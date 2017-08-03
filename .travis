@@ -2,9 +2,6 @@
 # Travis build for Alloy Tools
 #
 
-sudo: false
-dist: precise
-
 language: java
 
 jdk:
