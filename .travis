@@ -14,7 +14,8 @@ install:
   - ./gradlew --version
 
 script:
-  - ./gradlew -Dmaven.repo.local=maven/target/m2 build
+- echo "Hello World"
+- ./gradlew -Dmaven.repo.local=maven/target/m2 clean build
 
 cache:
   directories:
@@ -22,6 +23,5 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.m2/wrapper/
     - cnf/cache/stable/
-    - maven/target/m2/
 
 
