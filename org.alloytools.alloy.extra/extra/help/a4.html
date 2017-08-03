@@ -1,0 +1,347 @@
+<html>
+<head>
+<title>New Syntactic Features in Alloy 4</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>New Syntactic Features in Alloy 4</h2>
+
+The syntax of Alloy 4 differs very slightly from the syntax of Alloy 3. Changes
+were made for three reasons: to make the syntax more uniform; to add some new
+features for greater convenience; to simplify the grammar to allow faster
+parsing and to make it easier for others to implement tools for Alloy. The
+grammar is now LALR(1), and compilation is instantaneous for all but the
+largest models.
+
+<p>
+
+The changes are explained in detail below. For each change, the rationale is
+explained, and short comments highlight the small changes that users are likely
+to need to make to Alloy 3 models. We expect that, for most users, the only
+changes needed will be replacing round by square brackets in invocations, and
+adding aliases for imported modules.
+
+<p>
+
+<b>1. To cast between integers and Int atoms, use Int[ ] and int[ ]</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+
+   <p><em> Change:</em>
+   To cast from integer to an Int atom,
+   you must use the new "Int[ ]" function.<br>
+   Likewise, to cast from Int to integer,
+   you should use the new "int[ ]" function.</p>
+
+   <p><em> Rationale:</em>
+   This simplifies the grammar by using the function invocation syntax
+   to do type casts.</p>
+
+   <p><em> Impact:</em>
+   To update an Alloy3 model, you need to replace <i>sum X</i> and <i>int X</i> with <i>int[X]</i>, and replace <i>Int X</i> with <i>Int[X]</i>.</p>
+
+   <table border=0 cellpadding=4 cellspacing=4>
+   <tr> <th>Alloy 3</th>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;int SomeIntegerSet</td>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;Int 2</td>
+   </tr><tr> <th>Alloy 4</th>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;int[SomeIntegerSet]</td>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;Int[2]</td>
+   </tr></table>
+   </div>
+
+<b>2. The ":" symbol can only be used to declare a variable or field.</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   <p><em> Change:</em> To say an expression has
+   a particular multiplicity, you must now use the "in" operator
+   rather than the ":" operator.</p>
+
+   <p><em> Rationale:</em>
+   The ":" symbol in Alloy 3 has two meanings.<br>
+   The first meaning is to introduce a new name.<br>
+   For example: "some a:A | a!=b".<br>
+   The second meaning is to say that an expression
+   has a particular multiplicity.<br>
+   For example: "bank.accounts : Person -&gt; one Account".<br>
+   The second usage intuitively fits better with the existing meaning of
+   the "in" keyword.
+   </p>
+
+   <p><em> Impact:</em> Inside a formula, the ":" operator must be changed
+   to the "in" operator.
+   </p>
+
+   <p>
+   <b>Alloy 3:</b> &nbsp;&nbsp; bank.accounts : Person -&gt; one Account<br>
+   <b>Alloy 4:</b> &nbsp;&nbsp; bank.accounts in Person -&gt; one Account
+   </p>
+   </div>
+
+<b>3. if-then-else is now written as "condition=&gt;x else y"</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   In Alloy 3, if-then-else formulas are written as "condition=&gt;formula1,formula2"
+   where as if-then-else expressions are written as "if condition then x else y".
+   <p>In Alloy 4, both forms are now replaced by "condition=&gt;x else y".
+   <table width=90% border=0 cellpadding=4 cellspacing=4>
+   <tr> <th>Alloy 3</th>
+        <td>&nbsp;condition<br>=&gt; formula</td>
+        <td>&nbsp;condition<br>=&gt; formula1,<br>formula2</td>
+        <td>&nbsp;if condition<br>then expression1<br>else expression2</td>
+   </tr><tr> <th>Alloy 4</th>
+        <td>&nbsp;condition<br>=&gt; formula</td>
+        <td>&nbsp;condition<br>=&gt; formula1<br>else formula2</td>
+        <td>&nbsp;condition<br>=&gt; expression1<br>else expression2</td>
+   </tr></table>
+   </div>
+
+<b>4. Function/predicate calls must use the
+   same operators [ ] and . as relational joins.</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   To invoke <b>f(a,b)</b>, you must write it as <b>f[a,b]</b>,
+   <b>f[a][b]</b>, <b>a.f[b]</b>,
+   or <b>b.(a.f)</b>
+   <p>
+   To invoke <b>f(a)</b>, you must write it as <b>f[a]</b> or <b>a.f</b>
+   <p>
+   To invoke <b>f()</b>, you must write it as <b>f[ ]</b> or simply <b>f</b>
+   <p>
+   In particular, note that
+   <b>a.add[b].sub[c]</b> is equivalent to <b>sub[add[a,b],c]</b>
+   </div>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   Likewise, a function or predicate can be declared using [ ]:
+   <br>&nbsp;&nbsp;&nbsp; <b>pred</b> contains <b>[</b> m<b>:</b>Map<b>,</b> k<b>:</b>Key<b>,</b> v<b>:</b>Value <b>]</b> <b>{</b>...<b>}</b>
+   <p>Furthermore, if the list of arguments is empty, the [ ] can be omitted:
+   <br>&nbsp;&nbsp;&nbsp; <b>pred</b> acyclic <b>{</b>...<b>}</b>
+   <p>Finally, the first argument can be declared using the receiver syntax:
+   <br>&nbsp;&nbsp;&nbsp; <b>pred</b> List<b>.</b>contains <b>[</b> e<b>:</b>Element<b> ]</b> <b>{</b>...<b>}</b>
+   <br>is internally converted into
+   <br>&nbsp;&nbsp;&nbsp; <b>pred</b> contains <b>[ </b>this<b>:</b>List<b>,</b> e<b>:</b>Element<b> ]</b> <b>{</b>...<b>}</b>
+   <br>
+   </div>
+
+<b>5. Grammar for int expressions, set/relation expressions, and formulas
+   are unified.</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   This means some expressions legal in Alloy 3 may require
+   additional parentheses for it to parse.
+   <p>
+   <b>Operator Precedence (from low to high)</b><pre>
+   let    all a:X|F   no a:X|F   some a:X|F   lone a:X|F   one a:x|F   sum a:x|F
+   ||
+   &lt;=&gt;
+   =&gt;     =&gt; else
+   &amp;&amp;
+   !
+   in     =        &lt;        &gt;       &lt;=      &gt;=      !in   !=   !&lt;   !&gt;  !&lt;=  !&gt;=
+   no X   some X   lone X   one X   set X   seq X
+   &lt;&lt;     &gt;&gt;       &gt;&gt;&gt;
+   +      -
+   #X
+   ++
+   &amp;
+   -&gt;
+   &lt;:
+   :&gt;
+   []
+   .
+   ~    *     ^
+   </pre></div>
+
+<b>6. You can no longer set a separate scope on the number of Int atoms.</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   Its scope is always exactly equal to the number of possible integers
+   corresponding to the current bitwidth (default is 4).
+   <p>
+   To set the bitwidth, use the "int" keyword in a run or check command.
+   <p>
+   For example, if you write "<b>check MyAssertion for 4 int</b>",
+   the assertion
+   will be checked with integer bitwidth
+   of 4. That means there are exactly 16 Int atoms ranging
+   from -8 to 7.
+   </div>
+
+<b>7. You can no longer declare a signature that extends Int,
+   or declare a signature to be a subset of Int.</b>
+
+   <p>
+
+<b>8. We don't allow "part" and "exh" in declarations any more.</b>
+
+<h2>Additional Changes</h2>
+
+<b>9. Module Search Path:</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   When importing a module, Alloy 4 first searches in the installation
+   directory.
+   If not found, it will attempt to derive a relative path based on the
+   current module's name and the name of the module being imported.
+   <p>
+   For example, if the following model is <b>/Desktop/MyProject/main.als</b>,<br>
+   then we will infer that the "helper" module is
+   located at <b>/Desktop/MyProject/additonal/helper.als</b>
+   <p>
+   <pre>
+   module MyProject/main
+   open MyProject/additional/helper
+   ...
+   </pre>
+   </div>
+
+<b>10. "module" declaration is now optional.</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   If a model is not parametric, you can omit the "module" declaration.
+   <p>
+   <b>Example 1:</b>
+   <p>
+   In this example, the first line is require, since it lists
+   the parameters:
+   <blockquote>
+       module MyProject/main[T]<br>
+       ...
+   </blockquote>
+   <p>
+   <b>Example 2:</b>
+   <p>In this example, the first line is optional. But its presense
+   or absense will affect where Alloy 4 searches for imported modules.
+   <blockquote>
+       module MyProject/main<br>
+       open MyProject/library/helper<br>
+       ...
+   </blockquote>
+   If the module line is specified, then Alloy 4 will infer
+   that the <b>helper</b> module is located in a subdirectory called
+   <b>library</b>.
+   <p>
+   If the module line is omitted, then Alloy 4 assumes the main file
+   has no path. Thus, the <b>helper</b> module is assumed
+   to be in the subdirectory <b>MyProject/library</b>.
+   </div>
+
+<b>11. You can now write "check {...}" and "run {...}"</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   Instead of declaring an assertion X and then write <b>check X</b>,<br>
+   you can now combine them by just writing <b>check {some formula}</b>.
+   <p>
+   Likewise, instead of declaring a predicate X and then write <b>run X</b>,<br>
+   you can now combine them by just writing <b>run {some formula}</b>.
+   <p>
+   For example:<br>
+     <b>&nbsp;&nbsp;check { A!=B } for 3</b><br>
+   is equivalent to<br>
+     <b>&nbsp;&nbsp;assert NOTEQUAL { A!=B }</b><br>
+     <b>&nbsp;&nbsp;check NOTEQUAL for 3</b>
+   <p>
+   These are called "anonymous" assertions and predicates.<br>
+   Alternatively, you can prepend an explcit label if you wish.<br>
+   For example:
+   <p>
+   <b>somelabel: check { A != B } for 3</b><br>
+   <b>somelabel: run { some a:A, b:B | a=b } for 3</b>
+   </div>
+
+<b>12. predicates, functions, and fields can now overload each other.</b>
+
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   That is, you can declare functions, predicates, and fields
+   with the same name.
+   When there's an ambiguity, we'll use the following rule to determine
+   whether each candidate is compatible:
+   <p>
+   (a) First of all, its value must be relevant to the overall expression.
+   <p>
+   (b) Furthermore, if it's a predicate or function, then
+   the type of each parameter must have nonempty intersection with
+   the type of each argument.
+   <p>
+   If exactly one function, predicate, or field is compatible, Alloy 4
+   will choose it automatically. Otherwise, an ambiguity error will be reported.
+   </div>
+
+<b>13. When necessary, Alloy4 will add int-&gt;Int and Int-&gt;int casts automatically.</b>
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+   <p>
+   For example, given an atom X, then the relational product <b>X-&gt;3</b> is illegal,<br>
+   since both operands of <b>-&gt;</b> must be set or relation values.<br>
+   Alloy4 knows the only way for this to be legal is to add an int-to-Int cast,<br>
+   so Alloy4 will parse it as if the user wrote <b>X-&gt;Int[3]</b>
+   </p>
+   <p>&nbsp;</p>
+   <p>
+   Likewise, given an Int atom X, then the left shift expression <b>X&lt;&lt;2</b> is illegal,<br>
+   since both operands of <b>&lt;&lt;</b> must be int values.<br>
+   Alloy4 knows the only way for this to be legal is to add an Int-to-int cast,<br>
+   so Alloy4 will parse it as if the user wrote <b>int[X]&lt;&lt;2</b>
+   </p>
+   <p>&nbsp;</p>
+   <p>
+   <b>Note:</b> When there are two ways to make an expression legal,<br>
+   by adding either Int-to-int cast or int-to-Int cast,<br>
+   then Alloy4 <b>prefers the Int-to-int cast since it is cheaper</b>.
+   </p>
+   <p>&nbsp;</p>
+   For example, given an Int atom X, then the expression <b>X+3</b> is illegal,<br>
+   since both operands of <b>+</b> must be of the same type.<br>
+   Alloy4 knows there are two ways for this to be legal:<br>
+   1) &nbsp; convert X to int[X], and you get the int value representing the sum of X and 3.<br>
+   2) &nbsp; convert 3 to Int[3], and you get the union containing two atoms ("X" and "3").<br>
+   Since Alloy4 <b>prefers the Int-to-int cast since it is cheaper</b>,<br>
+   so Alloy4 will parse it as if the user wrote <b>int[X]+3</b>
+   </p>
+   </div>
+
+<b>14. Alloy4 now has syntax support for "sequence of atoms".</b>
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+      For more information, please click <a href="seq.html">this</a>.
+   </div>
+
+<b>15. Alloy4 now has syntax support for "private namespace".</b>
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+      Alloy4 allows you to declare a sig, a field, a function, or a predicate as "private" to the module, and not visible from other modules.<br>
+      For more information, please click <a href="private.html">this</a>.
+   </div>
+
+<b>16. Alloy4 now supports all the standard operations on int values.</b>
+   <div style="width:95%; background:#e0e0e0; border:1px solid black; margin:20px; padding:10px;">
+      <table border=0 cellpadding=2 cellspacing=2>
+      <tr> <td>addition</td>                  <td>&nbsp;</td>  <td>a.add[b]</td>     <td>(If unambiguous, you can shorten this to be a+b)</td> </tr>
+      <tr> <td>subtraction</td>               <td>&nbsp;</td>  <td>a.sub[b]</td>     <td>(If unambiguous, you can shorten this to be a-b)</td> </tr>
+      <tr> <td>multiplication</td>            <td>&nbsp;</td>  <td>a.mul[b]</td>     <td>&nbsp;</td> </tr>
+      <tr> <td>division</td>                  <td>&nbsp;</td>  <td>a.div[b]</td>     <td>&nbsp;</td> </tr>
+      <tr> <td>remainder</td>                 <td>&nbsp;</td>  <td>a.rem[b]</td>     <td>&nbsp;</td> </tr>
+      <tr> <td>negation</td>                  <td>&nbsp;</td>  <td>- a</td>          <td>&nbsp;</td> </tr>
+      <tr> <td colspan=4>&nbsp;</td> </tr>
+      <tr> <td>equal</td>                     <td>&nbsp;</td>  <td>a = b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>not equal</td>                 <td>&nbsp;</td>  <td>a != b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>less than</td>                 <td>&nbsp;</td>  <td>a &lt; b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>greater than</td>              <td>&nbsp;</td>  <td>a &gt; b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>less than or equal to</td>     <td>&nbsp;</td>  <td>a &lt;= b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>greater than or equal to</td>  <td>&nbsp;</td>  <td>a &gt;= b</td> <td>&nbsp;</td> </tr>
+      <tr> <td colspan=4>&nbsp;</td> </tr>
+      <tr> <td>left-shift</td>                <td>&nbsp;</td>  <td>a &lt;&lt; b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>sign-extended right-shift</td> <td>&nbsp;</td>  <td>a &gt;&gt; b</td> <td>&nbsp;</td> </tr>
+      <tr> <td>zero-extended right-shift</td> <td>&nbsp;</td>  <td>a &gt;&gt;&gt; b</td> <td>&nbsp;</td> </tr>
+      <tr> <td colspan=4>&nbsp;</td> </tr>
+      </table>
+      <b>Note:</b> The first five operators (<b>add, sub, mul, div, and rem</b>) requires that you add "<b>open util/integer</b>" to your model.
+   </div>
+
+</body>
+</html>

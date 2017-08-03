@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha" edgetheme="Standard">
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <set name="$BelowToo&apos;_m" type="Man"/>
+</node>
+
+<node color="Gray">
+   <type name="Platform"/>
+</node>
+
+<node label="m">
+   <set name="$m" type="Man"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Man"/>
+</node>
+
+</view>
+
+</alloy>

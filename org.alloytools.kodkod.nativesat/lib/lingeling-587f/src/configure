@@ -1,0 +1,145 @@
+#!/bin/sh
+log=undefined
+check=undefined
+chksol=undefined
+coverage=undefined
+profile=undefined
+competition=no
+feedback=no
+olevel=none
+other=none
+picosat=no
+static=no
+debug=no
+die () {
+  echo "*** configure: $*" 1>&2
+  exit 1
+}
+while [ $# -gt 0 ]
+do
+  case $1 in
+    -h|--help) 
+       echo "usage: configure [<option> ...]"
+       echo
+       echo "where <option> is one of the following"
+       echo
+       echo "-h | --help"
+       echo "-g | --debug    include debugging code and symbols"
+       echo "-l | --log      include logging code (default with '-g')"
+       echo "-c | --check    include checking code (default with '-g')"
+       echo "-p | --profile  compile with '-pg' for profiling"
+       echo "-f | --feedback compile with profile feedback"
+       echo "--competition   SAT race / SAT competition options"
+       echo "--coverage      compile with coverage options"
+       echo "--no-check      no checking code (overwrite default for '-g')"
+       echo "--chksol        alaways check solution (default for '-c')"
+       echo "--no-log        no logging code (overwrite default for '-g')"
+       echo "-O[0-3]         set optimization level unless '-g' specified"
+       echo "--picosat       add checking code depending on PicoSAT"
+       echo "-f...|-m...     add other compiler options"
+       exit 0
+       ;;
+    -g|--debug) debug=yes;;
+    -l|--log) log=yes;;
+    -c|--check) check=yes;;
+    -f|--feedback) feedback=yes;;
+    --chksol) chksol=yes;;
+    --competition) competition=yes;;
+    --no-check) check=no;;
+    --no-log) log=no;;
+    -p|--profile) profile=yes;;
+    --coverage) coverage=yes;;
+    --picosat) picosat=yes;;
+    -O) debug=no;;
+    -O0|-O1|-O2|-O3) olevel=$1;;
+    -static) static=yes;;
+    -f*|-m*) if [ $other = none ]; then other=$1; else other="$other $1"; fi;;
+    *) echo "*** configure: invalid command line option '$1'"; exit 1;;
+  esac
+  shift
+done
+if [ $competition = yes ]
+then
+  if [ $other = none ]; then other=""; else other="$other "; fi
+  other="${other}-march=core2"
+  static=yes
+  feedback=yes
+  [ x"$CC" = x ] && CC=/usr/bin/gcc
+fi
+[ $log = undefined ] && log=$debug
+[ $check = undefined ] && check=$debug
+for CNF in profile.cnf.gz \
+           /data/cnf/sc2009/applications/simon-s03-fifo8-300.cnf \
+           /data/cnf/cmu/longmult12.dimacs \
+	   log/prime65537.in \
+	   none
+do
+  [ -f $CNF ] && break;
+done
+
+if [ $feedback = yes ]
+then
+  [ $CNF = none ] && die "no CNF for feedback found"
+  TARGET="feedback"
+else
+  TARGET="targets"
+fi
+
+[ x"$CC" = x ] && CC=gcc
+CFLAGS="-Wall"
+if [ $debug = yes ]
+then
+  CFLAGS="$CFLAGS -g3"
+  [ $olevel = none ] || CFLAGS="$CFLAGS $olevel"
+else
+  [ $olevel = none ] && olevel=-O3
+  CFLAGS="$CFLAGS $olevel"
+  [ $olevel = O3 ] && \
+  CFLAGS="$CFLAGS -finline-limit=10000000 -fomit-frame-pointer"
+fi
+LIBS="-lm"
+if [ $picosat = yes ]
+then
+  if [ ! -d ../picosat ]
+  then
+    echo "*** configure: can not find '../picosat'"
+    exit 1;
+  elif [ ! -f ../picosat/picosat.h ]
+  then
+    echo "*** configure: can not find '../picosat/picosat.h'"
+    exit 1;
+  elif [ ! -f ../picosat/libpicosat.a ]
+  then
+    echo "*** configure: can not find '../picosat/libpicosat.a'"
+    exit 1;
+  else
+    HDEPS="../picosat/picosat.h"
+    LDEPS="../picosat/libpicosat.a"
+    LIBS="$LIBS -L../picosat -lpicosat"
+    CFLAGS="$CFLAGS -I../picosat"
+  fi
+else
+  HDEPS=""
+  LDEPS=""
+fi
+[ $chksol = undefined ] && chksol=$check
+[ $static = yes ] && CFLAGS="$CFLAGS -static"
+[ $profile = yes ] && CFLAGS="$CFLAGS -pg"
+[ $coverage = yes ] && CFLAGS="$CFLAGS -ftest-coverage -fprofile-arcs"
+[ $other = none ] || CFLAGS="$CFLAGS $other"
+[ $log = yes ] && LIBS="$LIBS -lm"
+[ $log = no ] && CFLAGS="$CFLAGS -DNLGLOG"
+[ $check = no ] && CFLAGS="$CFLAGS -DNDEBUG"
+[ $chksol = no ] && CFLAGS="$CFLAGS -DNCHKSOL"
+[ $picosat = no ] && CFLAGS="$CFLAGS -DNLGLPICOSAT"
+echo "$CC $CFLAGS"
+rm -f makefile
+sed \
+  -e "s,@CC@,$CC," \
+  -e "s,@CFLAGS@,$CFLAGS," \
+  -e "s,@TARGET@,$TARGET," \
+  -e "s,@HDEPS@,$HDEPS," \
+  -e "s,@LDEPS@,$LDEPS," \
+  -e "s,@CNF@,$CNF," \
+  -e "s,@LIBS@,$LIBS," \
+  makefile.in > makefile

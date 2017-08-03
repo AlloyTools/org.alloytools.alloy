@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="Time"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node hideunconnected="yes" shape="Circle">
+   <type name="Event"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Guest"/>
+</node>
+
+<node showlabel="no">
+   <set name="First" type="to/Ord"/>
+   <set name="Last" type="to/Ord"/>
+   <set name="Next" type="to/Ord"/>
+   <set name="Prev" type="to/Ord"/>
+</node>
+
+<node visible="no">
+   <type name="ko/Ord"/>
+   <type name="to/Ord"/>
+   <set name="$e" type="univ"/>
+   <set name="$e" type="Event"/>
+   <set name="$k" type="univ"/>
+   <set name="$k" type="Key"/>
+</node>
+
+<node visible="no" hideunconnected="yes">
+   <type name="Key"/>
+</node>
+
+<node visible="yes" hideunconnected="no">
+   <set name="pre" type="Event"/>
+</node>
+
+<edge visible="no">
+   <relation name="First"> <type name="ko/Ord"/> <type name="Key"/> </relation>
+   <relation name="Last"> <type name="ko/Ord"/> <type name="Key"/> </relation>
+   <relation name="Next"> <type name="ko/Ord"/> <type name="Key"/> <type name="Key"/> </relation>
+   <relation name="Prev"> <type name="ko/Ord"/> <type name="Key"/> <type name="Key"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="currentKey"> <type name="Room"/> <type name="Key"/> </relation>
+   <relation name="guest"> <type name="Event"/> <type name="Guest"/> </relation>
+   <relation name="key"> <type name="RoomKeyEvent"/> <type name="Key"/> </relation>
+   <relation name="keys"> <type name="Guest"/> <type name="Key"/> </relation>
+   <relation name="keys"> <type name="Room"/> <type name="Key"/> </relation>
+   <relation name="lastKey"> <type name="FrontDesk"/> <type name="Room"/> <type name="Key"/> </relation>
+   <relation name="occupant"> <type name="FrontDesk"/> <type name="Room"/> <type name="Guest"/> </relation>
+   <relation name="room"> <type name="RoomKeyEvent"/> <type name="Room"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha" edgetheme="Standard">
+
+<projection> <type name="State"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Ack"/>
+   <type name="AssignParent"/>
+   <type name="Elect"/>
+   <type name="Init"/>
+   <type name="ReadReqOrAck"/>
+   <type name="Req"/>
+   <type name="ResolveContention"/>
+   <type name="State"/>
+   <type name="Stutter"/>
+   <type name="univ"/>
+   <type name="WriteReqOrAck"/>
+   <type name="seq/Int"/>
+   <set name="active" type="Node"/>
+   <set name="contending" type="Node"/>
+   <set name="First" type="ord/Ord"/>
+   <set name="Last" type="ord/Ord"/>
+   <set name="Next" type="ord/Ord"/>
+   <set name="Prev" type="ord/Ord"/>
+   <set name="waiting" type="Node"/>
+</node>
+
+<node color="Red">
+   <set name="elected" type="Node"/>
+</node>
+
+<node color="Yellow" label="tree">
+   <set name="parentLinks" type="Link"/>
+</node>
+
+<node hideunconnected="yes">
+   <type name="Msg"/>
+</node>
+
+<node label="root">
+   <set name="$root" type="Node"/>
+</node>
+
+<node shape="Diamond" color="Gray">
+   <type name="Link"/>
+</node>
+
+<node shape="Ellipse" color="Blue">
+   <type name="Node"/>
+</node>
+
+<node visible="no">
+   <type name="Int"/>
+   <type name="ord/Ord"/>
+</node>
+
+<node visible="no" hideunconnected="yes">
+   <type name="Queue"/>
+</node>
+
+<node visible="no" shape="Trapezoid" color="Gray">
+   <type name="Op"/>
+</node>
+
+<node visible="yes" color="Red" label="">
+   <set name="op" type="Op"/>
+</node>
+
+<edge color="Red" label="tree">
+   <relation name="$tree"> <type name="Node"/> <type name="Node"/> </relation>
+</edge>
+
+<edge label="">
+   <relation name="from"> <type name="Node"/> <type name="Link"/> </relation>
+   <relation name="slot"> <type name="Queue"/> <type name="Msg"/> </relation>
+   <relation name="target"> <type name="Link"/> <type name="Node"/> </relation>
+</edge>
+
+<edge visible="no">
+   <relation name="reverse"> <type name="Link"/> <type name="Link"/> </relation>
+   <relation name="source"> <type name="Link"/> <type name="Node"/> </relation>
+   <relation name="to"> <type name="Node"/> <type name="Link"/> </relation>
+</edge>
+
+<edge visible="no" attribute="no" label="">
+   <relation name="queue"> <type name="Link"/> <type name="Queue"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes" label="queued">
+   <relation name="$queued"> <type name="Link"/> <type name="Msg"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

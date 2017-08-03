@@ -1,0 +1,17 @@
+apply plugin: 'java'
+
+task jflex(type: JavaExec) {
+	classpath file( '../cnf/jars/JFlex.jar' )
+	main = 'JFlex.Main'
+	args ("-d","src/main/java/edu/mit/csail/sdg/alloy4compiler/parser","-nobak","src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/Alloy.lex") 
+}
+
+task cup(type: JavaExec ) {
+	classpath file( '../cnf/jars/java-cup-11b.jar' )
+	main = 'java_cup.Main'
+ 	args( "-package", "edu.mit.csail.sdg.alloy4compiler.parser", "-parser", "CompParser", "-progress",
+ 	 "-time", "-compact_red", "-symbols", "CompSym", "src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/Alloy.cup")
+}
+compileJava.dependsOn(jflex)
+compileJava.dependsOn(cup)
+cup.dependsOn(jflex)

@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="TrainState"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="TrainState"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <set name="$PolicyWorks_x" type="TrainState"/>
+   <set name="$PolicyWorks_x&apos;" type="TrainState"/>
+</node>
+
+<node color="Gray">
+   <type name="Seg"/>
+</node>
+
+<node color="Red" label="">
+   <set name="occupied" type="Seg"/>
+</node>
+
+<node label="safe">
+   <set name="$Safe_s" type="Seg"/>
+</node>
+
+<node numberatoms="no" shape="Diamond" color="Yellow" label="Gate">
+   <type name="GateState"/>
+</node>
+
+<node showlabel="no">
+   <set name="$PolicyWorks_g" type="GateState"/>
+   <set name="$PolicyWorks_ts" type="Train"/>
+</node>
+
+<node visible="no" shape="Trapezoid" color="Red">
+   <type name="Train"/>
+</node>
+
+<edge color="Gray" weight="10" label="">
+   <relation name="overlaps"> <type name="Seg"/> <type name="Seg"/> </relation>
+</edge>
+
+<edge color="Red" constraint="no" label="">
+   <relation name="on"> <type name="Train"/> <type name="Seg"/> </relation>
+</edge>
+
+<edge color="Yellow" constraint="no" label="">
+   <relation name="closed"> <type name="GateState"/> <type name="Seg"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes" label="">
+   <relation name="$contains"> <type name="Seg"/> <type name="Train"/> </relation>
+</edge>
+
+<edge weight="10" label="">
+   <relation name="next"> <type name="Seg"/> <type name="Seg"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

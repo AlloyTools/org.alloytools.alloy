@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha">
+
+<projection> <type name="State"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Chicken"/>
+   <type name="Fox"/>
+   <type name="Grain"/>
+   <type name="Int"/>
+   <type name="State"/>
+   <type name="seq/Int"/>
+   <set name="First" type="ord/Ord"/>
+   <set name="Last" type="ord/Ord"/>
+   <set name="Next" type="ord/Ord"/>
+   <set name="Prev" type="ord/Ord"/>
+</node>
+
+<node color="Green">
+   <set name="far" type="Object"/>
+</node>
+
+<node color="White">
+   <type name="univ"/>
+</node>
+
+<node color="Yellow">
+   <set name="near" type="Object"/>
+</node>
+
+<node shape="Box">
+   <type name="Farmer"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Object"/>
+</node>
+
+<node visible="no">
+   <type name="ord/Ord"/>
+</node>
+
+</view>
+
+</alloy>

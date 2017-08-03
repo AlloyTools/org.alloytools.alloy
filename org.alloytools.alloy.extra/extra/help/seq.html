@@ -1,0 +1,172 @@
+<html>
+<head>
+<title>Skolemization Relations</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>sequence of atoms</h2>
+
+<p>
+A new reserved keyword "seq" has been added for declaring a field as a sequence of atoms.<br>
+In the following example, for each person p, "p.books" is a sequence of Book:
+</p>
+
+<pre>
+  sig Book { }
+  sig Person {
+      books: seq Book
+  }
+</pre>
+
+<p>
+The actual type of a sequence of Book is "Int-&gt;Book".<br>
+So if s is a sequence of Book, then the first element is s[0]<br>
+and you can get the set of all elements by writing "univ.s"<br>
+</p>
+
+<p>
+You can also use "seq" in quantifications, like this:
+</p>
+
+<pre>some s: seq Book | FORMULA</pre>
+
+<p>
+You can also use "seq" in function argument declaration, like this:
+</p>
+
+<pre>
+  fun getAllElements [s: seq Book] : set Book {
+      univ.s
+  }
+</pre>
+
+<p>
+Just like the other multiplicity symbols, when you use "seq"
+in a function argument declaration, we do not enforce that
+you always call the function/predicate with a well-formed sequence.
+So it is only for documentation purpose, to denote s
+is a binary relation from Int-&gt;Book.
+</p>
+
+<p>
+Note: for effifiency, we bound the length of allowed sequences.
+You can change this bound by setting the scope on "seq".<br>
+For example, if you want to allow sequences of up to 4 elements,
+you write
+</p>
+
+<pre>  check SomeAssertion for 4 seq
+</pre>
+
+<p>
+To make it easier to manipulate sequences,
+we provide a number of helper functions: (these are
+defined in the pre-included util/sequniv.als file)
+</p>
+
+<p><b>#s</b><br>
+ Return the number of elements in sequence s.<br>
+<br></p>
+
+<p><b>s.elems</b><br>
+ Return the set of elements in sequence s.<br>
+<br></p>
+
+<p><b>s.first</b><br>
+ If #s &gt; 0, it returns the first element of s<br>
+ Otherwise, it returns the empty set<br>
+<br></p>
+
+<p><b>s.last</b><br>
+ If #s &gt; 0, it returns the last element of s<br>
+ Otherwise, it returns the empty set<br>
+<br></p>
+
+<p><b>s.rest</b><br>
+ If #s &gt; 1, it returns s with its first element removed<br>
+ Otherwise, it returns the empty sequence<br>
+<br></p>
+
+<p><b>s.butLast</b><br>
+ If #s &gt; 1, it returns s with its last element removed<br>
+ Otherwise, it returns the empty sequence<br>
+<br></p>
+
+<p><b>s.isEmpty</b><br>
+ It returns true if #s==0.<br>
+<br></p>
+
+<p><b>s.hasDups</b><br>
+ It returns true if s contains duplicate elements.<br>
+<br></p>
+
+<p><b>s.inds</b><br>
+ If #s &gt; 0, it returns the set of integers {0 .. (#s)-1}<br>
+ Otherwise, it returns the empty set<br>
+<br></p>
+
+<p><b>s.lastIdx</b><br>
+ If #s &gt; 0, it returns the integer (#s)-1<br>
+ Otherwise, it returns the empty set<br>
+<br></p>
+
+<p><b>s.afterLastIdx</b><br>
+ If (#s &lt; the longest allowed sequence length), it returns #s<br>
+ Otherwise, it returns the empty set<br>
+<br></p>
+
+<p><b>s.idxOf [x]</b><br>
+ If x does not appear in s, it returns the empty set.<br>
+ Otherwise, it returns the first index where x appears in s.<br>
+<br></p>
+
+<p><b>s.lastIdxOf [x]</b><br>
+ If x does not appear in s, it returns the empty set.<br>
+ Otherwise, it returns the last index where x appears in s.<br>
+<br></p>
+
+<p><b>s.indsOf [x]</b><br>
+ If x does not appear in s, it returns the empty set.<br>
+ Otherwise, it returns the set of indices where x appears in s.<br>
+<br></p>
+
+<p><b>s.add [x]</b><br>
+ If (#s &lt; the longest allowed sequence length), it appends x to s.<br>
+ Otherwise, it returns s.<br>
+<br></p>
+
+<p><b>s.setAt [i, x]</b><br>
+ Precondition: 0 &lt;= i &lt; #s<br>
+ It returns a new sequence where the i-th entry is changed to x.<br>
+<br></p>
+
+<p><b>s.insert [i, x]</b><br>
+ Precondition: 0 &lt;= i &lt;= #s<br>
+ It returns a new sequence where x is inserted at index i.<br>
+ Note: if #s was already equal to the longest allowed sequence
+ length, then the last element of s will be removed first.<br>
+<br></p>
+
+<p><b>s.delete [i]</b><br>
+ Precondition: 0 &lt;= i &lt; #s<br>
+ It returns the result of deleting the element at index i<br>
+<br></p>
+
+<p><b>a.append [b]</b><br>
+ Returns the result of concatenating sequence a and sequence b<br>
+ (If the resulting sequence is too longer, it will be truncated)<br>
+<br></p>
+
+<p><b>s.subseq [from, to]</b><br>
+ Precondition: 0 &lt;= from &lt;= to &lt; #s<br>
+ Returns the subsequence between from and to, inclusively.<br>
+<br></p>
+
+</body></html>

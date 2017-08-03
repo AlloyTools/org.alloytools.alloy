@@ -1,0 +1,57 @@
+<html>
+<head>
+<title>XML View</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>XML View </h2>
+
+<p>As implied by its name, the XML view displays an instance
+in XML format. If you save the XML text, you can load the instance
+later from the visualizer.</p>
+
+<p>Here is a sample XML file:</p>
+
+<pre>
+
+&lt;alloy&gt;
+
+&lt;sig name="Name" extends="univ"&gt;
+  &lt;atom name="Name$0"/&gt;
+  &lt;atom name="Name$1"/&gt;
+&lt;/sig&gt;
+
+&lt;sig name="Date" extends="univ"&gt;
+  &lt;atom name="Date$0"/&gt;
+&lt;/sig&gt;
+
+&lt;sig name="BirthdayBook" extends="univ"&gt;
+  &lt;atom name="BirthdayBook$0"/&gt;
+  &lt;atom name="BirthdayBook$1"/&gt;
+&lt;/sig&gt;
+
+&lt;field name="known"&gt;
+    &lt;type&gt; &lt;sig name="BirthdayBook"/&gt; &lt;sig name="Name"/&gt; &lt;/type&gt;
+    &lt;tuple&gt; &lt;atom name="BirthdayBook$1"/&gt; &lt;atom name="Name$1"/&gt; &lt;/tuple&gt;
+&lt;/field&gt;
+
+&lt;field name="date"&gt;
+    &lt;type&gt; &lt;sig name="BirthdayBook"/&gt; &lt;sig name="Name"/&gt; &lt;sig name="Date"/&gt; &lt;/type&gt;
+    &lt;tuple&gt; &lt;atom name="BirthdayBook$1"/&gt; &lt;atom name="Name$1"/&gt; &lt;atom name="Date$0"/&gt; &lt;/tuple&gt;
+&lt;/field&gt;
+
+&lt;/instance&gt;
+
+&lt;/alloy&gt;
+
+</pre>
+
+</body>
+</html>

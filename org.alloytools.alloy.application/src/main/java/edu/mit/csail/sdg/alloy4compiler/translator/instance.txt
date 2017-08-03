@@ -1,0 +1,26 @@
+WHOLEFILE = <alloy builddate=".."> exactly 1 INSTANCE </alloy>
+                                   0 or more SOURCE
+
+INSTANCE = <instance bitwidth=".." maxseq=".." command=".." filename=".." metamodel="yes">  0 or more PRIMSIG    </instance>
+                                                                                            0 or more SUBSETSIG
+                                                                                            0 or more FIELD
+                                                                                            0 or more SKOLEM
+
+PRIMSIG = <sig ID=".." parentID=".." label=".." builtin="yes" some="yes" lone="yes" one="yes" abstract="yes" private="yes" meta="yes">  0 or more ATOM  </sig>
+
+SUBSETSIG = <sig ID=".." label=".."  some="yes" lone="yes" one="yes"  private="yes" meta="yes">  0 or more ATOM  </sig>
+                                                                                                    1 or more TYPE
+
+FIELD = <field ID=".." parentID=".." label=".." private="yes" meta="yes"> 0 or more TUPLE </field>
+                                                                          1 or more TYPES
+
+SKOLEM = <skolem ID=".." label=".."> 0 or more TUPLE </skolem>
+                                     1 or more TYPES
+
+TUPLE = <tuple> 1 or more ATOM </tuple>
+ATOM  = <atom label=".."/>
+
+TYPES = <types> 1 or more TYPE </types>
+TYPE  = <type ID=".."/>
+
+SOURCE  = <source filename=".." content=".."/>

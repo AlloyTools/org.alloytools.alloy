@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="Book"/> </projection>
+
+<defaultnode hideunconnected="yes"/>
+
+<defaultedge/>
+
+<node shape="Ellipse">
+   <type name="Addr"/>
+</node>
+
+</view>
+
+</alloy>

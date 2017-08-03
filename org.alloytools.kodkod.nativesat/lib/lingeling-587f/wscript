@@ -1,0 +1,48 @@
+#! /usr/bin/env python
+# encoding: utf-8
+import os.path;
+import datetime;
+
+def options(opt):
+    opt.load('compiler_c')
+    opt.load('java')
+
+def configure(conf):
+    conf.load('compiler_c')
+    conf.load('java')
+    conf.check_jni_headers()
+    
+    conf.env.DEFINES = ['NLGLOG', 'NLGLSTATS', 'NDEBUG', 'NLGLPICOSAT']
+    conf.env.INCLUDES = ['.', '..']
+    conf.env.CFLAGS = ['-Wall', '-O3', '-fPIC', '-fopenmp']
+    conf.env.LINKFLAGS = ['-fopenmp']
+    conf.env.LIB = ['m']
+    conf.env.LINGELING_SRC = ['src/lglib.c', 'src/lglbnr.c']
+    conf.env.LINGELING_MAIN = 'src/lglmain.c'
+    conf.env.LINGELING_JNI = 'jni/kodkod_engine_satlab_Lingeling.c'
+    conf.env.PLINGELING_MAIN = 'src/plingeling.c'
+
+    if conf.env.solver:
+        header_path = conf.env.solver + os.path.sep + conf.path.path_from(conf.srcnode) + os.path.sep
+    else:
+        header_path = ''
+    flags = reduce(lambda x, y: x + " " + y, conf.env.CFLAGS + [ '-D'+flag for flag in conf.env.DEFINES ])
+    cc_version = reduce(lambda x, y: x + "." + y, conf.env.CC_VERSION)
+    conf.define('LGL_CC', conf.env.CC_NAME + " " + cc_version)
+    conf.define('LGL_CFLAGS', flags)
+    conf.write_config_header(header_path+'lglcflags.h', top=True)
+
+    conf.define('LGL_OS', conf.env.DEST_OS + ' ' + conf.env.DEST_CPU)
+    conf.define('LGL_COMPILED', str(datetime.datetime.now()))
+    conf.define('LGL_RELEASED', "Fri May 13 10:31:34 CEST 2011")
+    conf.define('LGL_VERSION', conf.path.ant_glob('src/VERSION')[0].read().strip())
+    conf.define('LGL_ID', "488204892da844a6e9ef7943cb581cc20385c5b3")
+    conf.write_config_header(header_path+'lglcfg.h', top=True)
+     
+def build(bld):
+    bld.objects( source = bld.path.ant_glob(bld.env.LINGELING_SRC), target = 'lglib' )
+    #bld.program( source = bld.path.ant_glob(bld.env.LINGELING_MAIN), use = 'lglib', target = 'lingeling')
+    bld.program( source = bld.path.ant_glob(bld.env.PLINGELING_MAIN), use = 'lglib', target = 'plingeling')
+    bld.shlib( source = bld.path.ant_glob(bld.env.LINGELING_JNI), uselib = 'JAVA', use = 'lglib', target = 'lingeling' )
+ 
+   

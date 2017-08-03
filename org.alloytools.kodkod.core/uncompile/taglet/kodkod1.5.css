@@ -1,0 +1,61 @@
+/** default stylesheet **/
+
+
+/** basic body attributes **/
+body { 
+ background-color: #FFFFFF; color: #323232; 
+ font-family: Trebuchet, "Times New Roman", Times, serif;
+}
+
+
+
+/** link attributes **/
+a {text-decoration: none;}
+a:link, a:visited { color: #007800; }
+a:hover { text-decoration: underline; }
+
+
+/* header */
+
+h1 { 
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    background-image: url(kodkod.png);  
+    background-repeat: no-repeat; 
+    text-align: left; 
+    padding-left: 90px; 
+    padding-top: 40px; 
+    padding-bottom: 30px; 
+}
+
+hr { border: 1px dotted #DDDDDD;  }
+
+
+/* Table colors */
+.TableHeadingColor     { background: #DDDDDD } /* Dark gray */
+.TableSubHeadingColor  { background: #DDDDDD } /* Light gray */
+.TableRowColor         { background: #FFFFFF } /* White */
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif }
+.FrameHeadingFont { font-weight: bold; font-size:  90%; font-family: Helvetica, Arial, sans-serif }
+.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
+
+/* Navigation bar fonts and colors */
+td.NavBarCell1 { background-color:#fff; padding:0;border:0; width: 100em;}
+td table td.NavBarCell1    { 
+    background-color:#fffff; 
+    padding:4px 6px 4px 6px;
+    border:1px solid #bbb;
+    width: 5em;
+} 
+
+.NavBarCell1Rev { background-color:#DDDDDD; margin: 0; padding:4px 6px 4px 6px;border:1px solid #bbb;width: 5em;} /* Dark gray */
+.NavBarFont1    { color:#000000;}
+.NavBarFont1Rev { color:#000000;}
+
+.NavBarCell2    { background-color:#FFFFFF; padding:8px 8px 4px 4px;border:0; text-align: left;}
+.NavBarCell3    { background-color:#FFFFFF; padding:4px 8px 4px 4px;border:0; text-align: left;}
+
+td.NavBarCell3:first-child {
+  padding-left: .45em;
+}

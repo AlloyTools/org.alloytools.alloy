@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="edu.mit.csail.sdg.alloy4whole.InternalTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2017-08-03T10:02:46" hostname="zeno-5.local" time="0.109">
+  <properties/>
+  <testcase name="test1" classname="edu.mit.csail.sdg.alloy4whole.InternalTest" time="0.103"/>
+  <testcase name="test2" classname="edu.mit.csail.sdg.alloy4whole.InternalTest" time="0.004"/>
+  <testcase name="test3" classname="edu.mit.csail.sdg.alloy4whole.InternalTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

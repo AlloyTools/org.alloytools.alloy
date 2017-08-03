@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+  @(#)package.html	1.60 98/01/27
+
+  Copyright 1998 Sun Microsystems, Inc. 901 San Antonio Road, 
+  Palo Alto, California, 94303, U.S.A.  All Rights Reserved.
+
+  This software is the confidential and proprietary information of Sun
+  Microsystems, Inc. ("Confidential Information").  You shall not
+  disclose such Confidential Information and shall use it only in
+  accordance with the terms of the license agreement you entered into
+  with Sun.
+
+  CopyrightVersion 1.2
+
+-->
+</head>
+<body bgcolor="white">
+
+
+Contains visitors for Kodkod formulas, expressions, and integer expressions.
+
+<h2>Package Specification</h2>
+
+<p>Provides two interfaces for traversing the Kodkod AST using
+the visitor pattern.  A {@linkplain kodkod.ast.visitor.VoidVisitor} visits the nodes but returns no values.  A
+{@linkplain kodkod.ast.visitor.ReturnVisitor} can be parametrized to return values of specific types for
+{@linkplain kodkod.ast.Decls}, {@linkplain kodkod.ast.Expression}, {@linkplain kodkod.ast.IntExpression}, 
+and {@linkplain kodkod.ast.Formula} nodes.  </p>
+
+<p>Several skeletal implementations of the VoidVisitor and ReturnVisitor interfaces
+are also provided.  These traverse the AST in a depth-first manner and optionally cache
+the results of visiting specified nodes.  The caching functionality makes it convenient
+to implement visitors that visit shared nodes only once.  </p>
+
+<h2>Related Documentation</h2>
+
+@see kodkod.ast.visitor.VoidVisitor
+@see kodkod.ast.visitor.ReturnVisitor
+
+</body>
+</html>

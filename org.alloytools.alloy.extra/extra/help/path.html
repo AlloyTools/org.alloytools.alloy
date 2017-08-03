@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>About Module Paths</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>About Module Paths</h2>
+
+<p> Alloy models may contain &quot;open&quot; statements, like this one:</p>
+
+<pre> open util/integer</pre>
+
+<p> The Alloy &quot;open&quot; statement is roughly similar
+  to the Java &quot;import&quot;
+  or the C/C++ &quot;include&quot; in that it tells
+  the tool to look at some source
+  in another file.
+</p>
+
+<p>
+  Alloy will look for util/integer.als in two places:
+</p>
+
+<p>
+  First of all, if the module is one of the sample model that comes with Alloy 4, it will load it.<br>
+  This includes all the <a href="util.html">"util" modules</a>
+  such as util/ordering and util/boolean, as well as the example models such as examples/algorithms/dijkstra.<br>
+  You can see the list of sample models by clicking on the File menu, then click on "open sample models".
+</p>
+
+<p>
+  Failing that, it will infer the location of the file based on the location
+  of the current model and the name of the current model.
+</p>
+
+<p>
+  For example, let's suppose we are analyzing the model "C:\Desktop\main.als"
+  with the following content:
+  <br>
+    <pre>
+    model filesystem/main
+
+    open filesystem/debug as DEBUG
+    open filesystem/library/dirmodel as DIR
+    open filesystem/library/filemodel as FILE
+   </pre>
+</p>
+
+  <p>
+  The "filesystem/debug" module is on the same level as "filesystem/main",
+  so we will infer that it is at C:\Desktop\debug.als
+  </p>
+
+  <p>
+  The dirmodel and filemodel are in a subdirectory called "library",
+  so we will infer that they are at C:\Desktop\library\dirmodel.als
+  and C:\Desktop\library\filemodel.als
+  </p>
+</body>
+</html>

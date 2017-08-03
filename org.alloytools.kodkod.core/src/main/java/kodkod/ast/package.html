@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+  @(#)package.html	1.60 98/01/27
+
+  Copyright 1998 Sun Microsystems, Inc. 901 San Antonio Road, 
+  Palo Alto, California, 94303, U.S.A.  All Rights Reserved.
+
+  This software is the confidential and proprietary information of Sun
+  Microsystems, Inc. ("Confidential Information").  You shall not
+  disclose such Confidential Information and shall use it only in
+  accordance with the terms of the license agreement you entered into
+  with Sun.
+
+  CopyrightVersion 1.2
+
+-->
+</head>
+<body bgcolor="white">
+
+
+Contains classes for creating Kodkod formulas, expressions, 
+and integer expressions.
+
+<h2>Package Specification</h2>
+
+<p>Contains the classes for creating a Kodkod abstract syntax 
+tree (AST). An object such as a quantified formula or a union expression is called a node. 
+The {@linkplain kodkod.ast.Node} class is the root of the Kodkod syntax hierarchy.</p> 
+
+<p>All classes in this package are immutable.  Their instances
+are created by calling factory methods of the classes {@linkplain kodkod.ast.Relation}, {@linkplain kodkod.ast.Variable}, 
+{@linkplain kodkod.ast.Expression}, {@linkplain kodkod.ast.IntExpression}, and {@linkplain kodkod.ast.Formula}.  Nodes can be freely shared between
+multiple parents (so a Kodkod AST is actually a directed acyclic graph).</p>
+
+<h2>Related Documentation</h2>
+
+@see kodkod.ast.Relation
+@see kodkod.ast.Variable
+@see kodkod.ast.Expression
+@see kodkod.ast.IntExpression
+@see kodkod.ast.Formula
+@see kodkod.ast.Node
+
+</body>
+</html>

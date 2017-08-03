@@ -1,0 +1,24 @@
+news for release 587 since first public release 276
+---------------------------------------------------
+lifting units and equivalences
+sharing of equivalences in parallel solver
+reusing of trail after restart
+unhiding hidden tautologies, hidden literal removal, variable elimination
+dynamic activity versus glue based reductions
+capping of long learned clauses
+poison flag for minimization
+partially flipping initial phase during rebias and rephrasing
+more aggressive rebias
+setting options through environment variables
+initial incremental interface with one assumption
+optional tracing of API calls
+added missing reschedule when using '--bias' option
+improved verbose messages for plingeling
+
+news for release 276 since competition version 271
+--------------------------------------------------
+added '-i' option to ignore additional clauses
+better logging and verbose messages
+first worker of plingling = lingeling
+externalized parameters: lhbr, redlmininc
+cleaned up unused code

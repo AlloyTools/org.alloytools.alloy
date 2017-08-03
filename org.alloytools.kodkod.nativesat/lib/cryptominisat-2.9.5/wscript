@@ -1,0 +1,23 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+def options(opt):
+    opt.load('compiler_cxx')
+    opt.load('java')
+
+def configure(conf):
+    conf.load('compiler_cxx')
+    conf.load('java')
+    conf.check_jni_headers()
+    conf.env.DEFINES = ['__STDC_LIMIT_MACROS', '__STDC_FORMAT_MACROS', 'DISABLE_ZLIB']
+    conf.env.INCLUDES = ['.', '..']
+    conf.env.CXXFLAGS = ['-Wall', '-O3', '-fopenmp', '-fPIC']
+    conf.env.LINKFLAGS = ['-fopenmp']
+    conf.env.CORE_SRC = {'include' : ['cmsat/*.cpp'], 'exclude' : ['cmsat/Main*']}
+    conf.env.JNI_SRC = {'include' : ['jni/*.cpp'], 'exclude' : []}
+    
+def build(bld):
+    bld.objects( source = bld.path.ant_glob(bld.env.CORE_SRC['include'], excl=bld.env.CORE_SRC['exclude']), target = 'core' )
+    bld.shlib( source = bld.path.ant_glob(bld.env.JNI_SRC['include'], excl=bld.env.JNI_SRC['exclude']), uselib = 'JAVA', use = 'core', target = 'cryptominisat' )
+
+   

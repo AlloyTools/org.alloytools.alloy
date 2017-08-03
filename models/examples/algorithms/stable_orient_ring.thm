@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha">
+
+<projection> <type name="Tick"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="Tick"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <set name="$SomeState_t" type="Tick"/>
+   <set name="First" type="ord/Ord"/>
+   <set name="Last" type="ord/Ord"/>
+   <set name="Next" type="ord/Ord"/>
+   <set name="Prev" type="ord/Ord"/>
+   <set name="runs" type="Process"/>
+</node>
+
+<node color="Blue">
+   <set name="$ring_n" type="Process"/>
+</node>
+
+<node label="False">
+   <type name="bool/False"/>
+</node>
+
+<node label="True">
+   <type name="bool/True"/>
+</node>
+
+<node shape="Ellipse" color="Green">
+   <type name="Process"/>
+</node>
+
+<node visible="no">
+   <type name="bool/Bool"/>
+   <type name="ord/Ord"/>
+</node>
+
+<edge color="Green" label="right">
+   <relation name="rightNeighbor"> <type name="Process"/> <type name="Process"/> </relation>
+</edge>
+
+<edge color="Red" label="ring">
+   <relation name="ring_"> <type name="Process"/> <type name="Process"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="dir"> <type name="Process"/> <type name="bool/Bool"/> </relation>
+   <relation name="S"> <type name="Process"/> <type name="bool/Bool"/> </relation>
+   <relation name="T"> <type name="Process"/> <type name="bool/Bool"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

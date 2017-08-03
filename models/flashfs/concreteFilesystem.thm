@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha">
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="ConcFsys"/>
+   <type name="Fail1"/>
+   <type name="Fail2"/>
+   <type name="Int"/>
+   <type name="OpResult"/>
+   <type name="ProgramState"/>
+   <type name="Succ"/>
+   <type name="TranscState"/>
+   <type name="univ"/>
+   <type name="ValidatedState"/>
+   <type name="FD/Allocated"/>
+   <type name="FD/Free"/>
+   <type name="FD/Invalid"/>
+   <type name="FD/NeverErased"/>
+   <type name="FD/OftenErased"/>
+   <type name="FD/SeldomErased"/>
+   <type name="FD/Valid"/>
+   <type name="FD/EFO/Ord"/>
+   <type name="TrscSeq/ord/Ord"/>
+   <type name="FD/BSeq/ord/Ord"/>
+   <type name="FD/LSeq/ord/Ord"/>
+   <type name="FD/PSeq/ord/Ord"/>
+   <set name="$cfsys" type="ConcFsys"/>
+   <set name="$cfsys&apos;" type="ConcFsys"/>
+   <set name="$d" type="FD/Device"/>
+   <set name="$d&apos;" type="FD/Device"/>
+   <set name="$fid" type="FID"/>
+   <set name="$fsysBlockSizeParam" type="Int"/>
+   <set name="$fsysEraseUnitSizeParam" type="Int"/>
+   <set name="$offset" type="Int"/>
+   <set name="$size" type="Int"/>
+   <set name="EmptyTable" type="ReplTable"/>
+   <set name="FD/ErasedData" type="Data"/>
+</node>
+
+<node color="Black" label="Block">
+   <type name="FD/Block"/>
+</node>
+
+<node color="Gray" label="Page">
+   <type name="FD/Page"/>
+</node>
+
+<node color="Green" label="Device">
+   <type name="FD/Device"/>
+</node>
+
+<node color="Red" label="LUN">
+   <type name="FD/LUN"/>
+</node>
+
+<node hideunconnected="inherit">
+   <type name="seq/Int"/>
+</node>
+
+<node hideunconnected="no" shape="Inv Triangle" color="Red">
+   <type name="FID"/>
+</node>
+
+<node hideunconnected="yes">
+   <type name="Data"/>
+   <type name="ReplTable"/>
+   <type name="VBlock"/>
+   <type name="FD/EraseFrequency"/>
+   <type name="FD/PageStatus"/>
+   <type name="TrscSeq/SeqIdx"/>
+   <type name="FD/BSeq/SeqIdx"/>
+   <type name="FD/LSeq/SeqIdx"/>
+   <type name="FD/PSeq/SeqIdx"/>
+</node>
+
+<node hideunconnected="yes" color="White" label="RowAddr">
+   <type name="FD/RowAddr"/>
+</node>
+
+<node hideunconnected="yes" shape="Hexagon" color="White">
+   <type name="Inode"/>
+</node>
+
+<node shape="Ellipse" color="Red">
+   <type name="StateSeqFactory"/>
+</node>
+
+<edge attribute="no">
+   <relation name="data"> <type name="FD/Page"/> <type name="seq/Int"/> <type name="Data"/> </relation>
+</edge>
+
+<edge layout="yes">
+   <relation name="$writeData"> <type name="seq/Int"/> <type name="Data"/> </relation>
+</edge>
+
+<edge visible="no">
+   <relation name="$fillData"> <type name="seq/Int"/> <type name="Data"/> </relation>
+   <relation name="blockMap"> <type name="ConcFsys"/> <type name="VBlock"/> <type name="FD/RowAddr"/> </relation>
+   <relation name="EOFIdx"> <type name="Fail2"/> <type name="Int"/> </relation>
+   <relation name="fileID"> <type name="Fail2"/> <type name="FID"/> </relation>
+</edge>
+
+<edge visible="no" attribute="no">
+   <relation name="pageStatusMap"> <type name="FD/Device"/> <type name="FD/RowAddr"/> <type name="FD/PageStatus"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="b"> <type name="FD/RowAddr"/> <type name="FD/BSeq/SeqIdx"/> </relation>
+   <relation name="blockList"> <type name="Inode"/> <type name="seq/Int"/> <type name="VBlock"/> </relation>
+   <relation name="entries"> <type name="ReplTable"/> <type name="FD/RowAddr"/> <type name="FD/RowAddr"/> </relation>
+   <relation name="l"> <type name="FD/RowAddr"/> <type name="FD/LSeq/SeqIdx"/> </relation>
+   <relation name="newBlockSeq"> <type name="Fail2"/> <type name="seq/Int"/> <type name="FD/RowAddr"/> </relation>
+   <relation name="newBlockSeq"> <type name="ProgramState"/> <type name="seq/Int"/> <type name="FD/RowAddr"/> </relation>
+   <relation name="p"> <type name="FD/RowAddr"/> <type name="FD/PSeq/SeqIdx"/> </relation>
+   <relation name="programTbl"> <type name="ProgramState"/> <type name="ReplTable"/> </relation>
+   <relation name="reclaimTbl"> <type name="ProgramState"/> <type name="ReplTable"/> </relation>
+   <relation name="reserveBlock"> <type name="FD/Device"/> <type name="FD/BSeq/SeqIdx"/> </relation>
+</edge>
+
+<edge visible="no" layout="no">
+   <relation name="eraseFreqMap"> <type name="FD/Device"/> <type name="FD/BSeq/SeqIdx"/> <type name="FD/EraseFrequency"/> </relation>
+</edge>
+
+<edge visible="no" layout="no" attribute="yes">
+   <relation name="eofIdx"> <type name="Inode"/> <type name="Int"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

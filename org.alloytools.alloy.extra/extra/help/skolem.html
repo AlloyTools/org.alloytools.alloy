@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>Skolemization Relations</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>Skolemization Relations </h2>
+<h3>Introduction</h3>
+<p>Often times, quantified formulas can be reduced to equivalent formulas without the use of quantifiers.<br>
+This reduction is called <strong>skolemization</strong> and is based on the introduction of one or more <strong>skolem constants or functions</strong><br>
+that capture the constraint of the quantified formula in their values. </p>
+<p>Consider the following example:</p>
+<pre>sig A { r: lone B }
+sig B {}</pre>
+<pre>fact {
+    some x: A | no x.r
+}</pre>
+<p>The &quot;some&quot; formula may be equivalently expressed as:</p>
+<pre>    x' in A &amp;&amp; no x'.r </pre>
+<p><em>x' </em> is the skolem reation in this case. The existential quantifier &quot;some&quot; is not needed because the analysis will search for the existence of the skolem realtion <em>x'</em>.</p>
+<p>&nbsp;</p>
+<h3>Determining the names of skolem relations </h3>
+<p>The Alloy Analyzer automatically generates and assigns names to skolem relations.<br>
+The names can be determined by looking at the solved instance using any of the three (Text, Tree, Viz) views.<br>
+For instance, in the above example, the name <em>$x</em> may have been assigned to the skolem relation <em>x'</em>.</p>
+<p>&nbsp;</p>
+<h3>Using skolem relations</h3>
+<p>Skolem relations are displayed in the output like any other relation in the original model. Hence, its visualization may be customized to be made more conspicuous.
+</p>
+</body>
+</html>

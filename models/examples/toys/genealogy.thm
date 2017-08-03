@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Adam"/>
+   <type name="Eve"/>
+   <type name="Int"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+</node>
+
+<node color="Blue">
+   <type name="Man"/>
+</node>
+
+<node color="Red">
+   <type name="Woman"/>
+</node>
+
+<node label="p">
+   <set name="$Show_p" type="Person"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Person"/>
+</node>
+
+<edge weight="10">
+   <relation name="spouse"> <type name="Person"/> <type name="Person"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

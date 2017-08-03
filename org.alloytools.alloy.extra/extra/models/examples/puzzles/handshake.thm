@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha" edgetheme="Standard">
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+</node>
+
+<node color="Blue">
+   <type name="Jocelyn"/>
+</node>
+
+<node color="Green">
+   <type name="Hilary"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Person"/>
+</node>
+
+<edge color="Gray" weight="10" label="">
+   <relation name="spouse"> <type name="Person"/> <type name="Person"/> </relation>
+</edge>
+
+<edge color="Red" label="">
+   <relation name="shaken"> <type name="Person"/> <type name="Person"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

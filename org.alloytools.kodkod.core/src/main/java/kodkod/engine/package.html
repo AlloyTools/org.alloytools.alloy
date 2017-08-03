@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+  @(#)package.html	1.60 98/01/27
+
+  Copyright 1998 Sun Microsystems, Inc. 901 San Antonio Road, 
+  Palo Alto, California, 94303, U.S.A.  All Rights Reserved.
+
+  This software is the confidential and proprietary information of Sun
+  Microsystems, Inc. ("Confidential Information").  You shall not
+  disclose such Confidential Information and shall use it only in
+  accordance with the terms of the license agreement you entered into
+  with Sun.
+
+  CopyrightVersion 1.2
+
+-->
+</head>
+<body bgcolor="white">
+
+
+Provides classes for analyzing and evaluating Kodkod ASTs with
+respect to finite bounds or instances.
+
+<h2>Package Specification</h2>
+
+<p>Contains classes for analyzing and evaluating Kodkod ASTs with
+respect to finite bounds or instances. A {@linkplain kodkod.engine.Solver Solver} 
+provides methods for finding finite models and minimal unsatisfiable cores of Kodkod formulas with respect
+to given {@linkplain kodkod.instance.Bounds Bounds} and {@linkplain kodkod.engine.config.Options Options}.
+An {@linkplain kodkod.engine.IncrementalSolver IncrementalSolver} provides a way to solve a sequence of 
+related formulas and bounds incrementally, with respect to the same 
+{@linkplain kodkod.engine.config.Options Options options}.  
+An {@linkplain kodkod.engine.Evaluator Evaluator} enables the evaluation of formulas, expressions, and 
+integer expressions with respect to a particular {@linkplain kodkod.instance.Instance Instance} and 
+{@linkplain kodkod.engine.config.Options Options}. 
+
+</p> 
+
+<h2>Related Documentation</h2>
+
+@see kodkod.instance.Bounds
+@see kodkod.instance.Instance
+@see kodkod.ast.Expression
+@see kodkod.ast.IntExpression
+@see kodkod.ast.Formula
+@see kodkod.engine.Solver
+@see kodkod.engine.IncrementalSolver
+@see kodkod.engine.Evaluator
+
+</body>
+</html>

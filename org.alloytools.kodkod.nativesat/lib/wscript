@@ -1,0 +1,46 @@
+#! /usr/bin/env python
+# encoding: utf-8
+import os.path
+import waflib.Context
+from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
+import sys
+
+if sys.platform == 'win32' :
+    solvers = [ 'glucose-2.1', 'minisat-2.2.0', 'minisat-p_v1.14' ]
+else :
+    solvers = [ 'cryptominisat-2.9.5', 'glucose-2.1', 'lingeling-587f', 'minisat-2.2.0', 'minisat-p_v1.14' ]
+
+def options(opt):
+    opt.recurse(solvers)               # set options for all solvers
+
+def configure(conf):
+    env = conf.env
+    for solver in solvers:             # create configuration environments for all solvers
+        conf.setenv(solver, env)
+        conf.env.solver=solver
+        conf.recurse(solver)
+    
+def build(bld):
+    if not bld.variant:                 # no solver specified, build all
+        import waflib.Options
+        for x in solvers: 
+            waflib.Options.commands.insert(0, bld.cmd + '_' + x)
+    else:                               
+        if bld.cmd.startswith('install'):
+            bld.env.PREFIX = bld.env.BINDIR = bld.env.LIBDIR = ''
+            if len(bld.options.destdir) == 0:
+                bld.options.destdir = repr(bld.srcnode.make_node(satlib(bld)))
+        bld.recurse(bld.variant)       
+
+def satlib(bld):
+    if sys.platform == 'win32':
+        return "win_" + bld.env.DEST_CPU
+    else:
+        return bld.env.DEST_OS + "_" + bld.env.DEST_CPU
+    
+for solver in solvers:
+    for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+        name = y.__name__.replace('Context','').lower()
+        class tmp(y): 
+            cmd = name + '_' + solver
+            variant = solver

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha">
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <type name="SO/Ord"/>
+   <set name="$RunPrim_sLast" type="Step"/>
+</node>
+
+<node shape="Box" color="Blue">
+   <type name="Step"/>
+</node>
+
+<node shape="Ellipse" color="Yellow">
+   <type name="Edge"/>
+</node>
+
+<node shape="Parallelogram" color="Green">
+   <type name="Node"/>
+</node>
+
+<edge visible="no">
+   <relation name="$trans_e"> <type name="Step"/> <type name="Edge"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="edge"> <type name="Step"/> <type name="Edge"/> </relation>
+   <relation name="marked"> <type name="Step"/> <type name="Node"/> </relation>
+   <relation name="totalWeight"> <type name="Step"/> <type name="Int"/> </relation>
+   <relation name="weight"> <type name="Edge"/> <type name="Int"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

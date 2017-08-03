@@ -1,0 +1,30 @@
+MiniSat v1.14 / MiniSat-p v1.14
+========================================
+
+This version is a cleaned up version of the MiniSat solver entering
+the SAT 2005 competition.  Some of the most low-level optimization has
+been removed for the sake of clarity, resulting in a 5-10% performance
+degradation. The guard on "too-many-calls" in 'simplifyDB()' has also
+been improved. If uttermost performance is needed, use the competition
+version, also available at the MiniSat page
+(www.cs.chalmers.se/Cs/Research/FormalMethods/MiniSat/).
+
+Several things has changed inside MiniSat since the first version,
+documented in the paper "An Extensible SAT Solver". The most important
+is the lack of support for non-clausal constraints in this
+version. Please use MiniSat v1.12b if you need this. Other changes are
+special treatment of binary clauses for efficiency (messes up the code
+a bit, but gives quite a speedup), improved variable order (still
+VSIDS based, but works MUCH better than in previous MiniSat
+versions!), conflict clause minimization (by Niklas Sörensson), and a
+better Main module (for those of you who use MiniSat as a stand-alone
+solver).
+
+The MiniSat-p version also supports proof logging, sacrificing the
+binary clauses trick for clarity (some 10-20% slower). For
+scalability, we decided to keep the proof only on disk. This frees up
+memory for the working set of conflict clauses, and allows for
+bigger-than-memory proofs to be produced (which can happen, even if
+you garbage collect the proof).
+
+For information about upcomming changes, please review the TODO file.

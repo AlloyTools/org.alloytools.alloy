@@ -1,0 +1,9 @@
+#
+# This file is left open for you to define your macros
+#
+
+src:          src/main/java
+bin:          target/classes
+testsrc:      src/test/java
+testbin:      target/test-classes
+target-dir:   target

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha">
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="EmptyList"/>
+   <type name="Int"/>
+   <type name="NonEmptyList"/>
+   <type name="Thing"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="List"/>
+</node>
+
+<node showlabel="no">
+   <set name="$show_a" type="NonEmptyList"/>
+   <set name="$show_b" type="NonEmptyList"/>
+</node>
+
+<edge label="=">
+   <relation name="equivTo"> <type name="List"/> <type name="List"/> </relation>
+</edge>
+
+<edge label="head">
+   <relation name="car"> <type name="NonEmptyList"/> <type name="Thing"/> </relation>
+</edge>
+
+<edge label="rest">
+   <relation name="cdr"> <type name="NonEmptyList"/> <type name="List"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="prefixes"> <type name="List"/> <type name="List"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

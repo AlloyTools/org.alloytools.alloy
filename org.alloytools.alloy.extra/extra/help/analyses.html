@@ -1,0 +1,94 @@
+<html>
+<head>
+<title>Performing Analyses on Alloy Models</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>Performing Analyses on Alloy Models</h2>
+
+<h3>Loading the Model</h3>
+
+<p>When executing commands in an Alloy model, Alloy always uses
+the current content in the text editor as the model to compile.<br>
+Therefore, if you made some changes to the model,
+you do not have to save them before running the model.
+</p>
+
+<h3>Performing an Analysis on Alloy Models</h3>
+
+<p>A <em>run </em>command is used to search for solutions that satisfy the specification and a predicate,
+while a <em>check</em> command is used to search for solutions that satisfy the specification but violate an assertion.</p>
+
+<p>To run either type of analysis, select the command to be run from
+the run menu, or click the "run" toolbar button.</p>
+
+<p>The run menu will display the list of check and run commands present
+in the model. You can execute the commands one at a time,
+or click "run all" to execute them all.</p>
+
+<p>The run toolbar button will executes the most recently executed command.
+If no command has been executed, it will execute the first command in
+the model.</p>
+
+<p>The analysis will either terminate with a solution or indicate that one cannot be found within the search space specified by the type scopes of the command.<br>
+If a solution is found, it can be displayed by clicking on the blue clickable <a href="viz.html">hyperlink</a> in the message panel.<br>
+Or, if you enable "visualize automatically" in the Options menu, then the solution will be displayed automatically.
+</p>
+
+<h3>Troubleshooting</h3>
+
+<p>Here are some of the common errors that may be encountered:</p>
+
+<ul>
+
+  <li><b>Higher-order quantification</b>:<br>
+    The declaration for
+    a variable in a quantified formula is higher-order and cannot be reduced via
+    <a target="_top" href="skolem.html">skolemization</a>.<br>
+    Solving such formulas will always take
+    a significant amount of time and memory
+    unless the scope is very, very small,
+    since every combination must be enumerated.<br>
+    Thus, the Alloy Analyzer will not attempt to solve such a formula.
+   <p>
+  </li>
+
+  <li><b>The module X cannot be found</b>:<br>
+    The Alloy Analyzer cannot
+    find the desired model to import in an &quot;open&quot; statement.<br>
+    For details
+    on the module finding mechanism used, see the page
+    on <a target="_top" href="path.html">module paths</a>.
+   <p>
+ </li>
+
+  <li><b>No scope specified for top-level type X in command</b>:
+    <br>A top level type is one that has no supertype (other than the implicit universal type univ).<br>
+    All such types must be given a scope for execution, with the following exceptions:<br>
+      1) The command has no explicit scopes at all -- all top-level types are given an implicit default scope of 3.<br>
+      2) Type X is defined as &quot;abstract&quot; -- in this case, if all children
+        of X are scoped, then the scope of X is inferred and need not be set explicitly.
+  <p>
+  </li>
+
+</ul>
+
+<h3>Things that may affect execution speed</h3>
+
+<p>Various things may affect the speed of analysis. These include:</p>
+<ul>
+  <li>The size of the type scopes specified in the command. The difficulty of the analysis increases with scope in a quicker than linear fashion.<p></li>
+  <li>The SAT solver used. By default, the SAT4J solver is used.<br>
+      However, other solvers may fare better in specific models.<br>
+      The SAT solver may changed by clicking the Options menu.<p></li>
+</ul>
+
+</body>
+</html>

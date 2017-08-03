@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha" edgetheme="Standard">
+
+<projection> <type name="BirthdayBook"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="BirthdayBook"/>
+   <type name="Int"/>
+   <type name="Name"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <set name="$BusyDay_bb" type="BirthdayBook"/>
+   <set name="known" type="Name"/>
+</node>
+
+<node color="Blue">
+   <type name="Date"/>
+</node>
+
+<node label="cards">
+   <set name="$BusyDay_cards" type="Name"/>
+</node>
+
+<node label="d">
+   <set name="$BusyDay_d" type="Date"/>
+</node>
+
+</view>
+
+</alloy>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="State"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node label="">
+   <type name="Root"/>
+</node>
+
+<node numberatoms="no" shape="Circle" color="Gray" label="">
+   <type name="Point"/>
+</node>
+
+<node showlabel="no" color="Green" label="">
+   <set name="live" type="Point"/>
+</node>
+
+<node visible="no">
+   <type name="ord/Ord"/>
+</node>
+
+<edge label="">
+   <relation name="right"> <type name="Point"/> <type name="Point"/> </relation>
+</edge>
+
+<edge weight="10" label="">
+   <relation name="below"> <type name="Point"/> <type name="Point"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

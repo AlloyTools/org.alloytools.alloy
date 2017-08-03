@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="Time"/> </projection>
+
+<defaultnode shape="Ellipse"/>
+
+<defaultedge/>
+
+<node visible="no">
+   <type name="PO/Ord"/>
+   <type name="TO/Ord"/>
+   <set name="First" type="TO/Ord"/>
+   <set name="Last" type="TO/Ord"/>
+   <set name="Next" type="TO/Ord"/>
+   <set name="Prev" type="TO/Ord"/>
+</node>
+
+<edge label="">
+   <relation name="succ"> <type name="Process"/> <type name="Process"/> </relation>
+</edge>
+
+<edge visible="no">
+   <relation name="First"> <type name="PO/Ord"/> <type name="Process"/> </relation>
+   <relation name="Last"> <type name="PO/Ord"/> <type name="Process"/> </relation>
+   <relation name="Next"> <type name="PO/Ord"/> <type name="Process"/> <type name="Process"/> </relation>
+   <relation name="Prev"> <type name="PO/Ord"/> <type name="Process"/> <type name="Process"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="toSend"> <type name="Process"/> <type name="Process"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

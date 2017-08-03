@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha">
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="File"/>
+   <type name="Int"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <set name="$count" type="Int"/>
+   <set name="$writeAbs_f" type="File"/>
+   <set name="$writeAbs_f&apos;" type="File"/>
+   <set name="FillData" type="Data"/>
+</node>
+
+<node color="Red">
+   <type name="AbsFsys"/>
+</node>
+
+<node shape="Ellipse" color="Green">
+   <type name="Data"/>
+</node>
+
+<node shape="Parallelogram" color="Blue">
+   <type name="FID"/>
+</node>
+
+<node style="Bold">
+   <set name="$fid" type="FID"/>
+   <set name="$fstore" type="AbsFsys"/>
+   <set name="$fstore&apos;" type="AbsFsys"/>
+   <set name="$offset" type="Int"/>
+</node>
+
+<edge visible="no" attribute="yes">
+   <relation name="contents"> <type name="File"/> <type name="seq/Int"/> <type name="Data"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

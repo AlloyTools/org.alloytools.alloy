@@ -1,0 +1,30 @@
+# 
+# Travis build for Alloy Tools
+#
+
+sudo: false
+dist: precise
+
+language: java
+
+jdk:
+  - oraclejdk7
+  - oraclejdk8
+
+before_install:
+
+install:
+  - ./gradlew --version
+
+script:
+  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.m2/wrapper/
+    - cnf/cache/stable/
+    - maven/target/m2/
+
+

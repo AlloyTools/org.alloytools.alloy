@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha" edgetheme="Standard">
+
+<projection> <type name="Tick"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="Tick"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+   <set name="First" type="to/Ord"/>
+   <set name="Last" type="to/Ord"/>
+   <set name="Next" type="to/Ord"/>
+   <set name="Prev" type="to/Ord"/>
+   <set name="priv" type="Process"/>
+   <set name="runs" type="Process"/>
+</node>
+
+<node color="Blue">
+   <type name="FirstProc"/>
+</node>
+
+<node color="Gray">
+   <type name="Val"/>
+</node>
+
+<node label="p1">
+   <set name="$TwoPrivileged_p1" type="Process"/>
+</node>
+
+<node label="p2">
+   <set name="$TwoPrivileged_p2" type="Process"/>
+</node>
+
+<node shape="Ellipse" color="Green">
+   <type name="Process"/>
+</node>
+
+<node showlabel="no" label="Bad_p1">
+   <set name="$BadTick_p1" type="Process"/>
+</node>
+
+<node showlabel="no" label="Bad_p2">
+   <set name="$BadTick_p2" type="Process"/>
+</node>
+
+<node visible="no">
+   <type name="to/Ord"/>
+</node>
+
+<edge color="Gray" weight="5" label="next">
+   <relation name="nextVal"> <type name="Val"/> <type name="Val"/> </relation>
+</edge>
+
+<edge color="Green" label="right">
+   <relation name="rightNeighbor"> <type name="Process"/> <type name="Process"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

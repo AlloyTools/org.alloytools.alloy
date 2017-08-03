@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Int"/>
+   <type name="univ"/>
+   <type name="seq/Int"/>
+</node>
+
+<node color="Blue">
+   <type name="Man"/>
+</node>
+
+<node color="Red">
+   <type name="Woman"/>
+</node>
+
+<node shape="Ellipse">
+   <type name="Person"/>
+</node>
+
+<edge weight="5">
+   <relation name="husband"> <type name="Woman"/> <type name="Man"/> </relation>
+   <relation name="wife"> <type name="Man"/> <type name="Woman"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

@@ -1,0 +1,149 @@
+<html>
+<head>
+<title>About the Alloy Analyzer Layout</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<STYLE TYPE="text/css">
+<!--
+P { margin-top:7px; margin-bottom:8px; }
+-->
+</STYLE>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>The Alloy Analyzer Layout</h2>
+
+<p>Here is a screenshot of the main window of the Analyzer:</p>
+
+<p><img hspace="20" src="image/general.gif"></p>
+
+<h2>Toolbar</h2>
+
+<p>The main toolbar of the Alloy Analyzer provides
+quick access to the most commonly used operations:</p>
+
+<p><img hspace="20" border=1 src="image/toolbar.gif"></p>
+
+<ul>
+
+<li><strong>New</strong>
+Creates a new text file in the editor.
+</li>
+
+<li><strong>Open</strong>
+Opens an existing Alloy model in the editor.
+</li>
+
+<li><strong>Reload</strong>
+For each file currently open in the editor, reload its content from the file system.
+</li>
+
+<li><strong>Save</strong>
+Saves the currently active model in the editor.
+</li>
+
+<li><strong>Execute</strong>
+Executes the most recently executed command.<br>
+Executes the first command from the file if no command has been executed so far.
+</li>
+
+<li><strong>Show</strong>
+Displays the most recent counterexample or instance.
+</li>
+
+</ul>
+
+<h2>Editor Panel and Message Panel</h2>
+
+<p>The user interface consists of the editor panel and the message panel.<br>
+  The relative sizes of panels may be adjusted by clicking and dragging the split bars that separate the panels.</p>
+
+<ul>
+  <li>Editor panel: contains a tabbed text editor for modifying Alloy models.<br>
+    It supports tabbing so you can edit multiple text files simultaneously.<br>
+    It also supports error highlighting during model compilation.
+  </li>
+  <p>
+  <li>Message panel: displays the results of analysis.<br>
+    Each counterexample and each satisfying instance will have a clickable hyperlink.<br>
+    Clicking on it will launch the Alloy Visualizer to display the counterexample or instance.
+  </li>
+</ul>
+
+<p>
+The message panel is also used for general status messages and error messages.<br>
+For example, if a model cannot be compiled, an error message is displayed,<br>
+and the error will be highlighted in the source Alloy model (see the figure below):
+</p>
+
+<p><img hspace="20" src="image/error.gif"></p>
+
+<h2>Options and Preferences</h2>
+
+<p>The preferences can be set by
+clicking the Options menu (see the figure below):</p>
+
+<p><img hspace="20" src="image/pref.gif"></p>
+
+<ul>
+
+  <li><strong>SAT Solver</strong>:
+  Alloy4 comes prepackaged with a selection of SAT solvers.<br>
+  By default, the pure Java solver "SAT4J" is chosen since it runs on every platform and operating system.<br>
+  If you require faster performance, you can try one of the native solver such as MiniSat or ZChaff.<br>
+  But if MiniSat or ZChaff crashes due to platform or operating system incompatibility, then change the solver back to SAT4J.
+  <p></li>
+
+  <li><strong>Warnings are Fatal</strong>:
+  By default, a model that contains one or more compilation warnings cannot be executed.
+  <p></li>
+
+  <li><strong>Maximum Memory to Use</strong>:
+  The amount of memory to allocate for Alloy4; larger and more complicated models require more memory.
+  <p></li>
+
+  <li><strong>Message Verbosity</strong>:
+  This controls how verbose the messages will be.
+  <p></li>
+
+  <li><strong>Font Size</strong>:
+  This controls the font size in the editor panel and the message panel.
+  <p></li>
+
+  <li><strong>Font</strong>:
+  This controls the font in the editor panel and the message panel.
+  <p></li>
+
+  <li><strong>Tab Size</strong>:
+  This controls the tab size in the editor panel.
+  <p></li>
+
+  <li><strong>Skolem Depth</strong>:
+  This controls the maximum depth of alternating universal-vs-existential<br>
+  quantifier that we will permit when generating a skolem function.<br>
+  If a formula exceeds this depth, we will not generate a skolem function for it.
+  <p></li>
+
+  <li><strong>Unsat Core Minimization Strategy</strong>:
+  This controls the strategy used to minimize the unsat core.<br>
+  The fast strategy performs no minimization at all.<br>
+  The medium strategy uses a hybrid algorithm that attempts to reduce the core size.<br>
+  The slow strategy guarantees that, at the logic level, the core is a locally minimum core.
+  <p></li>
+
+  <li><strong>Visualize Automatically</strong>:
+  If this option is enabled, after executing any command,<br>
+  the Alloy Analyzer will automatically load the visualizer<br>
+  to visualize the counterexample or instance (if any).
+  <p></li>
+
+  <li><strong>Record the Kodkod Input/output</strong>:
+  If this option is enabled, after executing any command,<br>
+  then Alloy Analyzer will record the Kodkod input model generated for that command,<br>
+  as well as the Kodkod solution correspoding to that command.
+  <p></li>
+
+</ul>
+
+</body>
+</html>
