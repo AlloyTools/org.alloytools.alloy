@@ -8,16 +8,13 @@ dist: precise
 language: java
 
 jdk:
-  - oraclejdk7
   - oraclejdk8
-
-before_install:
 
 install:
   - ./gradlew --version
 
 script:
-  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build
+  - ./gradlew -Dmaven.repo.local=maven/target/m2 build
 
 cache:
   directories:
