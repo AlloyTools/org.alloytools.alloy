@@ -2,6 +2,7 @@
 # Travis build for Alloy Tools
 #
 
+
 language: java
 
 jdk:
