@@ -11,15 +11,12 @@ jdk:
 install:
   - ./gradlew --version
 
-script:
-- echo "Hello World"
-- ./gradlew -Dmaven.repo.local=maven/target/m2 clean build
+script: echo "Hello World"
 
 cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-    - $HOME/.m2/wrapper/
     - cnf/cache/stable/
 
 
