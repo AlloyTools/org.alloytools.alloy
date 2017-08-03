@@ -1,2 +1,2 @@
 
--includeresource: x86-linux=jni/x86-mac
+-includeresource: x86-linux=jni/x86-linux
