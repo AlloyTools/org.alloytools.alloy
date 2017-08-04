@@ -21,30 +21,28 @@
  */
 package kodkod.ast;
 
-
-
 import kodkod.ast.operator.IntCompOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
-/** 
+/**
  * An integer comparison formula, e.g. x = y, x <= y, etc.
  * 
  * @specfield left: IntExpression
  * @specfield right: IntExpression
  * @specfield op: IntCompOperator
  * @invariant children = 0->left + 1->right
- * @author Emina Torlak 
+ * @author Emina Torlak
  */
 public final class IntComparisonFormula extends Formula {
-	private final IntCompOperator op;
-	private final IntExpression left, right;
+	private final IntCompOperator	op;
+	private final IntExpression		left, right;
 
-	/**  
+	/**
 	 * Constructs a new int comparison formula: left op right
 	 * 
 	 * @ensures this.left' = left && this.right' = right && this.op' = op
-	 * @throws NullPointerException  left = null || right = null || op = null
+	 * @throws NullPointerException left = null || right = null || op = null
 	 */
 	IntComparisonFormula(final IntExpression left, final IntCompOperator op, final IntExpression right) {
 		this.left = left;
@@ -54,32 +52,43 @@ public final class IntComparisonFormula extends Formula {
 
 	/**
 	 * Returns the left child of this.
+	 * 
 	 * @return this.left
 	 */
-	public IntExpression left() {return left;}
+	public IntExpression left() {
+		return left;
+	}
 
 	/**
 	 * Returns the right child of this.
+	 * 
 	 * @return this.right
 	 */
-	public IntExpression right() {return right;}
+	public IntExpression right() {
+		return right;
+	}
 
 	/**
 	 * Returns the operator of this.
+	 * 
 	 * @return this.op
 	 */
-	public IntCompOperator op() {return op;}
+	public IntCompOperator op() {
+		return op;
+	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	public void accept(VoidVisitor visitor) {
@@ -88,6 +97,7 @@ public final class IntComparisonFormula extends Formula {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
 	public String toString() {

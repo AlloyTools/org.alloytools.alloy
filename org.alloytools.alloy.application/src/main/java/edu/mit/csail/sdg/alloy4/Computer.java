@@ -15,12 +15,17 @@
 
 package edu.mit.csail.sdg.alloy4;
 
-/** This defines a compute() method that takes an Object input and produces a String output. */
+/**
+ * This defines a compute() method that takes an Object input and produces a
+ * String output.
+ */
 
 public interface Computer {
 
-   /** This method takes an Object input and produces a String output.
-    * @throws Exception if an error occurred during the computation.
-    */
-   public String compute (Object input) throws Exception;
+	/**
+	 * This method takes an Object input and produces a String output.
+	 * 
+	 * @throws Exception if an error occurred during the computation.
+	 */
+	public String compute(Object input) throws Exception;
 }

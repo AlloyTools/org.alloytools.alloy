@@ -26,11 +26,13 @@ import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
 /**
- * Represents the conversion from an {@link kodkod.ast.IntExpression int expression }
- * to an {@link kodkod.ast.Expression expression}.  The meaning of the resulting 
- * expression is a singleton set containing the atom that represents the integer 
- * given by the wrapped int expression, if the conversion operator is INTCAST.  
- * Otherwise, the meaning is the set of powers of 2 that make up the given integer expression.
+ * Represents the conversion from an {@link kodkod.ast.IntExpression int
+ * expression } to an {@link kodkod.ast.Expression expression}. The meaning of
+ * the resulting expression is a singleton set containing the atom that
+ * represents the integer given by the wrapped int expression, if the conversion
+ * operator is INTCAST. Otherwise, the meaning is the set of powers of 2 that
+ * make up the given integer expression.
+ * 
  * @specfield intExpr: IntExpression
  * @specfield op: IntCastOperator
  * @invariant children = 0->intExpr
@@ -38,10 +40,12 @@ import kodkod.ast.visitor.VoidVisitor;
  * @author Emina Torlak
  */
 public final class IntToExprCast extends Expression {
-	private final IntExpression intExpr;
-	private final IntCastOperator op;
+	private final IntExpression		intExpr;
+	private final IntCastOperator	op;
+
 	/**
 	 * Constructs a new IntToExprCast.
+	 * 
 	 * @requires intExpr != null && op != null
 	 * @ensures this.intexpr' = intExpr
 	 */
@@ -52,6 +56,7 @@ public final class IntToExprCast extends Expression {
 
 	/**
 	 * Returns 1.
+	 * 
 	 * @return 1
 	 */
 	@Override
@@ -61,30 +66,34 @@ public final class IntToExprCast extends Expression {
 
 	/**
 	 * Returns this.intExpr.
+	 * 
 	 * @return this.intExpr
 	 */
 	public IntExpression intExpr() {
 		return intExpr;
 	}
-	
+
 	/**
 	 * Returns this.op
+	 * 
 	 * @return this.op
 	 */
-	public final IntCastOperator op() { 
+	public final IntCastOperator op() {
 		return op;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> E accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	public void accept(VoidVisitor visitor) {
@@ -93,9 +102,11 @@ public final class IntToExprCast extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#toString()
-	 */	public String toString() { 
+	 */
+	public String toString() {
 		return op + "[" + intExpr + "]";
 	}
-	
+
 }

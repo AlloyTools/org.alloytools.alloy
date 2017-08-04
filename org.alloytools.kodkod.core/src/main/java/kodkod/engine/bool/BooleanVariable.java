@@ -26,20 +26,20 @@ import java.util.Iterator;
 import kodkod.util.collections.Containers;
 import kodkod.util.ints.Ints;
 
-
 /**
- * Represents a boolean variable.  
+ * Represents a boolean variable.
  * 
  * @invariant op = Operator.VAR
  * @invariant no inputs && label in [1, ..., Integer.MAX_VALUE)
  * @author Emina Torlak
  */
 public final class BooleanVariable extends BooleanFormula {
-	final int label;
-	private final int hashcode;
+	final int			label;
+	private final int	hashcode;
 
 	/**
 	 * Constructs a new BooleanVariable with the given label.
+	 * 
 	 * @requires label != 0
 	 * @ensures this.label' = label
 	 */
@@ -49,25 +49,30 @@ public final class BooleanVariable extends BooleanFormula {
 		this.label = label;
 		this.hashcode = Ints.superFastHash(label);
 	}
-		
+
 	/**
 	 * Returns a hash of this variable's label.
+	 * 
 	 * @return Ints.superFastHash(this.label)
 	 */
 	@Override
 	int hash(Operator op) {
 		return hashcode;
 	}
-	
+
 	/**
-	 * Returns the label for this value. 
+	 * Returns the label for this value.
+	 * 
 	 * @return this.label
 	 */
 	@Override
-	public int label() {	return label; }
-	
+	public int label() {
+		return label;
+	}
+
 	/**
 	 * Returns a string representation of this variable.
+	 * 
 	 * @return a string representation of this variable.
 	 */
 	public String toString() {
@@ -75,10 +80,11 @@ public final class BooleanVariable extends BooleanFormula {
 	}
 
 	/**
-	 * Passes this value and the given
-	 * argument value to the visitor, and returns the resulting value.
-	 * @return the value produced by the visitor when visiting this node
-	 * with the given argument.
+	 * Passes this value and the given argument value to the visitor, and
+	 * returns the resulting value.
+	 * 
+	 * @return the value produced by the visitor when visiting this node with
+	 *         the given argument.
 	 */
 	@Override
 	public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
@@ -87,6 +93,7 @@ public final class BooleanVariable extends BooleanFormula {
 
 	/**
 	 * Returns the VAR operator.
+	 * 
 	 * @return Operator.VAR
 	 */
 	@Override
@@ -96,6 +103,7 @@ public final class BooleanVariable extends BooleanFormula {
 
 	/**
 	 * Returns an empty iterator.
+	 * 
 	 * @return an empty iterator
 	 */
 	@Override
@@ -105,6 +113,7 @@ public final class BooleanVariable extends BooleanFormula {
 
 	/**
 	 * Returns 0.
+	 * 
 	 * @return 0
 	 */
 	@Override
@@ -114,6 +123,7 @@ public final class BooleanVariable extends BooleanFormula {
 
 	/**
 	 * Throws an IndexOutOfBoundsException.
+	 * 
 	 * @throws IndexOutOfBoundsException
 	 */
 	@Override
@@ -123,9 +133,10 @@ public final class BooleanVariable extends BooleanFormula {
 
 	/**
 	 * Returns a hashcode for this variable.
+	 * 
 	 * @return a hashcode for this variable.
 	 */
-	public int hashCode() { 
+	public int hashCode() {
 		return hashcode;
 	}
 }

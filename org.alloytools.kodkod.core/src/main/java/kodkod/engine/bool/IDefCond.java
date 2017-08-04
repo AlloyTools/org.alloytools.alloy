@@ -7,15 +7,15 @@ import kodkod.ast.Variable;
 
 public interface IDefCond {
 
-    public BooleanValue getOverflow();
+	public BooleanValue getOverflow();
 
-    public BooleanValue getAccumOverflow();
+	public BooleanValue getAccumOverflow();
 
-    public void setOverflows(BooleanValue of, BooleanValue accumOF);
+	public void setOverflows(BooleanValue of, BooleanValue accumOF);
 
-    public void addVar(Variable v);
+	public void addVar(Variable v);
 
-    public void addVars(Collection<Variable> vars);
+	public void addVars(Collection<Variable> vars);
 
-    public Set<Variable> vars();
+	public Set<Variable> vars();
 }

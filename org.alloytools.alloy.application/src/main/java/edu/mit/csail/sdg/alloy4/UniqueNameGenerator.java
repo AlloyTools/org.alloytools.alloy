@@ -18,37 +18,50 @@ package edu.mit.csail.sdg.alloy4;
 import java.util.Set;
 import java.util.HashSet;
 
-/** This generates unique names based on names provided by the caller.
- *
- * <p><b>Thread Safety:</b>  Safe.
+/**
+ * This generates unique names based on names provided by the caller.
+ * <p>
+ * <b>Thread Safety:</b> Safe.
  */
 
 public final class UniqueNameGenerator {
 
-   /** This stores the set of names we've generated so far. */
-   private final Set<String> names = new HashSet<String>();
+	/** This stores the set of names we've generated so far. */
+	private final Set<String> names = new HashSet<String>();
 
-   /** Construct a UniqueNameGenerator with a blank history. */
-   public UniqueNameGenerator() { }
+	/** Construct a UniqueNameGenerator with a blank history. */
+	public UniqueNameGenerator() {}
 
-   /** Regard the provided name as "seen".
-    * <p> For convenience, it returns the argument as the return value.
-    */
-   public synchronized String seen(String name) { names.add(name); return name; }
+	/**
+	 * Regard the provided name as "seen".
+	 * <p>
+	 * For convenience, it returns the argument as the return value.
+	 */
+	public synchronized String seen(String name) {
+		names.add(name);
+		return name;
+	}
 
-   /** Queries whether the provided name has been "seen" or not. */
-   public synchronized boolean hasSeen(String name) { return names.contains(name); }
+	/** Queries whether the provided name has been "seen" or not. */
+	public synchronized boolean hasSeen(String name) {
+		return names.contains(name);
+	}
 
-   /** Clear the history of previously generated names. */
-   public synchronized void clear() { names.clear(); }
+	/** Clear the history of previously generated names. */
+	public synchronized void clear() {
+		names.clear();
+	}
 
-   /** Generate a unique name based on the input name.
-    *
-    * <p> Specifically: if the name has not been generated/seen already by this generator,
-    * then it is returned as is. Otherwise, we append ' to it until the name becomes unique.
-    */
-   public synchronized String make(String name) {
-      while(!names.add(name)) name=name+"'";
-      return name;
-   }
+	/**
+	 * Generate a unique name based on the input name.
+	 * <p>
+	 * Specifically: if the name has not been generated/seen already by this
+	 * generator, then it is returned as is. Otherwise, we append ' to it until
+	 * the name becomes unique.
+	 */
+	public synchronized String make(String name) {
+		while (!names.add(name))
+			name = name + "'";
+		return name;
+	}
 }

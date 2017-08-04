@@ -1,7 +1,18 @@
--dependson: org.alloytools.alloy.extra
+
+Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
+
+-buildpath: \
+	org.alloytools.alloy.application,\
+	org.alloytools.alloy.extra,\
+	org.alloytools.kodkod.core;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
+	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
+	org.alloytools.kodkod.nativesat.util;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-mac;version=latest
+	
 
 -sources: false
-Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 
 -includeresource: \
 	@${repo;org.alloytools.alloy.application}, \

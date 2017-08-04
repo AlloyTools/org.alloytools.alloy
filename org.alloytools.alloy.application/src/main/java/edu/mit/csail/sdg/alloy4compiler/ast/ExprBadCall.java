@@ -26,106 +26,145 @@ import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import static edu.mit.csail.sdg.alloy4compiler.ast.Type.EMPTY;
 
-/** Immutable; represents an illegal pred/fun call.
- *
- * <p> <b>Invariant:</b>  this.type==EMPTY && this.errors.size()>0
+/**
+ * Immutable; represents an illegal pred/fun call.
+ * <p>
+ * <b>Invariant:</b> this.type==EMPTY && this.errors.size()>0
  */
 
 public final class ExprBadCall extends Expr {
 
-    /** The function. */
-    public final Func fun;
+	/** The function. */
+	public final Func				fun;
 
-    /** The unmodifiable list of arguments. */
-    public final ConstList<Expr> args;
+	/** The unmodifiable list of arguments. */
+	public final ConstList<Expr>	args;
 
-    /** The extra weight added to this node on top of the combined weights of the arguments. */
-    public final long extraWeight;
+	/**
+	 * The extra weight added to this node on top of the combined weights of the
+	 * arguments.
+	 */
+	public final long				extraWeight;
 
-    /** Caches the span() result. */
-    private Pos span=null;
+	/** Caches the span() result. */
+	private Pos						span	= null;
 
-    /** {@inheritDoc} */
-    @Override public Pos span() {
-        Pos p=span;
-        if (p==null) {
-            p=pos.merge(closingBracket);
-            for(Expr a:args) p=p.merge(a.span());
-            span=p;
-        }
-        return p;
-    }
+	/** {@inheritDoc} */
+	@Override
+	public Pos span() {
+		Pos p = span;
+		if (p == null) {
+			p = pos.merge(closingBracket);
+			for (Expr a : args)
+				p = p.merge(a.span());
+			span = p;
+		}
+		return p;
+	}
 
-    /** {@inheritDoc} */
-    @Override public void toString(StringBuilder out, int indent) {
-        if (indent<0) {
-            out.append(fun.label).append('[');
-            for(int i=0; i<args.size(); i++) { if (i>0) out.append(", "); args.get(i).toString(out,-1); }
-            out.append(']');
-        } else {
-            for(int i=0; i<indent; i++) { out.append(' '); }
-            out.append("ExprBadCall: ").append(fun.isPred?"pred ":"fun ").append(fun.label).append('\n');
-            for(Expr a:args) { a.toString(out, indent+2); }
-        }
-    }
+	/** {@inheritDoc} */
+	@Override
+	public void toString(StringBuilder out, int indent) {
+		if (indent < 0) {
+			out.append(fun.label).append('[');
+			for (int i = 0; i < args.size(); i++) {
+				if (i > 0)
+					out.append(", ");
+				args.get(i).toString(out, -1);
+			}
+			out.append(']');
+		} else {
+			for (int i = 0; i < indent; i++) {
+				out.append(' ');
+			}
+			out.append("ExprBadCall: ").append(fun.isPred ? "pred " : "fun ").append(fun.label).append('\n');
+			for (Expr a : args) {
+				a.toString(out, indent + 2);
+			}
+		}
+	}
 
-    /** Constructs an ExprBadCall object. */
-    private ExprBadCall(Pos pos, Pos closingBracket, boolean ambiguous, Func fun, ConstList<Expr> args, JoinableList<Err> errors, long extraWeight, long weight) {
-        super(pos, closingBracket, ambiguous, EMPTY, 0, weight, errors);
-        this.fun=fun;
-        this.args=args;
-        this.extraWeight=extraWeight;
-    }
+	/** Constructs an ExprBadCall object. */
+	private ExprBadCall(Pos pos, Pos closingBracket, boolean ambiguous, Func fun, ConstList<Expr> args,
+			JoinableList<Err> errors, long extraWeight, long weight) {
+		super(pos, closingBracket, ambiguous, EMPTY, 0, weight, errors);
+		this.fun = fun;
+		this.args = args;
+		this.extraWeight = extraWeight;
+	}
 
-    /** Constructs an ExprBadCall object. */
-    public static Expr make(final Pos pos, final Pos closingBracket, final Func fun, ConstList<Expr> args, long extraPenalty) {
-        if (extraPenalty<0) extraPenalty=0;
-        if (args==null) args=ConstList.make();
-        long weight = extraPenalty;
-        boolean ambiguous = false;
-        JoinableList<Err> errors = emptyListOfErrors;
-        for(Expr x: args) {
-            weight = weight + x.weight;
-            ambiguous = ambiguous || x.ambiguous;
-            errors = errors.make(x.errors);
-        }
-        if (errors.isEmpty()) {
-            StringBuilder sb=new StringBuilder("This cannot be a correct call to ");
-            sb.append(fun.isPred?"pred ":"fun ");
-            sb.append(fun.label);
-            sb.append(fun.count()==0 ? ".\nIt has no parameters,\n" : ".\nThe parameters are\n");
-            for(ExprVar v:fun.params()) {
-                sb.append("  ").append(v.label).append(": ").append(v.type).append('\n');
-            }
-            sb.append(args.size()==0 || fun.count()==0 ? "so the arguments cannot be empty.\n" : "so the arguments cannot be\n");
-            int n = fun.count();
-            for(Expr v: args) {
-                if (n==0) break; else n--;
-                sb.append("  ");
-                v.toString(sb, -1);
-                sb.append(" (type = ").append(v.type).append(")\n");
-            }
-            errors = errors.make(new ErrorType(pos, sb.toString()));
-        }
-        return new ExprBadCall(pos, closingBracket, ambiguous, fun, args, errors, extraPenalty, weight);
-    }
+	/** Constructs an ExprBadCall object. */
+	public static Expr make(final Pos pos, final Pos closingBracket, final Func fun, ConstList<Expr> args,
+			long extraPenalty) {
+		if (extraPenalty < 0)
+			extraPenalty = 0;
+		if (args == null)
+			args = ConstList.make();
+		long weight = extraPenalty;
+		boolean ambiguous = false;
+		JoinableList<Err> errors = emptyListOfErrors;
+		for (Expr x : args) {
+			weight = weight + x.weight;
+			ambiguous = ambiguous || x.ambiguous;
+			errors = errors.make(x.errors);
+		}
+		if (errors.isEmpty()) {
+			StringBuilder sb = new StringBuilder("This cannot be a correct call to ");
+			sb.append(fun.isPred ? "pred " : "fun ");
+			sb.append(fun.label);
+			sb.append(fun.count() == 0 ? ".\nIt has no parameters,\n" : ".\nThe parameters are\n");
+			for (ExprVar v : fun.params()) {
+				sb.append("  ").append(v.label).append(": ").append(v.type).append('\n');
+			}
+			sb.append(args.size() == 0 || fun.count() == 0 ? "so the arguments cannot be empty.\n"
+					: "so the arguments cannot be\n");
+			int n = fun.count();
+			for (Expr v : args) {
+				if (n == 0)
+					break;
+				else
+					n--;
+				sb.append("  ");
+				v.toString(sb, -1);
+				sb.append(" (type = ").append(v.type).append(")\n");
+			}
+			errors = errors.make(new ErrorType(pos, sb.toString()));
+		}
+		return new ExprBadCall(pos, closingBracket, ambiguous, fun, args, errors, extraPenalty, weight);
+	}
 
-    /** {@inheritDoc} */
-    public int getDepth() {
-        int max = 1;
-        for(Expr x: args) { int tmp=x.getDepth(); if (max<tmp) max=tmp; }
-        return 1 + max;
-    }
+	/** {@inheritDoc} */
+	public int getDepth() {
+		int max = 1;
+		for (Expr x : args) {
+			int tmp = x.getDepth();
+			if (max < tmp)
+				max = tmp;
+		}
+		return 1 + max;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr resolve(Type t, Collection<ErrorWarning> warns) { return this; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr resolve(Type t, Collection<ErrorWarning> warns) {
+		return this;
+	}
 
-    /** {@inheritDoc} */
-    @Override public final<T> T accept(VisitReturn<T> visitor) throws Err { return visitor.visit(this); }
+	/** {@inheritDoc} */
+	@Override
+	public final <T> T accept(VisitReturn<T> visitor) throws Err {
+		return visitor.visit(this);
+	}
 
-    /** {@inheritDoc} */
-    @Override public String getHTML() { return "<b>error</b> (parser or typechecker failed)"; }
+	/** {@inheritDoc} */
+	@Override
+	public String getHTML() {
+		return "<b>error</b> (parser or typechecker failed)";
+	}
 
-    /** {@inheritDoc} */
-    @Override public List<? extends Browsable> getSubnodes() { return new ArrayList<Browsable>(0); }
+	/** {@inheritDoc} */
+	@Override
+	public List< ? extends Browsable> getSubnodes() {
+		return new ArrayList<Browsable>(0);
+	}
 }

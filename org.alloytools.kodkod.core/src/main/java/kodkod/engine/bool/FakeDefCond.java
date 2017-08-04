@@ -10,31 +10,42 @@ import kodkod.engine.fol2sat.Environment;
 
 public class FakeDefCond implements IDefCond {
 
-    private final Set<Variable> vars = Collections.unmodifiableSet(new HashSet<Variable>());
+	private final Set<Variable> vars = Collections.unmodifiableSet(new HashSet<Variable>());
 
-    public BooleanValue getOverflow()             { return BooleanConstant.FALSE; }
-    public BooleanValue getAccumOverflow()        { return BooleanConstant.FALSE; }
-    public void setOverflows(BooleanValue of, BooleanValue accumOF)  {}
+	public BooleanValue getOverflow() {
+		return BooleanConstant.FALSE;
+	}
 
+	public BooleanValue getAccumOverflow() {
+		return BooleanConstant.FALSE;
+	}
 
-    public void addVar(Variable v)                 {}
-    public void addVars(Collection<Variable> vars) {}
-    public Set<Variable> vars()                    { return vars; }
+	public void setOverflows(BooleanValue of, BooleanValue accumOF) {}
 
-    public void setOverflowFlag(boolean overflow) {}
-    public boolean isOverflowFlag()               { return false; }
+	public void addVar(Variable v) {}
 
+	public void addVars(Collection<Variable> vars) {}
 
+	public Set<Variable> vars() {
+		return vars;
+	}
 
-    public static BooleanValue merge(BooleanFactory factory, BooleanValue accum, IDefCond ... conds) {
-        return BooleanConstant.FALSE;
-    }
+	public void setOverflowFlag(boolean overflow) {}
 
-    public static BooleanValue merge(BooleanFactory factory, IDefCond ... conds) {
-        return BooleanConstant.FALSE;
-    }
+	public boolean isOverflowFlag() {
+		return false;
+	}
 
-    public static BooleanValue ensureDef(BooleanFactory factory, Environment<?, ?> env, BooleanValue value, IDefCond ... dcs) {
-        return value;
-    }
+	public static BooleanValue merge(BooleanFactory factory, BooleanValue accum, IDefCond... conds) {
+		return BooleanConstant.FALSE;
+	}
+
+	public static BooleanValue merge(BooleanFactory factory, IDefCond... conds) {
+		return BooleanConstant.FALSE;
+	}
+
+	public static BooleanValue ensureDef(BooleanFactory factory, Environment< ? , ? > env, BooleanValue value,
+			IDefCond... dcs) {
+		return value;
+	}
 }

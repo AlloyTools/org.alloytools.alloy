@@ -2,8 +2,27 @@
 # This file is left open for you to define your macros
 #
 
-src:          src/main/java
-bin:          target/classes
-testsrc:      src/test/java
-testbin:      target/test-classes
-target-dir:   target
+src:          			src/main/java
+bin:          			target/classes
+testsrc:      			src/test/java
+testbin:      			target/test-classes
+target-dir:   			target
+javac.source:           1.8
+javac.target:           ${javac.source}
+javac.compliance:       ${javac.source}
+javac.debug:            on
+
+Git-Descriptor:         	${system-allow-fail;git describe --dirty --always}
+Git-SHA:                	${system-allow-fail;git rev-list -1 HEAD}
+
+Bundle-Copyright: 		MIT
+Bundle-Vendor:			AlloyTools at Github
+Bundle-DocURL: 			http://alloytools.org
+Bundle-License:			MIT
+
+base.version:           5.0.0
+Bundle-Version:         ${base.version}.${tstamp}
+
+-snapshot:
+-groupid:               org.alloytools
+-pom:                   version=${versionmask;===s;${@version}}

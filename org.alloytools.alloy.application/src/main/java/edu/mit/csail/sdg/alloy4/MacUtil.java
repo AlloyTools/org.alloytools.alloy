@@ -21,57 +21,83 @@ import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
 
-/** This class provides better integration on Mac OS X.
- *
- * <p> You must not call any methods here if you're not on Mac OS X,
- * since that triggers the loading of com.apple.eawt.* which are not available on other platforms.
- *
- * <p><b>Thread Safety:</b>  Safe.
+/**
+ * This class provides better integration on Mac OS X.
+ * <p>
+ * You must not call any methods here if you're not on Mac OS X, since that
+ * triggers the loading of com.apple.eawt.* which are not available on other
+ * platforms.
+ * <p>
+ * <b>Thread Safety:</b> Safe.
  */
 
 public final class MacUtil {
 
-   /** Constructor is private, since this class never needs to be instantiated. */
-   private MacUtil() { }
+	/**
+	 * Constructor is private, since this class never needs to be instantiated.
+	 */
+	private MacUtil() {}
 
-   /** The cached Application object. */
-   private static Application app = null;
+	/** The cached Application object. */
+	private static Application			app			= null;
 
-   /** The previous ApplicationListener (or null if there was none). */
-   private static ApplicationListener listener = null;
+	/** The previous ApplicationListener (or null if there was none). */
+	private static ApplicationListener	listener	= null;
 
-   /** Register a Mac OS X "ApplicationListener"; if there was a previous listener, it will be removed first.
-    * @param reopen - when the user clicks on the Dock icon, we'll call reopen.run() using SwingUtilities.invokeLater
-    * @param about - when the user clicks on About Alloy4, we'll call about.run() using SwingUtilities.invokeLater
-    * @param open - when a file needs to be opened, we'll call open.run(filename) using SwingUtilities.invokeLater
-    * @param quit - when the user clicks on Quit, we'll call quit.run() using SwingUtilities.invokeAndWait
-    */
-   public synchronized static void registerApplicationListener
-   (final Runnable reopen, final Runnable about, final Runner open, final Runnable quit) {
-      if (app == null) app = new Application(); else if (listener != null) app.removeApplicationListener(listener);
-      listener = new ApplicationAdapter() {
-         @Override public void handleReOpenApplication(ApplicationEvent arg) {
-            SwingUtilities.invokeLater(reopen);
-         }
-         @Override public void handleAbout(ApplicationEvent arg) {
-            arg.setHandled(true);
-            SwingUtilities.invokeLater(about);
-         }
-         @Override public void handleOpenFile(ApplicationEvent arg) {
-            final String filename = arg.getFilename();
-            SwingUtilities.invokeLater(new Runnable() {
-               public void run() { open.run(filename); }
-            });
-         }
-         @Override public void handleQuit(ApplicationEvent arg) {
-            try {
-               if (SwingUtilities.isEventDispatchThread()) quit.run(); else SwingUtilities.invokeAndWait(quit);
-            } catch (Throwable e) {
-               // Nothing we can do; we're already trying to quit!
-            }
-            arg.setHandled(false);
-         }
-      };
-      app.addApplicationListener(listener);
-   }
+	/**
+	 * Register a Mac OS X "ApplicationListener"; if there was a previous
+	 * listener, it will be removed first.
+	 * 
+	 * @param reopen - when the user clicks on the Dock icon, we'll call
+	 *            reopen.run() using SwingUtilities.invokeLater
+	 * @param about - when the user clicks on About Alloy4, we'll call
+	 *            about.run() using SwingUtilities.invokeLater
+	 * @param open - when a file needs to be opened, we'll call
+	 *            open.run(filename) using SwingUtilities.invokeLater
+	 * @param quit - when the user clicks on Quit, we'll call quit.run() using
+	 *            SwingUtilities.invokeAndWait
+	 */
+	public synchronized static void registerApplicationListener(final Runnable reopen, final Runnable about,
+			final Runner open, final Runnable quit) {
+		if (app == null)
+			app = new Application();
+		else if (listener != null)
+			app.removeApplicationListener(listener);
+		listener = new ApplicationAdapter() {
+			@Override
+			public void handleReOpenApplication(ApplicationEvent arg) {
+				SwingUtilities.invokeLater(reopen);
+			}
+
+			@Override
+			public void handleAbout(ApplicationEvent arg) {
+				arg.setHandled(true);
+				SwingUtilities.invokeLater(about);
+			}
+
+			@Override
+			public void handleOpenFile(ApplicationEvent arg) {
+				final String filename = arg.getFilename();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						open.run(filename);
+					}
+				});
+			}
+
+			@Override
+			public void handleQuit(ApplicationEvent arg) {
+				try {
+					if (SwingUtilities.isEventDispatchThread())
+						quit.run();
+					else
+						SwingUtilities.invokeAndWait(quit);
+				} catch (Throwable e) {
+					// Nothing we can do; we're already trying to quit!
+				}
+				arg.setHandled(false);
+			}
+		};
+		app.addApplicationListener(listener);
+	}
 }

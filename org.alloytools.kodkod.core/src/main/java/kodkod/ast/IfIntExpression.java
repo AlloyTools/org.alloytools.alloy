@@ -34,15 +34,14 @@ import kodkod.ast.visitor.VoidVisitor;
  * @author Emina Torlak
  */
 public final class IfIntExpression extends IntExpression {
-	private final Formula condition;
-	private final IntExpression thenExpr, elseExpr;
+	private final Formula		condition;
+	private final IntExpression	thenExpr, elseExpr;
 
 	/**
 	 * @ensures this.condition' = condition && this.thenExpr' = thenExpr &&
 	 *          this.elseExpr' = elseExpr
 	 */
-	IfIntExpression(Formula condition, IntExpression thenExpr,
-			IntExpression elseExpr) {
+	IfIntExpression(Formula condition, IntExpression thenExpr, IntExpression elseExpr) {
 		this.condition = condition;
 		this.thenExpr = thenExpr;
 		this.elseExpr = elseExpr;
@@ -50,6 +49,7 @@ public final class IfIntExpression extends IntExpression {
 
 	/**
 	 * Returns the if-condition.
+	 * 
 	 * @return this.condition
 	 */
 	public Formula condition() {
@@ -58,6 +58,7 @@ public final class IfIntExpression extends IntExpression {
 
 	/**
 	 * Returns the then-expression.
+	 * 
 	 * @return this.thenExpr
 	 */
 	public IntExpression thenExpr() {
@@ -66,6 +67,7 @@ public final class IfIntExpression extends IntExpression {
 
 	/**
 	 * Returns the else-expression.
+	 * 
 	 * @return this.elseExpr
 	 */
 	public IntExpression elseExpr() {
@@ -74,24 +76,27 @@ public final class IfIntExpression extends IntExpression {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
 	@Override
-	public <E, F, D, I> I accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	@Override
 	public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
 	public String toString() {

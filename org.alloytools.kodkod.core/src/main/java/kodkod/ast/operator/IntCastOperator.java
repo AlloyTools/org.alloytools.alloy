@@ -29,19 +29,21 @@ public enum IntCastOperator {
 	INTCAST {
 		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see java.lang.Object#toString()
 		 */
-		public String toString() { 
+		public String toString() {
 			return "Int";
 		}
-	}, 
+	},
 	/** The Bitset cast operator Bits[intExpr]. */
 	BITSETCAST {
 		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see java.lang.Object#toString()
 		 */
-		public String toString() { 
+		public String toString() {
 			return "Bits";
 		}
 	};

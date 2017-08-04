@@ -28,15 +28,20 @@ import kodkod.util.ints.Ints;
 
 /**
  * A non-optimal minimization strategy based on the Empty Clause Cone algorithm.
+ * 
  * @author Emina Torlak
- * @see <a href="http://research.microsoft.com/users/lintaoz/papers/SAT_2003_core.pdf">L. Zhang and S. Malik. <i>Extracting small unsatisfiable cores from unsatisfiable
- * Boolean formula.</i>  In Proceedings of Sixth International Conference on Theory and Applications of 
- * Satisfiability Testing (SAT '03). 2003.</a>
+ * @see <a href=
+ *      "http://research.microsoft.com/users/lintaoz/papers/SAT_2003_core.pdf">L.
+ *      Zhang and S. Malik. <i>Extracting small unsatisfiable cores from
+ *      unsatisfiable Boolean formula.</i> In Proceedings of Sixth International
+ *      Conference on Theory and Applications of Satisfiability Testing (SAT
+ *      '03). 2003.</a>
  */
 public final class ECFPStrategy implements ReductionStrategy {
 	private int lastCore;
+
 	/**
-	 * Constructs a new instance of the empty clause cone strategy for 
+	 * Constructs a new instance of the empty clause cone strategy for
 	 * minimizing unsatisfiable cores.
 	 */
 	public ECFPStrategy() {
@@ -45,6 +50,7 @@ public final class ECFPStrategy implements ReductionStrategy {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
 	 */
 	public IntSet next(final ResolutionTrace trace) {
@@ -53,7 +59,7 @@ public final class ECFPStrategy implements ReductionStrategy {
 			lastCore = core.size();
 			return core;
 		} else {
-			lastCore = Integer.MIN_VALUE;                  
+			lastCore = Integer.MIN_VALUE;
 			return Ints.EMPTY_SET;
 		}
 	}

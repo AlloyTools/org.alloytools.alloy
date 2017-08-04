@@ -42,7 +42,6 @@ import examples.tptp.TOP020;
 
 public class ExamplesTest extends TestCase {
 
-
 	private final Solver solver;
 
 	public ExamplesTest(String arg0) {
@@ -57,11 +56,14 @@ public class ExamplesTest extends TestCase {
 
 	private void check(String name, Solution sol, Solution.Outcome outcome, int primaryVars, int vars, int clauses) {
 		assertEquals(outcome, sol.outcome());
-//		System.out.println(Runtime.getRuntime().freeMemory() + "\t" +sol.stats().translationTime() + "\t" + sol.stats().solvingTime() + "\t" + sol.stats().primaryVariables() + "\t" + sol.stats().variables() +"\t" + sol.stats().clauses() );
-//		assertEquals(primaryVars, sol.stats().primaryVariables());
-//		assertEquals(vars, sol.stats().variables());
-//		assertEquals(clauses, sol.stats().clauses());
-//		System.out.println(name+":"+sol.stats().primaryVariables()+":"+sol.stats().variables()+":"+sol.stats().clauses()+":"+sol.stats().translationTime()+":"+sol.stats().solvingTime());
+		// System.out.println(Runtime.getRuntime().freeMemory() + "\t"
+		// +sol.stats().translationTime() + "\t" + sol.stats().solvingTime() +
+		// "\t" + sol.stats().primaryVariables() + "\t" +
+		// sol.stats().variables() +"\t" + sol.stats().clauses() );
+		// assertEquals(primaryVars, sol.stats().primaryVariables());
+		// assertEquals(vars, sol.stats().variables());
+		// assertEquals(clauses, sol.stats().clauses());
+		// System.out.println(name+":"+sol.stats().primaryVariables()+":"+sol.stats().variables()+":"+sol.stats().clauses()+":"+sol.stats().translationTime()+":"+sol.stats().solvingTime());
 	}
 
 	/**
@@ -74,7 +76,8 @@ public class ExamplesTest extends TestCase {
 	}
 
 	/**
-	 * Runs the CeilingsAndFloors.checkBelowTooDoublePrime example for 6 Man, 6 Platform.
+	 * Runs the CeilingsAndFloors.checkBelowTooDoublePrime example for 6 Man, 6
+	 * Platform.
 	 */
 	public void testCeilingsAndFloors_BelowTooDoublePrime() {
 		final CeilingsAndFloors prob = new CeilingsAndFloors();
@@ -83,7 +86,8 @@ public class ExamplesTest extends TestCase {
 	}
 
 	/**
-	 * Runs the CeilingsAndFloors.checkBelowTooAssertion example for 6 Man, 6 Platform.
+	 * Runs the CeilingsAndFloors.checkBelowTooAssertion example for 6 Man, 6
+	 * Platform.
 	 */
 	public void testCeilingsAndFloors_BelowTooAssertion() {
 		final CeilingsAndFloors prob = new CeilingsAndFloors();
@@ -96,7 +100,7 @@ public class ExamplesTest extends TestCase {
 	 */
 	public void testDijkstra() {
 		final Dijkstra prob = new Dijkstra();
-		final Solution sol = solve(prob.checkDijkstraPreventsDeadlocks(), prob.bounds(6,6,6));
+		final Solution sol = solve(prob.checkDijkstraPreventsDeadlocks(), prob.bounds(6, 6, 6));
 		check(prob.getClass().getSimpleName(), sol, UNSATISFIABLE, 444, 4341, 18485);
 	}
 
@@ -123,8 +127,10 @@ public class ExamplesTest extends TestCase {
 	 */
 	public void testHotel() {
 		final Hotel prob = new Hotel();
-		check(prob.getClass().getSimpleName(), solve(prob.checkNoBadEntry(), prob.bounds(4)), UNSATISFIABLE, 444, 4341, 18485);
-		check(prob.getClass().getSimpleName(), solve(prob.checkNoBadEntry(), prob.bounds(6)), SATISFIABLE, 444, 4341, 18485);
+		check(prob.getClass().getSimpleName(), solve(prob.checkNoBadEntry(), prob.bounds(4)), UNSATISFIABLE, 444, 4341,
+				18485);
+		check(prob.getClass().getSimpleName(), solve(prob.checkNoBadEntry(), prob.bounds(6)), SATISFIABLE, 444, 4341,
+				18485);
 	}
 
 	/**
@@ -169,7 +175,7 @@ public class ExamplesTest extends TestCase {
 	public void testPigeonhole() {
 		final Pigeonhole prob = new Pigeonhole();
 		final Formula show = prob.declarations().and(prob.pigeonPerHole());
-		final Solution sol = solve(show, prob.bounds(10,9));
+		final Solution sol = solve(show, prob.bounds(10, 9));
 		check(prob.getClass().getSimpleName(), sol, UNSATISFIABLE, 90, 1133, 2126);
 	}
 
@@ -178,14 +184,14 @@ public class ExamplesTest extends TestCase {
 	 */
 	public void testRingElection() {
 		final RingElection prob = new RingElection();
-		final Solution sol = solve(prob.checkAtMostOneElected(), prob.bounds(5,10));
+		final Solution sol = solve(prob.checkAtMostOneElected(), prob.bounds(5, 10));
 		check(prob.getClass().getSimpleName(), sol, UNSATISFIABLE, 325, 8665, 29589);
 	}
 
 	/**
 	 * Runs Trees.checkEquivOfTreeDefns example for 4.
 	 */
-	//TODO: see why this test fails when noOverflow is set to true!!!
+	// TODO: see why this test fails when noOverflow is set to true!!!
 	public void testTrees() {
 		final Trees prob = new Trees();
 		final Solution sol = solve(prob.checkEquivOfTreeDefns(), prob.bounds(4));
@@ -322,11 +328,12 @@ public class ExamplesTest extends TestCase {
 	/**
 	 * Runs GRA019.checkGoalToBeProved for 6.
 	 */
-//	public void testGRA019() {
-//		final GRA013_026 prob = new GRA013_026();
-//		final Solution sol = solve(prob.checkGoalToBeProved(), prob.bounds(6));
-//		check(prob.getClass().getSimpleName(), sol, SATISFIABLE, 407, 6968, 15413);
-//	}
+	// public void testGRA019() {
+	// final GRA013_026 prob = new GRA013_026();
+	// final Solution sol = solve(prob.checkGoalToBeProved(), prob.bounds(6));
+	// check(prob.getClass().getSimpleName(), sol, SATISFIABLE, 407, 6968,
+	// 15413);
+	// }
 
 	/**
 	 * Runs LAT258.checkGoalToBeProved for 6.

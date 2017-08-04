@@ -28,27 +28,28 @@ import java.io.UnsupportedEncodingException;
 
 import tests.util.ProcessRunner;
 
-
-
 /**
- * Calls BenchmarkSymmStats on all  problems in examples.tptp.* and
- * most  problems in examples.*
- * The output is printed in the following (tab separated) format:
- * <class name> <method name>  <partial model (bits)> <state space (bits)> <gbp (ms)> <gbp (symms)> <gad (ms)> <gad (symms)>  <SAT|UNSAT> <solve+sbp (ms)> <solve (ms)>
+ * Calls BenchmarkSymmStats on all problems in examples.tptp.* and most problems
+ * in examples.* The output is printed in the following (tab separated) format:
+ * <class name> <method name> <partial model (bits)> <state space (bits)> <gbp
+ * (ms)> <gbp (symms)> <gad (ms)> <gad (symms)> <SAT|UNSAT> <solve+sbp (ms)>
+ * <solve (ms)>
+ * 
  * @author Emina Torlak
  */
 public final class BenchmarkSymmStatsDriver extends BenchmarkDriver {
 
 	/**
-	 * <class name> <method name>  <partial model (bits)> <gbp (ms)> <gbp (symms)> <gad (ms)> <gad (symms)> \t
+	 * <class name> <method name> <partial model (bits)> <gbp (ms)> <gbp
+	 * (symms)> <gad (ms)> <gad (symms)> \t
 	 */
-	private static void runSymms(Problem problem) { 
-		final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkSymmStats " + problem.problem + 
-		" " + problem.spec + 	" "+problem.bounds;
-		
+	private static void runSymms(Problem problem) {
+		final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkSymmStats " + problem.problem + " "
+				+ problem.spec + " " + problem.bounds;
+
 		final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
 		runner.start();
-		try {	
+		try {
 			runner.join();
 			final BufferedReader out;
 			out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
@@ -67,26 +68,29 @@ public final class BenchmarkSymmStatsDriver extends BenchmarkDriver {
 			runner.destroyProcess();
 		}
 	}
-	
+
 	/**
 	 * <state space (bits)> <SAT|UNSAT> <solve with symms (ms)> \t
 	 */
-	private static void runSolveWithSymms(Problem problem) { 
-		final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkStats " + problem.problem + 
-		" " + problem.spec + " -scope="+problem.bounds; 
-		
+	private static void runSolveWithSymms(Problem problem) {
+		final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkStats " + problem.problem + " " + problem.spec
+				+ " -scope=" + problem.bounds;
+
 		final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
 		runner.start();
-		try {	
+		try {
 			runner.join();
 			final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
 			final String line = out.readLine();
 			final String[] data = line.split("\\s");
-			if (data.length!=10) throw new RuntimeException("badly formatted output: " + line);
-			// <class name> <method name> <universe size> <S|U> <translation time (ms)> <# of gates> <# of primary vars> <# of vars> <# of clauses> <solving time (ms)>
-			System.out.print(data[6]+"\t");
+			if (data.length != 10)
+				throw new RuntimeException("badly formatted output: " + line);
+			// <class name> <method name> <universe size> <S|U> <translation
+			// time (ms)> <# of gates> <# of primary vars> <# of vars> <# of
+			// clauses> <solving time (ms)>
+			System.out.print(data[6] + "\t");
 			System.out.print(data[3].startsWith("S") ? "SAT\t" : "UNSAT\t");
-			System.out.print(data[9]+"\t");
+			System.out.print(data[9] + "\t");
 			out.close();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -101,27 +105,28 @@ public final class BenchmarkSymmStatsDriver extends BenchmarkDriver {
 			runner.destroyProcess();
 		}
 	}
-	
+
 	/**
 	 * <solve no symms (ms)> \n
 	 */
-	private static void runSolveNoSymms(Problem problem) { 
-		final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkStats " + problem.problem + 
-		" " + problem.spec + " -scope="+problem.bounds + " -symm="+0;
+	private static void runSolveNoSymms(Problem problem) {
+		final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkStats " + problem.problem + " " + problem.spec
+				+ " -scope=" + problem.bounds + " -symm=" + 0;
 		final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
 		runner.start();
-		try {	
+		try {
 			runner.join(FIVE_MIN);
-			
-			if (runner.getState()!=Thread.State.TERMINATED) {
+
+			if (runner.getState() != Thread.State.TERMINATED) {
 				runner.interrupt();
 				System.out.println("t\\o");
 				runner.destroyProcess();
 			} else {
-				final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));			
+				final BufferedReader out = new BufferedReader(
+						new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
 				final String line = out.readLine();
 				final String[] data = line.split("\\s");
-				System.out.println(data.length==10 ? data[9] : "t\\o");
+				System.out.println(data.length == 10 ? data[9] : "t\\o");
 				out.close();
 			}
 		} catch (InterruptedException e) {
@@ -137,13 +142,12 @@ public final class BenchmarkSymmStatsDriver extends BenchmarkDriver {
 			runner.destroyProcess();
 		}
 	}
-	
-	/**
-	 * Usage: java tests.benchmarks.BenchmarksSymmStatsDriver  
-	 */
-	public static void main(String args[]) { 
 
-		
+	/**
+	 * Usage: java tests.benchmarks.BenchmarksSymmStatsDriver
+	 */
+	public static void main(String args[]) {
+
 		System.out.print("class\t");
 		System.out.print("method\t");
 		System.out.print("partial model (bits)\t");
@@ -155,32 +159,51 @@ public final class BenchmarkSymmStatsDriver extends BenchmarkDriver {
 		System.out.print("sat | unsat\t");
 		System.out.print("solve+sbp (ms)\t");
 		System.out.println("solve (ms)");
-		
-		for(Problem problem : problems) { 
-			runSymms(problem); //System.out.println();
+
+		for (Problem problem : problems) {
+			runSymms(problem); // System.out.println();
 			runSolveWithSymms(problem);
 			runSolveNoSymms(problem);
 		}
-		
-		final Problem[] graphProblems = { 
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.1.col,DIMACS,27)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.2.col,DIMACS,27)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.3.col,DIMACS,27)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.4.col,DIMACS,27)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.5.col,DIMACS,27)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/school1_nsh.col,DIMACS,13)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/school1.col,DIMACS,13)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/zeroin.i.1.col,DIMACS,27)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/zeroin.i.2.col,DIMACS,28)", "coloring"), 		
-				new Problem("examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/zeroin.i.3.col,DIMACS,27)", "coloring"), 		
+
+		final Problem[] graphProblems = {
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.1.col,DIMACS,27)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.2.col,DIMACS,27)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.3.col,DIMACS,27)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.4.col,DIMACS,27)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/mulsol.i.5.col,DIMACS,27)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/school1_nsh.col,DIMACS,13)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/school1.col,DIMACS,13)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/zeroin.i.1.col,DIMACS,27)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/zeroin.i.2.col,DIMACS,28)",
+						"coloring"),
+				new Problem(
+						"examples.classicnp.GraphColoring(/Users/emina/Documents/workspace/relations5/src/examples/classicnp/zeroin.i.3.col,DIMACS,27)",
+						"coloring"),
 		};
-		
-		
-		for(Problem problem : graphProblems) { 
-			runSymms(problem); //System.out.println();
+
+		for (Problem problem : graphProblems) {
+			runSymms(problem); // System.out.println();
 			runSolveWithSymms(problem);
 			runSolveNoSymms(problem);
 		}
-		
+
 	}
 }

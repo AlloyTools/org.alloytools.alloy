@@ -23,6 +23,7 @@ package kodkod.engine;
 
 /**
  * Indicates that a solving or evaluation task has been aborted.
+ * 
  * @author Emina Torlak
  */
 public final class AbortedException extends RuntimeException {
@@ -45,7 +46,7 @@ public final class AbortedException extends RuntimeException {
 	 * Constructs an aborted exception with the given cause.
 	 */
 	AbortedException(Throwable cause) {
-		super(cause); 
+		super(cause);
 	}
 
 	/**

@@ -53,11 +53,12 @@ import kodkod.instance.Universe;
  * check BelowToo'' for 5 expect 0
  * check BelowToo'' for 10 expect 0
  * </pre>
+ * 
  * @author Emina Torlak
  */
 public final class CeilingsAndFloors {
 	private final Relation Platform, Man, ceiling, floor;
-	
+
 	/**
 	 * Creates an instance of the ceilings and floors class.
 	 */
@@ -67,77 +68,94 @@ public final class CeilingsAndFloors {
 		ceiling = Relation.binary("ceiling");
 		floor = Relation.binary("floor");
 	}
-	
+
 	/**
-	 * Returns a formula that constrains the ceiling and floor 
-	 * relations to be functions from Man to Platform.
-	 * @return FUNCTION(ceiling, Man, Platform) && FUNCTION(floor, Man, Platform)
+	 * Returns a formula that constrains the ceiling and floor relations to be
+	 * functions from Man to Platform.
+	 * 
+	 * @return FUNCTION(ceiling, Man, Platform) && FUNCTION(floor, Man,
+	 *         Platform)
 	 */
 	public Formula declarations() {
 		// ceiling and floor are functions from Man to Platform
-		return ceiling.function(Man,Platform).and(floor.function(Man,Platform));
+		return ceiling.function(Man, Platform).and(floor.function(Man, Platform));
 	}
-	
+
 	/**
 	 * Returns the belowToo constraint
+	 * 
 	 * @return all m: Man | some n: Man | m.floor = n.ceiling
 	 */
 	public Formula belowToo() {
 		final Variable m = Variable.unary("m0"), n = Variable.unary("n0");
-//		 all m: Man | some n: Man | m.floor = n.ceiling
+		// all m: Man | some n: Man | m.floor = n.ceiling
 		return ((m.join(floor).eq(n.join(ceiling))).forSome(n.oneOf(Man)).forAll(m.oneOf(Man)));
 
 	}
-	
+
 	/**
 	 * Returns the noSharing constraint.
-	 * @return all m, n: Man | !(m = n) => !(m.floor = n.floor || m.ceiling = n.ceiling) 
+	 * 
+	 * @return all m, n: Man | !(m = n) => !(m.floor = n.floor || m.ceiling =
+	 *         n.ceiling)
 	 */
 	public Formula noSharing() {
 		final Variable m = Variable.unary("m1"), n = Variable.unary("n1");
-//		 all m, n: Man | !(m = n) => !(m.floor = n.floor || m.ceiling = n.ceiling) 
+		// all m, n: Man | !(m = n) => !(m.floor = n.floor || m.ceiling =
+		// n.ceiling)
 		final Formula body = (m.join(floor).eq(n.join(floor))).or(m.join(ceiling).eq(n.join(ceiling)));
 		return (m.eq(n).not().implies(body.not())).forAll(m.oneOf(Man).and(n.oneOf(Man)));
 	}
-	
+
 	/**
 	 * Returns the paulSimon constraint.
+	 * 
 	 * @return all m: Man | some n: Man | n.floor = m.ceiling
 	 */
 	public Formula paulSimon() {
 		final Variable m = Variable.unary("m2"), n = Variable.unary("n2");
-//		 all m: Man | some n: Man | n.floor = m.ceiling
+		// all m: Man | some n: Man | n.floor = m.ceiling
 		return ((n.join(floor).eq(m.join(ceiling))).forSome(n.oneOf(Man)).forAll(m.oneOf(Man)));
 
 	}
-	
+
 	/**
 	 * Returns the belowToo'' constraint.
-	 * @return declarations() &&  paulSimon() && noSharing() && !belowToo()
+	 * 
+	 * @return declarations() && paulSimon() && noSharing() && !belowToo()
 	 */
 	public Formula checkBelowTooDoublePrime() {
 		return declarations().and(paulSimon()).and(noSharing()).and(belowToo().not());
 	}
-	
+
 	/**
 	 * Returns the belowToo assertion.
+	 * 
 	 * @return declarations() && paulSimon() && !belowToo()
 	 */
 	public Formula checkBelowTooAssertion() {
 		return declarations().and(paulSimon()).and(belowToo().not());
 	}
-	
+
 	/**
-	 * Creates bounds for the problem using the given number of platforms and men. 
-	 * @return bounds for the problem using the given number of platforms and men. 
+	 * Creates bounds for the problem using the given number of platforms and
+	 * men.
+	 * 
+	 * @return bounds for the problem using the given number of platforms and
+	 *         men.
 	 */
-	public Bounds bounds(int scope) { return bounds(scope, scope); }
-	
+	public Bounds bounds(int scope) {
+		return bounds(scope, scope);
+	}
+
 	/**
-	 * Creates bounds for the problem using the given number of platforms and men. 
-	 * @return bounds for the problem using the given number of platforms and men. 
+	 * Creates bounds for the problem using the given number of platforms and
+	 * men.
+	 * 
+	 * @return bounds for the problem using the given number of platforms and
+	 *         men.
 	 */
-	public Bounds bounds(int platforms,int men) {
+	public Bounds bounds(int platforms, int men) {
 		final List<String> atoms = new LinkedList<String>();
 		for (int i = 0; i < men; i++) {
 			atoms.add("Man" + i);
@@ -149,27 +167,27 @@ public final class CeilingsAndFloors {
 		final TupleFactory factory = universe.factory();
 		final Bounds bounds = new Bounds(universe);
 		final String manMax = "Man" + (men - 1), platformMax = "Platform" + (platforms - 1);
-		
+
 		bounds.bound(Platform, factory.range(factory.tuple("Platform0"), factory.tuple(platformMax)));
 		bounds.bound(Man, factory.range(factory.tuple("Man0"), factory.tuple(manMax)));
 		bounds.bound(ceiling, factory.area(factory.tuple("Man0", "Platform0"), factory.tuple(manMax, platformMax)));
 		bounds.bound(floor, factory.area(factory.tuple("Man0", "Platform0"), factory.tuple(manMax, platformMax)));
-		
-		
+
 		return bounds;
 	}
-	
+
 	private static void usage() {
 		System.out.println("Usage: java examples.CeilingsAndFloors [# men] [# platforms]");
 		System.exit(1);
 	}
-	
+
 	/**
 	 * Usage: java examples.CeilingsAndFloors [# men] [# platforms]
 	 */
 	public static void main(String[] args) {
-		if (args.length < 2) usage();
-		
+		if (args.length < 2)
+			usage();
+
 		final CeilingsAndFloors model = new CeilingsAndFloors();
 		final Solver solver = new Solver();
 		solver.options().setSolver(SATFactory.MiniSat);
@@ -177,13 +195,13 @@ public final class CeilingsAndFloors {
 			final int m = Integer.parseInt(args[0]);
 			final int p = Integer.parseInt(args[1]);
 			final Formula show = model.checkBelowTooDoublePrime();
-			final Solution sol = solver.solve(show, model.bounds(m,p));
+			final Solution sol = solver.solve(show, model.bounds(m, p));
 			System.out.println(show);
 			System.out.println(sol);
-			
+
 		} catch (NumberFormatException nfe) {
 			usage();
 		}
 	}
-	
+
 }

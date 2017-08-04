@@ -33,52 +33,58 @@ final class Lingeling extends NativeSolver {
 	public Lingeling() {
 		super(make());
 	}
-	
+
 	static {
 		loadLibrary(Lingeling.class);
 	}
 
-	
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return "lingeling";
 	}
-	
+
 	/**
 	 * Returns a pointer to an instance of Lingeling.
+	 * 
 	 * @return a pointer to an instance of minisat.
 	 */
 	private static native long make();
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#free(long)
 	 */
 	native void free(long peer);
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
 	 */
 	native void addVariables(long peer, int numVariables);
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
 	 */
 	native boolean addClause(long peer, int[] lits);
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#solve(long)
 	 */
 	native boolean solve(long peer);
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
 	 */
 	native boolean valueOf(long peer, int literal);

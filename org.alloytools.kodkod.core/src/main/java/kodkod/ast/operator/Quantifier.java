@@ -27,21 +27,28 @@ package kodkod.ast.operator;
 public enum Quantifier {
 
 	/** Universal quantifier. */
-    ALL  { public String toString() { return "all"; }},
-    /** Existential quantifier. */
-    SOME { public String toString() { return "some"; }};
+	ALL {
+		public String toString() {
+			return "all";
+		}
+	},
+	/** Existential quantifier. */
+	SOME {
+		public String toString() {
+			return "some";
+		}
+	};
 
-    public Quantifier opposite;
-    public boolean universal;
-    public boolean existential;
+	public Quantifier	opposite;
+	public boolean		universal;
+	public boolean		existential;
 
-    static {
-        ALL.opposite = SOME;
-        ALL.universal = true;
-        ALL.existential = false;
-        SOME.opposite = ALL;
-        SOME.universal = false;
-        SOME.existential = true;
-    }
+	static {
+		ALL.opposite = SOME;
+		ALL.universal = true;
+		ALL.existential = false;
+		SOME.opposite = ALL;
+		SOME.universal = false;
+		SOME.existential = true;
+	}
 }
-

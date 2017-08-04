@@ -37,12 +37,13 @@ import kodkod.util.nodes.PrettyPrinter;
 
 /**
  * A toy filesystem specification.
+ * 
  * @author Emina Torlak
  */
 public final class ToyFilesystem {
-	private final Relation file, dir, root;
-	private final Relation contents;
-	
+	private final Relation	file, dir, root;
+	private final Relation	contents;
+
 	/**
 	 * Constructs a new instance of the file system problem.
 	 */
@@ -55,25 +56,27 @@ public final class ToyFilesystem {
 
 	/**
 	 * Returns the toy filesystem constraints
+	 * 
 	 * @return toy filesystem constraints
 	 */
 	public Formula constraints() {
 		final List<Formula> formulas = new ArrayList<Formula>();
-		
-		formulas.add( contents.in(dir.product(dir.union(file))) );
-		
+
+		formulas.add(contents.in(dir.product(dir.union(file))));
+
 		final Variable d = Variable.unary("d");
-		formulas.add( d.in(d.join(contents.closure())).not().forAll(d.oneOf(dir)) );
-		
-		formulas.add( root.in(dir) );
-		
-		formulas.add( file.union(dir).in(root.join(contents.reflexiveClosure())) );
-		
+		formulas.add(d.in(d.join(contents.closure())).not().forAll(d.oneOf(dir)));
+
+		formulas.add(root.in(dir));
+
+		formulas.add(file.union(dir).in(root.join(contents.reflexiveClosure())));
+
 		return Formula.and(formulas);
 	}
-	
+
 	/**
 	 * Returns the toy filesystem bounds.
+	 * 
 	 * @return toy filesystem bounds
 	 */
 	public final Bounds bounds() {
@@ -83,21 +86,22 @@ public final class ToyFilesystem {
 		bounds.boundExactly(root, factory.setOf("d0"));
 		bounds.bound(dir, factory.setOf("d0", "d1"));
 		bounds.bound(file, factory.setOf("f0", "f1", "f2"));
-		bounds.bound(contents, factory.setOf(factory.tuple("d0", "d1")), bounds.upperBound(dir).product(factory.allOf(1)));
+		bounds.bound(contents, factory.setOf(factory.tuple("d0", "d1")),
+				bounds.upperBound(dir).product(factory.allOf(1)));
 		return bounds;
 	}
-	
+
 	/**
 	 * Usage: java examples.alloy.ToyFilesystem
 	 */
-	public  static void main(String[] args) {
+	public static void main(String[] args) {
 		final ToyFilesystem toy = new ToyFilesystem();
 		final Formula f = toy.constraints();
 		System.out.println(PrettyPrinter.print(f, 2));
 		final Bounds b = toy.bounds();
 		final Solver solver = new Solver();
 		solver.options().setSolver(SATFactory.MiniSat);
-		
+
 		final Solution s = solver.solve(f, b);
 		System.out.println(s);
 	}

@@ -22,10 +22,11 @@
 package kodkod.engine.satlab;
 
 /**
-* A runtime exception thrown when a sat solver
-* terminates abnormally, usually because it was cancelled.
-* @author Emina Torlak
-*/
+ * A runtime exception thrown when a sat solver terminates abnormally, usually
+ * because it was cancelled.
+ * 
+ * @author Emina Torlak
+ */
 public final class SATAbortedException extends RuntimeException {
 
 	private static final long serialVersionUID = 5162235133382021308L;

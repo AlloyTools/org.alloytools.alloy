@@ -18,10 +18,17 @@ package edu.mit.csail.sdg.alloy4compiler.sim;
 import java.util.List;
 import edu.mit.csail.sdg.alloy4compiler.ast.Func;
 
-/** This interface represents callback objects (that can be plugged into SimContext to perform more efficient evaluations) */
+/**
+ * This interface represents callback objects (that can be plugged into
+ * SimContext to perform more efficient evaluations)
+ */
 
 public interface SimCallback {
 
-    /** This method accepts a function, a list of arguments, and should return either a java Boolean, java Integer, or a SimTupleset, (or null if it chooses NOT to handle this call) */
-    public Object compute(Func predicateOrFunction, List<SimTupleset> arguments) throws Exception;
+	/**
+	 * This method accepts a function, a list of arguments, and should return
+	 * either a java Boolean, java Integer, or a SimTupleset, (or null if it
+	 * chooses NOT to handle this call)
+	 */
+	public Object compute(Func predicateOrFunction, List<SimTupleset> arguments) throws Exception;
 }

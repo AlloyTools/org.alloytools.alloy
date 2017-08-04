@@ -27,70 +27,144 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-/** This class converts a Runnable into an AbstractAction, WindowListener, CaretListener, and MenuListener also. */
+/**
+ * This class converts a Runnable into an AbstractAction, WindowListener,
+ * CaretListener, and MenuListener also.
+ */
 
-public abstract class Runner extends AbstractAction implements Runnable, WindowListener, MenuListener, CaretListener, FocusListener {
+public abstract class Runner extends AbstractAction
+		implements Runnable, WindowListener, MenuListener, CaretListener, FocusListener {
 
-   /** This ensures the class can be serialized reliably. */
-   private static final long serialVersionUID = 0;
+	/** This ensures the class can be serialized reliably. */
+	private static final long serialVersionUID = 0;
 
-   /** Constructs a new runner; you should override the run() and run(arg) method to customize it. */
-   public Runner() { }
+	/**
+	 * Constructs a new runner; you should override the run() and run(arg)
+	 * method to customize it.
+	 */
+	public Runner() {}
 
-   /** This method should be overriden to provide the default action that this Runner would perform. */
-   public abstract void run();
+	/**
+	 * This method should be overriden to provide the default action that this
+	 * Runner would perform.
+	 */
+	public abstract void run();
 
-   /** This method should be overriden to provide the default action that this Runner would perform given an argument. */
-   public abstract void run(Object arg);
+	/**
+	 * This method should be overriden to provide the default action that this
+	 * Runner would perform given an argument.
+	 */
+	public abstract void run(Object arg);
 
-   /** This method is defined in java.awt.event.ActionListener; (this implementation calls this.run()) */
-   public final void actionPerformed(ActionEvent e) { run(); }
+	/**
+	 * This method is defined in java.awt.event.ActionListener; (this
+	 * implementation calls this.run())
+	 */
+	public final void actionPerformed(ActionEvent e) {
+		run();
+	}
 
-   /** This method is defined in javax.swing.event.MenuListener; (this implementation calls this.run()) */
-   public final void menuSelected(MenuEvent e) { run(); }
+	/**
+	 * This method is defined in javax.swing.event.MenuListener; (this
+	 * implementation calls this.run())
+	 */
+	public final void menuSelected(MenuEvent e) {
+		run();
+	}
 
-   /** This method is defined in javax.swing.event.MenuListener; (this implementation does nothing) */
-   public final void menuDeselected(MenuEvent e) { }
+	/**
+	 * This method is defined in javax.swing.event.MenuListener; (this
+	 * implementation does nothing)
+	 */
+	public final void menuDeselected(MenuEvent e) {}
 
-   /** This method is defined in javax.swing.event.MenuListener; (this implementation does nothing) */
-   public final void menuCanceled(MenuEvent e) { }
+	/**
+	 * This method is defined in javax.swing.event.MenuListener; (this
+	 * implementation does nothing)
+	 */
+	public final void menuCanceled(MenuEvent e) {}
 
-   /** This method is defined in java.awt.event.CaretListener; (this implementation calls this.run()) */
-   public final void caretUpdate(CaretEvent e) { run(); }
+	/**
+	 * This method is defined in java.awt.event.CaretListener; (this
+	 * implementation calls this.run())
+	 */
+	public final void caretUpdate(CaretEvent e) {
+		run();
+	}
 
-   /** This method is defined in java.awt.event.FocusListener; (this implementation calls this.run()) */
-   public final void focusGained(FocusEvent e) { run(); }
+	/**
+	 * This method is defined in java.awt.event.FocusListener; (this
+	 * implementation calls this.run())
+	 */
+	public final void focusGained(FocusEvent e) {
+		run();
+	}
 
-   /** This method is defined in java.awt.event.FocusListener; (this implementation does nothing) */
-   public final void focusLost(FocusEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.FocusListener; (this
+	 * implementation does nothing)
+	 */
+	public final void focusLost(FocusEvent e) {}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation calls this.run()) */
-   public final void windowClosing(WindowEvent e) { run(); }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation calls this.run())
+	 */
+	public final void windowClosing(WindowEvent e) {
+		run();
+	}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation does nothing) */
-   public final void windowClosed(WindowEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation does nothing)
+	 */
+	public final void windowClosed(WindowEvent e) {}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation does nothing) */
-   public final void windowOpened(WindowEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation does nothing)
+	 */
+	public final void windowOpened(WindowEvent e) {}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation does nothing) */
-   public final void windowIconified(WindowEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation does nothing)
+	 */
+	public final void windowIconified(WindowEvent e) {}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation does nothing) */
-   public final void windowDeiconified(WindowEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation does nothing)
+	 */
+	public final void windowDeiconified(WindowEvent e) {}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation does nothing) */
-   public final void windowActivated(WindowEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation does nothing)
+	 */
+	public final void windowActivated(WindowEvent e) {}
 
-   /** This method is defined in java.awt.event.WindowListener; (this implementation does nothing) */
-   public final void windowDeactivated(WindowEvent e) { }
+	/**
+	 * This method is defined in java.awt.event.WindowListener; (this
+	 * implementation does nothing)
+	 */
+	public final void windowDeactivated(WindowEvent e) {}
 
-   /** This helper method returns a Runnable whose run() method will call window.dispose() */
-   public static final Runner createDispose(final Window window) {
-      return new Runner() {
-         private static final long serialVersionUID = 0;
-         public final void run()           { window.dispose(); }
-         public final void run(Object arg) { window.dispose(); }
-      };
-   }
+	/**
+	 * This helper method returns a Runnable whose run() method will call
+	 * window.dispose()
+	 */
+	public static final Runner createDispose(final Window window) {
+		return new Runner() {
+			private static final long serialVersionUID = 0;
+
+			public final void run() {
+				window.dispose();
+			}
+
+			public final void run(Object arg) {
+				window.dispose();
+			}
+		};
+	}
 }

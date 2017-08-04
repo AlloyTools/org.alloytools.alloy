@@ -28,38 +28,50 @@ import kodkod.engine.bool.BooleanMatrix;
 import kodkod.engine.bool.BooleanValue;
 
 /**
- * Logs the translations of all descendants of a user-provided formula that 
- * are either formulas or that desugar to formulas.  
- * @specfield originalFormula: Formula // the {@linkplain Solver#solve(Formula, kodkod.instance.Bounds) original} formula, provided by the user
- * @specfield originalBounds: Bounds // the {@linkplain Solver#solve(Formula, kodkod.instance.Bounds) original} bounds, provided by the user
+ * Logs the translations of all descendants of a user-provided formula that are
+ * either formulas or that desugar to formulas.
+ * 
+ * @specfield originalFormula: Formula // the
+ *            {@linkplain Solver#solve(Formula, kodkod.instance.Bounds)
+ *            original} formula, provided by the user
+ * @specfield originalBounds: Bounds // the
+ *            {@linkplain Solver#solve(Formula, kodkod.instance.Bounds)
+ *            original} bounds, provided by the user
  * @specfield formula: Formula // desugaring of this.formula that was translated
  * @specfield bounds: Bounds // translation bounds
- * @specfield records: (formula.*children & Formula) -> BooleanValue -> Environment<BooleanMatrix>
- * @invariant Solver.solve(formula, bounds).instance() == null iff Solver.solve(originalFormula, originalBounds).instance() == null
+ * @specfield records: (formula.*children & Formula) -> BooleanValue ->
+ *            Environment<BooleanMatrix>
+ * @invariant Solver.solve(formula, bounds).instance() == null iff
+ *            Solver.solve(originalFormula, originalBounds).instance() == null
  * @author Emina Torlak
  */
 abstract class TranslationLogger {
 
 	/**
-	 * Optionally records the translation of the source of the 
-	 * given transformed formula to the given boolean value 
-	 * in the specified environment.
+	 * Optionally records the translation of the source of the given transformed
+	 * formula to the given boolean value in the specified environment.
+	 * 
 	 * @requires f in this.formula.*children
-	 * @ensures this.records' = this.records or this.records' = this.records + f -> translation -> freeVariables(f)<:env
-	 * @throws IllegalArgumentException  some aspect of the given translation event prevents it from being logged
-	 * @throws IllegalStateException  this log has been closed
+	 * @ensures this.records' = this.records or this.records' = this.records + f
+	 *          -> translation -> freeVariables(f)<:env
+	 * @throws IllegalArgumentException some aspect of the given translation
+	 *             event prevents it from being logged
+	 * @throws IllegalStateException this log has been closed
 	 */
-	abstract void log(Formula f, BooleanValue translation, Environment<BooleanMatrix, Expression> env);
-	
+	abstract void log(Formula f, BooleanValue translation, Environment<BooleanMatrix,Expression> env);
+
 	/**
-	 * Closes this logger and releases associated resources.  Attempts to call {@link #log(Formula, BooleanValue, Environment)}
-	 * after the log has been closed may result in an IllegalStateException.
-	 * @ensures closes this logger and releases associated resources. 
+	 * Closes this logger and releases associated resources. Attempts to call
+	 * {@link #log(Formula, BooleanValue, Environment)} after the log has been
+	 * closed may result in an IllegalStateException.
+	 * 
+	 * @ensures closes this logger and releases associated resources.
 	 */
 	abstract void close();
-	
+
 	/**
 	 * Returns a TranslationLog view of this.records.
+	 * 
 	 * @return a TranslationLog view of this.records.
 	 */
 	abstract TranslationLog log();

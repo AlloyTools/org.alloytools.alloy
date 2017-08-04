@@ -22,27 +22,28 @@
 package kodkod.util.ints;
 
 /**
- * A mutable IndexedEntry.  This class provides
- * various convience method for changing the entry state.
+ * A mutable IndexedEntry. This class provides various convience method for
+ * changing the entry state.
+ * 
  * @author Emina Torlak
  */
 class EntryView<V> implements IndexedEntry<V> {
-	private int index;
-	private V value;
-	
+	private int	index;
+	private V	value;
+
 	/**
 	 * Constructs a new entry view with the given index and value.
+	 * 
 	 * @ensures this.index' = index and this.value' = value
 	 */
 	EntryView(int index, V value) {
 		this.index = index;
 		this.value = value;
 	}
-	
-	
+
 	/**
-	 * Sets this.index to the given index, 
-	 * and returns the old index.
+	 * Sets this.index to the given index, and returns the old index.
+	 * 
 	 * @ensures this.index' = newIndex
 	 * @return this.index
 	 */
@@ -51,10 +52,10 @@ class EntryView<V> implements IndexedEntry<V> {
 		this.index = newIndex;
 		return oldIndex;
 	}
-	
+
 	/**
-	 * Sets this.value to the given value, 
-	 * and returns the old value.
+	 * Sets this.value to the given value, and returns the old value.
+	 * 
 	 * @ensures this.value' = newValue
 	 * @return this.value
 	 */
@@ -63,10 +64,11 @@ class EntryView<V> implements IndexedEntry<V> {
 		this.value = newValue;
 		return oldValue;
 	}
-	
+
 	/**
-	 * Sets this.index and this.value to the given
-	 * index and value, and returns this.
+	 * Sets this.index and this.value to the given index and value, and returns
+	 * this.
+	 * 
 	 * @ensures this.index' = newIndex && this.value' = newValue
 	 * @return this
 	 */
@@ -75,11 +77,11 @@ class EntryView<V> implements IndexedEntry<V> {
 		this.value = newValue;
 		return this;
 	}
-	
+
 	/**
-	 * Sets this.index to the given
-	 * index, and returns this.
-	 * @ensures this.index' = newIndex 
+	 * Sets this.index to the given index, and returns this.
+	 * 
+	 * @ensures this.index' = newIndex
 	 * @return this
 	 */
 	IndexedEntry<V> setIndexView(int newIndex) {
@@ -88,8 +90,8 @@ class EntryView<V> implements IndexedEntry<V> {
 	}
 
 	/**
-	 * Sets this.value to the given
-	 * value, and returns this.
+	 * Sets this.value to the given value, and returns this.
+	 * 
 	 * @ensures this.value' = newValue
 	 * @return this
 	 */
@@ -97,7 +99,7 @@ class EntryView<V> implements IndexedEntry<V> {
 		this.value = newValue;
 		return this;
 	}
-	
+
 	/**
 	 * @see kodkod.util.ints.IndexedEntry#index()
 	 */
@@ -118,20 +120,22 @@ class EntryView<V> implements IndexedEntry<V> {
 	public final String toString() {
 		return index + "=" + value;
 	}
-	
+
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public final boolean equals(Object o) {
-		if (o==this) return true;
-		if (!(o instanceof IndexedEntry)) return false;
-		return AbstractSparseSequence.equal(this, (IndexedEntry<?>)o);
+		if (o == this)
+			return true;
+		if (!(o instanceof IndexedEntry))
+			return false;
+		return AbstractSparseSequence.equal(this, (IndexedEntry< ? >) o);
 	}
-	
+
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
 	public final int hashCode() {
 		return AbstractSparseSequence.hashCode(this);
-	}	
+	}
 }

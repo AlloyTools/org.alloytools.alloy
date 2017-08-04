@@ -18,13 +18,14 @@ import kodkod.instance.Universe;
 
 /**
  * Kodkod encoding of models/examples/algorithms/dijkstra.als.
+ * 
  * @author Emina Torlak
  */
 public final class Dijkstra {
 
-	private final Relation Process, Mutex, State, holds, waits;
-	private final Relation sfirst, slast, sord, mfirst, mlast, mord;
-	
+	private final Relation	Process, Mutex, State, holds, waits;
+	private final Relation	sfirst, slast, sord, mfirst, mlast, mord;
+
 	/**
 	 * Creates an instance of Dijkstra example.
 	 */
@@ -41,15 +42,17 @@ public final class Dijkstra {
 		mlast = Relation.unary("mlast");
 		mord = Relation.binary("mord");
 	}
-	
+
 	/**
 	 * Returns the declaration constraints.
-	 * @return 
-	 * <pre>
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
 	 * sig Process {} 
 	 * sig Mutex {}
 	 * sig State { holds, waits: Process -> Mutex }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula declarations() {
 		final Formula f1 = sord.totalOrder(State, sfirst, slast);
@@ -58,47 +61,55 @@ public final class Dijkstra {
 		final Formula f4 = waits.in(State.product(Process).product(Mutex));
 		return Formula.and(f1, f2, f3, f4);
 	}
-	
+
 	/**
 	 * Returns the initial predicate for state s.
+	 * 
 	 * @return
-	 * <pre>
+	 * 
+	 *         <pre>
 	 * pred State.Initial () { no this.holds + this.waits }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula initial(Expression s) {
 		return s.join(holds).union(s.join(waits)).no();
 	}
-	
+
 	/**
 	 * Returns the free predicate for state s and mutex m.
-	 * @return 
-	 * <pre>
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
 	 * pred State.IsFree (m: Mutex) {
 	 * // no process holds this mutex
 	 * no m.~(this.holds)
 	 * }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula isFree(Expression s, Expression m) {
 		return m.join((s.join(holds)).transpose()).no();
 	}
-	
+
 	/**
-	 * Returns the isStalled predicate for state s and process p. 
-	 * @return 
-	 * <pre>
-	 * pred State.IsStalled (p: Process) { some p.(this.waits) } 
-	 * </pre>
+	 * Returns the isStalled predicate for state s and process p.
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
+	 * pred State.IsStalled (p: Process) { some p.(this.waits) }
+	 *         </pre>
 	 */
 	public Formula isStalled(Expression s, Expression p) {
 		return p.join(s.join(waits)).some();
 	}
-	
+
 	/**
-	 * Returns the GrabMutex predicate for states s1, s2, process p and mutex m. 
-	 * @return 
-	 * <pre>
+	 * Returns the GrabMutex predicate for states s1, s2, process p and mutex m.
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
 	 * pred State.GrabMutex (p: Process, m: Mutex, s': State) {
 	 *  // a process can only act if it is not 
 	 *  // waiting for a mutex
@@ -123,11 +134,11 @@ public final class Dijkstra {
 	 *    otherProc.(s'.waits) = otherProc.(this.waits)
 	 * }
 	 * }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula grabMutex(Expression s1, Expression s2, Expression p, Expression m) {
-		final Formula f1 = isStalled(s1,p).not().and(m.in(p.join(s1.join(holds))).not());
-		final Formula isFree = isFree(s1,m);
+		final Formula f1 = isStalled(s1, p).not().and(m.in(p.join(s1.join(holds))).not());
+		final Formula isFree = isFree(s1, m);
 		final Formula f2 = p.join(s2.join(holds)).eq(p.join(s1.join(holds)).union(m));
 		final Formula f3 = p.join(s2.join(waits)).no();
 		final Formula f4 = isFree.implies(f2.and(f3));
@@ -140,11 +151,13 @@ public final class Dijkstra {
 		final Formula f10 = f8.and(f9).forAll(otherProc.oneOf(Process.difference(p)));
 		return Formula.and(f1, f4, f7, f10);
 	}
-	
+
 	/**
-	 * Returns the GrabMutex predicate for states s1, s2, process p and mutex m. 
-	 * @return 
-	 * <pre>
+	 * Returns the GrabMutex predicate for states s1, s2, process p and mutex m.
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
 	 * pred State.ReleaseMutex (p: Process, m: Mutex, s': State) {
 	 *   !this::IsStalled(p)
 	 *   m in p.(this.holds)
@@ -164,10 +177,10 @@ public final class Dijkstra {
 	 *     mu.~(s'.holds)= mu.~(this.holds)
 	 *   }
 	 * }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula releaseMutex(Expression s1, Expression s2, Expression p, Expression m) {
-		final Formula f1 = isStalled(s1,p).not().and(m.in(p.join(s1.join(holds))));
+		final Formula f1 = isStalled(s1, p).not().and(m.in(p.join(s1.join(holds))));
 		final Formula f2 = p.join(s2.join(holds)).eq(p.join(s1.join(holds)).difference(m));
 		final Formula f3 = p.join(s2.join(waits)).no();
 		final Expression cexpr = m.join((s1.join(waits)).transpose());
@@ -185,11 +198,13 @@ public final class Dijkstra {
 		final Formula f13 = f11.and(f12).forAll(mu.oneOf(Mutex.difference(m)));
 		return Formula.and(f1, f2, f3, f6, f10, f13);
 	}
-	
+
 	/**
 	 * Returns the GrabOrRelease predicate.
-	 * @return 
-	 * <pre>
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
 	 * pred GrabOrRelease () {
 	 *    Initial(so/first()) &&
 	 *    (
@@ -202,7 +217,7 @@ public final class Dijkstra {
 	 *    
 	 *    )
 	 * }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula grabOrRelease() {
 		final Variable pre = Variable.unary("pre");
@@ -216,26 +231,31 @@ public final class Dijkstra {
 		final Formula f4 = releaseMutex(pre, post, p, m).forSome(d);
 		return initial(sfirst).and(((f1.and(f2)).or(f3).or(f4)).forAll(pre.oneOf(State.difference(slast))));
 	}
-	
+
 	/**
 	 * Returns the Deadlock predicate.
+	 * 
 	 * @return
-	 * <pre> 
+	 * 
+	 *         <pre>
+	 *  
 	 * pred Deadlock () {
-     *  some s: State | all p: Process | some p.(s.waits)
-     * }
-     * </pre>
+	 *  some s: State | all p: Process | some p.(s.waits)
+	 * }
+	 *         </pre>
 	 */
 	public Formula deadlock() {
 		final Variable s = Variable.unary("s");
 		final Variable p = Variable.unary("p");
 		return p.join(s.join(waits)).some().forAll(p.oneOf(Process)).forSome(s.oneOf(State));
 	}
-	
+
 	/**
 	 * Returns the GrabbedInOrder predicate.
-	 * @return 
-	 * <pre>
+	 * 
+	 * @return
+	 * 
+	 *         <pre>
 	 * pred GrabbedInOrder ( ) {
 	 * all pre: State - so/last() |
 	 *  let post = so/next(pre) |
@@ -243,7 +263,7 @@ public final class Dijkstra {
 	 *     let grabbed = have - had |
 	 *        some grabbed => grabbed in mo/nexts(had)
 	 * }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula grabbedInOrder() {
 		final Variable pre = Variable.unary("pre");
@@ -253,87 +273,95 @@ public final class Dijkstra {
 		final Expression grabbed = have.difference(had);
 		return grabbed.some().implies(grabbed.in(had.join(mord.closure()))).forAll(pre.oneOf(State.difference(slast)));
 	}
-	
+
 	/**
 	 * Returns the DijkstraPreventsDeadlocks assertion.
+	 * 
 	 * @return
-	 * <pre> 
+	 * 
+	 *         <pre>
+	 *  
 	 * assert DijkstraPreventsDeadlocks {
 	 *  some Process && GrabOrRelease() && GrabbedInOrder() => ! Deadlock()
 	 * }
-	 * </pre>
+	 *         </pre>
 	 */
 	public Formula checkDijkstraPreventsDeadlocks() {
 		return Formula.and(declarations(), Process.some(), grabOrRelease(), grabbedInOrder(), deadlock());
 	}
-	
+
 	/**
 	 * Returns the showDijkstra predicate.
+	 * 
 	 * @return he showDijkstra predicate
 	 */
 	public Formula showDijkstra() {
 		return declarations().and(grabOrRelease()).and(deadlock()).and(waits.some());
 	}
-	
+
 	/**
 	 * Returns the bounds that allocate the given number of atoms to each type.
+	 * 
 	 * @return bounds
 	 */
-	public Bounds bounds(int scope) { return bounds(scope, scope, scope); }
-	
+	public Bounds bounds(int scope) {
+		return bounds(scope, scope, scope);
+	}
+
 	/**
 	 * Returns the bounds corresponding to the given scopes.
+	 * 
 	 * @return bounds
 	 */
 	public Bounds bounds(int states, int processes, int mutexes) {
 		final List<String> atoms = new ArrayList<String>(states + processes + mutexes);
-		for(int i = 0; i < states; i++) {
-			atoms.add("State"+i);
+		for (int i = 0; i < states; i++) {
+			atoms.add("State" + i);
 		}
-		for(int i = 0; i < processes; i++) {
-			atoms.add("Process"+i);
+		for (int i = 0; i < processes; i++) {
+			atoms.add("Process" + i);
 		}
-		for(int i = 0; i < mutexes; i++) {
-			atoms.add("Mutex"+i);
+		for (int i = 0; i < mutexes; i++) {
+			atoms.add("Mutex" + i);
 		}
 		final Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 		final Bounds b = new Bounds(u);
-		
-		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+(states-1)));
-		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+(processes-1)));
-		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex"+(mutexes-1)));
-		
+
+		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State" + (states - 1)));
+		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (processes - 1)));
+		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex" + (mutexes - 1)));
+
 		b.bound(State, sb);
 		b.bound(holds, sb.product(pb).product(mb));
 		b.bound(waits, sb.product(pb).product(mb));
-		
+
 		b.bound(sfirst, sb);
 		b.bound(slast, sb);
 		b.bound(sord, sb.product(sb));
-		
+
 		b.bound(Process, pb);
-		
+
 		b.bound(Mutex, mb);
 		b.bound(mfirst, mb);
 		b.bound(mlast, mb);
 		b.bound(mord, mb.product(mb));
-			
+
 		return b;
 	}
-	
+
 	private static void usage() {
 		System.out.println("Usage: java examples.Dijkstra [# states] [# processes] [# mutexes]");
 		System.exit(1);
 	}
-	
+
 	/**
-	 * Usage:  java examples.Dijkstra [# states] [# processes] [# mutexes]
+	 * Usage: java examples.Dijkstra [# states] [# processes] [# mutexes]
 	 */
 	public static void main(String[] args) {
 		if (args.length < 3)
 			usage();
-		
+
 		final Dijkstra model = new Dijkstra();
 		final Solver solver = new Solver();
 		solver.options().setSolver(SATFactory.MiniSat);
@@ -344,19 +372,19 @@ public final class Dijkstra {
 			final int processes = Integer.parseInt(args[1]);
 			final int mutexes = Integer.parseInt(args[2]);
 			final Bounds bounds = model.bounds(states, processes, mutexes);
-			System.out.println("*****check DijkstraPreventsDeadlocks for " + 
-					          states + " State, " + processes + " Process, " + mutexes + " Mutex*****");
+			System.out.println("*****check DijkstraPreventsDeadlocks for " + states + " State, " + processes
+					+ " Process, " + mutexes + " Mutex*****");
 
 			System.out.println(noDeadlocks);
-//			System.out.println(bounds);
+			// System.out.println(bounds);
 			Solution sol1 = solver.solve(noDeadlocks, bounds);
 			System.out.println(sol1);
-//			System.out.println(solver.solve(model.grabOrRelease().and(model.declarations()).
-//					and(model.waits.some()).and(model.deadlock()), bounds));
-			
+			// System.out.println(solver.solve(model.grabOrRelease().and(model.declarations()).
+			// and(model.waits.some()).and(model.deadlock()), bounds));
+
 		} catch (NumberFormatException nfe) {
 			usage();
 		}
 	}
-	
+
 }

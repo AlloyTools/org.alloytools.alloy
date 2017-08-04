@@ -44,8 +44,8 @@ import kodkod.util.collections.Containers;
 import kodkod.util.collections.IdentityHashSet;
 
 /**
- * Provides utility methods for extracting roots (top-level) conjuncts
- * of Kodkod formulas
+ * Provides utility methods for extracting roots (top-level) conjuncts of Kodkod
+ * formulas
  *
  * @author Emina Torlak
  */
@@ -53,25 +53,26 @@ public final class Nodes {
 	private Nodes() {}
 
 	/**
-     * Returns the roots of the given formula.
-     * In other words, breaks up the given formula into its conjunctive
-     * components, {f0, ..., fk},
-     * such that, for all 0<=i<=k, f<sub>i</sub> is not a conjunction  and
-     * [[f0 && ... && fk]] <=> [[formula]].
-     * @return subformulas, {f0, ..., fk}, of the given formula such that, for all 0<=i<=k,
-     * f<sub>i</sub> is not a conjuction and [[f0 && ... && fk]] <=> [[formula]].
-     */
+	 * Returns the roots of the given formula. In other words, breaks up the
+	 * given formula into its conjunctive components, {f0, ..., fk}, such that,
+	 * for all 0<=i<=k, f<sub>i</sub> is not a conjunction and [[f0 && ... &&
+	 * fk]] <=> [[formula]].
+	 * 
+	 * @return subformulas, {f0, ..., fk}, of the given formula such that, for
+	 *         all 0<=i<=k, f<sub>i</sub> is not a conjuction and [[f0 && ... &&
+	 *         fk]] <=> [[formula]].
+	 */
 	public static Set<Formula> roots(Formula formula) {
 
-    	final List<Formula> formulas = new LinkedList<Formula>();
+		final List<Formula> formulas = new LinkedList<Formula>();
 		formulas.add(formula);
 
 		final ListIterator<Formula> itr = formulas.listIterator();
-		while(itr.hasNext()) {
+		while (itr.hasNext()) {
 			final Formula f = itr.next();
 			if (f instanceof BinaryFormula) {
 				final BinaryFormula bin = (BinaryFormula) f;
-				if (bin.op()==FormulaOperator.AND) {
+				if (bin.op() == FormulaOperator.AND) {
 					itr.remove();
 					itr.add(bin.left());
 					itr.add(bin.right());
@@ -80,12 +81,12 @@ public final class Nodes {
 				}
 			} else if (f instanceof NaryFormula) {
 				final NaryFormula nf = (NaryFormula) f;
-				if (nf.op()==FormulaOperator.AND) {
+				if (nf.op() == FormulaOperator.AND) {
 					itr.remove();
-					for(Formula child : nf) {
+					for (Formula child : nf) {
 						itr.add(child);
 					}
-					for(int i = nf.size(); i>0; i--) {
+					for (int i = nf.size(); i > 0; i--) {
 						itr.previous();
 					}
 				}
@@ -96,32 +97,47 @@ public final class Nodes {
 	}
 
 	/**
-	 * Returns an unmodifiable set consisting of the children of the given formula, if the formula is a binary or an nary conjunction.  Otherwise
+	 * Returns an unmodifiable set consisting of the children of the given
+	 * formula, if the formula is a binary or an nary conjunction. Otherwise
 	 * returns a singleton set containing the formula itself.
-	 * @return  an unmodifiable set consisting of children of the given formula, if the formula is a binary or an nary conjunction.  Otherwise
-	 * returns a singleton set containing the formula itself.
+	 * 
+	 * @return an unmodifiable set consisting of children of the given formula,
+	 *         if the formula is a binary or an nary conjunction. Otherwise
+	 *         returns a singleton set containing the formula itself.
 	 */
 	public static Set<Formula> conjuncts(Formula formula) {
 		if (formula instanceof BinaryFormula) {
 			final BinaryFormula bin = (BinaryFormula) formula;
-			if (bin.op()==FormulaOperator.AND) {
+			if (bin.op() == FormulaOperator.AND) {
 				final Formula left = bin.left(), right = bin.right();
-				if (left==right) return Collections.singleton(left);
-				else return new AbstractSet<Formula>() {
-					@Override
-					public boolean contains(Object o) { return left==o || right==o; }
-					@Override
-					public Iterator<Formula> iterator() { return Containers.iterate(left, right); }
-					@Override
-					public int size() { return 2;	}
+				if (left == right)
+					return Collections.singleton(left);
+				else
+					return new AbstractSet<Formula>() {
+						@Override
+						public boolean contains(Object o) {
+							return left == o || right == o;
+						}
 
-				};
+						@Override
+						public Iterator<Formula> iterator() {
+							return Containers.iterate(left, right);
+						}
+
+						@Override
+						public int size() {
+							return 2;
+						}
+
+					};
 			}
 		} else if (formula instanceof NaryFormula) {
 			final NaryFormula nf = (NaryFormula) formula;
-			if (nf.op()==FormulaOperator.AND) {
-				final LinkedHashSet<Formula> children = new LinkedHashSet<Formula>(1+(nf.size()*4)/3);
-				for(Formula child : nf) { children.add(child); }
+			if (nf.op() == FormulaOperator.AND) {
+				final LinkedHashSet<Formula> children = new LinkedHashSet<Formula>(1 + (nf.size() * 4) / 3);
+				for (Formula child : nf) {
+					children.add(child);
+				}
 				return Collections.unmodifiableSet(children);
 			}
 		}
@@ -131,40 +147,48 @@ public final class Nodes {
 	}
 
 	public static List<Formula> allConjuncts(Formula formula, List<Formula> acc) {
-	    List<Formula> ans = acc != null ? acc : new ArrayList<Formula>();
-	    if (formula instanceof BinaryFormula) {
-            final BinaryFormula bin = (BinaryFormula) formula;
-            if (bin.op()==FormulaOperator.AND) {
-                allConjuncts(bin.left(), ans);
-                allConjuncts(bin.right(), ans);
-                return ans;
-            }
-        }
-	    if (formula instanceof NaryFormula) {
-	        final NaryFormula nf = (NaryFormula) formula;
-            if (nf.op()==FormulaOperator.AND) {
-                for(Formula child : nf) { allConjuncts(child, ans); }
-                return ans;
-            }
-        }
-	    ans.add(formula);
-	    return ans;
+		List<Formula> ans = acc != null ? acc : new ArrayList<Formula>();
+		if (formula instanceof BinaryFormula) {
+			final BinaryFormula bin = (BinaryFormula) formula;
+			if (bin.op() == FormulaOperator.AND) {
+				allConjuncts(bin.left(), ans);
+				allConjuncts(bin.right(), ans);
+				return ans;
+			}
+		}
+		if (formula instanceof NaryFormula) {
+			final NaryFormula nf = (NaryFormula) formula;
+			if (nf.op() == FormulaOperator.AND) {
+				for (Formula child : nf) {
+					allConjuncts(child, ans);
+				}
+				return ans;
+			}
+		}
+		ans.add(formula);
+		return ans;
 	}
 
 	/**
-	 * Returns a minimal subset of {@linkplain #roots(Formula) roots} of the given formula such that all nodes in the given collection
-	 * are reachable from those roots.  The returned subset is a local minimum in that none of its members can be removed without leaving
-	 * some node in the descendants set unreachable from the remaining roots.
+	 * Returns a minimal subset of {@linkplain #roots(Formula) roots} of the
+	 * given formula such that all nodes in the given collection are reachable
+	 * from those roots. The returned subset is a local minimum in that none of
+	 * its members can be removed without leaving some node in the descendants
+	 * set unreachable from the remaining roots.
+	 * 
 	 * @requires descendants in formula.*components
-	 * @return { s: Set<Formula> | s.elements in roots(formula) and descendants in s.elements.*components and
-	 * 				no s': Set<Formula> | s.containsAll(s') and s'.size()<s.size() and descendants in s.elements.*components }
-	 * @throws IllegalArgumentException  descendants !in formula.*components
+	 * @return { s: Set<Formula> | s.elements in roots(formula) and descendants
+	 *         in s.elements.*components and no s': Set<Formula> |
+	 *         s.containsAll(s') and s'.size()<s.size() and descendants in
+	 *         s.elements.*components }
+	 * @throws IllegalArgumentException descendants !in formula.*components
 	 */
-	public static Set<Formula> minRoots(Formula formula, Collection<? extends Node> descendants) {
+	public static Set<Formula> minRoots(Formula formula, Collection< ? extends Node> descendants) {
 
 		final Set<Node> desc = new IdentityHashSet<Node>(descendants);
 		final VoidVisitor visitor = new AbstractVoidVisitor() {
 			final Set<Node> visited = new IdentityHashSet<Node>();
+
 			@Override
 			protected boolean visited(Node n) {
 				if (visited.add(n)) {
@@ -176,31 +200,38 @@ public final class Nodes {
 		};
 
 		final Set<Formula> roots = new LinkedHashSet<Formula>();
-		for(Formula root : roots(formula)) {
+		for (Formula root : roots(formula)) {
 			final int size = desc.size();
 			root.accept(visitor);
-			if (desc.size()<size) { roots.add(root); }
-			if (desc.isEmpty()) { break; }
+			if (desc.size() < size) {
+				roots.add(root);
+			}
+			if (desc.isEmpty()) {
+				break;
+			}
 		}
 
 		if (!desc.isEmpty())
-			throw new IllegalArgumentException("descendants !in formula.*components: formula="+formula+" ; descendants="+descendants);
+			throw new IllegalArgumentException(
+					"descendants !in formula.*components: formula=" + formula + " ; descendants=" + descendants);
 
 		return roots;
 	}
 
 	/**
-	 * Returns all {@linkplain #roots(Formula) roots} of the given formula such that a node in the given collection
-	 * is reachable from that root.
+	 * Returns all {@linkplain #roots(Formula) roots} of the given formula such
+	 * that a node in the given collection is reachable from that root.
+	 * 
 	 * @return { r: roots(formula) | some r.*components & descendants.elements }
 	 */
 	@SuppressWarnings("unchecked")
-	public static Set<Formula> allRoots(Formula formula, Collection<? extends Node> descendants) {
+	public static Set<Formula> allRoots(Formula formula, Collection< ? extends Node> descendants) {
 		final Set<Node> desc = new IdentityHashSet<Node>(descendants);
 		final AbstractDetector detector = new AbstractDetector(Collections.EMPTY_SET) {
 			protected Boolean lookup(Node n) {
 				return desc.contains(n) ? Boolean.TRUE : cache.get(n);
 			}
+
 			protected Boolean cache(Node n, boolean val) {
 				final Boolean ret = Boolean.valueOf(val);
 				cache.put(n, ret);
@@ -209,7 +240,7 @@ public final class Nodes {
 		};
 
 		final Set<Formula> roots = new LinkedHashSet<Formula>();
-		for(Formula root : roots(formula)) {
+		for (Formula root : roots(formula)) {
 			if (root.accept(detector)) {
 				roots.add(root);
 			}

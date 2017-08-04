@@ -40,16 +40,18 @@ import kodkod.util.ints.Ints;
  * @author Emina Torlak
  */
 public final class ITEGate extends BooleanFormula {
-	private final BooleanFormula[] inputs;
-	private final int label, hashcode, labelhash;
-	
+	private final BooleanFormula[]	inputs;
+	private final int				label, hashcode, labelhash;
+
 	/**
 	 * Constructs a new ITEGate from the given formulas and label.
+	 * 
 	 * @requires label >= 0 && null !in ifFormula + thenFormula + elseFormula
 	 * @requires hashcode = ITE.hash(ifFormula, thenFormula, elseFormula)
 	 * @ensures this.label' = label && this.ifFormula' = ifFormula &&
-	 * this.thenFormula' = thenFormula && this.elseFormula' = elseFormula
-	 * @throws NullPointerException  owner = null
+	 *          this.thenFormula' = thenFormula && this.elseFormula' =
+	 *          elseFormula
+	 * @throws NullPointerException owner = null
 	 */
 	ITEGate(int label, int hashcode, BooleanFormula ifFormula, BooleanFormula thenFormula, BooleanFormula elseFormula) {
 		super(null);
@@ -65,15 +67,17 @@ public final class ITEGate extends BooleanFormula {
 
 	/**
 	 * Returns a hash of this.label
+	 * 
 	 * @return a hash of this.label
 	 */
 	@Override
 	int hash(Operator op) {
 		return labelhash;
 	}
-	
+
 	/**
 	 * Returns an iterator over this.inputs
+	 * 
 	 * @return returns an iterator over this.inputs
 	 * @see kodkod.engine.bool.BooleanFormula#iterator()
 	 */
@@ -81,9 +85,10 @@ public final class ITEGate extends BooleanFormula {
 	public Iterator<BooleanFormula> iterator() {
 		return Containers.iterate(inputs);
 	}
-	
-	/** 
+
+	/**
 	 * Returns 3.
+	 * 
 	 * @return 2
 	 * @see kodkod.engine.bool.BooleanFormula#size()
 	 */
@@ -94,6 +99,7 @@ public final class ITEGate extends BooleanFormula {
 
 	/**
 	 * Returns this.label
+	 * 
 	 * @return this.label
 	 * @see kodkod.engine.bool.BooleanValue#label()
 	 */
@@ -103,19 +109,22 @@ public final class ITEGate extends BooleanFormula {
 	}
 
 	/**
-	 * Passes this value and the given
-	 * argument value to the visitor, and returns the resulting value.
-	 * @return the value produced by the visitor when visiting this node
-	 * with the given argument.
-	 * @see kodkod.engine.bool.BooleanFormula#accept(kodkod.engine.bool.BooleanVisitor, Object)
+	 * Passes this value and the given argument value to the visitor, and
+	 * returns the resulting value.
+	 * 
+	 * @return the value produced by the visitor when visiting this node with
+	 *         the given argument.
+	 * @see kodkod.engine.bool.BooleanFormula#accept(kodkod.engine.bool.BooleanVisitor,
+	 *      Object)
 	 */
 	@Override
-	public <T, A> T accept(BooleanVisitor<T, A> visitor, A arg) {
+	public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
 		return visitor.visit(this, arg);
 	}
 
 	/**
 	 * Returns a string representation of this ITE gate.
+	 * 
 	 * @return a string representation of this ITE gate.
 	 */
 	public String toString() {
@@ -124,13 +133,16 @@ public final class ITEGate extends BooleanFormula {
 
 	/**
 	 * Returns the hashcode for this if-then-else gate.
+	 * 
 	 * @return the hashcode for this gate.
 	 */
 	public int hashCode() {
 		return hashcode;
 	}
+
 	/**
 	 * Returns Operator.ITE.
+	 * 
 	 * @return Operator.ITE
 	 */
 	@Override
@@ -140,8 +152,9 @@ public final class ITEGate extends BooleanFormula {
 
 	/**
 	 * Returns this.inputs[i].
+	 * 
 	 * @return this.inputs[i]
-	 * @throws IndexOutOfBoundsException  0 < i || i > 2
+	 * @throws IndexOutOfBoundsException 0 < i || i > 2
 	 */
 	@Override
 	public BooleanFormula input(int i) {
@@ -149,41 +162,47 @@ public final class ITEGate extends BooleanFormula {
 			throw new IndexOutOfBoundsException();
 		return inputs[i];
 	}
-	
-	 /**
-	 * Returns an integer k' such that 0 < |k'| < k and |k'| is the number of flattening
-	 * steps that need to be taken to determine that this circuit has (or does not have)
-	 * an input with the given label.
-	 * A positive k' indicates that f is found to be an input to this circuit in k' steps.
-	 * A negative k' indicates that f is not an input to this circuit, when it is flattened
-	 * using at most k steps.  
+
+	/**
+	 * Returns an integer k' such that 0 < |k'| < k and |k'| is the number of
+	 * flattening steps that need to be taken to determine that this circuit has
+	 * (or does not have) an input with the given label. A positive k' indicates
+	 * that f is found to be an input to this circuit in k' steps. A negative k'
+	 * indicates that f is not an input to this circuit, when it is flattened
+	 * using at most k steps.
+	 * 
 	 * @requires k > 0
-	 * @return this=f => 1 else op=ITE && k>2 && f in this.inputs[int].label => 3 else -3
+	 * @return this=f => 1 else op=ITE && k>2 && f in this.inputs[int].label =>
+	 *         3 else -3
 	 */
 	@Override
 	int contains(Operator op, int f, int k) {
 		assert k > 0;
-		if (f==label) return 1;
-		else if (op != Operator.ITE || k < 3 || f>label || -f>label) return -1;
-		else return (inputs[0].label()==f || inputs[1].label()==f || inputs[2].label()==f) ? 3 : -3;
+		if (f == label)
+			return 1;
+		else if (op != Operator.ITE || k < 3 || f > label || -f > label)
+			return -1;
+		else
+			return (inputs[0].label() == f || inputs[1].label() == f || inputs[2].label() == f) ? 3 : -3;
 	}
-		
+
 	/**
-	 * Flattens this circuit with respect to the given operator into 
-	 * the provided set.  
+	 * Flattens this circuit with respect to the given operator into the
+	 * provided set.
+	 * 
 	 * @requires k > 0
-	 * @ensures op = Operator.ITE && k> 2 => flat.elts' = flat.elts + this.inputs[ints], 
-	 *          flat.elts' = flat.elts + this
+	 * @ensures op = Operator.ITE && k> 2 => flat.elts' = flat.elts +
+	 *          this.inputs[ints], flat.elts' = flat.elts + this
 	 */
 	@Override
 	void flatten(Operator op, Set<BooleanFormula> flat, int k) {
 		assert k > 0;
-		if (op==Operator.ITE && k > 2) {
+		if (op == Operator.ITE && k > 2) {
 			flat.add(inputs[0]);
 			flat.add(inputs[1]);
 			flat.add(inputs[2]);
 		} else {
 			flat.add(this);
 		}
-	}	
+	}
 }

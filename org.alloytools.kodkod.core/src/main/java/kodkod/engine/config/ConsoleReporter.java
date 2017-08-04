@@ -21,7 +21,6 @@
  */
 package kodkod.engine.config;
 
-
 import java.util.List;
 import java.util.Set;
 
@@ -35,8 +34,9 @@ import kodkod.instance.Instance;
 import kodkod.util.ints.IntSet;
 
 /**
- * An implementation of the reporter interface that prints messages
- * to the standard output stream.
+ * An implementation of the reporter interface that prints messages to the
+ * standard output stream.
+ * 
  * @author Emina Torlak
  */
 public final class ConsoleReporter implements Reporter {
@@ -55,7 +55,9 @@ public final class ConsoleReporter implements Reporter {
 
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.config.Reporter#skolemizing(kodkod.ast.Decl, kodkod.ast.Relation, java.util.List)
+	 * 
+	 * @see kodkod.engine.config.Reporter#skolemizing(kodkod.ast.Decl,
+	 *      kodkod.ast.Relation, java.util.List)
 	 */
 	public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {
 		System.out.println("skolemizing " + decl + ": skolem relation=" + skolem + ", arity=" + skolem.arity());
@@ -68,17 +70,18 @@ public final class ConsoleReporter implements Reporter {
 		System.out.println("solving p cnf " + vars + " " + clauses);
 	}
 
-
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.config.Reporter#detectingSymmetries(kodkod.instance.Bounds)
 	 */
-	public void detectingSymmetries(Bounds bounds){
+	public void detectingSymmetries(Bounds bounds) {
 		System.out.println("detecting symmetries ...");
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.config.Reporter#detectedSymmetries(java.util.Set)
 	 */
 	public void detectedSymmetries(Set<IntSet> parts) {
@@ -93,7 +96,8 @@ public final class ConsoleReporter implements Reporter {
 	}
 
 	/**
-	 * @see kodkod.engine.config.Reporter#translatingToBoolean(kodkod.ast.Formula, kodkod.instance.Bounds)
+	 * @see kodkod.engine.config.Reporter#translatingToBoolean(kodkod.ast.Formula,
+	 *      kodkod.instance.Bounds)
 	 */
 	public void translatingToBoolean(Formula formula, Bounds bounds) {
 		System.out.println("translating to boolean ...");
@@ -113,45 +117,45 @@ public final class ConsoleReporter implements Reporter {
 		return "ConsoleReporter";
 	}
 
-    @Override
-    public void convertingToNNF() {
-        System.out.println("converting to nnf ...");
+	@Override
+	public void convertingToNNF() {
+		System.out.println("converting to nnf ...");
 
-    }
+	}
 
-    @Override
-    public void holLoopStart(HOLTranslation tr, Formula formula, Bounds bounds) {
-        System.out.println(String.format("starting higher-order (%s) search ...", tr));
-    }
+	@Override
+	public void holLoopStart(HOLTranslation tr, Formula formula, Bounds bounds) {
+		System.out.println(String.format("starting higher-order (%s) search ...", tr));
+	}
 
-    @Override
-    public void holCandidateFound(HOLTranslation tr, Instance candidate) {
-    	System.out.println(String.format("  [%s] candidate found", tr));
-    }
+	@Override
+	public void holCandidateFound(HOLTranslation tr, Instance candidate) {
+		System.out.println(String.format("  [%s] candidate found", tr));
+	}
 
-    @Override
-    public void holVerifyingCandidate(HOLTranslation tr, Instance candidate, Formula checkFormula, Bounds bounds) {
-        System.out.println(String.format("  [%s]   verifying candidate", tr));
-    }
+	@Override
+	public void holVerifyingCandidate(HOLTranslation tr, Instance candidate, Formula checkFormula, Bounds bounds) {
+		System.out.println(String.format("  [%s]   verifying candidate", tr));
+	}
 
-    @Override
-    public void holCandidateVerified(HOLTranslation tr, Instance candidate) {
-        System.out.println(String.format("  [%s]   candidate verified", tr));
-    }
+	@Override
+	public void holCandidateVerified(HOLTranslation tr, Instance candidate) {
+		System.out.println(String.format("  [%s]   candidate verified", tr));
+	}
 
-    @Override
-    public void holCandidateNotVerified(HOLTranslation tr, Instance candidate, Instance cex) {
-        System.out.println(String.format("  [%s]   counterexample found", tr));
-    }
+	@Override
+	public void holCandidateNotVerified(HOLTranslation tr, Instance candidate, Instance cex) {
+		System.out.println(String.format("  [%s]   counterexample found", tr));
+	}
 
-    @Override
-    public void holFindingNextCandidate(HOLTranslation tr, Formula inc) {
-        System.out.println(String.format("  [%s] continuing cegis loop", tr.getClass()));
-    }
+	@Override
+	public void holFindingNextCandidate(HOLTranslation tr, Formula inc) {
+		System.out.println(String.format("  [%s] continuing cegis loop", tr.getClass()));
+	}
 
 	@Override
 	public void holSplitStart(HOLTranslation tr, Formula formula) {
-        System.out.println(String.format("starting split (%s) ...", tr));
+		System.out.println(String.format("starting split (%s) ...", tr));
 	}
 
 	@Override
@@ -169,33 +173,32 @@ public final class ConsoleReporter implements Reporter {
 		System.out.println(String.format("  [%s] choice UNSAT", tr));
 	}
 
-    @Override
-    public void holFixpointStart(HOLTranslation tr, Formula formula, Bounds bounds) {
-        System.out.println(String.format("  [%s] fixpoint search started", tr));
-    }
+	@Override
+	public void holFixpointStart(HOLTranslation tr, Formula formula, Bounds bounds) {
+		System.out.println(String.format("  [%s] fixpoint search started", tr));
+	}
 
-    @Override
-    public void holFixpointNoSolution(HOLTranslation tr) {
-        System.out.println(String.format("  [%s]   no solution", tr));
-    }
+	@Override
+	public void holFixpointNoSolution(HOLTranslation tr) {
+		System.out.println(String.format("  [%s]   no solution", tr));
+	}
 
-    @Override
-    public void holFixpointFirstSolution(HOLTranslation tr, Instance candidate) {
-        System.out.println(String.format("  [%s]   first solution found", tr));
-    }
+	@Override
+	public void holFixpointFirstSolution(HOLTranslation tr, Instance candidate) {
+		System.out.println(String.format("  [%s]   first solution found", tr));
+	}
 
-    @Override
-    public void holFixpointIncrementing(HOLTranslation tr, Formula inc) {
-        System.out.println(String.format("  [%s]   hill climbing", tr));
-    }
+	@Override
+	public void holFixpointIncrementing(HOLTranslation tr, Formula inc) {
+		System.out.println(String.format("  [%s]   hill climbing", tr));
+	}
 
-    @Override
-    public void holFixpointIncrementingOutcome(HOLTranslation tr, Instance next) {
-        if (next != null)
-            System.out.println(String.format("  [%s]   climbed one step", tr));
-        else
-            System.out.println(String.format("  [%s]   fixpoint reached", tr));
-    }
-
+	@Override
+	public void holFixpointIncrementingOutcome(HOLTranslation tr, Instance next) {
+		if (next != null)
+			System.out.println(String.format("  [%s]   climbed one step", tr));
+		else
+			System.out.println(String.format("  [%s]   fixpoint reached", tr));
+	}
 
 }

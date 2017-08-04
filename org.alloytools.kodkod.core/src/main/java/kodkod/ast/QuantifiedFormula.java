@@ -21,11 +21,9 @@
  */
 package kodkod.ast;
 
-
 import kodkod.ast.operator.Quantifier;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
-
 
 /**
  * A quantified formula.
@@ -36,86 +34,103 @@ import kodkod.ast.visitor.VoidVisitor;
  * @invariant children = 0->decls + 1->formula
  * @author Emina Torlak
  */
-public final class QuantifiedFormula extends Formula  {
-    private final Quantifier quantifier;
-    private final Decls decls;
-    private final Formula domain;
-    private final Formula body;
+public final class QuantifiedFormula extends Formula {
+	private final Quantifier	quantifier;
+	private final Decls			decls;
+	private final Formula		domain;
+	private final Formula		body;
 
-    /**
-     * Constructs a new quantified formula: quantifier decls | formula
-     *
-     * @ensures this.quantifier' = quantifier && this.decls' = decls &&
-     *          this.formula' = formula
-     * @throws NullPointerException  quantifier = null || decls = null || formula = null
-     */
-    QuantifiedFormula(Quantifier quantifier, Decls declarations, Formula domain, Formula body) {
-        if (quantifier == null || declarations == null || domain == null || body == null) {
-            throw new NullPointerException("null arg");
-        }
-        this.quantifier = quantifier;
-        this.decls = declarations;
-        this.domain = domain;
-        this.body = body;
-    }
+	/**
+	 * Constructs a new quantified formula: quantifier decls | formula
+	 *
+	 * @ensures this.quantifier' = quantifier && this.decls' = decls &&
+	 *          this.formula' = formula
+	 * @throws NullPointerException quantifier = null || decls = null || formula
+	 *             = null
+	 */
+	QuantifiedFormula(Quantifier quantifier, Decls declarations, Formula domain, Formula body) {
+		if (quantifier == null || declarations == null || domain == null || body == null) {
+			throw new NullPointerException("null arg");
+		}
+		this.quantifier = quantifier;
+		this.decls = declarations;
+		this.domain = domain;
+		this.body = body;
+	}
 
-    /**
-     * Returns this.formula.
-     * @return this.formula
-     */
-    public Formula domain() { return domain; }
+	/**
+	 * Returns this.formula.
+	 * 
+	 * @return this.formula
+	 */
+	public Formula domain() {
+		return domain;
+	}
 
-    /**
-     * Returns this.body.
-     * @return this.body
-     */
-    public Formula body() { return body; }
+	/**
+	 * Returns this.body.
+	 * 
+	 * @return this.body
+	 */
+	public Formula body() {
+		return body;
+	}
 
-    public Formula formula() {
-        if (domain == Formula.TRUE) return body;
-        if (quantifier == Quantifier.ALL)
-            return domain.implies(body);
-        else
-            return domain.and(body);
-    }
+	public Formula formula() {
+		if (domain == Formula.TRUE)
+			return body;
+		if (quantifier == Quantifier.ALL)
+			return domain.implies(body);
+		else
+			return domain.and(body);
+	}
 
-    /**
-     * Returns this.decls.
-     * @return this.decls
-     */
-    public Decls decls() { return decls;}
+	/**
+	 * Returns this.decls.
+	 * 
+	 * @return this.decls
+	 */
+	public Decls decls() {
+		return decls;
+	}
 
-    /**
-     * Returns this.quantifier.
-     * @return this.quantifier
-     */
-    public Quantifier quantifier() { return quantifier; }
+	/**
+	 * Returns this.quantifier.
+	 * 
+	 * @return this.quantifier
+	 */
+	public Quantifier quantifier() {
+		return quantifier;
+	}
 
-    /**
-     * {@inheritDoc}
-     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
-     */
-    public <E, F, D, I> F accept(ReturnVisitor<E, F, D, I> visitor) {
-        return visitor.visit(this);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+	 */
+	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+		return visitor.visit(this);
+	}
 
-    /**
-     * {@inheritDoc}
-     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-     */
-    public void accept(VoidVisitor visitor) {
-        visitor.visit(this);
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+	 */
+	public void accept(VoidVisitor visitor) {
+		visitor.visit(this);
+	}
 
-    /**
-     * {@inheritDoc}
-     * @see kodkod.ast.Node#toString()
-     */
-    public String toString() {
-        if (domain != Formula.TRUE)
-            return "(" + quantifier + " " + decls + " | " + domain + " | " + body + ")";
-        else
-            return "(" + quantifier + " " + decls + " | " + formula() + ")";
-    }
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see kodkod.ast.Node#toString()
+	 */
+	public String toString() {
+		if (domain != Formula.TRUE)
+			return "(" + quantifier + " " + decls + " | " + domain + " | " + body + ")";
+		else
+			return "(" + quantifier + " " + decls + " | " + formula() + ")";
+	}
 
 }

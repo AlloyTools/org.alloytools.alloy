@@ -61,125 +61,143 @@ public interface VoidVisitor {
 	/**
 	 * Visits the given sequence of declarations.
 	 **/
-    public void visit(Decls decls);
-    /**
+	public void visit(Decls decls);
+
+	/**
 	 * Visits the given declaration.
 	 **/
-    public void visit(Decl decl);
+	public void visit(Decl decl);
 
-    /**
+	/**
 	 * Visits the given relation.
 	 **/
-    public void visit(Relation relation);
-    /**
+	public void visit(Relation relation);
+
+	/**
 	 * Visits the given variable.
 	 **/
-    public void visit(Variable variable);
-    /**
+	public void visit(Variable variable);
+
+	/**
 	 * Visits the given constant expression.
 	 **/
-    public void visit(ConstantExpression constExpr);
+	public void visit(ConstantExpression constExpr);
 
-    /**
+	/**
 	 * Visits the given unary expression.
 	 **/
-    public void visit(UnaryExpression unaryExpr);
+	public void visit(UnaryExpression unaryExpr);
 
-    /**
+	/**
 	 * Visits the given binary expression.
 	 **/
-    public void visit(BinaryExpression binExpr);
+	public void visit(BinaryExpression binExpr);
 
-    /**
+	/**
 	 * Visits the given nary expression.
 	 **/
-    public void visit(NaryExpression expr);
+	public void visit(NaryExpression expr);
 
-
-    /**
+	/**
 	 * Visits the given comprehension.
 	 **/
-    public void visit(Comprehension comprehension);
-    /**
+	public void visit(Comprehension comprehension);
+
+	/**
 	 * Visits the given if-then expression.
 	 **/
-    public void visit(IfExpression ifExpr);
-    /**
-     * Visits the given projection expression.
-     */
-    public void visit(ProjectExpression project);
+	public void visit(IfExpression ifExpr);
 
+	/**
+	 * Visits the given projection expression.
+	 */
+	public void visit(ProjectExpression project);
 
-    /**
-     * Visits the given integer cast expression.
-     */
-    public void visit(IntToExprCast castExpr);
-    /**
-     * Visits the given integer constant.
-     */
-    public void visit(IntConstant intConst);
-    /**
-     * Visits the given unary integer expression.
-     */
-    public void visit(ExprToIntCast intExpr);
-    /**
-     * Visits the given if-int-expression.
-     */
-    public void visit(IfIntExpression intExpr);
-    /**
+	/**
+	 * Visits the given integer cast expression.
+	 */
+	public void visit(IntToExprCast castExpr);
+
+	/**
+	 * Visits the given integer constant.
+	 */
+	public void visit(IntConstant intConst);
+
+	/**
+	 * Visits the given unary integer expression.
+	 */
+	public void visit(ExprToIntCast intExpr);
+
+	/**
+	 * Visits the given if-int-expression.
+	 */
+	public void visit(IfIntExpression intExpr);
+
+	/**
 	 * Visits the given nary int expression.
 	 **/
-    public void visit(NaryIntExpression intExpr);
-    /**
-     * Visits the given binary integer expression.
-     */
-    public void visit(BinaryIntExpression intExpr);
-    /**
-     * Visits the given unary integer expression.
-     */
-    public void visit(UnaryIntExpression intExpr);
-    /**
-     * Visits the given sum expression.
-     */
-    public void visit(SumExpression intExpr);
-    /**
-     * Visits the given integer comparison formula.
-     */
-    public void visit(IntComparisonFormula intComp);
+	public void visit(NaryIntExpression intExpr);
 
-    /**
+	/**
+	 * Visits the given binary integer expression.
+	 */
+	public void visit(BinaryIntExpression intExpr);
+
+	/**
+	 * Visits the given unary integer expression.
+	 */
+	public void visit(UnaryIntExpression intExpr);
+
+	/**
+	 * Visits the given sum expression.
+	 */
+	public void visit(SumExpression intExpr);
+
+	/**
+	 * Visits the given integer comparison formula.
+	 */
+	public void visit(IntComparisonFormula intComp);
+
+	/**
 	 * Visits the given quantified formula.
 	 **/
-    public void visit(QuantifiedFormula quantFormula);
-    /**
+	public void visit(QuantifiedFormula quantFormula);
+
+	/**
 	 * Visits the given nary formula.
 	 **/
-    public void visit(NaryFormula formula);
-    /**
+	public void visit(NaryFormula formula);
+
+	/**
 	 * Visits the given binary formula.
 	 **/
-    public void visit(BinaryFormula binFormula);
-    /**
+	public void visit(BinaryFormula binFormula);
+
+	/**
 	 * Visits the given negation.
 	 **/
-    public void visit(NotFormula not);
-    /**
+	public void visit(NotFormula not);
+
+	/**
 	 * Visits the given constant formula.
 	 **/
-    public void visit(ConstantFormula constant);
+	public void visit(ConstantFormula constant);
 
-    /**
+	/**
 	 * Visits the given comparison formula.
 	 **/
-    public void visit(ComparisonFormula compFormula);
-    /**
+	public void visit(ComparisonFormula compFormula);
+
+	/**
 	 * Visits the given multiplicity formula.
 	 **/
-    public void visit(MultiplicityFormula multFormula);
-    /**
-     * Visits the given relation predicate.
-     */
-    public void visit(RelationPredicate predicate);
-    public void visit(FixFormula fixFormula);
+	public void visit(MultiplicityFormula multFormula);
+
+	/**
+	 * Visits the given relation predicate.
+	 */
+	public void visit(RelationPredicate predicate);
+
+	public void visit(FixFormula fixFormula);
 
 }

@@ -25,8 +25,7 @@ import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
-
-/** 
+/**
  * A relational {@link kodkod.ast.Expression expression} with two children.
  * 
  * @specfield left: Expression
@@ -34,48 +33,53 @@ import kodkod.ast.visitor.VoidVisitor;
  * @specfield op: ExprOperator
  * @specfield op.binary()
  * @invariant children = 0->left + 1->right
- * @author Emina Torlak 
+ * @author Emina Torlak
  */
 public final class BinaryExpression extends Expression {
-	private final ExprOperator op;
-	private final Expression left;
-	private final Expression right;
-	private final int arity;
+	private final ExprOperator	op;
+	private final Expression	left;
+	private final Expression	right;
+	private final int			arity;
 
-	/**  
+	/**
 	 * Constructs a new binary expression: left op right
 	 * 
 	 * @ensures this.left' = left && this.right' = right && this.op' = op
-	 * @throws NullPointerException  left = null || right = null || op = null
-	 * @throws IllegalArgumentException  left and right cannot be combined with the specified operator.
+	 * @throws NullPointerException left = null || right = null || op = null
+	 * @throws IllegalArgumentException left and right cannot be combined with
+	 *             the specified operator.
 	 */
 	BinaryExpression(final Expression left, final ExprOperator op, final Expression right) {
-		switch(op) { 
-		case UNION : case INTERSECTION : case DIFFERENCE : case OVERRIDE :
-			this.arity = left.arity();
-			if (arity!=right.arity())
-				throw new IllegalArgumentException("Incompatible arities: " + left + " and " + right);
-			break;
-		case JOIN : 
-			this.arity = left.arity() + right.arity() - 2;
-			if (arity < 1)
-				throw new IllegalArgumentException("Incompatible arities: " + left + " and " + right);
-			break;
-		case PRODUCT : 
-			this.arity = left.arity() + right.arity();
-			break;
-		default : 
-			throw new IllegalArgumentException("Not a binary operator: " + op);
+		switch (op) {
+			case UNION :
+			case INTERSECTION :
+			case DIFFERENCE :
+			case OVERRIDE :
+				this.arity = left.arity();
+				if (arity != right.arity())
+					throw new IllegalArgumentException("Incompatible arities: " + left + " and " + right);
+				break;
+			case JOIN :
+				this.arity = left.arity() + right.arity() - 2;
+				if (arity < 1)
+					throw new IllegalArgumentException("Incompatible arities: " + left + " and " + right);
+				break;
+			case PRODUCT :
+				this.arity = left.arity() + right.arity();
+				break;
+			default :
+				throw new IllegalArgumentException("Not a binary operator: " + op);
 		}
-		
+
 		this.op = op;
 		this.left = left;
 		this.right = right;
-		
+
 	}
 
 	/**
 	 * Returns the arity of this binary expression.
+	 * 
 	 * @return this.arity
 	 * @see kodkod.ast.Expression#arity()
 	 */
@@ -85,31 +89,43 @@ public final class BinaryExpression extends Expression {
 
 	/**
 	 * Returns this.op.
+	 * 
 	 * @return this.op
 	 */
-	public ExprOperator op() { return op ; }
+	public ExprOperator op() {
+		return op;
+	}
+
 	/**
 	 * Returns the left child of this.
+	 * 
 	 * @return this.left
 	 */
-	public Expression left() {return left;}
+	public Expression left() {
+		return left;
+	}
 
 	/**
 	 * Returns the right child of this.
+	 * 
 	 * @return this.right
 	 */
-	public Expression right() {return right;}
+	public Expression right() {
+		return right;
+	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> E accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	public void accept(VoidVisitor visitor) {
@@ -118,6 +134,7 @@ public final class BinaryExpression extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
 	public String toString() {

@@ -52,13 +52,13 @@ final class InstanceCreator {
 
 	private Document								document;
 	private final Set<String>						atoms;
-	private final Map<Relation, Set<List<String>>>	relations;
+	private final Map<Relation,Set<List<String>>>	relations;
 
 	private InstanceCreator(File file) {
 		this(getStream(file));
 	}
 
-	private static FileInputStream getStream(File file)  {
+	private static FileInputStream getStream(File file) {
 		try {
 			return new FileInputStream(file);
 		} catch (FileNotFoundException e) {
@@ -68,7 +68,7 @@ final class InstanceCreator {
 
 	public InstanceCreator(InputStream in) {
 		try {
-			this.relations = new HashMap<Relation, Set<List<String>>>();
+			this.relations = new HashMap<Relation,Set<List<String>>>();
 			this.atoms = new LinkedHashSet<String>();
 
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -204,10 +204,10 @@ final class InstanceCreator {
 		final Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 		final Instance instance = new Instance(u);
-		for (Map.Entry<Relation, Set<List<String>>> entry : relations.entrySet()) {
+		for (Map.Entry<Relation,Set<List<String>>> entry : relations.entrySet()) {
 			Relation r = (Relation) entry.getKey();
 			TupleSet s = f.noneOf(r.arity());
-			for (List<?> atoms : entry.getValue()) {
+			for (List< ? > atoms : entry.getValue()) {
 				s.add(f.tuple(atoms));
 			}
 			instance.add(r, s);
@@ -221,9 +221,7 @@ final class InstanceCreator {
 	 *
 	 * @return an Instance corresponding to the data in the file designated by
 	 *         the given fileName
-	 * @throws a
-	 *             InstanceCreationException if an error occurs during
-	 *             processing
+	 * @throws a InstanceCreationException if an error occurs during processing
 	 */
 	public static Instance getInstance(String fileName) {
 		InstanceCreator creator = new InstanceCreator(new File(fileName));

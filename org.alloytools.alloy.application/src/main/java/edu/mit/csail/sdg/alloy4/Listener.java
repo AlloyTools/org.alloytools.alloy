@@ -19,12 +19,14 @@ package edu.mit.csail.sdg.alloy4;
 
 public interface Listener {
 
-   /** This defines the list of possible events. */
-   enum Event { CLICK, STATUS_CHANGE, FOCUSED, CTRL_PAGE_UP, CTRL_PAGE_DOWN, CARET_MOVED};
+	/** This defines the list of possible events. */
+	enum Event {
+		CLICK, STATUS_CHANGE, FOCUSED, CTRL_PAGE_UP, CTRL_PAGE_DOWN, CARET_MOVED
+	};
 
-   /** This method is called when the given zero-argument-event occurs. */
-   public Object do_action(Object sender, Event event);
+	/** This method is called when the given zero-argument-event occurs. */
+	public Object do_action(Object sender, Event event);
 
-   /** This method is called when the given single-argument-event occurs. */
-   public Object do_action(Object sender, Event event, Object arg);
+	/** This method is called when the given single-argument-event occurs. */
+	public Object do_action(Object sender, Event event, Object arg);
 }

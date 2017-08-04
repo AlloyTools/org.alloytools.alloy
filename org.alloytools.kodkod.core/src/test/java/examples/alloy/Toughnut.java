@@ -18,6 +18,7 @@ import kodkod.instance.Universe;
 
 /**
  * A kodkod encoding of John McCarthy's thoughnut problem
+ * 
  * <pre>
  * module internal/tougnut
  * 
@@ -41,11 +42,10 @@ import kodkod.instance.Universe;
  * </pre>
  * 
  * @author Emina
- * 
  */
 public final class Toughnut {
 	private final Relation Cell, covered, ord;
-	
+
 	/**
 	 * Creates an instance of Toughnut.
 	 */
@@ -54,19 +54,20 @@ public final class Toughnut {
 		this.covered = Relation.nary("covered", 4);
 		this.ord = Relation.binary("ord");
 	}
-	
+
 	private Expression next(Expression e) {
 		return e.join(ord);
 	}
-	
+
 	private Expression prev(Expression e) {
 		return ord.join(e);
 	}
-	
+
 	/**
-	 * Returns the covering predicate.  Note that we don't 
-	 * need to specify the first two lines of the predicate,
-	 * since they can be expressed as bounds constraints.
+	 * Returns the covering predicate. Note that we don't need to specify the
+	 * first two lines of the predicate, since they can be expressed as bounds
+	 * constraints.
+	 * 
 	 * @return the covering predicate
 	 */
 	public Formula checkBelowTooDoublePrime() {
@@ -83,58 +84,58 @@ public final class Toughnut {
 		Formula covering = (xy.one().and(xy.in(xNeighbors.union(yNeighbors)))).forAll(d);
 		return symm.and(covering);
 	}
-	
+
 	/**
 	 * Returns bounds for an nxn board.
+	 * 
 	 * @return bounds for an nxn board.
 	 */
 	public Bounds bounds(int n) {
 		assert n > 0;
 		final List<String> atoms = new ArrayList<String>(n);
-		for(int i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++) {
 			atoms.add(String.valueOf(i));
 		}
 		final Universe u = new Universe(atoms);
 		final Bounds b = new Bounds(u);
 		final TupleFactory f = u.factory();
-		
+
 		b.boundExactly(Cell, f.allOf(1));
-		
+
 		final TupleSet ordBound = f.noneOf(2);
-		for(int i = 0; i < n-1; i++) {
-			ordBound.add(f.tuple(String.valueOf(i), String.valueOf(i+1)));
+		for (int i = 0; i < n - 1; i++) {
+			ordBound.add(f.tuple(String.valueOf(i), String.valueOf(i + 1)));
 		}
 		b.boundExactly(ord, ordBound);
-		
+
 		final TupleSet board = f.allOf(2);
 		board.remove(f.tuple(String.valueOf(0), String.valueOf(0)));
-		board.remove(f.tuple(String.valueOf(n-1), String.valueOf(n-1)));
-		
+		board.remove(f.tuple(String.valueOf(n - 1), String.valueOf(n - 1)));
+
 		b.bound(covered, board.product(board));
-		
+
 		return b;
 	}
-	
+
 	/**
 	 * Usage: java examples.Toughnut [size of one side of the board; optional]
 	 */
 	public static void main(String[] args) {
 		try {
-			int n = args.length==0 ? 4 : Integer.parseInt(args[0]);
+			int n = args.length == 0 ? 4 : Integer.parseInt(args[0]);
 			final Toughnut nut = new Toughnut();
 			final Solver solver = new Solver();
 			solver.options().setSolver(SATFactory.MiniSat);
 			final Formula covering = nut.checkBelowTooDoublePrime();
 			final Bounds bounds = nut.bounds(n);
-			
-			//System.out.println(covering);
-			//System.out.println(bounds);
+
+			// System.out.println(covering);
+			// System.out.println(bounds);
 			final Solution sol = solver.solve(covering, bounds);
 			System.out.println(sol);
 		} catch (NumberFormatException nfe) {
 			System.out.println("Usage: java examples.Toughnut [size of one side of the board; optional]");
 		}
-		
-		
+
 	}
 }

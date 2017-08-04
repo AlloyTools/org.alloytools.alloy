@@ -27,44 +27,47 @@ import kodkod.ast.Node;
 import kodkod.ast.operator.Multiplicity;
 
 /**
- * Thrown when a node contains a higher order declaration that cannot
- * be skolemized, or it can be skolemized but skolemization is disabled.
+ * Thrown when a node contains a higher order declaration that cannot be
+ * skolemized, or it can be skolemized but skolemization is disabled.
  *
- * @specfield decl: Decl // higher order decl that caused the exception to be thrown
+ * @specfield decl: Decl // higher order decl that caused the exception to be
+ *            thrown
  * @author Emina Torlak
  */
 public final class HigherOrderDeclException extends RuntimeException {
-	private final Node node;
-	private final boolean isDecl;
-	private static final long serialVersionUID = 1892780864484615171L;
+	private final Node			node;
+	private final boolean		isDecl;
+	private static final long	serialVersionUID	= 1892780864484615171L;
 
 	/**
 	 * Constructs a HigherOrderDeclException for the given decl.
+	 * 
 	 * @requires decl.multiplicity != ONE
 	 * @ensures this.decl' = decl
 	 */
-	 public HigherOrderDeclException(Decl decl) {
-	    super("Higher order declaration: " + decl);
+	public HigherOrderDeclException(Decl decl) {
+		super("Higher order declaration: " + decl);
 		assert decl.multiplicity() != Multiplicity.ONE;
 		this.node = decl;
 		this.isDecl = true;
-	 }
+	}
 
-	 public HigherOrderDeclException(FixFormula ff) {
-         super("Fixed point formula: " + ff);
-         this.node = ff;
-         this.isDecl = false;
-     }
+	public HigherOrderDeclException(FixFormula ff) {
+		super("Fixed point formula: " + ff);
+		this.node = ff;
+		this.isDecl = false;
+	}
 
 	/**
 	 * Returns this.decl
+	 * 
 	 * @return this.decl
 	 */
 	public Decl decl() {
-		return isDecl ? (Decl)node : null;
+		return isDecl ? (Decl) node : null;
 	}
 
 	public Node node() {
-	    return node;
+		return node;
 	}
 }

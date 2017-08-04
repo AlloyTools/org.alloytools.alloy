@@ -51,136 +51,151 @@ import kodkod.util.ints.IntVector;
 import tests.util.ProcessRunner;
 
 /**
- * Executes  a single problem.
- * The output is printed in the following (tab separated) format:
- * <class name> <method name> <partial model bits> <gbp (ms)> <gbp (symms)> <gad (ms)> <gad (symms)> 
+ * Executes a single problem. The output is printed in the following (tab
+ * separated) format: <class name> <method name> <partial model bits> <gbp (ms)>
+ * <gbp (symms)> <gad (ms)> <gad (symms)>
+ * 
  * @author Emina Torlak
  */
 public class BenchmarkSymmStats {
 	private static void usage() {
-		System.out.println("Usage: java tests.benchmarks.BenchmarkSymmStats <class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] [<class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)]]");
+		System.out.println(
+				"Usage: java tests.benchmarks.BenchmarkSymmStats <class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] [<class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)]]");
 		System.exit(1);
 	}
-	
+
 	private static final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-	static { bean.setThreadCpuTimeEnabled(true); }
-	
-	private static class SymmReporter extends AbstractReporter { 
-		long gbpTime;
-		int[] symms;
-		Bounds bounds;
-				
+	static {
+		bean.setThreadCpuTimeEnabled(true);
+	}
+
+	private static class SymmReporter extends AbstractReporter {
+		long	gbpTime;
+		int[]	symms;
+		Bounds	bounds;
+
 		@Override
-		public void detectingSymmetries(Bounds bounds) { 
+		public void detectingSymmetries(Bounds bounds) {
 			this.bounds = bounds.clone();
 			gbpTime = bean.getCurrentThreadUserTime();
 		}
-		
-		public void detectedSymmetries(Set<IntSet> parts) { 
+
+		public void detectedSymmetries(Set<IntSet> parts) {
 			final long end = bean.getCurrentThreadUserTime();
-			gbpTime = (end-gbpTime)/1000000;
+			gbpTime = (end - gbpTime) / 1000000;
 			symms = new int[parts.size()];
 			int i = 0;
-			for(IntSet s : parts) { 
+			for (IntSet s : parts) {
 				symms[i++] = s.size();
 			}
 		}
-		
-		public void optimizingBoundsAndFormula() { throw new RuntimeException(); }
-		
+
+		public void optimizingBoundsAndFormula() {
+			throw new RuntimeException();
+		}
+
 		/**
 		 * Returns a new reporter with its gbpTime, bounds and symms fields
 		 * initialized with respect to the given formula and bounds.
 		 */
-		static SymmReporter report(Formula formula, Bounds bounds) { 
+		static SymmReporter report(Formula formula, Bounds bounds) {
 			final SymmReporter reporter = new SymmReporter();
 			final Solver solver = new Solver();
 			solver.options().setReporter(reporter);
-			try { solver.solve(formula, bounds); } catch(RuntimeException ae) {}
+			try {
+				solver.solve(formula, bounds);
+			} catch (RuntimeException ae) {}
 			return reporter;
 		}
 	}
-		
-	private static void toNauty(Bounds bounds, PrintStream stream) { 
+
+	private static void toNauty(Bounds bounds, PrintStream stream) {
 		int size = bounds.universe().size() + bounds.ints().size();
-		for(Relation r : bounds.relations()) { 
+		for (Relation r : bounds.relations()) {
 			final int upsize = bounds.upperBound(r).size(), lowsize = bounds.lowerBound(r).size();
-			size += (upsize==lowsize ? upsize : upsize+lowsize)*r.arity();
+			size += (upsize == lowsize ? upsize : upsize + lowsize) * r.arity();
 		}
 
-		stream.println("n="+size+" $0 *=13 k = 0 " + size + " +d -a -m g");
-		
+		stream.println("n=" + size + " $0 *=13 k = 0 " + size + " +d -a -m g");
+
 		int v = bounds.universe().size();
 		final IntVector vec = new ArrayIntVector();
 		vec.add(v);
-		for(Relation r : bounds.relations()) { 
+		for (Relation r : bounds.relations()) {
 			final int arity = r.arity();
 			final TupleSet up = bounds.upperBound(r), down = bounds.lowerBound(r);
-			final TupleSet[] sets = up.size()==down.size() || down.size()==0 ? new TupleSet[]{up} : new TupleSet[]{down, up};
-			for(TupleSet s : sets) {
-				for(Tuple t : s) { 
-					for(int i = 0, max = arity-1; i < max; i++) {
-						stream.println(v + " : " + (v+1) + " " + t.atomIndex(i) + ";");
+			final TupleSet[] sets = up.size() == down.size() || down.size() == 0 ? new TupleSet[] {
+					up
+			} : new TupleSet[] {
+					down, up
+			};
+			for (TupleSet s : sets) {
+				for (Tuple t : s) {
+					for (int i = 0, max = arity - 1; i < max; i++) {
+						stream.println(v + " : " + (v + 1) + " " + t.atomIndex(i) + ";");
 						v++;
 					}
-					stream.println(v + " : " + t.atomIndex(arity-1) + ";");
+					stream.println(v + " : " + t.atomIndex(arity - 1) + ";");
 					v++;
 				}
 				vec.add(v);
 			}
 		}
-		for(TupleSet s : bounds.intBounds().values()) { 
+		for (TupleSet s : bounds.intBounds().values()) {
 			stream.println(v + " : " + s.iterator().next().atomIndex(0) + ";");
 			v++;
 			vec.add(v);
 		}
-		
-//		stream.println(".");
-		stream.print("f = [ 0:"+(vec.get(0)-1));
-		for(int i  = 1; i < vec.size(); i++) { 
-			stream.print(" | " + vec.get(i-1)+":"+(vec.get(i)-1));
+
+		// stream.println(".");
+		stream.print("f = [ 0:" + (vec.get(0) - 1));
+		for (int i = 1; i < vec.size(); i++) {
+			stream.print(" | " + vec.get(i - 1) + ":" + (vec.get(i) - 1));
 		}
 		stream.println(" ]");
 		stream.println("x");
-//		stream.println("o");
+		// stream.println("o");
 		stream.println("q");
 	}
-	
-	private static BigInteger fact(int num) { 
+
+	private static BigInteger fact(int num) {
 		BigInteger ret = new BigInteger("1");
-		for(int i = 1; i <= num; i++) { 
+		for (int i = 1; i <= num; i++) {
 			ret = ret.multiply(new BigInteger(String.valueOf(i)));
 		}
 		return ret;
 	}
-	
+
 	/**
 	 * Returns the number of symmetries defined by the given partitions.
 	 */
-	private static BigInteger symms(int[] parts) { 
+	private static BigInteger symms(int[] parts) {
 		BigInteger symms = new BigInteger("1");
-		for(int part : parts) { symms = symms.multiply(fact(part)); }
+		for (int part : parts) {
+			symms = symms.multiply(fact(part));
+		}
 		return symms;
 	}
-	
+
 	/**
 	 * Returns the size of the partial model (in bits)
 	 */
-	private static int pmBits(Bounds bounds) { 
+	private static int pmBits(Bounds bounds) {
 		int pm = 0;
-		for(TupleSet lower : bounds.lowerBounds().values()) { 
-			pm+=lower.size();
+		for (TupleSet lower : bounds.lowerBounds().values()) {
+			pm += lower.size();
 		}
 		return pm;
 	}
-	
-	private static void destroy(String name) { 
+
+	private static void destroy(String name) {
 		try {
 			final Process process = Runtime.getRuntime().exec("ps -e");
 			process.waitFor();
-			final BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream(), "ISO-8859-1"));
-			final Matcher m = Pattern.compile("(\\d+).*?"+name).matcher("");
-			for(String line = out.readLine(); line !=  null; line = out.readLine()) { 
+			final BufferedReader out = new BufferedReader(
+					new InputStreamReader(process.getInputStream(), "ISO-8859-1"));
+			final Matcher m = Pattern.compile("(\\d+).*?" + name).matcher("");
+			for (String line = out.readLine(); line != null; line = out.readLine()) {
 				m.reset(line);
 				if (m.find()) {
 					Runtime.getRuntime().exec("kill " + m.group(1)).waitFor();
@@ -195,17 +210,17 @@ public class BenchmarkSymmStats {
 			e.printStackTrace();
 		}
 	}
-	
-	private static void printSymmInfo(Formula formula, Bounds bounds) { 
-		
+
+	private static void printSymmInfo(Formula formula, Bounds bounds) {
+
 		final SymmReporter reporter = SymmReporter.report(formula, bounds);
-		
-		// <partial model bits> <gbp (ms)> <gbp (symms)> 
-		System.out.print(pmBits(bounds)+"\t");
+
+		// <partial model bits> <gbp (ms)> <gbp (symms)>
+		System.out.print(pmBits(bounds) + "\t");
 		System.out.print(reporter.gbpTime + "\t");
-		
-		System.out.print(symms(reporter.symms)+"\t");
-		
+
+		System.out.print(symms(reporter.symms) + "\t");
+
 		// <gad (ms)> <gad (symms)>
 		try {
 			final long startGen = bean.getCurrentThreadUserTime();
@@ -214,50 +229,52 @@ public class BenchmarkSymmStats {
 			toNauty(reporter.bounds, stream);
 			stream.close();
 			final long endGen = bean.getCurrentThreadUserTime();
-			
+
 			final String cmd = "/Users/emina/Desktop/tools/nauty22/run_dreadnaut " + tmp.getAbsoluteFile();
-			
+
 			final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
 			runner.start();
 
-			try {	
-				
+			try {
+
 				runner.join(BenchmarkDriver.FIVE_MIN);
-				if (runner.getState()!=Thread.State.TERMINATED) {
+				if (runner.getState() != Thread.State.TERMINATED) {
 					System.out.print("t\\o\t");
 					System.out.print("t\\o\t");
 					runner.destroyProcess();
 					destroy("dreadnaut");
 					return;
 				}
-				
-				final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
+
+				final BufferedReader out = new BufferedReader(
+						new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
 				String line;
-				
+
 				String allSymms = null;
 				long gadTime = -1;
-			
+
 				final Pattern spattern = Pattern.compile(".+grpsize=(.+?);.*");
 				final Matcher smatcher = spattern.matcher("");
 				final Pattern tpattern = Pattern.compile(".+cpu time = (.+?)\\s.*");
 				final Matcher tmatcher = tpattern.matcher("");
-				while((line = out.readLine()) != null) { 
+				while ((line = out.readLine()) != null) {
 					smatcher.reset(line);
-					if (smatcher.matches()) { 
+					if (smatcher.matches()) {
 						allSymms = smatcher.group(1);
 					} else {
 						tmatcher.reset(line);
-						if (tmatcher.matches()) { 
-							gadTime = (long)(Double.parseDouble(tmatcher.group(1))*1000);
-							if (gadTime==0) gadTime++;
+						if (tmatcher.matches()) {
+							gadTime = (long) (Double.parseDouble(tmatcher.group(1)) * 1000);
+							if (gadTime == 0)
+								gadTime++;
 						}
 					}
-//					System.out.println(line);
+					// System.out.println(line);
 				}
 				out.close();
-				
-				System.out.print(gadTime<0 ? "err\t" : (gadTime+(endGen-startGen)/1000000)+"\t");
-				System.out.print(allSymms==null ? "err\t" : allSymms+"\t");
+
+				System.out.print(gadTime < 0 ? "err\t" : (gadTime + (endGen - startGen) / 1000000) + "\t");
+				System.out.print(allSymms == null ? "err\t" : allSymms + "\t");
 
 			} catch (InterruptedException e) {
 				System.out.println("INTERRUPTED");
@@ -273,29 +290,33 @@ public class BenchmarkSymmStats {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
-	 * Usage: java tests.benchmarks.BenchmarkSymmStats <class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] [<method name>(<primitive | string | enum>[,<primitive | string | enum>]*)]
+	 * Usage: java tests.benchmarks.BenchmarkSymmStats <class name>[(<primitive
+	 * | string | enum>[,<primitive | string | enum>]*)] <method
+	 * name>[(<primitive | string | enum>[,<primitive | string | enum>]*)]
+	 * [<method name>(<primitive | string | enum>[,<primitive | string |
+	 * enum>]*)]
 	 */
-	public static void main(String[] args) { 
-		if (args.length!=2 && args.length!=3) usage();
+	public static void main(String[] args) {
+		if (args.length != 2 && args.length != 3)
+			usage();
 
 		try {
-			
-			final Object instance = construct(args[0].contains("(") ? args[0] : args[0]+"()");
-			final Formula formula = create(instance, args[1].contains("(") ? args[1] : args[1]+"()");
-			final Bounds bounds = create(instance, args.length==3 ? args[2] : "bounds()");
 
-			// <class name> <method name> 
-			System.out.print(args[0]+"\t");
-			System.out.print(args[1].split("\\(")[0]+"\t");
-			
+			final Object instance = construct(args[0].contains("(") ? args[0] : args[0] + "()");
+			final Formula formula = create(instance, args[1].contains("(") ? args[1] : args[1] + "()");
+			final Bounds bounds = create(instance, args.length == 3 ? args[2] : "bounds()");
+
+			// <class name> <method name>
+			System.out.print(args[0] + "\t");
+			System.out.print(args[1].split("\\(")[0] + "\t");
+
 			// <PURE|EXT> <gbp (ms)> <gbp (symms)> <gad (ms)> <gad (symms)>
-			printSymmInfo(formula,bounds);
-			
-			
+			printSymmInfo(formula, bounds);
+
 		} catch (NumberFormatException nfe) {
 			usage();
 		}

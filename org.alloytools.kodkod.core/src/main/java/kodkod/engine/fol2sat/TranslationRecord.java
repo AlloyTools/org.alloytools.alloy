@@ -29,47 +29,58 @@ import kodkod.ast.Variable;
 import kodkod.instance.TupleSet;
 
 /**
- * Record of a translation event.  Each translation event is described by four pieces of information:
+ * Record of a translation event. Each translation event is described by four
+ * pieces of information:
  * <ol>
  * <li>the {@linkplain Formula formula} that was translated;</li>
- * <li>the {@linkplain Node node} from which the translated formula was derived by skolemization or through some other optimization;</li>
- * <li>the environment in which the given formula is translated, given as a binding of free variables to scalars (singleton, unary tuplesets);</li>
- * <li>the CNF literal, expressed as an integer, that represents the meaning of the given formula in the given environment.</li>
+ * <li>the {@linkplain Node node} from which the translated formula was derived
+ * by skolemization or through some other optimization;</li>
+ * <li>the environment in which the given formula is translated, given as a
+ * binding of free variables to scalars (singleton, unary tuplesets);</li>
+ * <li>the CNF literal, expressed as an integer, that represents the meaning of
+ * the given formula in the given environment.</li>
  * </ol>
  * 
  * @specfield node: Node // node that was transformed to this.translated
- * @specfield translated: Formula // the translated formula obtain from this.node
- * @specfield literal: int // cnf literal representing the meaning of this.node in this.env
- * @specfield env: Variable ->one TupleSet // bindings for free, non-skolemized variables 
- *                                         // for which this.node (or its desugared form) evaluates to this.literal   
+ * @specfield translated: Formula // the translated formula obtain from
+ *            this.node
+ * @specfield literal: int // cnf literal representing the meaning of this.node
+ *            in this.env
+ * @specfield env: Variable ->one TupleSet // bindings for free, non-skolemized
+ *            variables // for which this.node (or its desugared form) evaluates
+ *            to this.literal
  * @author Emina Torlak
  */
 public abstract class TranslationRecord {
-		
+
 	/**
 	 * Returns this.node.
+	 * 
 	 * @return this.node.
 	 */
 	public abstract Node node();
-	
+
 	/**
 	 * Returns this.translated.
+	 * 
 	 * @return this.translated
 	 */
 	public abstract Formula translated();
-	
+
 	/**
 	 * Returns this.literal.
+	 * 
 	 * @return this.literal
 	 */
 	public abstract int literal();
-	
+
 	/**
 	 * Returns a map view of this.env.
+	 * 
 	 * @return this.env
 	 */
 	public abstract Map<Variable,TupleSet> env();
-	
+
 	/**
 	 * @see java.lang.Object#toString()
 	 */
@@ -83,5 +94,5 @@ public abstract class TranslationRecord {
 		ret.append(env());
 		ret.append(">");
 		return ret.toString();
-	}		
+	}
 }

@@ -18,6 +18,7 @@ import kodkod.instance.Universe;
 
 /**
  * Kodkod encoding of the DNA cuts model:
+ * 
  * <pre>
  * module s2
  * 
@@ -68,14 +69,16 @@ import kodkod.instance.Universe;
  * 
  * run show for exactly 11 Link
  * </pre>
+ * 
  * @author Emina Torlak
  */
 public final class DNACuts {
-	private final Relation next, Link, CutLink, JoinLink, Base, base, partner;
-	private final Expression[] neighbor;
-	
+	private final Relation		next, Link, CutLink, JoinLink, Base, base, partner;
+	private final Expression[]	neighbor;
+
 	/**
-	 * Constructs an instance of the DNACuts example for the given cut link length.
+	 * Constructs an instance of the DNACuts example for the given cut link
+	 * length.
 	 */
 	public DNACuts(int cutLinkLength) {
 		assert cutLinkLength > 0;
@@ -86,18 +89,19 @@ public final class DNACuts {
 		base = Relation.binary("base");
 		next = Relation.binary("next");
 		partner = Relation.binary("partner");
-		neighbor = new Expression[cutLinkLength-1];
+		neighbor = new Expression[cutLinkLength - 1];
 		if (cutLinkLength > 1) {
 			neighbor[0] = next;
-			for(int i = 1; i  < cutLinkLength-1; i++) {
-				neighbor[i] = next.join(neighbor[i-1]);
+			for (int i = 1; i < cutLinkLength - 1; i++) {
+				neighbor[i] = next.join(neighbor[i - 1]);
 			}
 		}
-		
+
 	}
-	
+
 	/**
 	 * Returns declarations constraints.
+	 * 
 	 * @return declarations constraints.
 	 */
 	public Formula declarations() {
@@ -107,24 +111,26 @@ public final class DNACuts {
 		final Formula f2 = CutLink.intersection(JoinLink).no();
 		return f0.and(f1).and(f2);
 	}
-	
+
 	/**
-	 * Returns the cutChainLength constraint.  (Similar to 
-	 * CutChainsAtMost6BasesLong fact, but with the cut 
-	 * chain length as specified during construction.)
+	 * Returns the cutChainLength constraint. (Similar to
+	 * CutChainsAtMost6BasesLong fact, but with the cut chain length as
+	 * specified during construction.)
+	 * 
 	 * @return the cutChainLength constraint
 	 */
 	public Formula cutChainLength() {
 		Formula ret = Formula.FALSE;
 		final Variable c = Variable.unary("c");
-		for(int i = 0; i < neighbor.length; i++) {
+		for (int i = 0; i < neighbor.length; i++) {
 			ret = ret.or(c.join(neighbor[i]).in(JoinLink));
 		}
 		return ret.forAll(c.oneOf(CutLink));
 	}
-	
+
 	/**
 	 * Returns the cutLinkUniqueness constraint.
+	 * 
 	 * @return the cutLinkUniqueness constraint.
 	 */
 	public Formula cutLinkUniqueness() {
@@ -132,16 +138,17 @@ public final class DNACuts {
 		final Variable c2 = Variable.unary("c2");
 		final Formula f0 = c1.eq(c2).not().and(next.join(c1).in(JoinLink)).and(next.join(c2).in(JoinLink));
 		Formula f = c1.join(base).in(c2.join(base).union(c2.join(base).join(partner))).not();
-		for(int i = 0; i < neighbor.length; i++) {
+		for (int i = 0; i < neighbor.length; i++) {
 			Expression c1n = c1.join(neighbor[i]), c2n = c2.join(neighbor[i]);
 			f = f.or(c1n.in(JoinLink)).or(c2n.in(JoinLink));
 			f = f.or(c1n.join(base).in(c2n.join(base).union(c2n.join(base).join(partner))).not());
 		}
 		return f0.implies(f).forAll(c1.oneOf(CutLink).and(c2.oneOf(CutLink)));
 	}
-	
+
 	/**
 	 * Returns the show predicate.
+	 * 
 	 * @return the show predicate.
 	 */
 	public Formula show() {
@@ -150,9 +157,10 @@ public final class DNACuts {
 		final Formula f2 = CutLink.some();
 		return declarations().and(cutChainLength()).and(cutLinkUniqueness()).and(f0).and(f1).and(f2);
 	}
-	
+
 	/**
 	 * Returns the bounds for n links.
+	 * 
 	 * @return bounds for n links.
 	 */
 	public Bounds bounds(int n) {
@@ -162,58 +170,58 @@ public final class DNACuts {
 		atoms.add("T");
 		atoms.add("G");
 		atoms.add("C");
-		for(int i = 0; i < n; i++) {
-			atoms.add("Link"+i);
+		for (int i = 0; i < n; i++) {
+			atoms.add("Link" + i);
 		}
 		final Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 		final Bounds b = new Bounds(u);
-		
+
 		final TupleSet bases = f.range(f.tuple("A"), f.tuple("C"));
-		final TupleSet links = f.range(f.tuple("Link0"), f.tuple("Link"+(n-1)));
-		
+		final TupleSet links = f.range(f.tuple("Link0"), f.tuple("Link" + (n - 1)));
+
 		b.boundExactly(Base, bases);
 		b.boundExactly(Link, links);
 		b.bound(CutLink, links);
 		b.bound(JoinLink, links);
-		
+
 		final TupleSet randomSequence = f.noneOf(2);
 		final Random r = new Random();
-		for(int i = 0; i < n; i++) {
-			randomSequence.add(f.tuple("Link"+i, u.atom(r.nextInt(4))));
+		for (int i = 0; i < n; i++) {
+			randomSequence.add(f.tuple("Link" + i, u.atom(r.nextInt(4))));
 		}
 		b.boundExactly(base, randomSequence);
-		
+
 		final TupleSet partners = f.noneOf(2);
 		partners.add(f.tuple("A", "T"));
 		partners.add(f.tuple("T", "A"));
 		partners.add(f.tuple("G", "C"));
 		partners.add(f.tuple("C", "G"));
-		
+
 		b.boundExactly(partner, partners);
-		
+
 		final TupleSet linkOrd = f.noneOf(2);
-		for(int i = 1; i < n; i++) {
-			linkOrd.add(f.tuple("Link"+(i-1), "Link"+i));
+		for (int i = 1; i < n; i++) {
+			linkOrd.add(f.tuple("Link" + (i - 1), "Link" + i));
 		}
-		
+
 		b.boundExactly(next, linkOrd);
-		
+
 		return b;
 	}
-	
+
 	private static void usage() {
 		System.out.println("Usage: java examples.alloy.DNACuts [cut chain length] [# links]");
 		System.exit(1);
 	}
-	
+
 	/**
-	 * Usage:  java examples.alloy.DNACuts [cut chain length] [# links]
+	 * Usage: java examples.alloy.DNACuts [cut chain length] [# links]
 	 */
 	public static void main(String[] args) {
-		if (args.length < 2) 
+		if (args.length < 2)
 			usage();
-		
+
 		try {
 			final DNACuts model = new DNACuts(Integer.parseInt(args[0]));
 			final Solver solver = new Solver();
@@ -222,8 +230,8 @@ public final class DNACuts {
 			Bounds b = model.bounds(Integer.parseInt(args[1]));
 			System.out.println("solving...");
 			Solution sol = solver.solve(f, b);
-			//System.out.println(f);
-			//System.out.println(b);
+			// System.out.println(f);
+			// System.out.println(b);
 			System.out.println(sol.outcome());
 			System.out.println(sol.stats());
 		} catch (NumberFormatException nfe) {

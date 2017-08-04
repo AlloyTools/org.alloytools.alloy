@@ -22,33 +22,39 @@
 package kodkod.engine.satlab;
 
 /**
- * Provides an interface to a SAT solver that can generate
- * proofs of unsatisfiability.
+ * Provides an interface to a SAT solver that can generate proofs of
+ * unsatisfiability.
  * 
  * @specfield variables: set [1..)
  * @specfield clauses: set Clause
- * @specfield resolvents: set Clause  
+ * @specfield resolvents: set Clause
  * @invariant all i: [2..) | i in variables => i-1 in variables
- * @invariant all c: clauses + resolvents | all lit: c.lits | lit in variables || -lit in variables
- * @invariant all c: clauses + resolvents | all disj i,j: c.lits | abs(i) != abs(j)
+ * @invariant all c: clauses + resolvents | all lit: c.lits | lit in variables
+ *            || -lit in variables
+ * @invariant all c: clauses + resolvents | all disj i,j: c.lits | abs(i) !=
+ *            abs(j)
  * @author Emina Torlak
  */
 public interface SATProver extends SATSolver {
-	
+
 	/**
-	 * Returns a resolution-based proof of  unsatisfiability of this.clauses.
-	 * @requires {@link SATSolver#solve()} has been called, and it returned false
+	 * Returns a resolution-based proof of unsatisfiability of this.clauses.
+	 * 
+	 * @requires {@link SATSolver#solve()} has been called, and it returned
+	 *           false
 	 * @return { t: ResolutionTrace | t.prover = this }
-	 * @throws IllegalStateException  {@link SATSolver#solve()} has not been called, 
-	 * or the last call to {@link SATSolver#solve()} returned true
+	 * @throws IllegalStateException {@link SATSolver#solve()} has not been
+	 *             called, or the last call to {@link SATSolver#solve()}
+	 *             returned true
 	 */
 	public ResolutionTrace proof();
 
 	/**
-	 * Uses the given reduction strategy to remove irrelevant clauses from 
-	 * the set of unsatisfiable clauses stored in this prover.  
-	 * A clause c is irrelevant iff this.clauses - c is unsatisfiable.
-	 * The removal algorithm works as follows:
+	 * Uses the given reduction strategy to remove irrelevant clauses from the
+	 * set of unsatisfiable clauses stored in this prover. A clause c is
+	 * irrelevant iff this.clauses - c is unsatisfiable. The removal algorithm
+	 * works as follows:
+	 * 
 	 * <pre>
 	 * for (IntSet next = strategy.next(this.proof()); !next.isEmpty(); next = strategy.next(this.proof())) {
 	 *  let oldClauses = this.clauses, oldResolvents = this.resolvents
@@ -66,12 +72,16 @@ public interface SATProver extends SATSolver {
 	 *  }
 	 * }
 	 * </pre>
-	 * @requires {@link SATSolver#solve()} has been called, and it returned false
-	 * @ensures modifies this.clauses and this.resolvents according to the algorithm described above 
-	 * @throws IllegalStateException  {@link SATSolver#solve()} has not been called, 
-	 * or the last call to {@link SATSolver#solve()} returned true
+	 * 
+	 * @requires {@link SATSolver#solve()} has been called, and it returned
+	 *           false
+	 * @ensures modifies this.clauses and this.resolvents according to the
+	 *          algorithm described above
+	 * @throws IllegalStateException {@link SATSolver#solve()} has not been
+	 *             called, or the last call to {@link SATSolver#solve()}
+	 *             returned true
 	 * @see ReductionStrategy
 	 */
 	public void reduce(ReductionStrategy strategy);
-	
+
 }

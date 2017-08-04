@@ -31,13 +31,14 @@ import java.util.NoSuchElementException;
  * @author Emina Torlak
  */
 public final class ArrayIntSet extends AbstractIntSet {
-	private final int[] ints;
-	private final int hashcode;
+	private final int[]	ints;
+	private final int	hashcode;
+
 	/**
-	 * Constructs a set view for the given array.  The array must contain no duplicates, 
-	 * its elements must be sorted
-	 * in the ascending order, and its contents
-	 * must not be changed while it is in use by this set
+	 * Constructs a set view for the given array. The array must contain no
+	 * duplicates, its elements must be sorted in the ascending order, and its
+	 * contents must not be changed while it is in use by this set
+	 * 
 	 * @requires all i, j: [0..ints.length) | i < j => array[i] <= array[j]
 	 * @ensures this.ints' = ints
 	 */
@@ -45,26 +46,28 @@ public final class ArrayIntSet extends AbstractIntSet {
 		this.ints = ints;
 		this.hashcode = Ints.superFastHash(ints);
 	}
-	
+
 	/**
-	 * Constructs an ArrayIntSet that is <tt>equal</tt> to the
-	 * given set.
+	 * Constructs an ArrayIntSet that is <tt>equal</tt> to the given set.
+	 * 
 	 * @ensures this.ints' = s.ints
 	 */
 	public ArrayIntSet(IntSet s) {
 		this(s.toArray());
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.util.ints.IntSet#iterator(int, int)
 	 */
 	public IntIterator iterator(final int from, final int to) {
-		return from <= to ? new AscendingIntArrayIterator(from,to) : new DescendingIntArrayIterator(from,to);
+		return from <= to ? new AscendingIntArrayIterator(from, to) : new DescendingIntArrayIterator(from, to);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.util.ints.IntSet#size()
 	 */
 	public int size() {
@@ -76,8 +79,10 @@ public final class ArrayIntSet extends AbstractIntSet {
 	 */
 	public int ceil(int i) {
 		final int index = Arrays.binarySearch(ints, i);
-		if (index==-ints.length-1) throw new NoSuchElementException();
-		else return index >= 0 ? ints[index] : ints[-index-1];
+		if (index == -ints.length - 1)
+			throw new NoSuchElementException();
+		else
+			return index >= 0 ? ints[index] : ints[-index - 1];
 	}
 
 	/**
@@ -85,12 +90,15 @@ public final class ArrayIntSet extends AbstractIntSet {
 	 */
 	public int floor(int i) {
 		final int index = Arrays.binarySearch(ints, i);
-		if (index==-1) throw new NoSuchElementException();
-		else return index >= 0 ? ints[index] : ints[-index-2];
+		if (index == -1)
+			throw new NoSuchElementException();
+		else
+			return index >= 0 ? ints[index] : ints[-index - 2];
 	}
 
 	/**
 	 * Returns true if i is in this set.
+	 * 
 	 * @return i in this.ints
 	 * @see kodkod.util.ints.IntSet#contains(int)
 	 */
@@ -99,33 +107,38 @@ public final class ArrayIntSet extends AbstractIntSet {
 	}
 
 	/**
-	 * Returns the smallest element in this set.
-	 * Throws a NoSuchElementException if this set is empty.
+	 * Returns the smallest element in this set. Throws a NoSuchElementException
+	 * if this set is empty.
+	 * 
 	 * @return min(this.ints)
-	 * @throws java.util.NoSuchElementException  no this.ints
+	 * @throws java.util.NoSuchElementException no this.ints
 	 * @see kodkod.util.ints.IntSet#max()
 	 */
 	@Override
 	public int max() {
-		if (ints.length==0) throw new NoSuchElementException();
-		return ints[ints.length-1];
+		if (ints.length == 0)
+			throw new NoSuchElementException();
+		return ints[ints.length - 1];
 	}
 
 	/**
-	 * Returns the largest element in this set.
-	 * Throws a NoSuchElementException if this set is empty.
+	 * Returns the largest element in this set. Throws a NoSuchElementException
+	 * if this set is empty.
+	 * 
 	 * @return max(this.ints)
-	 * @throws java.util.NoSuchElementException  no this.ints
+	 * @throws java.util.NoSuchElementException no this.ints
 	 * @see kodkod.util.ints.IntSet#min()
 	 */
 	@Override
 	public int min() {
-		if (ints.length==0) throw new NoSuchElementException();
+		if (ints.length == 0)
+			throw new NoSuchElementException();
 		return ints[0];
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.util.ints.IntCollection#toArray()
 	 */
 	@Override
@@ -134,9 +147,10 @@ public final class ArrayIntSet extends AbstractIntSet {
 		System.arraycopy(ints, 0, ret, 0, ints.length);
 		return ret;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.util.ints.IntCollection#toArray(int[])
 	 */
 	@Override
@@ -147,73 +161,97 @@ public final class ArrayIntSet extends AbstractIntSet {
 		System.arraycopy(ints, 0, array, 0, ints.length);
 		return array;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.util.ints.IntSet#hashCode()
 	 */
 	@Override
-	public int hashCode() { return hashcode; }
-	
+	public int hashCode() {
+		return hashcode;
+	}
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.util.ints.IntSet#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object o) {
-		return (o instanceof ArrayIntSet) ? 
-				java.util.Arrays.equals(ints, ((ArrayIntSet)o).ints) : 
-				super.equals(o);
+		return (o instanceof ArrayIntSet) ? java.util.Arrays.equals(ints, ((ArrayIntSet) o).ints) : super.equals(o);
 	}
-	
+
 	/**
-	 * An iterator that returns the elements of this int set in the
-	 * ascending order.
+	 * An iterator that returns the elements of this int set in the ascending
+	 * order.
+	 * 
 	 * @author Emina Torlak
 	 */
 	private final class AscendingIntArrayIterator implements IntIterator {
 		private int next, end;
+
 		/**
 		 * Constructs a new AscendingIntArrayIterator.
+		 * 
 		 * @requires from <= to
 		 */
 		AscendingIntArrayIterator(int from, int to) {
 			final int fromIndex = Arrays.binarySearch(ints, from);
 			final int toIndex = Arrays.binarySearch(ints, to);
-			next = fromIndex >= 0 ? fromIndex : -fromIndex-1;
-			end = toIndex >=0 ? toIndex : -toIndex-2;
+			next = fromIndex >= 0 ? fromIndex : -fromIndex - 1;
+			end = toIndex >= 0 ? toIndex : -toIndex - 2;
 		}
-		public boolean hasNext() { return next>=0 && next <= end; }
+
+		public boolean hasNext() {
+			return next >= 0 && next <= end;
+		}
+
 		public int next() {
-			if (!hasNext()) throw new NoSuchElementException();
+			if (!hasNext())
+				throw new NoSuchElementException();
 			return ints[next++];
 		}
-		public final void remove() { throw new UnsupportedOperationException(); }
+
+		public final void remove() {
+			throw new UnsupportedOperationException();
+		}
 	}
-	
+
 	/**
-	 * An iterator that returns the elements of this int set in the
-	 * descending order.
+	 * An iterator that returns the elements of this int set in the descending
+	 * order.
+	 * 
 	 * @author Emina Torlak
 	 */
-	private final class DescendingIntArrayIterator implements IntIterator  {
+	private final class DescendingIntArrayIterator implements IntIterator {
 		private int next, end;
+
 		/**
 		 * Constructs a new AscendingIntArrayIterator.
+		 * 
 		 * @requires from >= to
 		 */
 		DescendingIntArrayIterator(int from, int to) {
 			final int fromIndex = Arrays.binarySearch(ints, from);
 			final int toIndex = Arrays.binarySearch(ints, to);
-			next = fromIndex >= 0 ? fromIndex : -fromIndex-2;
-			end = toIndex >=0 ? toIndex : -toIndex-1;
+			next = fromIndex >= 0 ? fromIndex : -fromIndex - 2;
+			end = toIndex >= 0 ? toIndex : -toIndex - 1;
 		}
-		public boolean hasNext() { return next >= end; }
+
+		public boolean hasNext() {
+			return next >= end;
+		}
+
 		public int next() {
-			if (!hasNext()) throw new NoSuchElementException();
+			if (!hasNext())
+				throw new NoSuchElementException();
 			return ints[next--];
 		}
-		public final void remove() { throw new UnsupportedOperationException(); }
+
+		public final void remove() {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 }

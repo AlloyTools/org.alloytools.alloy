@@ -21,10 +21,8 @@
  */
 package kodkod.ast;
 
-
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
-
 
 /**
  * An expression whose value depends on the truth of a given condition.
@@ -38,37 +36,38 @@ import kodkod.ast.visitor.VoidVisitor;
  */
 public final class IfExpression extends Expression {
 
-	private final Formula condition;
-	private final Expression thenExpr, elseExpr;
-	private final int arity;
-	
+	private final Formula		condition;
+	private final Expression	thenExpr, elseExpr;
+	private final int			arity;
+
 	/**
 	 * @ensures this.condition' = condition && this.thenExpr' = thenExpr &&
-	 *         this.elseExpr' = elseExpr
-	 * @throws IllegalArgumentException  thenExpr.arity != elseExpr.arity
+	 *          this.elseExpr' = elseExpr
+	 * @throws IllegalArgumentException thenExpr.arity != elseExpr.arity
 	 */
 	IfExpression(Formula condition, Expression thenExpr, Expression elseExpr) {
 		if (thenExpr.arity() != elseExpr.arity()) {
-            throw new IllegalArgumentException("Arity mismatch: " +
-            		thenExpr + "::" + thenExpr.arity() +  " and " +
-            		elseExpr + "::" + elseExpr.arity());
-        }
+			throw new IllegalArgumentException("Arity mismatch: " + thenExpr + "::" + thenExpr.arity() + " and "
+					+ elseExpr + "::" + elseExpr.arity());
+		}
 		this.condition = condition;
 		this.thenExpr = thenExpr;
 		this.elseExpr = elseExpr;
-		this.arity  = thenExpr.arity();
+		this.arity = thenExpr.arity();
 	}
-	
+
 	/**
 	 * Returns the if-condition.
+	 * 
 	 * @return this.condition
 	 */
 	public Formula condition() {
 		return condition;
 	}
-	
+
 	/**
 	 * Returns the then-expression.
+	 * 
 	 * @return this.thenExpr
 	 */
 	public Expression thenExpr() {
@@ -77,14 +76,16 @@ public final class IfExpression extends Expression {
 
 	/**
 	 * Returns the else-expression.
+	 * 
 	 * @return this.elseExpr
 	 */
 	public Expression elseExpr() {
 		return elseExpr;
 	}
-	
+
 	/**
 	 * Returns the arity of this.
+	 * 
 	 * @return this.arity
 	 */
 	@Override
@@ -94,14 +95,16 @@ public final class IfExpression extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> E accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	public void accept(VoidVisitor visitor) {
@@ -110,9 +113,11 @@ public final class IfExpression extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#toString()
-	 */	public String toString() {
+	 */
+	public String toString() {
 		return "(if " + condition + " then " + thenExpr + " else " + elseExpr + ")";
 	}
-	
+
 }

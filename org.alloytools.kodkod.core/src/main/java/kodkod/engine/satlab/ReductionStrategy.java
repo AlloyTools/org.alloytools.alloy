@@ -23,43 +23,48 @@ package kodkod.engine.satlab;
 
 import kodkod.util.ints.IntSet;
 
-
 /**
- * Strategy for reducing the unsatisfiable core of
- * a {@link SATProver}.  
+ * Strategy for reducing the unsatisfiable core of a {@link SATProver}.
+ * 
  * @specfield traces: ResolutionTrace[]
  * @specfield nexts: IntSet[]
  * @invariant #traces = #nexts
- * @invariant no disj i,j: [0..#nexts) | traces[i] = traces[j] && nexts[i] = nexts[j]
- * @see SATProver#reduce(ReductionStrategy)  
+ * @invariant no disj i,j: [0..#nexts) | traces[i] = traces[j] && nexts[i] =
+ *            nexts[j]
+ * @see SATProver#reduce(ReductionStrategy)
  * @author Emina Torlak
  */
 public interface ReductionStrategy {
 
 	/**
-	 * Returns the next subtrace of the specified trace to be analyzed, given 
-	 * as a set of indices into the trace.   
-	 * If there are no more subtraces to be analyzed (i.e. the given trace is 
-	 * minimal according to the minimality measure used by this strategy),
-	 * returns the empty set.
-	 * @requires 
-	 * <pre>
+	 * Returns the next subtrace of the specified trace to be analyzed, given as
+	 * a set of indices into the trace. If there are no more subtraces to be
+	 * analyzed (i.e. the given trace is minimal according to the minimality
+	 * measure used by this strategy), returns the empty set.
+	 * 
+	 * @requires
+	 * 
+	 *           <pre>
 	 * let t = this.traces[#this.traces-1], n = this.nexts[#this.nexts-1] | 
 	 *  unsat(t.elts[n].literals) => 
 	 *   (all i: n.ints | let j = #{k: n.ints | k < i} | t.elts[i].equals(trace.elts[j])) 
 	 *  else
 	 *   trace = t
-	 * </pre>
-	 * @ensures 
-	 * <pre> 
+	 *           </pre>
+	 * 
+	 * @ensures
+	 * 
+	 *          <pre>
+	 *  
 	 *  let next = { i: int | 0 <= i < trace.size()-1 } |
 	 *   trace.elts[next].antecedents in trace.elts[next] and 
 	 *   (some i: [0..#trace) | i !in next and no trace[i].antecedents) and  
 	 *   this.nexts' = this.nexts + #this.nexts->next and
-	 *   this.traces' = this.traces + #this.traces->trace 
-	 * </pre>
+	 *   this.traces' = this.traces + #this.traces->trace
+	 *          </pre>
+	 * 
 	 * @return this.nexts'[#this.nexts-1]
 	 */
 	public IntSet next(ResolutionTrace trace);
-	
+
 }

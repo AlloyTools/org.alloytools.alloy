@@ -7,4 +7,4 @@ jdk:
   
 install: ./gradlew --version
 
-script: ./gradlew --stacktrace build -i
+script: ./gradlew -DGRADLE_OPTS=-Xmx500m --stacktrace build -i

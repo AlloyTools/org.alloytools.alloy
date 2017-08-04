@@ -24,11 +24,9 @@ package kodkod.ast;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
-
 /**
- * A node in the abstract syntax tree (DAG).  A node
- * can accept a ReturnVisitor and have a sequence of
- * zero or more children.
+ * A node in the abstract syntax tree (DAG). A node can accept a ReturnVisitor
+ * and have a sequence of zero or more children.
  * 
  * @specfield children: int ->lone Node
  * @specfield components: set Node
@@ -37,26 +35,29 @@ import kodkod.ast.visitor.VoidVisitor;
  * @author Emina Torlak
  */
 public abstract class Node {
-    
-    /**
-     * Accepts the given visitor and returns the result
-     * of the visit (i.e. the result of the call visitor.visit(this))
-     * @return the result of being visited by the given visitor
-     * @throws NullPointerException visitor = null
-     */
-    public abstract <E, F, D, I> Object accept(ReturnVisitor<E, F, D, I> visitor);
-   
-    /**
-     * Accepts the given void visitor by calling visitor.visit(this).
-     * @throws NullPointerException visitor = null
-     */
-    public abstract void accept(VoidVisitor visitor);
 
-    /**
-     * Returns a string representation of this node. 
-     * For a pretty-printed string, use {@linkplain kodkod.util.nodes.PrettyPrinter}.
-     * @return a string representation of this node
-     * @see kodkod.util.nodes.PrettyPrinter
-     */
-    public abstract String toString();
+	/**
+	 * Accepts the given visitor and returns the result of the visit (i.e. the
+	 * result of the call visitor.visit(this))
+	 * 
+	 * @return the result of being visited by the given visitor
+	 * @throws NullPointerException visitor = null
+	 */
+	public abstract <E, F, D, I> Object accept(ReturnVisitor<E,F,D,I> visitor);
+
+	/**
+	 * Accepts the given void visitor by calling visitor.visit(this).
+	 * 
+	 * @throws NullPointerException visitor = null
+	 */
+	public abstract void accept(VoidVisitor visitor);
+
+	/**
+	 * Returns a string representation of this node. For a pretty-printed
+	 * string, use {@linkplain kodkod.util.nodes.PrettyPrinter}.
+	 * 
+	 * @return a string representation of this node
+	 * @see kodkod.util.nodes.PrettyPrinter
+	 */
+	public abstract String toString();
 }

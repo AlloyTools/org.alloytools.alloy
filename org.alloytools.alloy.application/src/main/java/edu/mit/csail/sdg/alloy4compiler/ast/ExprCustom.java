@@ -22,28 +22,41 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.JoinableList;
 import static edu.mit.csail.sdg.alloy4compiler.ast.Type.EMPTY;
 
-/** Immutable; represents a custom node.
- *
- * <p> <b>Invariant:</b>  this.type==EMPTY && this.errors.size()==1
+/**
+ * Immutable; represents a custom node.
+ * <p>
+ * <b>Invariant:</b> this.type==EMPTY && this.errors.size()==1
  */
 
 public abstract class ExprCustom extends Expr {
 
-    /** {@inheritDoc} */
-    @Override public Pos span() { return pos; }
+	/** {@inheritDoc} */
+	@Override
+	public Pos span() {
+		return pos;
+	}
 
-    /** Constructs an ExprCustom object.
-     * @param pos - the Pos for this expression (can be Pos.UNKNOWN if unknown)
-     * @param error - the error to display if this node does not get desugared
-     */
-    public ExprCustom(Pos pos, Err error) {
-        super(pos, null, false, EMPTY, 0, 0, new JoinableList<Err>(error));
-        if (error==null) throw new NullPointerException();
-    }
+	/**
+	 * Constructs an ExprCustom object.
+	 * 
+	 * @param pos - the Pos for this expression (can be Pos.UNKNOWN if unknown)
+	 * @param error - the error to display if this node does not get desugared
+	 */
+	public ExprCustom(Pos pos, Err error) {
+		super(pos, null, false, EMPTY, 0, 0, new JoinableList<Err>(error));
+		if (error == null)
+			throw new NullPointerException();
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr resolve(Type t, Collection<ErrorWarning> warns) { return this; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr resolve(Type t, Collection<ErrorWarning> warns) {
+		return this;
+	}
 
-    /** {@inheritDoc} */
-    @Override public final<T> T accept(VisitReturn<T> visitor) throws Err { throw errors.pick(); }
+	/** {@inheritDoc} */
+	@Override
+	public final <T> T accept(VisitReturn<T> visitor) throws Err {
+		throw errors.pick();
+	}
 }

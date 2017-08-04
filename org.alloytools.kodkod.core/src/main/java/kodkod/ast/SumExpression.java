@@ -26,26 +26,29 @@ import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
 /**
- * Denotes the integer obtained by summing the values of an iteger expression <i>ie</i>
- * for all values of a scalar <i>x</i> drawn from a set <i>e</i>.
+ * Denotes the integer obtained by summing the values of an iteger expression
+ * <i>ie</i> for all values of a scalar <i>x</i> drawn from a set <i>e</i>.
+ * 
  * @specfield intExpr: IntExpression
  * @specfield decls: Decls
  * @specfield children = 0->decls + 1->intExpr
- * @invariant  all d: decls.children[int] | d.multiplicity = 1
+ * @invariant all d: decls.children[int] | d.multiplicity = 1
  * @author Emina Torlak
  */
 public final class SumExpression extends IntExpression {
-	private final Decls decls;
-	private final IntExpression intExpr;
+	private final Decls			decls;
+	private final IntExpression	intExpr;
 
 	/**
 	 * Constructs a sum expression
+	 * 
 	 * @ensures this.decls' = decls && this.intExpr' = intExpr
-	 * @throws IllegalArgumentException  some d: decls.children | d.multiplicty != ONE
+	 * @throws IllegalArgumentException some d: decls.children | d.multiplicty
+	 *             != ONE
 	 */
 	SumExpression(Decls decls, IntExpression intExpr) {
-		for(Decl d : decls) {
-			if (d.multiplicity()!=Multiplicity.ONE)
+		for (Decl d : decls) {
+			if (d.multiplicity() != Multiplicity.ONE)
 				throw new IllegalArgumentException(d + " is not a scalar declaration.");
 		}
 		this.decls = decls;
@@ -54,45 +57,49 @@ public final class SumExpression extends IntExpression {
 
 	/**
 	 * Returns this.decls.
+	 * 
 	 * @return this.decls
 	 */
-	public final Decls decls() { 
+	public final Decls decls() {
 		return decls;
 	}
-	
+
 	/**
 	 * Returns this.intExpr.
+	 * 
 	 * @return this.intExpr
 	 */
-	public final IntExpression intExpr() { 
+	public final IntExpression intExpr() {
 		return intExpr;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
 	@Override
-	public <E, F, D, I> I accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	@Override
 	public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() { 
+	public String toString() {
 		return "(sum " + decls + " | " + intExpr + ")";
 	}
-	
-	
+
 }

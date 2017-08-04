@@ -24,16 +24,18 @@ package kodkod.engine;
 import kodkod.util.ints.IntVector;
 
 /**
- * Indicates that a problem construction or translation task failed because
- * the capacity of the index representation was exceeded. 
- * @specfield dims: IntVector // contains a vector of dimensions which exceed the representation capacity
+ * Indicates that a problem construction or translation task failed because the
+ * capacity of the index representation was exceeded.
+ * 
+ * @specfield dims: IntVector // contains a vector of dimensions which exceed
+ *            the representation capacity
  * @author Emina Torlak
  */
 public final class CapacityExceededException extends RuntimeException {
 
-	private static final long serialVersionUID = -8098615204149641969L;
-	private final IntVector dims;
-	
+	private static final long	serialVersionUID	= -8098615204149641969L;
+	private final IntVector		dims;
+
 	/**
 	 * Constructs a CapacityExceededException from the given dimensions.
 	 */
@@ -42,7 +44,8 @@ public final class CapacityExceededException extends RuntimeException {
 	}
 
 	/**
-	 * Constructs a CapacityExceededException with the given message and dimensions.
+	 * Constructs a CapacityExceededException with the given message and
+	 * dimensions.
 	 */
 	public CapacityExceededException(String arg0, IntVector dims) {
 		super(arg0);
@@ -64,12 +67,15 @@ public final class CapacityExceededException extends RuntimeException {
 		super(arg0, arg1);
 		this.dims = dims;
 	}
-	
+
 	/**
 	 * Returns the vector of dimensions which, when multiplied together, exceed
 	 * the representation capacity.
+	 * 
 	 * @return this.dims
 	 */
-	public final IntVector dims() { return dims; }
+	public final IntVector dims() {
+		return dims;
+	}
 
 }

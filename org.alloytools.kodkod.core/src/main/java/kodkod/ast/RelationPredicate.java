@@ -21,19 +21,17 @@
  */
 package kodkod.ast;
 
-
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
 /**
- * Represents common predicates on relations; e.g.
- * predicates stating that a relation is a total function,
- * partial function, acyclic, or a total ordering over
- * a set of atoms.  
+ * Represents common predicates on relations; e.g. predicates stating that a
+ * relation is a total function, partial function, acyclic, or a total ordering
+ * over a set of atoms.
  * 
- * @specfield relation: Relation 
- * @specfield name: Name // name of the predicate 
+ * @specfield relation: Relation
+ * @specfield name: Name // name of the predicate
  * @invariant relation.arity = 2
  * @author Emina Torlak
  */
@@ -42,8 +40,9 @@ public abstract class RelationPredicate extends Formula {
 
 	/**
 	 * Constructs a new relation predicate for the given relation.
-	 * @throws NullPointerException  relation = null
-	 * @throws IllegalArgumentException  relation.arity != 2
+	 * 
+	 * @throws NullPointerException relation = null
+	 * @throws IllegalArgumentException relation.arity != 2
 	 */
 	private RelationPredicate(Relation relation) {
 		if (relation.arity() != 2)
@@ -53,41 +52,44 @@ public abstract class RelationPredicate extends Formula {
 
 	/**
 	 * Returns the relation to which this predicate applies.
+	 * 
 	 * @return this.relation
 	 */
 	public Relation relation() {
 		return relation;
 	}
 
-
 	/**
 	 * Returns the name of this predicate.
+	 * 
 	 * @return this.name
 	 */
 	public abstract Name name();
 
 	/**
 	 * Turns this predicate into explicit constraiants.
+	 * 
 	 * @return {f: Formula - RelationPredicate | f <=> this }
 	 */
-	public abstract Formula toConstraints(); 
+	public abstract Formula toConstraints();
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E, F, D, I> visitor) {
+	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
 	public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
-
 
 	/**
 	 * Enumerates built-in predicates.
@@ -96,7 +98,7 @@ public abstract class RelationPredicate extends Formula {
 		/** Function predicate. */
 		FUNCTION,
 		/** Partial function predicate. */
-		//PARTIAL_FUNCTION,
+		// PARTIAL_FUNCTION,
 		/** Acyclic predicate. */
 		ACYCLIC,
 		/** Total ordering predicate. */
@@ -104,8 +106,9 @@ public abstract class RelationPredicate extends Formula {
 	}
 
 	/**
-	 * Represents the acyclic predicate.  The predicate states that  
-	 * the given <code>relation</code> is acyclic.
+	 * Represents the acyclic predicate. The predicate states that the given
+	 * <code>relation</code> is acyclic.
+	 * 
 	 * @specfield relation: Relation
 	 * @invariant name = ACYCLIC
 	 * @invariant children = 0->relation
@@ -114,8 +117,9 @@ public abstract class RelationPredicate extends Formula {
 	public static final class Acyclic extends RelationPredicate {
 		/**
 		 * Constructs a new acyclic predicate over the given relation.
+		 * 
 		 * @ensures this.relation' = relation && this.name' = ACYCLIC
-		 * @throws IllegalArgumentException  relation.arity != 2
+		 * @throws IllegalArgumentException relation.arity != 2
 		 */
 		Acyclic(Relation relation) {
 			super(relation);
@@ -123,6 +127,7 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * Returns the name of this predicate.
+		 * 
 		 * @return ACYCLIC
 		 */
 		@Override
@@ -132,6 +137,7 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see kodkod.ast.RelationPredicate#toConstraints()
 		 */
 		@Override
@@ -139,18 +145,18 @@ public abstract class RelationPredicate extends Formula {
 			return relation().closure().intersection(Expression.IDEN).no();
 		}
 
-		   
-	    /**
-	     * {@inheritDoc}
-	     * @see kodkod.ast.Node#toString()
-	     */
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see kodkod.ast.Node#toString()
+		 */
 		public String toString() {
 			return name() + "(" + relation() + ")";
 		}
 	}
 
 	/**
-	 * Represents the function predicate.  The predicate states that the given
+	 * Represents the function predicate. The predicate states that the given
 	 * <code>relation</code> is a total or partial function with the specified
 	 * <code>domain</code> and <code>range</code>.
 	 * 
@@ -163,15 +169,17 @@ public abstract class RelationPredicate extends Formula {
 	 * @author Emina Torlak
 	 */
 	public static final class Function extends RelationPredicate {
-		private final Expression domain, range;
-		private final Multiplicity targetMult;
+		private final Expression	domain, range;
+		private final Multiplicity	targetMult;
+
 		/**
-		 * Constructs a new function predicate over the given relation and domain, 
-		 * with the specified target multiplicity.
-		 * @ensures this.name' = FUNCTION && this.relation' = relation && this.domain' = domain &&
-		 *          this.range' = range
-		 * @throws IllegalArgumentException  relation.arity != 2 || domain.arity != 1 || range.arity != 1 || 
-		 *                                    targetMult !in ONE + LONE
+		 * Constructs a new function predicate over the given relation and
+		 * domain, with the specified target multiplicity.
+		 * 
+		 * @ensures this.name' = FUNCTION && this.relation' = relation &&
+		 *          this.domain' = domain && this.range' = range
+		 * @throws IllegalArgumentException relation.arity != 2 || domain.arity
+		 *             != 1 || range.arity != 1 || targetMult !in ONE + LONE
 		 */
 		Function(Relation relation, Expression domain, Multiplicity targetMult, Expression range) {
 			super(relation);
@@ -186,16 +194,17 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * Returns the name of this predicate.
+		 * 
 		 * @return this.name
 		 */
-		public Name name() { 
+		public Name name() {
 			return Name.FUNCTION;
 		}
 
-
 		/**
-		 * Returns the target multiplicity of the function represented
-		 * by this.relation.
+		 * Returns the target multiplicity of the function represented by
+		 * this.relation.
+		 * 
 		 * @return this.targetMult
 		 */
 		public Multiplicity targetMult() {
@@ -204,6 +213,7 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * Returns the domain of this.relation.
+		 * 
 		 * @return this.domain
 		 */
 		public Expression domain() {
@@ -212,6 +222,7 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * Returns the range of this.relation.
+		 * 
 		 * @return this.range
 		 */
 		public Expression range() {
@@ -220,38 +231,40 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see kodkod.ast.RelationPredicate#toConstraints()
 		 */
 		@Override
 		public Formula toConstraints() {
-			// relation in domain->range 
+			// relation in domain->range
 			final Formula domainConstraint = relation().in(domain.product(range));
 			// all v: domain | targetMult v.relation
-			final Variable v = Variable.unary("v"+relation().name());
+			final Variable v = Variable.unary("v" + relation().name());
 			final Formula funConstraint = v.join(relation()).apply(targetMult).forAll(v.oneOf(domain));
-			// relation in domain->range && all v: domain | targetMult v.relation
+			// relation in domain->range && all v: domain | targetMult
+			// v.relation
 			return domainConstraint.and(funConstraint);
 		}
 
-		   
-	    /**
-	     * {@inheritDoc}
-	     * @see kodkod.ast.Node#toString()
-	     */
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see kodkod.ast.Node#toString()
+		 */
 		public String toString() {
-			return name() + "(" + relation() + ", " + 
-			domain + " ->" + targetMult + " " + range + ")";
+			return name() + "(" + relation() + ", " + domain + " ->" + targetMult + " " + range + ")";
 		}
 	}
 
 	/**
-	 * Represents the total ordering predicate.  The predicate states that the given 
-	 * <code>relation</code> imposes a total ordering over the set <code>ordered</code>,
-	 * and that the smallest/largest elements resulting from the ordering are given
-	 * by the <code>first</code>/<code>last</code> relations.
+	 * Represents the total ordering predicate. The predicate states that the
+	 * given <code>relation</code> imposes a total ordering over the set
+	 * <code>ordered</code>, and that the smallest/largest elements resulting
+	 * from the ordering are given by the <code>first</code>/<code>last</code>
+	 * relations.
 	 * 
 	 * @specfield relation: Relation
-	 * @specfield ordered, first, last: Relation 
+	 * @specfield ordered, first, last: Relation
 	 * @invariant name = TOTAL_ORDERING
 	 * @invariant ordered.arity = first.arity = last.arity = 1
 	 * @invariant children = 0->relation + 1->ordered + 2->first + 3->last
@@ -261,10 +274,12 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * Constructs a new total ordering predicate.
-		 * @ensures this.relation' = relation && this.first' = first && this.last' = last &&
-		 *          this.name' = TOTAL_ORDERING
-		 * @throws NullPointerException  any of the arguments are null
-		 * @throws IllegalArgumentException  relation.arity != 2 || first.arity != 1 || last.arity != 1
+		 * 
+		 * @ensures this.relation' = relation && this.first' = first &&
+		 *          this.last' = last && this.name' = TOTAL_ORDERING
+		 * @throws NullPointerException any of the arguments are null
+		 * @throws IllegalArgumentException relation.arity != 2 || first.arity
+		 *             != 1 || last.arity != 1
 		 **/
 		TotalOrdering(Relation relation, Relation ordered, Relation first, Relation last) {
 			super(relation);
@@ -277,6 +292,7 @@ public abstract class RelationPredicate extends Formula {
 
 		/**
 		 * Returns the name of this predicate.
+		 * 
 		 * @return TOTAL_ORDERING
 		 */
 		public Name name() {
@@ -284,8 +300,9 @@ public abstract class RelationPredicate extends Formula {
 		}
 
 		/**
-		 * Returns the relation representing the first element
-		 * in the ordering imposed by this.relation.
+		 * Returns the relation representing the first element in the ordering
+		 * imposed by this.relation.
+		 * 
 		 * @return this.first
 		 */
 		public Relation first() {
@@ -293,25 +310,28 @@ public abstract class RelationPredicate extends Formula {
 		}
 
 		/**
-		 * Returns the relation representing the last element
-		 * in the ordering imposed by this.relation.
+		 * Returns the relation representing the last element in the ordering
+		 * imposed by this.relation.
+		 * 
 		 * @return this.last
 		 */
-		public Relation last() { 
+		public Relation last() {
 			return last;
 		}
 
 		/**
-		 * Returns the relation representing the atoms which
-		 * are ordered by this.relation.
+		 * Returns the relation representing the atoms which are ordered by
+		 * this.relation.
+		 * 
 		 * @return this.ordered
 		 */
-		public Relation ordered() { 
+		public Relation ordered() {
 			return ordered;
 		}
 
 		/**
 		 * {@inheritDoc}
+		 * 
 		 * @see kodkod.ast.RelationPredicate#toConstraints()
 		 */
 		@Override
@@ -323,17 +343,17 @@ public abstract class RelationPredicate extends Formula {
 			// no relation.first && no last.relation
 			final Formula f2 = relation().join(first).no().and(last.join(relation()).no());
 			// all e: ordered - last | one e.this
-			final Variable e = Variable.unary("e"+relation().name());
+			final Variable e = Variable.unary("e" + relation().name());
 			final Formula f3 = e.join(relation()).one().forAll(e.oneOf(ordered.difference(last)));
 
 			return and(f0, f1, f2, f3);
 		}
 
-		   
-	    /**
-	     * {@inheritDoc}
-	     * @see kodkod.ast.Node#toString()
-	     */
+		/**
+		 * {@inheritDoc}
+		 * 
+		 * @see kodkod.ast.Node#toString()
+		 */
 		public String toString() {
 			return name() + "(" + relation() + ", " + ordered + ", " + first + ", " + last + ")";
 		}

@@ -15,19 +15,25 @@
 
 package edu.mit.csail.sdg.alloy4viz;
 
-/** Immutable; it's the abstract superclass extended by AlloyType, AlloySet, and AlloyRelation.
- *
- * <p><b>Thread Safety:</b> Can be called only by the AWT event thread.
+/**
+ * Immutable; it's the abstract superclass extended by AlloyType, AlloySet, and
+ * AlloyRelation.
+ * <p>
+ * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  */
 
 public abstract class AlloyElement implements Comparable<AlloyElement> {
 
-   /** The name of the element. */
-   private final String name;
+	/** The name of the element. */
+	private final String name;
 
-   /** Returns the name of this element. */
-   public String getName() { return name; }
+	/** Returns the name of this element. */
+	public String getName() {
+		return name;
+	}
 
-   /** Constructs a new AlloyElement with that name. */
-   AlloyElement(String name) { this.name=name; }
+	/** Constructs a new AlloyElement with that name. */
+	AlloyElement(String name) {
+		this.name = name;
+	}
 }

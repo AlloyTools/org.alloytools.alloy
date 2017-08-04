@@ -22,25 +22,31 @@ import edu.mit.csail.sdg.alloy4.Listener.Event;
 
 public final class Listeners {
 
-   /** The actual list of listeners. */
-   private final ArrayList<Listener> listeners = new ArrayList<Listener>();
+	/** The actual list of listeners. */
+	private final ArrayList<Listener> listeners = new ArrayList<Listener>();
 
-   /** Construct a empty list of listeners. */
-   public Listeners() { }
+	/** Construct a empty list of listeners. */
+	public Listeners() {}
 
-   /** Add a listener to this group of listeners (if not already in the list) */
-   public void add(Listener listener) {
-      for(Listener x: listeners) if (x == listener) return;
-      listeners.add(listener);
-   }
+	/**
+	 * Add a listener to this group of listeners (if not already in the list)
+	 */
+	public void add(Listener listener) {
+		for (Listener x : listeners)
+			if (x == listener)
+				return;
+		listeners.add(listener);
+	}
 
-   /** Send the following zero-argument event to every listener. */
-   public void fire(Object sender, Event event) {
-      for(Listener x: listeners) x.do_action(sender, event);
-   }
+	/** Send the following zero-argument event to every listener. */
+	public void fire(Object sender, Event event) {
+		for (Listener x : listeners)
+			x.do_action(sender, event);
+	}
 
-   /** Send the following one-argument event to every listener. */
-   public void fire(Object sender, Event event, Object arg) {
-      for(Listener x: listeners) x.do_action(sender, event, arg);
-   }
+	/** Send the following one-argument event to every listener. */
+	public void fire(Object sender, Event event, Object arg) {
+		for (Listener x : listeners)
+			x.do_action(sender, event, arg);
+	}
 }

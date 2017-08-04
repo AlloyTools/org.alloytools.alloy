@@ -32,51 +32,60 @@ final class Glucose extends NativeSolver {
 	 * Constructs a new Glucose wrapper.
 	 */
 	Glucose() {
-		super(make()); 
+		super(make());
 	}
-	
+
 	static {
 		loadLibrary(Glucose.class);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() { return "Glucose"; }
-	
+	public String toString() {
+		return "Glucose";
+	}
+
 	/**
 	 * Returns a pointer to an instance of the glucose solver.
+	 * 
 	 * @return a pointer to an instance of the glucose solver.
 	 */
 	private static native long make();
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#free(long)
 	 */
 	native void free(long peer);
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
 	 */
 	native void addVariables(long peer, int numVariables);
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
 	 */
 	native boolean addClause(long peer, int[] lits);
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#solve(long)
 	 */
 	native boolean solve(long peer);
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
 	 */
 	native boolean valueOf(long peer, int literal);

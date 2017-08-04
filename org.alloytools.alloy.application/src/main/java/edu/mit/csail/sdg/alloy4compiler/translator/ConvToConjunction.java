@@ -31,72 +31,100 @@ import edu.mit.csail.sdg.alloy4compiler.ast.Sig;
 import edu.mit.csail.sdg.alloy4compiler.ast.VisitReturn;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig.Field;
 
-/** Immutable; this class rearranges the AST to promote as many clauses up to the top level as possible
- * (in order to get better precision unsat core results)
+/**
+ * Immutable; this class rearranges the AST to promote as many clauses up to the
+ * top level as possible (in order to get better precision unsat core results)
  */
 
 final class ConvToConjunction extends VisitReturn<Expr> {
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprBinary x) throws Err {
-        if (x.op == ExprBinary.Op.AND) {
-            Expr a = visitThis(x.left);
-            Expr b = visitThis(x.right);
-            return a.and(b);
-        }
-        return x;
-    }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprBinary x) throws Err {
+		if (x.op == ExprBinary.Op.AND) {
+			Expr a = visitThis(x.left);
+			Expr b = visitThis(x.right);
+			return a.and(b);
+		}
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprQt x) throws Err {
-        if (x.op == ExprQt.Op.ALL) {
-            Expr s = x.sub.deNOP();
-            if (s instanceof ExprBinary && ((ExprBinary)s).op==ExprBinary.Op.AND) {
-                Expr a = visitThis(x.op.make(Pos.UNKNOWN, Pos.UNKNOWN, x.decls, ((ExprBinary)s).left));
-                Expr b = visitThis(x.op.make(Pos.UNKNOWN, Pos.UNKNOWN, x.decls, ((ExprBinary)s).right));
-                return a.and(b);
-            }
-        }
-        return x;
-    }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprQt x) throws Err {
+		if (x.op == ExprQt.Op.ALL) {
+			Expr s = x.sub.deNOP();
+			if (s instanceof ExprBinary && ((ExprBinary) s).op == ExprBinary.Op.AND) {
+				Expr a = visitThis(x.op.make(Pos.UNKNOWN, Pos.UNKNOWN, x.decls, ((ExprBinary) s).left));
+				Expr b = visitThis(x.op.make(Pos.UNKNOWN, Pos.UNKNOWN, x.decls, ((ExprBinary) s).right));
+				return a.and(b);
+			}
+		}
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprUnary x) throws Err {
-        if (x.op == ExprUnary.Op.NOOP) {
-            return visitThis(x.sub);
-        }
-        if (x.op == ExprUnary.Op.NOT) {
-            Expr s = x.sub.deNOP();
-            if (s instanceof ExprBinary && ((ExprBinary)s).op==ExprBinary.Op.OR) {
-                Expr a = visitThis(((ExprBinary)s).left.not());
-                Expr b = visitThis(((ExprBinary)s).right.not());
-                return a.and(b);
-            }
-        }
-        return x;
-    }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprUnary x) throws Err {
+		if (x.op == ExprUnary.Op.NOOP) {
+			return visitThis(x.sub);
+		}
+		if (x.op == ExprUnary.Op.NOT) {
+			Expr s = x.sub.deNOP();
+			if (s instanceof ExprBinary && ((ExprBinary) s).op == ExprBinary.Op.OR) {
+				Expr a = visitThis(((ExprBinary) s).left.not());
+				Expr b = visitThis(((ExprBinary) s).right.not());
+				return a.and(b);
+			}
+		}
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprList x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprList x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprCall x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprCall x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprConstant x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprConstant x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprITE x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprITE x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprLet x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprLet x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(ExprVar x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(ExprVar x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(Sig x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(Sig x) {
+		return x;
+	}
 
-    /** {@inheritDoc} */
-    @Override public Expr visit(Field x) { return x; }
+	/** {@inheritDoc} */
+	@Override
+	public Expr visit(Field x) {
+		return x;
+	}
 }

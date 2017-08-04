@@ -15,23 +15,34 @@
 
 package edu.mit.csail.sdg.alloy4graph;
 
-/** Immutable; this defines the set of possible edge directions.
- *
- * <p><b>Thread Safety:</b> Can be called only by the AWT event thread.
+/**
+ * Immutable; this defines the set of possible edge directions.
+ * <p>
+ * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  */
 
 public enum DotDirection {
 
-   /** Going forward. */   FORWARD("forward"),
-   /** Going backward. */  BACK("back"),
-   /** Going both ways. */ BOTH("both");
+	/** Going forward. */
+	FORWARD("forward"),
+	/** Going backward. */
+	BACK("back"),
+	/** Going both ways. */
+	BOTH("both");
 
-   /** The text to display. */
-   private final String displayText;
+	/** The text to display. */
+	private final String displayText;
 
-   /** Constructs a new DotDirection object. */
-   private DotDirection(String text) { this.displayText = text; }
+	/** Constructs a new DotDirection object. */
+	private DotDirection(String text) {
+		this.displayText = text;
+	}
 
-   /** Returns the String that should be written into the dot file for this value, when used with the given palette. */
-   public String getDotText() { return displayText; }
+	/**
+	 * Returns the String that should be written into the dot file for this
+	 * value, when used with the given palette.
+	 */
+	public String getDotText() {
+		return displayText;
+	}
 }
