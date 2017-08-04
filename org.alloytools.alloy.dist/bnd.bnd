@@ -8,6 +8,7 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 	@${repo;org.alloytools.alloy.extra}, \
 	@${repo;org.alloytools.kodkod.core}, \
 	@${repo;org.alloytools.kodkod.nativesat.util}, \
+	@${repo;org.alloytools.kodkod.nativesat.amd64-linux}, \
 	@${repo;org.alloytools.kodkod.nativesat.x86-linux}, \
 	@${repo;org.alloytools.kodkod.nativesat.x86-mac}, \
 	@${repo;org.alloytools.kodkod.nativesat.x86-windows}, \
