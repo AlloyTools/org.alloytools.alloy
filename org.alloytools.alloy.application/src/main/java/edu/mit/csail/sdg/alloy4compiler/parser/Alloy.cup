@@ -20,6 +20,8 @@
  * parse the transformed token stream using this LALR(1) grammar.  For more information,
  * please refer to CompFilter.java
  */
+ 
+ package edu.mit.csail.sdg.alloy4compiler.parser;
 
 import java.util.Stack;
 import java.util.List;
