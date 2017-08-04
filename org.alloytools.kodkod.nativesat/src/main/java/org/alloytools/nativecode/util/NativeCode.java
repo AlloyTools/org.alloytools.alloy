@@ -52,9 +52,10 @@ public class NativeCode {
 			Platform p = platform;
 			String libraryName = System.mapLibraryName(name);
 
-			Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(platform.dir+"/"+libraryName);
+			String file = platform.dir+"/"+libraryName;
+			Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
 			if ( !enumeration.hasMoreElements() ) {
-				System.out.println( "Could not find native lib");
+				System.out.println( "Could not find native lib " + libraryName);
 				return false;
 			}
 
@@ -91,7 +92,7 @@ public class NativeCode {
 		System.out.println( "OS _ ARCH = '" + os + "' - '" + arch + "'");
 		for (Platform p : platforms) {
 			if (p.osarch.matcher(arch).matches() && p.osname.matcher(os).matches()) {
-				System.out.println( "Found = '" + platform.dir);
+				System.out.println( "Found = '" + p.dir);
 				return platform = p;
 			}
 		}
