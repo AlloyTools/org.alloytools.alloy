@@ -1,2 +1,19 @@
+
 task macos( dependsOn: jar, type: JavaExec ) {
+
+	classpath files("${System.properties['java.home']}/../lib/ant-javafx.jar")
+	classpath files(".")
+
+	main = 'com.sun.javafx.tools.packager.Main'
+
+	args( 
+		'-deploy', 
+			'-native', 'dmg',
+				'-srcfiles', 'target/org.alloytools.alloy.dist.jar', 
+				'-appclass', 'edu.mit.csail.sdg.alloy4whole.SimpleGUI', 
+				'-name', 'Alloy',
+	 			'-outdir', 'target', 
+	 			'-outfile',  'alloy', 
+	 			'-v'	)
+	
 }
