@@ -1,4 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
+![Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master")
 
 # Alloy
 
@@ -7,12 +8,28 @@ model finder and a variety of SAT solvers, as well as the standard
 Alloy library and a collection of tutorial examples. The same jar file
 can be incorporated into other applications to use Alloy as an API,
 and includes the source code. See the release notes for details of new
-features. To execute, simply double-click on the jar file, or type
-java -jar alloy4.jar in a console.
+features. 
+
+After the build you can find the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar.
+To execute, type:
+
+     java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
 
 More documentation can be found at: http://alloy.mit.edu/alloy/documentation.html.
 
 ## Building Alloy
+
+The Alloy build is using a _bnd workspace_ setup using a maven layout. This means it can be build  with Gradle and it can be easily developed with the Eclipse IDE. Projects are setup to continuously deliver the executable.
+
+## Eclipse
+
+The workspace is setup for interactive development in Eclipse with the Bndtools plugin. Bndtools can be installed from the [Eclipse Market](https://marketplace.eclipse.org/content/bndtools) place (see `Help/Marketplace` and search for `Bndtools`). 
+
+## Gradle 
+
+In the root of this workspace type `./gradlew`. This is a script that will download the correct version of gradle and run the build scripts. For settings look at [gradle.properties] and [settings.gradle].
+
+## Continuous Integration
 
 ### Building the JAR file
 
