@@ -24,20 +24,20 @@ The Alloy build is using a _bnd workspace_ setup using a maven layout. This mean
 
 The workspace is divided into a number of projects:
 
-* [cnf] – Setup directory. Dependencies are specified in [cnf/central.xml] using the maven POM layout
-* [org.alloytools.alloy.application] – Main application code includes the parser, ast, visualiser, and application code
-* [org.alloytools.alloy.dist] – Project to create the distribution executable JAR
-* [org.alloytools.alloy.extra] – Models and examples
-* [org.alloytools.kodkod.core] – Kodkod without native code
-* [org.alloytools.kodkod.native] – The native code libraries for kodkod
+* [cnf](cnf) – Setup directory. Dependencies are specified in [cnf/central.xml] using the maven POM layout
+* [org.alloytools.alloy.application](org.alloytools.alloy.application) – Main application code includes the parser, ast, visualiser, and application code
+* [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
+* [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
+* [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
+* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
 
 ### Relevant Project files
 
 This workspace uses bnd. This means that the following have special meaning:
 
-* [cnf/build.xml] – Settings shared between projects
+* [cnf/build.xml](cnf/build.xml) – Settings shared between projects
 * ./bnd.bnd – Settings for a project. This file will _drag_ in code in a JAR.
-* [cnf/central.xml] – Dependencies from maven central
+* [cnf/central.xml](cnf/central.xml) – Dependencies from maven central
 
 ### Eclipse
 
@@ -57,5 +57,8 @@ The workspace is setup to build after every commit using Travis.
 
 Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar is build. Next step is to use the [javapackager] to make executables for Windows, Mac, and different versions of Linux.
 
+## CONTRIBUTIONS
+
+Please read the [CONTRIBUTIONS](CONTRIBUTIONS.md) to understand how you can contribute.
 
 [javapackager]: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/packager.html
