@@ -1,6 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-![Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master")
-
+[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
 # Alloy
 
 Alloy 4 is a self-contained executable, which includes the Kodkod
