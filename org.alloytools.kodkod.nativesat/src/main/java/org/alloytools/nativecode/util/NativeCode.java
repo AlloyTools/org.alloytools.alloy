@@ -55,7 +55,7 @@ public class NativeCode {
 			String file = platform.dir+"/"+libraryName;
 			Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
 			if ( !enumeration.hasMoreElements() ) {
-				System.out.println( "Could not find native lib " + libraryName);
+				System.out.println( "Could not find native lib " + file);
 				return false;
 			}
 
