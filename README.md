@@ -59,6 +59,6 @@ Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloyt
 
 ## CONTRIBUTIONS
 
-Please read the [CONTRIBUTIONS](CONTRIBUTIONS.md) to understand how you can contribute.
+Please read the [CONTRIBUTING](CONTRIBUTING.md) to understand how you can contribute.
 
 [javapackager]: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/packager.html
