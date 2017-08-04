@@ -20,7 +20,7 @@ More documentation can be found at: http://alloy.mit.edu/alloy/documentation.htm
 
 The Alloy build is using a _bnd workspace_ setup using a maven layout. This means it can be build  with Gradle and  the Eclipse IDE for interactive development. Projects are setup to continuously deliver the executable.
 
-### Setup
+### Projects
 
 The workspace is divided into a number of projects:
 
