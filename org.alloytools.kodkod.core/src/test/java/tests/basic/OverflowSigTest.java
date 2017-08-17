@@ -51,7 +51,6 @@ public class OverflowSigTest extends TestCase {
 	}
 
 	protected Solution solve(Formula formula) {
-		System.out.println(bounds);
 		return new Solver(options).solve(formula, bounds);
 	}
 
@@ -127,10 +126,8 @@ public class OverflowSigTest extends TestCase {
 
 	protected Solution check() {
 		this.goal = facts.and(check.not());
-		System.out.println(String.format("checking (bw = %s): %s", options.bitwidth(), goal));
 		this.sol = solve(goal);
 		return sol;
-		// return sol.outcome() == Outcome.UNSATISFIABLE;
 	}
 
 	public Solution checkForBw(IntOperator intOp, int bw) {

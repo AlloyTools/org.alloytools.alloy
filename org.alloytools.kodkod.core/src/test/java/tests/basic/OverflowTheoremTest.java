@@ -97,22 +97,18 @@ public class OverflowTheoremTest extends TestCase {
 	}
 
 	protected void checkTrue(Formula f) {
-		System.out.println("TAUTOLOGY: " + f);
 		assertNoInstance(solve(f.not()));
 	}
 
 	protected void checkFalse(Formula f) {
-		System.out.println("  SAT: " + f.not());
 		assertInstance(solve(f.not()));
 	}
 
 	protected void checkSat(Formula f) {
-		System.out.println("SAT: " + f);
 		assertInstance(solve(f));
 	}
 
 	protected void checkUnsat(Formula f) {
-		System.out.println("UNSAT: " + f);
 		assertNoInstance(solve(f));
 	}
 
@@ -123,12 +119,6 @@ public class OverflowTheoremTest extends TestCase {
 	 * !post) !(some decl | !!(pre && !post)) !(some decl | !(!pre || post))
 	 */
 	protected void checkTrue(Formula pre, Formula post, Decls forAllDecls) {
-		System.out.println("==========================");
-		System.out.println(forAllDecls);
-		System.out.println(pre);
-		System.out.println(post);
-		System.out.println("==========================");
-
 		Formula f = pre.implies(post).forAll(forAllDecls);
 		checkTrue(f);
 

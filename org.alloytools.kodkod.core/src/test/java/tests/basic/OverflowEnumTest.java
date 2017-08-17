@@ -91,7 +91,6 @@ public class OverflowEnumTest extends OverflowNumTest {
 		Formula goal = op1.one().and(op2.one()).and(ret.one());
 		// goal = goal.and(ret.sum().eq(gt.kodkodOpExpr(op1.sum(), op2.sum())));
 		goal = goal.and(ret.eq(gt.kodkodOpExpr(op1.sum(), op2.sum()).toExpression()));
-		System.out.println("solving: " + goal);
 		Set<Res> kkRes = new HashSet<Res>();
 		Iterator<Solution> sols = solveAll(goal);
 		while (sols.hasNext()) {
@@ -119,7 +118,6 @@ public class OverflowEnumTest extends OverflowNumTest {
 			}
 		}
 
-		System.out.println(" solutions found: " + kkRes.size());
 		assertEquals(kkRes, jRes);
 	}
 

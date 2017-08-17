@@ -317,12 +317,8 @@ public class HOLSome4AllTest extends TestCase {
 	}
 
 	protected Solution solve(Formula f) {
-		System.out.println("Solving:");
-		System.out.println(PrettyPrinter.print(f, 2));
 		HOLSolver s = HOLSolver.solver(options);
-		Solution sol = s.solve(f, bounds);
-		System.out.println("Outcome: " + sol.outcome());
-		return sol;
+		return s.solve(f, bounds);
 	}
 
 	private void createRelations() {

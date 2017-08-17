@@ -20,7 +20,6 @@ public class OverflowTestUtils {
 
 	@SuppressWarnings("deprecation")
 	public static void assertInstance(Solution sol) {
-		System.out.println(sol.instance() != null ? "SAT: " + sol.outcome() : "UNSAT: " + sol.outcome());
 		assertNotNull("expected sat, actual " + sol.outcome(), sol.instance());
 	}
 
@@ -31,7 +30,6 @@ public class OverflowTestUtils {
 
 	@SuppressWarnings("deprecation")
 	public static void assertNoInstance(Solution sol) {
-		System.out.println(sol.instance() != null ? "SAT: " + sol.outcome() : "UNSAT: " + sol.outcome());
 		assertNull("expected unsat, actual " + sol.outcome(), sol.instance());
 	}
 

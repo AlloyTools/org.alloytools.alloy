@@ -68,7 +68,6 @@ public class OverflowNumTest extends TestCase {
 								int kkResult = exeKodkod(f);
 								fail(String.format("Overflow not detected: (%s) %s (%s) != %s", i, op, j, kkResult));
 							} catch (NoSol e) {
-								// System.out.println("overflow!");
 							}
 						} else {
 							try {
@@ -236,7 +235,6 @@ public class OverflowNumTest extends TestCase {
 	}
 
 	protected Solution solve(Formula formula) {
-		System.out.println("Solving: " + formula);
 		return new Solver(options).solve(formula, bounds);
 	}
 
