@@ -9,4 +9,4 @@ jdk:
 
 install: ./gradlew --version
 
-script: ./gradlew --no-daemon -DGRADLE_OPTS=-Xmx1024m --stacktrace build -i
+script: ./gradlew --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
