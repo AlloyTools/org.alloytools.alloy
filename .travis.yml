@@ -1,12 +1,19 @@
-
 dist: trusty
 sudo: false
-
 language: java
-
 jdk:
-  - oraclejdk8
-
-install: ./gradlew --version
-
+- oraclejdk8
+install: "./gradlew --version"
 script: ./gradlew --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
+after_success:
+- git status
+- echo $REPOSITORY_USERNAME
+- echo $TRAVIS_PULL_REQUEST
+- echo $TRAVIS_BRANCH
+- if [ master == $TRAVIS_BRANCH -a $TRAVIS_PULL_REQUEST == false -a  ${REPOSITORY_USERNAME:=X}
+  != X ]; then ./gradlew -DGRADLE_OPTS="-Xms128m" release -i; fi
+cache:
+  directories:
+  - "$HOME/.gradle"
+env:
+  secure: oWyOJ2Nyj5raXMEiS8oaqSV+LSRV1z3ktBS+9v2GBWWNNH7j1I1tO7TOr29XnbmYmSEr8XgSZ+VrAYSTmoRbvTHJi2/Z4lRtQcc9+4CsH6SKfY+GwWnwFcxsU22yIFVGwVauv67oJ202K6NoTVFNu6STN1m0ph1IjE5SBJBGv/4a60b7mkiszIBOPvgV6+eJX7vszQT3faI27Gs4lQvOQ+c4xU+tVOf+2MG6ulBNkLmXqPHTY1AUCkVebfE+JLi2O/7jfWecak66eDoWN1au0gLdZk/KtVnLPaxxy43K1aHwJO7PHoY5F0PuNMaLt4twXku6kwrwU4dYWPpC7I+GEuqb7a/U7V94kXJ0mKQjLPGFRFDKel3S1uYE4X8VQbxBZBMvY9cesOefKdkX9eo2WPV/szVtjaWb3vFy/qRFK3ZNeVh746xRJjE+Qa4SXUw1JieMyIbYD2Rl2wYoFDhogEGx41o+el9/+/oT04LB0uQXBXsj6seHrVL779jTwmPpw/32AHaf6ODH7oXj15uMFa4BophlexiOhLSlhEwkI7W988uVVyVnl7T8H0+qk/15F9WcjyMYRQkwckCA0sz8iYpA3XUqS5VthZYKPWB6WRvK0HS3FyUR/5rcwQNrwpxHCrBE4h5jaVDlUL8D84oPu2XrQBh9veNvWdQrsbKF+/U=
