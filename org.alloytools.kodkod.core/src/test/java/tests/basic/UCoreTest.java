@@ -12,6 +12,8 @@ import junit.framework.TestCase;
  */
 public final class UCoreTest extends TestCase {
 
+	public void test() {}
+
 	// private static final Class< ? >[] FIXED_SCOPE = {
 	// NUM378.class
 	// };
