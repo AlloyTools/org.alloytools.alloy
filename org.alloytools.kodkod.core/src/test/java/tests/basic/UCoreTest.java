@@ -9,23 +9,12 @@ import static tests.util.Reflection.invokeAll;
 import static tests.util.Reflection.strategy;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-import kodkod.ast.Formula;
-import kodkod.engine.Proof;
-import kodkod.engine.Solution;
-import kodkod.engine.Solver;
-import kodkod.engine.satlab.ReductionStrategy;
-import kodkod.engine.satlab.SATFactory;
-import kodkod.engine.ucore.RCEStrategy;
-import kodkod.engine.ucore.SCEStrategy;
-import kodkod.instance.Bounds;
-import kodkod.util.nodes.Nodes;
-import tests.benchmarks.UCoreStats;
 import examples.alloy.Hotel;
 import examples.alloy.Lists;
 import examples.alloy.RingElection;
@@ -47,6 +36,18 @@ import examples.tptp.SET943;
 import examples.tptp.SET948;
 import examples.tptp.SET967;
 import examples.tptp.TOP020;
+import junit.framework.TestCase;
+import kodkod.ast.Formula;
+import kodkod.engine.Proof;
+import kodkod.engine.Solution;
+import kodkod.engine.Solver;
+import kodkod.engine.satlab.ReductionStrategy;
+import kodkod.engine.satlab.SATFactory;
+import kodkod.engine.ucore.RCEStrategy;
+import kodkod.engine.ucore.SCEStrategy;
+import kodkod.instance.Bounds;
+import kodkod.util.nodes.Nodes;
+import tests.benchmarks.UCoreStats;
 
 /**
  * Tests the unsat core functionality.
@@ -152,6 +153,8 @@ public final class UCoreTest extends TestCase {
 
 	private final void testProofExtractor(Class< ? >[] probs, Class< ? extends ReductionStrategy> strategy,
 			int maxScope) {
+		System.out.println("" + Arrays.toString(probs) + " " + strategy + " " + maxScope);
+
 		for (Class< ? > prob : probs) {
 			Object instance = UCoreStats.instance(prob);
 			Map<Method,Formula> checks = invokeAll(instance, checks(prob));
