@@ -169,6 +169,7 @@ public final class UCoreTest extends TestCase {
 			}
 
 		}
+		System.out.println("done");
 	}
 
 	private final void testProofExtractor(Class< ? >[] probs, Class< ? extends ReductionStrategy> strategy) {
