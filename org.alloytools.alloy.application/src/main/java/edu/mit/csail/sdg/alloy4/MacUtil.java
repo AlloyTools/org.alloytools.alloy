@@ -16,10 +16,13 @@
 package edu.mit.csail.sdg.alloy4;
 
 import javax.swing.SwingUtilities;
+
 import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
+
+import edu.mit.csail.sdg.alloy4whole.SimpleGUI;
 
 /**
  * This class provides better integration on Mac OS X.
@@ -36,13 +39,13 @@ public final class MacUtil {
 	/**
 	 * Constructor is private, since this class never needs to be instantiated.
 	 */
-	private MacUtil() {}
+	public MacUtil() {}
 
 	/** The cached Application object. */
-	private static Application			app			= null;
+	private Application			app			= null;
 
 	/** The previous ApplicationListener (or null if there was none). */
-	private static ApplicationListener	listener	= null;
+	private ApplicationListener	listener	= null;
 
 	/**
 	 * Register a Mac OS X "ApplicationListener"; if there was a previous
@@ -57,8 +60,8 @@ public final class MacUtil {
 	 * @param quit - when the user clicks on Quit, we'll call quit.run() using
 	 *            SwingUtilities.invokeAndWait
 	 */
-	public synchronized static void registerApplicationListener(final Runnable reopen, final Runnable about,
-			final Runner open, final Runnable quit) {
+	public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runner open,
+			final Runnable quit) {
 		if (app == null)
 			app = new Application();
 		else if (listener != null)
@@ -99,5 +102,26 @@ public final class MacUtil {
 			}
 		};
 		app.addApplicationListener(listener);
+	}
+
+	public void addMenus(SimpleGUI simpleGUI) {
+		Application.getApplication().addPreferencesMenuItem();
+		Application.getApplication().addAboutMenuItem();
+		Application.getApplication().addApplicationListener(new ApplicationAdapter() {
+			@Override
+			public void handleAbout(ApplicationEvent ae) {
+				simpleGUI.doAbout();
+			}
+
+			@Override
+			public void handlePreferences(ApplicationEvent ae) {
+				simpleGUI.doPreferences();
+			}
+
+			@Override
+			public void handleQuit(ApplicationEvent arg0) {
+				simpleGUI.doQuit();
+			}
+		});
 	}
 }

@@ -111,9 +111,10 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
 
-import com.apple.eawt.Application;
-import com.apple.eawt.ApplicationAdapter;
-import com.apple.eawt.ApplicationEvent;
+//import com.apple.eawt.Application;
+//import com.apple.eawt.ApplicationAdapter;
+//import com.apple.eawt.ApplicationEvent;
+//
 
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.BooleanPref;
@@ -179,6 +180,7 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  * from a fresh thread
  */
 public final class SimpleGUI implements ComponentListener, Listener {
+	MacUtil macUtil;
 
 	/**
 	 * The latest welcome screen; each time we update the welcome screen, we
@@ -849,7 +851,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	}
 
 	/** This method performs File->Quit. */
-	private Runner doQuit() {
+	public Runner doQuit() {
 		if (!wrap)
 			if (text.closeAll()) {
 				try {
@@ -987,7 +989,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	}
 
 	/** This method performs Edit->Preferences. */
-	private Runner doPreferences() {
+	public Runner doPreferences() {
 		if (wrap)
 			return wrapMe();
 		prefDialog.setVisible(true);
@@ -1513,7 +1515,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	// ===============================================================================================================//
 
 	/** This method displays the about box. */
-	private Runner doAbout() {
+	public Runner doAbout() {
 		if (wrap)
 			return wrapMe();
 		OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"),
@@ -1900,11 +1902,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 			if (help)
 				System.out.println(
-						"Usage: alloy [options] file ...\n" + "  //"
-						+ "  -d/--debug                  set debug mode\n"
-						+ "  -h/--help                   show this help\n"
-						+ "  -q/--quit                   do not continue with GUI\n"
-						+ "  -v/--version                show version\n");
+						"Usage: alloy [options] file ...\n" + "  //" + "  -d/--debug                  set debug mode\n"
+								+ "  -h/--help                   show this help\n"
+								+ "  -q/--quit                   do not continue with GUI\n"
+								+ "  -v/--version                show version\n");
 
 			if (quit)
 				return;
@@ -1944,24 +1945,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			System.setProperty("apple.laf.useScreenMenuBar", "true");
 		}
 		if (Util.onMac()) {
-			Application.getApplication().addPreferencesMenuItem();
-			Application.getApplication().addAboutMenuItem();
-			Application.getApplication().addApplicationListener(new ApplicationAdapter() {
-				@Override
-				public void handleAbout(ApplicationEvent ae) {
-					doAbout();
-				}
-
-				@Override
-				public void handlePreferences(ApplicationEvent ae) {
-					doPreferences();
-				}
-
-				@Override
-				public void handleQuit(ApplicationEvent arg0) {
-					doQuit();
-				}
-			});
+			macUtil = new MacUtil();
+			macUtil.addMenus(this);
 		}
 
 		doLookAndFeel();
@@ -2201,8 +2186,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		// If on Mac, then register an application listener
 		try {
 			wrap = true;
-			if (Util.onMac())
-				MacUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
+			if (Util.onMac()) {
+				macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
+			}
+		} catch (Throwable t) {
+			System.out.println("Mac classes not there");
 		} finally {
 			wrap = false;
 		}
