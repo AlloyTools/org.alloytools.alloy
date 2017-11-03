@@ -32,6 +32,7 @@ Export-Package: \
 
 -testpath: \
 	osgi.enroute.junit.wrapper, \
+	osgi.enroute.hamcrest.wrapper
 
 -includeresource: LICENSE
 

@@ -7,3 +7,31 @@ enroute.zip
 org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/CompLexer.java
 org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/CompParser.java
 org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/CompSym.java
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+

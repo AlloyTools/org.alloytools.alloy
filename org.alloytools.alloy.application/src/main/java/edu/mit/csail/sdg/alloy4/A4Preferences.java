@@ -621,7 +621,8 @@ public class A4Preferences {
 	 * The amount of memory (in M) to allocate for Kodkod and the SAT solvers.
 	 */
 	public static final IntChoicePref					SubMemory				= new IntChoicePref("SubMemory",
-			"Maximum memory", Arrays.asList(256, 512, 768, 1024, 1536, 2048, 2560, 3072, 3584, 4096), 768) {
+			"Maximum memory", Arrays.asList(768, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 8192, 16384),
+			2084) {
 																					@Override
 																					public Object renderValueShort(
 																							Integer value) {
