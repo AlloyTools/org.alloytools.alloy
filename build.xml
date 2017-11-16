@@ -26,7 +26,7 @@
 			</classpath>
 
 			<!-- got rid of that huge one liner string -->
-			<!-- ignore java_cup.runtime, tmp" -->
+			<!-- ignore runtime, tmp" -->
 			<packageset defaultexcludes="yes" dir="src">
 				<include name="edu.mit.csail.sdg.*"/>
 			</packageset>
