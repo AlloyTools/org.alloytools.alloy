@@ -44,6 +44,7 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.VisitQuery;
+import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type.ProductType;
@@ -150,7 +151,7 @@ public final class CompUtil {
 		/* check expressions; look for CAST2SIGING (Int[]) */
 		try {
 			Object intTriggerNode;
-			intTriggerNode = cmd.formula.accept(new VisitQuery<Object>() {
+			intTriggerNode = cmd.formula.accept(new VisitQueryOnce<Object>() {
 				@Override
 				public Object visit(ExprCall x) throws Err {
 					// skip integer arithmetic functions, because their

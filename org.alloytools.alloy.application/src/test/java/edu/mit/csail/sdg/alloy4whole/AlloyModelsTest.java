@@ -18,6 +18,7 @@ public class AlloyModelsTest {
 		Module world = CompUtil.parseEverything_fromFile(A4Reporter.NOP, null, filename);
 
 		A4Options options = new A4Options();
+		options.unrolls = 10;
 		for (Command command : world.getAllCommands()) {
 			A4Solution ans = TranslateAlloyToKodkod.execute_command(A4Reporter.NOP, world.getAllReachableSigs(),
 					command, options);
