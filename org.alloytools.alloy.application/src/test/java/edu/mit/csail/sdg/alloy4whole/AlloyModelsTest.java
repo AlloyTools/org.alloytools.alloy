@@ -24,6 +24,7 @@ public class AlloyModelsTest {
 					command, options);
 			while (ans.satisfiable()) {
 				String hc = "Answer: " + ans.toString().hashCode();
+				System.out.println(hc);
 				ans = ans.next();
 			}
 			return;

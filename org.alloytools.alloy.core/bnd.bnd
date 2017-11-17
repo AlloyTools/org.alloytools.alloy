@@ -9,7 +9,9 @@
 	org.alloytools.kodkod.nativesat.x86-windows;version=latest
 
 -testpath: \
-	osgi.enroute.junit.wrapper
+	osgi.enroute.junit.wrapper, \
+	osgi.enroute.hamcrest.wrapper
+	
 
 Export-Package: \
 	edu.mit.csail.sdg.alloy4,\

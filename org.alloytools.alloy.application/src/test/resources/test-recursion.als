@@ -1,4 +1,5 @@
 sig Foo { n : lone Foo }
-pred t[ f : Foo ] { some f.n implies t[f.n] }
+pred a[ f : Foo ] { some f.n implies b[f.n] }
+pred b[ f : Foo ] { some f.n implies a[f.n] }
 
-run t for 4
+run a for 4
