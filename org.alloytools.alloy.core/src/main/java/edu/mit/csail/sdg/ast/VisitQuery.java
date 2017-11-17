@@ -15,6 +15,9 @@
 
 package edu.mit.csail.sdg.ast;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Sig.Field;
 
@@ -30,7 +33,7 @@ import edu.mit.csail.sdg.ast.Sig.Field;
  */
 
 public abstract class VisitQuery<T> extends VisitReturn<T> {
-
+	
 	/** Constructs a VisitQuery object. */
 	public VisitQuery() {}
 

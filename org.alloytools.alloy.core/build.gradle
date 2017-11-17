@@ -1,9 +1,5 @@
 apply plugin: 'java'
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
 task jflex(type: JavaExec) {
     inputs.files("src/main/java/edu/mit/csail/sdg/parser/Alloy.lex")
     outputs.files("src/main/java/edu/mit/csail/sdg/parser/CompLexer.java")

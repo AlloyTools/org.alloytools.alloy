@@ -20,12 +20,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
+import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.Util;
 
 /**
  * Immutable; reresents a "run" or "check" command.
@@ -269,7 +269,7 @@ public final class Command extends Browsable {
 	 */
 	public Set<String> getAllStringConstants(Iterable<Sig> sigs) throws Err {
 		final Set<String> set = new HashSet<String>();
-		final VisitQuery<Object> findString = new VisitQuery<Object>() {
+		final VisitQuery<Object> findString = new VisitQueryOnce<Object>() {
 			@Override
 			public final Object visit(ExprConstant x) throws Err {
 				if (x.op == ExprConstant.Op.STRING)

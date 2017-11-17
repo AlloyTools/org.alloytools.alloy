@@ -1,4 +1,5 @@
-package edu.mit.csail.sdg.alloy4whole;
+package org.alloytools.alloy.core;
+
 
 import org.junit.Test;
 
@@ -18,11 +19,13 @@ public class AlloyModelsTest {
 		Module world = CompUtil.parseEverything_fromFile(A4Reporter.NOP, null, filename);
 
 		A4Options options = new A4Options();
+		options.unrolls = 10;
 		for (Command command : world.getAllCommands()) {
 			A4Solution ans = TranslateAlloyToKodkod.execute_command(A4Reporter.NOP, world.getAllReachableSigs(),
 					command, options);
 			while (ans.satisfiable()) {
 				String hc = "Answer: " + ans.toString().hashCode();
+				System.out.println(hc);
 				ans = ans.next();
 			}
 			return;
