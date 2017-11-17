@@ -1,5 +1,5 @@
 -includeresource: \
-	src/resources
+	src/main/resources
 
 -buildpath: \
 	lib/apple-osx-ui.jar;version=file,\

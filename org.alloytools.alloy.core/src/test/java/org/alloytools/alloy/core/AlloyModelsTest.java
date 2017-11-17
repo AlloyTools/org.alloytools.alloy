@@ -1,4 +1,5 @@
-package edu.mit.csail.sdg.alloy4whole;
+package org.alloytools.alloy.core;
+
 
 import org.junit.Test;
 
