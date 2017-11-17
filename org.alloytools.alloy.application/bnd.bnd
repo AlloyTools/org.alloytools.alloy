@@ -7,7 +7,8 @@
 	org.alloytools.kodkod.core;version=latest
 
 -testpath: \
-	osgi.enroute.junit.wrapper
+	osgi.enroute.junit.wrapper, \
+	osgi.enroute.hamcrest.wrapper
 	
 Private-Package: \
 	edu.mit.csail.sdg.alloy4graph,\
