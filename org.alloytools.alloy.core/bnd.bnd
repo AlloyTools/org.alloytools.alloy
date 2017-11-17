@@ -18,5 +18,4 @@ Export-Package: \
 	edu.mit.csail.sdg.sim,\
 	edu.mit.csail.sdg.translator,\
 
-Private-Package: \
-	runtime
+Private-Package: java_cup.runtime

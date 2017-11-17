@@ -3,6 +3,7 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 
 -buildpath: \
 	org.alloytools.alloy.application,\
+    org.alloytools.alloy.core,\
 	org.alloytools.alloy.extra,\
 	org.alloytools.kodkod.core;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
@@ -16,6 +17,7 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 
 -includeresource: \
 	@${repo;org.alloytools.alloy.application}, \
+    @${repo;org.alloytools.alloy.core}, \
 	@${repo;org.alloytools.alloy.extra}, \
 	@${repo;org.alloytools.kodkod.core}, \
 	@${repo;org.alloytools.kodkod.nativesat.util}, \
