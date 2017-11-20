@@ -9,12 +9,21 @@ can be incorporated into other applications to use Alloy as an API,
 and includes the source code. See the release notes for details of new
 features. 
 
-After the build you can find the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar.
-To execute, type:
-
-     java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
-
 More documentation can be found at: http://alloy.mit.edu/alloy/documentation.html.
+
+# TL;DR
+
+Checkout the project and type ./gradlew. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
+
+     $ java version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
+     java version "1.8.0_144"
+     Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
+     Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
+	$ git clone git@github.com:AlloyTools/org.alloytools.alloy.git
+	$ cd org.alloytools.alloy
+	$ ./gradlew build
+	$ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
+     # opens GUI
 
 ## Building Alloy
 
@@ -51,11 +60,11 @@ In the root of this workspace type `./gradlew`. This is a script that will downl
 
 ### Continuous Integration
 
-The workspace is setup to build after every commit using Travis. 
+The workspace is setup to build after every commit using Travis. It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.
 
 ### Building the DMG file for OSX systems
 
-Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar is build. Next step is to use the [javapackager] to make executables for Windows, Mac, and different versions of Linux.
+Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar is build. In the `org.alloytools.alloy.dist` project, run `../gradlew macos`. This will leave the PKG file in `target/bundle`.
 
 ## CONTRIBUTIONS
 
