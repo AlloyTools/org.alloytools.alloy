@@ -19,10 +19,10 @@ Checkout the project and type ./gradlew. You find the executable JAR in org.allo
      java version "1.8.0_144"
      Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
      Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
-	$ git clone git@github.com:AlloyTools/org.alloytools.alloy.git
-	$ cd org.alloytools.alloy
-	$ ./gradlew build
-	$ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
+     $ git clone git@github.com:AlloyTools/org.alloytools.alloy.git
+     $ cd org.alloytools.alloy
+     $ ./gradlew build
+     $ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
      # opens GUI
 
 ## Building Alloy
