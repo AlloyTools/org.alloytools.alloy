@@ -25,6 +25,13 @@ Checkout the project and type ./gradlew. You find the executable JAR in org.allo
      $ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
      # opens GUI
 
+Note: if you are behind a proxy, the call to `gradlew` is likely to fail, unless you pass it further options about the http and https proxies (and possibly your login and password on this proxy). There are several ways to pass these options, a simple one is to type (replace the `XXXXX`'s by the adequate settings):
+
+     $ ./gradlew -Dhttps.proxyHost=XXXXX -Dhttp.proxyHost=XXXXX -Dhttp.proxyPort=XXXXX \
+          -Dhttps.proxyPort=XXXXX -Dhttp.proxyUser=XXXXX -Dhttp.proxyPassword=XXXXX \
+          -Dhttps.proxyUser=XXXXX -Dhttps.proxyPassword=XXXXX \
+          build
+
 ## Building Alloy
 
 The Alloy build is using a _bnd workspace_ setup using a maven layout. This means it can be build  with Gradle and  the Eclipse IDE for interactive development. Projects are setup to continuously deliver the executable.
