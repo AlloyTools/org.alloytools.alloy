@@ -69,16 +69,16 @@ public final class OurConsole extends JScrollPane {
 	private static final long	serialVersionUID	= 0;
 
 	/** The style for default text. */
-	private final AttributeSet	plain				= style("Verdana", 14, false, Color.BLACK, 0);
+	private final AttributeSet	plain				= style("Verdana", 14, false, false, false, Color.BLACK, 0);
 
 	/** The style for bold text. */
-	private final AttributeSet	bold				= style("Verdana", 14, true, Color.BLACK, 0);
+	private final AttributeSet	bold				= style("Verdana", 14, true, false, false, Color.BLACK, 0);
 
 	/** The style for successful result. */
-	private final AttributeSet	good				= style("Verdana", 14, false, Color.BLUE, 15);
+	private final AttributeSet	good				= style("Verdana", 14, false, false, false, Color.BLUE, 15);
 
 	/** The style for failed result. */
-	private final AttributeSet	bad					= style("Verdana", 14, false, Color.RED, 15);
+	private final AttributeSet	bad					= style("Verdana", 14, false, false, false, Color.RED, 15);
 
 	/**
 	 * The number of characters that currently exist above the horizontal
@@ -113,14 +113,18 @@ public final class OurConsole extends JScrollPane {
 	/**
 	 * Helper method that construct a mutable style with the given font name,
 	 * font size, boldness, color, and left indentation.
+	 * @param italic TODO
+	 * @param strike TODO
 	 */
-	static MutableAttributeSet style(String fontName, int fontSize, boolean boldness, Color color, int leftIndent) {
+	static MutableAttributeSet style(String fontName, int fontSize, boolean boldness, boolean italic, boolean strike, Color color, int leftIndent) {
 		MutableAttributeSet s = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(s, fontName);
 		StyleConstants.setFontSize(s, fontSize);
 		StyleConstants.setBold(s, boldness);
+		StyleConstants.setItalic(s, italic);
 		StyleConstants.setForeground(s, color);
 		StyleConstants.setLeftIndent(s, leftIndent);
+		StyleConstants.setStrikeThrough(s, strike);
 		return s;
 	}
 

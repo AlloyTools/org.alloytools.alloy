@@ -274,6 +274,7 @@ parser code {:
         if (content==null && loaded!=null) content = loaded.get(filename);
         if (content==null) content = Util.readAll(filename);
         if (loaded!=null) loaded.put(filename,content);
+        content = MarkdownHandler.strip(content);
         content = Util.convertLineBreak(content);
         isr = new StringReader(content);
         CompFilter s = new CompFilter(u, seenDollar, filename, lineOffset, new BufferedReader(isr));

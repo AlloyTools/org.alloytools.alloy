@@ -20,6 +20,9 @@ import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
@@ -67,49 +70,98 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	private final List<MutableAttributeSet>	all					= new ArrayList<MutableAttributeSet>();
 
 	/** The character style for regular text. */
-	private final MutableAttributeSet		styleNormal			= style(font, fontSize, false, Color.BLACK, 0);
+	private final MutableAttributeSet		styleNormal			= style(font, fontSize, false, false, false, Color.BLACK, 0);
 	{
 		all.add(styleNormal);
 	}
 
 	/** The character style for symbols. */
-	private final MutableAttributeSet styleSymbol = style(font, fontSize, true, Color.BLACK, 0);
+	private final MutableAttributeSet styleSymbol = style(font, fontSize, true, false, false, Color.BLACK, 0);
 	{
 		all.add(styleSymbol);
 	}
 
+	/** The character style for YAML header bars. */
+	private final MutableAttributeSet yamlHeaderBars = style(font, fontSize, false, false, false, new Color(0xD86556), 0);
+	{
+		all.add(yamlHeaderBars);
+	}
+	/** The character style for YAML header field. */
+	private final MutableAttributeSet yamlHeaderLines = style(font, fontSize, false, false, false, new Color(0xC58D6D), 0);
+	{
+		all.add(yamlHeaderLines);
+	}
+
+	/** The character style for ### field. */
+	private final MutableAttributeSet styleHead3 = style(font, fontSize+2, true, false, false, new Color(0x772222), 0);
+	{
+		all.add(styleHead3);
+	}
+	/** The character style for ## field. */
+	private final MutableAttributeSet styleHead2 = style(font, fontSize+4, true, false, false, new Color(0x772222), 0);
+	{
+		all.add(styleHead2);
+	}
+	/** The character style for # field. */
+	private final MutableAttributeSet styleHead1 = style(font, fontSize+20, true, false, false, new Color(0x772222), 0);
+	{
+		all.add(styleHead1);
+	}
+	/** The character style for **word**. */
+	private final MutableAttributeSet styleBold = style(font, fontSize, true, false, false, Color.BLACK, 0);
+	{
+		all.add(styleBold);
+	}
+	/** The character style for _emphasis_. */
+	private final MutableAttributeSet styleEmphasis = style(font, fontSize, false, true, false, Color.BLACK, 0);
+	{
+		all.add(styleEmphasis);
+	}
+
+	/** The character style for ~strikethrough~. */
+	private final MutableAttributeSet styleStrikeThrough = style(font, fontSize, false, false, true, Color.BLACK, 0);
+	{
+		all.add(styleEmphasis);
+	}
+
+	/** The character style for YAML header field. */
+	private final MutableAttributeSet alloyMarker = style(font, fontSize, false, false, false, new Color(0xF4D5D0), 0);
+	{
+		all.add(alloyMarker	);
+	}
+	
 	/** The character style for integer constants. */
-	private final MutableAttributeSet styleNumber = style(font, fontSize, true, new Color(0xA80A0A), 0);
+	private final MutableAttributeSet styleNumber = style(font, fontSize, true, false, false, new Color(0xA80A0A), 0);
 	{
 		all.add(styleNumber);
 	}
 
 	/** The character style for keywords. */
-	private final MutableAttributeSet styleKeyword = style(font, fontSize, true, new Color(0x1E1EA8), 0);
+	private final MutableAttributeSet styleKeyword = style(font, fontSize, true, false, false, new Color(0x1E1EA8), 0);
 	{
 		all.add(styleKeyword);
 	}
 
 	/** The character style for string literals. */
-	private final MutableAttributeSet styleString = style(font, fontSize, false, new Color(0xA80AA8), 0);
+	private final MutableAttributeSet styleString = style(font, fontSize, false, false, false, new Color(0xA80AA8), 0);
 	{
 		all.add(styleString);
 	}
 
 	/** The character style for up-to-end-of-line-style comment. */
-	private final MutableAttributeSet styleComment = style(font, fontSize, false, new Color(0x0A940A), 0);
+	private final MutableAttributeSet styleComment = style(font, fontSize, false, false, false, new Color(0x0A940A), 0);
 	{
 		all.add(styleComment);
 	}
 
 	/** The character style for non-javadoc-style block comment. */
-	private final MutableAttributeSet styleBlock = style(font, fontSize, false, new Color(0x0A940A), 0);
+	private final MutableAttributeSet styleBlock = style(font, fontSize, false, false, false, new Color(0x0A940A), 0);
 	{
 		all.add(styleBlock);
 	}
 
 	/** The character style for javadoc-style block comment. */
-	private final MutableAttributeSet styleJavadoc = style(font, fontSize, true, new Color(0x0A940A), 0);
+	private final MutableAttributeSet styleJavadoc = style(font, fontSize, true, false, false, new Color(0x0A940A), 0);
 	{
 		all.add(styleJavadoc);
 	}
@@ -317,11 +369,78 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 			comments.add(-1); // enlarge array if needed
 		comments.set(line, comment); // record the fact that this line starts
 										// with the given comment mode
-		for (int n = txt.length(), i = do_getLineStartOffset(line); i < n;) {
+		int startOfLine = do_getLineStartOffset(line);
+		int endOfLine = txt.indexOf('\n', startOfLine);
+
+		if (comment == 0 && line == 0 && match(txt, 0, "---\n")) {
+			setCharacterAttributes(startOfLine, 4, yamlHeaderBars, false);
+			return 3;
+		}
+
+		if (comment == 3) {
+			if (match(txt, startOfLine, "---\n")) {
+				setCharacterAttributes(startOfLine, 4, yamlHeaderBars, false);
+				return 4;
+			} else {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, yamlHeaderLines, false);
+				return 3;
+			}
+		}
+
+		if (match(txt, startOfLine, "```alloy\n")) {
+			setCharacterAttributes(startOfLine, endOfLine - startOfLine, alloyMarker, false);
+			if (comment == 4) {
+				return 0;
+			} else {
+				return 4;
+			}
+		}
+		if ( comment == 4) {
+			if ( match(txt,startOfLine, "###") ) {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead3, false);
+			} else if ( match(txt,startOfLine, "##")) {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead2, false);
+			}else if ( match(txt,startOfLine, "#")) {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead1, false);
+			} else {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleNormal, false);
+				Pattern charStyles = Pattern.compile("(([*_~])\\2?)[^*_\n]+\\1");
+				Matcher m = charStyles.matcher(txt);
+				m.region(startOfLine, endOfLine);
+				while(m.find()) {
+					String type = m.group(1); 
+					int start = m.start(0)+type.length();
+					int end = m.end(0)-type.length() - m.start(0) -1;
+					switch( type) {
+					case "**":
+						setCharacterAttributes(start, end, styleBold, true);
+						break;
+					case "__":
+						setCharacterAttributes(start, end, styleEmphasis, true);
+						break;
+					case "~~":
+					case "~":
+						setCharacterAttributes(start, end, styleStrikeThrough, true);
+						break;
+					case "_":
+						setCharacterAttributes(start, end, styleEmphasis, true);
+						break;
+					case "*":
+						setCharacterAttributes(start, end, styleBold, true);
+						break;
+					}
+				}
+			}
+			return 4;
+		}
+
+		for (int n = txt.length(), i = startOfLine; i < n;) {
 			final int oldi = i;
 			final char c = txt.charAt(i);
+
 			if (c == '\n')
 				break;
+
 			if (comment == 0 && c == '/' && i < n - 3 && txt.charAt(i + 1) == '*' && txt.charAt(i + 2) == '*'
 					&& txt.charAt(i + 3) != '/')
 				comment = 2;
@@ -331,6 +450,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 				comment = 1;
 				i = i + 2;
 			}
+
 			if (comment > 0) {
 				AttributeSet style = (comment == 1 ? styleBlock : styleJavadoc);
 				while (i < n && txt.charAt(i) != '\n'
@@ -358,17 +478,30 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 				}
 				setCharacterAttributes(oldi, i - oldi, styleString, false);
 			} else if (do_iden(c)) {
-				for (i++; i < n && do_iden(txt.charAt(i)); i++) {}
+				for (i++; i < n && do_iden(txt.charAt(i)); i++) {
+				}
 				AttributeSet style = (c >= '0' && c <= '9') ? styleNumber
 						: (do_keyword(txt, oldi, i - oldi) ? styleKeyword : styleNormal);
 				setCharacterAttributes(oldi, i - oldi, style, false);
 			} else {
 				for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-'
-						&& txt.charAt(i) != '/'; i++) {}
+						&& txt.charAt(i) != '/'; i++) {
+				}
 				setCharacterAttributes(oldi, i - oldi, styleSymbol, false);
 			}
 		}
 		return comment;
+	}
+
+	private boolean match(String txt, int i, String string) {
+		int j = 0;
+		for (; i + j < txt.length() && j < string.length(); j++) {
+			char a = string.charAt(j);
+			char b = txt.charAt(i + j);
+			if (a != b)
+				return false;
+		}
+		return j == string.length();
 	}
 
 	/** Reapply the appropriate style to the entire document. */
