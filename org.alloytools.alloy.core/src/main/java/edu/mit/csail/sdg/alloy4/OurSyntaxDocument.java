@@ -125,7 +125,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	}
 
 	/** The character style for YAML header field. */
-	private final MutableAttributeSet alloyMarker = style(font, fontSize, false, false, false, new Color(0xF4D5D0), 0);
+	private final MutableAttributeSet alloyMarker = style(font, fontSize, false, false, false, new Color(0x84D5D0), 0);
 	{
 		all.add(alloyMarker	);
 	}
@@ -364,6 +364,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	 * Re-color the given line assuming it starts with a given comment mode,
 	 * then return the comment mode for start of next line.
 	 */
+	
 	private final int do_reapply(int comment, final String txt, final int line) {
 		while (line >= comments.size())
 			comments.add(-1); // enlarge array if needed
@@ -388,13 +389,19 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 		}
 
 		if (match(txt, startOfLine, "```alloy\n")) {
-			setCharacterAttributes(startOfLine, endOfLine - startOfLine, alloyMarker, false);
 			if (comment == 4) {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, alloyMarker, false);
 				return 0;
-			} else {
+			}
+		}
+		
+		if (match(txt, startOfLine, "```\n")) {
+			if (comment == 0) {
+				setCharacterAttributes(startOfLine, endOfLine - startOfLine, alloyMarker, false);
 				return 4;
 			}
 		}
+		
 		if ( comment == 4) {
 			if ( match(txt,startOfLine, "###") ) {
 				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead3, false);

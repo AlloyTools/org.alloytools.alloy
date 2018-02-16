@@ -18,7 +18,6 @@ package edu.mit.csail.sdg.sim;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
 /**
@@ -36,7 +35,7 @@ import java.util.WeakHashMap;
 public final class SimAtom {
 
 	/** This map is used to canonicalize the atoms. */
-	private static final WeakHashMap<SimAtom,WeakReference<SimAtom>>	map	= new WeakHashMap<SimAtom,WeakReference<SimAtom>>();
+	private static final WeakHashMap<SimAtom,SimAtom>	map	= new WeakHashMap<SimAtom,SimAtom>();
 
 	/**
 	 * The String label for the atom; all distinct atoms have distinct labels.
@@ -58,14 +57,7 @@ public final class SimAtom {
 	public static SimAtom make(String label) {
 		synchronized (map) {
 			SimAtom x = new SimAtom(label);
-			WeakReference<SimAtom> ans = map.get(x);
-			if (ans != null) {
-				SimAtom y = ans.get();
-				if (y != null)
-					return y;
-			}
-			map.put(x, new WeakReference<SimAtom>(x));
-			return x;
+			return map.computeIfAbsent(x, l -> x );
 		}
 	}
 

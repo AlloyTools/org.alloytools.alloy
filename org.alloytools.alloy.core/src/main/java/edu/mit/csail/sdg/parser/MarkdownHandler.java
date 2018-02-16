@@ -1,14 +1,10 @@
 package edu.mit.csail.sdg.parser;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Test;
 
 public class MarkdownHandler {
 	enum State {
@@ -89,13 +85,4 @@ public class MarkdownHandler {
 			throw new RuntimeException(e);
 		}
 	}
-
-	@Test
-	public void testInput() {
-		assertEquals("let foo=3\nlet bar = 1", strip("let foo=3\nlet bar = 1"));
-		assertEquals("", strip("---\n---\n"));
-		assertEquals("let foo = 3\nlet bar = {}\n", strip(
-				"---\nbla: foo\n---\nThis is text\n```alloy\nlet foo = 3\nlet bar = {}\n```alloy\nand more text"));
-	}
-
 }

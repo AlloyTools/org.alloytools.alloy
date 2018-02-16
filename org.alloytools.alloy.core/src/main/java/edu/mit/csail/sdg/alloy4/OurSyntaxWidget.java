@@ -24,6 +24,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.Collection;
+
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -35,12 +36,14 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.BoxView;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
+
 import edu.mit.csail.sdg.alloy4.Listener.Event;
 
 /**
@@ -179,6 +182,20 @@ public final class OurSyntaxWidget {
 				listeners.fire(me, Event.CTRL_PAGE_DOWN);
 			}
 		});
+		pane.getActionMap().put("alloy_tab_insert", new AbstractAction("alloy_tab_insert") {
+			public void actionPerformed(ActionEvent e) {
+				doTabInsert();
+			}
+
+		});
+		pane.getActionMap().put("alloy_tab_remove", new AbstractAction("alloy_tab_remove") {
+			public void actionPerformed(ActionEvent e) {
+				doTabRemove();
+			}
+
+		});
+		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "alloy_tab_insert");
+		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK), "alloy_tab_remove");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "alloy_copy");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK), "alloy_cut");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK), "alloy_paste");
@@ -222,6 +239,53 @@ public final class OurSyntaxWidget {
 		component.setMinimumSize(new Dimension(50, 50));
 		component.setViewportView(pane);
 		modified = false;
+	}
+
+	private void doTabInsert() {
+		String s = pane.getSelectedText();
+		if ( s != null && s.length() > 0) {
+			StringBuilder sb = new StringBuilder(s);
+			sb.insert(0, '\t');
+			for ( int i=1; i<sb.length()-1; i++) {
+				char c = sb.charAt(i);
+				if (c == '\n') {
+					sb.insert(++i, '\t');
+				}
+			}
+			replaceSelection(sb);
+		} else {
+			try {
+				pane.getDocument().insertString(pane.getCaretPosition(), "\t", null);
+			} catch (BadLocationException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
+		listeners.fire(this, Event.CARET_MOVED);
+	}
+
+	private void doTabRemove() {
+		String s = pane.getSelectedText();
+		if ( s != null && s.length() > 0) {
+			StringBuilder sb = new StringBuilder(s);
+			if( sb.charAt(0) =='\t')
+				sb.delete(0, 1);
+			
+			for ( int i=1; i<sb.length()-1; i++) {
+				char c = sb.charAt(i);
+				if (c == '\n' && sb.charAt(i+1)=='\t') {
+					sb.delete(i+1, i+2);
+				}
+			}
+			replaceSelection(sb);
+		}
+		listeners.fire(this, Event.CARET_MOVED);
+	}
+
+	private void replaceSelection(CharSequence sb) {
+		int selectionStart = pane.getSelectionStart();
+		pane.replaceSelection(sb.toString());
+		pane.setSelectionStart(selectionStart);
+		pane.setSelectionEnd(selectionStart+sb.length());
 	}
 
 	/** Add this object into the given container. */
