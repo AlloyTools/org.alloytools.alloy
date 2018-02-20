@@ -144,6 +144,10 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
 import edu.mit.csail.sdg.alloy4.XMLNode;
+import edu.mit.csail.sdg.alloy4viz.VizGUI;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
 import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
@@ -161,10 +165,6 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4Tuple;
 import edu.mit.csail.sdg.translator.A4TupleSet;
-import edu.mit.csail.sdg.alloy4viz.VizGUI;
-import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
-import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
-import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 
 /**
@@ -1734,7 +1734,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			SimpleTask2 task = new SimpleTask2();
 			task.filename = arg;
 			try {
-				WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
+				if ("yes".equals(System.getProperty("debug")))
+					WorkerEngine.runLocally(task, cb);
+				else
+					WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
 				// task.run(cb);
 			} catch (Throwable ex) {
 				WorkerEngine.stop();
@@ -2075,24 +2078,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 		// Choose the appropriate font
 		int fontSize = FontSize.get();
-		String fontName = FontName.get();
-		while (true) {
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Lucida Grande";
-			else
-				break;
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Verdana";
-			else
-				break;
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Courier New";
-			else
-				break;
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Lucida Grande";
-			break;
-		}
+		String fontName = OurDialog.getProperfontName(FontName.get(), "Courier New", "Lucidia", "Courier",
+				"Monospaced");
 		FontName.set(fontName);
 
 		// Copy required files from the JAR

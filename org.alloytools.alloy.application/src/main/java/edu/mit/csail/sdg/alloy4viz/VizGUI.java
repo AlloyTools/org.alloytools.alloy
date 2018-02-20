@@ -107,7 +107,7 @@ public final class VizGUI implements ComponentListener {
 	private final JButton		projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
 			loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
 			openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
-			txtButton/* , dotButton, xmlButton */;
+			txtButton, tableButton/* , dotButton, xmlButton */;
 
 	/**
 	 * This list must contain all the display mode buttons (that is, vizButton,
@@ -265,6 +265,7 @@ public final class VizGUI implements ComponentListener {
 		// /** See the XML content. */ XML("xml"),
 		/** See the instance as text. */
 		TEXT("txt"),
+		TABLE("table"),
 		/** See the instance as a tree. */
 		Tree("tree");
 		/**
@@ -335,6 +336,7 @@ public final class VizGUI implements ComponentListener {
 	 */
 	private boolean					wrap		= false;
 
+
 	/**
 	 * Wraps the calling method into a Runnable whose run() will call the
 	 * calling method with (false) as the only argument.
@@ -353,6 +355,10 @@ public final class VizGUI implements ComponentListener {
 				m = methods[i];
 				break;
 			}
+		if (m == null) {
+			throw new IllegalStateException("Missing method " + name);
+		}
+
 		final Method method = m;
 		return new Runner() {
 			private static final long serialVersionUID = 0;
@@ -391,6 +397,11 @@ public final class VizGUI implements ComponentListener {
 				m = methods[i];
 				break;
 			}
+
+		if (m == null) {
+			throw new IllegalStateException("Missing method " + name);
+		}
+
 		final Method method = m;
 		return new Runner() {
 			private static final long serialVersionUID = 0;
@@ -560,6 +571,8 @@ public final class VizGUI implements ComponentListener {
 			// "images/24_plaintext.gif", doShowXML());
 			txtButton = makeSolutionButton("Txt", "Show the textual output for the Graph", "images/24_plaintext.gif",
 					doShowTxt());
+			tableButton = makeSolutionButton("Table", "Show the table output for the Graph", "images/24_plaintext.gif",
+					doShowTable());
 			treeButton = makeSolutionButton("Tree", "Show Tree", "images/24_texttree.gif", doShowTree());
 			if (frame != null)
 				addDivider();
@@ -711,6 +724,9 @@ public final class VizGUI implements ComponentListener {
 			case TEXT :
 				txtButton.setEnabled(false);
 				break;
+			case TABLE :
+				tableButton.setEnabled(false);
+				break;
 			// case XML: xmlButton.setEnabled(false); break;
 			// case DOT: dotButton.setEnabled(false); break;
 			default :
@@ -757,6 +773,11 @@ public final class VizGUI implements ComponentListener {
 			}
 			case TEXT : {
 				String textualOutput = myState.getOriginalInstance().originalA4.toString();
+				content = getTextComponent(textualOutput);
+				break;
+			}
+			case TABLE : {
+				String textualOutput = myState.getOriginalInstance().originalA4.format();
 				content = getTextComponent(textualOutput);
 				break;
 			}
@@ -901,10 +922,14 @@ public final class VizGUI implements ComponentListener {
 
 			@Override
 			public void setFont(Font font) {
-				ta.setFont(font);
+				super.setFont(font);
 			}
 		};
 		ans.setBorder(new OurBorder(true, false, true, false));
+		String fontName = OurDialog.getProperfontName("Lucida Console", "Monospaced");
+		Font font = new Font(fontName, Font.PLAIN, fontSize);
+		ans.setFont(font);
+		ta.setFont(font);
 		return ans;
 	}
 
@@ -1408,6 +1433,19 @@ public final class VizGUI implements ComponentListener {
 	public Runner doShowTxt() {
 		if (!wrap) {
 			currentMode = VisualizerMode.TEXT;
+			updateDisplay();
+			return null;
+		}
+		return wrapMe();
+	}
+
+	/**
+	 * This method changes the display mode to show the equivalent dot text (the
+	 * return value is always null).
+	 */
+	public Runner doShowTable() {
+		if (!wrap) {
+			currentMode = VisualizerMode.TABLE;
 			updateDisplay();
 			return null;
 		}

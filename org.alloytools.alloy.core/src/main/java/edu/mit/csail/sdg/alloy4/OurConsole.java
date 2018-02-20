@@ -336,6 +336,8 @@ public final class OurConsole extends JScrollPane {
 		cmd = cmd.trim();
 		if (cmd.length() == 0)
 			return;
+		
+		cmd = TableView.revertSuffix(cmd);
 		StyledDocument doc = main.getStyledDocument();
 		if (history.size() >= 2 && cmd.equals(history.get(history.size() - 2))) {
 			// If the user merely repeated the most recent command, then don't
@@ -397,7 +399,7 @@ public final class OurConsole extends JScrollPane {
 		try {
 			StyledDocument doc = main.getStyledDocument();
 			if (TableView.isTable(text)) {
-				doc.insertString(where >= 0 ? where : doc.getLength(), TableView.toTable(text), mono);
+				doc.insertString(where >= 0 ? where : doc.getLength(), TableView.toTable(text, false), mono);
 				main.getCaret().setSelectionVisible(false);
 			} else
 				doc.insertString(where >= 0 ? where : doc.getLength(), text, style);

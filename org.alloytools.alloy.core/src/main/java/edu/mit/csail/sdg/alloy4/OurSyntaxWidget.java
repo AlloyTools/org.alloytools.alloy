@@ -77,7 +77,7 @@ public final class OurSyntaxWidget {
 
 	/** The underlying JTextPane being displayed. */
 	private final JTextPane					pane		= OurAntiAlias.pane(Color.BLACK, Color.WHITE,
-			new EmptyBorder(1, 1, 1, 1));
+			new EmptyBorder(6, 6, 6, 6));
 
 	/**
 	 * The filename for this JTextPane (changes will trigger the STATUS_CHANGE
@@ -194,6 +194,9 @@ public final class OurSyntaxWidget {
 			}
 
 		});
+		
+		pane.getActionMap().put("select-word", getSelectWordAction());
+		
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "alloy_tab_insert");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK), "alloy_tab_remove");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "alloy_copy");
@@ -239,6 +242,36 @@ public final class OurSyntaxWidget {
 		component.setMinimumSize(new Dimension(50, 50));
 		component.setViewportView(pane);
 		modified = false;
+	}
+
+	private AbstractAction getSelectWordAction() {
+		return new AbstractAction("select-word") {
+			private static final long serialVersionUID = 1L;
+
+			private boolean inWord(char c) {
+				return Character.isAlphabetic(c) || Character.isDigit(c) || Character.isIdentifierIgnorable(c)
+						|| Character.isJavaIdentifierPart(c) || c=='\''|| c=='"';
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String text = pane.getText();
+				int cursor = pane.getCaretPosition();
+				
+				int selectionStart = cursor;
+				int selectionEnd = cursor;
+
+				while (selectionStart >= 0 && inWord(text.charAt(selectionStart)))
+					selectionStart--;
+
+				while (selectionEnd < text.length() && inWord(text.charAt(selectionEnd)))
+					selectionEnd++;
+
+				pane.setSelectionEnd(selectionEnd);
+				pane.setSelectionStart(selectionStart+1);
+				
+			}
+		};
 	}
 
 	private void doTabInsert() {

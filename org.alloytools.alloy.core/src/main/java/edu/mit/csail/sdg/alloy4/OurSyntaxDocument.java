@@ -70,7 +70,8 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	private final List<MutableAttributeSet>	all					= new ArrayList<MutableAttributeSet>();
 
 	/** The character style for regular text. */
-	private final MutableAttributeSet		styleNormal			= style(font, fontSize, false, false, false, Color.BLACK, 0);
+	private final MutableAttributeSet		styleNormal			= style(font, fontSize, false, false, false,
+			Color.BLACK, 0);
 	{
 		all.add(styleNormal);
 	}
@@ -82,28 +83,33 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	}
 
 	/** The character style for YAML header bars. */
-	private final MutableAttributeSet yamlHeaderBars = style(font, fontSize, false, false, false, new Color(0xD86556), 0);
+	private final MutableAttributeSet yamlHeaderBars = style(font, fontSize, false, false, false, new Color(0xD86556),
+			0);
 	{
 		all.add(yamlHeaderBars);
 	}
 	/** The character style for YAML header field. */
-	private final MutableAttributeSet yamlHeaderLines = style(font, fontSize, false, false, false, new Color(0xC58D6D), 0);
+	private final MutableAttributeSet yamlHeaderLines = style(font, fontSize, false, false, false, new Color(0xC58D6D),
+			0);
 	{
 		all.add(yamlHeaderLines);
 	}
 
 	/** The character style for ### field. */
-	private final MutableAttributeSet styleHead3 = style(font, fontSize+2, true, false, false, new Color(0x772222), 0);
+	private final MutableAttributeSet styleHead3 = style(font, fontSize + 2, true, false, false, new Color(0x772222),
+			0);
 	{
 		all.add(styleHead3);
 	}
 	/** The character style for ## field. */
-	private final MutableAttributeSet styleHead2 = style(font, fontSize+4, true, false, false, new Color(0x772222), 0);
+	private final MutableAttributeSet styleHead2 = style(font, fontSize + 4, true, false, false, new Color(0x772222),
+			0);
 	{
 		all.add(styleHead2);
 	}
 	/** The character style for # field. */
-	private final MutableAttributeSet styleHead1 = style(font, fontSize+20, true, false, false, new Color(0x772222), 0);
+	private final MutableAttributeSet styleHead1 = style(font, fontSize + 20, true, false, false, new Color(0x772222),
+			0);
 	{
 		all.add(styleHead1);
 	}
@@ -127,9 +133,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	/** The character style for YAML header field. */
 	private final MutableAttributeSet alloyMarker = style(font, fontSize, false, false, false, new Color(0x84D5D0), 0);
 	{
-		all.add(alloyMarker	);
+		all.add(alloyMarker);
 	}
-	
+
 	/** The character style for integer constants. */
 	private final MutableAttributeSet styleNumber = style(font, fontSize, true, false, false, new Color(0xA80A0A), 0);
 	{
@@ -364,7 +370,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 	 * Re-color the given line assuming it starts with a given comment mode,
 	 * then return the comment mode for start of next line.
 	 */
-	
+
 	private final int do_reapply(int comment, final String txt, final int line) {
 		while (line >= comments.size())
 			comments.add(-1); // enlarge array if needed
@@ -394,47 +400,50 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 				return 0;
 			}
 		}
-		
+
 		if (match(txt, startOfLine, "```\n")) {
 			if (comment == 0) {
 				setCharacterAttributes(startOfLine, endOfLine - startOfLine, alloyMarker, false);
 				return 4;
 			}
 		}
-		
-		if ( comment == 4) {
-			if ( match(txt,startOfLine, "###") ) {
+
+		if (comment == 4) {
+			if (match(txt, startOfLine, "###")) {
 				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead3, false);
-			} else if ( match(txt,startOfLine, "##")) {
+			} else if (match(txt, startOfLine, "##")) {
 				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead2, false);
-			}else if ( match(txt,startOfLine, "#")) {
+			} else if (match(txt, startOfLine, "#")) {
 				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleHead1, false);
 			} else {
 				setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleNormal, false);
 				Pattern charStyles = Pattern.compile("(([*_~])\\2?)[^*_\n]+\\1");
 				Matcher m = charStyles.matcher(txt);
-				m.region(startOfLine, endOfLine);
-				while(m.find()) {
-					String type = m.group(1); 
-					int start = m.start(0)+type.length();
-					int end = m.end(0)-type.length() - m.start(0) -1;
-					switch( type) {
-					case "**":
-						setCharacterAttributes(start, end, styleBold, true);
-						break;
-					case "__":
-						setCharacterAttributes(start, end, styleEmphasis, true);
-						break;
-					case "~~":
-					case "~":
-						setCharacterAttributes(start, end, styleStrikeThrough, true);
-						break;
-					case "_":
-						setCharacterAttributes(start, end, styleEmphasis, true);
-						break;
-					case "*":
-						setCharacterAttributes(start, end, styleBold, true);
-						break;
+				if (endOfLine < txt.length() && startOfLine <= endOfLine && startOfLine > 0
+						&& endOfLine >= startOfLine) {
+					m.region(startOfLine, endOfLine);
+					while (m.find()) {
+						String type = m.group(1);
+						int start = m.start(0) + type.length();
+						int end = m.end(0) - type.length() - m.start(0) - 1;
+						switch (type) {
+						case "**":
+							setCharacterAttributes(start, end, styleBold, true);
+							break;
+						case "__":
+							setCharacterAttributes(start, end, styleEmphasis, true);
+							break;
+						case "~~":
+						case "~":
+							setCharacterAttributes(start, end, styleStrikeThrough, true);
+							break;
+						case "_":
+							setCharacterAttributes(start, end, styleEmphasis, true);
+							break;
+						case "*":
+							setCharacterAttributes(start, end, styleBold, true);
+							break;
+						}
 					}
 				}
 			}

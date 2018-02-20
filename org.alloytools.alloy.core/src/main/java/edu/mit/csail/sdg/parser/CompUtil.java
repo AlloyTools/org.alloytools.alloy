@@ -41,13 +41,12 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
-import edu.mit.csail.sdg.ast.VisitQuery;
-import edu.mit.csail.sdg.ast.VisitQueryOnce;
-import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type.ProductType;
+import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.parser.CompModule.Open;
 
 /**
@@ -450,15 +449,10 @@ public final class CompUtil {
 			tmpAls = File.createTempFile("alloy_heredoc", ".als");
 			tmpAls.deleteOnExit();
 		}
-		BufferedOutputStream bos = null;
-		try {
-			bos = new BufferedOutputStream(new FileOutputStream(tmpAls));
+		try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpAls))) {
 			bos.write(model.getBytes());
 			bos.flush();
 			return tmpAls;
-		} finally {
-			if (bos != null)
-				bos.close();
 		}
 	}
 }

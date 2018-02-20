@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ public final class SimTupleset implements Iterable<SimTuple> {
 	// else if (min<max && next) this == tuples + { (min,min+1)...(max-1,max) }
 	// else this == tuples
 
+	public static final SimAtom EMPTY_ATOM = SimAtom.make("∅");
 	/**
 	 * The list of tuples. <br>
 	 * <b>Invariant:</b> If nonempty, it must contain only same-arity tuples.
@@ -654,6 +656,37 @@ public final class SimTupleset implements Iterable<SimTuple> {
 										// "this" has same arity, and every
 										// tuple in "that" has same arity
 			}
+		return new SimTupleset(ans.makeConst());
+	}
+
+	/**
+	 * Return the cartesian product of this and that but only for tuples with
+	 * the same first column. This also skips the first column of that
+	 */
+	public SimTupleset productForSameFirstColumn(SimTupleset that) {
+		if (empty())
+			return EMPTY;
+		
+		TempList<SimTuple> ans = new TempList<SimTuple>(size() * that.size());
+		ArrayList<SimAtom> fillerAtoms = new ArrayList<>();
+		for ( int i=0; i<that.arity()-1; i++) {
+			fillerAtoms.add( EMPTY_ATOM);
+		}
+		SimTuple filler = SimTuple.make( fillerAtoms);
+		
+		for (SimTuple a : this) {
+			boolean found=false;
+			for (SimTuple b : that) {
+				if (a.get(0).equals(b.get(0))) {
+					SimTuple tail = b.tail(b.arity() - 1);
+					ans.add(a.product(tail));
+					found |= true;
+				}
+			}
+			if ( !found ) {
+				ans.add(a.product(filler));
+			}
+		}
 		return new SimTupleset(ans.makeConst());
 	}
 
