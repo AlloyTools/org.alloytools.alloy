@@ -261,10 +261,10 @@ public final class OurSyntaxWidget {
 				int selectionStart = cursor;
 				int selectionEnd = cursor;
 
-				while (selectionStart >= 0 && inWord(text.charAt(selectionStart)))
+				while (selectionStart >= 0 && selectionStart< text.length() && inWord(text.charAt(selectionStart)))
 					selectionStart--;
 
-				while (selectionEnd < text.length() && inWord(text.charAt(selectionEnd)))
+				while (selectionEnd >= 0 && selectionEnd < text.length() && inWord(text.charAt(selectionEnd)))
 					selectionEnd++;
 
 				pane.setSelectionEnd(selectionEnd);
