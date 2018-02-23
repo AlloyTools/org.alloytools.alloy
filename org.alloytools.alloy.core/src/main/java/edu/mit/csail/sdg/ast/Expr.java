@@ -87,6 +87,8 @@ public abstract class Expr extends Browsable {
 	/** True if this expression is not fully resolved. */
 	public final boolean			ambiguous;
 
+	private Clause referenced;
+
 	/** This is an unmodifiable empty list of Err objects. */
 	static final JoinableList<Err>	emptyListOfErrors	= new JoinableList<Err>();
 
@@ -1142,5 +1144,23 @@ public abstract class Expr extends Browsable {
 	 */
 	public final Expr cast2sigint() {
 		return ExprUnary.Op.CAST2SIGINT.make(span(), this);
+	}
+
+	/**
+	 * Get the position where this expression is referring to or null if
+	 * it is not referring to anything.
+	 * @return
+	 */
+
+	public void setReferenced(Clause clause) {
+		this.referenced = clause;
+	}
+
+	public Clause referenced(Clause pos) {
+		return referenced != null ? referenced : pos;
+	}
+
+	public Clause referenced() {
+		return referenced;
 	}
 }

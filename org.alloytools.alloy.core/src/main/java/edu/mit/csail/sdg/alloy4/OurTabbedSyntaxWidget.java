@@ -24,13 +24,15 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
+
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
 import edu.mit.csail.sdg.alloy4.Listener.Event;
 
 /**
@@ -360,7 +362,7 @@ public final class OurTabbedSyntaxWidget {
 
 	/** Returns the JTextArea of the current text buffer. */
 	public OurSyntaxWidget get() {
-		return (me >= 0 && me < tabs.size()) ? tabs.get(me) : new OurSyntaxWidget();
+		return (me >= 0 && me < tabs.size()) ? tabs.get(me) : new OurSyntaxWidget(this);
 	}
 
 	/**
@@ -420,7 +422,7 @@ public final class OurTabbedSyntaxWidget {
 				: OurUtil.makeVL(null, 2, OurUtil.makeHB(h1, lb, h2, GRAY), GRAY);
 		pan.setAlignmentX(0.0f);
 		pan.setAlignmentY(1.0f);
-		OurSyntaxWidget text = new OurSyntaxWidget(syntaxHighlighting, "", fontName, fontSize, tabSize, lb, pan);
+		OurSyntaxWidget text = new OurSyntaxWidget(this,syntaxHighlighting, "", fontName, fontSize, tabSize, lb, pan);
 		tabBar.add(pan, tabs.size());
 		tabs.add(text);
 		text.listeners.add(listener); // add listener AFTER we've updated
@@ -476,4 +478,27 @@ public final class OurTabbedSyntaxWidget {
 	public void shade(Pos pos) {
 		shade(Util.asList(pos), new Color(0.9f, 0.4f, 0.4f), true);
 	}
+
+	public OurSyntaxWidget open(Pos pos) {
+		for ( int i=0; i<tabs.size(); i++) {
+			if ( me == i)
+				continue;
+			
+			OurSyntaxWidget w = tabs.get(i);
+			String filename = w.getFilename();
+			if ( pos.filename.equals(filename)) {
+				select(i);
+				OurSyntaxWidget selected = tabs.get(me);
+				return selected;
+			}
+		}
+		if ( pos != Pos.UNKNOWN && pos.filename.length() > 2) {
+			newtab( pos.filename);
+			OurSyntaxWidget selected = tabs.get(me);
+			return selected;
+		}
+		return null;
+	}
+	
+	
 }

@@ -109,6 +109,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.text.html.HTMLDocument;
 
 //import com.apple.eawt.Application;
@@ -1934,6 +1935,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	 * using the "invokeLater" method.
 	 */
 	private SimpleGUI(final String[] args) {
+
+		UIManager.put("ToolTip.font", new FontUIResource("Courier New", Font.PLAIN, 14));
 
 		// Register an exception handler for uncaught exceptions
 		MailBug.setup();

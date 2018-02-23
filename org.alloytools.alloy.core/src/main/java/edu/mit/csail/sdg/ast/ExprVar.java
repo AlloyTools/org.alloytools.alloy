@@ -28,7 +28,7 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
  * <b>Invariant:</b> type!=EMPTY => (type==expr.type && !expr.ambiguous)
  */
 
-public final class ExprVar extends ExprHasName {
+public final class ExprVar extends ExprHasName implements Clause {
 
 	/** {@inheritDoc} */
 	@Override
@@ -101,5 +101,10 @@ public final class ExprVar extends ExprHasName {
 	@Override
 	public List< ? extends Browsable> getSubnodes() {
 		return new ArrayList<Browsable>(0);
+	}
+
+	@Override
+	public String explain() {
+		return type.toString();
 	}
 }

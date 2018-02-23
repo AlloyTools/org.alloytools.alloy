@@ -37,7 +37,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * predicate/function call
  */
 
-public final class Func extends Browsable {
+public final class Func extends Browsable implements Clause {
 
 	/**
 	 * The location in the original file where this predicate/function is
@@ -278,6 +278,34 @@ public final class Func extends Browsable {
 					returnDecl));
 		ans.add(make(body.span(), body.span(), "<b>body</b> <i>" + body.type + "</i>", body));
 		return ans;
+	}
+
+	@Override
+	public String explain() {
+		StringBuilder sb = new StringBuilder();
+		if ( isPred) 
+			sb.append("pred ");
+		else
+			sb.append("fun ");
+			
+		sb.append(label);
+		String del = "[";
+		for ( Decl decl : decls) {
+			for ( Expr e : decl.names) {
+				sb.append(del);
+				sb.append(e);
+				sb.append(" :" );
+				sb.append(decl.expr.type);
+				del = ", ";
+			}
+		}
+		if ( !del.equals("["))
+			sb.append("]");
+		if ( !isPred) {
+			sb.append(" : " );
+			sb.append(returnDecl.type);
+		}
+		return sb.toString();
 	}
 
 }

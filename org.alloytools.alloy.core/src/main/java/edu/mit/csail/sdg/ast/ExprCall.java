@@ -435,4 +435,9 @@ public final class ExprCall extends Expr {
 				args);
 		return Util.asList(f, a);
 	}
+
+	@Override
+	public Clause referenced() {
+		return super.referenced(fun);
+	}
 }

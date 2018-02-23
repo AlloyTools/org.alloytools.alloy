@@ -18,22 +18,23 @@ package edu.mit.csail.sdg.ast;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import edu.mit.csail.sdg.alloy4.Pos;
+
+import edu.mit.csail.sdg.alloy4.ConstList;
+import edu.mit.csail.sdg.alloy4.ConstList.TempList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
+import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
-import edu.mit.csail.sdg.alloy4.ErrorSyntax;
-import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.alloy4.Version;
-import edu.mit.csail.sdg.alloy4.ConstList.TempList;
-import edu.mit.csail.sdg.ast.Attr.AttrType;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.alloy4.Version;
+import edu.mit.csail.sdg.ast.Attr.AttrType;
 
 /** Mutable; represents a signature. */
 
-public abstract class Sig extends Expr {
+public abstract class Sig extends Expr implements Clause {
 
 	/** The built-in "univ" signature. */
 	public static final PrimSig	UNIV	= new PrimSig("univ", null, false);
@@ -65,6 +66,45 @@ public abstract class Sig extends Expr {
 	@Override
 	public final String toString() {
 		return label;
+	}
+	
+	public String toExtendedString() {
+		StringBuilder sb = new StringBuilder();
+		if (this.builtin) {
+			sb.append("builtin ");
+		}
+		if ( isPrivate != null) 
+			sb.append("private ");
+		if ( isAbstract != null) 
+			sb.append("abstract ");
+		
+		if ( isLone != null) 
+			sb.append("lone ");
+		
+		if ( isOne != null) 
+			sb.append("one ");
+		
+		if ( isOne != null) 
+			sb.append("some ");
+		
+		if ( isSubset != null) 
+			sb.append("subset ");
+		
+		if ( isMeta != null) 
+			sb.append("meta ");
+		
+		if ( isEnum != null) 
+			sb.append("enum ");
+
+		sb.append( label).append( "{");
+		String del = "";
+		for ( Field f : realFields) {
+			sb.append(del);
+			sb.append(f.label);
+			del=", ";	
+		}
+		sb.append("}");
+		return sb.toString();
 	}
 
 	/** {@inheritDoc} */
@@ -248,6 +288,8 @@ public abstract class Sig extends Expr {
 					case SUBSIG :
 						isSubsig = a.pos.merge(isSubsig);
 						break;
+				default:
+					//TODO throw new ErrorWarning("Undefined case " + a);
 				}
 		this.isPrivate = isPrivate;
 		this.isMeta = isMeta;
@@ -613,7 +655,7 @@ public abstract class Sig extends Expr {
 
 	/** Mutable; represents a field. */
 
-	public static final class Field extends ExprHasName {
+	public static final class Field extends ExprHasName implements Clause {
 
 		/** The sig that this field belongs to; never null. */
 		public final Sig		sig;
@@ -708,12 +750,31 @@ public abstract class Sig extends Expr {
 			Browsable b = make(bound.span(), bound.span(), "<b>bound</b>", bound);
 			return Util.asList(s, b);
 		}
+		
+		@Override 
+		public String explain() {
+			StringBuilder sb = new StringBuilder();
+			if ( isPrivate != null) {
+				sb.append("private ");
+			}
+			if ( isMeta != null) {
+				sb.append("meta ");
+			}
+
+			sb.append(label);
+
+			sb.append( " : ").append( type);
+			
+			return sb.toString();
+		}
+		
 	}
 
 	// ==============================================================================================================//
 
 	/** The list of fields. */
 	private final SafeList<Decl> fields = new SafeList<Decl>();
+	private final SafeList<Field> realFields = new SafeList<>();
 
 	/**
 	 * Return the list of fields as a unmodifiable list of declarations (where
@@ -762,6 +823,7 @@ public abstract class Sig extends Expr {
 		final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
 		f.decl = d;
 		fields.add(d);
+		realFields.add(f);
 		return f;
 	}
 
@@ -800,8 +862,10 @@ public abstract class Sig extends Expr {
 		for (int i = 0; i < f.length; i++)
 			f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, this, labels[i], bound);
 		final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, Arrays.asList(f), bound);
-		for (int i = 0; i < f.length; i++)
+		for (int i = 0; i < f.length; i++) {
 			f[i].decl = d;
+			realFields.add(f[i]);
+		}
 		fields.add(d);
 		return f;
 	}
@@ -840,6 +904,43 @@ public abstract class Sig extends Expr {
 		final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
 		f.decl = d;
 		fields.add(d);
+		realFields.add(f);
 		return f;
+	}
+
+	@Override
+	public String explain() {
+		StringBuilder sb = new StringBuilder();
+		if ( builtin )
+			sb.append("builtin ");
+		if(isEnum !=null) 
+			sb.append("enum ");
+		if(isAbstract !=null) 
+			sb.append("abstract ");
+		if(isLone !=null) 
+			sb.append("lone ");
+		if(isOne !=null) 
+			sb.append("one ");
+		if(isMeta !=null) 
+			sb.append("meta ");
+		if(isSome !=null) 
+			sb.append("some ");
+		if(isSubsig !=null) 
+			sb.append("sig ");
+		if(isSubset !=null) 
+			sb.append("subset ");
+		
+		sb.append(label);
+		String del = "{";
+		for ( Field f : realFields) {
+			sb.append(del);
+			sb.append(f.label).append(":");
+			sb.append(type.join(f.type));
+			del = ", ";
+		}
+		if( !del.equals("{")) {
+			sb.append("}");
+		}
+		return sb.toString();
 	}
 }

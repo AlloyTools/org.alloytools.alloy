@@ -89,6 +89,9 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
 	 * alloy.mit.edu for latest version number.
 	 */
 	public static void setup() {
+		if ( "yes".equals(System.getProperty("debug")))
+			return;
+		
 		if (Thread.getDefaultUncaughtExceptionHandler() != null)
 			return;
 		MailBug x = new MailBug();

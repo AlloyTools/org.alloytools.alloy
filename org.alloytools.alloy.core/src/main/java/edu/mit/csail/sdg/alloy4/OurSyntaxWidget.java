@@ -22,6 +22,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 
@@ -45,6 +47,16 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
 import edu.mit.csail.sdg.alloy4.Listener.Event;
+import edu.mit.csail.sdg.ast.Clause;
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBad;
+import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Func;
+import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.parser.CompModule;
+import edu.mit.csail.sdg.parser.CompUtil;
 
 /**
  * Graphical syntax-highlighting editor.
@@ -76,7 +88,7 @@ public final class OurSyntaxWidget {
 	private final OurSyntaxUndoableDocument	doc			= new OurSyntaxUndoableDocument("Monospaced", 14);
 
 	/** The underlying JTextPane being displayed. */
-	private final JTextPane					pane		= OurAntiAlias.pane(Color.BLACK, Color.WHITE,
+	private final JTextPane					pane		= OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE,
 			new EmptyBorder(6, 6, 6, 6));
 
 	/**
@@ -100,15 +112,46 @@ public final class OurSyntaxWidget {
 	/** Caches the most recent background painter if nonnull. */
 	private OurHighlighter					painter;
 
-	/** Constructs a syntax-highlighting widget. */
-	public OurSyntaxWidget() {
-		this(true, "", "Monospaced", 14, 4, null, null);
+	private OurTabbedSyntaxWidget			parent;
+
+	private volatile CompModule				module;
+
+	/**
+	 * Constructs a syntax-highlighting widget.
+	 * 
+	 * @param ourTabbedSyntaxWidget
+	 */
+	public OurSyntaxWidget(OurTabbedSyntaxWidget parent) {
+		this(parent, true, "", "Monospaced", 14, 4, null, null);
 	}
 
-	/** Constructs a syntax-highlighting widget. */
+	/**
+	 * Constructs a syntax-highlighting widget.
+	 * 
+	 * @param parent
+	 */
 	@SuppressWarnings("serial")
-	public OurSyntaxWidget(boolean enableSyntax, String text, String fontName, int fontSize, int tabSize,
+	public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName,
+			int fontSize, int tabSize,
 			JComponent obj1, JComponent obj2) {
+		pane.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				module = null;
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				module = null;
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				module = null;
+			}
+		});
+		this.parent = parent;
 		this.obj1 = obj1;
 		this.obj2 = obj2;
 		final OurSyntaxWidget me = this;
@@ -145,7 +188,8 @@ public final class OurSyntaxWidget {
 							public final void layout(int w, int h) {
 								try {
 									super.layout(30000, h);
-								} catch (Throwable ex) {}
+								} catch (Throwable ex) {
+								}
 							}
 						};
 					}
@@ -194,9 +238,21 @@ public final class OurSyntaxWidget {
 			}
 
 		});
-		
+
+		pane.getActionMap().put("alloy-comment-block", new AbstractAction("alloy-comment-block") {
+			public void actionPerformed(ActionEvent e) {
+				doComment();
+			}
+		});
+		pane.getActionMap().put("alloy-nav", new AbstractAction("alloy-comment-block") {
+			public void actionPerformed(ActionEvent e) {
+				doNav();
+			}
+		});
 		pane.getActionMap().put("select-word", getSelectWordAction());
-		
+
+		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "alloy-nav");
+		pane.getInputMap().put(KeyStroke.getKeyStroke('/', OurConsole.menuShortcutKeyMask), "alloy-comment-block");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "alloy_tab_insert");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK), "alloy_tab_remove");
 		pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "alloy_copy");
@@ -219,7 +275,8 @@ public final class OurSyntaxWidget {
 				listeners.fire(me, Event.STATUS_CHANGE);
 			}
 
-			public void changedUpdate(DocumentEvent e) {}
+			public void changedUpdate(DocumentEvent e) {
+			}
 		});
 		pane.addFocusListener(new FocusAdapter() {
 			@Override
@@ -244,42 +301,67 @@ public final class OurSyntaxWidget {
 		modified = false;
 	}
 
+	private boolean inWord(char c) {
+		return Character.isAlphabetic(c) || Character.isDigit(c) || Character.isIdentifierIgnorable(c)
+				|| Character.isJavaIdentifierPart(c) || c == '\'' || c == '"';
+	}
+
+	boolean isValidSelection(String text, int start, int end) {
+		return start >= 0 && start <= end && end >= start && end <= text.length();
+	}
+
+	String getCurrentWord() {
+		String text = pane.getText();
+		int[] selection = getCurrentWordSelection(text);
+		if (selection == null)
+			return null;
+
+		return text.substring(selection[0], selection[1]);
+	}
+
+	int[] getCurrentWordSelection(String text) {
+
+		int selectionStart = pane.getSelectionStart();
+		int selectionEnd = pane.getSelectionEnd();
+
+		if (!isValidSelection(text, selectionStart, selectionEnd))
+			return null;
+
+		while (isValidSelection(text, selectionStart - 1, selectionEnd) && inWord(text.charAt(selectionStart - 1)))
+			selectionStart--;
+
+		while (isValidSelection(text, selectionStart, selectionEnd + 1) && inWord(text.charAt(selectionEnd)))
+			selectionEnd++;
+
+		if (!isValidSelection(text, selectionStart, selectionEnd))
+			return null;
+		return new int[] { selectionStart, selectionEnd };
+	}
+
 	private AbstractAction getSelectWordAction() {
 		return new AbstractAction("select-word") {
 			private static final long serialVersionUID = 1L;
 
-			private boolean inWord(char c) {
-				return Character.isAlphabetic(c) || Character.isDigit(c) || Character.isIdentifierIgnorable(c)
-						|| Character.isJavaIdentifierPart(c) || c=='\''|| c=='"';
-			}
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String text = pane.getText();
-				int cursor = pane.getCaretPosition();
-				
-				int selectionStart = cursor;
-				int selectionEnd = cursor;
+				int[] selection = getCurrentWordSelection(text);
+				if (selection == null)
+					return;
 
-				while (selectionStart >= 0 && selectionStart< text.length() && inWord(text.charAt(selectionStart)))
-					selectionStart--;
+				pane.setSelectionStart(selection[0]);
+				pane.setSelectionEnd(selection[1]);
 
-				while (selectionEnd >= 0 && selectionEnd < text.length() && inWord(text.charAt(selectionEnd)))
-					selectionEnd++;
-
-				pane.setSelectionEnd(selectionEnd);
-				pane.setSelectionStart(selectionStart+1);
-				
 			}
 		};
 	}
 
 	private void doTabInsert() {
 		String s = pane.getSelectedText();
-		if ( s != null && s.length() > 0) {
+		if (s != null && s.length() > 0) {
 			StringBuilder sb = new StringBuilder(s);
 			sb.insert(0, '\t');
-			for ( int i=1; i<sb.length()-1; i++) {
+			for (int i = 1; i < sb.length() - 1; i++) {
 				char c = sb.charAt(i);
 				if (c == '\n') {
 					sb.insert(++i, '\t');
@@ -298,15 +380,15 @@ public final class OurSyntaxWidget {
 
 	private void doTabRemove() {
 		String s = pane.getSelectedText();
-		if ( s != null && s.length() > 0) {
+		if (s != null && s.length() > 0) {
 			StringBuilder sb = new StringBuilder(s);
-			if( sb.charAt(0) =='\t')
+			if (sb.charAt(0) == '\t')
 				sb.delete(0, 1);
-			
-			for ( int i=1; i<sb.length()-1; i++) {
+
+			for (int i = 1; i < sb.length() - 1; i++) {
 				char c = sb.charAt(i);
-				if (c == '\n' && sb.charAt(i+1)=='\t') {
-					sb.delete(i+1, i+2);
+				if (c == '\n' && sb.charAt(i + 1) == '\t') {
+					sb.delete(i + 1, i + 2);
 				}
 			}
 			replaceSelection(sb);
@@ -314,11 +396,89 @@ public final class OurSyntaxWidget {
 		listeners.fire(this, Event.CARET_MOVED);
 	}
 
+	private void doComment() {
+		String s = pane.getSelectedText();
+		if (s != null && s.length() > 0) {
+			StringBuilder sb = new StringBuilder(s);
+			int i = 0;
+			while (i < sb.length() - 1) {
+				if (sb.charAt(i) == '/' && sb.charAt(i + 1) == '/') {
+					sb.delete(i, i + 2);
+				} else {
+					sb.insert(i, "//");
+					i += 2;
+				}
+				while (i < sb.length() - 1) {
+					if (sb.charAt(i) == '\n') {
+						i++;
+						break;
+					}
+					i++;
+				}
+			}
+			replaceSelection(sb);
+		} else {
+			try {
+				pane.getDocument().insertString(pane.getCaretPosition(), "/", null);
+			} catch (BadLocationException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
+		listeners.fire(this, Event.CARET_MOVED);
+	}
+
+	private void doNav() {
+		String text = pane.getText();
+		int[] sel = getCurrentWordSelection(text);
+		Pos pos = Pos.toPos(text, sel[0], sel[1]);
+		if (pos == null)
+			return;
+
+		String currentWord = getCurrentWord();
+		if (currentWord == null)
+			return;
+
+		CompModule module = getModule();
+		if (module == null)
+			return;
+
+		Expr expr = module.find(pos);
+		if (expr != null) {
+			Clause clause = expr.referenced();
+			if (clause != null) {
+				Pos where = clause.pos();
+				if (where.sameFile(module.pos()))
+					select(where);
+				else {
+					OurSyntaxWidget ow = parent.open(where);
+					if (ow != null) {
+						ow.select(where);
+					}
+				}
+			}
+		}
+	}
+
+	CompModule getModule() {
+		try {
+			A4Reporter reporter = new A4Reporter();
+			CompModule module = this.module;
+			if (module == null)
+				module = CompUtil.parseEverything_fromString(reporter, pane.getText());
+			this.module = module;
+			return module;
+		} catch (Err e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	private void replaceSelection(CharSequence sb) {
 		int selectionStart = pane.getSelectionStart();
 		pane.replaceSelection(sb.toString());
 		pane.setSelectionStart(selectionStart);
-		pane.setSelectionEnd(selectionStart+sb.length());
+		pane.setSelectionEnd(selectionStart + sb.length());
 	}
 
 	/** Add this object into the given container. */
@@ -343,7 +503,8 @@ public final class OurSyntaxWidget {
 			painter = new OurHighlighter(color);
 		try {
 			pane.getHighlighter().addHighlight(start, end, painter);
-		} catch (Throwable ex) {} // exception is okay
+		} catch (Throwable ex) {
+		} // exception is okay
 	}
 
 	/** Returns the filename. */
@@ -580,8 +741,9 @@ public final class OurSyntaxWidget {
 	 * Save the current tab content to the file system and return true if
 	 * successful.
 	 * 
-	 * @param alwaysPickNewName - if true, it will always pop up a File
-	 *            Selection dialog box to ask for the filename
+	 * @param alwaysPickNewName
+	 *            - if true, it will always pop up a File Selection dialog box
+	 *            to ask for the filename
 	 */
 	boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
 		String n = this.filename;
@@ -604,5 +766,44 @@ public final class OurSyntaxWidget {
 	public void requestFocusInWindow() {
 		if (pane != null)
 			pane.requestFocusInWindow();
+	}
+
+	public void select(Pos pos) {
+		String doc = pane.getText();
+		int[] selection = pos.toStartEnd(doc);
+		if (selection == null)
+			return;
+
+		pane.setSelectionStart(selection[0]);
+		pane.setSelectionEnd(selection[1]);
+	}
+
+	public String getTooltip(MouseEvent event) {
+		int offset = pane.viewToModel(event.getPoint());
+		CompModule module = getModule();
+		if (module == null)
+			return null;
+
+		String text = pane.getText();
+		Pos pos = Pos.toPos(text, offset, offset + 1);
+		Expr expr = module.find(pos);
+		if (expr instanceof ExprBad) {
+			return expr.toString();
+		}
+		if (expr != null) {
+			Clause referenced = expr.referenced();
+			if (referenced != null) {
+				String s = referenced.explain();
+				s = s.replaceAll("this/", "");
+				if (TableView.isTable(s)) {
+					String table = "<html>" + TableView.toTable(s, false) + "</html>";
+					s = table.replaceAll("\n", "<br/>");
+				}
+
+				return s;
+			}
+		}
+
+		return null;
 	}
 }

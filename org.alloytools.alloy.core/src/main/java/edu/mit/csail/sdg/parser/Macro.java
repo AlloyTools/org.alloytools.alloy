@@ -29,6 +29,7 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
 import edu.mit.csail.sdg.ast.ExprCustom;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.VisitReturn;
 import edu.mit.csail.sdg.parser.CompModule.Context;
 
 /** Immutable; this class represents a macro. */
@@ -147,4 +148,13 @@ final class Macro extends ExprCustom {
 		return new ArrayList<Browsable>(0);
 	}
 
+	/*
+	 * TODO is this valid? Custom throws an error because macro's
+	 * should never be used directly. Macros are therefore
+	 * compiled with a usage error. Thinks this is ok?
+	 */
+	@Override
+	public final <T> T accept(VisitReturn<T> visitor) throws Err {
+		return null;
+	}
 }

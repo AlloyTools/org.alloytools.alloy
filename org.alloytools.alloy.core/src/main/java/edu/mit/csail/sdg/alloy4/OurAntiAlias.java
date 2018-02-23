@@ -18,10 +18,14 @@ package edu.mit.csail.sdg.alloy4;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
 import java.util.WeakHashMap;
+import java.util.function.Function;
+
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextPane;
+import javax.swing.ToolTipManager;
 import javax.swing.text.DefaultHighlighter;
 
 /**
@@ -95,10 +99,10 @@ public final class OurAntiAlias {
 	 * @param attributes - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
 	 *            OurUtil.make(component, attributes...)}
 	 */
-	public static JTextPane pane(Object... attributes) {
+	
+	public static JTextPane pane(Function<MouseEvent,String> tooltip, Object... attributes) {
 		JTextPane ans = new JTextPane() {
 			static final long serialVersionUID = 0;
-
 			@Override
 			public void paint(Graphics gr) {
 				if (antiAlias && gr instanceof Graphics2D) {
@@ -107,7 +111,18 @@ public final class OurAntiAlias {
 				}
 				super.paint(gr);
 			}
+			@Override
+			public String getToolTipText(MouseEvent event) {
+				if ( tooltip != null) {
+					return tooltip.apply(event);
+				}
+				return super.getToolTipText(event);
+			}
+			
 		};
+		if ( tooltip != null)
+			ToolTipManager.sharedInstance().registerComponent(ans);
+
 		OurUtil.make(ans, attributes);
 		ans.setHighlighter(new DefaultHighlighter());
 		map.put(ans, Boolean.TRUE);

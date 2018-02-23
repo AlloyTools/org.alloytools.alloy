@@ -73,35 +73,35 @@ public final class ExprUnary extends Expr {
 	public void toString(StringBuilder out, int indent) {
 		if (indent < 0) {
 			switch (op) {
-				case SOMEOF :
-					out.append("some ");
-					break;
-				case LONEOF :
-					out.append("lone ");
-					break;
-				case ONEOF :
-					out.append("one ");
-					break;
-				case SETOF :
-					out.append("set ");
-					break;
-				case EXACTLYOF :
-					out.append("exactly ");
-					break;
-				case CAST2INT :
-					out.append("int[");
-					sub.toString(out, -1);
-					out.append(']');
-					return;
-				case CAST2SIGINT :
-					out.append("Int[");
-					sub.toString(out, -1);
-					out.append(']');
-					return;
-				case NOOP :
-					break;
-				default :
-					out.append(op).append(' ');
+			case SOMEOF:
+				out.append("some ");
+				break;
+			case LONEOF:
+				out.append("lone ");
+				break;
+			case ONEOF:
+				out.append("one ");
+				break;
+			case SETOF:
+				out.append("set ");
+				break;
+			case EXACTLYOF:
+				out.append("exactly ");
+				break;
+			case CAST2INT:
+				out.append("int[");
+				sub.toString(out, -1);
+				out.append(']');
+				return;
+			case CAST2SIGINT:
+				out.append("Int[");
+				sub.toString(out, -1);
+				out.append(']');
+				return;
+			case NOOP:
+				break;
+			default:
+				out.append(op).append(' ');
 			}
 			sub.toString(out, -1);
 		} else {
@@ -194,9 +194,11 @@ public final class ExprUnary extends Expr {
 		/**
 		 * Construct an ExprUnary node.
 		 * 
-		 * @param pos - the original position of the "unary operator" in the
+		 * @param pos
+		 *            - the original position of the "unary operator" in the
 		 *            file (can be null if unknown)
-		 * @param sub - the subexpression
+		 * @param sub
+		 *            - the subexpression
 		 *            <p>
 		 *            Alloy4 disallows multiplicity like this: "variable : one
 		 *            (X lone-> Y)", <br>
@@ -214,11 +216,15 @@ public final class ExprUnary extends Expr {
 		/**
 		 * Construct an ExprUnary node.
 		 * 
-		 * @param pos - the original position of the "unary operator" in the
+		 * @param pos
+		 *            - the original position of the "unary operator" in the
 		 *            file (can be null if unknown)
-		 * @param sub - the subexpression
-		 * @param extraError - if nonnull, it will be appended as an extra error
-		 * @param extraWeight - it's the amount of extra weight
+		 * @param sub
+		 *            - the subexpression
+		 * @param extraError
+		 *            - if nonnull, it will be appended as an extra error
+		 * @param extraWeight
+		 *            - it's the amount of extra weight
 		 *            <p>
 		 *            Alloy4 disallows multiplicity like this: "variable : one
 		 *            (X lone-> Y)", <br>
@@ -253,82 +259,82 @@ public final class ExprUnary extends Expr {
 			}
 			extraError = null;
 			switch (this) {
-				case NOOP :
-					break;
-				case NOT :
-					sub = sub.typecheck_as_formula();
-					break;
-				case CAST2SIGINT :
-					if (sub instanceof ExprUnary)
-						if (((ExprUnary) sub).op == CAST2SIGINT)
-							return sub;
-					sub = sub.typecheck_as_int();
-					break;
-				case CAST2INT :
-					if (sub instanceof ExprUnary) {
-						// shortcircuit
-						ExprUnary sub2 = (ExprUnary) sub;
-						if (sub2.op == CAST2INT)
-							return sub2;
-						if (sub2.op == CAST2SIGINT)
-							return sub2.sub;
-					}
-					sub = sub.typecheck_as_set();
-					break;
-				default :
-					sub = sub.typecheck_as_set();
+			case NOOP:
+				break;
+			case NOT:
+				sub = sub.typecheck_as_formula();
+				break;
+			case CAST2SIGINT:
+				if (sub instanceof ExprUnary)
+					if (((ExprUnary) sub).op == CAST2SIGINT)
+						return sub;
+				sub = sub.typecheck_as_int();
+				break;
+			case CAST2INT:
+				if (sub instanceof ExprUnary) {
+					// shortcircuit
+					ExprUnary sub2 = (ExprUnary) sub;
+					if (sub2.op == CAST2INT)
+						return sub2;
+					if (sub2.op == CAST2SIGINT)
+						return sub2.sub;
+				}
+				sub = sub.typecheck_as_set();
+				break;
+			default:
+				sub = sub.typecheck_as_set();
 			}
 			Type type = sub.type;
 			if (sub.errors.isEmpty())
 				switch (this) {
-					case EXACTLYOF :
-					case SOMEOF :
-					case LONEOF :
-					case ONEOF :
-					case SETOF :
-						if (this == SETOF || this == EXACTLYOF)
-							type = Type.removesBoolAndInt(sub.type);
-						else
-							type = sub.type.extract(1);
-						if (type == EMPTY)
-							extraError = new ErrorType(sub.span(), "After the some/lone/one multiplicity symbol, "
-									+ "this expression must be a unary set.\nInstead, its possible type(s) are:\n"
-									+ sub.type);
-						break;
-					case NOT :
-					case NO :
-					case SOME :
-					case LONE :
-					case ONE :
-						type = Type.FORMULA;
-						break;
-					case TRANSPOSE :
-						type = sub.type.transpose();
-						if (type == EMPTY)
-							extraError = new ErrorType(sub.span(), "~ can be used only with a binary relation.\n"
-									+ "Instead, its possible type(s) are:\n" + sub.type);
-						break;
-					case RCLOSURE :
-					case CLOSURE :
-						type = sub.type.closure();
-						if (type == EMPTY)
-							extraError = new ErrorType(sub.span(), label + " can be used only with a binary relation.\n"
-									+ "Instead, its possible type(s) are:\n" + sub.type);
-						if (this == RCLOSURE)
-							type = Type.make2(UNIV);
-						break;
-					case CARDINALITY :
-						type = Type.smallIntType();
-						break;
-					case CAST2INT :
-						if (!sub.type.hasArity(1))
-							extraError = new ErrorType(sub.span(), "int[] can be used only with a unary set.\n"
-									+ "Instead, its possible type(s) are:\n" + sub.type);
-						type = Type.smallIntType();
-						break;
-					case CAST2SIGINT :
-						type = SIGINT.type;
-						break;
+				case EXACTLYOF:
+				case SOMEOF:
+				case LONEOF:
+				case ONEOF:
+				case SETOF:
+					if (this == SETOF || this == EXACTLYOF)
+						type = Type.removesBoolAndInt(sub.type);
+					else
+						type = sub.type.extract(1);
+					if (type == EMPTY)
+						extraError = new ErrorType(sub.span(), "After the some/lone/one multiplicity symbol, "
+								+ "this expression must be a unary set.\nInstead, its possible type(s) are:\n"
+								+ sub.type);
+					break;
+				case NOT:
+				case NO:
+				case SOME:
+				case LONE:
+				case ONE:
+					type = Type.FORMULA;
+					break;
+				case TRANSPOSE:
+					type = sub.type.transpose();
+					if (type == EMPTY)
+						extraError = new ErrorType(sub.span(), "~ can be used only with a binary relation.\n"
+								+ "Instead, its possible type(s) are:\n" + sub.type);
+					break;
+				case RCLOSURE:
+				case CLOSURE:
+					type = sub.type.closure();
+					if (type == EMPTY)
+						extraError = new ErrorType(sub.span(), label + " can be used only with a binary relation.\n"
+								+ "Instead, its possible type(s) are:\n" + sub.type);
+					if (this == RCLOSURE)
+						type = Type.make2(UNIV);
+					break;
+				case CARDINALITY:
+					type = Type.smallIntType();
+					break;
+				case CAST2INT:
+					if (!sub.type.hasArity(1))
+						extraError = new ErrorType(sub.span(), "int[] can be used only with a unary set.\n"
+								+ "Instead, its possible type(s) are:\n" + sub.type);
+					type = Type.smallIntType();
+					break;
+				case CAST2SIGINT:
+					type = SIGINT.type;
+					break;
 				}
 			return new ExprUnary(pos, this, sub, type, extraWeight + sub.weight, errors.make(extraError));
 		}
@@ -359,38 +365,38 @@ public final class ExprUnary extends Expr {
 		ErrorWarning w1 = null, w2 = null;
 		Type s = p;
 		switch (op) {
-			case NOT :
-				s = Type.FORMULA;
-				break;
-			case TRANSPOSE :
-			case RCLOSURE :
-			case CLOSURE :
-				if (warns != null && op != Op.TRANSPOSE && type.join(type).hasNoTuple())
-					w1 = new ErrorWarning(pos,
-							this + " is redundant since its domain and range are disjoint: " + sub.type.extract(2));
-				s = (op != Op.TRANSPOSE) ? resolveClosure(p, sub.type) : sub.type.transpose().intersect(p).transpose();
-				if (warns != null && s == EMPTY && p.hasTuple())
-					w2 = new ErrorWarning(sub.span(),
-							"The value of this expression does not contribute to the value of the parent.\nParent's relevant type = "
-									+ p + "\nThis expression's type = " + sub.type.extract(2));
-				break;
-			case CARDINALITY :
-			case NO :
-			case ONE :
-			case SOME :
-			case LONE :
-				s = Type.removesBoolAndInt(sub.type);
-				break;
-			case CAST2SIGINT :
-				s = Type.smallIntType();
-				break;
-			case CAST2INT :
-				s = sub.type.intersect(SIGINT.type);
-				if (warns != null && s.hasNoTuple())
-					w1 = new ErrorWarning(sub.span(),
-							"This expression should contain Int atoms.\nInstead, its possible type(s) are:\n"
-									+ sub.type.extract(1));
-				break;
+		case NOT:
+			s = Type.FORMULA;
+			break;
+		case TRANSPOSE:
+		case RCLOSURE:
+		case CLOSURE:
+			if (warns != null && op != Op.TRANSPOSE && type.join(type).hasNoTuple())
+				w1 = new ErrorWarning(pos,
+						this + " is redundant since its domain and range are disjoint: " + sub.type.extract(2));
+			s = (op != Op.TRANSPOSE) ? resolveClosure(p, sub.type) : sub.type.transpose().intersect(p).transpose();
+			if (warns != null && s == EMPTY && p.hasTuple())
+				w2 = new ErrorWarning(sub.span(),
+						"The value of this expression does not contribute to the value of the parent.\nParent's relevant type = "
+								+ p + "\nThis expression's type = " + sub.type.extract(2));
+			break;
+		case CARDINALITY:
+		case NO:
+		case ONE:
+		case SOME:
+		case LONE:
+			s = Type.removesBoolAndInt(sub.type);
+			break;
+		case CAST2SIGINT:
+			s = Type.smallIntType();
+			break;
+		case CAST2INT:
+			s = sub.type.intersect(SIGINT.type);
+			if (warns != null && s.hasNoTuple())
+				w1 = new ErrorWarning(sub.span(),
+						"This expression should contain Int atoms.\nInstead, its possible type(s) are:\n"
+								+ sub.type.extract(1));
+			break;
 		}
 		Expr sub = this.sub.resolve(s, warns);
 		if (w1 != null)
@@ -500,7 +506,15 @@ public final class ExprUnary extends Expr {
 
 	/** {@inheritDoc} */
 	@Override
-	public List< ? extends Browsable> getSubnodes() {
+	public List<? extends Browsable> getSubnodes() {
 		return op == Op.NOOP ? sub.getSubnodes() : Util.asList(sub);
+	}
+
+	@Override
+	public Clause referenced() {
+		if (sub instanceof Clause) {
+			return super.referenced((Clause) sub);
+		} else
+			return super.referenced();
 	}
 }

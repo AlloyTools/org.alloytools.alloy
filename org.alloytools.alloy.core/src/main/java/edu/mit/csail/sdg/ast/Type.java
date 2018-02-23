@@ -26,6 +26,7 @@ import java.util.List;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorType;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
@@ -41,7 +42,7 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * B even if the caller later constructs more sigs or subsigs or subsetsigs...
  */
 
-public final class Type implements Iterable<Type.ProductType> {
+public final class Type implements Iterable<Type.ProductType>, Clause {
 
 	// [AM]
 	// /** This configuration option is true if we want to automatically cast
@@ -1270,5 +1271,23 @@ public final class Type implements Iterable<Type.ProductType> {
 			}
 		}
 		return ans.append('}').toString();
+	}
+
+	@Override
+	public Pos pos() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String explain() {
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for ( ProductType t : this) {
+			sb.append(del);
+			sb.append(t.toString());
+			del = "->";
+		}
+		return sb.toString();
 	}
 }

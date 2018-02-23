@@ -251,6 +251,7 @@ public final class CompUtil {
 				}
 			}
 			loaded.put(cp, content);
+			x.setResolvedFilePath(cp);
 			CompModule y = parseRecursively(seenDollar, loaded, fc, x.pos, cp, root,
 					(prefix.length() == 0 ? x.alias : prefix + "/" + x.alias), thispath, initialResolution);
 			x.connect(y);
