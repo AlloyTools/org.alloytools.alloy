@@ -355,16 +355,17 @@ public final class OurConsole extends JScrollPane {
 		len += (doc.getLength() - old);
 		// perform the computation
 		boolean isBad = false;
+		Object result;
 		try {
-			cmd = computer.compute(cmd);
+			result = computer.compute(cmd);
 		} catch (Throwable ex) {
-			cmd = ex.toString();
+			result = ex.toString();
 			isBad = true;
 		}
 		int savePosition = len;
 		// display the outcome
 		old = doc.getLength();
-		do_add(len, cmd.trim() + "\n\n", (isBad ? bad : good));
+		do_add(len, result.toString().trim() + "\n\n", (isBad ? bad : good));
 		len += (doc.getLength() - old);
 		// indent the outcome
 		main.setSelectionStart(savePosition + 1);

@@ -1799,7 +1799,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private static Computer evaluator = new Computer() {
 		private String filename = null;
 
-		public final String compute(final Object input) throws Exception {
+		public final Object compute(final Object input) throws Exception {
 			if (input instanceof File) {
 				filename = ((File) input).getAbsolutePath();
 				return "";
@@ -1846,9 +1846,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
 				Expr e = CompUtil.parseOneExpression_fromString(root, str);
 				if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG) {
 					SimInstance simInst = convert(root, ans);
-					return simInst.visitThis(e).toString() + (simInst.wasOverflow() ? " (OF)" : "");
-				} else
-					return ans.eval(e).toString();
+					if (simInst.wasOverflow())
+						return simInst.visitThis(e).toString() + " (OF)";
+				}
+				return ans.eval(e);
 			} catch (HigherOrderDeclException ex) {
 				throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
 			}

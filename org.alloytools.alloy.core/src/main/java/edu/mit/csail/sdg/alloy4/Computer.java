@@ -27,5 +27,6 @@ public interface Computer {
 	 * 
 	 * @throws Exception if an error occurred during the computation.
 	 */
-	public String compute(Object input) throws Exception;
+	public Object compute(Object input) throws Exception;
+
 }
