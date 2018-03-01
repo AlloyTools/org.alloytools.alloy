@@ -26,6 +26,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
+import java.util.Objects;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -50,6 +51,7 @@ import edu.mit.csail.sdg.alloy4.Listener.Event;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
+import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
@@ -801,6 +803,13 @@ public final class OurSyntaxWidget {
 				}
 
 				return s;
+			} else if (expr instanceof ExprConstant) {
+				String token = pos.substring(text);
+				if ( token != null) {
+					String match = expr.toString();
+					if (!Objects.equals(token, match))
+						return match;
+				}
 			}
 		}
 

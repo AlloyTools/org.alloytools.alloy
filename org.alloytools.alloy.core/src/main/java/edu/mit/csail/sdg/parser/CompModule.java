@@ -2147,13 +2147,13 @@ public final class CompModule extends Browsable implements Module {
 					root.exactSigs.add(sig);
 			}
 		}
-		// if (!errors.isEmpty())
-		// throw errors.pick();
+		if (!errors.isEmpty())
+			throw errors.pick();
 		// Typecheck the run/check commands (which can refer to function bodies
 		// and assertions)
 		root.resolveCommands(root.getAllReachableFacts());
-		// if (!errors.isEmpty())
-		// throw errors.pick();
+		if (!errors.isEmpty())
+			throw errors.pick();
 		for (ErrorWarning w : warns)
 			rep.warning(w);
 		for (Sig s : root.exactSigs)
@@ -2355,6 +2355,7 @@ public final class CompModule extends Browsable implements Module {
 				d.names.forEach(x -> x.accept(visitor));
 				d.expr.accept(visitor);
 			});
+			s.getFacts().forEach( f -> f.accept(visitor));
 		});
 
 		funcs.values().forEach(funs -> {
@@ -2419,7 +2420,7 @@ public final class CompModule extends Browsable implements Module {
 
 					int width = expr.pos.width();
 					if (width <= holder.width) {
-						if (holder.expr == null ||  holder.expr.referenced() == null || expr.referenced() != null) {
+						if (holder.expr == null || holder.expr.referenced() == null || expr.referenced() != null) {
 							holder.width = width;
 							holder.expr = expr;
 						}
