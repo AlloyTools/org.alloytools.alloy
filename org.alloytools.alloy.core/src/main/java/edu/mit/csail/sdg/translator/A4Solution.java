@@ -36,6 +36,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -61,9 +64,6 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Type;
-import edu.mit.csail.sdg.sim.SimAtom;
-import edu.mit.csail.sdg.sim.SimTuple;
-import edu.mit.csail.sdg.sim.SimTupleset;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -721,6 +721,9 @@ public final class A4Solution {
 			case MINUS:
 				return a2k(a).difference(a2k(b));
 			// TODO: IPLUS, IMINUS???
+			default:
+				// TODO log?
+				break;
 			}
 		}
 		return null; // Current only UNION, PRODUCT, and DIFFERENCE of Sigs and
@@ -1639,14 +1642,11 @@ public final class A4Solution {
 
 	/** Helper method to write out a full XML file. */
 	public void writeXML(String filename, Iterable<Func> macros, Map<String, String> sourceFiles) throws Err {
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(filename, "UTF-8");
+		try (PrintWriter out = new PrintWriter(filename, "UTF-8")) {
 			writeXML(out, macros, sourceFiles);
 			if (!Util.close(out))
 				throw new ErrorFatal("Error writing the solution XML file.");
 		} catch (IOException ex) {
-			Util.close(out);
 			throw new ErrorFatal("Error writing the solution XML file.", ex);
 		}
 	}
@@ -1654,14 +1654,11 @@ public final class A4Solution {
 	/** Helper method to write out a full XML file. */
 	public void writeXML(A4Reporter rep, String filename, Iterable<Func> macros, Map<String, String> sourceFiles)
 			throws Err {
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(filename, "UTF-8");
+		try (PrintWriter out = new PrintWriter(filename, "UTF-8")) {
 			writeXML(rep, out, macros, sourceFiles);
 			if (!Util.close(out))
 				throw new ErrorFatal("Error writing the solution XML file.");
 		} catch (IOException ex) {
-			Util.close(out);
 			throw new ErrorFatal("Error writing the solution XML file.", ex);
 		}
 	}
@@ -1687,71 +1684,9 @@ public final class A4Solution {
 		if (eval == null)
 			return "---OUTCOME---\nUnsatisfiable.\n";
 
-		StringBuilder sb = new StringBuilder();
-		Instance instance = eval.instance();
-
-		for (Sig s : sigs) {
-			
-			if ( !s.label.startsWith("this/"))
-				continue;
-			
-			TupleSet tuples = instance.tuples(s.label);
-			if (tuples != null) {
-				List<SimAtom> titles = new ArrayList<>();
-				A4TupleSet atoms = new A4TupleSet(tuples, this);
-				titles.add(SimAtom.make(s.label.substring(5)));
-				SimTupleset st = toSimTupleSet(atoms);
-
-				if ( s.getFields().size() == 0)
-					continue;
-				
-				for (Field f : s.getFields()) {
-					A4TupleSet values = eval(f);
-					if (values != null) {
-						SimTupleset empty = SimTupleset.make(SimTupleset.EMPTY_ATOM.toString());
-						if ( values.size() == 0) {
-							
-							for (int i=1; i<f.type().arity(); i++)
-								st = st.product( empty );
-							
-						} else {
-							SimTupleset next = toSimTupleSet(values);
-							st = st.productForSameFirstColumn(next);
-						}
-						if (values.arity() > 2) {
-							for (int i = 1; i < values.arity(); i++) {
-								titles.add(SimAtom.make(f.label + "$" + (i - 1)));
-							}
-						} else {
-							titles.add(SimAtom.make(f.label));
-						}
-					}
-				}
-				SimTuple headerTuple = SimTuple.make(titles);
-				SimTupleset headerTupleset = SimTupleset.make(headerTuple);
-				SimTupleset union = headerTupleset.union(st);
-				String table = TableView.toTable(union.toString(), true);
-				sb.append(table);
-			}
-		}
-		return sb.toString();
-	}
-
-	private SimTupleset toSimTupleSet(A4TupleSet values) {
-		List<SimTuple> l = new ArrayList<>();
-		for (A4Tuple a4t : values) {
-			l.add(toSimTuple(a4t));
-		}
-		return SimTupleset.make(l);
-	}
-
-	private SimTuple toSimTuple(A4Tuple a4t) {
-		List<SimAtom> atoms = new ArrayList<>();
-		for (int i = 0; i < a4t.arity(); i++) {
-			SimAtom atom = SimAtom.make(a4t.atom(i));
-			atoms.add(atom);
-		}
-		return SimTuple.make(atoms);
+		Map<String, Table> table = TableView.toTable(this, eval.instance(), sigs);
+		return String.join("\n",
+				table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
 	}
 
 }

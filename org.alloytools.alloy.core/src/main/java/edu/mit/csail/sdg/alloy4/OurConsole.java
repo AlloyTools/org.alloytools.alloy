@@ -49,6 +49,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.alloytools.util.table.Table;
+
 /**
  * Graphical input/output prompt.
  * <p>
@@ -400,7 +402,9 @@ public final class OurConsole extends JScrollPane {
 		try {
 			StyledDocument doc = main.getStyledDocument();
 			if (TableView.isTable(text)) {
-				doc.insertString(where >= 0 ? where : doc.getLength(), TableView.toTable(text, false), mono);
+				Table table = TableView.toTable(text, false);
+				
+				doc.insertString(where >= 0 ? where : doc.getLength(),table.toString(), mono);
 				main.getCaret().setSelectionVisible(false);
 			} else
 				doc.insertString(where >= 0 ? where : doc.getLength(), text, style);

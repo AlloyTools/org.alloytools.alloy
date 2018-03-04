@@ -24,5 +24,5 @@ Export-Package: \
 	edu.mit.csail.sdg.parser,\
 	edu.mit.csail.sdg.sim,\
 	edu.mit.csail.sdg.translator,\
-
+	org.alloytools.util.table
 Private-Package: java_cup.runtime
