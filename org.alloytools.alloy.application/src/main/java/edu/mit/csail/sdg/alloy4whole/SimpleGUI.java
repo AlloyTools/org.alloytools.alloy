@@ -765,7 +765,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private Runner doOpen() {
 		if (wrap)
 			return wrapMe();
-		File file = OurDialog.askFile(true, null, ".als", ".als files");
+		File file = OurDialog.askFile(true, null, new String[] {
+				".als", ".md"
+		}, "Alloy (.als) or Markdown files");
 		if (file != null) {
 			Util.setCurrentDirectory(file.getParentFile());
 			doOpenFile(file.getPath());
@@ -777,7 +779,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private Runner doBuiltin() {
 		if (wrap)
 			return wrapMe();
-		File file = OurDialog.askFile(true, alloyHome() + fs + "models", ".als", ".als files");
+		File file = OurDialog.askFile(true, alloyHome() + fs + "models", new String[] {
+				".als", ".md"
+		}, "Alloy (.als) or Markdown files");
 		if (file != null) {
 			doOpenFile(file.getPath());
 		}

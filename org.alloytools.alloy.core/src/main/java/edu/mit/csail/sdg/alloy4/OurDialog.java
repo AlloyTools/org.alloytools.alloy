@@ -208,6 +208,9 @@ public final class OurDialog {
 	 *         selected file
 	 */
 	public static File askFile(boolean isOpen, String dir, final String ext, final String description) {
+		return askFile(isOpen,dir,new String[] {ext},description);
+	}
+	public static File askFile(boolean isOpen, String dir, final String exts[], final String description) {
 		if (dir == null)
 			dir = Util.getCurrentDirectory();
 		if (!(new File(dir).isDirectory()))
@@ -224,10 +227,14 @@ public final class OurDialog {
 			open.setAlwaysOnTop(true);
 			open.setMode(isOpen ? FileDialog.LOAD : FileDialog.SAVE);
 			open.setDirectory(dir);
-			if (ext.length() > 0)
+			if (exts != null && exts.length > 0)
 				open.setFilenameFilter(new FilenameFilter() {
 					public boolean accept(File dir, String name) {
-						return name.toLowerCase(Locale.US).endsWith(ext);
+						for ( String ext : exts) {
+							if ( name.toLowerCase(Locale.US).endsWith(ext) )
+								return true;
+						}
+						return false;
 					}
 				});
 			open.setVisible(true); // This method blocks until the user either
@@ -251,10 +258,15 @@ public final class OurDialog {
 				open.setDialogTitle(isOpen ? "Open..." : "Save...");
 				open.setApproveButtonText(isOpen ? "Open" : "Save");
 				open.setDialogType(isOpen ? JFileChooser.OPEN_DIALOG : JFileChooser.SAVE_DIALOG);
-				if (ext.length() > 0)
+				if (exts != null && exts.length > 0)
 					open.setFileFilter(new FileFilter() {
 						public boolean accept(File file) {
-							return !file.isFile() || file.getPath().toLowerCase(Locale.US).endsWith(ext);
+							for ( String ext : exts) {
+								boolean result = !file.isFile() || file.getPath().toLowerCase(Locale.US).endsWith(ext);
+								if ( result )
+									return true;
+							}
+							return false;
 						}
 
 						public String getDescription() {
@@ -270,14 +282,14 @@ public final class OurDialog {
 				// In such a case, we'll fall back to using the "AWT" file open
 				// dialog
 				useAWT = true;
-				return askFile(isOpen, dir, ext, description);
+				return askFile(isOpen, dir, exts, description);
 			}
 		}
 		if (!isOpen) {
 			int lastSlash = ans.lastIndexOf(File.separatorChar);
 			int lastDot = (lastSlash >= 0) ? ans.indexOf('.', lastSlash) : ans.indexOf('.');
-			if (lastDot < 0)
-				ans = ans + ext;
+			if (lastDot < 0 && exts != null && exts.length > 0)
+				ans = ans + exts[0];
 		}
 		return new File(Util.canon(ans));
 	}
