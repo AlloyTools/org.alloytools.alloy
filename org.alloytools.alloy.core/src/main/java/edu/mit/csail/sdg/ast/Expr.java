@@ -121,7 +121,7 @@ public abstract class Expr extends Browsable {
 		if (errors == null)
 			errors = emptyListOfErrors;
 		if (type == EMPTY && errors.size() == 0)
-			errors = errors.make(new ErrorType(pos, "This expression failed to be typechecked"));
+			errors = errors.make(new ErrorType(pos, "This expression failed to be typechecked " + pos));
 		this.mult = (mult < 0 || mult > 2) ? 0 : mult;
 		this.type = (errors.size() > 0 || type == null) ? EMPTY : type;
 		this.weight = (weight > 0) ? weight : 0;

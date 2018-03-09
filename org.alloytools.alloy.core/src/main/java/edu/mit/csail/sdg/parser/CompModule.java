@@ -307,7 +307,7 @@ public final class CompModule extends Browsable implements Module {
 					break;
 				}
 			}
-			this.isIntsNotUsed = noIntFields && noOpenInteger;
+			this.isIntsNotUsed = false; // TODO InoIntFields && noOpenInteger;
 		}
 
 		/**

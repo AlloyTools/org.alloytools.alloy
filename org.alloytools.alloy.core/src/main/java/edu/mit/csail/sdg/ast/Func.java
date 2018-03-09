@@ -18,11 +18,15 @@ package edu.mit.csail.sdg.ast;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import org.alloytools.util.table.Table;
+
 import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Util;
 
 /**
@@ -284,26 +288,33 @@ public final class Func extends Browsable implements Clause {
 	public String explain() {
 		StringBuilder sb = new StringBuilder();
 		if ( isPred) 
-			sb.append("pred ");
+			sb.append("pred: ");
 		else
-			sb.append("fun ");
+			sb.append("fun: ");
 			
-		sb.append(label);
-		String del = "[";
-		for ( Decl decl : decls) {
-			for ( Expr e : decl.names) {
-				sb.append(del);
-				sb.append(e);
-				sb.append(" :" );
-				sb.append(decl.expr.type);
-				del = ", ";
+		sb.append(label.replaceAll("this/", ""));
+		
+		
+		if ( decls.size() > 0 || !isPred) {
+			sb.append("\n");
+			int n = 0;
+			
+			int count = (int) decls.stream().flatMap( decl -> decl.names.stream()).count();
+			
+			Table t = new Table(2, count + ( isPred ? 0 : 1), 1);
+			for ( Decl decl : decls) {
+				for ( Expr e : decl.names) {
+					t.set(0, n, e);
+					t.set(1, n, TableView.toTable(decl.expr.type));
+					n++;
+				}
 			}
-		}
-		if ( !del.equals("["))
-			sb.append("]");
-		if ( !isPred) {
-			sb.append(" : " );
-			sb.append(returnDecl.type);
+			if ( !isPred) {
+				t.set(0, n, "<return>");
+				t.set(1, n, TableView.toTable(returnDecl.type));
+				n++;
+			}
+			sb.append(t);
 		}
 		return sb.toString();
 	}

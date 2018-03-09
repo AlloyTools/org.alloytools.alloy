@@ -430,34 +430,38 @@ public final class OurSyntaxWidget {
 	}
 
 	private void doNav() {
-		String text = pane.getText();
-		int[] sel = getCurrentWordSelection(text);
-		Pos pos = Pos.toPos(text, sel[0], sel[1]);
-		if (pos == null)
-			return;
+		try {
+			String text = pane.getText();
+			int[] sel = getCurrentWordSelection(text);
+			Pos pos = Pos.toPos(text, sel[0], sel[1]);
+			if (pos == null)
+				return;
 
-		String currentWord = getCurrentWord();
-		if (currentWord == null)
-			return;
+			String currentWord = getCurrentWord();
+			if (currentWord == null)
+				return;
 
-		CompModule module = getModule();
-		if (module == null)
-			return;
+			CompModule module = getModule();
+			if (module == null)
+				return;
 
-		Expr expr = module.find(pos);
-		if (expr != null) {
-			Clause clause = expr.referenced();
-			if (clause != null) {
-				Pos where = clause.pos();
-				if (where.sameFile(module.pos()))
-					select(where);
-				else {
-					OurSyntaxWidget ow = parent.open(where);
-					if (ow != null) {
-						ow.select(where);
+			Expr expr = module.find(pos);
+			if (expr != null) {
+				Clause clause = expr.referenced();
+				if (clause != null) {
+					Pos where = clause.pos();
+					if (where.sameFile(module.pos()))
+						select(where);
+					else {
+						OurSyntaxWidget ow = parent.open(where);
+						if (ow != null) {
+							ow.select(where);
+						}
 					}
 				}
 			}
+		} catch (Exception e) {
+			// Ignore, this is a best effort thingy
 		}
 	}
 
@@ -781,38 +785,38 @@ public final class OurSyntaxWidget {
 	}
 
 	public String getTooltip(MouseEvent event) {
-		int offset = pane.viewToModel(event.getPoint());
-		CompModule module = getModule();
-		if (module == null)
-			return null;
+		try {
+			int offset = pane.viewToModel(event.getPoint());
+			CompModule module = getModule();
+			if (module == null)
+				return null;
 
-		String text = pane.getText();
-		Pos pos = Pos.toPos(text, offset, offset + 1);
-		Expr expr = module.find(pos);
-		if (expr instanceof ExprBad) {
-			return expr.toString();
-		}
-		if (expr != null) {
-			Clause referenced = expr.referenced();
-			if (referenced != null) {
-				String s = referenced.explain();
-				s = s.replaceAll("this/", "");
-				if (TableView.isTable(s)) {
-					String table = "<html>" + TableView.toTable(s, false) + "</html>";
+			String text = pane.getText();
+			Pos pos = Pos.toPos(text, offset, offset + 1);
+			Expr expr = module.find(pos);
+			if (expr instanceof ExprBad) {
+				return expr.toString();
+			}
+			if (expr != null) {
+				Clause referenced = expr.referenced();
+				if (referenced != null) {
+					String s = referenced.explain();
+					String table = "<html><pre>" + s + "</pre></html>";
 					s = table.replaceAll("\n", "<br/>");
-				}
-
-				return s;
-			} else if (expr instanceof ExprConstant) {
-				String token = pos.substring(text);
-				if ( token != null) {
-					String match = expr.toString();
-					if (!Objects.equals(token, match))
-						return match;
+					return s;
+				} else if (expr instanceof ExprConstant) {
+					String token = pos.substring(text);
+					if (token != null) {
+						String match = expr.toString();
+						if (!Objects.equals(token, match))
+							return match;
+					}
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			// ignore compile errors
 		}
-
 		return null;
 	}
 }

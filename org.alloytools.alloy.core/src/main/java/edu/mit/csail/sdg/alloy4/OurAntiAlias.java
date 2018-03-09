@@ -41,7 +41,8 @@ public final class OurAntiAlias {
 	 * This constructor is private, since this utility class never needs to be
 	 * instantiated.
 	 */
-	private OurAntiAlias() {}
+	private OurAntiAlias() {
+	}
 
 	/** Use anti-alias or not. */
 	private static boolean							antiAlias	= Util.onMac() || Util.onWindows();
@@ -50,7 +51,7 @@ public final class OurAntiAlias {
 	 * Stores weak references of all objects that need to be redrawn when
 	 * anti-alias setting changes.
 	 */
-	private static WeakHashMap<JComponent,Boolean>	map			= new WeakHashMap<JComponent,Boolean>();
+	private static WeakHashMap<JComponent, Boolean>	map			= new WeakHashMap<JComponent, Boolean>();
 
 	/**
 	 * Changes whether anti-aliasing should be done or not (when changed, we
@@ -71,7 +72,8 @@ public final class OurAntiAlias {
 	/**
 	 * Constructs an antialias-capable JLabel.
 	 * 
-	 * @param attributes - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
+	 * @param attributes
+	 *            - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
 	 *            OurUtil.make(component, attributes...)}
 	 */
 	public static JLabel label(String label, Object... attributes) {
@@ -96,36 +98,43 @@ public final class OurAntiAlias {
 	 * Constructs an antialias-capable JTextPane with a DefaultHighlighter
 	 * associated with it.
 	 * 
-	 * @param attributes - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
+	 * @param attributes
+	 *            - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
 	 *            OurUtil.make(component, attributes...)}
 	 */
-	
-	public static JTextPane pane(Function<MouseEvent,String> tooltip, Object... attributes) {
-		JTextPane ans = new JTextPane() {
-			static final long serialVersionUID = 0;
-			@Override
-			public void paint(Graphics gr) {
-				if (antiAlias && gr instanceof Graphics2D) {
-					((Graphics2D) gr).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-							RenderingHints.VALUE_ANTIALIAS_ON);
-				}
-				super.paint(gr);
-			}
-			@Override
-			public String getToolTipText(MouseEvent event) {
-				if ( tooltip != null) {
-					return tooltip.apply(event);
-				}
-				return super.getToolTipText(event);
-			}
-			
-		};
-		if ( tooltip != null)
-			ToolTipManager.sharedInstance().registerComponent(ans);
 
-		OurUtil.make(ans, attributes);
-		ans.setHighlighter(new DefaultHighlighter());
-		map.put(ans, Boolean.TRUE);
-		return ans;
+	public static JTextPane pane(Function<MouseEvent, String> tooltip, Object... attributes) {
+		try {
+			JTextPane ans = new JTextPane() {
+				static final long serialVersionUID = 0;
+
+				@Override
+				public void paint(Graphics gr) {
+					if (antiAlias && gr instanceof Graphics2D) {
+						((Graphics2D) gr).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+								RenderingHints.VALUE_ANTIALIAS_ON);
+					}
+					super.paint(gr);
+				}
+
+				@Override
+				public String getToolTipText(MouseEvent event) {
+					if (tooltip != null) {
+						return tooltip.apply(event);
+					}
+					return super.getToolTipText(event);
+				}
+
+			};
+			if (tooltip != null)
+				ToolTipManager.sharedInstance().registerComponent(ans);
+
+			OurUtil.make(ans, attributes);
+			ans.setHighlighter(new DefaultHighlighter());
+			map.put(ans, Boolean.TRUE);
+			return ans;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

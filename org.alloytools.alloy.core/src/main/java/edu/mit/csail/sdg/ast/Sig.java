@@ -15,9 +15,13 @@
 
 package edu.mit.csail.sdg.ast;
 
+import static edu.mit.csail.sdg.alloy4.TableView.clean;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -28,6 +32,7 @@ import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
+import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
@@ -753,6 +758,7 @@ public abstract class Sig extends Expr implements Clause {
 		
 		@Override 
 		public String explain() {
+			
 			StringBuilder sb = new StringBuilder();
 			if ( isPrivate != null) {
 				sb.append("private ");
@@ -760,11 +766,11 @@ public abstract class Sig extends Expr implements Clause {
 			if ( isMeta != null) {
 				sb.append("meta ");
 			}
-
+			sb.append("relation: ");
 			sb.append(label);
-
-			sb.append( " : ").append( type);
-			
+			sb.append("\n");
+			Table table = TableView.toTable(type.toString().replaceAll("this/", ""), false);
+			sb.append(table);
 			return sb.toString();
 		}
 		
@@ -910,6 +916,8 @@ public abstract class Sig extends Expr implements Clause {
 
 	@Override
 	public String explain() {
+		Table t = new Table( 2, 1+realFields.size(), 1);
+		
 		StringBuilder sb = new StringBuilder();
 		if ( builtin )
 			sb.append("builtin ");
@@ -929,18 +937,20 @@ public abstract class Sig extends Expr implements Clause {
 			sb.append("sig ");
 		if(isSubset !=null) 
 			sb.append("subset ");
+		t.set(0, 0, sb);
+		t.set(1, 0, clean(label));
 		
-		sb.append(label);
-		String del = "{";
+		int n = 1;
 		for ( Field f : realFields) {
-			sb.append(del);
-			sb.append(f.label).append(":");
-			sb.append(type.join(f.type));
-			del = ", ";
+			t.set(0,  n++, clean(f.label));
 		}
-		if( !del.equals("{")) {
-			sb.append("}");
+		n = 1;
+		for ( Field f : realFields) {
+			String relation = clean(type.join(f.type).toString());
+			Table table = TableView.toTable(relation, false);
+			t.set(1,  n++, table );
 		}
-		return sb.toString();
+		
+		return t.toString();
 	}
 }

@@ -2,17 +2,18 @@ package edu.mit.csail.sdg.alloy4;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alloytools.util.table.Cell;
 import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.sim.SimAtom;
 import edu.mit.csail.sdg.sim.SimTuple;
 import edu.mit.csail.sdg.sim.SimTupleset;
@@ -27,7 +28,7 @@ public class TableView {
 	final static String		SUPERSCRIPTS	= "⁰¹²³⁴⁵⁶⁷⁸⁹";
 	final static String		SUBSCRIPTS		= "₀₁₂₃₄₅₆₇₈₉";
 	final static String		BOX_SINGLE		= "│┌─┬┐┘┴└├┼┤";
-	final static Pattern	TABLE_P			= Pattern.compile("\\s*\\{(([\\d\\w$\\s,>-]+))\\}\\s*");
+	final static Pattern	TABLE_P			= Pattern.compile("\\s*\\{(([\\d\\w$\\s,>\"-]+))\\}\\s*");
 
 	public static boolean isTable(String input) {
 		return TABLE_P.matcher(input).matches();
@@ -265,6 +266,14 @@ public class TableView {
 			atoms.add(atom);
 		}
 		return SimTuple.make(atoms);
+	}
+
+	public static Table toTable(Type type) {
+		return toTable(type.toString().replaceAll("this/",""), false);
+	}
+
+	public static String clean(String label) {
+		return label.replaceAll("this/", "");
 	}
 
 }

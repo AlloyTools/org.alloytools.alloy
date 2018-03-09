@@ -74,7 +74,7 @@ public class Table implements Cell {
 	}
 
 	public String toString() {
-		if ( cols==1 && rows>1)
+		if ( cols==1 && rows>3)
 			return transpose(0).toString("⁻¹");
 		else
 			return toString(null);
@@ -162,6 +162,31 @@ public class Table implements Cell {
 		Canvas render = render(width(), height(), 0, 0, message.length(), 0);
 		render.set(width(), 0, message);
 		return render.toString();
+	}
+
+	public Table addColum(int col) {
+		Table t = new Table(rows, cols+1,headers);
+		if ( col > 0 )
+			copy( t, 0, 0, 0, 0, rows, col);
+		
+		return copy( t, 0, col, 0, col+1, rows, cols-col);
+	}
+	
+	public Table setColumn( int col, Object cell ) {
+		for ( int r = 0; r<rows; r++ )
+			set(r,col, cell);
+		
+		return this;
+	}
+
+	public Table copy(Table t, int sourceRow, int sourceCol, int destRow, int destCol, int rows, int cols) {
+		for ( int i=0; i<rows; i++) {
+			for ( int j=0; i<cols; i++) {
+				Cell cell = get(sourceRow+i, sourceCol+j);
+				t.set(destRow+i, destCol+j, cell);
+			}
+		}
+		return t;
 	}
 
 }

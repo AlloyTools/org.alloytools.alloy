@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
@@ -105,6 +106,6 @@ public final class ExprVar extends ExprHasName implements Clause {
 
 	@Override
 	public String explain() {
-		return type.toString();
+		return "var "+label+"\n"+TableView.toTable(type);
 	}
 }
