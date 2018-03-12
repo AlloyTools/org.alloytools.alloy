@@ -9,7 +9,7 @@ can be incorporated into other applications to use Alloy as an API,
 and includes the source code. See the release notes for details of new
 features. 
 
-More documentation can be found at: http://alloy.mit.edu/alloy/documentation.html.
+More documentation can be found at: http://alloytools.org/documentation.html.
 
 # TL;DR
 
