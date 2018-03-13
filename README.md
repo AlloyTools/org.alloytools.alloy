@@ -11,6 +11,15 @@ features.
 
 More documentation can be found at: http://alloytools.org/documentation.html.
 
+# Requirements
+
+Alloy runs on all operating systems with a recent JVM (Java 6 or later). 
+It is made available as a runnable jar file with both a cross-platform SAT solver
+([Sat4j](http://www.sat4j.org/) and more efficient native SAT solvers ([minisat](http://minisat.se), [lingeling/plingeling](http://fmv.jku.at/lingeling/), [glucose](http://www.labri.fr/perso/lsimon/glucose/)).
+
+Note however that starting with macOS High Sierra, it is necessary to install a dedicated
+JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
+
 # TL;DR
 
 Checkout the project and type ./gradlew. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
