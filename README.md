@@ -70,6 +70,27 @@ The workspace is setup for interactive development in Eclipse with the Bndtools 
 
 Bndtools will continuously create the final executable. The projects are setup to automatically update when a downstream project changes.
 
+### IntelliJ IDEA (Ultimate Edition only)
+
+Ensure you have the [Osmorc] plugin is enabled, as this plugin is needed for
+Bndtools support. It should be enabled by default.
+
+1. Choose "Import Project"
+2. Select the `org.alloytools.alloy` directory.
+3. Choose "Import project from external model: Bnd/Bndtools" and click "Next"
+4. For "Select Bnd/Bndtools project to import", all projects should be checked
+   by default, click "Next"
+5. For project SDK, Choose "1.8", Click Finish
+
+Note: do *not* link the Gradle project, as this will prevent you from running
+Alloy within IDEA.
+
+To run the Alloy GUI within IDEA, navigate to
+org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4whole/SimpleGUI and run the SimpleGUI class.
+
+[Osmorc]: https://plugins.jetbrains.com/plugin/1816-osmorc
+
+
 ### Gradle 
 
 In the root of this workspace type `./gradlew`. This is a script that will download the correct version of gradle and run the build scripts. For settings look at [gradle.properties] and [settings.gradle].
