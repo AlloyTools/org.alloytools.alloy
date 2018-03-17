@@ -25,16 +25,18 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.Browsable;
+import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
 import edu.mit.csail.sdg.ast.ExprCustom;
+import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.VisitReturn;
 import edu.mit.csail.sdg.parser.CompModule.Context;
 
 /** Immutable; this class represents a macro. */
 
-final class Macro extends ExprCustom {
+final class Macro extends ExprCustom implements Clause {
 
 	/** If nonnull, this is a private macro. */
 	final Pos							isPrivate;
@@ -156,5 +158,10 @@ final class Macro extends ExprCustom {
 	@Override
 	public final <T> T accept(VisitReturn<T> visitor) throws Err {
 		return null;
+	}
+
+	@Override
+	public String explain() {
+		return "this is a macro " + name;
 	}
 }
