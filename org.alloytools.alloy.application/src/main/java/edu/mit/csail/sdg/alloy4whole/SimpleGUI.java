@@ -1103,7 +1103,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		List<Command> cp = commands;
 		if (cp == null) {
 			try {
-				cp = CompUtil.parseOneModule_fromString(text.get().getText());
+				String source = text.get().getText();
+				cp = CompUtil.parseOneModule_fromString(source);
 			} catch (Err e) {
 				commands = null;
 				runmenu.getItem(0).setEnabled(false);

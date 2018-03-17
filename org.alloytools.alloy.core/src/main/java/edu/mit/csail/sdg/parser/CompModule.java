@@ -919,7 +919,7 @@ public final class CompModule extends Browsable implements Module {
 	public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException {
 		Map<String, String> fc = new LinkedHashMap<String, String>();
 		fc.put("", "run {\n" + input + "}"); // We prepend the line "run{"
-		CompModule m = CompParser.alloy_parseStream(new ArrayList<Object>(), null, fc, null, -1, "", "", 1);
+		CompModule m = CompUtil.parse(new ArrayList<Object>(), null, fc, null, -1, "", "", 1);
 		if (m.funcs.size() == 0)
 			throw new ErrorSyntax("The input does not correspond to an Alloy expression.");
 		Expr body = m.funcs.values().iterator().next().get(0).getBody();
@@ -1825,21 +1825,21 @@ public final class CompModule extends Browsable implements Module {
 	// ============================================================================================================================//
 
 	/** Add a COMMAND declaration. */
-	@SuppressWarnings("unused")
-	void addCommand(boolean followUp, Pos p, ExprVar n, boolean c, int o, int b, int seq, int exp, List<CommandScope> s,
+
+	void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes,
 			ExprVar label) throws Err {
 		if (followUp && !Version.experimental)
-			throw new ErrorSyntax(p, "Syntax error encountering => symbol.");
+			throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
 		if (label != null)
-			p = Pos.UNKNOWN.merge(p).merge(label.pos);
+			pos = Pos.UNKNOWN.merge(pos).merge(label.pos);
 		status = 3;
-		if (n.label.length() == 0)
-			throw new ErrorSyntax(p, "Predicate/assertion name cannot be empty.");
-		if (n.label.indexOf('@') >= 0)
-			throw new ErrorSyntax(p, "Predicate/assertion name cannot contain \'@\'");
-		String labelName = (label == null || label.label.length() == 0) ? n.label : label.label;
+		if (name.label.length() == 0)
+			throw new ErrorSyntax(pos, "Predicate/assertion name cannot be empty.");
+		if (name.label.indexOf('@') >= 0)
+			throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
+		String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
 		Command parent = followUp ? commands.get(commands.size() - 1) : null;
-		Command newcommand = new Command(p, n, labelName, c, o, b, seq, exp, s, null, n, parent);
+		Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
 		if (parent != null)
 			commands.set(commands.size() - 1, newcommand);
 		else
@@ -1847,29 +1847,38 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Add a COMMAND declaration. */
-	@SuppressWarnings("unused")
-	void addCommand(boolean followUp, Pos p, Expr e, boolean c, int o, int b, int seq, int exp, List<CommandScope> s,
+	void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes,
 			ExprVar label) throws Err {
 
 		if (followUp && !Version.experimental)
-			throw new ErrorSyntax(p, "Syntax error encountering => symbol.");
+			throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
+		
 		if (label != null)
-			p = Pos.UNKNOWN.merge(p).merge(label.pos);
+			pos = Pos.UNKNOWN.merge(pos).merge(label.pos);
+		
 		status = 3;
 		String n;
-		if (c)
-			n = addAssertion(p, "check$" + (1 + commands.size()), e);
+		if (check)
+			n = addAssertion(pos, "check$" + (1 + commands.size()), e);
 		else
-			addFunc(e.span().merge(p), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(),
+			addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(),
 					null, e);
 		String labelName = (label == null || label.label.length() == 0) ? n : label.label;
 		Command parent = followUp ? commands.get(commands.size() - 1) : null;
-		Command newcommand = new Command(e.span().merge(p), e, labelName, c, o, b, seq, exp, s, null,
+		Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, expects, scopes, null,
 				ExprVar.make(null, n), parent);
 		if (parent != null)
 			commands.set(commands.size() - 1, newcommand);
 		else
 			commands.add(newcommand);
+	}
+	
+	public void addDefaultCommand() {
+		if ( commands.isEmpty()) {
+			addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(),
+					null, ExprConstant.TRUE);
+			commands.add( new Command(Pos.UNKNOWN,ExprConstant.TRUE, "Default", false,4,4,4,0,null,null,ExprVar.make(null, "$$Default"),null));
+		}
 	}
 
 	/** Resolve a particular command. */
