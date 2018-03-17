@@ -605,8 +605,24 @@ public final class CompModule extends Browsable implements Module {
 		@Override
 		public Expr visit(ExprVar x) throws Err {
 			Expr obj = resolve(x.pos, x.label);
-			if (obj instanceof Macro)
-				return ((Macro) obj).instantiate(this, warns);
+			if (obj instanceof Macro) {
+				Macro macro = ((Macro) obj).copy();
+				Expr instantiated = macro.instantiate(this, warns);
+				instantiated.setReferenced(new Clause() {
+
+					@Override
+					public Pos pos() {
+						return instantiated.pos;
+					}
+
+					@Override
+					public String explain() {
+						return instantiated.toString();
+					}
+					
+				});
+				return instantiated;
+			}
 			else
 				return obj;
 		}

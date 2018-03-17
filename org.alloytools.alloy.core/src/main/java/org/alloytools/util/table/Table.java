@@ -6,7 +6,8 @@ public class Table implements Cell {
 	public final int			cols;
 	public final Cell[][]		cells;
 	final public int			headers;
-
+	Canvas.Style				style	= Canvas.PLAIN;
+	
 	public static final Cell	EMPTY	= new Cell() {
 
 											@Override
@@ -18,7 +19,7 @@ public class Table implements Cell {
 											public int height() {
 												return 3;
 											}
-											
+
 											@Override
 											public String toString() {
 												return " ";
@@ -44,7 +45,7 @@ public class Table implements Cell {
 	public int width() {
 		int w = 0;
 		for (int c = 0; c < cols; c++) {
-			w += width(c)-1; // remove right border width because we overlap
+			w += width(c) - 1; // remove right border width because we overlap
 		}
 		return w + 1; // add right border
 	}
@@ -56,7 +57,7 @@ public class Table implements Cell {
 	public int height() {
 		int h = 0;
 		for (int r = 0; r < rows; r++) {
-				h += height(r)-1;// remove bottom border width because we overlap
+			h += height(r) - 1;// remove bottom border width because we overlap
 		}
 		return h + 1; // add bottom border
 	}
@@ -74,18 +75,20 @@ public class Table implements Cell {
 	}
 
 	public String toString() {
-		if ( cols==1 && rows>3)
+		if (cols == 1 && rows > 3)
 			return transpose(0).toString("⁻¹");
 		else
 			return toString(null);
 	}
+
 	public Canvas render(int width, int height) {
-		return render( width, height, 0,0,0,0);
+		return render(width, height, 0, 0, 0, 0);
 	}
+
 	public Canvas render(int width, int height, int left, int top, int right, int bottom) {
 
-		Canvas canvas = new Canvas(width + left+right, height+top+bottom);
-		canvas.box(left,top,width,height);
+		Canvas canvas = new Canvas(width + left + right, height + top + bottom);
+		canvas.box(left, top, width, height, style);
 
 		int y = top;
 
@@ -94,9 +97,9 @@ public class Table implements Cell {
 			int x = left;
 			for (int c = 0; c < cols; c++) {
 				int cw;
-				if ( c == cols-1) {
+				if (c == cols - 1) {
 					// adjust last column width
-					cw = width-x-left;
+					cw = width - x - left;
 				} else {
 					cw = width(c);
 				}
@@ -112,6 +115,7 @@ public class Table implements Cell {
 
 	/**
 	 * Width of a column without borders
+	 * 
 	 * @param col
 	 * @return
 	 */
@@ -138,10 +142,10 @@ public class Table implements Cell {
 	}
 
 	public Table transpose(int headers) {
-		Table transposed = new Table(cols,rows,headers);
-		for ( int row =0; row<rows; row++) {
-			for ( int col =0; col<cols; col++) {
-				Cell c = this.get(row,col);
+		Table transposed = new Table(cols, rows, headers);
+		for (int row = 0; row < rows; row++) {
+			for (int col = 0; col < cols; col++) {
+				Cell c = this.get(row, col);
 				transposed.set(col, row, c);
 			}
 		}
@@ -149,14 +153,14 @@ public class Table implements Cell {
 	}
 
 	public Cell get(int row, int col) {
-		return cells[ row][col];
+		return cells[row][col];
 	}
 
 	public String toString(String message) {
-		if ( message == null)
+		if (message == null)
 			message = "";
-		
-		if (rows == 0|| cols == 0) {
+
+		if (rows == 0 || cols == 0) {
 			return "☒" + message;
 		}
 		Canvas render = render(width(), height(), 0, 0, message.length(), 0);
@@ -165,28 +169,32 @@ public class Table implements Cell {
 	}
 
 	public Table addColum(int col) {
-		Table t = new Table(rows, cols+1,headers);
-		if ( col > 0 )
-			copy( t, 0, 0, 0, 0, rows, col);
-		
-		return copy( t, 0, col, 0, col+1, rows, cols-col);
+		Table t = new Table(rows, cols + 1, headers);
+		if (col > 0)
+			copy(t, 0, 0, 0, 0, rows, col);
+
+		return copy(t, 0, col, 0, col + 1, rows, cols - col);
 	}
-	
-	public Table setColumn( int col, Object cell ) {
-		for ( int r = 0; r<rows; r++ )
-			set(r,col, cell);
-		
+
+	public Table setColumn(int col, Object cell) {
+		for (int r = 0; r < rows; r++)
+			set(r, col, cell);
+
 		return this;
 	}
 
 	public Table copy(Table t, int sourceRow, int sourceCol, int destRow, int destCol, int rows, int cols) {
-		for ( int i=0; i<rows; i++) {
-			for ( int j=0; i<cols; i++) {
-				Cell cell = get(sourceRow+i, sourceCol+j);
-				t.set(destRow+i, destCol+j, cell);
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; i < cols; i++) {
+				Cell cell = get(sourceRow + i, sourceCol + j);
+				t.set(destRow + i, destCol + j, cell);
 			}
 		}
 		return t;
+	}
+
+	public void setBold() {
+		style = Canvas.BOLD;
 	}
 
 }

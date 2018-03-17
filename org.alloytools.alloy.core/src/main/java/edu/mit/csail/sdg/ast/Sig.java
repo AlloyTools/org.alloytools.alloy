@@ -760,17 +760,18 @@ public abstract class Sig extends Expr implements Clause {
 		public String explain() {
 			
 			StringBuilder sb = new StringBuilder();
+			sb.append("relation ");
+			
 			if ( isPrivate != null) {
 				sb.append("private ");
 			}
 			if ( isMeta != null) {
 				sb.append("meta ");
 			}
-			sb.append("relation: ");
-			sb.append(label);
-			sb.append("\n");
-			Table table = TableView.toTable(type.toString().replaceAll("this/", ""), false);
-			sb.append(table);
+			sb.append(clean(label));
+			sb.append(":\n");
+			Table table = TableView.toTable(type);
+			sb.append(table).append("\n");
 			return sb.toString();
 		}
 		
