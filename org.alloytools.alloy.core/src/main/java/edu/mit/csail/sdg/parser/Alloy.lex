@@ -240,4 +240,4 @@ import java_cup.runtime.*;
 
 [ \t\f\r\n]                  { }
 
-. { throw new ErrorSyntax(alloy_here(" "), "Syntax error at the "+yytext()+" character."); }
+. { throw new ErrorSyntax(alloy_here(" "), "Syntax error at the "+yytext()+" character. HEX: \\u"+Integer.toString(yytext().charAt(0),16)+")"); }

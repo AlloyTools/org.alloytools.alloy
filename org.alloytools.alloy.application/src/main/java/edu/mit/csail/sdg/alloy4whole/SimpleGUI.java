@@ -112,6 +112,8 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.html.HTMLDocument;
 
+import org.alloytools.alloy.core.AlloyCore;
+
 //import com.apple.eawt.Application;
 //import com.apple.eawt.ApplicationAdapter;
 //import com.apple.eawt.ApplicationEvent;
@@ -765,9 +767,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private Runner doOpen() {
 		if (wrap)
 			return wrapMe();
-		File file = OurDialog.askFile(true, null, new String[] {
-				".als", ".md"
-		}, "Alloy (.als) or Markdown files");
+		File file = getFile(null);
 		if (file != null) {
 			Util.setCurrentDirectory(file.getParentFile());
 			doOpenFile(file.getPath());
@@ -779,13 +779,18 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private Runner doBuiltin() {
 		if (wrap)
 			return wrapMe();
-		File file = OurDialog.askFile(true, alloyHome() + fs + "models", new String[] {
-				".als", ".md"
-		}, "Alloy (.als) or Markdown files");
+		File file = getFile(alloyHome() + fs + "models");
 		if (file != null) {
 			doOpenFile(file.getPath());
 		}
 		return null;
+	}
+
+	private File getFile(String home) {
+		File file = OurDialog.askFile(true, home, new String[] {
+				".als", ".md", "*"
+		}, "Alloy (.als) or Markdown (.md) files");
+		return file;
 	}
 
 	/** This method performs File->ReloadAll. */
@@ -1110,7 +1115,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 				runmenu.getItem(0).setEnabled(false);
 				runmenu.getItem(3).setEnabled(false);
 				text.shade(new Pos(text.get().getFilename(), e.pos.x, e.pos.y, e.pos.x2, e.pos.y2));
-				if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG)
+				if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
 					log.logRed("Fatal Exception!" + e.dump() + "\n\n");
 				else
 					log.logRed(e.toString() + "\n\n");
@@ -1222,7 +1227,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			int newmem = SubMemory.get(), newstack = SubStack.get();
 			if (newmem != subMemoryNow || newstack != subStackNow)
 				WorkerEngine.stop();
-			if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG)
+			if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
 				WorkerEngine.runLocally(task, cb);
 			else
 				WorkerEngine.run(task, newmem, newstack, alloyHome() + fs + "binary", "", cb);
@@ -1740,7 +1745,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			SimpleTask2 task = new SimpleTask2();
 			task.filename = arg;
 			try {
-				if ("yes".equals(System.getProperty("debug")))
+				if (AlloyCore.isDebug())
 					WorkerEngine.runLocally(task, cb);
 				else
 					WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
@@ -1849,7 +1854,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			}
 			try {
 				Expr e = CompUtil.parseOneExpression_fromString(root, str);
-				if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG) {
+				if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
 					SimInstance simInst = convert(root, ans);
 					if (simInst.wasOverflow())
 						return simInst.visitThis(e).toString() + " (OF)";
@@ -1877,6 +1882,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 			for (String cmd : args) {
 				switch (cmd) {
+
+					case "--worker" :
+					case "-w" :
+						WorkerEngine.main(args);
+						break;
+
 					case "--version" :
 					case "-v" :
 						System.out.println(Version.version());
@@ -2257,7 +2268,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		text.get().requestFocusInWindow();
 
 		// Launch the welcome screen if needed
-		if (!"yes".equals(System.getProperty("debug")) && Welcome.get()) {
+		if (!AlloyCore.isDebug() && Welcome.get()) {
 			JCheckBox again = new JCheckBox("Show this message every time you start the Alloy Analyzer");
 			again.setSelected(true);
 			OurDialog.showmsg("Welcome", "Thank you for using the Alloy Analyzer " + Version.version(), " ",

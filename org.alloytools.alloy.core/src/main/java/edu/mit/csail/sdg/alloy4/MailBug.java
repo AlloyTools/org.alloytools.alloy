@@ -36,6 +36,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import org.alloytools.alloy.core.AlloyCore;
+
 /**
  * This class asks the user for permission to email a bug report when an
  * uncaught exception occurs.
@@ -89,7 +91,7 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
 	 * alloy.mit.edu for latest version number.
 	 */
 	public static void setup() {
-		if ( "yes".equals(System.getProperty("debug")))
+		if ( AlloyCore.isDebug())
 			return;
 		
 		if (Thread.getDefaultUncaughtExceptionHandler() != null)

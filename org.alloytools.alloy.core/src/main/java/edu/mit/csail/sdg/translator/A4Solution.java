@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -1383,7 +1384,7 @@ public final class A4Solution {
 		if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
 																										// book
 																										// examples
-			A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
+			A4Reporter r = AlloyCore.isDebug() ? rep : null;
 			try {
 				sol = BookExamples.trial(r, this, fgoal, solver, cmd.check);
 			} catch (Throwable ex) {

@@ -28,6 +28,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.alloytools.alloy.core.AlloyCore;
+
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -41,20 +44,20 @@ import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
-import edu.mit.csail.sdg.alloy4.XMLNode;
 import edu.mit.csail.sdg.alloy4.WorkerEngine.WorkerCallback;
 import edu.mit.csail.sdg.alloy4.WorkerEngine.WorkerTask;
+import edu.mit.csail.sdg.alloy4.XMLNode;
+import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
+import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Module;
+import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
-import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
-import edu.mit.csail.sdg.alloy4viz.VizGUI;
 
 /** This helper method is used by SimpleGUI. */
 
@@ -555,7 +558,7 @@ final class SimpleReporter extends A4Reporter {
 	private static void writeXML(A4Reporter rep, Module mod, String filename, A4Solution sol,
 			Map<String,String> sources) throws Exception {
 		sol.writeXML(rep, filename, mod.getAllFunc(), sources);
-		if ("yes".equals(System.getProperty("debug")))
+		if (AlloyCore.isDebug())
 			validate(filename);
 	}
 
@@ -675,7 +678,7 @@ final class SimpleReporter extends A4Reporter {
 				A4SolutionWriter.writeMetamodel(ConstList.make(sigs), options.originalFilename, of);
 				Util.encodeXMLs(of, "\n</alloy>");
 				Util.close(of);
-				if ("yes".equals(System.getProperty("debug")))
+				if (AlloyCore.isDebug())
 					validate(outf);
 				cb(out, "metamodel", outf);
 				synchronized (SimpleReporter.class) {

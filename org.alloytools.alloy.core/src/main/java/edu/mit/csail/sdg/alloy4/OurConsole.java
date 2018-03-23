@@ -119,14 +119,9 @@ public final class OurConsole extends JScrollPane {
 	/** The position in this.history that is currently showing. */
 	private int browse = 0;
 
-	/**
+	/*
 	 * Helper method that construct a mutable style with the given font name,
 	 * font size, boldness, color, and left indentation.
-	 * 
-	 * @param italic
-	 *            TODO
-	 * @param strike
-	 *            TODO
 	 */
 	static MutableAttributeSet style(String fontName, int fontSize, boolean boldness, boolean italic, boolean strike,
 			Color color, int leftIndent) {

@@ -660,37 +660,6 @@ public final class SimTupleset implements Iterable<SimTuple> {
 	}
 
 	/**
-	 * Return the cartesian product of this and that but only for tuples with
-	 * the same first column. This also skips the first column of that
-	 */
-	public SimTupleset productForSameFirstColumn(SimTupleset that) {
-		if (empty())
-			return EMPTY;
-		
-		TempList<SimTuple> ans = new TempList<SimTuple>(size() * that.size());
-		ArrayList<SimAtom> fillerAtoms = new ArrayList<>();
-		for ( int i=0; i<that.arity()-1; i++) {
-			fillerAtoms.add( EMPTY_ATOM);
-		}
-		SimTuple filler = SimTuple.make( fillerAtoms);
-		
-		for (SimTuple a : this) {
-			boolean found=false;
-			for (SimTuple b : that) {
-				if (a.get(0).equals(b.get(0))) {
-					SimTuple tail = b.tail(b.arity() - 1);
-					ans.add(a.product(tail));
-					found |= true;
-				}
-			}
-			if ( !found ) {
-				ans.add(a.product(filler));
-			}
-		}
-		return new SimTupleset(ans.makeConst());
-	}
-
-	/**
 	 * Return the relational join between this and that (throws ErrorType if
 	 * this.arity==1 and that.arity==1)
 	 */
