@@ -2098,7 +2098,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 		// Choose the appropriate font
 		int fontSize = FontSize.get();
-		String fontName = OurDialog.getProperfontName(FontName.get(), "Courier New", "Lucidia", "Courier",
+		String fontName = OurDialog.getProperFontName(FontName.get(), "Courier New", "Lucidia", "Courier",
 				"Monospaced");
 		FontName.set(fontName);
 

@@ -926,7 +926,7 @@ public final class VizGUI implements ComponentListener {
 			}
 		};
 		ans.setBorder(new OurBorder(true, false, true, false));
-		String fontName = OurDialog.getProperfontName("Lucida Console", "Monospaced");
+		String fontName = OurDialog.getProperFontName("Lucida Console", "Monospaced");
 		Font font = new Font(fontName, Font.PLAIN, fontSize);
 		ans.setFont(font);
 		ta.setFont(font);

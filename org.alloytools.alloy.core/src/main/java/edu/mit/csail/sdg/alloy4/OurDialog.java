@@ -155,7 +155,7 @@ public final class OurDialog {
 				return true;
 		return false;
 	}
-	public synchronized static String getProperfontName(String fontname, String ... preferred) {
+	public synchronized static String getProperFontName(String fontname, String ... preferred) {
 		int i=0;
 		while( true) {
 			if ( hasFont(fontname) || i >= preferred.length)
