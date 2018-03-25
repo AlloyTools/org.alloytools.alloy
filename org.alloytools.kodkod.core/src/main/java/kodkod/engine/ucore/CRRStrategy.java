@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,7 @@ import kodkod.util.ints.Ints;
  * minimal iff removing any single clause from the core will make the resulting
  * formula satisfiable. No heuristic is used to pick the clauses to be excluded
  * from the core.
- * 
+ *
  * @specfield traces: [0..)->ResolutionTrace
  * @specfield nexts: [0..)->Set<Clause>
  * @invariant traces.ResolutionTrace = nexts.Set<Clause>
@@ -46,50 +46,52 @@ import kodkod.util.ints.Ints;
  * @invariant no disj i,j: [0..#nexts) | traces[i] = traces[j] && nexts[i] =
  *            nexts[j]
  * @author Emina Torlak
- * @see <a href="http://www.cs.tau.ac.il/~ale1/muc_sat06_short_8.pdf">N.
+ * @see <a href= "http://www.cs.tau.ac.il/~ale1/muc_sat06_short_8.pdf">N.
  *      Dershowitz, Z. Hanna, and A. Nadel. <i>A scalable algorithm for minimal
  *      unsatisfiable core extraction.</i> In Proceedings of Ninth International
  *      Conference on Theory and Applications of Satisfiability Testing (SAT
  *      '06). 2006.</a>
  */
 public final class CRRStrategy implements ReductionStrategy {
-	private Set<Clause> excluded;
 
-	/**
-	 * Constructs a new instance of CRRStrategy.
-	 * 
-	 * @ensures no this.traces' and no this.nexts'
-	 **/
-	public CRRStrategy() {
-		excluded = null;
-	}
+    private Set<Clause> excluded;
 
-	/**
-	 * Returns the next subset of clauses in the given trace to be analyzed.
-	 * 
-	 * @requires {@inheritDoc}
-	 * @ensures {@inheritDoc}
-	 * @return last(this.nexts')
-	 */
-	public final IntSet next(final ResolutionTrace trace) {
-		final IntSet core = trace.core();
-		if (excluded == null) { // the first time this method is called
-			excluded = new HashSet<Clause>((int) (StrictMath.round(core.size() * .75)));
-		}
+    /**
+     * Constructs a new instance of CRRStrategy.
+     *
+     * @ensures no this.traces' and no this.nexts'
+     **/
+    public CRRStrategy() {
+        excluded = null;
+    }
 
-		for (IntIterator iter = core.iterator(Integer.MAX_VALUE, Integer.MIN_VALUE); iter.hasNext();) {
-			int index = iter.next();
-			if (excluded.add(trace.get(index))) { // haven't tried excluding
-													// this one
-				// get all clauses reachable from the conflict clause
-				IntSet next = trace.reachable(Ints.singleton(trace.size() - 1));
-				// remove all clauses backward reachable from the excluded
-				// clause
-				next.removeAll(trace.backwardReachable(Ints.singleton(index)));
-				return next;
-			}
-		}
+    /**
+     * Returns the next subset of clauses in the given trace to be analyzed.
+     *
+     * @requires {@inheritDoc}
+     * @ensures {@inheritDoc}
+     * @return last(this.nexts')
+     */
+    @Override
+    public final IntSet next(final ResolutionTrace trace) {
+        final IntSet core = trace.core();
+        if (excluded == null) { // the first time this method is called
+            excluded = new HashSet<Clause>((int) (StrictMath.round(core.size() * .75)));
+        }
 
-		return Ints.EMPTY_SET;
-	}
+        for (IntIterator iter = core.iterator(Integer.MAX_VALUE, Integer.MIN_VALUE); iter.hasNext();) {
+            int index = iter.next();
+            if (excluded.add(trace.get(index))) { // haven't tried excluding
+                                                 // this one
+                                                 // get all clauses reachable from the conflict clause
+                IntSet next = trace.reachable(Ints.singleton(trace.size() - 1));
+                // remove all clauses backward reachable from the excluded
+                // clause
+                next.removeAll(trace.backwardReachable(Ints.singleton(index)));
+                return next;
+            }
+        }
+
+        return Ints.EMPTY_SET;
+    }
 }

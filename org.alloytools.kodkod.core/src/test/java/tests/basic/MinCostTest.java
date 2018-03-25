@@ -4,7 +4,7 @@ package tests.basic;
 /**
  * Tests the optimal-solution functionality provided by
  * {@link kodkod.engine.Solver#solve(Formula, Bounds, Cost) }.
- * 
+ *
  * @author Emina Torlak
  */
 // public class MinCostTest extends TestCase {

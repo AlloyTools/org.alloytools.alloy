@@ -16,6 +16,7 @@
 package edu.mit.csail.sdg.sim;
 
 import java.util.List;
+
 import edu.mit.csail.sdg.ast.Func;
 
 /**
@@ -25,10 +26,10 @@ import edu.mit.csail.sdg.ast.Func;
 
 public interface SimCallback {
 
-	/**
-	 * This method accepts a function, a list of arguments, and should return
-	 * either a java Boolean, java Integer, or a SimTupleset, (or null if it
-	 * chooses NOT to handle this call)
-	 */
-	public Object compute(Func predicateOrFunction, List<SimTupleset> arguments) throws Exception;
+    /**
+     * This method accepts a function, a list of arguments, and should return either
+     * a java Boolean, java Integer, or a SimTupleset, (or null if it chooses NOT to
+     * handle this call)
+     */
+    public Object compute(Func predicateOrFunction, List<SimTupleset> arguments) throws Exception;
 }

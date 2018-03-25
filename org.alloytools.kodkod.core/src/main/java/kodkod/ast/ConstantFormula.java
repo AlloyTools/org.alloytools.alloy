@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,48 +31,52 @@ import kodkod.ast.visitor.VoidVisitor;
  * @author Emina Torlak
  */
 public abstract class ConstantFormula extends Formula {
-	private final boolean value;
 
-	/**
-	 * Constructs a constant formula with the given value.
-	 */
-	ConstantFormula(boolean value) {
-		this.value = value;
-	}
+    private final boolean value;
 
-	/**
-	 * Returns the boolean value that corresponds to this constant formula.
-	 * 
-	 * @return this=TRUE => true, false
-	 */
-	public final boolean booleanValue() {
-		return value;
-	}
+    /**
+     * Constructs a constant formula with the given value.
+     */
+    ConstantFormula(boolean value) {
+        this.value = value;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns the boolean value that corresponds to this constant formula.
+     *
+     * @return this=TRUE => true, false
+     */
+    public final boolean booleanValue() {
+        return value;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return String.valueOf(booleanValue());
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return String.valueOf(booleanValue());
+    }
 }

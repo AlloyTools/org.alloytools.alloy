@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,115 +28,118 @@ import kodkod.util.ints.Ints;
 
 /**
  * Represents a boolean variable.
- * 
+ *
  * @invariant op = Operator.VAR
  * @invariant no inputs && label in [1, ..., Integer.MAX_VALUE)
  * @author Emina Torlak
  */
 public final class BooleanVariable extends BooleanFormula {
-	final int			label;
-	private final int	hashcode;
 
-	/**
-	 * Constructs a new BooleanVariable with the given label.
-	 * 
-	 * @requires label != 0
-	 * @ensures this.label' = label
-	 */
-	BooleanVariable(int label) {
-		super(null);
-		assert label != 0;
-		this.label = label;
-		this.hashcode = Ints.superFastHash(label);
-	}
+    final int         label;
+    private final int hashcode;
 
-	/**
-	 * Returns a hash of this variable's label.
-	 * 
-	 * @return Ints.superFastHash(this.label)
-	 */
-	@Override
-	int hash(Operator op) {
-		return hashcode;
-	}
+    /**
+     * Constructs a new BooleanVariable with the given label.
+     *
+     * @requires label != 0
+     * @ensures this.label' = label
+     */
+    BooleanVariable(int label) {
+        super(null);
+        assert label != 0;
+        this.label = label;
+        this.hashcode = Ints.superFastHash(label);
+    }
 
-	/**
-	 * Returns the label for this value.
-	 * 
-	 * @return this.label
-	 */
-	@Override
-	public int label() {
-		return label;
-	}
+    /**
+     * Returns a hash of this variable's label.
+     *
+     * @return Ints.superFastHash(this.label)
+     */
+    @Override
+    int hash(Operator op) {
+        return hashcode;
+    }
 
-	/**
-	 * Returns a string representation of this variable.
-	 * 
-	 * @return a string representation of this variable.
-	 */
-	public String toString() {
-		return Integer.toString(label);
-	}
+    /**
+     * Returns the label for this value.
+     *
+     * @return this.label
+     */
+    @Override
+    public int label() {
+        return label;
+    }
 
-	/**
-	 * Passes this value and the given argument value to the visitor, and
-	 * returns the resulting value.
-	 * 
-	 * @return the value produced by the visitor when visiting this node with
-	 *         the given argument.
-	 */
-	@Override
-	public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
-		return visitor.visit(this, arg);
-	}
+    /**
+     * Returns a string representation of this variable.
+     *
+     * @return a string representation of this variable.
+     */
+    @Override
+    public String toString() {
+        return Integer.toString(label);
+    }
 
-	/**
-	 * Returns the VAR operator.
-	 * 
-	 * @return Operator.VAR
-	 */
-	@Override
-	public Operator op() {
-		return Operator.VAR;
-	}
+    /**
+     * Passes this value and the given argument value to the visitor, and returns
+     * the resulting value.
+     *
+     * @return the value produced by the visitor when visiting this node with the
+     *         given argument.
+     */
+    @Override
+    public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
+        return visitor.visit(this, arg);
+    }
 
-	/**
-	 * Returns an empty iterator.
-	 * 
-	 * @return an empty iterator
-	 */
-	@Override
-	public Iterator<BooleanFormula> iterator() {
-		return Containers.emptyIterator();
-	}
+    /**
+     * Returns the VAR operator.
+     *
+     * @return Operator.VAR
+     */
+    @Override
+    public Operator op() {
+        return Operator.VAR;
+    }
 
-	/**
-	 * Returns 0.
-	 * 
-	 * @return 0
-	 */
-	@Override
-	public int size() {
-		return 0;
-	}
+    /**
+     * Returns an empty iterator.
+     *
+     * @return an empty iterator
+     */
+    @Override
+    public Iterator<BooleanFormula> iterator() {
+        return Containers.emptyIterator();
+    }
 
-	/**
-	 * Throws an IndexOutOfBoundsException.
-	 * 
-	 * @throws IndexOutOfBoundsException
-	 */
-	@Override
-	public BooleanFormula input(int i) {
-		throw new IndexOutOfBoundsException();
-	}
+    /**
+     * Returns 0.
+     *
+     * @return 0
+     */
+    @Override
+    public int size() {
+        return 0;
+    }
 
-	/**
-	 * Returns a hashcode for this variable.
-	 * 
-	 * @return a hashcode for this variable.
-	 */
-	public int hashCode() {
-		return hashcode;
-	}
+    /**
+     * Throws an IndexOutOfBoundsException.
+     *
+     * @throws IndexOutOfBoundsException
+     */
+    @Override
+    public BooleanFormula input(int i) {
+        throw new IndexOutOfBoundsException();
+    }
+
+    /**
+     * Returns a hashcode for this variable.
+     *
+     * @return a hashcode for this variable.
+     */
+    @Override
+    public int hashCode() {
+        return hashcode;
+    }
 }

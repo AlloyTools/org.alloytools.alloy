@@ -27,282 +27,280 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 
 public final class A4Options implements Serializable {
 
-	/** This enum defines the set of possible SAT solvers. */
-	public static final class SatSolver implements Serializable {
-		/** This ensures the class can be serialized reliably. */
-		private static final long					serialVersionUID	= 0;
-		/** List of all existing SatSolver values. */
-		private static final SafeList<SatSolver>	values				= new SafeList<SatSolver>();
-		/**
-		 * This is a unique String for this value; it should be kept consistent
-		 * in future versions.
-		 */
-		private final String						id;
-		/** This is the label that the toString() method will return. */
-		private final String						toString;
-		/** If not null, this is the external command-line solver to use. */
-		private final String						external;
-		/**
-		 * If not null, this is the set of options to use with the command-line
-		 * solver.
-		 */
-		private final String[]						options;
+    /** This enum defines the set of possible SAT solvers. */
+    public static final class SatSolver implements Serializable {
 
-		/** Constructs a new SatSolver value. */
-		private SatSolver(String id, String toString, String external, String[] options, boolean add) {
-			this.id = id;
-			this.toString = toString;
-			this.external = external;
-			this.options = new String[options != null ? options.length : 0];
-			for (int i = 0; i < this.options.length; i++)
-				this.options[i] = options[i];
-			if (add) {
-				synchronized (SatSolver.class) {
-					values.add(this);
-				}
-			}
-		}
+        /** This ensures the class can be serialized reliably. */
+        private static final long                serialVersionUID = 0;
+        /** List of all existing SatSolver values. */
+        private static final SafeList<SatSolver> values           = new SafeList<SatSolver>();
+        /**
+         * This is a unique String for this value; it should be kept consistent in
+         * future versions.
+         */
+        private final String                     id;
+        /**
+         * This is the label that the toString() method will return.
+         */
+        private final String                     toString;
+        /**
+         * If not null, this is the external command-line solver to use.
+         */
+        private final String                     external;
+        /**
+         * If not null, this is the set of options to use with the command-line solver.
+         */
+        private final String[]                   options;
 
-		/**
-		 * Constructs a new SatSolver value that uses a command-line solver;
-		 * throws ErrorAPI if the ID is already in use.
-		 */
-		public static SatSolver make(String id, String toString, String external, String[] options) throws ErrorAPI {
-			if (id == null || toString == null || external == null)
-				throw new ErrorAPI("NullPointerException in SatSolver.make()");
-			SatSolver ans = new SatSolver(id, toString, external, options, false);
-			synchronized (SatSolver.class) {
-				for (SatSolver x : values)
-					if (x.id.equals(id))
-						throw new ErrorAPI("The SatSolver id \"" + id + "\" is already in use.");
-				values.add(ans);
-			}
-			return ans;
-		}
+        /** Constructs a new SatSolver value. */
+        private SatSolver(String id, String toString, String external, String[] options, boolean add) {
+            this.id = id;
+            this.toString = toString;
+            this.external = external;
+            this.options = new String[options != null ? options.length : 0];
+            for (int i = 0; i < this.options.length; i++)
+                this.options[i] = options[i];
+            if (add) {
+                synchronized (SatSolver.class) {
+                    values.add(this);
+                }
+            }
+        }
 
-		/**
-		 * Constructs a new SatSolver value that uses a command-line solver;
-		 * throws ErrorAPI if the ID is already in use.
-		 */
-		public static SatSolver make(String id, String toString, String external) throws ErrorAPI {
-			return make(id, toString, external, null);
-		}
+        /**
+         * Constructs a new SatSolver value that uses a command-line solver; throws
+         * ErrorAPI if the ID is already in use.
+         */
+        public static SatSolver make(String id, String toString, String external, String[] options) throws ErrorAPI {
+            if (id == null || toString == null || external == null)
+                throw new ErrorAPI("NullPointerException in SatSolver.make()");
+            SatSolver ans = new SatSolver(id, toString, external, options, false);
+            synchronized (SatSolver.class) {
+                for (SatSolver x : values)
+                    if (x.id.equals(id))
+                        throw new ErrorAPI("The SatSolver id \"" + id + "\" is already in use.");
+                values.add(ans);
+            }
+            return ans;
+        }
 
-		/**
-		 * Returns the executable for the external command-line solver to use
-		 * (or null if this solver does not use an external commandline solver)
-		 */
-		public String external() {
-			return external;
-		}
+        /**
+         * Constructs a new SatSolver value that uses a command-line solver; throws
+         * ErrorAPI if the ID is already in use.
+         */
+        public static SatSolver make(String id, String toString, String external) throws ErrorAPI {
+            return make(id, toString, external, null);
+        }
 
-		/**
-		 * Returns the options for the external command-line solver to use (or
-		 * empty array if this solver does not use an external commandline
-		 * solver)
-		 */
-		public String[] options() {
-			if (external == null || options.length == 0)
-				return new String[0];
-			String[] ans = new String[options.length];
-			for (int i = 0; i < ans.length; i++)
-				ans[i] = options[i];
-			return ans;
-		}
+        /**
+         * Returns the executable for the external command-line solver to use (or null
+         * if this solver does not use an external commandline solver)
+         */
+        public String external() {
+            return external;
+        }
 
-		/**
-		 * Returns the unique String for this value; it will be kept consistent
-		 * in future versions.
-		 */
-		public String id() {
-			return id;
-		}
+        /**
+         * Returns the options for the external command-line solver to use (or empty
+         * array if this solver does not use an external commandline solver)
+         */
+        public String[] options() {
+            if (external == null || options.length == 0)
+                return new String[0];
+            String[] ans = new String[options.length];
+            for (int i = 0; i < ans.length; i++)
+                ans[i] = options[i];
+            return ans;
+        }
 
-		/** Returns the list of SatSolver values. */
-		public static SafeList<SatSolver> values() {
-			SafeList<SatSolver> ans;
-			synchronized (SatSolver.class) {
-				ans = values.dup();
-			}
-			return ans;
-		}
+        /**
+         * Returns the unique String for this value; it will be kept consistent in
+         * future versions.
+         */
+        public String id() {
+            return id;
+        }
 
-		/** Returns the human-readable label for this enum value. */
-		@Override
-		public String toString() {
-			return toString;
-		}
+        /** Returns the list of SatSolver values. */
+        public static SafeList<SatSolver> values() {
+            SafeList<SatSolver> ans;
+            synchronized (SatSolver.class) {
+                ans = values.dup();
+            }
+            return ans;
+        }
 
-		/** Ensures we can use == to do comparison. */
-		private Object readResolve() {
-			synchronized (SatSolver.class) {
-				for (SatSolver x : values)
-					if (x.id.equals(id))
-						return x;
-				values.add(this);
-			}
-			return this;
-		}
+        /** Returns the human-readable label for this enum value. */
+        @Override
+        public String toString() {
+            return toString;
+        }
 
-		/**
-		 * Given an id, return the enum value corresponding to it (if there's no
-		 * match, then return SAT4J).
-		 */
-		public static SatSolver parse(String id) {
-			synchronized (SatSolver.class) {
-				for (SatSolver x : values)
-					if (x.id.equals(id))
-						return x;
-			}
-			return SAT4J;
-		}
+        /** Ensures we can use == to do comparison. */
+        private Object readResolve() {
+            synchronized (SatSolver.class) {
+                for (SatSolver x : values)
+                    if (x.id.equals(id))
+                        return x;
+                values.add(this);
+            }
+            return this;
+        }
 
-		/** BerkMin via pipe */
-		public static final SatSolver	BerkMinPIPE			= new SatSolver("berkmin", "BerkMin", "berkmin", null,
-				true);
-		/** Spear via pipe */
-		public static final SatSolver	SpearPIPE			= new SatSolver("spear", "Spear", "spear", new String[] {
-				"--model", "--dimacs"
-		}, true);
-		/** MiniSat1 via JNI */
-		public static final SatSolver	MiniSatJNI			= new SatSolver("minisat(jni)", "MiniSat", null, null,
-				true);
-		/** MiniSatProver1 via JNI */
-		public static final SatSolver	MiniSatProverJNI	= new SatSolver("minisatprover(jni)",
-				"MiniSat with Unsat Core", null, null, true);
-		/// ** ZChaff via JNI */
-		// public static final SatSolver ZChaffJNI = new
-		/// SatSolver("zchaff(jni)", "ZChaff with mincost", null, null, true);
-		/** Lingeling */
-		public static final SatSolver	LingelingJNI		= new SatSolver("lingeling(jni)", "Lingeling", null, null,
-				true);
-		public static final SatSolver	PLingelingJNI		= new SatSolver("plingeling(jni)", "PLingeling", null, null,
-				true);
-		/** Glucose */
-		public static final SatSolver	GlucoseJNI			= new SatSolver("glucose(jni)", "Glucose", null, null,
-				true);
-		/** CryptoMiniSat */
-		public static final SatSolver	CryptoMiniSatJNI	= new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null,
-				null, true);
-		/** SAT4J using native Java */
-		public static final SatSolver	SAT4J				= new SatSolver("sat4j", "SAT4J", null, null, true);
-		/** Outputs the raw CNF file only */
-		public static final SatSolver	CNF					= new SatSolver("cnf", "Output CNF to file", null, null,
-				true);
-		/** Outputs the raw Kodkod file only */
-		public static final SatSolver	KK					= new SatSolver("kodkod", "Output Kodkod to file", null,
-				null, true);
+        /**
+         * Given an id, return the enum value corresponding to it (if there's no match,
+         * then return SAT4J).
+         */
+        public static SatSolver parse(String id) {
+            synchronized (SatSolver.class) {
+                for (SatSolver x : values)
+                    if (x.id.equals(id))
+                        return x;
+            }
+            return SAT4J;
+        }
 
-	}
+        /** BerkMin via pipe */
+        public static final SatSolver BerkMinPIPE      = new SatSolver("berkmin", "BerkMin", "berkmin", null, true);
+        /** Spear via pipe */
+        public static final SatSolver SpearPIPE        = new SatSolver("spear", "Spear", "spear", new String[] {
+                                                                                                                "--model", "--dimacs"
+        }, true);
+        /** MiniSat1 via JNI */
+        public static final SatSolver MiniSatJNI       = new SatSolver("minisat(jni)", "MiniSat", null, null, true);
+        /** MiniSatProver1 via JNI */
+        public static final SatSolver MiniSatProverJNI = new SatSolver("minisatprover(jni)", "MiniSat with Unsat Core", null, null, true);
+        /// ** ZChaff via JNI */
+        // public static final SatSolver ZChaffJNI = new
+        /// SatSolver("zchaff(jni)", "ZChaff with mincost", null, null, true);
+        /** Lingeling */
+        public static final SatSolver LingelingJNI     = new SatSolver("lingeling(jni)", "Lingeling", null, null, true);
+        public static final SatSolver PLingelingJNI    = new SatSolver("plingeling(jni)", "PLingeling", null, null, true);
+        /** Glucose */
+        public static final SatSolver GlucoseJNI       = new SatSolver("glucose(jni)", "Glucose", null, null, true);
+        /** CryptoMiniSat */
+        public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true);
+        /** SAT4J using native Java */
+        public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
+        /** Outputs the raw CNF file only */
+        public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        /** Outputs the raw Kodkod file only */
+        public static final SatSolver KK               = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
 
-	/** This ensures the class can be serialized reliably. */
-	private static final long serialVersionUID = 0;
+    }
 
-	/** Constructs an A4Options object with default values for everything. */
-	public A4Options() {}
+    /** This ensures the class can be serialized reliably. */
+    private static final long serialVersionUID = 0;
 
-	public boolean		inferPartialInstance	= true;
+    /**
+     * Constructs an A4Options object with default values for everything.
+     */
+    public A4Options() {}
 
-	/**
-	 * This option specifies the amount of symmetry breaking to do (when
-	 * symmetry breaking isn't explicitly disabled).
-	 * <p>
-	 * If a formula is unsatisfiable, then in general, the higher this value,
-	 * the faster you finish the solving. But if this value is too high, it will
-	 * instead slow down the solving.
-	 * <p>
-	 * If a formula is satisfiable, then in general, the lower this value, the
-	 * faster you finish the solving. Setting this value to 0 usually gives the
-	 * fastest solve.
-	 * <p>
-	 * Default value is 20.
-	 */
-	public int			symmetry				= 20;
+    public boolean   inferPartialInstance = true;
 
-	/**
-	 * This option specifies the maximum skolem-function depth.
-	 * <p>
-	 * Default value is 0, which means it will only generate skolem constants,
-	 * and will not generate skolem functions.
-	 */
-	public int			skolemDepth				= 0;
+    /**
+     * This option specifies the amount of symmetry breaking to do (when symmetry
+     * breaking isn't explicitly disabled).
+     * <p>
+     * If a formula is unsatisfiable, then in general, the higher this value, the
+     * faster you finish the solving. But if this value is too high, it will instead
+     * slow down the solving.
+     * <p>
+     * If a formula is satisfiable, then in general, the lower this value, the
+     * faster you finish the solving. Setting this value to 0 usually gives the
+     * fastest solve.
+     * <p>
+     * Default value is 20.
+     */
+    public int       symmetry             = 20;
 
-	/**
-	 * This option specifies the unsat core minimization strategy
-	 * (0=GuaranteedLocalMinimum 1=FasterButLessAccurate 2=EvenFaster...)
-	 * <p>
-	 * Default value is set to the fastest current strategy.
-	 */
-	public int			coreMinimization		= 2;
+    /**
+     * This option specifies the maximum skolem-function depth.
+     * <p>
+     * Default value is 0, which means it will only generate skolem constants, and
+     * will not generate skolem functions.
+     */
+    public int       skolemDepth          = 0;
 
-	/**
-	 * Unsat core granularity, default is 0 (only top-level conjuncts are
-	 * considered), 3 expands all quantifiers
-	 */
-	public int			coreGranularity			= 0;
+    /**
+     * This option specifies the unsat core minimization strategy
+     * (0=GuaranteedLocalMinimum 1=FasterButLessAccurate 2=EvenFaster...)
+     * <p>
+     * Default value is set to the fastest current strategy.
+     */
+    public int       coreMinimization     = 2;
 
-	/**
-	 * This option specifies the SAT solver to use (SAT4J, MiniSatJNI,
-	 * MiniSatProverJNI, ZChaffJNI...)
-	 * <p>
-	 * Default value is SAT4J.
-	 */
-	public SatSolver	solver					= SatSolver.SAT4J;
+    /**
+     * Unsat core granularity, default is 0 (only top-level conjuncts are
+     * considered), 3 expands all quantifiers
+     */
+    public int       coreGranularity      = 0;
 
-	/**
-	 * When this.solver is external, and the solver filename is a relative
-	 * filename, then this option specifies the directory that the solver
-	 * filename is relative to.
-	 */
-	public String		solverDirectory			= "";
+    /**
+     * This option specifies the SAT solver to use (SAT4J, MiniSatJNI,
+     * MiniSatProverJNI, ZChaffJNI...)
+     * <p>
+     * Default value is SAT4J.
+     */
+    public SatSolver solver               = SatSolver.SAT4J;
 
-	/** This specifies the directory where we may write temporary files to. */
-	public String		tempDirectory			= System.getProperty("java.io.tmpdir");
+    /**
+     * When this.solver is external, and the solver filename is a relative filename,
+     * then this option specifies the directory that the solver filename is relative
+     * to.
+     */
+    public String    solverDirectory      = "";
 
-	/**
-	 * This option tells the compiler the "original filename" that these AST
-	 * nodes came from; it is only used for generating comments and other
-	 * diagnostic messages.
-	 * <p>
-	 * Default value is "".
-	 */
-	public String		originalFilename		= "";
+    /**
+     * This specifies the directory where we may write temporary files to.
+     */
+    public String    tempDirectory        = System.getProperty("java.io.tmpdir");
 
-	/**
-	 * This option specifies whether the compiler should record the original
-	 * Kodkod formula being generated and the resulting Kodkod instances.
-	 * <p>
-	 * Default value is false.
-	 */
-	public boolean		recordKodkod			= false;
+    /**
+     * This option tells the compiler the "original filename" that these AST nodes
+     * came from; it is only used for generating comments and other diagnostic
+     * messages.
+     * <p>
+     * Default value is "".
+     */
+    public String    originalFilename     = "";
 
-	/**
-	 * This option specifies whether the solver should report only solutions
-	 * that don't cause any overflows.
-	 */
-	public boolean		noOverflow				= false;
+    /**
+     * This option specifies whether the compiler should record the original Kodkod
+     * formula being generated and the resulting Kodkod instances.
+     * <p>
+     * Default value is false.
+     */
+    public boolean   recordKodkod         = false;
 
-	/**
-	 * This option constrols how deep we unroll loops and unroll recursive
-	 * predicate/function/macros (negative means it's disallowed)
-	 */
-	public int			unrolls					= (-1);
+    /**
+     * This option specifies whether the solver should report only solutions that
+     * don't cause any overflows.
+     */
+    public boolean   noOverflow           = false;
 
-	/** This method makes a copy of this Options object. */
-	public A4Options dup() {
-		A4Options x = new A4Options();
-		x.inferPartialInstance = inferPartialInstance;
-		x.unrolls = unrolls;
-		x.symmetry = symmetry;
-		x.skolemDepth = skolemDepth;
-		x.coreMinimization = coreMinimization;
-		x.solver = solver;
-		x.solverDirectory = solverDirectory;
-		x.tempDirectory = tempDirectory;
-		x.originalFilename = originalFilename;
-		x.recordKodkod = recordKodkod;
-		x.noOverflow = noOverflow;
-		x.coreGranularity = coreGranularity;
-		return x;
-	}
+    /**
+     * This option constrols how deep we unroll loops and unroll recursive
+     * predicate/function/macros (negative means it's disallowed)
+     */
+    public int       unrolls              = (-1);
+
+    /** This method makes a copy of this Options object. */
+    public A4Options dup() {
+        A4Options x = new A4Options();
+        x.inferPartialInstance = inferPartialInstance;
+        x.unrolls = unrolls;
+        x.symmetry = symmetry;
+        x.skolemDepth = skolemDepth;
+        x.coreMinimization = coreMinimization;
+        x.solver = solver;
+        x.solverDirectory = solverDirectory;
+        x.tempDirectory = tempDirectory;
+        x.originalFilename = originalFilename;
+        x.recordKodkod = recordKodkod;
+        x.noOverflow = noOverflow;
+        x.coreGranularity = coreGranularity;
+        return x;
+    }
 }

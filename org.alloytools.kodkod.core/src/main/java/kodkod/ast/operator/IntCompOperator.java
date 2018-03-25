@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,40 +25,52 @@ package kodkod.ast.operator;
  * Enumerates binary comparison operators: =, < , >, <=, >=.
  */
 public enum IntCompOperator {
-	/** `=' operator */
-	EQ {
-		public String toString() {
-			return "=";
-		}
-	},
-	/** `!=' operator */
-	NEQ {
-		public String toString() {
-			return "!=";
-		}
-	},
-	/** `<' operator */
-	LT {
-		public String toString() {
-			return "<";
-		}
-	},
-	/** `<=' operator */
-	LTE {
-		public String toString() {
-			return "<=";
-		}
-	},
-	/** `>' operator */
-	GT {
-		public String toString() {
-			return ">";
-		}
-	},
-	/** `>=' operator */
-	GTE {
-		public String toString() {
-			return ">=";
-		}
-	};
+                             /** `=' operator */
+                             EQ {
+
+                                 @Override
+                                 public String toString() {
+                                     return "=";
+                                 }
+                             },
+                             /** `!=' operator */
+                             NEQ {
+
+                                 @Override
+                                 public String toString() {
+                                     return "!=";
+                                 }
+                             },
+                             /** `<' operator */
+                             LT {
+
+                                 @Override
+                                 public String toString() {
+                                     return "<";
+                                 }
+                             },
+                             /** `<=' operator */
+                             LTE {
+
+                                 @Override
+                                 public String toString() {
+                                     return "<=";
+                                 }
+                             },
+                             /** `>' operator */
+                             GT {
+
+                                 @Override
+                                 public String toString() {
+                                     return ">";
+                                 }
+                             },
+                             /** `>=' operator */
+                             GTE {
+
+                                 @Override
+                                 public String toString() {
+                                     return ">=";
+                                 }
+                             };
 }

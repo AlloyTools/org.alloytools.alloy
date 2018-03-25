@@ -114,163 +114,159 @@ import kodkod.instance.Universe;
  * @author Emina Torlak
  */
 public final class IncrementalSolver implements KodkodSolver {
-	private final Options			options;
-	private Translation.Incremental	translation;
-	private Boolean					outcome;
 
-	/**
-	 * Initializes the solver with the given options.
-	 * 
-	 * @ensures no this.solution' && no this.formulas' && no this.bounds'&&
-	 *          this.options' = options
-	 */
-	private IncrementalSolver(Options options) {
-		this.options = options;
-		this.outcome = null;
-	}
+    private final Options           options;
+    private Translation.Incremental translation;
+    private Boolean                 outcome;
 
-	/**
-	 * Returns a new {@link IncrementalSolver} using the given options.
-	 * 
-	 * @requires options.solver.incremental() && options.logTranslation = 0
-	 * @return some s: IncrementalSolver | no s.formulas && no s.bounds &&
-	 *         s.options = options.clone()
-	 * @throws NullPointerException any of the arguments are null
-	 * @throws IllegalArgumentException any of the preconditions on options are
-	 *             violated
-	 */
-	public static IncrementalSolver solver(Options options) {
-		Translator.checkIncrementalOptions(options);
-		return new IncrementalSolver(options.clone());
-	}
+    /**
+     * Initializes the solver with the given options.
+     *
+     * @ensures no this.solution' && no this.formulas' && no this.bounds'&&
+     *          this.options' = options
+     */
+    private IncrementalSolver(Options options) {
+        this.options = options;
+        this.outcome = null;
+    }
 
-	/**
-	 * Adds the specified formula and bounds to the solver's state, modifies the
-	 * current solution to reflect the updated state (if needed), and returns
-	 * this solver. This solver should not be used again if a call to this
-	 * method results in an exception.
-	 * 
-	 * @requires this.{@link #usable() usable}()
-	 * @requires f.*components & Relation in (this.bounds + b).relations
-	 * @requires some this.bounds => this.bounds.universe = b.universe && no
-	 *           b.intBound && no (this.bounds.relations & b.relations)
-	 * @requires some this.bounds => all s:
-	 *           {@link SymmetryDetector#partition(Bounds)
-	 *           partition}(this.bounds) | some p:
-	 *           {@link SymmetryDetector#partition(Bounds) partition}(b) |
-	 *           s.elements in p.elements
-	 * @ensures this.formulas' = this.formulas + f
-	 * @ensures some this.bounds => (this.bounds.relations' =
-	 *          this.bounds.relations + b.relations && this.bounds.upperBound' =
-	 *          this.bounds.upperBound + b.upperBound && this.bounds.lowerBound'
-	 *          = this.bounds.lowerBound + b.lowerBound) else (this.bounds' =
-	 *          bounds)
-	 * @return some sol: Solution | sol.instance() = null =>
-	 *         UNSAT(this.formulas', this.bounds', this.options) else
-	 *         sol.instance() in MODELS(Formula.and(this.formulas'),
-	 *         this.bounds', this.options)
-	 * @throws IllegalStateException a prior call returned an UNSAT solution or
-	 *             resulted in an exception
-	 * @throws NullPointerException any of the arguments are null
-	 * @throws UnboundLeafException the formula refers to an undeclared variable
-	 *             or a relation not mapped by this.bounds + b
-	 * @throws HigherOrderDeclException the formula contains a higher order
-	 *             declaration
-	 * @throws IllegalArgumentException any of the remaining preconditions on
-	 *             {@code f} and {@code b} are violated
-	 * @throws AbortedException this solving task has been aborted
-	 */
-	public Solution solve(Formula f, Bounds b) throws HigherOrderDeclException, UnboundLeafException, AbortedException {
-		if (outcome == Boolean.FALSE)
-			throw new IllegalStateException(
-					"Cannot use this solver since a prior call to solve(...) produced an UNSAT solution.");
+    /**
+     * Returns a new {@link IncrementalSolver} using the given options.
+     *
+     * @requires options.solver.incremental() && options.logTranslation = 0
+     * @return some s: IncrementalSolver | no s.formulas && no s.bounds && s.options
+     *         = options.clone()
+     * @throws NullPointerException any of the arguments are null
+     * @throws IllegalArgumentException any of the preconditions on options are
+     *             violated
+     */
+    public static IncrementalSolver solver(Options options) {
+        Translator.checkIncrementalOptions(options);
+        return new IncrementalSolver(options.clone());
+    }
 
-		if (outcome != null && translation == null)
-			throw new IllegalStateException(
-					"Cannot use this solver since a prior call to solve(...) resulted in an exception.");
+    /**
+     * Adds the specified formula and bounds to the solver's state, modifies the
+     * current solution to reflect the updated state (if needed), and returns this
+     * solver. This solver should not be used again if a call to this method results
+     * in an exception.
+     *
+     * @requires this.{@link #usable() usable}()
+     * @requires f.*components & Relation in (this.bounds + b).relations
+     * @requires some this.bounds => this.bounds.universe = b.universe && no
+     *           b.intBound && no (this.bounds.relations & b.relations)
+     * @requires some this.bounds => all s:
+     *           {@link SymmetryDetector#partition(Bounds) partition}(this.bounds) |
+     *           some p: {@link SymmetryDetector#partition(Bounds) partition}(b) |
+     *           s.elements in p.elements
+     * @ensures this.formulas' = this.formulas + f
+     * @ensures some this.bounds => (this.bounds.relations' = this.bounds.relations
+     *          + b.relations && this.bounds.upperBound' = this.bounds.upperBound +
+     *          b.upperBound && this.bounds.lowerBound' = this.bounds.lowerBound +
+     *          b.lowerBound) else (this.bounds' = bounds)
+     * @return some sol: Solution | sol.instance() = null => UNSAT(this.formulas',
+     *         this.bounds', this.options) else sol.instance() in
+     *         MODELS(Formula.and(this.formulas'), this.bounds', this.options)
+     * @throws IllegalStateException a prior call returned an UNSAT solution or
+     *             resulted in an exception
+     * @throws NullPointerException any of the arguments are null
+     * @throws UnboundLeafException the formula refers to an undeclared variable or
+     *             a relation not mapped by this.bounds + b
+     * @throws HigherOrderDeclException the formula contains a higher order
+     *             declaration
+     * @throws IllegalArgumentException any of the remaining preconditions on
+     *             {@code f} and {@code b} are violated
+     * @throws AbortedException this solving task has been aborted
+     */
+    @Override
+    public Solution solve(Formula f, Bounds b) throws HigherOrderDeclException, UnboundLeafException, AbortedException {
+        if (outcome == Boolean.FALSE)
+            throw new IllegalStateException("Cannot use this solver since a prior call to solve(...) produced an UNSAT solution.");
 
-		final Solution solution;
-		try {
-			final long startTransl = System.currentTimeMillis();
-			translation = translation == null ? Translator.translateIncremental(f, b, options)
-					: Translator.translateIncremental(f, b, translation);
-			final long endTransl = System.currentTimeMillis();
+        if (outcome != null && translation == null)
+            throw new IllegalStateException("Cannot use this solver since a prior call to solve(...) resulted in an exception.");
 
-			if (translation.trivial()) {
-				final Statistics stats = new Statistics(translation, endTransl - startTransl, 0);
-				if (translation.cnf().solve()) {
-					solution = Solution.triviallySatisfiable(stats, translation.interpret());
-				} else {
-					solution = Solution.triviallyUnsatisfiable(stats, null);
-				}
-			} else {
-				final SATSolver cnf = translation.cnf();
+        final Solution solution;
+        try {
+            final long startTransl = System.currentTimeMillis();
+            translation = translation == null ? Translator.translateIncremental(f, b, options) : Translator.translateIncremental(f, b, translation);
+            final long endTransl = System.currentTimeMillis();
 
-				translation.options().reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(),
-						cnf.numberOfClauses());
-				final long startSolve = System.currentTimeMillis();
-				final boolean sat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
+            if (translation.trivial()) {
+                final Statistics stats = new Statistics(translation, endTransl - startTransl, 0);
+                if (translation.cnf().solve()) {
+                    solution = Solution.triviallySatisfiable(stats, translation.interpret());
+                } else {
+                    solution = Solution.triviallyUnsatisfiable(stats, null);
+                }
+            } else {
+                final SATSolver cnf = translation.cnf();
 
-				final Statistics stats = new Statistics(translation, endTransl - startTransl, endSolve - startSolve);
-				if (sat) {
-					solution = Solution.satisfiable(stats, translation.interpret());
-				} else {
-					solution = Solution.unsatisfiable(stats, null);
-				}
-			}
-		} catch (SATAbortedException sae) {
-			free();
-			throw new AbortedException(sae);
-		} catch (RuntimeException e) {
-			free();
-			throw e;
-		}
+                translation.options().reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses());
+                final long startSolve = System.currentTimeMillis();
+                final boolean sat = cnf.solve();
+                final long endSolve = System.currentTimeMillis();
 
-		if (solution.sat()) {
-			outcome = Boolean.TRUE;
-		} else {
-			outcome = Boolean.FALSE;
-			free();
-		}
+                final Statistics stats = new Statistics(translation, endTransl - startTransl, endSolve - startSolve);
+                if (sat) {
+                    solution = Solution.satisfiable(stats, translation.interpret());
+                } else {
+                    solution = Solution.unsatisfiable(stats, null);
+                }
+            }
+        } catch (SATAbortedException sae) {
+            free();
+            throw new AbortedException(sae);
+        } catch (RuntimeException e) {
+            free();
+            throw e;
+        }
 
-		return solution;
-	}
+        if (solution.sat()) {
+            outcome = Boolean.TRUE;
+        } else {
+            outcome = Boolean.FALSE;
+            free();
+        }
 
-	@Override
-	public Iterator<Solution> solveAll(Formula formula, Bounds bounds)
-			throws HigherOrderDeclException, UnboundLeafException, AbortedException {
-		throw new RuntimeException("not implemented");
-	}
+        return solution;
+    }
 
-	/**
-	 * Returns true iff this solver has neither returned an UNSAT solution so
-	 * far nor thrown an exception during solving.
-	 * 
-	 * @return true iff this solver has neither returned an UNSAT solution so
-	 *         far nor thrown an exception during solving
-	 */
-	public boolean usable() {
-		return (outcome == Boolean.TRUE && translation != null) || (outcome == null);
-	}
+    @Override
+    public Iterator<Solution> solveAll(Formula formula, Bounds bounds) throws HigherOrderDeclException, UnboundLeafException, AbortedException {
+        throw new RuntimeException("not implemented");
+    }
 
-	/**
-	 * Returns a copy of {@code this.options}.
-	 * 
-	 * @return this.options.clone()
-	 */
-	public Options options() {
-		return options.clone();
-	}
+    /**
+     * Returns true iff this solver has neither returned an UNSAT solution so far
+     * nor thrown an exception during solving.
+     *
+     * @return true iff this solver has neither returned an UNSAT solution so far
+     *         nor thrown an exception during solving
+     */
+    public boolean usable() {
+        return (outcome == Boolean.TRUE && translation != null) || (outcome == null);
+    }
 
-	/**
-	 * Releases the resources, if any, associated with this solver.
-	 */
-	public void free() {
-		if (translation != null) {
-			translation.cnf().free();
-			translation = null;
-		}
-	}
+    /**
+     * Returns a copy of {@code this.options}.
+     *
+     * @return this.options.clone()
+     */
+    @Override
+    public Options options() {
+        return options.clone();
+    }
+
+    /**
+     * Releases the resources, if any, associated with this solver.
+     */
+    @Override
+    public void free() {
+        if (translation != null) {
+            translation.cnf().free();
+            translation = null;
+        }
+    }
 
 }

@@ -16,23 +16,24 @@ import edu.mit.csail.sdg.alloy4.Pos;
  * in Your scanner!
  ***************************************************/
 public interface SymbolFactory {
-	// Factory methods
-	/**
-	 * Construction with left/right propagation switched on
-	 */
-	public Symbol newSymbol(String name, int id, Symbol left, Symbol right, Object value);
 
-	public Symbol newSymbol(String name, int id, Symbol left, Symbol right);
+    // Factory methods
+    /**
+     * Construction with left/right propagation switched on
+     */
+    public Symbol newSymbol(String name, int id, Symbol left, Symbol right, Object value);
 
-	/**
-	 * Construction with left/right propagation switched off
-	 */
-	public Symbol newSymbol(String name, Pos pos, int id, Object value);
+    public Symbol newSymbol(String name, int id, Symbol left, Symbol right);
 
-	public Symbol newSymbol(String name, int id);
+    /**
+     * Construction with left/right propagation switched off
+     */
+    public Symbol newSymbol(String name, Pos pos, int id, Object value);
 
-	/**
-	 * Construction of start symbol
-	 */
-	public Symbol startSymbol(String name, int id, int state);
+    public Symbol newSymbol(String name, int id);
+
+    /**
+     * Construction of start symbol
+     */
+    public Symbol startSymbol(String name, int id, int state);
 }

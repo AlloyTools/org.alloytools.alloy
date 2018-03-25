@@ -19,45 +19,45 @@ package edu.mit.csail.sdg.alloy4;
 
 public final class ErrorFatal extends Err {
 
-	/** This ensures this class can be serialized reliably. */
-	private static final long serialVersionUID = 0;
+    /** This ensures this class can be serialized reliably. */
+    private static final long serialVersionUID = 0;
 
-	/**
-	 * Constructs a new fatal error.
-	 * 
-	 * @param msg - the actual error message (can be null)
-	 */
-	public ErrorFatal(String msg) {
-		super(null, msg, null);
-	}
+    /**
+     * Constructs a new fatal error.
+     *
+     * @param msg - the actual error message (can be null)
+     */
+    public ErrorFatal(String msg) {
+        super(null, msg, null);
+    }
 
-	/**
-	 * Constructs a new fatal error with "cause" as the underlying cause.
-	 * 
-	 * @param msg - the actual error message (can be null)
-	 * @param cause - if nonnull, it is the cause of this exception
-	 */
-	public ErrorFatal(String msg, Throwable cause) {
-		super(null, msg, cause);
-	}
+    /**
+     * Constructs a new fatal error with "cause" as the underlying cause.
+     *
+     * @param msg - the actual error message (can be null)
+     * @param cause - if nonnull, it is the cause of this exception
+     */
+    public ErrorFatal(String msg, Throwable cause) {
+        super(null, msg, cause);
+    }
 
-	/**
-	 * Constructs a new fatal error.
-	 * 
-	 * @param pos - the filename/line/row information (can be null if unknown)
-	 * @param msg - the actual error message (can be null)
-	 */
-	public ErrorFatal(Pos pos, String msg) {
-		super(pos, msg, null);
-	}
+    /**
+     * Constructs a new fatal error.
+     *
+     * @param pos - the filename/line/row information (can be null if unknown)
+     * @param msg - the actual error message (can be null)
+     */
+    public ErrorFatal(Pos pos, String msg) {
+        super(pos, msg, null);
+    }
 
-	/** Returns a textual description of the error. */
-	@Override
-	public String toString() {
-		if (pos == Pos.UNKNOWN)
-			return "Fatal error:\n" + msg;
-		if (pos.filename.length() > 0)
-			return "Fatal error in " + pos.filename + " at line " + pos.y + " column " + pos.x + ":\n" + msg;
-		return "Fatal error at line " + pos.y + " column " + pos.x + ":\n" + msg;
-	}
+    /** Returns a textual description of the error. */
+    @Override
+    public String toString() {
+        if (pos == Pos.UNKNOWN)
+            return "Fatal error:\n" + msg;
+        if (pos.filename.length() > 0)
+            return "Fatal error in " + pos.filename + " at line " + pos.y + " column " + pos.x + ":\n" + msg;
+        return "Fatal error at line " + pos.y + " column " + pos.x + ":\n" + msg;
+    }
 }

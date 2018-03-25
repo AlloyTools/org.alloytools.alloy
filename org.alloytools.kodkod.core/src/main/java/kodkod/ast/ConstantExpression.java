@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,35 +26,37 @@ import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * A constant valued expression.
- * 
+ *
  * @invariant no children
  * @author Emina Torlak
  */
 public final class ConstantExpression extends LeafExpression {
 
-	/**
-	 * Constructs a constant expression with the given arity.
-	 */
-	ConstantExpression(String name, int arity) {
-		super(name, arity);
-	}
+    /**
+     * Constructs a constant expression with the given arity.
+     */
+    ConstantExpression(String name, int arity) {
+        super(name, arity);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
 
 }

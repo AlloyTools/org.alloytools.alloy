@@ -30,126 +30,130 @@ import edu.mit.csail.sdg.ast.Sig.Field;
  */
 
 public abstract class VisitQuery<T> extends VisitReturn<T> {
-	
-	/** Constructs a VisitQuery object. */
-	public VisitQuery() {}
 
-	/** Visits an ExprBinary node (A OP B) by calling accept() on A then B. */
-	@Override
-	public T visit(ExprBinary x) throws Err {
-		T ans = x.left.accept(this);
-		if (ans == null)
-			ans = x.right.accept(this);
-		return ans;
-	}
+    /** Constructs a VisitQuery object. */
+    public VisitQuery() {}
 
-	/**
-	 * Visits an ExprList node F[X1,X2,X3..] by calling accept() on X1, X2,
-	 * X3...
-	 */
-	@Override
-	public T visit(ExprList x) throws Err {
-		for (Expr y : x.args) {
-			T ans = y.accept(this);
-			if (ans != null)
-				return ans;
-		}
-		return null;
-	}
+    /**
+     * Visits an ExprBinary node (A OP B) by calling accept() on A then B.
+     */
+    @Override
+    public T visit(ExprBinary x) throws Err {
+        T ans = x.left.accept(this);
+        if (ans == null)
+            ans = x.right.accept(this);
+        return ans;
+    }
 
-	/**
-	 * Visits an ExprCall node F[X1,X2,X3..] by calling accept() on X1, X2,
-	 * X3...
-	 */
-	@Override
-	public T visit(ExprCall x) throws Err {
-		for (Expr y : x.args) {
-			T ans = y.accept(this);
-			if (ans != null)
-				return ans;
-		}
-		return null;
-	}
+    /**
+     * Visits an ExprList node F[X1,X2,X3..] by calling accept() on X1, X2, X3...
+     */
+    @Override
+    public T visit(ExprList x) throws Err {
+        for (Expr y : x.args) {
+            T ans = y.accept(this);
+            if (ans != null)
+                return ans;
+        }
+        return null;
+    }
 
-	/**
-	 * Visits an ExprConstant node (this default implementation simply returns
-	 * null)
-	 */
-	@Override
-	public T visit(ExprConstant x) throws Err {
-		return null;
-	}
+    /**
+     * Visits an ExprCall node F[X1,X2,X3..] by calling accept() on X1, X2, X3...
+     */
+    @Override
+    public T visit(ExprCall x) throws Err {
+        for (Expr y : x.args) {
+            T ans = y.accept(this);
+            if (ans != null)
+                return ans;
+        }
+        return null;
+    }
 
-	/**
-	 * Visits an ExprITE node (C => X else Y) by calling accept() on C, X, then
-	 * Y.
-	 */
-	@Override
-	public T visit(ExprITE x) throws Err {
-		T ans = x.cond.accept(this);
-		if (ans == null)
-			ans = x.left.accept(this);
-		if (ans == null)
-			ans = x.right.accept(this);
-		return ans;
-	}
+    /**
+     * Visits an ExprConstant node (this default implementation simply returns null)
+     */
+    @Override
+    public T visit(ExprConstant x) throws Err {
+        return null;
+    }
 
-	/**
-	 * Visits an ExprLet node (let a=x | y) by calling accept() on "a", "x",
-	 * then "y".
-	 */
-	@Override
-	public T visit(ExprLet x) throws Err {
-		T ans = x.var.accept(this);
-		if (ans == null)
-			ans = x.expr.accept(this);
-		if (ans == null)
-			ans = x.sub.accept(this);
-		return ans;
-	}
+    /**
+     * Visits an ExprITE node (C => X else Y) by calling accept() on C, X, then Y.
+     */
+    @Override
+    public T visit(ExprITE x) throws Err {
+        T ans = x.cond.accept(this);
+        if (ans == null)
+            ans = x.left.accept(this);
+        if (ans == null)
+            ans = x.right.accept(this);
+        return ans;
+    }
 
-	/**
-	 * Visits an ExprQt node (all a,b,c:X1, d,e,f:X2... | F) by calling accept()
-	 * on a,b,c,X1,d,e,f,X2... then on F.
-	 */
-	@Override
-	public T visit(ExprQt x) throws Err {
-		for (Decl d : x.decls) {
-			for (ExprHasName v : d.names) {
-				T ans = v.accept(this);
-				if (ans != null)
-					return ans;
-			}
-			T ans = d.expr.accept(this);
-			if (ans != null)
-				return ans;
-		}
-		return x.sub.accept(this);
-	}
+    /**
+     * Visits an ExprLet node (let a=x | y) by calling accept() on "a", "x", then
+     * "y".
+     */
+    @Override
+    public T visit(ExprLet x) throws Err {
+        T ans = x.var.accept(this);
+        if (ans == null)
+            ans = x.expr.accept(this);
+        if (ans == null)
+            ans = x.sub.accept(this);
+        return ans;
+    }
 
-	/** Visits an ExprUnary node (OP X) by calling accept() on X. */
-	@Override
-	public T visit(ExprUnary x) throws Err {
-		return x.sub.accept(this);
-	}
+    /**
+     * Visits an ExprQt node (all a,b,c:X1, d,e,f:X2... | F) by calling accept() on
+     * a,b,c,X1,d,e,f,X2... then on F.
+     */
+    @Override
+    public T visit(ExprQt x) throws Err {
+        for (Decl d : x.decls) {
+            for (ExprHasName v : d.names) {
+                T ans = v.accept(this);
+                if (ans != null)
+                    return ans;
+            }
+            T ans = d.expr.accept(this);
+            if (ans != null)
+                return ans;
+        }
+        return x.sub.accept(this);
+    }
 
-	/**
-	 * Visits a ExprVar node (this default implementation simply returns null)
-	 */
-	@Override
-	public T visit(ExprVar x) throws Err {
-		return null;
-	}
+    /**
+     * Visits an ExprUnary node (OP X) by calling accept() on X.
+     */
+    @Override
+    public T visit(ExprUnary x) throws Err {
+        return x.sub.accept(this);
+    }
 
-	/** Visits a Sig node (this default implementation simply returns null) */
-	@Override
-	public T visit(Sig x) throws Err {
-		return null;
-	}
+    /**
+     * Visits a ExprVar node (this default implementation simply returns null)
+     */
+    @Override
+    public T visit(ExprVar x) throws Err {
+        return null;
+    }
 
-	/** Visits a Field node (this default implementation simply returns null) */
-	@Override
-	public T visit(Field x) throws Err {
-		return null;
-	}
+    /**
+     * Visits a Sig node (this default implementation simply returns null)
+     */
+    @Override
+    public T visit(Sig x) throws Err {
+        return null;
+    }
+
+    /**
+     * Visits a Field node (this default implementation simply returns null)
+     */
+    @Override
+    public T visit(Field x) throws Err {
+        return null;
+    }
 }

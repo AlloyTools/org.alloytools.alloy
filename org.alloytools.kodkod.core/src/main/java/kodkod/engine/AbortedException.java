@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,37 +23,37 @@ package kodkod.engine;
 
 /**
  * Indicates that a solving or evaluation task has been aborted.
- * 
+ *
  * @author Emina Torlak
  */
 public final class AbortedException extends RuntimeException {
 
-	private static final long serialVersionUID = 201522560152091247L;
+    private static final long serialVersionUID = 201522560152091247L;
 
-	/**
-	 * Constructs an aborted exception with no message.
-	 */
-	AbortedException() {}
+    /**
+     * Constructs an aborted exception with no message.
+     */
+    AbortedException() {}
 
-	/**
-	 * Constructs an aborted exception with the given message.
-	 */
-	AbortedException(String message) {
-		super(message);
-	}
+    /**
+     * Constructs an aborted exception with the given message.
+     */
+    AbortedException(String message) {
+        super(message);
+    }
 
-	/**
-	 * Constructs an aborted exception with the given cause.
-	 */
-	AbortedException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * Constructs an aborted exception with the given cause.
+     */
+    AbortedException(Throwable cause) {
+        super(cause);
+    }
 
-	/**
-	 * Constructs an aborted exception with the given message and cause.
-	 */
-	AbortedException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    /**
+     * Constructs an aborted exception with the given message and cause.
+     */
+    AbortedException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

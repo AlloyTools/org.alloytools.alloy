@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,7 +40,7 @@ import kodkod.instance.TupleSet;
  * <li>the CNF literal, expressed as an integer, that represents the meaning of
  * the given formula in the given environment.</li>
  * </ol>
- * 
+ *
  * @specfield node: Node // node that was transformed to this.translated
  * @specfield translated: Formula // the translated formula obtain from
  *            this.node
@@ -53,46 +53,47 @@ import kodkod.instance.TupleSet;
  */
 public abstract class TranslationRecord {
 
-	/**
-	 * Returns this.node.
-	 * 
-	 * @return this.node.
-	 */
-	public abstract Node node();
+    /**
+     * Returns this.node.
+     *
+     * @return this.node.
+     */
+    public abstract Node node();
 
-	/**
-	 * Returns this.translated.
-	 * 
-	 * @return this.translated
-	 */
-	public abstract Formula translated();
+    /**
+     * Returns this.translated.
+     *
+     * @return this.translated
+     */
+    public abstract Formula translated();
 
-	/**
-	 * Returns this.literal.
-	 * 
-	 * @return this.literal
-	 */
-	public abstract int literal();
+    /**
+     * Returns this.literal.
+     *
+     * @return this.literal
+     */
+    public abstract int literal();
 
-	/**
-	 * Returns a map view of this.env.
-	 * 
-	 * @return this.env
-	 */
-	public abstract Map<Variable,TupleSet> env();
+    /**
+     * Returns a map view of this.env.
+     *
+     * @return this.env
+     */
+    public abstract Map<Variable,TupleSet> env();
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		final StringBuilder ret = new StringBuilder();
-		ret.append("< node: ");
-		ret.append(node());
-		ret.append(", literal: ");
-		ret.append(literal());
-		ret.append(", env: ");
-		ret.append(env());
-		ret.append(">");
-		return ret.toString();
-	}
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        final StringBuilder ret = new StringBuilder();
+        ret.append("< node: ");
+        ret.append(node());
+        ret.append(", literal: ");
+        ret.append(literal());
+        ret.append(", env: ");
+        ret.append(env());
+        ret.append(">");
+        return ret.toString();
+    }
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,75 +29,77 @@ import kodkod.ast.visitor.VoidVisitor;
  * An {@link kodkod.ast.IntExpression } representing the cardinality of an
  * {@link kodkod.ast.Expression} or the sum of all the integer atoms contained
  * in the expression.
- * 
+ *
  * @specfield expression: Expression
  * @specfield op: ExprCastOperator
  * @invariant children = 0->expression
  * @author Emina Torlak
  */
 public final class ExprToIntCast extends IntExpression {
-	private final Expression		expression;
-	private final ExprCastOperator	op;
 
-	/**
-	 * Constructs a new cardinality expression.
-	 * 
-	 * @ensures this.expression' = expression && this.op' = op
-	 * @throws NullPointerException expression = null || op = null
-	 * @throws IllegalArgumentException op = SUM && child.arity != 1
-	 */
-	ExprToIntCast(Expression child, ExprCastOperator op) {
-		if (child.arity() > 1 && op == ExprCastOperator.SUM)
-			throw new IllegalArgumentException("cannot apply " + op + " to " + child);
-		this.expression = child;
-		this.op = op;
-	}
+    private final Expression       expression;
+    private final ExprCastOperator op;
 
-	/**
-	 * Returns this.expression.
-	 * 
-	 * @return this.expression
-	 */
-	public Expression expression() {
-		return expression;
-	}
+    /**
+     * Constructs a new cardinality expression.
+     *
+     * @ensures this.expression' = expression && this.op' = op
+     * @throws NullPointerException expression = null || op = null
+     * @throws IllegalArgumentException op = SUM && child.arity != 1
+     */
+    ExprToIntCast(Expression child, ExprCastOperator op) {
+        if (child.arity() > 1 && op == ExprCastOperator.SUM)
+            throw new IllegalArgumentException("cannot apply " + op + " to " + child);
+        this.expression = child;
+        this.op = op;
+    }
 
-	/**
-	 * Returns this.op.
-	 * 
-	 * @return this.op
-	 */
-	public ExprCastOperator op() {
-		return op;
-	}
+    /**
+     * Returns this.expression.
+     *
+     * @return this.expression
+     */
+    public Expression expression() {
+        return expression;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	@Override
-	public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns this.op.
+     *
+     * @return this.op
+     */
+    public ExprCastOperator op() {
+        return op;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	@Override
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return op + "(" + expression.toString() + ")";
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return op + "(" + expression.toString() + ")";
+    }
 
 }

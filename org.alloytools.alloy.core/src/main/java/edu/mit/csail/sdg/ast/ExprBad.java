@@ -15,14 +15,16 @@
 
 package edu.mit.csail.sdg.ast;
 
+import static edu.mit.csail.sdg.ast.Type.EMPTY;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import edu.mit.csail.sdg.alloy4.Pos;
+
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.JoinableList;
-import static edu.mit.csail.sdg.ast.Type.EMPTY;
+import edu.mit.csail.sdg.alloy4.Pos;
 
 /**
  * Immutable; represents an illegal node.
@@ -32,60 +34,61 @@ import static edu.mit.csail.sdg.ast.Type.EMPTY;
 
 public final class ExprBad extends Expr {
 
-	/** The original source text that caused the error. */
-	private final String originalText;
+    /** The original source text that caused the error. */
+    private final String originalText;
 
-	/** {@inheritDoc} */
-	@Override
-	public Pos span() {
-		return pos;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public Pos span() {
+        return pos;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public void toString(StringBuilder out, int indent) {
-		if (indent < 0) {
-			out.append(originalText);
-		} else {
-			for (int i = 0; i < indent; i++) {
-				out.append(' ');
-			}
-			out.append("ExprBad: ").append(originalText).append('\n');
-		}
-	}
+    /** {@inheritDoc} */
+    @Override
+    public void toString(StringBuilder out, int indent) {
+        if (indent < 0) {
+            out.append(originalText);
+        } else {
+            for (int i = 0; i < indent; i++) {
+                out.append(' ');
+            }
+            out.append("ExprBad: ").append(originalText).append('\n');
+        }
+    }
 
-	/** Constructs an ExprBad object. */
-	public ExprBad(Pos pos, String originalText, Err error) {
-		super(pos, null, false, EMPTY, 0, 0, new JoinableList<Err>(error));
-		this.originalText = originalText;
-	}
+    /** Constructs an ExprBad object. */
+    public ExprBad(Pos pos, String originalText, Err error) {
+        super(pos, null, false, EMPTY, 0, 0, new JoinableList<Err>(error));
+        this.originalText = originalText;
+    }
 
-	/** {@inheritDoc} */
-	public int getDepth() {
-		return 1;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public int getDepth() {
+        return 1;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public Expr resolve(Type t, Collection<ErrorWarning> warns) {
-		return this;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public Expr resolve(Type t, Collection<ErrorWarning> warns) {
+        return this;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public final <T> T accept(VisitReturn<T> visitor) throws Err {
-		return visitor.visit(this);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public final <T> T accept(VisitReturn<T> visitor) throws Err {
+        return visitor.visit(this);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String getHTML() {
-		return "<b>error</b> (parser or typechecker failed)";
-	}
+    /** {@inheritDoc} */
+    @Override
+    public String getHTML() {
+        return "<b>error</b> (parser or typechecker failed)";
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public List< ? extends Browsable> getSubnodes() {
-		return new ArrayList<Browsable>(0);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public List< ? extends Browsable> getSubnodes() {
+        return new ArrayList<Browsable>(0);
+    }
 }

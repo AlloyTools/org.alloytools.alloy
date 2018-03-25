@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ import kodkod.engine.bool.BooleanValue;
 /**
  * Logs the translations of all descendants of a user-provided formula that are
  * either formulas or that desugar to formulas.
- * 
+ *
  * @specfield originalFormula: Formula // the
  *            {@linkplain Solver#solve(Formula, kodkod.instance.Bounds)
  *            original} formula, provided by the user
@@ -47,32 +47,32 @@ import kodkod.engine.bool.BooleanValue;
  */
 abstract class TranslationLogger {
 
-	/**
-	 * Optionally records the translation of the source of the given transformed
-	 * formula to the given boolean value in the specified environment.
-	 * 
-	 * @requires f in this.formula.*children
-	 * @ensures this.records' = this.records or this.records' = this.records + f
-	 *          -> translation -> freeVariables(f)<:env
-	 * @throws IllegalArgumentException some aspect of the given translation
-	 *             event prevents it from being logged
-	 * @throws IllegalStateException this log has been closed
-	 */
-	abstract void log(Formula f, BooleanValue translation, Environment<BooleanMatrix,Expression> env);
+    /**
+     * Optionally records the translation of the source of the given transformed
+     * formula to the given boolean value in the specified environment.
+     *
+     * @requires f in this.formula.*children
+     * @ensures this.records' = this.records or this.records' = this.records + f ->
+     *          translation -> freeVariables(f)<:env
+     * @throws IllegalArgumentException some aspect of the given translation event
+     *             prevents it from being logged
+     * @throws IllegalStateException this log has been closed
+     */
+    abstract void log(Formula f, BooleanValue translation, Environment<BooleanMatrix,Expression> env);
 
-	/**
-	 * Closes this logger and releases associated resources. Attempts to call
-	 * {@link #log(Formula, BooleanValue, Environment)} after the log has been
-	 * closed may result in an IllegalStateException.
-	 * 
-	 * @ensures closes this logger and releases associated resources.
-	 */
-	abstract void close();
+    /**
+     * Closes this logger and releases associated resources. Attempts to call
+     * {@link #log(Formula, BooleanValue, Environment)} after the log has been
+     * closed may result in an IllegalStateException.
+     *
+     * @ensures closes this logger and releases associated resources.
+     */
+    abstract void close();
 
-	/**
-	 * Returns a TranslationLog view of this.records.
-	 * 
-	 * @return a TranslationLog view of this.records.
-	 */
-	abstract TranslationLog log();
+    /**
+     * Returns a TranslationLog view of this.records.
+     *
+     * @return a TranslationLog view of this.records.
+     */
+    abstract TranslationLog log();
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,59 +26,63 @@ import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * Negation of a {@link kodkod.ast.Formula formula}.
- * 
+ *
  * @specfield formula: Formula
  * @invariant children = 0->formula
  * @author Emina Torlak
  */
 public final class NotFormula extends Formula {
-	private final Formula formula;
 
-	/**
-	 * Constructs a new formula: !formula
-	 * 
-	 * @ensures this.formula' = formula
-	 * @throws NullPointerException formula = null
-	 */
-	NotFormula(Formula child) {
-		if (child == null)
-			throw new NullPointerException("formula");
-		this.formula = child;
-	}
+    private final Formula formula;
 
-	/**
-	 * Returns this.formula.
-	 * 
-	 * @return this.formula
-	 */
-	public Formula formula() {
-		return formula;
-	}
+    /**
+     * Constructs a new formula: !formula
+     *
+     * @ensures this.formula' = formula
+     * @throws NullPointerException formula = null
+     */
+    NotFormula(Formula child) {
+        if (child == null)
+            throw new NullPointerException("formula");
+        this.formula = child;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns this.formula.
+     *
+     * @return this.formula
+     */
+    public Formula formula() {
+        return formula;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return "!" + formula;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return "!" + formula;
+    }
 }

@@ -15,15 +15,17 @@
 
 package edu.mit.csail.sdg.ast;
 
+import static edu.mit.csail.sdg.ast.Type.EMPTY;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import edu.mit.csail.sdg.alloy4.Pos;
+
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.JoinableList;
-import static edu.mit.csail.sdg.ast.Type.EMPTY;
+import edu.mit.csail.sdg.alloy4.Pos;
 
 /**
  * Immutable; represents an illegal relation join.
@@ -33,92 +35,93 @@ import static edu.mit.csail.sdg.ast.Type.EMPTY;
 
 public final class ExprBadJoin extends Expr {
 
-	/** The left-hand-side expression. */
-	public final Expr	left;
+    /** The left-hand-side expression. */
+    public final Expr left;
 
-	/** The right-hand-side expression. */
-	public final Expr	right;
+    /** The right-hand-side expression. */
+    public final Expr right;
 
-	/** Caches the span() result. */
-	private Pos			span	= null;
+    /** Caches the span() result. */
+    private Pos       span = null;
 
-	/** {@inheritDoc} */
-	@Override
-	public Pos span() {
-		Pos p = span;
-		if (p == null)
-			span = (p = pos.merge(closingBracket).merge(right.span()).merge(left.span()));
-		return p;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public Pos span() {
+        Pos p = span;
+        if (p == null)
+            span = (p = pos.merge(closingBracket).merge(right.span()).merge(left.span()));
+        return p;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public void toString(StringBuilder out, int indent) {
-		if (indent < 0) {
-			left.toString(out, -1);
-			out.append('.');
-			right.toString(out, -1);
-		} else {
-			for (int i = 0; i < indent; i++) {
-				out.append(' ');
-			}
-			out.append("ExprBadJoin:\n");
-			left.toString(out, indent + 2);
-			right.toString(out, indent + 2);
-		}
-	}
+    /** {@inheritDoc} */
+    @Override
+    public void toString(StringBuilder out, int indent) {
+        if (indent < 0) {
+            left.toString(out, -1);
+            out.append('.');
+            right.toString(out, -1);
+        } else {
+            for (int i = 0; i < indent; i++) {
+                out.append(' ');
+            }
+            out.append("ExprBadJoin:\n");
+            left.toString(out, indent + 2);
+            right.toString(out, indent + 2);
+        }
+    }
 
-	/** Constructs an ExprBadJoin node. */
-	private ExprBadJoin(Pos pos, Pos closingBracket, Expr left, Expr right, JoinableList<Err> errors) {
-		super(pos, closingBracket, (left.ambiguous || right.ambiguous), EMPTY, 0, 0, errors);
-		this.left = left;
-		this.right = right;
-	}
+    /** Constructs an ExprBadJoin node. */
+    private ExprBadJoin(Pos pos, Pos closingBracket, Expr left, Expr right, JoinableList<Err> errors) {
+        super(pos, closingBracket, (left.ambiguous || right.ambiguous), EMPTY, 0, 0, errors);
+        this.left = left;
+        this.right = right;
+    }
 
-	/** Constructs an ExprBadJoin node. */
-	public static Expr make(Pos pos, Pos closingBracket, Expr left, Expr right) {
-		JoinableList<Err> errors = left.errors.make(right.errors);
-		if (errors.isEmpty()) {
-			StringBuilder sb = new StringBuilder("This cannot be a legal relational join where\nleft hand side is ");
-			left.toString(sb, -1);
-			sb.append(" (type = ").append(left.type).append(")\nright hand side is ");
-			right.toString(sb, -1);
-			sb.append(" (type = ").append(right.type).append(")\n");
-			errors = errors.make(new ErrorType(pos, sb.toString()));
-		}
-		return new ExprBadJoin(pos, closingBracket, left, right, errors);
-	}
+    /** Constructs an ExprBadJoin node. */
+    public static Expr make(Pos pos, Pos closingBracket, Expr left, Expr right) {
+        JoinableList<Err> errors = left.errors.make(right.errors);
+        if (errors.isEmpty()) {
+            StringBuilder sb = new StringBuilder("This cannot be a legal relational join where\nleft hand side is ");
+            left.toString(sb, -1);
+            sb.append(" (type = ").append(left.type).append(")\nright hand side is ");
+            right.toString(sb, -1);
+            sb.append(" (type = ").append(right.type).append(")\n");
+            errors = errors.make(new ErrorType(pos, sb.toString()));
+        }
+        return new ExprBadJoin(pos, closingBracket, left, right, errors);
+    }
 
-	/** {@inheritDoc} */
-	public int getDepth() {
-		int a = left.getDepth(), b = right.getDepth();
-		if (a >= b)
-			return 1 + a;
-		else
-			return 1 + b;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public int getDepth() {
+        int a = left.getDepth(), b = right.getDepth();
+        if (a >= b)
+            return 1 + a;
+        else
+            return 1 + b;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public Expr resolve(Type t, Collection<ErrorWarning> warns) {
-		return this;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public Expr resolve(Type t, Collection<ErrorWarning> warns) {
+        return this;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public final <T> T accept(VisitReturn<T> visitor) throws Err {
-		return visitor.visit(this);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public final <T> T accept(VisitReturn<T> visitor) throws Err {
+        return visitor.visit(this);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String getHTML() {
-		return "<b>error</b> (parser or typechecker failed)";
-	}
+    /** {@inheritDoc} */
+    @Override
+    public String getHTML() {
+        return "<b>error</b> (parser or typechecker failed)";
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public List< ? extends Browsable> getSubnodes() {
-		return new ArrayList<Browsable>(0);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public List< ? extends Browsable> getSubnodes() {
+        return new ArrayList<Browsable>(0);
+    }
 }

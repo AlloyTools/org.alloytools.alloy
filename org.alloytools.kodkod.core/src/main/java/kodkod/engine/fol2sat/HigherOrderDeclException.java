@@ -35,39 +35,40 @@ import kodkod.ast.operator.Multiplicity;
  * @author Emina Torlak
  */
 public final class HigherOrderDeclException extends RuntimeException {
-	private final Node			node;
-	private final boolean		isDecl;
-	private static final long	serialVersionUID	= 1892780864484615171L;
 
-	/**
-	 * Constructs a HigherOrderDeclException for the given decl.
-	 * 
-	 * @requires decl.multiplicity != ONE
-	 * @ensures this.decl' = decl
-	 */
-	public HigherOrderDeclException(Decl decl) {
-		super("Higher order declaration: " + decl);
-		assert decl.multiplicity() != Multiplicity.ONE;
-		this.node = decl;
-		this.isDecl = true;
-	}
+    private final Node        node;
+    private final boolean     isDecl;
+    private static final long serialVersionUID = 1892780864484615171L;
 
-	public HigherOrderDeclException(FixFormula ff) {
-		super("Fixed point formula: " + ff);
-		this.node = ff;
-		this.isDecl = false;
-	}
+    /**
+     * Constructs a HigherOrderDeclException for the given decl.
+     *
+     * @requires decl.multiplicity != ONE
+     * @ensures this.decl' = decl
+     */
+    public HigherOrderDeclException(Decl decl) {
+        super("Higher order declaration: " + decl);
+        assert decl.multiplicity() != Multiplicity.ONE;
+        this.node = decl;
+        this.isDecl = true;
+    }
 
-	/**
-	 * Returns this.decl
-	 * 
-	 * @return this.decl
-	 */
-	public Decl decl() {
-		return isDecl ? (Decl) node : null;
-	}
+    public HigherOrderDeclException(FixFormula ff) {
+        super("Fixed point formula: " + ff);
+        this.node = ff;
+        this.isDecl = false;
+    }
 
-	public Node node() {
-		return node;
-	}
+    /**
+     * Returns this.decl
+     *
+     * @return this.decl
+     */
+    public Decl decl() {
+        return isDecl ? (Decl) node : null;
+    }
+
+    public Node node() {
+        return node;
+    }
 }

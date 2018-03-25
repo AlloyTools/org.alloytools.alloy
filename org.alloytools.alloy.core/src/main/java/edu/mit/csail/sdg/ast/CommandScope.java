@@ -31,90 +31,88 @@ import edu.mit.csail.sdg.alloy4.Util;
 
 public class CommandScope {
 
-	/**
-	 * The position in the original source file where this scope was declared;
-	 * can be Pos.UNKNOWN if unknown.
-	 */
-	public final Pos		pos;
+    /**
+     * The position in the original source file where this scope was declared; can
+     * be Pos.UNKNOWN if unknown.
+     */
+    public final Pos     pos;
 
-	/** The sig whose scope is being given by this CommandScope object. */
-	public final Sig		sig;
+    /**
+     * The sig whose scope is being given by this CommandScope object.
+     */
+    public final Sig     sig;
 
-	/** True iff the scope is an exact scope. */
-	public final boolean	isExact;
+    /** True iff the scope is an exact scope. */
+    public final boolean isExact;
 
-	/** The starting scope. */
-	public final int		startingScope;
+    /** The starting scope. */
+    public final int     startingScope;
 
-	/**
-	 * The ending scope; if this sig is not a growing sig, then
-	 * this.startingScope==this.endingScope.
-	 */
-	public final int		endingScope;
+    /**
+     * The ending scope; if this sig is not a growing sig, then
+     * this.startingScope==this.endingScope.
+     */
+    public final int     endingScope;
 
-	/**
-	 * The scope increment; if this sig is not a growing sig, then
-	 * this.increment is ignored.
-	 */
-	public final int		increment;
+    /**
+     * The scope increment; if this sig is not a growing sig, then this.increment is
+     * ignored.
+     */
+    public final int     increment;
 
-	/**
-	 * Construct a new CommandScope object.
-	 * 
-	 * @param sig - the sig for this scope
-	 * @param isExact - true iff the scope is intended to be exact
-	 * @param scope - the scope
-	 * @throws ErrorSyntax if scope is less than zero
-	 */
-	public CommandScope(Sig sig, boolean isExact, int scope) throws ErrorSyntax {
-		this(null, sig, isExact, scope, scope, 1);
-	}
+    /**
+     * Construct a new CommandScope object.
+     *
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param scope - the scope
+     * @throws ErrorSyntax if scope is less than zero
+     */
+    public CommandScope(Sig sig, boolean isExact, int scope) throws ErrorSyntax {
+        this(null, sig, isExact, scope, scope, 1);
+    }
 
-	/**
-	 * Construct a new CommandScope object.
-	 * 
-	 * @param pos - the position where this scope is given
-	 * @param sig - the sig for this scope
-	 * @param isExact - true iff the scope is intended to be exact
-	 * @param startingScope - the starting scope
-	 * @param endingScope - the ending scope (if this sig is not intended to be
-	 *            growable, then startingScope should equal endingScope)
-	 * @param increment - the scope increment (if this sig is not intended to be
-	 *            growable, then this field is ignored)
-	 * @throws ErrorSyntax if startingScope is less than zero
-	 * @throws ErrorSyntax if endingScope is less than startingScope
-	 * @throws ErrorSyntax if increment is less than one
-	 */
-	public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment)
-			throws ErrorSyntax {
-		if (pos == null)
-			pos = Pos.UNKNOWN;
-		if (sig == null)
-			throw new NullPointerException();
-		if (startingScope < 0)
-			throw new ErrorSyntax(pos, "Sig " + sig + " cannot have a negative starting scope (" + startingScope + ")");
-		if (endingScope < 0)
-			throw new ErrorSyntax(pos, "Sig " + sig + " cannot have a negative ending scope (" + endingScope + ")");
-		if (endingScope < startingScope)
-			throw new ErrorSyntax(pos, "Sig " + sig + " cannot have an ending scope (" + endingScope
-					+ ") smaller than its starting scope (" + startingScope + ")");
-		if (startingScope == endingScope)
-			increment = 1;
-		if (increment < 1)
-			throw new ErrorSyntax(pos, "Sig " + sig + "'s increment value cannot be " + increment
-					+ ".\nThe increment must be 1 or greater.");
-		this.pos = pos;
-		this.sig = sig;
-		this.isExact = isExact;
-		this.startingScope = startingScope;
-		this.endingScope = endingScope;
-		this.increment = increment;
-	}
+    /**
+     * Construct a new CommandScope object.
+     *
+     * @param pos - the position where this scope is given
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param startingScope - the starting scope
+     * @param endingScope - the ending scope (if this sig is not intended to be
+     *            growable, then startingScope should equal endingScope)
+     * @param increment - the scope increment (if this sig is not intended to be
+     *            growable, then this field is ignored)
+     * @throws ErrorSyntax if startingScope is less than zero
+     * @throws ErrorSyntax if endingScope is less than startingScope
+     * @throws ErrorSyntax if increment is less than one
+     */
+    public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment) throws ErrorSyntax {
+        if (pos == null)
+            pos = Pos.UNKNOWN;
+        if (sig == null)
+            throw new NullPointerException();
+        if (startingScope < 0)
+            throw new ErrorSyntax(pos, "Sig " + sig + " cannot have a negative starting scope (" + startingScope + ")");
+        if (endingScope < 0)
+            throw new ErrorSyntax(pos, "Sig " + sig + " cannot have a negative ending scope (" + endingScope + ")");
+        if (endingScope < startingScope)
+            throw new ErrorSyntax(pos, "Sig " + sig + " cannot have an ending scope (" + endingScope + ") smaller than its starting scope (" + startingScope + ")");
+        if (startingScope == endingScope)
+            increment = 1;
+        if (increment < 1)
+            throw new ErrorSyntax(pos, "Sig " + sig + "'s increment value cannot be " + increment + ".\nThe increment must be 1 or greater.");
+        this.pos = pos;
+        this.sig = sig;
+        this.isExact = isExact;
+        this.startingScope = startingScope;
+        this.endingScope = endingScope;
+        this.increment = increment;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String toString() {
-		return (isExact ? "exactly " : "") + startingScope + (endingScope != startingScope ? (".." + endingScope) : "")
-				+ (increment > 1 ? (":" + increment) : "") + " " + Util.tail(sig.label);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return (isExact ? "exactly " : "") + startingScope + (endingScope != startingScope ? (".." + endingScope) : "") + (increment > 1 ? (":" + increment) : "") + " " + Util.tail(sig.label);
+    }
 }

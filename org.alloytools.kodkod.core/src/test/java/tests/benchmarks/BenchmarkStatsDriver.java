@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-2008, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,67 +31,65 @@ import tests.util.ProcessRunner;
 /**
  * Calls BenchmarkStats on all problems in examples.tptp.* and most problems in
  * examples.*
- * 
+ *
  * @author Emina Torlak
  */
 public final class BenchmarkStatsDriver extends BenchmarkDriver {
 
-	private static void usage() {
-		System.out.println("Usage: java tests.benchmarks.BenchmarksStatsDriver <sharing depth>");
-		System.exit(0);
-	}
+    private static void usage() {
+        System.out.println("Usage: java tests.benchmarks.BenchmarksStatsDriver <sharing depth>");
+        System.exit(0);
+    }
 
-	/**
-	 * Usage: java tests.benchmarks.BenchmarksStatsDriver <sharing depth>
-	 */
-	public static void main(String args[]) {
-		if (args.length != 1)
-			usage();
+    /**
+     * Usage: java tests.benchmarks.BenchmarksStatsDriver <sharing depth>
+     */
+    public static void main(String args[]) {
+        if (args.length != 1)
+            usage();
 
-		System.out.print("name\t");
-		System.out.print("method\t");
-		System.out.print("universe\t");
-		System.out.print("outcome\t");
-		System.out.print("translation (ms)\t");
-		System.out.print("gates\t");
-		System.out.print("primary vars\t");
-		System.out.print("vars\t");
-		System.out.print("clauses\t");
-		System.out.println("solving time (ms)");
+        System.out.print("name\t");
+        System.out.print("method\t");
+        System.out.print("universe\t");
+        System.out.print("outcome\t");
+        System.out.print("translation (ms)\t");
+        System.out.print("gates\t");
+        System.out.print("primary vars\t");
+        System.out.print("vars\t");
+        System.out.print("clauses\t");
+        System.out.println("solving time (ms)");
 
-		for (Problem problem : problems) {
-			final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkStats " + problem.problem + " "
-					+ problem.spec + " -scope=" + problem.bounds + " -sharing=" + args[0];
+        for (Problem problem : problems) {
+            final String cmd = "java -Xmx2G -cp bin tests.benchmarks.BenchmarkStats " + problem.problem + " " + problem.spec + " -scope=" + problem.bounds + " -sharing=" + args[0];
 
-			// System.out.println(cmd);
+            // System.out.println(cmd);
 
-			final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
-			runner.start();
+            final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
+            runner.start();
 
-			try {
-				runner.join(FIVE_MIN);
-				if (runner.getState() != Thread.State.TERMINATED) {
-					runner.interrupt();
-					runner.destroyProcess();
-					System.out.print(problem.problem + "\t");
-					System.out.print(problem.spec + "\t");
-					System.out.println("na\tna\tna\tna\tna\tna\tna\tna");
-					continue;
-				}
+            try {
+                runner.join(FIVE_MIN);
+                if (runner.getState() != Thread.State.TERMINATED) {
+                    runner.interrupt();
+                    runner.destroyProcess();
+                    System.out.print(problem.problem + "\t");
+                    System.out.print(problem.spec + "\t");
+                    System.out.println("na\tna\tna\tna\tna\tna\tna\tna");
+                    continue;
+                }
 
-				final BufferedReader out = new BufferedReader(
-						new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
-				System.out.println(out.readLine());
-			} catch (InterruptedException e) {
-				System.out.println("INTERRUPTED");
-				runner.destroyProcess();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-				System.exit(1);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
-	}
+                final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
+                System.out.println(out.readLine());
+            } catch (InterruptedException e) {
+                System.out.println("INTERRUPTED");
+                runner.destroyProcess();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                System.exit(1);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
 }

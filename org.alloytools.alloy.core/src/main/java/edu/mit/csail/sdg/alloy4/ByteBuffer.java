@@ -34,167 +34,169 @@ import java.util.zip.Deflater;
 
 public final class ByteBuffer {
 
-	/** The size per chunk. */
-	private static final int			SIZE	= 65536;
+    /** The size per chunk. */
+    private static final int         SIZE = 65536;
 
-	/**
-	 * The list of chunks allocated so far; always has at least one chunk; every
-	 * chunk is always exactly of size SIZE.
-	 */
-	private final LinkedList<byte[]>	list	= new LinkedList<byte[]>();
+    /**
+     * The list of chunks allocated so far; always has at least one chunk; every
+     * chunk is always exactly of size SIZE.
+     */
+    private final LinkedList<byte[]> list = new LinkedList<byte[]>();
 
-	/**
-	 * The number of bytes stored in the latest chunk; every chunk before that
-	 * is always fully filled.
-	 */
-	private int							n		= 0;
+    /**
+     * The number of bytes stored in the latest chunk; every chunk before that is
+     * always fully filled.
+     */
+    private int                      n    = 0;
 
-	/** Construct an empty byte buffer. */
-	public ByteBuffer() {
-		list.add(new byte[SIZE]);
-	}
+    /** Construct an empty byte buffer. */
+    public ByteBuffer() {
+        list.add(new byte[SIZE]);
+    }
 
-	/** Write the given byte into this byte buffer. */
-	private ByteBuffer w(int b) {
-		if (n == SIZE) {
-			list.add(new byte[SIZE]);
-			n = 0;
-		}
-		byte[] array = list.getLast();
-		array[n] = (byte) b;
-		n++;
-		return this;
-	}
+    /** Write the given byte into this byte buffer. */
+    private ByteBuffer w(int b) {
+        if (n == SIZE) {
+            list.add(new byte[SIZE]);
+            n = 0;
+        }
+        byte[] array = list.getLast();
+        array[n] = (byte) b;
+        n++;
+        return this;
+    }
 
-	/** Write the given array of bytes into this byte buffer. */
-	private ByteBuffer write(byte[] b, int offset, int len) {
-		if (b == null || len <= 0)
-			return this;
-		else if (n == SIZE) {
-			list.add(new byte[SIZE]);
-			n = 0;
-		}
-		while (true) { // loop invariant: len>0 and SIZE>n
-			byte[] array = list.getLast();
-			if (len <= (SIZE - n)) {
-				System.arraycopy(b, offset, array, n, len);
-				n += len;
-				return this;
-			}
-			System.arraycopy(b, offset, array, n, SIZE - n);
-			offset += (SIZE - n);
-			len -= (SIZE - n);
-			n = 0;
-			list.add(new byte[SIZE]);
-		}
-	}
+    /** Write the given array of bytes into this byte buffer. */
+    private ByteBuffer write(byte[] b, int offset, int len) {
+        if (b == null || len <= 0)
+            return this;
+        else if (n == SIZE) {
+            list.add(new byte[SIZE]);
+            n = 0;
+        }
+        while (true) { // loop invariant: len>0 and SIZE>n
+            byte[] array = list.getLast();
+            if (len <= (SIZE - n)) {
+                System.arraycopy(b, offset, array, n, len);
+                n += len;
+                return this;
+            }
+            System.arraycopy(b, offset, array, n, SIZE - n);
+            offset += (SIZE - n);
+            len -= (SIZE - n);
+            n = 0;
+            list.add(new byte[SIZE]);
+        }
+    }
 
-	/**
-	 * Write the given String into this byte buffer (by converting the String
-	 * into its UTF-8 representation)
-	 */
-	public ByteBuffer write(String string) {
-		if (string.length() == 0)
-			return this;
-		byte[] b;
-		try {
-			b = string.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException ex) {
-			return this;
-		} // exception not possible
-		return write(b, 0, b.length);
-	}
+    /**
+     * Write the given String into this byte buffer (by converting the String into
+     * its UTF-8 representation)
+     */
+    public ByteBuffer write(String string) {
+        if (string.length() == 0)
+            return this;
+        byte[] b;
+        try {
+            b = string.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return this;
+        } // exception not possible
+        return write(b, 0, b.length);
+    }
 
-	/** Write the given number into this byte buffer, followed by a space. */
-	public ByteBuffer writes(long x) {
-		return write(Long.toString(x)).w(' ');
-	}
+    /**
+     * Write the given number into this byte buffer, followed by a space.
+     */
+    public ByteBuffer writes(long x) {
+        return write(Long.toString(x)).w(' ');
+    }
 
-	/**
-	 * Write the given number into this byte buffer (truncated to the range
-	 * -32767..+32767), followed by a space.
-	 */
-	public strictfp ByteBuffer writes(double x) {
-		// These extreme values shouldn't happen, but we want to protect against
-		// them
-		if (Double.isNaN(x))
-			return write("0 ");
-		else if (x > 32767)
-			return write("32767 ");
-		else if (x < -32767)
-			return write("-32767 ");
-		long num = (long) (x * 1000000);
-		if (num >= 32767000000L)
-			return write("32767 ");
-		else if (num <= (-32767000000L))
-			return write("-32767 ");
-		// Now, regular doubles... let's allow up to 6 digits after the decimal
-		// point
-		if (num < 0) {
-			w('-');
-			num = -num;
-		}
-		String str = Long.toString(num);
-		int len = str.length();
-		if (len <= 6) {
-			w('.');
-			while (len < 6) {
-				w('0');
-				len++;
-			}
-			return write(str).w(' ');
-		}
-		return write(str.substring(0, str.length() - 6)).w('.').write(str.substring(str.length() - 6)).w(' ');
-	}
+    /**
+     * Write the given number into this byte buffer (truncated to the range
+     * -32767..+32767), followed by a space.
+     */
+    public strictfp ByteBuffer writes(double x) {
+        // These extreme values shouldn't happen, but we want to protect against
+        // them
+        if (Double.isNaN(x))
+            return write("0 ");
+        else if (x > 32767)
+            return write("32767 ");
+        else if (x < -32767)
+            return write("-32767 ");
+        long num = (long) (x * 1000000);
+        if (num >= 32767000000L)
+            return write("32767 ");
+        else if (num <= (-32767000000L))
+            return write("-32767 ");
+        // Now, regular doubles... let's allow up to 6 digits after the decimal
+        // point
+        if (num < 0) {
+            w('-');
+            num = -num;
+        }
+        String str = Long.toString(num);
+        int len = str.length();
+        if (len <= 6) {
+            w('.');
+            while (len < 6) {
+                w('0');
+                len++;
+            }
+            return write(str).w(' ');
+        }
+        return write(str.substring(0, str.length() - 6)).w('.').write(str.substring(str.length() - 6)).w(' ');
+    }
 
-	/**
-	 * Write the entire content into the given file using Flate compression (see
-	 * RFC1951) then return the number of bytes written.
-	 */
-	public long dumpFlate(RandomAccessFile os) throws IOException {
-		Deflater zip = new Deflater(Deflater.BEST_COMPRESSION);
-		byte[] output = new byte[8192];
-		Iterator<byte[]> it = list.iterator(); // when null, that means we have
-												// told the Deflater that no
-												// more input would be coming
-		long ans = 0; // the number of bytes written out so far
-		while (true) {
-			if (it != null && zip.needsInput() && it.hasNext()) {
-				byte[] in = it.next();
-				if (in == list.getLast()) {
-					zip.setInput(in, 0, n);
-					it = null;
-					zip.finish();
-				} else {
-					zip.setInput(in, 0, SIZE);
-				}
-			}
-			if (it == null && zip.finished())
-				break;
-			int count = zip.deflate(output);
-			if (count > 0) {
-				ans = ans + count;
-				if (ans < 0)
-					throw new IOException("Data too large to be written to the output file.");
-				os.write(output, 0, count);
-			}
-		}
-		return ans;
-	}
+    /**
+     * Write the entire content into the given file using Flate compression (see
+     * RFC1951) then return the number of bytes written.
+     */
+    public long dumpFlate(RandomAccessFile os) throws IOException {
+        Deflater zip = new Deflater(Deflater.BEST_COMPRESSION);
+        byte[] output = new byte[8192];
+        Iterator<byte[]> it = list.iterator(); // when null, that means we have
+                                              // told the Deflater that no
+                                              // more input would be coming
+        long ans = 0; // the number of bytes written out so far
+        while (true) {
+            if (it != null && zip.needsInput() && it.hasNext()) {
+                byte[] in = it.next();
+                if (in == list.getLast()) {
+                    zip.setInput(in, 0, n);
+                    it = null;
+                    zip.finish();
+                } else {
+                    zip.setInput(in, 0, SIZE);
+                }
+            }
+            if (it == null && zip.finished())
+                break;
+            int count = zip.deflate(output);
+            if (count > 0) {
+                ans = ans + count;
+                if (ans < 0)
+                    throw new IOException("Data too large to be written to the output file.");
+                os.write(output, 0, count);
+            }
+        }
+        return ans;
+    }
 
-	/**
-	 * Write the entire content into the given file as-is, then return the
-	 * number of bytes written.
-	 */
-	public long dump(RandomAccessFile os) throws IOException {
-		if (list.size() >= (Long.MAX_VALUE / SIZE))
-			throw new IOException("Data too large to be written to the output file.");
-		byte[] last = list.getLast();
-		for (byte[] x : list)
-			if (x != last)
-				os.write(x);
-		if (n > 0)
-			os.write(last, 0, n);
-		return ((long) (list.size() - 1)) * SIZE + n;
-	}
+    /**
+     * Write the entire content into the given file as-is, then return the number of
+     * bytes written.
+     */
+    public long dump(RandomAccessFile os) throws IOException {
+        if (list.size() >= (Long.MAX_VALUE / SIZE))
+            throw new IOException("Data too large to be written to the output file.");
+        byte[] last = list.getLast();
+        for (byte[] x : list)
+            if (x != last)
+                os.write(x);
+        if (n > 0)
+            os.write(last, 0, n);
+        return ((long) (list.size() - 1)) * SIZE + n;
+    }
 }

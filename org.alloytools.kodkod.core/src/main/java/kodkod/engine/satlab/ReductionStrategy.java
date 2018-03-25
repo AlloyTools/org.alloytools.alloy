@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,7 @@ import kodkod.util.ints.IntSet;
 
 /**
  * Strategy for reducing the unsatisfiable core of a {@link SATProver}.
- * 
+ *
  * @specfield traces: ResolutionTrace[]
  * @specfield nexts: IntSet[]
  * @invariant #traces = #nexts
@@ -36,35 +36,35 @@ import kodkod.util.ints.IntSet;
  */
 public interface ReductionStrategy {
 
-	/**
-	 * Returns the next subtrace of the specified trace to be analyzed, given as
-	 * a set of indices into the trace. If there are no more subtraces to be
-	 * analyzed (i.e. the given trace is minimal according to the minimality
-	 * measure used by this strategy), returns the empty set.
-	 * 
-	 * @requires
-	 * 
-	 *           <pre>
-	 * let t = this.traces[#this.traces-1], n = this.nexts[#this.nexts-1] | 
-	 *  unsat(t.elts[n].literals) => 
-	 *   (all i: n.ints | let j = #{k: n.ints | k < i} | t.elts[i].equals(trace.elts[j])) 
-	 *  else
-	 *   trace = t
-	 *           </pre>
-	 * 
-	 * @ensures
-	 * 
-	 *          <pre>
-	 *  
-	 *  let next = { i: int | 0 <= i < trace.size()-1 } |
-	 *   trace.elts[next].antecedents in trace.elts[next] and 
-	 *   (some i: [0..#trace) | i !in next and no trace[i].antecedents) and  
-	 *   this.nexts' = this.nexts + #this.nexts->next and
-	 *   this.traces' = this.traces + #this.traces->trace
-	 *          </pre>
-	 * 
-	 * @return this.nexts'[#this.nexts-1]
-	 */
-	public IntSet next(ResolutionTrace trace);
+    /**
+     * Returns the next subtrace of the specified trace to be analyzed, given as a
+     * set of indices into the trace. If there are no more subtraces to be analyzed
+     * (i.e. the given trace is minimal according to the minimality measure used by
+     * this strategy), returns the empty set.
+     *
+     * @requires
+     *
+     *           <pre>
+     * let t = this.traces[#this.traces-1], n = this.nexts[#this.nexts-1] |
+     *  unsat(t.elts[n].literals) =>
+     *   (all i: n.ints | let j = #{k: n.ints | k < i} | t.elts[i].equals(trace.elts[j]))
+     *  else
+     *   trace = t
+     *           </pre>
+     *
+     * @ensures
+     *
+     *          <pre>
+     *
+     *  let next = { i: int | 0 <= i < trace.size()-1 } |
+     *   trace.elts[next].antecedents in trace.elts[next] and
+     *   (some i: [0..#trace) | i !in next and no trace[i].antecedents) and
+     *   this.nexts' = this.nexts + #this.nexts->next and
+     *   this.traces' = this.traces + #this.traces->trace
+     *          </pre>
+     *
+     * @return this.nexts'[#this.nexts-1]
+     */
+    public IntSet next(ResolutionTrace trace);
 
 }

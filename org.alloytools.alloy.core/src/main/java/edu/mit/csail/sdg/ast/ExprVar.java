@@ -18,10 +18,11 @@ package edu.mit.csail.sdg.ast;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.TableView;
+
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.TableView;
 
 /**
  * Immutable; represents a LET or QUANTIFICATION variable in the AST.
@@ -31,81 +32,75 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
 public final class ExprVar extends ExprHasName implements Clause {
 
-	/** {@inheritDoc} */
-	@Override
-	public void toString(StringBuilder out, int indent) {
-		if (indent < 0) {
-			out.append(label);
-		} else {
-			for (int i = 0; i < indent; i++) {
-				out.append(' ');
-			}
-			out.append("Var ")
-					.append(label)
-					.append(" at position <")
-					.append(pos)
-					.append("> with type=")
-					.append(type)
-					.append('\n');
-		}
-	}
+    /** {@inheritDoc} */
+    @Override
+    public void toString(StringBuilder out, int indent) {
+        if (indent < 0) {
+            out.append(label);
+        } else {
+            for (int i = 0; i < indent; i++) {
+                out.append(' ');
+            }
+            out.append("Var ").append(label).append(" at position <").append(pos).append("> with type=").append(type).append('\n');
+        }
+    }
 
-	/** Constructs an ExprVar object */
-	private ExprVar(Pos pos, String label, Type type) {
-		super(pos, label, type);
-	}
+    /** Constructs an ExprVar object */
+    private ExprVar(Pos pos, String label, Type type) {
+        super(pos, label, type);
+    }
 
-	/**
-	 * Constructs an ExprVar variable with the EMPTY type
-	 * 
-	 * @param pos - the original position in the source file (can be null if
-	 *            unknown)
-	 * @param label - the label for this variable (it is only used for
-	 *            pretty-printing and does not have to be unique)
-	 */
-	public static ExprVar make(Pos pos, String label) {
-		return new ExprVar(pos, label, Type.EMPTY);
-	}
+    /**
+     * Constructs an ExprVar variable with the EMPTY type
+     *
+     * @param pos - the original position in the source file (can be null if
+     *            unknown)
+     * @param label - the label for this variable (it is only used for
+     *            pretty-printing and does not have to be unique)
+     */
+    public static ExprVar make(Pos pos, String label) {
+        return new ExprVar(pos, label, Type.EMPTY);
+    }
 
-	/**
-	 * Constructs an ExprVar variable with the given type
-	 * 
-	 * @param pos - the original position in the source file (can be null if
-	 *            unknown)
-	 * @param label - the label for this variable (it is only used for
-	 *            pretty-printing and does not have to be unique)
-	 * @param type - the type
-	 */
-	public static ExprVar make(Pos pos, String label, Type type) {
-		return new ExprVar(pos, label, type);
-	}
+    /**
+     * Constructs an ExprVar variable with the given type
+     *
+     * @param pos - the original position in the source file (can be null if
+     *            unknown)
+     * @param label - the label for this variable (it is only used for
+     *            pretty-printing and does not have to be unique)
+     * @param type - the type
+     */
+    public static ExprVar make(Pos pos, String label, Type type) {
+        return new ExprVar(pos, label, type);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public Expr resolve(Type p, Collection<ErrorWarning> warns) {
-		return this;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public Expr resolve(Type p, Collection<ErrorWarning> warns) {
+        return this;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public <T> T accept(VisitReturn<T> visitor) throws Err {
-		return visitor.visit(this);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public <T> T accept(VisitReturn<T> visitor) throws Err {
+        return visitor.visit(this);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String getHTML() {
-		return "<b>variable</b>: " + label + " <i>" + type + "</i>";
-	}
+    /** {@inheritDoc} */
+    @Override
+    public String getHTML() {
+        return "<b>variable</b>: " + label + " <i>" + type + "</i>";
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public List< ? extends Browsable> getSubnodes() {
-		return new ArrayList<Browsable>(0);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public List< ? extends Browsable> getSubnodes() {
+        return new ArrayList<Browsable>(0);
+    }
 
-	@Override
-	public String explain() {
-		return "var "+label+"\n"+TableView.toTable(type);
-	}
+    @Override
+    public String explain() {
+        return "var " + label + "\n" + TableView.toTable(type);
+    }
 }

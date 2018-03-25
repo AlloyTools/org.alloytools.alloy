@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ import kodkod.util.ints.Ints;
 
 /**
  * A logic gate with two or more inputs; an AND or an OR gate.
- * 
+ *
  * @specfield op: Operator.Binary
  * @invariant #inputs > 1
  * @invariant some components.this => label in [1..Integer.MAX_VALUE), label in
@@ -37,97 +37,100 @@ import kodkod.util.ints.Ints;
  * @author Emina Torlak
  */
 public abstract class MultiGate extends BooleanFormula {
-	final Operator.Nary	op;
 
-	private final int	label, labelhash, hashcode;
+    final Operator.Nary op;
 
-	/**
-	 * Constructs a new MultiGate gate with the given operator and label.
-	 * 
-	 * @requires op != null && label >= 0
-	 * @ensures this.op' = op && this.label' = label
-	 */
-	MultiGate(Operator.Nary op, int label, int hashcode) {
-		super(null);
-		assert op != null;
-		assert label >= 0;
-		this.op = op;
-		this.label = label;
-		this.labelhash = Ints.superFastHash(label);
-		this.hashcode = hashcode;
-	}
+    private final int   label, labelhash, hashcode;
 
-	/**
-	 * Returns the label for this value.
-	 * 
-	 * @return this.label
-	 */
-	@Override
-	public final int label() {
-		return label;
-	}
+    /**
+     * Constructs a new MultiGate gate with the given operator and label.
+     *
+     * @requires op != null && label >= 0
+     * @ensures this.op' = op && this.label' = label
+     */
+    MultiGate(Operator.Nary op, int label, int hashcode) {
+        super(null);
+        assert op != null;
+        assert label >= 0;
+        this.op = op;
+        this.label = label;
+        this.labelhash = Ints.superFastHash(label);
+        this.hashcode = hashcode;
+    }
 
-	/**
-	 * Returns the operator used to combine the input variables of this
-	 * connective gate.
-	 * 
-	 * @return this.op
-	 */
-	public final Operator.Nary op() {
-		return op;
-	}
+    /**
+     * Returns the label for this value.
+     *
+     * @return this.label
+     */
+    @Override
+    public final int label() {
+        return label;
+    }
 
-	/**
-	 * Passes this value and the given argument value to the visitor, and
-	 * returns the resulting value.
-	 * 
-	 * @return the value produced by the visitor when visiting this node with
-	 *         the given argument.
-	 */
-	@Override
-	public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
-		return visitor.visit(this, arg);
-	}
+    /**
+     * Returns the operator used to combine the input variables of this connective
+     * gate.
+     *
+     * @return this.op
+     */
+    @Override
+    public final Operator.Nary op() {
+        return op;
+    }
 
-	/**
-	 * Returns a string representation of this multigate.
-	 * 
-	 * @return a string representation of this multigate.
-	 */
-	public String toString() {
-		final StringBuilder builder = new StringBuilder("(");
-		final Iterator<BooleanFormula> children = iterator();
-		builder.append(children.next());
-		while (children.hasNext()) {
-			builder.append(op);
-			builder.append(children.next());
-		}
-		builder.append(")");
-		return builder.toString();
-	}
+    /**
+     * Passes this value and the given argument value to the visitor, and returns
+     * the resulting value.
+     *
+     * @return the value produced by the visitor when visiting this node with the
+     *         given argument.
+     */
+    @Override
+    public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
+        return visitor.visit(this, arg);
+    }
 
-	/**
-	 * Returns a hashcode for this gate. The hashcode obeys the Object contract.
-	 * 
-	 * @return a hashcode for this gate.
-	 */
-	@Override
-	public final int hashCode() {
-		return hashcode;
-	}
+    /**
+     * Returns a string representation of this multigate.
+     *
+     * @return a string representation of this multigate.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder("(");
+        final Iterator<BooleanFormula> children = iterator();
+        builder.append(children.next());
+        while (children.hasNext()) {
+            builder.append(op);
+            builder.append(children.next());
+        }
+        builder.append(")");
+        return builder.toString();
+    }
 
-	/**
-	 * Returns the digest of this formula that would be used to compute the
-	 * digest of the composition of this and some other formula using the given
-	 * operator. Specifically, if op = this.op, then the sum of this circuit's
-	 * irreducible inputs' hashes (with respect to op) is returned. Otherwise,
-	 * the superFastHash of this.label is returned.
-	 * 
-	 * @return this.op = op => this.op.hash(this.inputs),
-	 *         Ints.superFastHash(this.label)
-	 */
-	@Override
-	final int hash(Operator op) {
-		return op == this.op ? hashcode : labelhash;
-	}
+    /**
+     * Returns a hashcode for this gate. The hashcode obeys the Object contract.
+     *
+     * @return a hashcode for this gate.
+     */
+    @Override
+    public final int hashCode() {
+        return hashcode;
+    }
+
+    /**
+     * Returns the digest of this formula that would be used to compute the digest
+     * of the composition of this and some other formula using the given operator.
+     * Specifically, if op = this.op, then the sum of this circuit's irreducible
+     * inputs' hashes (with respect to op) is returned. Otherwise, the superFastHash
+     * of this.label is returned.
+     *
+     * @return this.op = op => this.op.hash(this.inputs),
+     *         Ints.superFastHash(this.label)
+     */
+    @Override
+    final int hash(Operator op) {
+        return op == this.op ? hashcode : labelhash;
+    }
 }

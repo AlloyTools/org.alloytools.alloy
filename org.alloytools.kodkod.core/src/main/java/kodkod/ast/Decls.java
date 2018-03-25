@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ import kodkod.util.collections.Containers;
 
 /**
  * A sequence of decls.
- * 
+ *
  * @specfield size: int
  * @specfield decls: [0..size) -> one Decl
  * @invariant size > 0
@@ -38,103 +38,108 @@ import kodkod.util.collections.Containers;
  * @author Emina Torlak
  */
 public class Decls extends Node implements Iterable<Decl> {
-	private final Decl[] decls;
 
-	/**
-	 * Constructs a Decls object with itself as its sole declaration. This
-	 * constructor can only be called from inside the Decl constructor;
-	 * otherwise it will throw a ClassCastException.
-	 * 
-	 * @ensures this.declarations' = 0->this
-	 * @throws ClassCastException this !in Decl
-	 */
-	Decls() {
-		this.decls = new Decl[] {
-				(Decl) this
-		};
-	}
+    private final Decl[] decls;
 
-	/**
-	 * Constructs a new Decls with the specified head and tail.
-	 * 
-	 * @requires head.size > 0 && tail.size > 0
-	 * @ensures this.size' = head.size + tail.size && (all i: [0..head.size) |
-	 *          this.decls[i] = head.decls[i]) && (all i:
-	 *          [head.size..this.size') | this.decls[i] = tail.decls[i])
-	 * @throws NullPointerException head = null || tail is null
-	 */
-	private Decls(Decls head, Decls tail) {
-		this.decls = new Decl[head.size() + tail.size()];
-		System.arraycopy(head.decls, 0, decls, 0, head.size());
-		System.arraycopy(tail.decls, 0, decls, head.size(), tail.size());
-	}
+    /**
+     * Constructs a Decls object with itself as its sole declaration. This
+     * constructor can only be called from inside the Decl constructor; otherwise it
+     * will throw a ClassCastException.
+     *
+     * @ensures this.declarations' = 0->this
+     * @throws ClassCastException this !in Decl
+     */
+    Decls() {
+        this.decls = new Decl[] {
+                                 (Decl) this
+        };
+    }
 
-	/**
-	 * Returns the number of decls in this Decls object.
-	 * 
-	 * @return this.size
-	 */
-	public int size() {
-		return decls.length;
-	}
+    /**
+     * Constructs a new Decls with the specified head and tail.
+     *
+     * @requires head.size > 0 && tail.size > 0
+     * @ensures this.size' = head.size + tail.size && (all i: [0..head.size) |
+     *          this.decls[i] = head.decls[i]) && (all i: [head.size..this.size') |
+     *          this.decls[i] = tail.decls[i])
+     * @throws NullPointerException head = null || tail is null
+     */
+    private Decls(Decls head, Decls tail) {
+        this.decls = new Decl[head.size() + tail.size()];
+        System.arraycopy(head.decls, 0, decls, 0, head.size());
+        System.arraycopy(tail.decls, 0, decls, head.size(), tail.size());
+    }
 
-	/**
-	 * Returns the ith declaration in this Decls sequence.
-	 * 
-	 * @requires 0 <= i < this.size
-	 * @return this.decls[i]
-	 */
-	public Decl get(int i) {
-		return decls[i];
-	}
+    /**
+     * Returns the number of decls in this Decls object.
+     *
+     * @return this.size
+     */
+    public int size() {
+        return decls.length;
+    }
 
-	/**
-	 * Returns an unmodifiable iterator over the decls in this Decls object.
-	 * 
-	 * @return an unmodifiable iterator over the decls in this Decls object.
-	 */
-	public Iterator<Decl> iterator() {
-		return Containers.iterate(decls);
-	}
+    /**
+     * Returns the ith declaration in this Decls sequence.
+     *
+     * @requires 0 <= i < this.size
+     * @return this.decls[i]
+     */
+    public Decl get(int i) {
+        return decls[i];
+    }
 
-	/**
-	 * Returns a sequence of this.size + other.size decls that has these decls
-	 * as the prefix and the given decls as the suffix.
-	 * 
-	 * @return {ds: Decls | ds.size = this.size + other.size && ds.decls =
-	 *         this.decls + {i: [this.size..this.size+other.size), d: Decl | d =
-	 *         other.decls[i-this.size] }
-	 * @throws NullPointerException decl = null
-	 */
-	public final Decls and(Decls other) {
-		return new Decls(this, other);
-	}
+    /**
+     * Returns an unmodifiable iterator over the decls in this Decls object.
+     *
+     * @return an unmodifiable iterator over the decls in this Decls object.
+     */
+    @Override
+    public Iterator<Decl> iterator() {
+        return Containers.iterate(decls);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> D accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns a sequence of this.size + other.size decls that has these decls as
+     * the prefix and the given decls as the suffix.
+     *
+     * @return {ds: Decls | ds.size = this.size + other.size && ds.decls =
+     *         this.decls + {i: [this.size..this.size+other.size), d: Decl | d =
+     *         other.decls[i-this.size] }
+     * @throws NullPointerException decl = null
+     */
+    public final Decls and(Decls other) {
+        return new Decls(this, other);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> D accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return Arrays.toString(decls);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return Arrays.toString(decls);
+    }
 
 }

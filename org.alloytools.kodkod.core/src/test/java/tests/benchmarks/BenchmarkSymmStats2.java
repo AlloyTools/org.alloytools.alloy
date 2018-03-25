@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-2008, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -58,374 +58,377 @@ import tests.util.ProcessRunner;
  * Executes a single problem. The output is printed in the following (tab
  * separated) format: <class name> <method name> <partial model bits> <symm time
  * (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time (ms)>
- * 
+ *
  * @author Emina Torlak
  */
 class BenchmarkSymmStats2 {
-	private static void usage() {
-		System.out.println(
-				"Usage: java tests.BenchmarkSymmStats <GBP|GAD> <class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] [<class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)]]");
-		System.exit(1);
-	}
 
-	private static final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-	static {
-		bean.setThreadCpuTimeEnabled(true);
-	}
+    private static void usage() {
+        System.out.println("Usage: java tests.BenchmarkSymmStats <GBP|GAD> <class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] [<class name>[(<primitive | string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive | string | enum>[,<primitive | string | enum>]*)]]");
+        System.exit(1);
+    }
 
-	private static void toNauty(Bounds bounds, PrintStream stream) {
-		int size = bounds.universe().size() + bounds.ints().size();
-		for (Relation r : bounds.relations()) {
-			final int upsize = bounds.upperBound(r).size(), lowsize = bounds.lowerBound(r).size();
-			size += (upsize == lowsize ? upsize : upsize + lowsize) * r.arity();
-		}
+    private static final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    static {
+        bean.setThreadCpuTimeEnabled(true);
+    }
 
-		stream.println("n=" + size + " $0 *=13 k = 0 " + size + " +d -a g");
+    private static void toNauty(Bounds bounds, PrintStream stream) {
+        int size = bounds.universe().size() + bounds.ints().size();
+        for (Relation r : bounds.relations()) {
+            final int upsize = bounds.upperBound(r).size(), lowsize = bounds.lowerBound(r).size();
+            size += (upsize == lowsize ? upsize : upsize + lowsize) * r.arity();
+        }
 
-		int v = bounds.universe().size();
-		final IntVector vec = new ArrayIntVector();
-		vec.add(v);
-		for (Relation r : bounds.relations()) {
-			final int arity = r.arity();
-			final TupleSet up = bounds.upperBound(r), down = bounds.lowerBound(r);
-			final TupleSet[] sets = up.size() == down.size() || down.size() == 0 ? new TupleSet[] {
-					up
-			} : new TupleSet[] {
-					down, up
-			};
-			for (TupleSet s : sets) {
-				for (Tuple t : s) {
-					for (int i = 0, max = arity - 1; i < max; i++) {
-						stream.println(v + " : " + (v + 1) + " " + t.atomIndex(i) + ";");
-						v++;
-					}
-					stream.println(v + " : " + t.atomIndex(arity - 1) + ";");
-					v++;
-				}
-				vec.add(v);
-			}
-		}
-		for (TupleSet s : bounds.intBounds().values()) {
-			stream.println(v + " : " + s.iterator().next().atomIndex(0) + ";");
-			v++;
-			vec.add(v);
-		}
+        stream.println("n=" + size + " $0 *=13 k = 0 " + size + " +d -a g");
 
-		// stream.println(".");
-		stream.print("f = [ 0:" + (vec.get(0) - 1));
-		for (int i = 1; i < vec.size(); i++) {
-			stream.print(" | " + vec.get(i - 1) + ":" + (vec.get(i) - 1));
-		}
-		stream.println(" ]");
-		stream.println("x");
-		stream.println("o");
-		stream.println("q");
-	}
+        int v = bounds.universe().size();
+        final IntVector vec = new ArrayIntVector();
+        vec.add(v);
+        for (Relation r : bounds.relations()) {
+            final int arity = r.arity();
+            final TupleSet up = bounds.upperBound(r), down = bounds.lowerBound(r);
+            final TupleSet[] sets = up.size() == down.size() || down.size() == 0 ? new TupleSet[] {
+                                                                                                   up
+            } : new TupleSet[] {
+                                down, up
+            };
+            for (TupleSet s : sets) {
+                for (Tuple t : s) {
+                    for (int i = 0, max = arity - 1; i < max; i++) {
+                        stream.println(v + " : " + (v + 1) + " " + t.atomIndex(i) + ";");
+                        v++;
+                    }
+                    stream.println(v + " : " + t.atomIndex(arity - 1) + ";");
+                    v++;
+                }
+                vec.add(v);
+            }
+        }
+        for (TupleSet s : bounds.intBounds().values()) {
+            stream.println(v + " : " + s.iterator().next().atomIndex(0) + ";");
+            v++;
+            vec.add(v);
+        }
 
-	private static void destroy(String name) {
-		try {
-			final Process process = Runtime.getRuntime().exec("ps -e");
-			process.waitFor();
-			final BufferedReader out = new BufferedReader(
-					new InputStreamReader(process.getInputStream(), "ISO-8859-1"));
-			final Matcher m = Pattern.compile("(\\d+).*?" + name).matcher("");
-			for (String line = out.readLine(); line != null; line = out.readLine()) {
-				m.reset(line);
-				if (m.find()) {
-					Runtime.getRuntime().exec("kill " + m.group(1)).waitFor();
-					break;
-				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+        // stream.println(".");
+        stream.print("f = [ 0:" + (vec.get(0) - 1));
+        for (int i = 1; i < vec.size(); i++) {
+            stream.print(" | " + vec.get(i - 1) + ":" + (vec.get(i) - 1));
+        }
+        stream.println(" ]");
+        stream.println("x");
+        stream.println("o");
+        stream.println("q");
+    }
 
-	private static class SymmInfo {
-		final Set<IntSet>	parts;
-		final String		time, symms;
+    private static void destroy(String name) {
+        try {
+            final Process process = Runtime.getRuntime().exec("ps -e");
+            process.waitFor();
+            final BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream(), "ISO-8859-1"));
+            final Matcher m = Pattern.compile("(\\d+).*?" + name).matcher("");
+            for (String line = out.readLine(); line != null; line = out.readLine()) {
+                m.reset(line);
+                if (m.find()) {
+                    Runtime.getRuntime().exec("kill " + m.group(1)).waitFor();
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
-		SymmInfo(Set<IntSet> parts, String time, String symms) {
-			this.parts = parts;
-			this.time = time;
-			this.symms = symms;
-		}
+    private static class SymmInfo {
 
-		SymmInfo(int size) {
-			this.parts = new LinkedHashSet<IntSet>();
-			for (int i = 0, max = size; i < max; i++) {
-				parts.add(Ints.singleton(i));
-			}
-			this.time = "t\\o";
-			this.symms = "t\\o";
-		}
-	}
+        final Set<IntSet> parts;
+        final String      time, symms;
 
-	private static SymmInfo allSymms(Bounds bounds) {
-		try {
-			final long startGen = bean.getCurrentThreadUserTime();
-			final File tmp = File.createTempFile("symmgraph", ".txt");
-			final PrintStream stream = new PrintStream(new FileOutputStream(tmp));
-			toNauty(bounds, stream);
-			stream.close();
-			final long endGen = bean.getCurrentThreadUserTime();
+        SymmInfo(Set<IntSet> parts, String time, String symms) {
+            this.parts = parts;
+            this.time = time;
+            this.symms = symms;
+        }
 
-			final String cmd = "/Users/emina/Desktop/tools/nauty22/run_dreadnaut " + tmp.getAbsoluteFile();
+        SymmInfo(int size) {
+            this.parts = new LinkedHashSet<IntSet>();
+            for (int i = 0, max = size; i < max; i++) {
+                parts.add(Ints.singleton(i));
+            }
+            this.time = "t\\o";
+            this.symms = "t\\o";
+        }
+    }
 
-			final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
-			runner.start();
+    private static SymmInfo allSymms(Bounds bounds) {
+        try {
+            final long startGen = bean.getCurrentThreadUserTime();
+            final File tmp = File.createTempFile("symmgraph", ".txt");
+            final PrintStream stream = new PrintStream(new FileOutputStream(tmp));
+            toNauty(bounds, stream);
+            stream.close();
+            final long endGen = bean.getCurrentThreadUserTime();
 
-			try {
+            final String cmd = "/Users/emina/Desktop/tools/nauty22/run_dreadnaut " + tmp.getAbsoluteFile();
 
-				runner.join(BenchmarkDriver.FIVE_MIN);
-				if (runner.getState() != Thread.State.TERMINATED) {
-					System.out.print("t\\o\t");
-					System.out.print("t\\o\t");
-					runner.destroyProcess();
-					destroy("dreadnaut");
-					tmp.delete();
-					return new SymmInfo(bounds.universe().size());
-				}
+            final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
+            runner.start();
 
-				final BufferedReader out = new BufferedReader(
-						new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
-				String line;
+            try {
 
-				String allSymms = null;
-				long time = -1;
-				final Set<IntSet> parts = new LinkedHashSet<IntSet>();
+                runner.join(BenchmarkDriver.FIVE_MIN);
+                if (runner.getState() != Thread.State.TERMINATED) {
+                    System.out.print("t\\o\t");
+                    System.out.print("t\\o\t");
+                    runner.destroyProcess();
+                    destroy("dreadnaut");
+                    tmp.delete();
+                    return new SymmInfo(bounds.universe().size());
+                }
 
-				final Matcher smatcher = Pattern.compile(".+grpsize=(.+?);.*").matcher("");
-				final Matcher tmatcher = Pattern.compile(".+cpu time = (.+?)\\s.*").matcher("");
-				final Matcher omatcher = Pattern.compile("invarproc \"adjacencies\"").matcher("");
+                final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
+                String line;
 
-				while ((line = out.readLine()) != null) {
-					smatcher.reset(line);
-					if (smatcher.matches()) {
-						allSymms = smatcher.group(1);
-					} else {
-						tmatcher.reset(line);
-						if (tmatcher.matches()) {
-							time = (long) (Double.parseDouble(tmatcher.group(1)) * 1000);
-							if (time == 0)
-								time++;
-						} else {
-							omatcher.reset(line);
-							if (omatcher.find()) {
-								break;
-							}
-						}
-					}
-				}
+                String allSymms = null;
+                long time = -1;
+                final Set<IntSet> parts = new LinkedHashSet<IntSet>();
 
-				if (line != null) {
-					final StringBuilder builder = new StringBuilder();
-					while ((line = out.readLine()) != null) {
-						builder.append(line);
-					}
-					line = builder.toString();
-					// System.out.println(line);
-					final String[] orbits = line.split(";");
-					final Matcher dmatcher = Pattern.compile("\\s*(\\d+)\\s*").matcher("");
-					for (String n : orbits) {
-						String[] range = n.split(":");
-						if (range.length == 2) {
-							dmatcher.reset(range[0]);
-							dmatcher.matches();
-							final int min = Integer.parseInt(dmatcher.group(1));
-							if (min >= bounds.universe().size())
-								break;
-							dmatcher.reset(range[1]);
-							dmatcher.matches();
-							parts.add(Ints.rangeSet(Ints.range(min, Integer.parseInt(dmatcher.group(1)))));
-						} else {
-							range = n.split("\\s+");
-							final IntSet part = new IntTreeSet();
-							for (int i = 0; i < range.length; i++) {
-								dmatcher.reset(range[i]);
-								if (dmatcher.matches()) {
-									final int match = Integer.parseInt(dmatcher.group(1));
-									if (match < bounds.universe().size())
-										part.add(match);
-									else
-										break;
-								}
-							}
-							if (part.isEmpty())
-								break;
-							else
-								parts.add(part);
-						}
+                final Matcher smatcher = Pattern.compile(".+grpsize=(.+?);.*").matcher("");
+                final Matcher tmatcher = Pattern.compile(".+cpu time = (.+?)\\s.*").matcher("");
+                final Matcher omatcher = Pattern.compile("invarproc \"adjacencies\"").matcher("");
 
-					}
-				}
+                while ((line = out.readLine()) != null) {
+                    smatcher.reset(line);
+                    if (smatcher.matches()) {
+                        allSymms = smatcher.group(1);
+                    } else {
+                        tmatcher.reset(line);
+                        if (tmatcher.matches()) {
+                            time = (long) (Double.parseDouble(tmatcher.group(1)) * 1000);
+                            if (time == 0)
+                                time++;
+                        } else {
+                            omatcher.reset(line);
+                            if (omatcher.find()) {
+                                break;
+                            }
+                        }
+                    }
+                }
 
-				out.close();
-				tmp.delete();
-				runner.destroyProcess();
+                if (line != null) {
+                    final StringBuilder builder = new StringBuilder();
+                    while ((line = out.readLine()) != null) {
+                        builder.append(line);
+                    }
+                    line = builder.toString();
+                    // System.out.println(line);
+                    final String[] orbits = line.split(";");
+                    final Matcher dmatcher = Pattern.compile("\\s*(\\d+)\\s*").matcher("");
+                    for (String n : orbits) {
+                        String[] range = n.split(":");
+                        if (range.length == 2) {
+                            dmatcher.reset(range[0]);
+                            dmatcher.matches();
+                            final int min = Integer.parseInt(dmatcher.group(1));
+                            if (min >= bounds.universe().size())
+                                break;
+                            dmatcher.reset(range[1]);
+                            dmatcher.matches();
+                            parts.add(Ints.rangeSet(Ints.range(min, Integer.parseInt(dmatcher.group(1)))));
+                        } else {
+                            range = n.split("\\s+");
+                            final IntSet part = new IntTreeSet();
+                            for (int i = 0; i < range.length; i++) {
+                                dmatcher.reset(range[i]);
+                                if (dmatcher.matches()) {
+                                    final int match = Integer.parseInt(dmatcher.group(1));
+                                    if (match < bounds.universe().size())
+                                        part.add(match);
+                                    else
+                                        break;
+                                }
+                            }
+                            if (part.isEmpty())
+                                break;
+                            else
+                                parts.add(part);
+                        }
 
-				if (time < 0 || allSymms == null || parts.isEmpty())
-					throw new IllegalStateException();
-				return new SymmInfo(parts, String.valueOf(time + (endGen - startGen) / 1000000), allSymms);
+                    }
+                }
 
-			} catch (IOException e) {
-				tmp.delete();
-				runner.destroyProcess();
-				destroy("dreadnaut");
-				throw new IllegalStateException(e);
-			} catch (InterruptedException e) {
-				tmp.delete();
-				runner.destroyProcess();
-				destroy("dreadnaut");
-				e.printStackTrace();
-				throw new IllegalStateException(e);
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
-	}
+                out.close();
+                tmp.delete();
+                runner.destroyProcess();
 
-	private static BigInteger fact(int num) {
-		BigInteger ret = new BigInteger("1");
-		for (int i = 1; i <= num; i++) {
-			ret = ret.multiply(new BigInteger(String.valueOf(i)));
-		}
-		return ret;
-	}
+                if (time < 0 || allSymms == null || parts.isEmpty())
+                    throw new IllegalStateException();
+                return new SymmInfo(parts, String.valueOf(time + (endGen - startGen) / 1000000), allSymms);
 
-	/**
-	 * Returns the size of the partial model (in bits)
-	 */
-	private static int pmBits(Bounds bounds) {
-		int pm = 0;
-		for (TupleSet lower : bounds.lowerBounds().values()) {
-			pm += lower.size();
-		}
-		return pm;
-	}
+            } catch (IOException e) {
+                tmp.delete();
+                runner.destroyProcess();
+                destroy("dreadnaut");
+                throw new IllegalStateException(e);
+            } catch (InterruptedException e) {
+                tmp.delete();
+                runner.destroyProcess();
+                destroy("dreadnaut");
+                e.printStackTrace();
+                throw new IllegalStateException(e);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
-	// <symm time (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time (ms)>
-	private static void printGBP(Formula formula, Bounds bounds) {
-		final class SymmReporter extends AbstractReporter {
-			long		gbpTime;
-			BigInteger	symms;
+    private static BigInteger fact(int num) {
+        BigInteger ret = new BigInteger("1");
+        for (int i = 1; i <= num; i++) {
+            ret = ret.multiply(new BigInteger(String.valueOf(i)));
+        }
+        return ret;
+    }
 
-			@Override
-			public void detectingSymmetries(Bounds bounds) {
-				gbpTime = bean.getCurrentThreadUserTime();
-			}
+    /**
+     * Returns the size of the partial model (in bits)
+     */
+    private static int pmBits(Bounds bounds) {
+        int pm = 0;
+        for (TupleSet lower : bounds.lowerBounds().values()) {
+            pm += lower.size();
+        }
+        return pm;
+    }
 
-			public void detectedSymmetries(Set<IntSet> parts) {
-				final long end = bean.getCurrentThreadUserTime();
-				gbpTime = (end - gbpTime) / 1000000;
-				symms = new BigInteger("1");
-				for (IntSet s : parts) {
-					symms = symms.multiply(fact(s.size()));
-				}
-				// System.out.println(parts);
-			}
-		}
-		;
+    // <symm time (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time (ms)>
+    private static void printGBP(Formula formula, Bounds bounds) {
+        final class SymmReporter extends AbstractReporter {
 
-		final SymmReporter reporter = new SymmReporter();
-		final Solver solver = new Solver();
-		solver.options().setBitwidth(8);
-		solver.options().setSolver(SATFactory.MiniSat);
-		solver.options().setReporter(reporter);
+            long       gbpTime;
+            BigInteger symms;
 
-		final Solution sol = solver.solve(formula, bounds);
+            @Override
+            public void detectingSymmetries(Bounds bounds) {
+                gbpTime = bean.getCurrentThreadUserTime();
+            }
 
-		// <gbp (ms)> <gbp (symms)>
-		System.out.print(reporter.gbpTime + "\t");
-		System.out.print(reporter.symms + "\t");
-		// <state bits> <SAT|UNSAT> <SAT time (ms)>
-		System.out.print(sol.stats().primaryVariables() + "\t");
-		System.out.print(sol.instance() == null ? "UNSAT\t" : "SAT\t");
-		System.out.print(sol.stats().solvingTime() + "\t");
-	}
+            @Override
+            public void detectedSymmetries(Set<IntSet> parts) {
+                final long end = bean.getCurrentThreadUserTime();
+                gbpTime = (end - gbpTime) / 1000000;
+                symms = new BigInteger("1");
+                for (IntSet s : parts) {
+                    symms = symms.multiply(fact(s.size()));
+                }
+                // System.out.println(parts);
+            }
+        }
+        ;
 
-	// <symm time (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time (ms)>
-	private static void printGAD(Formula formula, Bounds bounds) {
-		final class SymmReporter extends AbstractReporter {
-			String	symms, time;
-			Bounds	bounds;
+        final SymmReporter reporter = new SymmReporter();
+        final Solver solver = new Solver();
+        solver.options().setBitwidth(8);
+        solver.options().setSolver(SATFactory.MiniSat);
+        solver.options().setReporter(reporter);
 
-			@Override
-			public void detectingSymmetries(Bounds bounds) {
-				this.bounds = bounds.clone();
-			}
+        final Solution sol = solver.solve(formula, bounds);
 
-			public void detectedSymmetries(Set<IntSet> parts) {
-				parts.clear();
-				final SymmInfo allSymms = allSymms(bounds);
-				parts.addAll(allSymms.parts);
-				symms = allSymms.symms;
-				time = allSymms.time;
-				// System.out.println(parts);
-			}
-		}
-		;
+        // <gbp (ms)> <gbp (symms)>
+        System.out.print(reporter.gbpTime + "\t");
+        System.out.print(reporter.symms + "\t");
+        // <state bits> <SAT|UNSAT> <SAT time (ms)>
+        System.out.print(sol.stats().primaryVariables() + "\t");
+        System.out.print(sol.instance() == null ? "UNSAT\t" : "SAT\t");
+        System.out.print(sol.stats().solvingTime() + "\t");
+    }
 
-		final SymmReporter reporter = new SymmReporter();
-		final Solver solver = new Solver();
-		solver.options().setBitwidth(8);
-		solver.options().setSolver(SATFactory.MiniSat);
-		solver.options().setReporter(reporter);
+    // <symm time (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time (ms)>
+    private static void printGAD(Formula formula, Bounds bounds) {
+        final class SymmReporter extends AbstractReporter {
 
-		final Solution sol = solver.solve(formula, bounds);
+            String symms, time;
+            Bounds bounds;
 
-		// <gbp (ms)> <gbp (symms)>
-		System.out.print(reporter.time + "\t");
-		System.out.print(reporter.symms + "\t");
-		// <state bits> <SAT|UNSAT> <SAT time (ms)>
-		System.out.print(sol.stats().primaryVariables() + "\t");
-		System.out.print(sol.instance() == null ? "UNSAT\t" : "SAT\t");
-		System.out.print(sol.stats().solvingTime() + "\t");
-	}
+            @Override
+            public void detectingSymmetries(Bounds bounds) {
+                this.bounds = bounds.clone();
+            }
 
-	/**
-	 * Usage: java tests.BenchmarkSymmStats <GBP|GAD> <class name>[(<primitive |
-	 * string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive
-	 * | string | enum>[,<primitive | string | enum>]*)] [(<primitive | string |
-	 * enum>[,<primitive | string | enum>]*)]
-	 */
-	public static void main(String[] args) {
-		if (args.length != 3 && args.length != 4)
-			usage();
+            @Override
+            public void detectedSymmetries(Set<IntSet> parts) {
+                parts.clear();
+                final SymmInfo allSymms = allSymms(bounds);
+                parts.addAll(allSymms.parts);
+                symms = allSymms.symms;
+                time = allSymms.time;
+                // System.out.println(parts);
+            }
+        }
+        ;
 
-		try {
-			final int method;
-			if ("GBP".equals(args[0].toUpperCase())) {
-				method = 0;
-			} else if ("GAD".equals(args[0].toUpperCase())) {
-				method = 1;
-			} else {
-				method = 2;
-				usage();
-			}
+        final SymmReporter reporter = new SymmReporter();
+        final Solver solver = new Solver();
+        solver.options().setBitwidth(8);
+        solver.options().setSolver(SATFactory.MiniSat);
+        solver.options().setReporter(reporter);
 
-			final Object instance = construct(args[1].contains("(") ? args[1] : args[1] + "()");
-			final Formula formula = create(instance, args[2].contains("(") ? args[2] : args[2] + "()");
-			final Bounds bounds = create(instance, "bounds" + (args.length == 4 ? args[3] : "()"));
+        final Solution sol = solver.solve(formula, bounds);
 
-			// <class name> <method name> <partial model bits>
-			System.out.print(args[0].split("\\(")[0] + "\t");
-			System.out.print(args[1].split("\\(")[0] + "\t");
-			System.out.print(pmBits(bounds) + "\t");
+        // <gbp (ms)> <gbp (symms)>
+        System.out.print(reporter.time + "\t");
+        System.out.print(reporter.symms + "\t");
+        // <state bits> <SAT|UNSAT> <SAT time (ms)>
+        System.out.print(sol.stats().primaryVariables() + "\t");
+        System.out.print(sol.instance() == null ? "UNSAT\t" : "SAT\t");
+        System.out.print(sol.stats().solvingTime() + "\t");
+    }
 
-			// <symm time (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time
-			// (ms)>
-			if (method == 0)
-				printGBP(formula, bounds);
-			else
-				printGAD(formula, bounds);
-			System.out.println();
-		} catch (NumberFormatException nfe) {
-			usage();
-		}
-	}
+    /**
+     * Usage: java tests.BenchmarkSymmStats <GBP|GAD> <class name>[(<primitive |
+     * string | enum>[,<primitive | string | enum>]*)] <method name>[(<primitive |
+     * string | enum>[,<primitive | string | enum>]*)] [(<primitive | string |
+     * enum>[,<primitive | string | enum>]*)]
+     */
+    public static void main(String[] args) {
+        if (args.length != 3 && args.length != 4)
+            usage();
+
+        try {
+            final int method;
+            if ("GBP".equals(args[0].toUpperCase())) {
+                method = 0;
+            } else if ("GAD".equals(args[0].toUpperCase())) {
+                method = 1;
+            } else {
+                method = 2;
+                usage();
+            }
+
+            final Object instance = construct(args[1].contains("(") ? args[1] : args[1] + "()");
+            final Formula formula = create(instance, args[2].contains("(") ? args[2] : args[2] + "()");
+            final Bounds bounds = create(instance, "bounds" + (args.length == 4 ? args[3] : "()"));
+
+            // <class name> <method name> <partial model bits>
+            System.out.print(args[0].split("\\(")[0] + "\t");
+            System.out.print(args[1].split("\\(")[0] + "\t");
+            System.out.print(pmBits(bounds) + "\t");
+
+            // <symm time (ms)> <# of symms> <state bits> <SAT|UNSAT> <SAT time
+            // (ms)>
+            if (method == 0)
+                printGBP(formula, bounds);
+            else
+                printGAD(formula, bounds);
+            System.out.println();
+        } catch (NumberFormatException nfe) {
+            usage();
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * A unary integer intExpr, e.g. -x.
- * 
+ *
  * @specfield intExpr: IntExpression
  * @specfield op: IntOperator
  * @invariant op.unary()
@@ -35,65 +35,67 @@ import kodkod.ast.visitor.VoidVisitor;
  * @author Emina Torlak
  */
 public final class UnaryIntExpression extends IntExpression {
-	private final IntOperator	op;
-	private final IntExpression	intExpr;
 
-	/**
-	 * Constructs a new unary int formula: op intExpr
-	 * 
-	 * @ensures this.op' = op && this.intExpr' = intExpr
-	 */
-	UnaryIntExpression(IntOperator op, IntExpression intExpr) {
-		if (!op.unary())
-			throw new IllegalArgumentException("Not a unary operator: " + op);
-		this.op = op;
-		this.intExpr = intExpr;
-	}
+    private final IntOperator   op;
+    private final IntExpression intExpr;
 
-	/**
-	 * Returns the operator of this.
-	 * 
-	 * @return this.op
-	 */
-	public IntOperator op() {
-		return op;
-	}
+    /**
+     * Constructs a new unary int formula: op intExpr
+     *
+     * @ensures this.op' = op && this.intExpr' = intExpr
+     */
+    UnaryIntExpression(IntOperator op, IntExpression intExpr) {
+        if (!op.unary())
+            throw new IllegalArgumentException("Not a unary operator: " + op);
+        this.op = op;
+        this.intExpr = intExpr;
+    }
 
-	/**
-	 * Returns this.intExpr.
-	 * 
-	 * @return this.intExpr
-	 */
-	public IntExpression intExpr() {
-		return intExpr;
-	}
+    /**
+     * Returns the operator of this.
+     *
+     * @return this.op
+     */
+    public IntOperator op() {
+        return op;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	@Override
-	public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns this.intExpr.
+     *
+     * @return this.intExpr
+     */
+    public IntExpression intExpr() {
+        return intExpr;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	@Override
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return (op == IntOperator.NEG || op == IntOperator.NOT) ? "(" + op + intExpr + ")" : op + "(" + intExpr + ")";
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return (op == IntOperator.NEG || op == IntOperator.NOT) ? "(" + op + intExpr + ")" : op + "(" + intExpr + ")";
+    }
 }

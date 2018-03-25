@@ -64,8 +64,8 @@ import edu.mit.csail.sdg.parser.CompUtil;
 public final class OurSyntaxWidget {
 
     /**
-     * The current list of listeners; possible events are { STATUS_CHANGE,
-     * FOCUSED, CTRL_PAGE_UP, CTRL_PAGE_DOWN, CARET_MOVED }.
+     * The current list of listeners; possible events are { STATUS_CHANGE, FOCUSED,
+     * CTRL_PAGE_UP, CTRL_PAGE_DOWN, CARET_MOVED }.
      */
     public final Listeners                  listeners = new Listeners();
 
@@ -85,8 +85,7 @@ public final class OurSyntaxWidget {
     private final OurSyntaxUndoableDocument doc       = new OurSyntaxUndoableDocument("Monospaced", 14);
 
     /** The underlying JTextPane being displayed. */
-    private final JTextPane                 pane      = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE,
-                    new EmptyBorder(6, 6, 6, 6));
+    private final JTextPane                 pane      = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
 
     /**
      * The filename for this JTextPane (changes will trigger the STATUS_CHANGE
@@ -95,8 +94,8 @@ public final class OurSyntaxWidget {
     private String                          filename  = "";
 
     /**
-     * Whether this JTextPane has been modified since last load/save (changes
-     * will trigger the STATUS_CHANGE event)
+     * Whether this JTextPane has been modified since last load/save (changes will
+     * trigger the STATUS_CHANGE event)
      */
     private boolean                         modified;
 
@@ -125,10 +124,8 @@ public final class OurSyntaxWidget {
      *
      * @param parent
      */
-    @SuppressWarnings("serial")
-    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName,
-                    int fontSize, int tabSize,
-                    JComponent obj1, JComponent obj2) {
+    @SuppressWarnings("serial" )
+    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName, int fontSize, int tabSize, JComponent obj1, JComponent obj2) {
         pane.addKeyListener(new KeyListener() {
 
             @Override
@@ -154,9 +151,10 @@ public final class OurSyntaxWidget {
         doc.do_enableSyntax(enableSyntax);
         doc.do_setFont(fontName, fontSize, tabSize);
         pane.setEditorKit(new StyledEditorKit() { // Prevents line-wrapping up
-                                                  // to width=30000, and tells
-                                                  // it to use our Document
-                                                  // obj
+                                                 // to width=30000, and tells
+                                                 // it to use our Document
+                                                 // obj
+
             @Override
             public Document createDefaultDocument() {
                 return doc;
@@ -165,15 +163,18 @@ public final class OurSyntaxWidget {
             @Override
             public ViewFactory getViewFactory() {
                 return new ViewFactory() {
+
+                    @Override
                     public View create(Element x) {
                         if (!AbstractDocument.SectionElementName.equals(x.getName()))
                             return defaultFactory.create(x);
                         return new BoxView(x, View.Y_AXIS) { // 30000 is a good
-                                                             // width to use
-                                                             // here; value >
-                                                             // 32767 appears
-                                                             // to cause
-                                                             // errors
+                                                            // width to use
+                                                            // here; value >
+                                                            // 32767 appears
+                                                            // to cause
+                                                            // errors
+
                             @Override
                             public final float getMinimumSpan(int axis) {
                                 return super.getPreferredSpan(axis);
@@ -196,37 +197,51 @@ public final class OurSyntaxWidget {
         }
         doc.do_clearUndo();
         pane.getActionMap().put("alloy_copy", new AbstractAction("alloy_copy") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pane.copy();
             }
         });
         pane.getActionMap().put("alloy_cut", new AbstractAction("alloy_cut") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pane.cut();
             }
         });
         pane.getActionMap().put("alloy_paste", new AbstractAction("alloy_paste") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pane.paste();
             }
         });
         pane.getActionMap().put("alloy_ctrl_pageup", new AbstractAction("alloy_ctrl_pageup") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 listeners.fire(me, Event.CTRL_PAGE_UP);
             }
         });
         pane.getActionMap().put("alloy_ctrl_pagedown", new AbstractAction("alloy_ctrl_pagedown") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 listeners.fire(me, Event.CTRL_PAGE_DOWN);
             }
         });
         pane.getActionMap().put("alloy_tab_insert", new AbstractAction("alloy_tab_insert") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doTabInsert();
             }
 
         });
         pane.getActionMap().put("alloy_tab_remove", new AbstractAction("alloy_tab_remove") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doTabRemove();
             }
@@ -234,11 +249,15 @@ public final class OurSyntaxWidget {
         });
 
         pane.getActionMap().put("alloy-comment-block", new AbstractAction("alloy-comment-block") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doComment();
             }
         });
         pane.getActionMap().put("alloy-nav", new AbstractAction("alloy-comment-block") {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doNav();
             }
@@ -256,33 +275,40 @@ public final class OurSyntaxWidget {
         pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.SHIFT_MASK), "alloy_paste");
         pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.SHIFT_MASK), "alloy_cut");
         pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, InputEvent.CTRL_MASK), "alloy_ctrl_pageup");
-        pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, InputEvent.CTRL_MASK),
-                        "alloy_ctrl_pagedown");
+        pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, InputEvent.CTRL_MASK), "alloy_ctrl_pagedown");
         doc.addDocumentListener(new DocumentListener() {
+
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 modified = true;
                 listeners.fire(me, Event.STATUS_CHANGE);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 modified = true;
                 listeners.fire(me, Event.STATUS_CHANGE);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {}
         });
         pane.addFocusListener(new FocusAdapter() {
+
             @Override
             public void focusGained(FocusEvent e) {
                 listeners.fire(me, Event.FOCUSED);
             }
         });
         pane.addCaretListener(new CaretListener() {
+
+            @Override
             public void caretUpdate(CaretEvent e) {
                 listeners.fire(me, Event.CARET_MOVED);
             }
         });
         component.addFocusListener(new FocusAdapter() {
+
             @Override
             public void focusGained(FocusEvent e) {
                 pane.requestFocusInWindow();
@@ -295,8 +321,7 @@ public final class OurSyntaxWidget {
     }
 
     private boolean inWord(char c) {
-        return Character.isAlphabetic(c) || Character.isDigit(c) || Character.isIdentifierIgnorable(c)
-                        || Character.isJavaIdentifierPart(c) || c == '\'' || c == '"';
+        return Character.isAlphabetic(c) || Character.isDigit(c) || Character.isIdentifierIgnorable(c) || Character.isJavaIdentifierPart(c) || c == '\'' || c == '"';
     }
 
     boolean isValidSelection(String text, int start, int end) {
@@ -329,12 +354,13 @@ public final class OurSyntaxWidget {
         if (!isValidSelection(text, selectionStart, selectionEnd))
             return null;
         return new int[] {
-                        selectionStart, selectionEnd
+                          selectionStart, selectionEnd
         };
     }
 
     private AbstractAction getSelectWordAction() {
         return new AbstractAction("select-word") {
+
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -495,7 +521,9 @@ public final class OurSyntaxWidget {
         pane.getHighlighter().removeAllHighlights();
     }
 
-    /** Shade the range of text from start (inclusive) to end (exclusive). */
+    /**
+     * Shade the range of text from start (inclusive) to end (exclusive).
+     */
     void shade(Color color, int start, int end) {
         int c = color.getRGB() & 0xFFFFFF;
         if (painter == null || (painter.color.getRGB() & 0xFFFFFF) != c)
@@ -515,12 +543,16 @@ public final class OurSyntaxWidget {
         return modified;
     }
 
-    /** Returns whether this textarea is based on an actual disk file. */
+    /**
+     * Returns whether this textarea is based on an actual disk file.
+     */
     public boolean isFile() {
         return isFile;
     }
 
-    /** Changes the font name, font size, and tab size for the document. */
+    /**
+     * Changes the font name, font size, and tab size for the document.
+     */
     void setFont(String fontName, int fontSize, int tabSize) {
         if (doc != null)
             doc.do_setFont(fontName, fontSize, tabSize);
@@ -547,8 +579,8 @@ public final class OurSyntaxWidget {
      * Return the starting offset of the given line (If "line" argument is too
      * large, it will return the last line's starting offset)
      * <p>
-     * For example: given "ab\ncd\n", start(0)==0, start(1)==3, start(2...)==6.
-     * Same thing when given "ab\ncd\ne".
+     * For example: given "ab\ncd\n", start(0)==0, start(1)==3, start(2...)==6. Same
+     * thing when given "ab\ncd\ne".
      */
     public int getLineStartOffset(int line) {
         return doc.do_getLineStartOffset(line);
@@ -618,7 +650,9 @@ public final class OurSyntaxWidget {
         return pane.getText();
     }
 
-    /** Change the entire text to the given text (and sets the modified flag) */
+    /**
+     * Change the entire text to the given text (and sets the modified flag)
+     */
     public void setText(String text) {
         pane.setText(text);
     }
@@ -639,8 +673,8 @@ public final class OurSyntaxWidget {
     }
 
     /**
-     * Discard all; if askUser is true, we'll ask the user whether to save it or
-     * not if the modified==true.
+     * Discard all; if askUser is true, we'll ask the user whether to save it or not
+     * if the modified==true.
      *
      * @return true if this text buffer is now a fresh empty text buffer
      */
@@ -660,8 +694,8 @@ public final class OurSyntaxWidget {
     }
 
     /**
-     * Discard current content then read the given file; return true if the
-     * entire operation succeeds.
+     * Discard current content then read the given file; return true if the entire
+     * operation succeeds.
      */
     boolean load(String filename) {
         String x;
@@ -688,13 +722,8 @@ public final class OurSyntaxWidget {
     void reload() {
         if (!isFile)
             return; // "untitled" text buffer does not have a on-disk file to
-                    // refresh from
-        if (modified
-                        && !OurDialog.yesno(
-                                        "You have unsaved changes to \"" + filename
-                                                        + "\"\nAre you sure you wish to discard "
-                                                        + "your changes and reload it from disk?",
-                                        "Discard your changes", "Cancel this operation"))
+                   // refresh from
+        if (modified && !OurDialog.yesno("You have unsaved changes to \"" + filename + "\"\nAre you sure you wish to discard " + "your changes and reload it from disk?", "Discard your changes", "Cancel this operation"))
             return;
         String t;
         try {
@@ -729,7 +758,7 @@ public final class OurSyntaxWidget {
             return false;
         }
         this.filename = Util.canon(filename); // a new file's canonical name may
-                                              // change
+                                             // change
         modified = false;
         isFile = true;
         listeners.fire(this, Event.STATUS_CHANGE);
@@ -740,9 +769,8 @@ public final class OurSyntaxWidget {
      * Save the current tab content to the file system and return true if
      * successful.
      *
-     * @param alwaysPickNewName
-     *            - if true, it will always pop up a File Selection dialog box
-     *            to ask for the filename
+     * @param alwaysPickNewName - if true, it will always pop up a File Selection
+     *            dialog box to ask for the filename
      */
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;

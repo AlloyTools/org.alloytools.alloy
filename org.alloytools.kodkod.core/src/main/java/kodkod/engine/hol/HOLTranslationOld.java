@@ -26,216 +26,242 @@ import kodkod.util.nodes.AnnotatedNode;
 
 public abstract class HOLTranslationOld extends HOLTranslation {
 
-	public static class FOL extends HOLTranslationOld {
-		final AnnotatedNode<Formula>	annotated;
-		final Translation.Incremental	folTr;
-		final FOL						prev;
+    public static class FOL extends HOLTranslationOld {
 
-		public FOL(AnnotatedNode<Formula> annotated, Bounds bounds, Options options) {
-			super(bounds, options);
-			this.annotated = annotated;
-			this.prev = null;
-			// TODO: pass annotated instead, so that it doesn't have to
-			// re-annotate again
-			folTr = Translator.translateIncremental(annotated.node(), bounds, options);
-		}
+        final AnnotatedNode<Formula>  annotated;
+        final Translation.Incremental folTr;
+        final FOL                     prev;
 
-		private FOL(FOL prev, Incremental trNext) {
-			super(trNext.bounds(), trNext.options());
-			this.folTr = trNext;
-			this.annotated = null;
-			this.prev = prev;
-		}
+        public FOL(AnnotatedNode<Formula> annotated, Bounds bounds, Options options) {
+            super(bounds, options);
+            this.annotated = annotated;
+            this.prev = null;
+            // TODO: pass annotated instead, so that it doesn't have to
+            // re-annotate again
+            folTr = Translator.translateIncremental(annotated.node(), bounds, options);
+        }
 
-		public final boolean isFirstOrder() {
-			return true;
-		}
+        private FOL(FOL prev, Incremental trNext) {
+            super(trNext.bounds(), trNext.options());
+            this.folTr = trNext;
+            this.annotated = null;
+            this.prev = prev;
+        }
 
-		public Formula formula() {
-			return annotated.node();
-		}
+        @Override
+        public final boolean isFirstOrder() {
+            return true;
+        }
 
-		public IntSet primaryVariables(Relation relation) {
-			return folTr.primaryVariables(relation);
-		}
+        @Override
+        public Formula formula() {
+            return annotated.node();
+        }
 
-		public int numPrimaryVariables() {
-			return folTr.numPrimaryVariables();
-		}
+        @Override
+        public IntSet primaryVariables(Relation relation) {
+            return folTr.primaryVariables(relation);
+        }
 
-		public SATSolver cnf() {
-			return folTr.cnf();
-		}
+        @Override
+        public int numPrimaryVariables() {
+            return folTr.numPrimaryVariables();
+        }
 
-		@Override
-		public HOLTranslation next(Formula formula, Bounds bounds) {
-			Translator.translateIncremental(formula, bounds, folTr);
-			return this;
-		}
+        @Override
+        public SATSolver cnf() {
+            return folTr.cnf();
+        }
 
-		@Override
-		public HOLTranslation next() {
-			Translator.translateNext(folTr);
-			return this;
-		}
-	}
+        @Override
+        public HOLTranslation next(Formula formula, Bounds bounds) {
+            Translator.translateIncremental(formula, bounds, folTr);
+            return this;
+        }
 
-	public static class Some4All extends HOLTranslationOld {
-		public final AnnotatedNode<Formula>	annotated;
-		public final Formula				converted;
-		public final List<Conversion>		conversions;
-		private HOLTranslation				convTr;
+        @Override
+        public HOLTranslation next() {
+            Translator.translateNext(folTr);
+            return this;
+        }
+    }
 
-		public Some4All(AnnotatedNode<Formula> annotated, Formula converted, List<Conversion> conversions,
-				Bounds bounds, Options options) {
-			super(bounds, options);
-			assert conversions.size() == 1 : "not implemented for multiple parallel higher-order quantifiers";
-			this.annotated = annotated;
-			this.converted = converted;
-			this.conversions = conversions;
-			this.convTr = Translator.translateHOL(converted, bounds, options);
-			for (Conversion conv : conversions) {
-				assert conv.origQF.quantifier() == Quantifier.ALL : "Non-universal quantifier converted for Some4All";
-			}
-		}
+    public static class Some4All extends HOLTranslationOld {
 
-		public HOLTranslation next() {
-			convTr = convTr.next();
-			return this;
-		}
+        public final AnnotatedNode<Formula> annotated;
+        public final Formula                converted;
+        public final List<Conversion>       conversions;
+        private HOLTranslation              convTr;
 
-		public HOLTranslation next(Formula f, Bounds b) {
-			convTr = convTr.next(f, b);
-			return this;
-		}
+        public Some4All(AnnotatedNode<Formula> annotated, Formula converted, List<Conversion> conversions, Bounds bounds, Options options) {
+            super(bounds, options);
+            assert conversions.size() == 1 : "not implemented for multiple parallel higher-order quantifiers";
+            this.annotated = annotated;
+            this.converted = converted;
+            this.conversions = conversions;
+            this.convTr = Translator.translateHOL(converted, bounds, options);
+            for (Conversion conv : conversions) {
+                assert conv.origQF.quantifier() == Quantifier.ALL : "Non-universal quantifier converted for Some4All";
+            }
+        }
 
-		// Translation methods -----------
+        @Override
+        public HOLTranslation next() {
+            convTr = convTr.next();
+            return this;
+        }
 
-		public IntSet primaryVariables(Relation relation) {
-			return convTr.primaryVariables(relation);
-		}
+        @Override
+        public HOLTranslation next(Formula f, Bounds b) {
+            convTr = convTr.next(f, b);
+            return this;
+        }
 
-		public int numPrimaryVariables() {
-			return convTr.numPrimaryVariables();
-		}
+        // Translation methods -----------
 
-		public SATSolver cnf() {
-			return new Solver();
-		}
+        @Override
+        public IntSet primaryVariables(Relation relation) {
+            return convTr.primaryVariables(relation);
+        }
 
-		public Instance interpret() {
-			return convTr.interpret();
-		}
+        @Override
+        public int numPrimaryVariables() {
+            return convTr.numPrimaryVariables();
+        }
 
-		public Formula formula() {
-			return convTr.formula();
-		}
+        @Override
+        public SATSolver cnf() {
+            return new Solver();
+        }
 
-		// Replacer ----------------------
+        @Override
+        public Instance interpret() {
+            return convTr.interpret();
+        }
 
-		class Replacer extends AbstractReplacer {
-			protected Replacer(Set<Node> cached) {
-				super(cached);
-			}
-		}
+        @Override
+        public Formula formula() {
+            return convTr.formula();
+        }
 
-		// SATSolver methods -------------
+        // Replacer ----------------------
 
-		class Solver implements SATSolver {
-			public int numberOfVariables() {
-				return convTr.cnf().numberOfVariables();
-			}
+        class Replacer extends AbstractReplacer {
 
-			public int numberOfClauses() {
-				return convTr.cnf().numberOfClauses();
-			}
+            protected Replacer(Set<Node> cached) {
+                super(cached);
+            }
+        }
 
-			public void addVariables(int numVars) {
-				convTr.cnf().addVariables(numVars);
-			}
+        // SATSolver methods -------------
 
-			public boolean addClause(int[] lits) {
-				return convTr.cnf().addClause(lits);
-			}
+        class Solver implements SATSolver {
 
-			public boolean valueOf(int variable) {
-				return convTr.cnf().valueOf(variable);
-			}
+            @Override
+            public int numberOfVariables() {
+                return convTr.cnf().numberOfVariables();
+            }
 
-			public void free() {
-				convTr.cnf().free();
-			}
+            @Override
+            public int numberOfClauses() {
+                return convTr.cnf().numberOfClauses();
+            }
 
-			public boolean solveNext() {
-				// finding the next candidate
-				while (convTr.cnf().solve()) {
-					Instance inst = convTr.interpret();
-					rep.holCandidateFound(Some4All.this, inst);
+            @Override
+            public void addVariables(int numVars) {
+                convTr.cnf().addVariables(numVars);
+            }
 
-					// TODO: rewrite check by replacing all skolems with
-					// concrete values from sol (maybe not necessary?)
-					QuantifiedFormula qf = conversions.get(0).origQF;
-					Formula checkFormula = qf.not();
+            @Override
+            public boolean addClause(int[] lits) {
+                return convTr.cnf().addClause(lits);
+            }
 
-					// verifying candidate
-					Bounds pi = bounds.clone();
-					for (Relation r : pi.relations()) {
-						pi.boundExactly(r, inst.tuples(r));
-					}
-					rep.holVerifyingCandidate(Some4All.this, inst, checkFormula, pi);
-					Translation checkTr = Translator.translate(checkFormula, pi, options);
-					if (!checkTr.cnf().solve()) {
-						rep.holCandidateVerified(Some4All.this, inst);
-						return true;
-					} else {
-						Instance cex = checkTr.interpret();
+            @Override
+            public boolean valueOf(int variable) {
+                return convTr.cnf().valueOf(variable);
+            }
 
-						Collection<Relation> holSkolems = inst.skolems();
-						holSkolems.removeAll(bounds.skolems());
-						assert holSkolems.size() == 1;
-						Relation sk = holSkolems.iterator().next();
-						TupleSet clqTuples = cex.tuples(sk.name());
+            @Override
+            public void free() {
+                convTr.cnf().free();
+            }
 
-						final Variable v = qf.decls().get(0).variable();
-						final Expression cexExpr = pi.ts2expr(clqTuples);
-						Formula cexInst = qf.formula().accept(new AbstractReplacer(annotated.sharedNodes()) {
-							@Override
-							public Expression visit(Variable variable) {
-								if (variable == v)
-									return cexExpr;
-								return super.visit(variable);
-							}
-						});
-						Formula inc = cexInst;
-						rep.holCandidateNotVerified(Some4All.this, inst, cex);
-						rep.holFindingNextCandidate(Some4All.this, inc);
-						convTr = convTr.next(inc);
-					}
-				}
-				return false;
-			}
+            public boolean solveNext() {
+                // finding the next candidate
+                while (convTr.cnf().solve()) {
+                    Instance inst = convTr.interpret();
+                    rep.holCandidateFound(Some4All.this, inst);
 
-			public boolean solve() throws SATAbortedException {
-				rep.holLoopStart(Some4All.this, convTr.formula(), convTr.bounds());
-				return solveNext();
-			}
-		}
-	}
+                    // TODO: rewrite check by replacing all skolems with
+                    // concrete values from sol (maybe not necessary?)
+                    QuantifiedFormula qf = conversions.get(0).origQF;
+                    Formula checkFormula = qf.not();
 
-	protected HOLTranslationOld(Bounds bounds, Options options) {
-		super(bounds, options, 0);
-	}
+                    // verifying candidate
+                    Bounds pi = bounds.clone();
+                    for (Relation r : pi.relations()) {
+                        pi.boundExactly(r, inst.tuples(r));
+                    }
+                    rep.holVerifyingCandidate(Some4All.this, inst, checkFormula, pi);
+                    Translation checkTr = Translator.translate(checkFormula, pi, options);
+                    if (!checkTr.cnf().solve()) {
+                        rep.holCandidateVerified(Some4All.this, inst);
+                        return true;
+                    } else {
+                        Instance cex = checkTr.interpret();
 
-	public boolean isFirstOrder() {
-		return false;
-	}
+                        Collection<Relation> holSkolems = inst.skolems();
+                        holSkolems.removeAll(bounds.skolems());
+                        assert holSkolems.size() == 1;
+                        Relation sk = holSkolems.iterator().next();
+                        TupleSet clqTuples = cex.tuples(sk.name());
 
-	public Translation getCurrentFOLTranslation() {
-		return null;
-	}
+                        final Variable v = qf.decls().get(0).variable();
+                        final Expression cexExpr = pi.ts2expr(clqTuples);
+                        Formula cexInst = qf.formula().accept(new AbstractReplacer(annotated.sharedNodes()) {
 
-	public int numCandidates() {
-		return 1;
-	}
+                            @Override
+                            public Expression visit(Variable variable) {
+                                if (variable == v)
+                                    return cexExpr;
+                                return super.visit(variable);
+                            }
+                        });
+                        Formula inc = cexInst;
+                        rep.holCandidateNotVerified(Some4All.this, inst, cex);
+                        rep.holFindingNextCandidate(Some4All.this, inc);
+                        convTr = convTr.next(inc);
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean solve() throws SATAbortedException {
+                rep.holLoopStart(Some4All.this, convTr.formula(), convTr.bounds());
+                return solveNext();
+            }
+        }
+    }
+
+    protected HOLTranslationOld(Bounds bounds, Options options) {
+        super(bounds, options, 0);
+    }
+
+    @Override
+    public boolean isFirstOrder() {
+        return false;
+    }
+
+    @Override
+    public Translation getCurrentFOLTranslation() {
+        return null;
+    }
+
+    @Override
+    public int numCandidates() {
+        return 1;
+    }
 
 }
