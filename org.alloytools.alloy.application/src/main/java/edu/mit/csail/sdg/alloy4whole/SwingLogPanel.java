@@ -25,6 +25,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,6 +41,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
+
 import edu.mit.csail.sdg.alloy4.OurAntiAlias;
 import edu.mit.csail.sdg.alloy4.OurUtil;
 
@@ -151,7 +153,7 @@ final class SwingLogPanel {
 		this.handler = handler;
 		this.fontName = fontName;
 		this.fontSize = fontSize;
-		this.log = OurUtil.make(OurAntiAlias.pane(), Color.BLACK, background, new EmptyBorder(1, 1, 1, 1),
+		this.log = OurUtil.make(OurAntiAlias.pane(null), Color.BLACK, background, new EmptyBorder(1, 1, 1, 1),
 				new Font(fontName, Font.PLAIN, fontSize));
 		// This customized StyledEditorKit prevents line-wrapping up to 30000
 		// pixels wide.

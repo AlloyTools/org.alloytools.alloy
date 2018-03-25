@@ -1,6 +1,6 @@
 package edu.mit.csail.sdg.ast;
 
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Set;
 
 import edu.mit.csail.sdg.alloy4.Err;
@@ -11,7 +11,7 @@ import edu.mit.csail.sdg.ast.Sig.Field;
  *
  */
 public class VisitQueryOnce<T> extends VisitQuery<T> {
-	final Set<Expr> visited = new HashSet<>();
+	final IdentityHashMap<Expr, Object> visited = new IdentityHashMap<Expr, Object>();
 
 	@Override
 	public T visit(ExprBinary x) throws Err {
@@ -131,8 +131,16 @@ public class VisitQueryOnce<T> extends VisitQuery<T> {
 			return super.visit(x);
 	}
 
-	private boolean visited(Expr x) {
-		return visited.add(x);
+	/**
+	 * Will be called for all visit methods. If it returns true then null is
+	 * returned otherwise the normal visit method is called.
+	 * 
+	 * @param x
+	 *            the expr that is being visited
+	 * @return true if this expr was already visited
+	 */
+	protected boolean visited(Expr x) {
+		return visited.put(x,x) != null;
 	}
 
 }

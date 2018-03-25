@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
@@ -28,7 +29,7 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
  * <b>Invariant:</b> type!=EMPTY => (type==expr.type && !expr.ambiguous)
  */
 
-public final class ExprVar extends ExprHasName {
+public final class ExprVar extends ExprHasName implements Clause {
 
 	/** {@inheritDoc} */
 	@Override
@@ -101,5 +102,10 @@ public final class ExprVar extends ExprHasName {
 	@Override
 	public List< ? extends Browsable> getSubnodes() {
 		return new ArrayList<Browsable>(0);
+	}
+
+	@Override
+	public String explain() {
+		return "var "+label+"\n"+TableView.toTable(type);
 	}
 }

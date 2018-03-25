@@ -15,14 +15,20 @@
 
 package edu.mit.csail.sdg.ast;
 
+import static edu.mit.csail.sdg.alloy4.TableView.clean;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import org.alloytools.util.table.Table;
+
 import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Util;
 
 /**
@@ -37,7 +43,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * predicate/function call
  */
 
-public final class Func extends Browsable {
+public final class Func extends Browsable implements Clause {
 
 	/**
 	 * The location in the original file where this predicate/function is
@@ -109,19 +115,27 @@ public final class Func extends Browsable {
 	 * The return declaration should have no free variables, except possibly the
 	 * list of input parameters.
 	 *
-	 * @param pos - the original position in the file
-	 * @param label - the label for this predicate/function (does not have to be
+	 * @param pos
+	 *            - the original position in the file
+	 * @param label
+	 *            - the label for this predicate/function (does not have to be
 	 *            unique)
-	 * @param decls - the list of parameter declarations (can be null or an
-	 *            empty list if this predicate/function has no parameters)
-	 * @param returnDecl - the return declaration (null if this is a predicate
-	 *            rather than a function)
-	 * @throws ErrorType if returnType!=null and returnType cannot be
-	 *             unambiguously typechecked to be a set/relation
-	 * @throws ErrorSyntax if the list of parameters contain duplicates
-	 * @throws ErrorSyntax if at least one of the parameter declaration contains
-	 *             a predicate/function call
-	 * @throws ErrorSyntax if this function's return type declaration contains a
+	 * @param decls
+	 *            - the list of parameter declarations (can be null or an empty
+	 *            list if this predicate/function has no parameters)
+	 * @param returnDecl
+	 *            - the return declaration (null if this is a predicate rather
+	 *            than a function)
+	 * @throws ErrorType
+	 *             if returnType!=null and returnType cannot be unambiguously
+	 *             typechecked to be a set/relation
+	 * @throws ErrorSyntax
+	 *             if the list of parameters contain duplicates
+	 * @throws ErrorSyntax
+	 *             if at least one of the parameter declaration contains a
+	 *             predicate/function call
+	 * @throws ErrorSyntax
+	 *             if this function's return type declaration contains a
 	 *             predicate/function call
 	 */
 	public Func(Pos pos, String label, List<Decl> decls, Expr returnDecl, Expr body) throws Err {
@@ -141,21 +155,30 @@ public final class Func extends Browsable {
 	 * The return declaration should have no free variables, except possibly the
 	 * list of input parameters.
 	 *
-	 * @param pos - the original position in the file
-	 * @param isPrivate - if nonnull, then the user intended this func/pred to
-	 *            be "private"
-	 * @param label - the label for this predicate/function (does not have to be
+	 * @param pos
+	 *            - the original position in the file
+	 * @param isPrivate
+	 *            - if nonnull, then the user intended this func/pred to be
+	 *            "private"
+	 * @param label
+	 *            - the label for this predicate/function (does not have to be
 	 *            unique)
-	 * @param decls - the list of parameter declarations (can be null or an
-	 *            empty list if this predicate/function has no parameters)
-	 * @param returnDecl - the return declaration (null if this is a predicate
-	 *            rather than a function)
-	 * @throws ErrorType if returnType!=null and returnType cannot be
-	 *             unambiguously typechecked to be a set/relation
-	 * @throws ErrorSyntax if the list of parameters contain duplicates
-	 * @throws ErrorSyntax if at least one of the parameter declaration contains
-	 *             a predicate/function call
-	 * @throws ErrorSyntax if this function's return type declaration contains a
+	 * @param decls
+	 *            - the list of parameter declarations (can be null or an empty
+	 *            list if this predicate/function has no parameters)
+	 * @param returnDecl
+	 *            - the return declaration (null if this is a predicate rather
+	 *            than a function)
+	 * @throws ErrorType
+	 *             if returnType!=null and returnType cannot be unambiguously
+	 *             typechecked to be a set/relation
+	 * @throws ErrorSyntax
+	 *             if the list of parameters contain duplicates
+	 * @throws ErrorSyntax
+	 *             if at least one of the parameter declaration contains a
+	 *             predicate/function call
+	 * @throws ErrorSyntax
+	 *             if this function's return type declaration contains a
 	 *             predicate/function call
 	 */
 	public Func(Pos pos, Pos isPrivate, String label, List<Decl> decls, Expr returnDecl, Expr body) throws Err {
@@ -194,10 +217,13 @@ public final class Func extends Browsable {
 	 * Changes the method body. <b>Precondition:</b> The expression should have
 	 * no free variables, except possibly the list of function parameters.
 	 *
-	 * @throws ErrorSyntax if newBody.mult!=0
-	 * @throws ErrorType if newBody cannot be unambiguously resolved
-	 * @throws ErrorType if newBody's type is incompatible with the original
-	 *             declared type of this predicate/function
+	 * @throws ErrorSyntax
+	 *             if newBody.mult!=0
+	 * @throws ErrorType
+	 *             if newBody cannot be unambiguously resolved
+	 * @throws ErrorType
+	 *             if newBody's type is incompatible with the original declared
+	 *             type of this predicate/function
 	 */
 	public void setBody(Expr newBody) throws Err {
 		if (isPred) {
@@ -267,7 +293,7 @@ public final class Func extends Browsable {
 
 	/** {@inheritDoc} */
 	@Override
-	public List< ? extends Browsable> getSubnodes() {
+	public List<? extends Browsable> getSubnodes() {
 		ArrayList<Browsable> ans = new ArrayList<Browsable>();
 		for (Decl d : decls)
 			for (ExprHasName v : d.names) {
@@ -278,6 +304,40 @@ public final class Func extends Browsable {
 					returnDecl));
 		ans.add(make(body.span(), body.span(), "<b>body</b> <i>" + body.type + "</i>", body));
 		return ans;
+	}
+
+	@Override
+	public String explain() {
+		StringBuilder sb = new StringBuilder();
+		if (isPred)
+			sb.append("pred ");
+		else
+			sb.append("fun ");
+		
+		sb.append(clean(label)).append(":\n");
+
+		if (decls.size() > 0 || !isPred) {
+			sb.append("\n");
+			int n = 0;
+
+			int count = (int) decls.stream().flatMap(decl -> decl.names.stream()).count();
+
+			Table t = new Table(2, count + (isPred ? 0 : 1), 1);
+			for (Decl decl : decls) {
+				for (Expr e : decl.names) {
+					t.set(0, n, e);
+					t.set(1, n, TableView.toTable(decl.expr.type));
+					n++;
+				}
+			}
+			if (!isPred) {
+				t.set(0, n, "⟶");
+				t.set(1, n, TableView.toTable(returnDecl.type));
+				n++;
+			}
+			sb.append(t);
+		}
+		return sb.toString();
 	}
 
 }

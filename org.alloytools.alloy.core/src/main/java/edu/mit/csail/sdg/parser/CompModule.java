@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -57,6 +58,7 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr;
 import edu.mit.csail.sdg.ast.Browsable;
+import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Decl;
@@ -77,11 +79,13 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Module;
+import edu.mit.csail.sdg.ast.ModuleReference;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
 
 /**
@@ -97,39 +101,39 @@ public final class CompModule extends Browsable implements Module {
 	 * Maps each actual Sig to the original parser-generated Sig that it came
 	 * from.
 	 */
-	private final LinkedHashMap<Sig,Sig>		new2old;
+	private final LinkedHashMap<Sig, Sig>			new2old;
 
 	/**
 	 * Maps each parser-generated Sig to its original list of field
 	 * declarations.
 	 */
-	private final LinkedHashMap<Sig,List<Decl>>	old2fields;
+	private final LinkedHashMap<Sig, List<Decl>>	old2fields;
 
 	/** Maps each parser-generated Sig to its original appended facts. */
-	private final LinkedHashMap<Sig,Expr>		old2appendedfacts;
+	private final LinkedHashMap<Sig, Expr>			old2appendedfacts;
 
 	/** Maps each Sig to the CompModule it belongs to. */
-	private final HashMap<Sig,CompModule>		sig2module;
+	private final HashMap<Sig, CompModule>			sig2module;
 
 	/** The list of CompModules. */
-	private final List<CompModule>				allModules;
+	private final List<CompModule>					allModules;
 
 	/**
 	 * The list of sigs in the entire world whose scope shall be deemed "exact"
 	 */
-	private final Set<Sig>						exactSigs;
+	private final Set<Sig>							exactSigs;
 
 	/**
 	 * This stores a set of global values; given a unresolved name, we query
 	 * this map first before all else.
 	 */
-	private final Map<String,Expr>				globals;
+	private final Map<String, Expr>					globals;
 
 	/** This stores the meta signature "sig$" */
-	private final PrimSig						metaSig;
+	private final PrimSig							metaSig;
 
 	/** This stores the meta signature "field$" */
-	private final PrimSig						metaField;
+	private final PrimSig							metaField;
 
 	// ============================================================================================================================//
 
@@ -137,15 +141,15 @@ public final class CompModule extends Browsable implements Module {
 	 * This field is used during a depth-first search of the dag-of-module(s) to
 	 * mark which modules have been visited.
 	 */
-	private Object								visitedBy	= null;
+	private Object				visitedBy	= null;
 
 	/** The world that this CompModule belongs to. */
-	private final CompModule					world;
+	private final CompModule	world;
 
 	/**
 	 * The simplest path pointing to this Module ("" if this is the main module)
 	 */
-	public final String							path;
+	public final String			path;
 
 	/**
 	 * Return the simplest path pointing to this Module ("" if this is the main
@@ -180,7 +184,7 @@ public final class CompModule extends Browsable implements Module {
 	 * Each param is mapped to its corresponding Sig (or null if we have not
 	 * resolved it).
 	 */
-	private final Map<String,Sig>				params		= new LinkedHashMap<String,Sig>();				// Must
+	private final Map<String, Sig>				params		= new LinkedHashMap<String, Sig>();				// Must
 																											// be
 																											// LinkedHashMap
 																											// since
@@ -189,10 +193,10 @@ public final class CompModule extends Browsable implements Module {
 																											// matters
 
 	/** Each alias is mapped to its corresponding "open" statement. */
-	private final Map<String,Open>				opens		= new LinkedHashMap<String,Open>();
+	private final Map<String, Open>				opens		= new LinkedHashMap<String, Open>();
 
 	/** Each sig name is mapped to its corresponding SigAST. */
-	private final Map<String,Sig>				sigs		= new LinkedHashMap<String,Sig>();
+	private final Map<String, Sig>				sigs		= new LinkedHashMap<String, Sig>();
 
 	/** The list of params in this module whose scope shall be deemed "exact" */
 	private final List<String>					exactParams	= new ArrayList<String>();
@@ -204,19 +208,19 @@ public final class CompModule extends Browsable implements Module {
 	int											resolution	= 1;
 
 	/** Each func name is mapped to a nonempty list of FunAST objects. */
-	private final Map<String,ArrayList<Func>>	funcs		= new LinkedHashMap<String,ArrayList<Func>>();
+	private final Map<String, ArrayList<Func>>	funcs		= new LinkedHashMap<String, ArrayList<Func>>();
 
 	/** Each macro name is mapped to a MacroAST object. */
-	private final Map<String,Macro>				macros		= new LinkedHashMap<String,Macro>();
+	private final Map<String, Macro>			macros		= new LinkedHashMap<String, Macro>();
 
 	/** Each assertion name is mapped to its Expr. */
-	private final Map<String,Expr>				asserts		= new LinkedHashMap<String,Expr>();
+	private final Map<String, Expr>				asserts		= new LinkedHashMap<String, Expr>();
 
 	/**
 	 * The list of facts; each fact is either an untypechecked Exp or a
 	 * typechecked Expr.
 	 */
-	private final List<Pair<String,Expr>>		facts		= new ArrayList<Pair<String,Expr>>();
+	private final List<Pair<String, Expr>>		facts		= new ArrayList<Pair<String, Expr>>();
 
 	/**
 	 * The list of (CommandName,Command,Expr) triples; NOTE: duplicate command
@@ -260,7 +264,7 @@ public final class CompModule extends Browsable implements Module {
 		 * This maps local names (eg. let/quantification variables and function
 		 * parameters) to the objects they refer to.
 		 */
-		private final Env<String,Expr>	env				= new Env<String,Expr>();
+		private final Env<String, Expr>	env				= new Env<String, Expr>();
 
 		/** The level of macro substitution recursion. */
 		public final int				unrolls;
@@ -303,7 +307,7 @@ public final class CompModule extends Browsable implements Module {
 					break;
 				}
 			}
-			this.isIntsNotUsed = noIntFields && noOpenInteger;
+			this.isIntsNotUsed = false; // TODO InoIntFields && noOpenInteger;
 		}
 
 		/**
@@ -601,8 +605,24 @@ public final class CompModule extends Browsable implements Module {
 		@Override
 		public Expr visit(ExprVar x) throws Err {
 			Expr obj = resolve(x.pos, x.label);
-			if (obj instanceof Macro)
-				return ((Macro) obj).instantiate(this, warns);
+			if (obj instanceof Macro) {
+				Macro macro = ((Macro) obj).copy();
+				Expr instantiated = macro.instantiate(this, warns);
+				instantiated.setReferenced(new Clause() {
+
+					@Override
+					public Pos pos() {
+						return instantiated.pos;
+					}
+
+					@Override
+					public String explain() {
+						return instantiated.toString();
+					}
+					
+				});
+				return instantiated;
+			}
 			else
 				return obj;
 		}
@@ -645,7 +665,7 @@ public final class CompModule extends Browsable implements Module {
 	 * Mutable; this class represents an untypechecked Alloy module import
 	 * statement; equals() uses object identity.
 	 */
-	public static final class Open {
+	public static final class Open implements Clause {
 
 		/**
 		 * The position in the original model where this "open" statement was
@@ -673,6 +693,8 @@ public final class CompModule extends Browsable implements Module {
 		 */
 		private CompModule				realModule	= null;
 
+		private List<Expr>				expressions;
+
 		/**
 		 * Returns the actual Module object that it points to; null if we have
 		 * not resolved it.
@@ -681,13 +703,19 @@ public final class CompModule extends Browsable implements Module {
 			return realModule;
 		}
 
-		/** Constructs an Open object. */
-		private Open(Pos pos, boolean isPrivate, String alias, ConstList<String> args, String filename) {
+		/**
+		 * Constructs an Open object.
+		 * 
+		 * @param expressions
+		 */
+		private Open(Pos pos, boolean isPrivate, String alias, ConstList<String> args, String filename,
+				List<Expr> expressions) {
 			this.pos = pos;
 			this.isPrivate = isPrivate;
 			this.alias = alias;
 			this.args = args;
 			this.filename = filename;
+			this.expressions = expressions;
 		}
 
 		/** Connect this OPEN statement to a module that it points to. */
@@ -696,6 +724,32 @@ public final class CompModule extends Browsable implements Module {
 				throw new ErrorFatal("Internal error (import mismatch)");
 			this.realModule = realModule;
 		}
+
+		public void setResolvedFilePath(String cp) {
+			if (expressions != null && !expressions.isEmpty()) {
+				expressions.get(0).setReferenced(new ModuleReference(cp));
+			}
+
+		}
+
+		@Override
+		public Pos pos() {
+			return pos;
+		}
+
+		@Override
+		public String explain() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("open ");
+			sb.append(filename);
+			for (String arg : args) {
+				sb.append("[").append(arg).append("]");
+			}
+			if (alias != null) {
+				sb.append(" as ").append(alias);
+			}
+			return sb.toString();
+		}
 	}
 
 	// ============================================================================================================================//
@@ -703,23 +757,26 @@ public final class CompModule extends Browsable implements Module {
 	/**
 	 * Constructs a new CompModule object
 	 * 
-	 * @param world - the world that this CompModule belongs to (null if this is
+	 * @param world
+	 *            - the world that this CompModule belongs to (null if this is
 	 *            the beginning of a new World)
-	 * @param filename - the filename corresponding to this module
-	 * @param path - one of the path pointing to this module
+	 * @param filename
+	 *            - the filename corresponding to this module
+	 * @param path
+	 *            - one of the path pointing to this module
 	 */
 	CompModule(CompModule world, String filename, String path) throws Err {
 		if (world == null) {
 			if (path.length() > 0)
 				throw new ErrorFatal("Root module misparsed by parser.");
 			this.world = this;
-			new2old = new LinkedHashMap<Sig,Sig>();
-			old2fields = new LinkedHashMap<Sig,List<Decl>>();
-			old2appendedfacts = new LinkedHashMap<Sig,Expr>();
-			sig2module = new HashMap<Sig,CompModule>();
+			new2old = new LinkedHashMap<Sig, Sig>();
+			old2fields = new LinkedHashMap<Sig, List<Decl>>();
+			old2appendedfacts = new LinkedHashMap<Sig, Expr>();
+			sig2module = new HashMap<Sig, CompModule>();
 			allModules = new ArrayList<CompModule>();
 			exactSigs = new LinkedHashSet<Sig>();
-			globals = new LinkedHashMap<String,Expr>();
+			globals = new LinkedHashMap<String, Expr>();
 			metaSig = new PrimSig("this/sig$", Attr.ABSTRACT, Attr.META);
 			metaField = new PrimSig("this/field$", Attr.ABSTRACT, Attr.META);
 		} else {
@@ -761,7 +818,7 @@ public final class CompModule extends Browsable implements Module {
 
 	/** {@inheritDoc} */
 	@Override
-	public List< ? extends Browsable> getSubnodes() {
+	public List<? extends Browsable> getSubnodes() {
 		ArrayList<Browsable> ans = new ArrayList<Browsable>();
 		ArrayList<Browsable> x;
 		if (opens.size() > 0) {
@@ -804,13 +861,13 @@ public final class CompModule extends Browsable implements Module {
 		}
 		if (facts.size() > 0) {
 			x = new ArrayList<Browsable>(facts.size());
-			for (Pair<String,Expr> e : facts)
+			for (Pair<String, Expr> e : facts)
 				x.add(make(e.b.span(), e.b.span(), "<b>fact " + e.a + "</b>", e.b));
 			ans.add(make("<b>" + x.size() + (x.size() > 1 ? " facts</b>" : " fact</b>"), x));
 		}
 		if (asserts.size() > 0) {
 			x = new ArrayList<Browsable>(asserts.size());
-			for (Map.Entry<String,Expr> e : asserts.entrySet()) {
+			for (Map.Entry<String, Expr> e : asserts.entrySet()) {
 				Pos sp = e.getValue().span();
 				x.add(make(sp, sp, "<b>assert</b> " + e.getKey(), e.getValue()));
 			}
@@ -860,9 +917,9 @@ public final class CompModule extends Browsable implements Module {
 	 * Parse one expression by starting fromt this module as the root module.
 	 */
 	public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException {
-		Map<String,String> fc = new LinkedHashMap<String,String>();
+		Map<String, String> fc = new LinkedHashMap<String, String>();
 		fc.put("", "run {\n" + input + "}"); // We prepend the line "run{"
-		CompModule m = CompParser.alloy_parseStream(new ArrayList<Object>(), null, fc, null, -1, "", "", 1);
+		CompModule m = CompUtil.parse(new ArrayList<Object>(), null, fc, null, -1, "", "", 1);
 		if (m.funcs.size() == 0)
 			throw new ErrorSyntax("The input does not correspond to an Alloy expression.");
 		Expr body = m.funcs.values().iterator().next().get(0).getBody();
@@ -1232,16 +1289,19 @@ public final class CompModule extends Browsable implements Module {
 				return;
 			throw new ErrorSyntax(pos, "You cannot import two different modules\n" + "using the same alias.");
 		}
-		x = new Open(pos, isPrivate != null, as, newlist.makeConst(), name.label);
+		List<Expr> expressions = new ArrayList<>(args == null ? Collections.emptySet() : args);
+		expressions.add(0, name);
+		expressions.add(alias);
+		x = new Open(pos, isPrivate != null, as, newlist.makeConst(), name.label, expressions);
 		opens.put(as, x);
 	}
 
 	/** Do any post-parsing processig. */
 	void doneParsing() {
 		status = 3;
-		LinkedHashMap<String,Open> copy = new LinkedHashMap<String,Open>(opens);
+		LinkedHashMap<String, Open> copy = new LinkedHashMap<String, Open>(opens);
 		opens.clear();
-		for (Map.Entry<String,Open> e : copy.entrySet()) {
+		for (Map.Entry<String, Open> e : copy.entrySet()) {
 			String a = e.getKey();
 			Open m = e.getValue();
 			if (a.indexOf('$') >= 0) {
@@ -1262,7 +1322,7 @@ public final class CompModule extends Browsable implements Module {
 						a = base;
 				}
 			}
-			opens.put(a, new Open(m.pos, m.isPrivate, a, m.args, m.filename));
+			opens.put(a, new Open(m.pos, m.isPrivate, a, m.args, m.filename, m.expressions));
 		}
 	}
 
@@ -1281,7 +1341,7 @@ public final class CompModule extends Browsable implements Module {
 										+ " arguments to the open statement, but the imported module requires "
 										+ sub.params.size() + " arguments.");
 					int i = 0;
-					for (Map.Entry<String,Sig> p : sub.params.entrySet()) {
+					for (Map.Entry<String, Sig> p : sub.params.entrySet()) {
 						Sig old = p.getValue();
 						String kn = p.getKey(), vn = open.args.get(i);
 						i++;
@@ -1344,7 +1404,7 @@ public final class CompModule extends Browsable implements Module {
 					modules.remove(j);
 					j--;
 					for (CompModule c : modules) {
-						for (Map.Entry<String,Sig> p : c.params.entrySet())
+						for (Map.Entry<String, Sig> p : c.params.entrySet())
 							if (isin(p.getValue(), b.sigs))
 								p.setValue(a.sigs.get(base(p.getValue())));
 						for (Open p : c.opens.values())
@@ -1460,10 +1520,10 @@ public final class CompModule extends Browsable implements Module {
 		res.new2old.put(realSig, oldS);
 		res.sig2module.put(realSig, u);
 		for (CompModule m : res.allModules) {
-			for (Map.Entry<String,Sig> e : m.sigs.entrySet())
+			for (Map.Entry<String, Sig> e : m.sigs.entrySet())
 				if (e.getValue() == oldS)
 					e.setValue(realSig);
-			for (Map.Entry<String,Sig> e : m.params.entrySet())
+			for (Map.Entry<String, Sig> e : m.params.entrySet())
 				if (e.getValue() == oldS)
 					e.setValue(realSig);
 		}
@@ -1666,7 +1726,7 @@ public final class CompModule extends Browsable implements Module {
 	private JoinableList<Err> resolveAssertions(A4Reporter rep, JoinableList<Err> errors, List<ErrorWarning> warns)
 			throws Err {
 		Context cx = new Context(this, warns);
-		for (Map.Entry<String,Expr> e : asserts.entrySet()) {
+		for (Map.Entry<String, Expr> e : asserts.entrySet()) {
 			Expr expr = e.getValue();
 			expr = cx.check(expr).resolve_as_formula(warns);
 			if (expr.errors.isEmpty()) {
@@ -1679,10 +1739,10 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return an unmodifiable list of all assertions in this module. */
-	public ConstList<Pair<String,Expr>> getAllAssertions() {
-		TempList<Pair<String,Expr>> ans = new TempList<Pair<String,Expr>>(asserts.size());
-		for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-			ans.add(new Pair<String,Expr>(e.getKey(), e.getValue()));
+	public ConstList<Pair<String, Expr>> getAllAssertions() {
+		TempList<Pair<String, Expr>> ans = new TempList<Pair<String, Expr>>(asserts.size());
+		for (Map.Entry<String, Expr> e : asserts.entrySet()) {
+			ans.add(new Pair<String, Expr>(e.getKey(), e.getValue()));
 		}
 		return ans.makeConst();
 	}
@@ -1694,7 +1754,7 @@ public final class CompModule extends Browsable implements Module {
 		status = 3;
 		if (name == null || name.length() == 0)
 			name = "fact$" + (1 + facts.size());
-		facts.add(new Pair<String,Expr>(name, ExprUnary.Op.NOOP.make(value.span().merge(pos), value)));
+		facts.add(new Pair<String, Expr>(name, ExprUnary.Op.NOOP.make(value.span().merge(pos), value)));
 	}
 
 	/**
@@ -1710,7 +1770,7 @@ public final class CompModule extends Browsable implements Module {
 			Expr checked = cx.check(expr);
 			expr = checked.resolve_as_formula(warns);
 			if (expr.errors.isEmpty()) {
-				facts.set(i, new Pair<String,Expr>(name, expr));
+				facts.set(i, new Pair<String, Expr>(name, expr));
 				rep.typecheck("Fact " + name + ": " + expr.type() + "\n");
 			} else
 				errors = errors.make(expr.errors);
@@ -1742,8 +1802,8 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return an unmodifiable list of all facts in this module. */
-	public SafeList<Pair<String,Expr>> getAllFacts() {
-		return (new SafeList<Pair<String,Expr>>(facts)).dup();
+	public SafeList<Pair<String, Expr>> getAllFacts() {
+		return (new SafeList<Pair<String, Expr>>(facts)).dup();
 	}
 
 	/**
@@ -1754,7 +1814,7 @@ public final class CompModule extends Browsable implements Module {
 	public Expr getAllReachableFacts() {
 		ArrayList<Expr> facts = new ArrayList<Expr>();
 		for (CompModule m : world.getAllReachableModules())
-			for (Pair<String,Expr> f : m.facts)
+			for (Pair<String, Expr> f : m.facts)
 				facts.add(f.b);
 		if (facts.size() == 0)
 			return ExprConstant.TRUE;
@@ -1765,21 +1825,21 @@ public final class CompModule extends Browsable implements Module {
 	// ============================================================================================================================//
 
 	/** Add a COMMAND declaration. */
-	@SuppressWarnings("unused")
-	void addCommand(boolean followUp, Pos p, String n, boolean c, int o, int b, int seq, int exp, List<CommandScope> s,
+
+	void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes,
 			ExprVar label) throws Err {
 		if (followUp && !Version.experimental)
-			throw new ErrorSyntax(p, "Syntax error encountering => symbol.");
+			throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
 		if (label != null)
-			p = Pos.UNKNOWN.merge(p).merge(label.pos);
+			pos = Pos.UNKNOWN.merge(pos).merge(label.pos);
 		status = 3;
-		if (n.length() == 0)
-			throw new ErrorSyntax(p, "Predicate/assertion name cannot be empty.");
-		if (n.indexOf('@') >= 0)
-			throw new ErrorSyntax(p, "Predicate/assertion name cannot contain \'@\'");
-		String labelName = (label == null || label.label.length() == 0) ? n : label.label;
+		if (name.label.length() == 0)
+			throw new ErrorSyntax(pos, "Predicate/assertion name cannot be empty.");
+		if (name.label.indexOf('@') >= 0)
+			throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
+		String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
 		Command parent = followUp ? commands.get(commands.size() - 1) : null;
-		Command newcommand = new Command(p, labelName, c, o, b, seq, exp, s, null, ExprVar.make(null, n), parent);
+		Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
 		if (parent != null)
 			commands.set(commands.size() - 1, newcommand);
 		else
@@ -1787,28 +1847,38 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Add a COMMAND declaration. */
-	@SuppressWarnings("unused")
-	void addCommand(boolean followUp, Pos p, Expr e, boolean c, int o, int b, int seq, int exp, List<CommandScope> s,
+	void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes,
 			ExprVar label) throws Err {
+
 		if (followUp && !Version.experimental)
-			throw new ErrorSyntax(p, "Syntax error encountering => symbol.");
+			throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
+		
 		if (label != null)
-			p = Pos.UNKNOWN.merge(p).merge(label.pos);
+			pos = Pos.UNKNOWN.merge(pos).merge(label.pos);
+		
 		status = 3;
 		String n;
-		if (c)
-			n = addAssertion(p, "check$" + (1 + commands.size()), e);
+		if (check)
+			n = addAssertion(pos, "check$" + (1 + commands.size()), e);
 		else
-			addFunc(e.span().merge(p), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(),
+			addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(),
 					null, e);
 		String labelName = (label == null || label.label.length() == 0) ? n : label.label;
 		Command parent = followUp ? commands.get(commands.size() - 1) : null;
-		Command newcommand = new Command(e.span().merge(p), labelName, c, o, b, seq, exp, s, null,
+		Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, expects, scopes, null,
 				ExprVar.make(null, n), parent);
 		if (parent != null)
 			commands.set(commands.size() - 1, newcommand);
 		else
 			commands.add(newcommand);
+	}
+	
+	public void addDefaultCommand() {
+		if ( commands.isEmpty()) {
+			addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(),
+					null, ExprConstant.TRUE);
+			commands.add( new Command(Pos.UNKNOWN,ExprConstant.TRUE, "Default", false,4,4,4,0,null,null,ExprVar.make(null, "$$Default"),null));
+		}
 	}
 
 	/** Resolve a particular command. */
@@ -1816,6 +1886,7 @@ public final class CompModule extends Browsable implements Module {
 		Command parent = cmd.parent == null ? null : resolveCommand(cmd.parent, exactSigs, globalFacts);
 		String cname = ((ExprVar) (cmd.formula)).label;
 		Expr e;
+		Clause declaringClause = null;
 		if (cmd.check) {
 			List<Object> m = getRawQS(2, cname); // We prefer assertion in the
 													// topmost module
@@ -1825,7 +1896,9 @@ public final class CompModule extends Browsable implements Module {
 				unique(cmd.pos, cname, m);
 			if (m.size() < 1)
 				throw new ErrorSyntax(cmd.pos, "The assertion \"" + cname + "\" cannot be found.");
-			e = ((Expr) (m.get(0))).not();
+
+			Expr expr = (Expr) (m.get(0));
+			e = expr.not();
 		} else {
 			List<Object> m = getRawQS(4, cname); // We prefer fun/pred in the
 													// topmost module
@@ -1836,6 +1909,7 @@ public final class CompModule extends Browsable implements Module {
 			if (m.size() < 1)
 				throw new ErrorSyntax(cmd.pos, "The predicate/function \"" + cname + "\" cannot be found.");
 			Func f = (Func) (m.get(0));
+			declaringClause = f;
 			e = f.getBody();
 			if (!f.isPred)
 				e = e.in(f.returnDecl);
@@ -1851,8 +1925,14 @@ public final class CompModule extends Browsable implements Module {
 				throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
 			sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
 		}
-		return new Command(cmd.pos, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects,
+
+		if (cmd.nameExpr != null) {
+			cmd.nameExpr.setReferenced(declaringClause);
+		}
+		return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq,
+				cmd.expects,
 				sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+
 	}
 
 	/** Each command now points to a typechecked Expr. */
@@ -1876,7 +1956,7 @@ public final class CompModule extends Browsable implements Module {
 	 * Returns true if exists some entry (a,b) in the map, such that b==value
 	 * (using object identity as the comparison)
 	 */
-	private static <K, V> boolean isin(V value, Map<K,V> map) {
+	private static <K, V> boolean isin(V value, Map<K, V> map) {
 		for (V v : map.values())
 			if (v == value)
 				return true;
@@ -1935,7 +2015,7 @@ public final class CompModule extends Browsable implements Module {
 		// with the same name.
 		// In other words: if 2 fields have the same name, then their type's
 		// first column must not intersect.
-		final Map<String,List<Field>> fieldname2fields = new LinkedHashMap<String,List<Field>>();
+		final Map<String, List<Field>> fieldname2fields = new LinkedHashMap<String, List<Field>>();
 		for (CompModule m : modules) {
 			for (Sig sig : m.sigs.values()) {
 				for (Field field : sig.getFields()) {
@@ -1961,8 +2041,8 @@ public final class CompModule extends Browsable implements Module {
 
 	private static void resolveMeta(final CompModule root) throws Err {
 		// Now, add the meta sigs and fields if needed
-		Map<Sig,PrimSig> sig2meta = new LinkedHashMap<Sig,PrimSig>();
-		Map<Field,PrimSig> field2meta = new LinkedHashMap<Field,PrimSig>();
+		Map<Sig, PrimSig> sig2meta = new LinkedHashMap<Sig, PrimSig>();
+		Map<Field, PrimSig> field2meta = new LinkedHashMap<Field, PrimSig>();
 		boolean hasMetaSig = false, hasMetaField = false;
 		root.new2old.put(root.metaSig, root.metaSig);
 		root.sigs.put(base(root.metaSig), root.metaSig);
@@ -1997,7 +2077,7 @@ public final class CompModule extends Browsable implements Module {
 					}
 					ka.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "fields", allfields);
 				}
-		for (Map.Entry<Sig,PrimSig> e : sig2meta.entrySet()) {
+		for (Map.Entry<Sig, PrimSig> e : sig2meta.entrySet()) {
 			Expr expr = null;
 			if ((e.getKey()) instanceof PrimSig) {
 				PrimSig a = (PrimSig) (e.getKey());
@@ -2007,7 +2087,7 @@ public final class CompModule extends Browsable implements Module {
 			e.getValue().addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "parent",
 					(expr == null ? ExprConstant.EMPTYNESS : expr));
 		}
-		for (Map.Entry<Sig,PrimSig> e : sig2meta.entrySet()) {
+		for (Map.Entry<Sig, PrimSig> e : sig2meta.entrySet()) {
 			Sig s = e.getKey();
 			PrimSig s2 = e.getValue();
 			Expr allfields = ExprConstant.EMPTYNESS;
@@ -2030,9 +2110,9 @@ public final class CompModule extends Browsable implements Module {
 			s2.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "subfields", allfields);
 		}
 		if (hasMetaSig == false)
-			root.facts.add(new Pair<String,Expr>("sig$fact", root.metaSig.no().and(root.metaField.no())));
+			root.facts.add(new Pair<String, Expr>("sig$fact", root.metaSig.no().and(root.metaField.no())));
 		else if (hasMetaField == false)
-			root.facts.add(new Pair<String,Expr>("sig$fact", root.metaField.no()));
+			root.facts.add(new Pair<String, Expr>("sig$fact", root.metaField.no()));
 	}
 
 	// ============================================================================================================================//
@@ -2263,4 +2343,124 @@ public final class CompModule extends Browsable implements Module {
 		}
 		return null;
 	}
+
+	public Pos getGlobal(String key) {
+		Pos result = getGlobalFromModule(this, key);
+		if (result != null) {
+			return result;
+		}
+
+		for (CompModule cm : allModules) {
+			if (cm == this)
+				continue;
+
+			result = getGlobalFromModule(cm, key);
+			if (result != null) {
+				return result;
+			}
+		}
+		return result;
+	}
+
+	Pos getGlobalFromModule(CompModule module, String key) {
+		Sig sig = module.sigs.get(key);
+		if (sig != null)
+			return sig.pos;
+		ArrayList<Func> arrayList = module.funcs.get(key);
+		if (arrayList == null || arrayList.isEmpty())
+			return null;
+
+		return arrayList.get(0).pos;
+	}
+
+	public <T> T visitExpressions(VisitReturn<T> visitor) {
+		sigs.values().forEach(s -> {
+			s.accept(visitor);
+			s.getFieldDecls().forEach(d -> {
+				d.names.forEach(x -> x.accept(visitor));
+				d.expr.accept(visitor);
+			});
+			s.getFacts().forEach( f -> f.accept(visitor));
+		});
+
+		funcs.values().forEach(funs -> {
+			funs.forEach(fun -> {
+				fun.getBody().accept(visitor);
+				fun.decls.forEach(d -> {
+					d.expr.accept(visitor);
+					d.names.forEach(n -> n.accept(visitor));
+				});
+				fun.returnDecl.accept(visitor);
+			});
+		});
+		facts.forEach(fact -> {
+			fact.b.accept(visitor);
+		});
+		asserts.values().forEach(assrt -> {
+			assrt.accept(visitor);
+		});
+		commands.forEach(cmd -> {
+			if (cmd.nameExpr != null)
+				cmd.nameExpr.accept(visitor);
+
+			cmd.additionalExactScopes.forEach(sig -> sig.accept(visitor));
+			cmd.formula.accept(visitor);
+			cmd.scope.forEach(scope -> {
+				scope.sig.accept(visitor);
+			});
+		});
+		opens.values().forEach(open -> {
+			if (open.expressions != null)
+				open.expressions.stream().filter(x -> x != null).forEach(ex -> ex.accept(visitor));
+		});
+		macros.values().forEach(macro -> {
+			macro.accept(visitor);
+		});
+		params.values().forEach(x -> x.accept(visitor));
+		return null;
+	}
+
+	public Expr find(Pos pos) {
+		if (pos == null)
+			return null;
+
+		class Holder {
+			int		width	= Integer.MAX_VALUE;
+			Expr	expr;
+		}
+		Holder holder = new Holder();
+
+		visitExpressions(new VisitQueryOnce<Object>() {
+
+			@Override
+			public boolean visited(Expr expr) {
+				boolean visited = super.visited(expr);
+				if (visited)
+					return visited;
+
+				if (expr.pos == null || expr.pos == Pos.UNKNOWN)
+					return visited;
+
+				if (expr.pos != null && expr.pos.contains(pos)) {
+
+					int width = expr.pos.width();
+					if (width <= holder.width) {
+						if (holder.expr == null || holder.expr.referenced() == null || expr.referenced() != null) {
+							holder.width = width;
+							holder.expr = expr;
+						}
+					}
+				}
+				return visited;
+			}
+		});
+
+		return holder.expr;
+	}
+
+	@Override
+	public String explain() {
+		return "module " + moduleName;
+	}
+
 }

@@ -344,7 +344,7 @@ final class ScopeComputer {
 	private ScopeComputer(A4Reporter rep, Iterable<Sig> sigs, Command cmd) throws Err {
 		this.rep = rep;
 		this.cmd = cmd;
-		boolean shouldUseInts = CompUtil.areIntsUsed(sigs, cmd);
+		boolean shouldUseInts = true; // TODO CompUtil.areIntsUsed(sigs, cmd);
 		// Process each sig listed in the command
 		for (CommandScope entry : cmd.scope) {
 			Sig s = entry.sig;

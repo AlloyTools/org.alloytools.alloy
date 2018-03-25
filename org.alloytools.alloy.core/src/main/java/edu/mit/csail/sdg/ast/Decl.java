@@ -108,4 +108,5 @@ public final class Decl {
 				return true;
 		return false;
 	}
+
 }

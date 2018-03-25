@@ -100,9 +100,32 @@ import java_cup.runtime.*;
     Pos p=alloy_here(txt);
     int n=0;
     try {
-       n=Integer.parseInt(txt);
+        txt = txt.replaceAll("_","");
+        n=Integer.parseInt(txt);
     } catch(NumberFormatException ex) {
-       throw new ErrorSyntax(p, "The number "+txt+" is too large to be stored in a Java integer");
+       throw new ErrorSyntax(p, "The number "+txt+" " + ex);
+    }
+    return new Symbol(CompSym.NUMBER, p, ExprConstant.Op.NUMBER.make(p, n));
+ }
+ private final Symbol alloy_hexnum(String txt) throws Err {
+    Pos p=alloy_here(txt);
+    int n=0;
+    try {
+        txt = txt.substring(2).replaceAll("_","");
+        n=Integer.parseInt(txt, 16);
+    } catch(NumberFormatException ex) {
+       throw new ErrorSyntax(p, "The hex number "+txt+" " + ex);
+    }
+    return new Symbol(CompSym.NUMBER, p, ExprConstant.Op.NUMBER.make(p, n));
+ }
+ private final Symbol alloy_binarynum(String txt) throws Err {
+    Pos p=alloy_here(txt);
+    int n=0;
+    try {
+        txt = txt.substring(2).replaceAll("_","");
+        n=Integer.parseInt(txt, 2);
+    } catch(NumberFormatException ex) {
+       throw new ErrorSyntax(p, "The binary number "+txt+" " + ex);
     }
     return new Symbol(CompSym.NUMBER, p, ExprConstant.Op.NUMBER.make(p, n));
  }
@@ -199,10 +222,12 @@ import java_cup.runtime.*;
 [\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\'\"] [\$0-9a-zA-Z_\'\"]* { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }
 [\"] ([^\\\"] | ("\\" .))* [\"]                                        { return alloy_string(yytext()); }
 [\"] ([^\\\"] | ("\\" .))*                                             { throw new ErrorSyntax(alloy_here(yytext()),"String literal is missing its closing \" character"); }
+[0]"x"([_]|([0-9A-Fa-f][0-9A-Fa-f]))+                                  { return alloy_hexnum (yytext()); }
+[0]"b"[01_]+                                                           { return alloy_binarynum (yytext()); }
 [0-9][0-9]*[\$a-zA-Z_\'\"][\$0-9a-zA-Z_\'\"]*                          { throw new ErrorSyntax(alloy_here(yytext()),"Name cannot start with a number."); }
-[0-9][0-9]*                                                            { return alloy_num (yytext()); }
-[:jletter:][[:jletterdigit:]\'\"]*                                      { return alloy_id  (yytext()); }
-//[\$a-zA-Z][\$0-9a-zA-Z_\'\"]*                                          { return alloy_id  (yytext()); }
+[0-9][0-9_]*                                                           { return alloy_num (yytext()); }
+[:jletter:][[:jletterdigit:]\'\"]*                                     { return alloy_id  (yytext()); }
+
 
 "/**" ~"*/"                  { }
 
@@ -215,4 +240,4 @@ import java_cup.runtime.*;
 
 [ \t\f\r\n]                  { }
 
-. { throw new ErrorSyntax(alloy_here(" "), "Syntax error at the "+yytext()+" character."); }
+. { throw new ErrorSyntax(alloy_here(" "), "Syntax error at the "+yytext()+" character. HEX: \\u"+Integer.toString(yytext().charAt(0),16)+")"); }

@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ public final class SimTupleset implements Iterable<SimTuple> {
 	// else if (min<max && next) this == tuples + { (min,min+1)...(max-1,max) }
 	// else this == tuples
 
+	public static final SimAtom EMPTY_ATOM = SimAtom.make("∅");
 	/**
 	 * The list of tuples. <br>
 	 * <b>Invariant:</b> If nonempty, it must contain only same-arity tuples.

@@ -109,7 +109,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.text.html.HTMLDocument;
+
+import org.alloytools.alloy.core.AlloyCore;
 
 //import com.apple.eawt.Application;
 //import com.apple.eawt.ApplicationAdapter;
@@ -144,6 +147,10 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
 import edu.mit.csail.sdg.alloy4.XMLNode;
+import edu.mit.csail.sdg.alloy4viz.VizGUI;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
 import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
@@ -161,10 +168,6 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4Tuple;
 import edu.mit.csail.sdg.translator.A4TupleSet;
-import edu.mit.csail.sdg.alloy4viz.VizGUI;
-import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
-import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
-import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 
 /**
@@ -764,7 +767,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private Runner doOpen() {
 		if (wrap)
 			return wrapMe();
-		File file = OurDialog.askFile(true, null, ".als", ".als files");
+		File file = getFile(null);
 		if (file != null) {
 			Util.setCurrentDirectory(file.getParentFile());
 			doOpenFile(file.getPath());
@@ -776,11 +779,18 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private Runner doBuiltin() {
 		if (wrap)
 			return wrapMe();
-		File file = OurDialog.askFile(true, alloyHome() + fs + "models", ".als", ".als files");
+		File file = getFile(alloyHome() + fs + "models");
 		if (file != null) {
 			doOpenFile(file.getPath());
 		}
 		return null;
+	}
+
+	private File getFile(String home) {
+		File file = OurDialog.askFile(true, home, new String[] {
+				".als", ".md", "*"
+		}, "Alloy (.als) or Markdown (.md) files");
+		return file;
 	}
 
 	/** This method performs File->ReloadAll. */
@@ -1098,13 +1108,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		List<Command> cp = commands;
 		if (cp == null) {
 			try {
-				cp = CompUtil.parseOneModule_fromString(text.get().getText());
+				String source = text.get().getText();
+				cp = CompUtil.parseOneModule_fromString(source);
 			} catch (Err e) {
 				commands = null;
 				runmenu.getItem(0).setEnabled(false);
 				runmenu.getItem(3).setEnabled(false);
 				text.shade(new Pos(text.get().getFilename(), e.pos.x, e.pos.y, e.pos.x2, e.pos.y2));
-				if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG)
+				if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
 					log.logRed("Fatal Exception!" + e.dump() + "\n\n");
 				else
 					log.logRed(e.toString() + "\n\n");
@@ -1216,7 +1227,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			int newmem = SubMemory.get(), newstack = SubStack.get();
 			if (newmem != subMemoryNow || newstack != subStackNow)
 				WorkerEngine.stop();
-			if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG)
+			if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
 				WorkerEngine.runLocally(task, cb);
 			else
 				WorkerEngine.run(task, newmem, newstack, alloyHome() + fs + "binary", "", cb);
@@ -1734,7 +1745,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			SimpleTask2 task = new SimpleTask2();
 			task.filename = arg;
 			try {
-				WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
+				if (AlloyCore.isDebug())
+					WorkerEngine.runLocally(task, cb);
+				else
+					WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
 				// task.run(cb);
 			} catch (Throwable ex) {
 				WorkerEngine.stop();
@@ -1795,7 +1809,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private static Computer evaluator = new Computer() {
 		private String filename = null;
 
-		public final String compute(final Object input) throws Exception {
+		public final Object compute(final Object input) throws Exception {
 			if (input instanceof File) {
 				filename = ((File) input).getAbsolutePath();
 				return "";
@@ -1840,11 +1854,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			}
 			try {
 				Expr e = CompUtil.parseOneExpression_fromString(root, str);
-				if ("yes".equals(System.getProperty("debug")) && VerbosityPref.get() == Verbosity.FULLDEBUG) {
+				if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
 					SimInstance simInst = convert(root, ans);
-					return simInst.visitThis(e).toString() + (simInst.wasOverflow() ? " (OF)" : "");
-				} else
-					return ans.eval(e).toString();
+					if (simInst.wasOverflow())
+						return simInst.visitThis(e).toString() + " (OF)";
+				}
+				return ans.eval(e);
 			} catch (HigherOrderDeclException ex) {
 				throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
 			}
@@ -1867,6 +1882,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 			for (String cmd : args) {
 				switch (cmd) {
+
+					case "--worker" :
+					case "-w" :
+						WorkerEngine.main(args);
+						break;
+
 					case "--version" :
 					case "-v" :
 						System.out.println(Version.version());
@@ -1931,6 +1952,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	 * using the "invokeLater" method.
 	 */
 	private SimpleGUI(final String[] args) {
+
+		UIManager.put("ToolTip.font", new FontUIResource("Courier New", Font.PLAIN, 14));
 
 		// Register an exception handler for uncaught exceptions
 		MailBug.setup();
@@ -2075,24 +2098,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 		// Choose the appropriate font
 		int fontSize = FontSize.get();
-		String fontName = FontName.get();
-		while (true) {
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Lucida Grande";
-			else
-				break;
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Verdana";
-			else
-				break;
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Courier New";
-			else
-				break;
-			if (!OurDialog.hasFont(fontName))
-				fontName = "Lucida Grande";
-			break;
-		}
+		String fontName = OurDialog.getProperFontName(FontName.get(), "Courier New", "Lucidia", "Courier",
+				"Monospaced");
 		FontName.set(fontName);
 
 		// Copy required files from the JAR
@@ -2261,7 +2268,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		text.get().requestFocusInWindow();
 
 		// Launch the welcome screen if needed
-		if (!"yes".equals(System.getProperty("debug")) && Welcome.get()) {
+		if (!AlloyCore.isDebug() && Welcome.get()) {
 			JCheckBox again = new JCheckBox("Show this message every time you start the Alloy Analyzer");
 			again.setSelected(true);
 			OurDialog.showmsg("Welcome", "Thank you for using the Alloy Analyzer " + Version.version(), " ",

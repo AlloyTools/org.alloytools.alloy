@@ -8,12 +8,12 @@ task macos( dependsOn: jar, type: JavaExec ) {
 
 	args( 
 		'-deploy', 
-			'-native', 'dmg',
+			'-native', 'pkg',
 				'-srcfiles', 'target/org.alloytools.alloy.dist.jar', 
 				'-appclass', 'edu.mit.csail.sdg.alloy4whole.SimpleGUI', 
 				'-name', 'Alloy',
 	 			'-outdir', 'target', 
-	 			'-outfile',  'alloy', 
+	 			'-outfile', 'alloy', 
 	 			'-v'	)
 	
 }

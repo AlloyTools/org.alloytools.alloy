@@ -21,6 +21,7 @@ import java.awt.Event;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -31,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -46,6 +48,8 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
+import org.alloytools.util.table.Table;
 
 /**
  * Graphical input/output prompt.
@@ -64,21 +68,26 @@ import javax.swing.text.StyledDocument;
  */
 
 public final class OurConsole extends JScrollPane {
+	final static int menuShortcutKeyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
 	/** This ensures the class can be serialized reliably. */
-	private static final long	serialVersionUID	= 0;
+	private static final long			serialVersionUID	= 0;
 
 	/** The style for default text. */
-	private final AttributeSet	plain				= style("Verdana", 14, false, Color.BLACK, 0);
+	private final static AttributeSet	plain				= style("Verdana", 14, false, false, false, Color.BLACK, 0);
+
+	/** The style for table text. */
+	private final static AttributeSet	mono				= style("Courier", 14, false, false, false, Color.BLACK,
+			10);
 
 	/** The style for bold text. */
-	private final AttributeSet	bold				= style("Verdana", 14, true, Color.BLACK, 0);
+	private final static AttributeSet	bold				= style("Verdana", 14, true, false, false, Color.BLACK, 0);
 
 	/** The style for successful result. */
-	private final AttributeSet	good				= style("Verdana", 14, false, Color.BLUE, 15);
+	private final static AttributeSet	good				= style("Verdana", 14, false, false, false, Color.BLUE, 10);
 
 	/** The style for failed result. */
-	private final AttributeSet	bad					= style("Verdana", 14, false, Color.RED, 15);
+	private final static AttributeSet	bad					= style("Verdana", 14, false, false, false, Color.RED, 10);
 
 	/**
 	 * The number of characters that currently exist above the horizontal
@@ -87,22 +96,22 @@ public final class OurConsole extends JScrollPane {
 	 * bar, followed by an embedded sub-JTextPane (where the user can type in
 	 * the next input))
 	 */
-	private int					len					= 0;
+	private int							len					= 0;
 
 	/**
 	 * The main JTextPane containing 0 or more input/output pairs, followed by a
 	 * horizontal bar, followed by this.sub
 	 */
-	private final JTextPane		main				= do_makeTextPane(false, 5, 5, 5);
+	private final JTextPane				main				= do_makeTextPane(false, 5, 5, 5);
 
 	/** The sub JTextPane where the user can type in the next command. */
-	private final JTextPane		sub					= do_makeTextPane(true, 10, 10, 0);
+	private final JTextPane				sub					= do_makeTextPane(true, 10, 10, 0);
 
 	/**
 	 * The history of all commands entered so far, plus an extra String
 	 * representing the user's next command.
 	 */
-	private final List<String>	history				= new ArrayList<String>();
+	private final List<String>			history				= new ArrayList<String>();
 	{
 		history.add("");
 	}
@@ -110,17 +119,21 @@ public final class OurConsole extends JScrollPane {
 	/** The position in this.history that is currently showing. */
 	private int browse = 0;
 
-	/**
+	/*
 	 * Helper method that construct a mutable style with the given font name,
 	 * font size, boldness, color, and left indentation.
 	 */
-	static MutableAttributeSet style(String fontName, int fontSize, boolean boldness, Color color, int leftIndent) {
+	static MutableAttributeSet style(String fontName, int fontSize, boolean boldness, boolean italic, boolean strike,
+			Color color, int leftIndent) {
 		MutableAttributeSet s = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(s, fontName);
 		StyleConstants.setFontSize(s, fontSize);
+		StyleConstants.setLineSpacing(s, -0.2f);
 		StyleConstants.setBold(s, boldness);
+		StyleConstants.setItalic(s, italic);
 		StyleConstants.setForeground(s, color);
 		StyleConstants.setLeftIndent(s, leftIndent);
+		StyleConstants.setStrikeThrough(s, strike);
 		return s;
 	}
 
@@ -128,13 +141,15 @@ public final class OurConsole extends JScrollPane {
 	 * Construct a JScrollPane that allows the user to interactively type in
 	 * commands and see replies.
 	 *
-	 * @param computer - this object is used to evaluate the user input
-	 * @param syntaxHighlighting - if true, the "input area" will be
-	 *            syntax-highlighted
-	 * @param initialMessages - this is a list of String and Boolean; each
-	 *            String is printed to the screen as is, and Boolean.TRUE will
-	 *            turn subsequent text bold, and Boolean.FALSE will turn
-	 *            subsequent text non-bold.
+	 * @param computer
+	 *            - this object is used to evaluate the user input
+	 * @param syntaxHighlighting
+	 *            - if true, the "input area" will be syntax-highlighted
+	 * @param initialMessages
+	 *            - this is a list of String and Boolean; each String is printed
+	 *            to the screen as is, and Boolean.TRUE will turn subsequent
+	 *            text bold, and Boolean.FALSE will turn subsequent text
+	 *            non-bold.
 	 */
 	public OurConsole(final Computer computer, boolean syntaxHighlighting, Object... initialMessages) {
 		super(VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -198,6 +213,7 @@ public final class OurConsole extends JScrollPane {
 			static final long serialVersionUID = 0;
 
 			public void actionPerformed(ActionEvent x) {
+				System.out.println("copy");
 				if (sub.getSelectionStart() != sub.getSelectionEnd())
 					sub.copy();
 				else
@@ -220,9 +236,9 @@ public final class OurConsole extends JScrollPane {
 			x.getActionMap().put("alloy_paste", alloy_paste);
 			x.getActionMap().put("alloy_copy", alloy_copy);
 			x.getActionMap().put("alloy_cut", alloy_cut);
-			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, Event.CTRL_MASK), "alloy_paste");
-			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, Event.CTRL_MASK), "alloy_copy");
-			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.CTRL_MASK), "alloy_cut");
+			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, menuShortcutKeyMask), "alloy_paste");
+			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuShortcutKeyMask), "alloy_copy");
+			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, menuShortcutKeyMask), "alloy_cut");
 			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, Event.SHIFT_MASK), "alloy_paste");
 			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, Event.CTRL_MASK), "alloy_copy");
 			x.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, Event.SHIFT_MASK), "alloy_cut");
@@ -303,7 +319,7 @@ public final class OurConsole extends JScrollPane {
 
 	/** This helper method constructs a JTextPane with the given settings. */
 	private static JTextPane do_makeTextPane(boolean editable, int topMargin, int bottomMargin, int otherMargin) {
-		JTextPane x = OurAntiAlias.pane(Color.BLACK, Color.WHITE, new Font("Verdana", Font.PLAIN, 14));
+		JTextPane x = OurAntiAlias.pane(null,Color.BLACK, Color.WHITE, new Font("Verdana", Font.PLAIN, 14));
 		x.setEditable(editable);
 		x.setAlignmentX(0);
 		x.setAlignmentY(0);
@@ -317,6 +333,8 @@ public final class OurConsole extends JScrollPane {
 		cmd = cmd.trim();
 		if (cmd.length() == 0)
 			return;
+		
+		cmd = TableView.revertSuffix(cmd);
 		StyledDocument doc = main.getStyledDocument();
 		if (history.size() >= 2 && cmd.equals(history.get(history.size() - 2))) {
 			// If the user merely repeated the most recent command, then don't
@@ -334,16 +352,17 @@ public final class OurConsole extends JScrollPane {
 		len += (doc.getLength() - old);
 		// perform the computation
 		boolean isBad = false;
+		Object result;
 		try {
-			cmd = computer.compute(cmd);
+			result = computer.compute(cmd);
 		} catch (Throwable ex) {
-			cmd = ex.toString();
+			result = ex.toString();
 			isBad = true;
 		}
 		int savePosition = len;
 		// display the outcome
 		old = doc.getLength();
-		do_add(len, cmd.trim() + "\n\n", (isBad ? bad : good));
+		do_add(len, result.toString().trim() + "\n\n", (isBad ? bad : good));
 		len += (doc.getLength() - old);
 		// indent the outcome
 		main.setSelectionStart(savePosition + 1);
@@ -375,9 +394,16 @@ public final class OurConsole extends JScrollPane {
 	 * where>=0; append the text if where<0.
 	 */
 	private void do_add(int where, String text, AttributeSet style) {
-		StyledDocument doc = main.getStyledDocument();
 		try {
-			doc.insertString(where >= 0 ? where : doc.getLength(), text, style);
-		} catch (BadLocationException ex) {}
+			StyledDocument doc = main.getStyledDocument();
+			if (TableView.isTable(text)) {
+				Table table = TableView.toTable(text, false);
+				
+				doc.insertString(where >= 0 ? where : doc.getLength(),table.toString(), mono);
+				main.getCaret().setSelectionVisible(false);
+			} else
+				doc.insertString(where >= 0 ? where : doc.getLength(), text, style);
+		} catch (BadLocationException ex) {
+		}
 	}
 }

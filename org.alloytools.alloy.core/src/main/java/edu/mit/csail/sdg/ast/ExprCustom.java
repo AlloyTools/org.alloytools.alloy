@@ -56,7 +56,7 @@ public abstract class ExprCustom extends Expr {
 
 	/** {@inheritDoc} */
 	@Override
-	public final <T> T accept(VisitReturn<T> visitor) throws Err {
+	public <T> T accept(VisitReturn<T> visitor) throws Err {
 		throw errors.pick();
 	}
 }

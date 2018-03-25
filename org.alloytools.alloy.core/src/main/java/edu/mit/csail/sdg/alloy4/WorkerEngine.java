@@ -28,6 +28,8 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
 
+import org.alloytools.alloy.core.AlloyCore;
+
 /**
  * This class allows you to execute tasks in a subprocess, and receive its
  * outputs via callback.
@@ -247,7 +249,7 @@ public final class WorkerEngine {
 					if (f.isFile())
 						java = f.getAbsolutePath();
 				}
-				String debug = "yes".equals(System.getProperty("debug")) ? "yes" : "no";
+				String debug = AlloyCore.isDebug() ? "yes" : "no";
 				if (jniPath != null && jniPath.length() > 0)
 					sub = Runtime.getRuntime().exec(new String[] {
 							java, "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Djava.library.path=" + jniPath,

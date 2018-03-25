@@ -36,7 +36,36 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.alloytools.alloy.core.AlloyCore;
+import org.alloytools.util.table.Table;
+
+import edu.mit.csail.sdg.alloy4.A4Reporter;
+import edu.mit.csail.sdg.alloy4.ConstList;
+import edu.mit.csail.sdg.alloy4.ConstMap;
+import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorAPI;
+import edu.mit.csail.sdg.alloy4.ErrorFatal;
+import edu.mit.csail.sdg.alloy4.ErrorSyntax;
+import edu.mit.csail.sdg.alloy4.Pair;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.SafeList;
+import edu.mit.csail.sdg.alloy4.TableView;
+import edu.mit.csail.sdg.alloy4.UniqueNameGenerator;
+import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprConstant;
+import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Func;
+import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.Decl;
@@ -68,31 +97,6 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 import kodkod.util.ints.IndexedEntry;
-import edu.mit.csail.sdg.alloy4.A4Preferences;
-import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.alloy4.ConstMap;
-import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4.ErrorAPI;
-import edu.mit.csail.sdg.alloy4.ErrorFatal;
-import edu.mit.csail.sdg.alloy4.ErrorSyntax;
-import edu.mit.csail.sdg.alloy4.Pair;
-import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.SafeList;
-import edu.mit.csail.sdg.alloy4.UniqueNameGenerator;
-import edu.mit.csail.sdg.alloy4.Util;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprBinary;
-import edu.mit.csail.sdg.ast.ExprConstant;
-import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Func;
-import edu.mit.csail.sdg.ast.Sig;
-import edu.mit.csail.sdg.ast.Sig.Field;
-import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.ast.Type;
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
@@ -106,69 +110,69 @@ public final class A4Solution {
 	// ====================================================================//
 
 	/** The constant unary relation representing the smallest Int atom. */
-	static final Relation						KK_MIN		= Relation.unary("Int/min");
+	static final Relation	KK_MIN		= Relation.unary("Int/min");
 
 	/** The constant unary relation representing the Int atom "0". */
-	static final Relation						KK_ZERO		= Relation.unary("Int/zero");
+	static final Relation	KK_ZERO		= Relation.unary("Int/zero");
 
 	/** The constant unary relation representing the largest Int atom. */
-	static final Relation						KK_MAX		= Relation.unary("Int/max");
+	static final Relation	KK_MAX		= Relation.unary("Int/max");
 
 	/**
 	 * The constant binary relation representing the "next" relation from each
 	 * Int atom to its successor.
 	 */
-	static final Relation						KK_NEXT		= Relation.binary("Int/next");
+	static final Relation	KK_NEXT		= Relation.binary("Int/next");
 
 	/**
 	 * The constant unary relation representing the set of all seq/Int atoms.
 	 */
-	static final Relation						KK_SEQIDX	= Relation.unary("seq/Int");
+	static final Relation	KK_SEQIDX	= Relation.unary("seq/Int");
 
 	/** The constant unary relation representing the set of all String atoms. */
-	static final Relation						KK_STRING	= Relation.unary("String");
+	static final Relation	KK_STRING	= Relation.unary("String");
 
 	// ====== immutable fields
 	// ===========================================================================//
 
 	/** The original Alloy options that generated this solution. */
-	private final A4Options						originalOptions;
+	private final A4Options			originalOptions;
 
 	/**
 	 * The original Alloy command that generated this solution; can be "" if
 	 * unknown.
 	 */
-	private final String						originalCommand;
+	private final String			originalCommand;
 
 	/** The bitwidth; always between 1 and 30. */
-	private final int							bitwidth;
+	private final int				bitwidth;
 
 	/**
 	 * The maximum allowed sequence length; always between 0 and
 	 * 2^(bitwidth-1)-1.
 	 */
-	private final int							maxseq;
+	private final int				maxseq;
 
 	/** The maximum allowed number of loop unrolling and recursion level. */
-	private final int							unrolls;
+	private final int				unrolls;
 
 	/** The list of all atoms. */
-	private final ConstList<String>				kAtoms;
+	private final ConstList<String>	kAtoms;
 
 	/** The Kodkod TupleFactory object. */
-	private final TupleFactory					factory;
+	private final TupleFactory		factory;
 
 	/** The set of all Int atoms; immutable. */
-	private final TupleSet						sigintBounds;
+	private final TupleSet			sigintBounds;
 
 	/** The set of all seq/Int atoms; immutable. */
-	private final TupleSet						seqidxBounds;
+	private final TupleSet			seqidxBounds;
 
 	/** The set of all String atoms; immutable. */
-	private final TupleSet						stringBounds;
+	private final TupleSet			stringBounds;
 
 	/** The Kodkod Solver object. */
-	private final Solver						solver;
+	private final Solver			solver;
 
 	// ====== mutable fields (immutable after solve() has been called)
 	// ===================================//
@@ -204,13 +208,13 @@ public final class A4Solution {
 	 * If solved==true and is satisfiable, then this maps each Kodkod atom to a
 	 * short name.
 	 */
-	private Map<Object,String>					atom2name	= new LinkedHashMap<Object,String>();
+	private Map<Object, String>					atom2name	= new LinkedHashMap<Object, String>();
 
 	/**
 	 * If solved==true and is satisfiable, then this maps each Kodkod atom to
 	 * its most specific sig.
 	 */
-	private Map<Object,PrimSig>					atom2sig	= new LinkedHashMap<Object,PrimSig>();
+	private Map<Object, PrimSig>				atom2sig	= new LinkedHashMap<Object, PrimSig>();
 
 	/**
 	 * If solved==true and is satisfiable, then this is the Kodkod evaluator.
@@ -224,27 +228,27 @@ public final class A4Solution {
 	 * The map from each Sig/Field/Skolem/Atom to its corresponding Kodkod
 	 * expression.
 	 */
-	private Map<Expr,Expression>				a2k;
+	private Map<Expr, Expression>				a2k;
 
 	/**
 	 * The map from each String literal to its corresponding Kodkod expression.
 	 */
-	private final ConstMap<String,Expression>	s2k;
+	private final ConstMap<String, Expression>	s2k;
 
 	/**
 	 * The map from each kodkod Formula to Alloy Expr or Alloy Pos (can be empty
 	 * if unknown)
 	 */
-	private Map<Formula,Object>					k2pos;
+	private Map<Formula, Object>				k2pos;
 
 	/**
 	 * The map from each Kodkod Relation to Alloy Type (can be empty or
 	 * incomplete if unknown)
 	 */
-	private Map<Relation,Type>					rel2type;
+	private Map<Relation, Type>					rel2type;
 
 	/** The map from each Kodkod Variable to an Alloy Type and Alloy Pos. */
-	private Map<Variable,Pair<Type,Pos>>		decl2type;
+	private Map<Variable, Pair<Type, Pos>>		decl2type;
 
 	// ===================================================================================================//
 
@@ -252,19 +256,25 @@ public final class A4Solution {
 	 * Construct a blank A4Solution containing just UNIV, SIGINT, SEQIDX,
 	 * STRING, and NONE as its only known sigs.
 	 * 
-	 * @param originalCommand - the original Alloy command that generated this
-	 *            solution; can be "" if unknown
-	 * @param bitwidth - the bitwidth; must be between 1 and 30
-	 * @param maxseq - the maximum allowed sequence length; must be between 0
-	 *            and (2^(bitwidth-1))-1
-	 * @param atoms - the set of atoms
-	 * @param rep - the reporter that will receive diagnostic and progress
+	 * @param originalCommand
+	 *            - the original Alloy command that generated this solution; can
+	 *            be "" if unknown
+	 * @param bitwidth
+	 *            - the bitwidth; must be between 1 and 30
+	 * @param maxseq
+	 *            - the maximum allowed sequence length; must be between 0 and
+	 *            (2^(bitwidth-1))-1
+	 * @param atoms
+	 *            - the set of atoms
+	 * @param rep
+	 *            - the reporter that will receive diagnostic and progress
 	 *            messages
-	 * @param opt - the Alloy options that will affect the solution and the
+	 * @param opt
+	 *            - the Alloy options that will affect the solution and the
 	 *            solver
-	 * @param expected - whether the user expected an instance or not (1 means
-	 *            yes, 0 means no, -1 means the user did not express an
-	 *            expectation)
+	 * @param expected
+	 *            - whether the user expected an instance or not (1 means yes, 0
+	 *            means no, -1 means the user did not express an expectation)
 	 */
 	A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms,
 			final A4Reporter rep, A4Options opt, int expected) throws Err {
@@ -274,9 +284,9 @@ public final class A4Solution {
 		this.a2k = Util.asMap(new Expr[] {
 				UNIV, SIGINT, SEQIDX, STRING, NONE
 		}, Relation.INTS.union(KK_STRING), Relation.INTS, KK_SEQIDX, KK_STRING, Relation.NONE);
-		this.k2pos = new LinkedHashMap<Formula,Object>();
-		this.rel2type = new LinkedHashMap<Relation,Type>();
-		this.decl2type = new LinkedHashMap<Variable,Pair<Type,Pos>>();
+		this.k2pos = new LinkedHashMap<Formula, Object>();
+		this.rel2type = new LinkedHashMap<Relation, Type>();
+		this.decl2type = new LinkedHashMap<Variable, Pair<Type, Pos>>();
 		this.originalOptions = opt;
 		this.originalCommand = (originalCommand == null ? "" : originalCommand);
 		this.bitwidth = bitwidth;
@@ -324,7 +334,7 @@ public final class A4Solution {
 		this.seqidxBounds = seqidxBounds.unmodifiableView();
 		bounds.boundExactly(KK_NEXT, next);
 		bounds.boundExactly(KK_SEQIDX, this.seqidxBounds);
-		Map<String,Expression> s2k = new HashMap<String,Expression>();
+		Map<String, Expression> s2k = new HashMap<String, Expression>();
 		for (String e : stringAtoms) {
 			Relation r = Relation.unary("");
 			Tuple t = factory.tuple(e);
@@ -426,8 +436,8 @@ public final class A4Solution {
 		decl2type = old.decl2type;
 		if (inst != null) {
 			eval = new Evaluator(inst, old.solver.options());
-			a2k = new LinkedHashMap<Expr,Expression>();
-			for (Map.Entry<Expr,Expression> e : old.a2k.entrySet())
+			a2k = new LinkedHashMap<Expr, Expression>();
+			for (Map.Entry<Expr, Expression> e : old.a2k.entrySet())
 				if (e.getKey() instanceof Sig || e.getKey() instanceof Field)
 					a2k.put(e.getKey(), e.getValue());
 			UniqueNameGenerator un = new UniqueNameGenerator();
@@ -546,10 +556,13 @@ public final class A4Solution {
 	 * Add a new relation with the given label and the given lower and upper
 	 * bound.
 	 * 
-	 * @param label - the label for the new relation; need not be unique
-	 * @param lower - the lowerbound; can be null if you want it to be the empty
+	 * @param label
+	 *            - the label for the new relation; need not be unique
+	 * @param lower
+	 *            - the lowerbound; can be null if you want it to be the empty
 	 *            set
-	 * @param upper - the upperbound; cannot be null; must contain everything in
+	 * @param upper
+	 *            - the upperbound; cannot be null; must contain everything in
 	 *            lowerbound
 	 */
 	Relation addRel(String label, TupleSet lower, TupleSet upper) throws ErrorFatal {
@@ -633,7 +646,7 @@ public final class A4Solution {
 	 * Returns an unmodifiable copy of the map from each Sig/Field/Skolem/Atom
 	 * to its corresponding Kodkod expression.
 	 */
-	ConstMap<Expr,Expression> a2k() {
+	ConstMap<Expr, Expression> a2k() {
 		return ConstMap.make(a2k);
 	}
 
@@ -641,7 +654,7 @@ public final class A4Solution {
 	 * Returns an unmodifiable copy of the map from each String literal to its
 	 * corresponding Kodkod expression.
 	 */
-	ConstMap<String,Expression> s2k() {
+	ConstMap<String, Expression> s2k() {
 		return s2k;
 	}
 
@@ -702,13 +715,16 @@ public final class A4Solution {
 		if (expr instanceof ExprBinary) {
 			Expr a = ((ExprBinary) expr).left, b = ((ExprBinary) expr).right;
 			switch (((ExprBinary) expr).op) {
-				case ARROW :
-					return a2k(a).product(a2k(b));
-				case PLUS :
-					return a2k(a).union(a2k(b));
-				case MINUS :
-					return a2k(a).difference(a2k(b));
-				// TODO: IPLUS, IMINUS???
+			case ARROW:
+				return a2k(a).product(a2k(b));
+			case PLUS:
+				return a2k(a).union(a2k(b));
+			case MINUS:
+				return a2k(a).difference(a2k(b));
+			// TODO: IPLUS, IMINUS???
+			default:
+				// TODO log?
+				break;
 			}
 		}
 		return null; // Current only UNION, PRODUCT, and DIFFERENCE of Sigs and
@@ -828,7 +844,7 @@ public final class A4Solution {
 	}
 
 	/** Caches eval(Sig) and eval(Field) results. */
-	private Map<Expr,A4TupleSet> evalCache = new LinkedHashMap<Expr,A4TupleSet>();
+	private Map<Expr, A4TupleSet> evalCache = new LinkedHashMap<Expr, A4TupleSet>();
 
 	/**
 	 * Return the A4TupleSet for the given sig (if solution not yet solved, or
@@ -986,18 +1002,18 @@ public final class A4Solution {
 	// ===================================================================================================//
 
 	/** Caches a constant pair of Type.EMPTY and Pos.UNKNOWN */
-	private Pair<Type,Pos> cachedPAIR = null;
+	private Pair<Type, Pos> cachedPAIR = null;
 
 	/**
 	 * Maps a Kodkod variable to an Alloy Type and Alloy Pos (if no association
 	 * exists, it will return (Type.EMPTY , Pos.UNKNOWN)
 	 */
-	Pair<Type,Pos> kv2typepos(Variable var) {
-		Pair<Type,Pos> ans = decl2type.get(var);
+	Pair<Type, Pos> kv2typepos(Variable var) {
+		Pair<Type, Pos> ans = decl2type.get(var);
 		if (ans != null)
 			return ans;
 		if (cachedPAIR == null)
-			cachedPAIR = new Pair<Type,Pos>(Type.EMPTY, Pos.UNKNOWN);
+			cachedPAIR = new Pair<Type, Pos>(Type.EMPTY, Pos.UNKNOWN);
 		return cachedPAIR;
 	}
 
@@ -1013,7 +1029,7 @@ public final class A4Solution {
 		if (pos == null)
 			pos = Pos.UNKNOWN;
 		if (!decl2type.containsKey(var))
-			decl2type.put(var, new Pair<Type,Pos>(type, pos));
+			decl2type.put(var, new Pair<Type, Pos>(type, pos));
 	}
 
 	// ===================================================================================================//
@@ -1151,14 +1167,14 @@ public final class A4Solution {
 	 * specific sig; (external caller should call this method with s==null and
 	 * nexts==null)
 	 */
-	private static void rename(A4Solution frame, PrimSig s, Map<Sig,List<Tuple>> nexts, UniqueNameGenerator un)
+	private static void rename(A4Solution frame, PrimSig s, Map<Sig, List<Tuple>> nexts, UniqueNameGenerator un)
 			throws Err {
 		if (s == null) {
 			for (ExprVar sk : frame.skolems)
 				un.seen(sk.label);
 			// Store up the skolems
 			List<Object> skolems = new ArrayList<Object>();
-			for (Map.Entry<Relation,Type> e : frame.rel2type.entrySet()) {
+			for (Map.Entry<Relation, Type> e : frame.rel2type.entrySet()) {
 				Relation r = e.getKey();
 				if (!frame.eval.instance().contains(r))
 					continue;
@@ -1175,7 +1191,7 @@ public final class A4Solution {
 				skolems.add(r);
 			}
 			// Find all suitable "next" or "prev" relations
-			nexts = new LinkedHashMap<Sig,List<Tuple>>();
+			nexts = new LinkedHashMap<Sig, List<Tuple>>();
 			for (Sig sig : frame.sigs)
 				for (Field f : sig.getFields())
 					if (f.label.compareToIgnoreCase("next") == 0) {
@@ -1350,7 +1366,8 @@ public final class A4Solution {
 						t = pp.product(t);
 					}
 					kr2type(skolem, t);
-				} catch (Throwable ex) {} // Exception here is not fatal
+				} catch (Throwable ex) {
+				} // Exception here is not fatal
 			}
 
 			@Override
@@ -1367,7 +1384,7 @@ public final class A4Solution {
 		if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
 																										// book
 																										// examples
-			A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
+			A4Reporter r = AlloyCore.isDebug() ? rep : null;
 			try {
 				sol = BookExamples.trial(r, this, fgoal, solver, cmd.check);
 			} catch (Throwable ex) {
@@ -1437,11 +1454,13 @@ public final class A4Solution {
 					if (opt.coreMinimization == 0)
 						try {
 							p.minimize(new RCEStrategy(p.log()));
-						} catch (Throwable ex) {}
+						} catch (Throwable ex) {
+						}
 					if (opt.coreMinimization == 1)
 						try {
 							p.minimize(new HybridStrategy(p.log()));
-						} catch (Throwable ex) {}
+						} catch (Throwable ex) {
+						}
 					rep.minimized(cmd, i, p.highLevelCore().size());
 				}
 				for (Iterator<TranslationRecord> it = p.core(); it.hasNext();) {
@@ -1449,7 +1468,7 @@ public final class A4Solution {
 					if (n instanceof Formula)
 						lCore.add((Formula) n);
 				}
-				Map<Formula,Node> map = p.highLevelCore();
+				Map<Formula, Node> map = p.highLevelCore();
 				hCore = new LinkedHashSet<Node>(map.keySet());
 				hCore.addAll(map.values());
 			} catch (Throwable ex) {
@@ -1525,7 +1544,8 @@ public final class A4Solution {
 	 * If this solution is UNSAT, return itself; else return the next solution
 	 * (which could be SAT or UNSAT).
 	 * 
-	 * @throws ErrorAPI if the solver was not an incremental solver
+	 * @throws ErrorAPI
+	 *             if the solver was not an incremental solver
 	 */
 	public A4Solution next() throws Err {
 		if (!solved)
@@ -1574,16 +1594,16 @@ public final class A4Solution {
 	// ===================================================================================================//
 
 	/** The high-level unsat core; null if it is not available. */
-	private LinkedHashSet<Node>		hCore		= null;
+	private LinkedHashSet<Node>			hCore		= null;
 
 	/** This caches the result of highLevelCore(). */
-	private Pair<Set<Pos>,Set<Pos>>	hCoreCache	= null;
+	private Pair<Set<Pos>, Set<Pos>>	hCoreCache	= null;
 
 	/**
 	 * If this solution is unsatisfiable and its unsat core is available, then
 	 * return the core; else return an empty set.
 	 */
-	public Pair<Set<Pos>,Set<Pos>> highLevelCore() {
+	public Pair<Set<Pos>, Set<Pos>> highLevelCore() {
 		if (hCoreCache != null)
 			return hCoreCache;
 		Set<Pos> ans1 = new LinkedHashSet<Pos>(), ans2 = new LinkedHashSet<Pos>();
@@ -1605,7 +1625,7 @@ public final class A4Solution {
 						ans2.add(func.getBody().span());
 				}
 			}
-		return hCoreCache = new Pair<Set<Pos>,Set<Pos>>(Collections.unmodifiableSet(ans1),
+		return hCoreCache = new Pair<Set<Pos>, Set<Pos>>(Collections.unmodifiableSet(ans1),
 				Collections.unmodifiableSet(ans2));
 	}
 
@@ -1622,46 +1642,52 @@ public final class A4Solution {
 	}
 
 	/** Helper method to write out a full XML file. */
-	public void writeXML(String filename, Iterable<Func> macros, Map<String,String> sourceFiles) throws Err {
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(filename, "UTF-8");
+	public void writeXML(String filename, Iterable<Func> macros, Map<String, String> sourceFiles) throws Err {
+		try (PrintWriter out = new PrintWriter(filename, "UTF-8")) {
 			writeXML(out, macros, sourceFiles);
 			if (!Util.close(out))
 				throw new ErrorFatal("Error writing the solution XML file.");
 		} catch (IOException ex) {
-			Util.close(out);
 			throw new ErrorFatal("Error writing the solution XML file.", ex);
 		}
 	}
 
 	/** Helper method to write out a full XML file. */
-	public void writeXML(A4Reporter rep, String filename, Iterable<Func> macros, Map<String,String> sourceFiles)
+	public void writeXML(A4Reporter rep, String filename, Iterable<Func> macros, Map<String, String> sourceFiles)
 			throws Err {
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(filename, "UTF-8");
+		try (PrintWriter out = new PrintWriter(filename, "UTF-8")) {
 			writeXML(rep, out, macros, sourceFiles);
 			if (!Util.close(out))
 				throw new ErrorFatal("Error writing the solution XML file.");
 		} catch (IOException ex) {
-			Util.close(out);
 			throw new ErrorFatal("Error writing the solution XML file.", ex);
 		}
 	}
 
 	/** Helper method to write out a full XML file. */
-	public void writeXML(PrintWriter writer, Iterable<Func> macros, Map<String,String> sourceFiles) throws Err {
+	public void writeXML(PrintWriter writer, Iterable<Func> macros, Map<String, String> sourceFiles) throws Err {
 		A4SolutionWriter.writeInstance(null, this, writer, macros, sourceFiles);
 		if (writer.checkError())
 			throw new ErrorFatal("Error writing the solution XML file.");
 	}
 
 	/** Helper method to write out a full XML file. */
-	public void writeXML(A4Reporter rep, PrintWriter writer, Iterable<Func> macros, Map<String,String> sourceFiles)
+	public void writeXML(A4Reporter rep, PrintWriter writer, Iterable<Func> macros, Map<String, String> sourceFiles)
 			throws Err {
 		A4SolutionWriter.writeInstance(rep, this, writer, macros, sourceFiles);
 		if (writer.checkError())
 			throw new ErrorFatal("Error writing the solution XML file.");
 	}
+
+	public String format() {
+		if (!solved)
+			return "---OUTCOME---\nUnknown.\n";
+		if (eval == null)
+			return "---OUTCOME---\nUnsatisfiable.\n";
+
+		Map<String, Table> table = TableView.toTable(this, eval.instance(), sigs);
+		return String.join("\n",
+				table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
+	}
+
 }

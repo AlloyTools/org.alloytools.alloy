@@ -72,13 +72,11 @@ pred RingLeadRestTrans [self: msg/Node, pre, post: msg/NodeState,
                            self in reads.state.id)
 }
 
-/**
- * we take any messages whose node ids are higher than ours,
- * and we forward them to the right neighbor.  we drop
- * all other messages.  if we get a message with our own
- * id, we're the leader.
- */
 pred RingLeadTransHelper[self: msg/Node, sees, reads, sends, needsToSend: set msg/Msg] {
+   // we take any messages whose node ids are higher than ours,
+   // and we forward them to the right neighbor.  we drop
+   // all other messages.  if we get a message with our own
+   // id, we're the leader.
    reads = sees
 
    all received: reads |

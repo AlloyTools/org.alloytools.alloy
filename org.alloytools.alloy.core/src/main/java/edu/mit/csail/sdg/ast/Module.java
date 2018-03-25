@@ -27,7 +27,7 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 
 /** This interface represents an Alloy module. */
 
-public interface Module {
+public interface Module extends Clause {
 
 	/**
 	 * Returns the text of the "MODULE" line at the top of the file; "unknown"
