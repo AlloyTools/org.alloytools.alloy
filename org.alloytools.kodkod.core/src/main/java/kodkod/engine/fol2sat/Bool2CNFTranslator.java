@@ -70,11 +70,13 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 		final Bool2CNFTranslator translator = new Bool2CNFTranslator(factory.instance()) {
 			final PolarityDetector pdetector = (new PolarityDetector(maxPrimaryVar, maxLiteral)).apply(circuit);
 
-			boolean positive(int label) {
+			@Override
+            boolean positive(int label) {
 				return pdetector.positive(label);
 			}
 
-			boolean negative(int label) {
+			@Override
+            boolean negative(int label) {
 				return pdetector.negative(label);
 			}
 		};
@@ -280,7 +282,8 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 	 *          visited and the clauses are added to the solver connecting the
 	 *          multigate's literal to its input literal, as described above.
 	 */
-	public final int[] visit(MultiGate multigate, Object arg) {
+	@Override
+    public final int[] visit(MultiGate multigate, Object arg) {
 		final int oLit = multigate.label();
 		if (visited.add(oLit)) {
 			final int sgn;
@@ -325,7 +328,8 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 	 *          visited and the clauses are added to the solver connecting the
 	 *          multigate's literal to its input literal, as described above.
 	 */
-	public final int[] visit(ITEGate itegate, Object arg) {
+	@Override
+    public final int[] visit(ITEGate itegate, Object arg) {
 		final int oLit = itegate.label();
 		if (visited.add(oLit)) {
 			final int i = itegate.input(0).accept(this, arg)[0];
@@ -354,7 +358,8 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 	 * 
 	 * @return o: int[] | o.length = 1 && o[0] = - translate(negation.inputs)[0]
 	 */
-	public final int[] visit(NotGate negation, Object arg) {
+	@Override
+    public final int[] visit(NotGate negation, Object arg) {
 		return clause(-negation.input(0).accept(this, arg)[0]);
 	}
 
@@ -363,7 +368,8 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 	 * 
 	 * @return o: int[] | o.length = 1 && o[0] = variable.literal
 	 */
-	public final int[] visit(BooleanVariable variable, Object arg) {
+	@Override
+    public final int[] visit(BooleanVariable variable, Object arg) {
 		return clause(variable.label());
 	}
 
@@ -455,7 +461,8 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 			return (this.polarity[index] = value | polarity) == value;
 		}
 
-		public Object visit(MultiGate multigate, Integer arg) {
+		@Override
+        public Object visit(MultiGate multigate, Integer arg) {
 			if (!visited(multigate, arg)) {
 				for (BooleanFormula input : multigate) {
 					input.accept(this, arg);
@@ -464,7 +471,8 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 			return null;
 		}
 
-		public Object visit(ITEGate ite, Integer arg) {
+		@Override
+        public Object visit(ITEGate ite, Integer arg) {
 			if (!visited(ite, arg)) {
 				// the condition occurs both positively and negative in an ITE
 				// gate
@@ -475,11 +483,13 @@ abstract class Bool2CNFTranslator implements BooleanVisitor<int[],Object> {
 			return null;
 		}
 
-		public Object visit(NotGate negation, Integer arg) {
+		@Override
+        public Object visit(NotGate negation, Integer arg) {
 			return negation.input(0).accept(this, ints[3 - arg]);
 		}
 
-		public Object visit(BooleanVariable variable, Integer arg) {
+		@Override
+        public Object visit(BooleanVariable variable, Integer arg) {
 			return null; // nothing to do
 		}
 

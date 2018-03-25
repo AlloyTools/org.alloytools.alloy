@@ -34,21 +34,24 @@ public interface IntVector extends IntCollection {
 	 * 
 	 * @return this.length
 	 */
-	public int size();
+	@Override
+    public int size();
 
 	/**
 	 * Returns <tt>true</tt> if this vector contains no elements.
 	 *
 	 * @return no this.elements
 	 */
-	public boolean isEmpty();
+	@Override
+    public boolean isEmpty();
 
 	/**
 	 * Returns <tt>true</tt> if this vector contains the specified element.
 	 * 
 	 * @return element in this.elements[int]
 	 */
-	public boolean contains(int element);
+	@Override
+    public boolean contains(int element);
 
 	/**
 	 * Returns the element at the specified position in this vector.
@@ -64,7 +67,8 @@ public interface IntVector extends IntCollection {
 	 *
 	 * @return an iterator over the elements in this vector in proper sequence.
 	 */
-	public IntIterator iterator();
+	@Override
+    public IntIterator iterator();
 
 	/**
 	 * Returns an iterator over the elements in this vector in proper sequence,
@@ -104,7 +108,8 @@ public interface IntVector extends IntCollection {
 	 * @throws UnsupportedOperationException if the <tt>clear</tt> method is not
 	 *             supported by this vector.
 	 */
-	public void clear();
+	@Override
+    public void clear();
 
 	/**
 	 * Returns the index in this vector of the first occurrence of the specified
@@ -135,7 +140,8 @@ public interface IntVector extends IntCollection {
 	 * @throws IllegalArgumentException if some aspect of this element prevents
 	 *             it from being added to this vector.
 	 */
-	public boolean add(int element);
+	@Override
+    public boolean add(int element);
 
 	/**
 	 * Inserts the specified element at the specified position in this vector
@@ -168,7 +174,8 @@ public interface IntVector extends IntCollection {
 	 * @throws IllegalArgumentException if some aspect of an element in the
 	 *             given vector prevents it from being added to this vector.
 	 */
-	public boolean addAll(IntCollection c);
+	@Override
+    public boolean addAll(IntCollection c);
 
 	/**
 	 * Inserts the specified elements at the specified position in this vector
@@ -198,7 +205,8 @@ public interface IntVector extends IntCollection {
 	 * @return this.elements != this.elements'
 	 * @throws UnsupportedOperationException this is an unmodifiable collection
 	 */
-	public abstract boolean remove(int i);
+	@Override
+    public abstract boolean remove(int i);
 
 	/**
 	 * Removes the element at the specified position in this vector (optional
@@ -229,7 +237,8 @@ public interface IntVector extends IntCollection {
 	 * @throws NullPointerException c = null
 	 * @throws UnsupportedOperationException this is an unmodifiable collection
 	 */
-	public abstract boolean removeAll(IntCollection c);
+	@Override
+    public abstract boolean removeAll(IntCollection c);
 
 	/**
 	 * Retains only the elements in this vector that are contained in the
@@ -243,7 +252,8 @@ public interface IntVector extends IntCollection {
 	 * @throws NullPointerException c = null
 	 * @throws UnsupportedOperationException this is an unmodifiable collection
 	 */
-	public abstract boolean retainAll(IntCollection c);
+	@Override
+    public abstract boolean retainAll(IntCollection c);
 
 	/**
 	 * Compares the specified object with this vector for equality. Returns
@@ -253,7 +263,8 @@ public interface IntVector extends IntCollection {
 	 * 
 	 * @return <tt>true</tt> if the specified object is equal to this vector.
 	 */
-	public boolean equals(Object o);
+	@Override
+    public boolean equals(Object o);
 
 	/**
 	 * Returns the hash code value for this vector. The hash code of an int
@@ -265,7 +276,8 @@ public interface IntVector extends IntCollection {
 	 * 
 	 * @return Ints.superFastHash(this.toArray())
 	 */
-	public int hashCode();
+	@Override
+    public int hashCode();
 
 	/**
 	 * Returns an array containing all of the elements in this vector in proper
@@ -274,7 +286,8 @@ public interface IntVector extends IntCollection {
 	 * @return an array containing all of the elements in this vector in proper
 	 *         sequence.
 	 */
-	public int[] toArray();
+	@Override
+    public int[] toArray();
 
 	/**
 	 * Copies the components of this vector into the specified array, provided
@@ -288,5 +301,6 @@ public interface IntVector extends IntCollection {
 	 * @return array.length>=this.length => array' else this.toArray()
 	 * @throws NullPointerException array = null
 	 */
-	public int[] toArray(int[] array);
+	@Override
+    public int[] toArray(int[] array);
 }

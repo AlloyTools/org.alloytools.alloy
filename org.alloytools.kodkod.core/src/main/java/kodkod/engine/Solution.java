@@ -174,7 +174,8 @@ public final class Solution {
 	 * 
 	 * @return a string representation of this Solution.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder b = new StringBuilder();
 		b.append("---OUTCOME---\n");
 		b.append(outcome);

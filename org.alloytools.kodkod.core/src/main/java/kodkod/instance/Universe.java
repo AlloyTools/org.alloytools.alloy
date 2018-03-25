@@ -197,7 +197,8 @@ public final class Universe implements Iterable<Object> {
 	 * @return an iterator over atoms in this universe, according to their order
 	 *         in the universe
 	 */
-	public Iterator<Object> iterator() {
+	@Override
+    public Iterator<Object> iterator() {
 		return Containers.iterate(atoms);
 	}
 
@@ -206,7 +207,8 @@ public final class Universe implements Iterable<Object> {
 	 * 
 	 * @return string representation of this universe.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return Arrays.toString(atoms);
 	}
 

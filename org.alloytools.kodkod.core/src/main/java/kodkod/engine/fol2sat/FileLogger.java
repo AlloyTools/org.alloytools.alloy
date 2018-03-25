@@ -126,14 +126,16 @@ final class FileLogger extends TranslationLogger {
 	private static Map<Formula,Set<Variable>> freeVars(final AnnotatedNode<Formula> annotated) {
 		final Map<Formula,Set<Variable>> freeVarMap = new IdentityHashMap<Formula,Set<Variable>>();
 		final FreeVariableCollector collector = new FreeVariableCollector(annotated.sharedNodes()) {
-			protected Set<Variable> cache(Node node, Set<Variable> freeVars) {
+			@Override
+            protected Set<Variable> cache(Node node, Set<Variable> freeVars) {
 				if (node instanceof Formula) {
 					freeVarMap.put((Formula) node, freeVars);
 				}
 				return super.cache(node, freeVars);
 			}
 
-			public Set<Variable> visit(ConstantFormula constant) {
+			@Override
+            public Set<Variable> visit(ConstantFormula constant) {
 				return cache(constant, Collections.EMPTY_SET);
 			}
 
@@ -201,7 +203,8 @@ final class FileLogger extends TranslationLogger {
 	/**
 	 * @see java.lang.Object#finalize()
 	 */
-	protected final void finalize() {
+	@Override
+    protected final void finalize() {
 		close();
 	}
 
@@ -249,7 +252,8 @@ final class FileLogger extends TranslationLogger {
 		 * 
 		 * @see java.lang.Object#finalize()
 		 */
-		protected final void finalize() {
+		@Override
+        protected final void finalize() {
 			file.delete();
 		}
 
@@ -258,7 +262,8 @@ final class FileLogger extends TranslationLogger {
 		 * 
 		 * @see kodkod.engine.fol2sat.TranslationLog#roots()
 		 */
-		public Set<Formula> roots() {
+		@Override
+        public Set<Formula> roots() {
 			return roots;
 		}
 
@@ -267,7 +272,8 @@ final class FileLogger extends TranslationLogger {
 		 * 
 		 * @see kodkod.engine.fol2sat.TranslationLog#bounds()
 		 */
-		public Bounds bounds() {
+		@Override
+        public Bounds bounds() {
 			return bounds;
 		}
 
@@ -276,7 +282,8 @@ final class FileLogger extends TranslationLogger {
 		 * 
 		 * @see kodkod.engine.fol2sat.TranslationLog#replay(kodkod.engine.fol2sat.RecordFilter)
 		 */
-		public Iterator<TranslationRecord> replay(final RecordFilter filter) {
+		@Override
+        public Iterator<TranslationRecord> replay(final RecordFilter filter) {
 			try {
 				return new Iterator<TranslationRecord>() {
 					final TupleFactory		factory		= bounds.universe().factory();
@@ -285,7 +292,8 @@ final class FileLogger extends TranslationLogger {
 					final MutableRecord		current		= new MutableRecord(), next = new MutableRecord();
 					long					remaining	= file.length();
 
-					public boolean hasNext() {
+					@Override
+                    public boolean hasNext() {
 						while (remaining > 0 && next.node == null) {
 							try {
 								final long indexLiteral = in.readLong();
@@ -322,17 +330,20 @@ final class FileLogger extends TranslationLogger {
 						}
 					}
 
-					public TranslationRecord next() {
+					@Override
+                    public TranslationRecord next() {
 						if (!hasNext())
 							throw new NoSuchElementException();
 						return current.setAll(next);
 					}
 
-					public void remove() {
+					@Override
+                    public void remove() {
 						throw new UnsupportedOperationException();
 					}
 
-					protected final void finalize() {
+					@Override
+                    protected final void finalize() {
 						try {
 							in.close();
 						} catch (IOException e) { /* unused */ }
@@ -355,15 +366,18 @@ final class FileLogger extends TranslationLogger {
 		int						literal		= 0;
 		Map<Variable,TupleSet>	env			= null;
 
-		public Map<Variable,TupleSet> env() {
+		@Override
+        public Map<Variable,TupleSet> env() {
 			return env;
 		}
 
-		public int literal() {
+		@Override
+        public int literal() {
 			return literal;
 		}
 
-		public Node node() {
+		@Override
+        public Node node() {
 			return node;
 		}
 
@@ -380,7 +394,8 @@ final class FileLogger extends TranslationLogger {
 			return this;
 		}
 
-		public Formula translated() {
+		@Override
+        public Formula translated() {
 			return translated;
 		}
 	}

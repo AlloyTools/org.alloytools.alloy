@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Listener;
@@ -145,14 +146,16 @@ public abstract class Browsable {
 			}
 		};
 		tree.setBorder(new EmptyBorder(3, 3, 3, 3));
-		final JScrollPane scr = new JScrollPane(tree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		final JScrollPane scr = new JScrollPane(tree, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scr.addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent e) {
+			@Override
+            public void focusGained(FocusEvent e) {
 				tree.requestFocusInWindow();
 			}
 
-			public void focusLost(FocusEvent e) {}
+			@Override
+            public void focusLost(FocusEvent e) {}
 		});
 		final JFrame x = new JFrame("Parse Tree");
 		x.setLayout(new BorderLayout());

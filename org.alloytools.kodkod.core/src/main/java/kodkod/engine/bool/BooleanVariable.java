@@ -75,7 +75,8 @@ public final class BooleanVariable extends BooleanFormula {
 	 * 
 	 * @return a string representation of this variable.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return Integer.toString(label);
 	}
 
@@ -136,7 +137,8 @@ public final class BooleanVariable extends BooleanFormula {
 	 * 
 	 * @return a hashcode for this variable.
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return hashcode;
 	}
 }

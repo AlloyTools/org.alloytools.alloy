@@ -337,7 +337,8 @@ public final class ExprQt extends Expr {
 	// =============================================================================================================//
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		int max = sub.getDepth();
 		for (Decl d : decls)
 			for (ExprHasName x : d.names) {

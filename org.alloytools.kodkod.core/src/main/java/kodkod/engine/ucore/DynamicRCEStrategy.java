@@ -128,7 +128,8 @@ public final class DynamicRCEStrategy implements ReductionStrategy {
 	 * 
 	 * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
 	 */
-	public IntSet next(ResolutionTrace trace) {
+	@Override
+    public IntSet next(ResolutionTrace trace) {
 		if (hits.isEmpty())
 			return Ints.EMPTY_SET; // tried everything
 		final IntSet relevantVars = StrategyUtils.coreTailUnits(trace);

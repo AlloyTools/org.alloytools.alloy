@@ -423,7 +423,8 @@ public final class IdentityHashSet<T> extends AbstractSet<T> {
 	 * @return <tt>true</tt> if the specified object is equal to this set.
 	 * @see Object#equals(Object)
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this) {
 			return true;
 		} else if (o instanceof IdentityHashSet) {
@@ -461,7 +462,8 @@ public final class IdentityHashSet<T> extends AbstractSet<T> {
 	 * @see Object#equals(Object)
 	 * @see #equals(Object)
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		int result = 0;
 		for (Object o : table) {
 			if (o != null) {
@@ -487,7 +489,8 @@ public final class IdentityHashSet<T> extends AbstractSet<T> {
 																			// or
 																			// copy
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			for (int i = index; i < traversalTable.length; i++) {
 				if (traversalTable[i] != null) {
 					index = i;
@@ -498,7 +501,8 @@ public final class IdentityHashSet<T> extends AbstractSet<T> {
 			return false;
 		}
 
-		@SuppressWarnings("unchecked")
+		@Override
+        @SuppressWarnings("unchecked")
 		public T next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
@@ -507,7 +511,8 @@ public final class IdentityHashSet<T> extends AbstractSet<T> {
 			return (T) unmaskNull(traversalTable[lastReturnedIndex]);
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (lastReturnedIndex == -1)
 				throw new IllegalStateException();
 

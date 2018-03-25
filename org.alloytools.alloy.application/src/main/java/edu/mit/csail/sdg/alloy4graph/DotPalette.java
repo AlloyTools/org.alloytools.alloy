@@ -16,55 +16,59 @@
 package edu.mit.csail.sdg.alloy4graph;
 
 /**
- * Immutable; this defines the set of possible color palettes.
+ * Immutable; this defines the set of possible color
+ * palettes.
  * <p>
- * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ * <b>Thread Safety:</b> Can be called only by the AWT event
+ * thread.
  */
 
 public enum DotPalette {
 
-	// Note: if you change the order, you must also change the ordering of the
-	// colors in DotColor class.
-	/** Classic palette. */
-	CLASSIC("Classic"),
-	/** Standard palette. */
-	STANDARD("Standard"),
-	/** Martha palette. */
-	MARTHA("Martha"),
-	/** Neon palette. */
-	NEON("Neon");
+                        // Note: if you change the order, you must also change the ordering of the
+                        // colors in DotColor class.
+                        /** Classic palette. */
+                        CLASSIC("Classic"),
+                        /** Standard palette. */
+                        STANDARD("Standard"),
+                        /** Martha palette. */
+                        MARTHA("Martha"),
+                        /** Neon palette. */
+                        NEON("Neon");
 
-	/** The text to display. */
-	private final String displayText;
+    /** The text to display. */
+    private final String displayText;
 
-	/** Constructs a DotPalette object with the given label. */
-	private DotPalette(String displayText) {
-		this.displayText = displayText;
-	}
+    /** Constructs a DotPalette object with the given label. */
+    private DotPalette(String displayText) {
+        this.displayText = displayText;
+    }
 
-	/**
-	 * This method is used in parsing the XML value into a valid DotPalette;
-	 * returns null if there is no match.
-	 */
-	public static DotPalette parse(String x) {
-		if (x != null)
-			for (DotPalette d : values())
-				if (d.toString().equals(x))
-					return d;
-		return null;
-	}
+    /**
+     * This method is used in parsing the XML value into a valid
+     * DotPalette;
+     * returns null if there is no match.
+     */
+    public static DotPalette parse(String x) {
+        if (x != null)
+            for (DotPalette d : values())
+                if (d.toString().equals(x))
+                    return d;
+        return null;
+    }
 
-	/**
-	 * Returns the String that will be displayed in the GUI to represent this
-	 * value.
-	 */
-	public String getDisplayedText() {
-		return displayText;
-	}
+    /**
+     * Returns the String that will be displayed in the GUI to
+     * represent this
+     * value.
+     */
+    public String getDisplayedText() {
+        return displayText;
+    }
 
-	/** This value is used in writing XML. */
-	@Override
-	public String toString() {
-		return displayText;
-	}
+    /** This value is used in writing XML. */
+    @Override
+    public String toString() {
+        return displayText;
+    }
 }

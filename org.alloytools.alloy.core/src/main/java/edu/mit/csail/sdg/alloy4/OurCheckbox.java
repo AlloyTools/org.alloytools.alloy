@@ -72,7 +72,8 @@ public abstract class OurCheckbox extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		jbox = new JCheckBox(icon);
 		jbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				Icon icon = do_action();
 				if (icon != jbox.getIcon())
 					jbox.setIcon(icon);

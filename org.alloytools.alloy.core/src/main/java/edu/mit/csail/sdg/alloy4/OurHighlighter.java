@@ -40,7 +40,8 @@ public final class OurHighlighter implements Highlighter.HighlightPainter {
 	}
 
 	/** This method is called by Swing to draw highlights. */
-	public void paint(Graphics gr, int start, int end, Shape shape, JTextComponent text) {
+	@Override
+    public void paint(Graphics gr, int start, int end, Shape shape, JTextComponent text) {
 		Color old = gr.getColor();
 		gr.setColor(color);
 		try {

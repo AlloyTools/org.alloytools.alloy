@@ -122,7 +122,8 @@ public final class Containers {
 	public static final Comparator<Object> identityComparator() {
 		if (identityComparator == null) {
 			identityComparator = new Comparator<Object>() {
-				public int compare(Object o1, Object o2) {
+				@Override
+                public int compare(Object o1, Object o2) {
 					final int c1 = System.identityHashCode(o1);
 					final int c2 = System.identityHashCode(o2);
 					return c1 == c2 ? 0 : (c1 < c2 ? -1 : 1);
@@ -161,7 +162,8 @@ public final class Containers {
 	public static final Comparator<Object> hashComparator() {
 		if (hashComparator == null) {
 			hashComparator = new Comparator<Object>() {
-				public int compare(Object o1, Object o2) {
+				@Override
+                public int compare(Object o1, Object o2) {
 					final int c1 = hash(o1);
 					final int c2 = hash(o2);
 					return c1 == c2 ? 0 : (c1 < c2 ? -1 : 1);
@@ -314,19 +316,23 @@ public final class Containers {
 	 */
 	public static final <T> Set<T> asIdentitySet(final T[] array) {
 		return new AbstractSet<T>() {
-			public boolean contains(Object o) {
+			@Override
+            public boolean contains(Object o) {
 				return identityBinarySearch(array, o) >= 0;
 			}
 
-			public Iterator<T> iterator() {
+			@Override
+            public Iterator<T> iterator() {
 				return iterate(array);
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return array.length;
 			}
 
-			public int hashCode() {
+			@Override
+            public int hashCode() {
 				int result = 0;
 				for (Object o : array) {
 					result += System.identityHashCode(o);
@@ -349,15 +355,18 @@ public final class Containers {
 	 */
 	public static final <T> Set<T> asHashSet(final T[] array) {
 		return new AbstractSet<T>() {
-			public boolean contains(Object o) {
+			@Override
+            public boolean contains(Object o) {
 				return hashBinarySearch(array, o) >= 0;
 			}
 
-			public Iterator<T> iterator() {
+			@Override
+            public Iterator<T> iterator() {
 				return iterate(array);
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return array.length;
 			}
 		};
@@ -400,7 +409,8 @@ public final class Containers {
 			this.end = end;
 		}
 
-		public final void remove() {
+		@Override
+        public final void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -423,11 +433,13 @@ public final class Containers {
 			}
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return cursor >= 0 && cursor < end;
 		}
 
-		public T next() {
+		@Override
+        public T next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return items[cursor++];
@@ -451,11 +463,13 @@ public final class Containers {
 			}
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return cursor > end;
 		}
 
-		public T next() {
+		@Override
+        public T next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return items[cursor--];

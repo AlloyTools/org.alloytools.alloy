@@ -146,7 +146,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * 
 	 * @return {s: IntSet | s.ints = this.entries.V}
 	 */
-	public IntSet indices() {
+	@Override
+    public IntSet indices() {
 		return indices;
 	}
 
@@ -169,7 +170,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 *         this.ceil(to).
 	 * @see kodkod.util.ints.AbstractSparseSequence#iterator(int, int)
 	 */
-	public Iterator<IndexedEntry<V>> iterator(int from, int to) {
+	@Override
+    public Iterator<IndexedEntry<V>> iterator(int from, int to) {
 		return new HomogenousIterator<V>(indices.iterator(from, to), value);
 	}
 
@@ -179,7 +181,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @return #this.entries
 	 * @see kodkod.util.ints.SparseSequence#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return indices.size();
 	}
 
@@ -189,7 +192,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @ensures no this.entries'
 	 * @see kodkod.util.ints.SparseSequence#clear()
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		indices.clear();
 	}
 
@@ -204,7 +208,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @throws IllegalArgumentException this.value != value
 	 * @see kodkod.util.ints.SparseSequence#put(int, Object)
 	 */
-	public V put(int index, V value) {
+	@Override
+    public V put(int index, V value) {
 		if (!equal(this.value, value))
 			throw new IllegalArgumentException();
 		return indices.add(index) ? null : value;
@@ -217,7 +222,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @return this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#get(int)
 	 */
-	public V get(int index) {
+	@Override
+    public V get(int index) {
 		return indices.contains(index) ? value : null;
 	}
 
@@ -230,7 +236,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @return this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#remove(int)
 	 */
-	public V remove(int index) {
+	@Override
+    public V remove(int index) {
 		return indices.remove(index) ? value : null;
 	}
 
@@ -241,7 +248,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @return some this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#containsIndex(int)
 	 */
-	public boolean containsIndex(int index) {
+	@Override
+    public boolean containsIndex(int index) {
 		return indices.contains(index);
 	}
 
@@ -252,7 +260,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @return some this.indices && this.value = value
 	 * @see kodkod.util.ints.SparseSequence#contains(java.lang.Object)
 	 */
-	public boolean contains(Object value) {
+	@Override
+    public boolean contains(Object value) {
 		return !indices.isEmpty() && equal(this.value, value);
 	}
 
@@ -264,7 +273,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 *         this.entries[e.index] }
 	 * @see kodkod.util.ints.SparseSequence#first()
 	 */
-	public IndexedEntry<V> first() {
+	@Override
+    public IndexedEntry<V> first() {
 		return indices.isEmpty() ? null : view.setIndexView(indices.min());
 	}
 
@@ -276,7 +286,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 *         this.entries[e.index] }
 	 * @see kodkod.util.ints.SparseSequence#last()
 	 */
-	public IndexedEntry<V> last() {
+	@Override
+    public IndexedEntry<V> last() {
 		return indices.isEmpty() ? null : view.setIndexView(indices.max());
 	}
 
@@ -288,7 +299,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 *         && e.value = this.entries[index] }, successor(index)
 	 * @see kodkod.util.ints.SparseSequence#ceil(int)
 	 */
-	public IndexedEntry<V> ceil(int index) {
+	@Override
+    public IndexedEntry<V> ceil(int index) {
 		if (indices.isEmpty() || index > indices.max())
 			return null;
 		else
@@ -303,7 +315,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 *         && e.value = this.entries[index] }, predecessor(index)
 	 * @see kodkod.util.ints.SparseSequence#floor(int)
 	 */
-	public IndexedEntry<V> floor(int index) {
+	@Override
+    public IndexedEntry<V> floor(int index) {
 		if (indices.isEmpty() || index < indices.min())
 			return null;
 		else
@@ -317,7 +330,8 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 	 * @return a copy of this sparse sequence.
 	 * @see kodkod.util.ints.SparseSequence#clone()
 	 */
-	public HomogenousSequence<V> clone() {
+	@Override
+    public HomogenousSequence<V> clone() {
 		// ok to clone a final class using a copy constructor
 		return new HomogenousSequence<V>(this);
 	}
@@ -338,15 +352,18 @@ public final class HomogenousSequence<V> extends AbstractSparseSequence<V> {
 			this.iter = iter;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return iter.hasNext();
 		}
 
-		public IndexedEntry<V> next() {
+		@Override
+        public IndexedEntry<V> next() {
 			return setIndexView(iter.next());
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			iter.remove();
 		}
 

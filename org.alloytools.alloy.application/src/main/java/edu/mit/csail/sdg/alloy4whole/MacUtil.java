@@ -83,7 +83,8 @@ public final class MacUtil {
 			public void handleOpenFile(ApplicationEvent arg) {
 				final String filename = arg.getFilename();
 				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
+					@Override
+                    public void run() {
 						open.run(filename);
 					}
 				});

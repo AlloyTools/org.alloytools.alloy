@@ -93,7 +93,8 @@ public final class BooleanAccumulator extends BooleanValue implements Iterable<B
 	 * 
 	 * @return this.op
 	 */
-	public Operator.Nary op() {
+	@Override
+    public Operator.Nary op() {
 		return op;
 	}
 
@@ -123,7 +124,7 @@ public final class BooleanAccumulator extends BooleanValue implements Iterable<B
 				return op.shortCircuit();
 			}
 			if (v != op.identity() && !inputs.containsIndex(lit)) {
-				inputs.put(lit, (BooleanValue) v);
+				inputs.put(lit, v);
 			}
 			// if (v==op.shortCircuit()) {
 			// inputs.clear();
@@ -181,19 +182,23 @@ public final class BooleanAccumulator extends BooleanValue implements Iterable<B
 	 * @return an iterator over this.components, in the increasing order of
 	 *         labels.
 	 */
-	public Iterator<BooleanValue> iterator() {
+	@Override
+    public Iterator<BooleanValue> iterator() {
 		return new Iterator<BooleanValue>() {
 			final Iterator<IndexedEntry<BooleanValue>> iter = inputs.iterator();
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return iter.hasNext();
 			}
 
-			public BooleanValue next() {
+			@Override
+            public BooleanValue next() {
 				return iter.next().value();
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 
@@ -221,7 +226,8 @@ public final class BooleanAccumulator extends BooleanValue implements Iterable<B
 		return 0;
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return inputs.toString();
 	}
 }

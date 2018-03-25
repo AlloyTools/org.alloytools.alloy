@@ -78,7 +78,8 @@ public abstract class RelationPredicate extends Formula {
 	 * 
 	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+	@Override
+    public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
@@ -87,7 +88,8 @@ public abstract class RelationPredicate extends Formula {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
-	public void accept(VoidVisitor visitor) {
+	@Override
+    public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
 
@@ -150,7 +152,8 @@ public abstract class RelationPredicate extends Formula {
 		 * 
 		 * @see kodkod.ast.Node#toString()
 		 */
-		public String toString() {
+		@Override
+        public String toString() {
 			return name() + "(" + relation() + ")";
 		}
 	}
@@ -197,7 +200,8 @@ public abstract class RelationPredicate extends Formula {
 		 * 
 		 * @return this.name
 		 */
-		public Name name() {
+		@Override
+        public Name name() {
 			return Name.FUNCTION;
 		}
 
@@ -251,7 +255,8 @@ public abstract class RelationPredicate extends Formula {
 		 * 
 		 * @see kodkod.ast.Node#toString()
 		 */
-		public String toString() {
+		@Override
+        public String toString() {
 			return name() + "(" + relation() + ", " + domain + " ->" + targetMult + " " + range + ")";
 		}
 	}
@@ -295,7 +300,8 @@ public abstract class RelationPredicate extends Formula {
 		 * 
 		 * @return TOTAL_ORDERING
 		 */
-		public Name name() {
+		@Override
+        public Name name() {
 			return Name.TOTAL_ORDERING;
 		}
 
@@ -354,7 +360,8 @@ public abstract class RelationPredicate extends Formula {
 		 * 
 		 * @see kodkod.ast.Node#toString()
 		 */
-		public String toString() {
+		@Override
+        public String toString() {
 			return name() + "(" + relation() + ", " + ordered + ", " + first + ", " + last + ")";
 		}
 

@@ -169,7 +169,8 @@ public class CompParser extends java_cup.runtime.lr_parser {
     "\002\004\003\000\002\004\006\000\002\004\005" });
 
   /** Access to production table. */
-  public short[][] production_table() {return _production_table;}
+  @Override
+public short[][] production_table() {return _production_table;}
 
   /** Parse-action table. */
   protected static final short[][] _action_table = 
@@ -1149,7 +1150,8 @@ public class CompParser extends java_cup.runtime.lr_parser {
     "\001\ufff2\000\002\001\ufff3\000\002\001\000" });
 
   /** Access to parse-action table. */
-  public short[][] action_table() {return _action_table;}
+  @Override
+public short[][] action_table() {return _action_table;}
 
   /** <code>reduce_goto</code> table. */
   protected static final short[][] _reduce_table = 
@@ -2003,19 +2005,22 @@ public class CompParser extends java_cup.runtime.lr_parser {
     "" });
 
   /** Access to <code>reduce_goto</code> table. */
-  public short[][] reduce_table() {return _reduce_table;}
+  @Override
+public short[][] reduce_table() {return _reduce_table;}
 
   /** Instance of action encapsulation class. */
   protected CUP$CompParser$actions action_obj;
 
   /** Action encapsulation object initializer. */
-  protected void init_actions()
+  @Override
+protected void init_actions()
     {
       action_obj = new CUP$CompParser$actions(this);
     }
 
   /** Invoke a user supplied parse action. */
-  public java_cup.runtime.Symbol do_action(
+  @Override
+public java_cup.runtime.Symbol do_action(
     int                        act_num,
     java_cup.runtime.lr_parser parser,
     java.util.Stack            stack,
@@ -2027,15 +2032,19 @@ public class CompParser extends java_cup.runtime.lr_parser {
   }
 
   /** Indicates start state. */
-  public int start_state() {return 0;}
+  @Override
+public int start_state() {return 0;}
   /** Indicates start production. */
-  public int start_production() {return 1;}
+  @Override
+public int start_production() {return 1;}
 
   /** <code>EOF</code> Symbol index. */
-  public int EOF_sym() {return 0;}
+  @Override
+public int EOF_sym() {return 0;}
 
   /** <code>error</code> Symbol index. */
-  public int error_sym() {return 1;}
+  @Override
+public int error_sym() {return 1;}
 
 
 
@@ -2084,7 +2093,8 @@ public class CompParser extends java_cup.runtime.lr_parser {
      return lhs_sym;
   }
 
-  public void syntax_error(Symbol x) throws Err {
+  @Override
+public void syntax_error(Symbol x) throws Err {
     Map<Integer,String> ch = new LinkedHashMap<Integer,String>();
     ch.put(CompSym.ARROW, "->");
     ch.put(CompSym.ANY_ARROW_SOME, "->");
@@ -7807,7 +7817,7 @@ class CUP$CompParser$actions {
               Object RESULT =null;
 		int start_valleft = ((java_cup.runtime.Symbol)CUP$CompParser$stack.elementAt(CUP$CompParser$top-1)).left;
 		int start_valright = ((java_cup.runtime.Symbol)CUP$CompParser$stack.elementAt(CUP$CompParser$top-1)).right;
-		Object start_val = (Object)((java_cup.runtime.Symbol) CUP$CompParser$stack.elementAt(CUP$CompParser$top-1)).value;
+		Object start_val = ((java_cup.runtime.Symbol) CUP$CompParser$stack.elementAt(CUP$CompParser$top-1)).value;
 		RESULT = start_val;
               CUP$CompParser$result = parser.getSymbolFactory().newSymbol("$START",0, ((java_cup.runtime.Symbol)CUP$CompParser$stack.elementAt(CUP$CompParser$top-1)), ((java_cup.runtime.Symbol)CUP$CompParser$stack.peek()), RESULT);
             }

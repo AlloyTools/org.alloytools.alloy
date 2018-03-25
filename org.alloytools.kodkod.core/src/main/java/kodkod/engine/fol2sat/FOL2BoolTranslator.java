@@ -75,13 +75,11 @@ import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Dimensions;
 import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
-import kodkod.engine.config.Options.OverflowPolicy;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 import kodkod.util.nodes.AnnotatedNode;
 import kodkod.util.nodes.Nodes;
-import kodkod.util.nodes.PrettyPrinter;
 
 /**
  * Translates an annotated node to boolean representation.
@@ -136,7 +134,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 			final TranslationLogger logger) {
 		final FOL2BoolCache cache = new FOL2BoolCache(annotated);
 		final FOL2BoolTranslator translator = new FOL2BoolTranslator(cache, interpreter) {
-			BooleanValue cache(Formula formula, BooleanValue translation) {
+			@Override
+            BooleanValue cache(Formula formula, BooleanValue translation) {
 				logger.log(formula, translation, super.env);
 				return super.cache(formula, translation);
 			}
@@ -167,7 +166,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	static final BooleanMatrix approximate(AnnotatedNode<Expression> annotated, LeafInterpreter interpreter,
 			Environment<BooleanMatrix,Expression> env) {
 		final FOL2BoolTranslator approximator = new FOL2BoolTranslator(new FOL2BoolCache(annotated), interpreter, env) {
-			public final BooleanMatrix visit(BinaryExpression binExpr) {
+			@Override
+            public final BooleanMatrix visit(BinaryExpression binExpr) {
 				final BooleanMatrix ret = lookup(binExpr);
 				if (ret != null)
 					return ret;
@@ -181,19 +181,22 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 				}
 			}
 
-			public final BooleanMatrix visit(Comprehension cexpr) {
+			@Override
+            public final BooleanMatrix visit(Comprehension cexpr) {
 				final BooleanMatrix ret = lookup(cexpr);
 				return ret != null ? ret
 						: cache(cexpr, super.visit((Comprehension) Formula.TRUE.comprehension(cexpr.decls())));
 			}
 
-			public BooleanMatrix visit(IfExpression ifExpr) {
+			@Override
+            public BooleanMatrix visit(IfExpression ifExpr) {
 				final BooleanMatrix ret = lookup(ifExpr);
 				return ret != null ? ret
 						: cache(ifExpr, ifExpr.thenExpr().accept(this).or(ifExpr.elseExpr().accept(this)));
 			}
 
-			public BooleanMatrix visit(IntToExprCast castExpr) {
+			@Override
+            public BooleanMatrix visit(IntToExprCast castExpr) {
 				BooleanMatrix ret = lookup(castExpr);
 				if (ret != null)
 					return ret;
@@ -322,7 +325,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(decls) | some t => t, cache(decl,
 	 *         decls.declarations.expression.accept(this))
 	 */
-	public final List<BooleanMatrix> visit(Decls decls) {
+	@Override
+    public final List<BooleanMatrix> visit(Decls decls) {
 		List<BooleanMatrix> ret = lookup(decls);
 		if (ret != null)
 			return ret;
@@ -341,7 +345,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(decl) | some t => t, cache(decl,
 	 *         decl.expression.accept(this))
 	 */
-	public final BooleanMatrix visit(Decl decl) {
+	@Override
+    public final BooleanMatrix visit(Decl decl) {
 		BooleanMatrix matrix = lookup(decl);
 		if (matrix != null)
 			return matrix;
@@ -359,7 +364,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return this.env.lookup(variable)
 	 * @throws UnboundLeafException no this.env.lookup(variable)
 	 */
-	public final BooleanMatrix visit(Variable variable) {
+	@Override
+    public final BooleanMatrix visit(Variable variable) {
 		final BooleanMatrix ret = env.lookup(variable);
 		if (ret == null)
 			throw new UnboundLeafException("Unbound variable", variable);
@@ -372,7 +378,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * 
 	 * @return this.interpreter.interpret(relation)
 	 */
-	public final BooleanMatrix visit(Relation relation) {
+	@Override
+    public final BooleanMatrix visit(Relation relation) {
 		BooleanMatrix ret = leafCache.get(relation);
 		if (relation.isSkolem())
 			vars.add(relation.getSkolemVar());
@@ -388,7 +395,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * 
 	 * @return this.interpreter.interpret(constExpr).
 	 */
-	public final BooleanMatrix visit(ConstantExpression constExpr) {
+	@Override
+    public final BooleanMatrix visit(ConstantExpression constExpr) {
 		BooleanMatrix ret = leafCache.get(constExpr);
 		if (ret == null) {
 			ret = interpreter.interpret(constExpr);
@@ -408,7 +416,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         PRODUCT->cross) | cache(binExpr, op(binExpr.left.accept(this),
 	 *         binExpr.right.accept(this)))
 	 */
-	public BooleanMatrix visit(BinaryExpression binExpr) {
+	@Override
+    public BooleanMatrix visit(BinaryExpression binExpr) {
 		BooleanMatrix ret = lookup(binExpr);
 		if (ret != null)
 			return ret;
@@ -453,7 +462,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         + JOIN->dot + PRODUCT->cross) | cache(expr,
 	 *         op(expr.left.accept(this), expr.right.accept(this)))
 	 */
-	public BooleanMatrix visit(NaryExpression expr) {
+	@Override
+    public BooleanMatrix visit(NaryExpression expr) {
 		BooleanMatrix ret = lookup(expr);
 		if (ret != null)
 			return ret;
@@ -495,7 +505,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         REFLEXIVE_CLOSURE->(lambda(m)(m.closure().or(iden))) |
 	 *         cache(unaryExpr, op(unaryExpr.child))
 	 */
-	public final BooleanMatrix visit(UnaryExpression unaryExpr) {
+	@Override
+    public final BooleanMatrix visit(UnaryExpression unaryExpr) {
 		BooleanMatrix ret = lookup(unaryExpr);
 		if (ret != null)
 			return ret;
@@ -571,7 +582,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(cexpr) | some t => t, cache(cexpr,
 	 *         translate(cexpr))
 	 */
-	public BooleanMatrix visit(Comprehension cexpr) {
+	@Override
+    public BooleanMatrix visit(Comprehension cexpr) {
 		BooleanMatrix ret = lookup(cexpr);
 		if (ret != null)
 			return ret;
@@ -591,7 +603,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         ifExpr.condition.accept(this).choice(ifExpr.then.accept(this),
 	 *         ifExpr.else.accept(this)))
 	 */
-	public BooleanMatrix visit(IfExpression ifExpr) {
+	@Override
+    public BooleanMatrix visit(IfExpression ifExpr) {
 		BooleanMatrix ret = lookup(ifExpr);
 		if (ret != null)
 			return ret;
@@ -612,7 +625,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(project) | some t => t, cache(project,
 	 *         project.expression.accept(this).project(translate(project.columns))
 	 */
-	public final BooleanMatrix visit(ProjectExpression project) {
+	@Override
+    public final BooleanMatrix visit(ProjectExpression project) {
 		BooleanMatrix ret = lookup(project);
 		if (ret != null)
 			return ret;
@@ -629,7 +643,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return constant = ConstantFormula.TRUE => BooleanConstant.TRUE,
 	 *         BooleanConstant.FALSE
 	 */
-	public final BooleanValue visit(ConstantFormula constant) {
+	@Override
+    public final BooleanValue visit(ConstantFormula constant) {
 		return cache(constant, BooleanConstant.constant(constant.booleanValue()));
 	}
 
@@ -743,7 +758,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(quantFormula) | some t => t, cache(quantFormula,
 	 *         translate(quantFormula))
 	 */
-	public final BooleanValue visit(QuantifiedFormula quantFormula) {
+	@Override
+    public final BooleanValue visit(QuantifiedFormula quantFormula) {
 		BooleanValue ret = lookup(quantFormula);
 		if (ret != null)
 			return ret;
@@ -780,7 +796,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(formula) | some t => t, cache(formula,
 	 *         formula.op(formula.left.accept(this), formula.right.accept(this))
 	 */
-	public final BooleanValue visit(NaryFormula formula) {
+	@Override
+    public final BooleanValue visit(NaryFormula formula) {
 		final BooleanValue ret = lookup(formula);
 		if (ret != null)
 			return ret;
@@ -818,7 +835,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         binFormula.op(binFormula.left.accept(this),
 	 *         binFormula.right.accept(this))
 	 */
-	public final BooleanValue visit(BinaryFormula binFormula) {
+	@Override
+    public final BooleanValue visit(BinaryFormula binFormula) {
 		BooleanValue ret = lookup(binFormula);
 		if (ret != null)
 			return ret;
@@ -855,7 +873,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(not) | some t => t, cache(not,
 	 *         !not.formula.accept(this))
 	 */
-	public final BooleanValue visit(NotFormula not) {
+	@Override
+    public final BooleanValue visit(NotFormula not) {
 		BooleanValue ret = lookup(not);
 		if (ret != null)
 			return ret;
@@ -875,7 +894,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         op(compFormula.left.accept(this),
 	 *         compFormula.right.accept(this)))
 	 */
-	public final BooleanValue visit(ComparisonFormula compFormula) {
+	@Override
+    public final BooleanValue visit(ComparisonFormula compFormula) {
 		BooleanValue ret = lookup(compFormula);
 		if (ret != null)
 			return ret;
@@ -907,7 +927,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         LONE->lone) | cache(multFormula,
 	 *         op(multFormula.expression.accept(this)))
 	 */
-	public final BooleanValue visit(MultiplicityFormula multFormula) {
+	@Override
+    public final BooleanValue visit(MultiplicityFormula multFormula) {
 		BooleanValue ret = lookup(multFormula);
 		if (ret != null)
 			return ret;
@@ -943,7 +964,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(pred) | some t => t, cache(pred,
 	 *         pred.toConstraints().accept(this))
 	 */
-	public final BooleanValue visit(RelationPredicate pred) {
+	@Override
+    public final BooleanValue visit(RelationPredicate pred) {
 		BooleanValue ret = lookup(pred);
 		return ret != null ? ret : cache(pred, pred.toConstraints().accept(this));
 	}
@@ -956,7 +978,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(castExpr) | some t => t, cache(castExpr,
 	 *         translate(castExpr))
 	 */
-	public BooleanMatrix visit(IntToExprCast castExpr) {
+	@Override
+    public BooleanMatrix visit(IntToExprCast castExpr) {
 		BooleanMatrix ret = lookup(castExpr);
 		if (ret != null)
 			return ret;
@@ -1001,7 +1024,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	/**
 	 * @return this.interpreter.factory.integer(intConst.value)
 	 */
-	public final Int visit(IntConstant intConst) {
+	@Override
+    public final Int visit(IntConstant intConst) {
 		Int ret = interpreter.factory().integer(intConst.value());
 		return ret;
 	}
@@ -1015,7 +1039,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 *         intExpr.condition.accept(this).choice(intExpr.then.accept(this),
 	 *         intExpr.else.accept(this)))
 	 */
-	public final Int visit(IfIntExpression intExpr) {
+	@Override
+    public final Int visit(IfIntExpression intExpr) {
 		Int ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -1063,7 +1088,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(intExpr) | some t => t, cache(intExpr,
 	 *         translate(intExpr))
 	 */
-	public final Int visit(ExprToIntCast intExpr) {
+	@Override
+    public final Int visit(ExprToIntCast intExpr) {
 		Int ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -1094,7 +1120,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(intExpr) | some t => t, cache(intExpr,
 	 *         intExpr.left.accept(this) intExpr.op intExpr.right.accept(this))
 	 */
-	public final Int visit(BinaryIntExpression intExpr) {
+	@Override
+    public final Int visit(BinaryIntExpression intExpr) {
 		Int ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -1148,7 +1175,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(intExpr) | some t => t, cache(intExpr,
 	 *         intExpr.left.accept(this) intExpr.op intExpr.right.accept(this))
 	 */
-	public final Int visit(NaryIntExpression intExpr) {
+	@Override
+    public final Int visit(NaryIntExpression intExpr) {
 		Int ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -1184,7 +1212,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(intExpr) | some t => t, cache(intExpr,
 	 *         intExpr.op(intExpr.expression.accept(this)))
 	 */
-	public final Int visit(UnaryIntExpression intExpr) {
+	@Override
+    public final Int visit(UnaryIntExpression intExpr) {
 		Int ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -1252,7 +1281,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(intExpr) | some t => t, cache(intExpr,
 	 *         translate(intExpr))
 	 */
-	public final Int visit(SumExpression intExpr) {
+	@Override
+    public final Int visit(SumExpression intExpr) {
 		final Int ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -1285,7 +1315,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix,Boolean
 	 * @return let t = lookup(intComp) | some t => t, cache(intComp,
 	 *         intComp.left.accept(this) intComp.op intComp.right.accept(this))
 	 */
-	public final BooleanValue visit(IntComparisonFormula intComp) {
+	@Override
+    public final BooleanValue visit(IntComparisonFormula intComp) {
 		BooleanValue ret = lookup(intComp);
 		if (ret != null)
 			return ret;

@@ -93,7 +93,8 @@ public class Decls extends Node implements Iterable<Decl> {
 	 * 
 	 * @return an unmodifiable iterator over the decls in this Decls object.
 	 */
-	public Iterator<Decl> iterator() {
+	@Override
+    public Iterator<Decl> iterator() {
 		return Containers.iterate(decls);
 	}
 
@@ -115,7 +116,8 @@ public class Decls extends Node implements Iterable<Decl> {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> D accept(ReturnVisitor<E,F,D,I> visitor) {
+	@Override
+    public <E, F, D, I> D accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
@@ -124,7 +126,8 @@ public class Decls extends Node implements Iterable<Decl> {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
-	public void accept(VoidVisitor visitor) {
+	@Override
+    public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
 
@@ -133,7 +136,8 @@ public class Decls extends Node implements Iterable<Decl> {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return Arrays.toString(decls);
 	}
 

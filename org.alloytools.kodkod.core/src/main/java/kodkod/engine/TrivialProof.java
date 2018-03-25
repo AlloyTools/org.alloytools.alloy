@@ -79,13 +79,15 @@ final class TrivialProof extends Proof {
 	 * 
 	 * @see kodkod.engine.Proof#core()
 	 */
-	public final Iterator<TranslationRecord> core() {
+	@Override
+    public final Iterator<TranslationRecord> core() {
 		if (coreFilter == null) {
 			coreFilter = new RecordFilter() {
 				final Set<Node> coreNodes = NodePruner.relevantNodes(log(),
 						coreRoots == null ? log().roots() : coreRoots.keySet());
 
-				public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+				@Override
+                public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 					return coreNodes.contains(translated);
 				}
 			};
@@ -98,7 +100,8 @@ final class TrivialProof extends Proof {
 	 * 
 	 * @see kodkod.engine.Proof#highLevelCore()
 	 */
-	public final Map<Formula,Node> highLevelCore() {
+	@Override
+    public final Map<Formula,Node> highLevelCore() {
 		if (coreRoots == null) {
 			final Iterator<TranslationRecord> itr = core();
 			final Set<Formula> roots = log().roots();
@@ -194,7 +197,8 @@ final class TrivialProof extends Proof {
 			relevant = new IdentityHashSet<Node>();
 
 			final RecordFilter filter = new RecordFilter() {
-				public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+				@Override
+                public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 					return env.isEmpty();
 				}
 			};
@@ -255,43 +259,50 @@ final class TrivialProof extends Proof {
 			return constNodes.get(node) == Boolean.TRUE;
 		}
 
-		public void visit(Decl decl) {
+		@Override
+        public void visit(Decl decl) {
 			if (visited(decl))
 				return;
 			relevant.add(decl);
 		}
 
-		public void visit(QuantifiedFormula quantFormula) {
+		@Override
+        public void visit(QuantifiedFormula quantFormula) {
 			if (visited(quantFormula))
 				return;
 			relevant.add(quantFormula);
 		}
 
-		public void visit(ComparisonFormula compFormula) {
+		@Override
+        public void visit(ComparisonFormula compFormula) {
 			if (visited(compFormula))
 				return;
 			relevant.add(compFormula);
 		}
 
-		public void visit(MultiplicityFormula multFormula) {
+		@Override
+        public void visit(MultiplicityFormula multFormula) {
 			if (visited(multFormula))
 				return;
 			relevant.add(multFormula);
 		}
 
-		public void visit(RelationPredicate pred) {
+		@Override
+        public void visit(RelationPredicate pred) {
 			if (visited(pred))
 				return;
 			relevant.add(pred);
 		}
 
-		public void visit(IntComparisonFormula intComp) {
+		@Override
+        public void visit(IntComparisonFormula intComp) {
 			if (visited(intComp))
 				return;
 			relevant.add(intComp);
 		}
 
-		public void visit(ConstantFormula formula) {
+		@Override
+        public void visit(ConstantFormula formula) {
 			relevant.add(formula);
 		}
 
@@ -299,7 +310,8 @@ final class TrivialProof extends Proof {
 		 * If the argument node has been been visited, adds it to this.relevant
 		 * and visits its child.
 		 */
-		public void visit(NotFormula not) {
+		@Override
+        public void visit(NotFormula not) {
 			if (visited(not))
 				return;
 			relevant.add(not);
@@ -314,7 +326,8 @@ final class TrivialProof extends Proof {
 		 * then only p should be visited since p caused binFormula's reduction
 		 * to FALSE.
 		 */
-		public void visit(BinaryFormula binFormula) {
+		@Override
+        public void visit(BinaryFormula binFormula) {
 			if (visited(binFormula))
 				return;
 			relevant.add(binFormula);
@@ -359,7 +372,8 @@ final class TrivialProof extends Proof {
 		 * then only p should be visited since p caused binFormula's reduction
 		 * to FALSE.
 		 */
-		public void visit(NaryFormula formula) {
+		@Override
+        public void visit(NaryFormula formula) {
 			if (visited(formula))
 				return;
 			relevant.add(formula);

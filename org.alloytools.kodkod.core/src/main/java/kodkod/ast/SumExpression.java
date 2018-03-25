@@ -98,7 +98,8 @@ public final class SumExpression extends IntExpression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "(sum " + decls + " | " + intExpr + ")";
 	}
 

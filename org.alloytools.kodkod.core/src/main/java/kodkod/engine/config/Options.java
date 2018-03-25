@@ -401,7 +401,8 @@ public final class Options implements Cloneable {
 	 * 
 	 * @return a shallow copy of this Options object.
 	 */
-	public Options clone() {
+	@Override
+    public Options clone() {
 		final Options c = new Options();
 		c.setSolver(solver);
 		c.setReporter(reporter);
@@ -425,7 +426,8 @@ public final class Options implements Cloneable {
 	 * 
 	 * @return a string representation of this Options object.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		StringBuilder b = new StringBuilder();
 		b.append("Options:");
 		b.append("\n solver: ");

@@ -63,7 +63,8 @@ public class SymmetryBreakingTest extends TestCase {
 		r2 = Relation.binary("r2");
 	}
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		bounds = new Bounds(factory.universe());
 	}

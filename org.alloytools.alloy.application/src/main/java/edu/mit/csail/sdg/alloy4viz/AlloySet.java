@@ -83,7 +83,8 @@ public final class AlloySet extends AlloyNodeElement {
 	 * their types. <br>
 	 * We guarantee x.equals(y) iff x.compareTo(y)==0
 	 */
-	public int compareTo(AlloyElement other) {
+	@Override
+    public int compareTo(AlloyElement other) {
 		if (other instanceof AlloyRelation)
 			return -1;
 		if (!(other instanceof AlloySet))

@@ -314,7 +314,8 @@ public abstract class Dimensions {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		StringBuilder buffer = new StringBuilder("[ ");
 		for (int i = 0; i < numDimensions(); i++) {
 			buffer.append(dimension(i));
@@ -399,7 +400,8 @@ public abstract class Dimensions {
 		 * 
 		 * @return this.dimensions = o.dimensions
 		 */
-		public boolean equals(Object o) {
+		@Override
+        public boolean equals(Object o) {
 			if (o instanceof Square) {
 				final Square s = (Square) o;
 				return n == s.n && size == s.size;
@@ -407,7 +409,8 @@ public abstract class Dimensions {
 			return false;
 		}
 
-		public int hashCode() {
+		@Override
+        public int hashCode() {
 			return n ^ size;
 		}
 
@@ -482,7 +485,8 @@ public abstract class Dimensions {
 		 * 
 		 * @return this.dimensions = dim.dimensions
 		 */
-		public boolean equals(Object o) {
+		@Override
+        public boolean equals(Object o) {
 			if (o instanceof Rectangle) {
 				final Rectangle r = (Rectangle) o;
 				if (dimensions.length != r.dimensions.length || capacity() != r.capacity())
@@ -497,7 +501,8 @@ public abstract class Dimensions {
 
 		}
 
-		public int hashCode() {
+		@Override
+        public int hashCode() {
 			return dimensions.length ^ capacity();
 		}
 

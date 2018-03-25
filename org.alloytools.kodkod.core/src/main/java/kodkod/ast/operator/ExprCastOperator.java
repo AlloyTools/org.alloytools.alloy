@@ -27,13 +27,15 @@ package kodkod.ast.operator;
 public enum ExprCastOperator {
 	/** The cardinality operator (#). */
 	CARDINALITY {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "#";
 		}
 	},
 	/** The sum operator. */
 	SUM {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "sum";
 		}
 	};

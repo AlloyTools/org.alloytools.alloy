@@ -58,7 +58,8 @@ public abstract class HOLTranslation extends Translation {
 		return formula();
 	};
 
-	public boolean trivial() {
+	@Override
+    public boolean trivial() {
 		return false;
 	}
 

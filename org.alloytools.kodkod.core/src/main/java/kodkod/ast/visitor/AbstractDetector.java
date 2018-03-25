@@ -132,7 +132,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(decls) | x != null => x, cache(decls, some d:
 	 *         decls.declarations | d.accept(this))
 	 */
-	public Boolean visit(Decls decls) {
+	@Override
+    public Boolean visit(Decls decls) {
 		final Boolean ret = lookup(decls);
 		if (ret != null)
 			return ret;
@@ -151,7 +152,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(decl) | x != null => x, cache(decl,
 	 *         decl.variable.accept(this) || decl.expression.accept(this))
 	 */
-	public Boolean visit(Decl decl) {
+	@Override
+    public Boolean visit(Decl decl) {
 		final Boolean ret = lookup(decl);
 		return (ret != null) ? ret : cache(decl, decl.variable().accept(this) || decl.expression().accept(this));
 	}
@@ -161,7 +163,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * 
 	 * @return FALSE
 	 */
-	public Boolean visit(Relation relation) {
+	@Override
+    public Boolean visit(Relation relation) {
 		return Boolean.FALSE;
 	}
 
@@ -170,7 +173,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * 
 	 * @return FALSE
 	 */
-	public Boolean visit(Variable variable) {
+	@Override
+    public Boolean visit(Variable variable) {
 		return Boolean.FALSE;
 	}
 
@@ -179,7 +183,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * 
 	 * @return FALSE
 	 */
-	public Boolean visit(ConstantExpression expr) {
+	@Override
+    public Boolean visit(ConstantExpression expr) {
 		return Boolean.FALSE;
 	}
 
@@ -192,7 +197,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         expr.child(0).accept(this) || ... ||
 	 *         expr.child(expr.size()-1).accept(this))
 	 */
-	public Boolean visit(NaryExpression expr) {
+	@Override
+    public Boolean visit(NaryExpression expr) {
 		final Boolean ret = lookup(expr);
 		if (ret != null)
 			return ret;
@@ -211,7 +217,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(binExpr) | x != null => x, cache(binExpr,
 	 *         binExpr.left.accept(this) || binExpr.right.accept(this))
 	 */
-	public Boolean visit(BinaryExpression binExpr) {
+	@Override
+    public Boolean visit(BinaryExpression binExpr) {
 		final Boolean ret = lookup(binExpr);
 		return (ret != null) ? ret : cache(binExpr, binExpr.left().accept(this) || binExpr.right().accept(this));
 	}
@@ -223,7 +230,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(expr) | x != null => x, cache(expr,
 	 *         expr.expression.accept(this))
 	 */
-	public Boolean visit(UnaryExpression expr) {
+	@Override
+    public Boolean visit(UnaryExpression expr) {
 		final Boolean ret = lookup(expr);
 		return (ret != null) ? ret : cache(expr, expr.expression().accept(this));
 	}
@@ -236,7 +244,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(expr) | x != null => x, cache(expr,
 	 *         expr.decls.accept(this) || expr.formula.accept(this))
 	 */
-	public Boolean visit(Comprehension expr) {
+	@Override
+    public Boolean visit(Comprehension expr) {
 		final Boolean ret = lookup(expr);
 		return (ret != null) ? ret : cache(expr, expr.decls().accept(this) || expr.formula().accept(this));
 	}
@@ -250,7 +259,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         expr.condition.accept(this) || expr.thenExpr.accept(this) ||
 	 *         expr.elseExpr.accept(this))
 	 */
-	public Boolean visit(IfExpression expr) {
+	@Override
+    public Boolean visit(IfExpression expr) {
 		final Boolean ret = lookup(expr);
 		return (ret != null) ? ret
 				: cache(expr,
@@ -266,7 +276,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         project.expression.accept(this) ||
 	 *         project.columns[int].accept(this))
 	 */
-	public Boolean visit(ProjectExpression project) {
+	@Override
+    public Boolean visit(ProjectExpression project) {
 		final Boolean ret = lookup(project);
 		if (ret != null)
 			return ret;
@@ -286,7 +297,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(castExpr) | x != null => x, cache(intExpr,
 	 *         castExpr.intExpr.accept(this))
 	 */
-	public Boolean visit(IntToExprCast castExpr) {
+	@Override
+    public Boolean visit(IntToExprCast castExpr) {
 		final Boolean ret = lookup(castExpr);
 		return (ret != null) ? ret : cache(castExpr, castExpr.intExpr().accept(this));
 	}
@@ -296,7 +308,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * 
 	 * @return FALSE
 	 */
-	public Boolean visit(IntConstant intConst) {
+	@Override
+    public Boolean visit(IntConstant intConst) {
 		return Boolean.FALSE;
 	}
 
@@ -309,7 +322,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         intExpr.condition.accept(this) || intExpr.thenExpr.accept(this)
 	 *         || intExpr.elseExpr.accept(this))
 	 */
-	public Boolean visit(IfIntExpression intExpr) {
+	@Override
+    public Boolean visit(IfIntExpression intExpr) {
 		final Boolean ret = lookup(intExpr);
 		return (ret != null) ? ret
 				: cache(intExpr, intExpr.condition().accept(this) || intExpr.thenExpr().accept(this)
@@ -323,7 +337,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.expression.accept(this))
 	 */
-	public Boolean visit(ExprToIntCast intExpr) {
+	@Override
+    public Boolean visit(ExprToIntCast intExpr) {
 		final Boolean ret = lookup(intExpr);
 		return (ret != null) ? ret : cache(intExpr, intExpr.expression().accept(this));
 	}
@@ -337,7 +352,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         intExpr.child(0).accept(this) || ... ||
 	 *         intExpr.child(intExpr.size()-1).accept(this))
 	 */
-	public Boolean visit(NaryIntExpression intExpr) {
+	@Override
+    public Boolean visit(NaryIntExpression intExpr) {
 		final Boolean ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -356,7 +372,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.left.accept(this) || intExpr.right.accept(this))
 	 */
-	public Boolean visit(BinaryIntExpression intExpr) {
+	@Override
+    public Boolean visit(BinaryIntExpression intExpr) {
 		final Boolean ret = lookup(intExpr);
 		return (ret != null) ? ret : cache(intExpr, intExpr.left().accept(this) || intExpr.right().accept(this));
 	}
@@ -368,7 +385,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.expression.accept(this))
 	 */
-	public Boolean visit(UnaryIntExpression intExpr) {
+	@Override
+    public Boolean visit(UnaryIntExpression intExpr) {
 		final Boolean ret = lookup(intExpr);
 		return (ret != null) ? ret : cache(intExpr, intExpr.intExpr().accept(this));
 	}
@@ -381,7 +399,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.decls.accept(this) || intExpr.intExpr.accept(this))
 	 */
-	public Boolean visit(SumExpression intExpr) {
+	@Override
+    public Boolean visit(SumExpression intExpr) {
 		final Boolean ret = lookup(intExpr);
 		return (ret != null) ? ret : cache(intExpr, intExpr.decls().accept(this) || intExpr.intExpr().accept(this));
 	}
@@ -394,7 +413,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(intComp) | x != null => x, cache(intComp,
 	 *         intComp.left.accept(this) || intComp.right.accept(this))
 	 */
-	public Boolean visit(IntComparisonFormula intComp) {
+	@Override
+    public Boolean visit(IntComparisonFormula intComp) {
 		final Boolean ret = lookup(intComp);
 		return (ret != null) ? ret : cache(intComp, intComp.left().accept(this) || intComp.right().accept(this));
 	}
@@ -408,7 +428,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         cache(quantFormula, quantFormula.declarations.accept(this)
 	 *         ||quantFormula.formula.accept(this))
 	 */
-	public Boolean visit(QuantifiedFormula quantFormula) {
+	@Override
+    public Boolean visit(QuantifiedFormula quantFormula) {
 		final Boolean ret = lookup(quantFormula);
 		return (ret != null) ? ret
 				: cache(quantFormula, quantFormula.decls().accept(this) || quantFormula.formula().accept(this));
@@ -423,7 +444,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         formula.child(0).accept(this) || ... ||
 	 *         formula.child(formula.size()-1).accept(this))
 	 */
-	public Boolean visit(NaryFormula formula) {
+	@Override
+    public Boolean visit(NaryFormula formula) {
 		final Boolean ret = lookup(formula);
 		if (ret != null)
 			return ret;
@@ -442,7 +464,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(binFormula) | x != null => x, cache(binFormula,
 	 *         binFormula.left.accept(this) || binFormula.right.accept(this))
 	 */
-	public Boolean visit(BinaryFormula binFormula) {
+	@Override
+    public Boolean visit(BinaryFormula binFormula) {
 		final Boolean ret = lookup(binFormula);
 		return (ret != null) ? ret
 				: cache(binFormula, binFormula.left().accept(this) || binFormula.right().accept(this));
@@ -455,7 +478,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(not) | x != null => x, cache(not,
 	 *         not.formula.accept(this))
 	 */
-	public Boolean visit(NotFormula not) {
+	@Override
+    public Boolean visit(NotFormula not) {
 		final Boolean ret = lookup(not);
 		return (ret != null) ? ret : cache(not, not.formula().accept(this));
 	}
@@ -465,7 +489,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * 
 	 * @return FALSE
 	 */
-	public Boolean visit(ConstantFormula constant) {
+	@Override
+    public Boolean visit(ConstantFormula constant) {
 		return Boolean.FALSE;
 	}
 
@@ -478,7 +503,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 *         cache(exprComp,exprComp.left.accept(this) ||
 	 *         exprComp.right.accept(this))
 	 */
-	public Boolean visit(ComparisonFormula exprComp) {
+	@Override
+    public Boolean visit(ComparisonFormula exprComp) {
 		final Boolean ret = lookup(exprComp);
 		return (ret != null) ? ret : cache(exprComp, exprComp.left().accept(this) || exprComp.right().accept(this));
 	}
@@ -491,7 +517,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(multFormula) | x != null => x, cache(multFormula,
 	 *         multFormula.expression.accept(this))
 	 */
-	public Boolean visit(MultiplicityFormula multFormula) {
+	@Override
+    public Boolean visit(MultiplicityFormula multFormula) {
 		final Boolean ret = lookup(multFormula);
 		return (ret != null) ? ret : cache(multFormula, multFormula.expression().accept(this));
 	}
@@ -504,7 +531,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 	 * @return let x = lookup(predicate) | x != null => x, cache(predicate, some
 	 *         n: predicate.children | n.accept(this))
 	 */
-	public Boolean visit(RelationPredicate predicate) {
+	@Override
+    public Boolean visit(RelationPredicate predicate) {
 		final Boolean ret = lookup(predicate);
 		if (ret != null)
 			return ret;
@@ -520,7 +548,8 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean,Boolean,
 		return cache(predicate, false);
 	}
 
-	public Boolean visit(FixFormula fixFormula) {
+	@Override
+    public Boolean visit(FixFormula fixFormula) {
 		final Boolean ret = lookup(fixFormula);
 		return (ret != null) ? ret
 				: cache(fixFormula, fixFormula.formula().accept(this) || fixFormula.condition().accept(this));

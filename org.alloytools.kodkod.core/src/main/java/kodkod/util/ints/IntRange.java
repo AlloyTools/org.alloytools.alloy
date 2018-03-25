@@ -91,7 +91,8 @@ public abstract class IntRange {
 	 * 
 	 * @return o in IntRange && o.min==this.min && o.max==this.max
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o instanceof IntRange) {
 			final IntRange r = (IntRange) o;
 			return min() == r.min() && max() == r.max();
@@ -105,11 +106,13 @@ public abstract class IntRange {
 	 * 
 	 * @return the hashcode for this intrange
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return min() == max() ? min() : min() ^ max();
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return "[" + min() + ".." + max() + "]";
 	}
 

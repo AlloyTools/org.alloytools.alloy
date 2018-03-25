@@ -1222,11 +1222,11 @@ public abstract class lr_parser {
 		for (int i = 1; i < sa.length; i++)
 			sb.append(sa[i]);
 		int n = 0; // location in initialization string
-		int size1 = (((int) sb.charAt(n)) << 16) | ((int) sb.charAt(n + 1));
+		int size1 = ((sb.charAt(n)) << 16) | (sb.charAt(n + 1));
 		n += 2;
 		short[][] result = new short[size1][];
 		for (int i = 0; i < size1; i++) {
-			int size2 = (((int) sb.charAt(n)) << 16) | ((int) sb.charAt(n + 1));
+			int size2 = ((sb.charAt(n)) << 16) | (sb.charAt(n + 1));
 			n += 2;
 			result[i] = new short[size2];
 			for (int j = 0; j < size2; j++)

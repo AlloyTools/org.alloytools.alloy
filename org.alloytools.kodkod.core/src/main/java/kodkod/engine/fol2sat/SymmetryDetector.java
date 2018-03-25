@@ -177,7 +177,8 @@ public final class SymmetryDetector {
 		}
 		final TupleSet[] sorted = sets.toArray(new TupleSet[sets.size()]);
 		Arrays.sort(sorted, new Comparator<TupleSet>() {
-			public int compare(TupleSet o1, TupleSet o2) {
+			@Override
+            public int compare(TupleSet o1, TupleSet o2) {
 				return o1.size() - o2.size();
 			}
 		});

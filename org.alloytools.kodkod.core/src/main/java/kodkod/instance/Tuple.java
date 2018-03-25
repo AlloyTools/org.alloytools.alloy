@@ -100,7 +100,8 @@ public abstract class Tuple {
 	 * 
 	 * @return o in Tuple && o.universe = this.universe && o.atoms = this.atoms
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (this == o)
 			return true;
 		else if (o instanceof Tuple) {
@@ -117,14 +118,16 @@ public abstract class Tuple {
 	 * 
 	 * @return the hashcode for this tuple
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return (arity() * 19 + index()) ^ universe().hashCode();
 	}
 
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder ret = new StringBuilder("[");
 		ret.append(atom(0));
 		for (int i = 1; i < arity(); i++) {

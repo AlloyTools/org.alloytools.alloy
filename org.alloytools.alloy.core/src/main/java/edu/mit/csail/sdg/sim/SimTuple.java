@@ -355,15 +355,18 @@ public final class SimTuple implements Iterable<SimAtom> {
 	}
 
 	/** {@inheritDoc} */
-	public Iterator<SimAtom> iterator() {
+	@Override
+    public Iterator<SimAtom> iterator() {
 		return new Iterator<SimAtom>() {
 			private int i = 0; // the next index to read out
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return i < array.length;
 			}
 
-			public SimAtom next() {
+			@Override
+            public SimAtom next() {
 				if (i < array.length) {
 					i++;
 					return array[i - 1];
@@ -371,7 +374,8 @@ public final class SimTuple implements Iterable<SimAtom> {
 					throw new NoSuchElementException();
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};

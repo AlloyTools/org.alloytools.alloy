@@ -118,7 +118,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 * 
 	 * @return key in this.keys => this.indices[key], {i: int | i < 0 }
 	 */
-	public final int indexOf(K key) {
+	@Override
+    public final int indexOf(K key) {
 		return Containers.identityBinarySearch(keys, key);
 	}
 
@@ -128,7 +129,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 * @return this.indices.index
 	 * @throws IndexOutOfBoundsException index !in this.indices[this.keys]
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public final K keyAt(int index) {
 		try {
 			return (K) keys[index];
@@ -142,7 +144,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 *
 	 * @return key in this.keys
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public final boolean containsKey(Object key) {
 		return indexOf((K) key) >= 0;
 	}
@@ -153,7 +156,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 *
 	 * @return value in this.map[this.keys]
 	 */
-	public final boolean containsValue(Object value) {
+	@Override
+    public final boolean containsValue(Object value) {
 		for (Object o : values) {
 			if (o == value)
 				return true;
@@ -193,25 +197,30 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 *
 	 * @return a set view of the identity-mappings contained in this map.
 	 */
-	public final Set<Map.Entry<K,V>> entrySet() {
+	@Override
+    public final Set<Map.Entry<K,V>> entrySet() {
 		return new AbstractSet<Map.Entry<K,V>>() {
 
-			@SuppressWarnings("unchecked")
+			@Override
+            @SuppressWarnings("unchecked")
 			public boolean contains(Object o) {
 				final Map.Entry<K,V> e = (Map.Entry<K,V>) o;
 				final int index = FixedMap.this.indexOf(e.getKey());
 				return index < 0 ? false : values[index] == e.getValue();
 			}
 
-			public Iterator<java.util.Map.Entry<K,V>> iterator() {
+			@Override
+            public Iterator<java.util.Map.Entry<K,V>> iterator() {
 				return new EntryIterator();
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return keys.length;
 			}
 
-			public Object[] toArray() {
+			@Override
+            public Object[] toArray() {
 				int size = size();
 				Object[] result = new Object[size];
 				for (int i = 0; i < size; i++)
@@ -219,7 +228,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 				return result;
 			}
 
-			@SuppressWarnings("unchecked")
+			@Override
+            @SuppressWarnings("unchecked")
 			public <T> T[] toArray(T[] a) {
 				int size = size();
 				if (a.length < size)
@@ -243,7 +253,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 *
 	 * @return this.map[key]
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public final V get(Object key) {
 		final int index = indexOf((K) key);
 		return index < 0 ? null : (V) values[index];
@@ -269,7 +280,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	/**
 	 * @see java.util.Map#isEmpty()
 	 */
-	public final boolean isEmpty() {
+	@Override
+    public final boolean isEmpty() {
 		return keys.length == 0;
 	}
 
@@ -285,9 +297,10 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 * @throws IllegalArgumentException key !in this.keys
 	 */
 
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public final V put(K key, V value) {
-		final int index = indexOf((K) key);
+		final int index = indexOf(key);
 		if (index < 0)
 			throw new IllegalArgumentException();
 		final V oldValue = (V) values[index];
@@ -300,14 +313,16 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 * 
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
-	public final V remove(Object key) {
+	@Override
+    public final V remove(Object key) {
 		throw new UnsupportedOperationException();
 	}
 
 	/**
 	 * @see java.util.Map#size()
 	 */
-	public final int size() {
+	@Override
+    public final int size() {
 		return keys.length;
 	}
 
@@ -331,7 +346,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 * @see Object#equals(Object)
 	 * @see #equals(Object)
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		int result = 0;
 		for (int i = 0; i < keys.length; i++)
 			result += System.identityHashCode(keys[i]) ^ System.identityHashCode(values[i]);
@@ -355,7 +371,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 	 * @return <tt>true</tt> if the specified object is equal to this map.
 	 * @see Object#equals(Object)
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this) {
 			return true;
 		} else if (o instanceof FixedMap) {
@@ -382,25 +399,30 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 			this.index = index;
 		}
 
-		@SuppressWarnings("unchecked")
+		@Override
+        @SuppressWarnings("unchecked")
 		public final K getKey() {
 			return (K) keys[index];
 		}
 
-		@SuppressWarnings("unchecked")
+		@Override
+        @SuppressWarnings("unchecked")
 		public final V getValue() {
 			return (V) values[index];
 		}
 
-		public V setValue(V value) {
+		@Override
+        public V setValue(V value) {
 			throw new UnsupportedOperationException();
 		}
 
-		public int hashCode() {
+		@Override
+        public int hashCode() {
 			return System.identityHashCode(keys[index]) ^ System.identityHashCode(values[index]);
 		}
 
-		public boolean equals(Object o) {
+		@Override
+        public boolean equals(Object o) {
 			if (o instanceof Map.Entry) {
 				final Map.Entry< ? , ? > e = (Map.Entry< ? , ? >) o;
 				return keys[index] == e.getKey() && values[index] == e.getValue();
@@ -408,7 +430,8 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 				return false;
 		}
 
-		public String toString() {
+		@Override
+        public String toString() {
 			return keys[index] + "=" + values[index];
 		}
 	}
@@ -420,37 +443,44 @@ public final class FixedMap<K, V> extends AbstractMap<K,V> implements Indexer<K>
 			super(-1);
 		}
 
-		@SuppressWarnings("unchecked")
+		@Override
+        @SuppressWarnings("unchecked")
 		public V setValue(V value) {
 			final V oldValue = (V) values[index];
 			values[index] = value;
 			return oldValue;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next < keys.length;
 		}
 
-		public Map.Entry<K,V> next() {
+		@Override
+        public Map.Entry<K,V> next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			index = next++;
 			return this;
 		}
 
-		public int hashCode() {
+		@Override
+        public int hashCode() {
 			return index < 0 ? System.identityHashCode(this) : super.hashCode();
 		}
 
-		public boolean equals(Object o) {
+		@Override
+        public boolean equals(Object o) {
 			return index < 0 ? this == o : super.equals(o);
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			throw new UnsupportedOperationException();
 		}
 
-		public String toString() {
+		@Override
+        public String toString() {
 			return index < 0 ? "[]" : super.toString();
 		}
 	}

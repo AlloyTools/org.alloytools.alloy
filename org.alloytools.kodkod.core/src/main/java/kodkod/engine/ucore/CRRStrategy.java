@@ -71,7 +71,8 @@ public final class CRRStrategy implements ReductionStrategy {
 	 * @ensures {@inheritDoc}
 	 * @return last(this.nexts')
 	 */
-	public final IntSet next(final ResolutionTrace trace) {
+	@Override
+    public final IntSet next(final ResolutionTrace trace) {
 		final IntSet core = trace.core();
 		if (excluded == null) { // the first time this method is called
 			excluded = new HashSet<Clause>((int) (StrictMath.round(core.size() * .75)));

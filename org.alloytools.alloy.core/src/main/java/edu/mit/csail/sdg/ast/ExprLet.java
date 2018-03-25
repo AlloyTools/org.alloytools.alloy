@@ -131,7 +131,8 @@ public final class ExprLet extends Expr {
 	// =============================================================================================================//
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		int a = var.getDepth(), b = sub.getDepth(), c = expr.getDepth();
 		if (a < b)
 			a = b;

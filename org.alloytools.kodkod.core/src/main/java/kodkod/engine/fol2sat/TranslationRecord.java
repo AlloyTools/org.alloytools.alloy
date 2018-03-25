@@ -84,7 +84,8 @@ public abstract class TranslationRecord {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder ret = new StringBuilder();
 		ret.append("< node: ");
 		ret.append(node());

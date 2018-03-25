@@ -53,7 +53,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * 
 	 * @return an ascending iterator over all elements in this set.
 	 */
-	public IntIterator iterator() {
+	@Override
+    public IntIterator iterator() {
 		return iterator(Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 
@@ -64,7 +65,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @return min(this.ints)
 	 * @throws NoSuchElementException no this.ints
 	 */
-	public int min() {
+	@Override
+    public int min() {
 		return iterator().next();
 	}
 
@@ -76,7 +78,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @return max(this.ints)
 	 * @throws NoSuchElementException no this.ints
 	 */
-	public int max() {
+	@Override
+    public int max() {
 		return iterator(Integer.MAX_VALUE, Integer.MIN_VALUE).next();
 	}
 
@@ -86,7 +89,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @return the result of calling super.clone()
 	 * @see java.lang.Object#clone()
 	 */
-	public IntSet clone() throws CloneNotSupportedException {
+	@Override
+    public IntSet clone() throws CloneNotSupportedException {
 		return (IntSet) super.clone();
 	}
 
@@ -101,7 +105,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @return o instanceof IntSet and o.size() = this.size() and
 	 *         this.containsAll(o)
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this)
 			return true;
 		else if (o instanceof IntSet) {
@@ -121,7 +126,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * 
 	 * @return Ints.superFastHash(this.toArray())
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		int hash = size();
 		for (IntIterator iter = iterator(); iter.hasNext();) {
 			hash = Ints.superFastHashIncremental(iter.next(), hash);
@@ -134,7 +140,8 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * 
 	 * @return a string representation of this int set.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder buf = new StringBuilder("{");
 		final IntIterator itr = iterator();
 		if (itr.hasNext())

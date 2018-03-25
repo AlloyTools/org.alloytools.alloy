@@ -94,7 +94,8 @@ public final class NaryIntExpression extends IntExpression implements Iterable<I
 	 * @return an iterator over this int expression's children, in the
 	 *         increasing order of indices.
 	 */
-	public Iterator<IntExpression> iterator() {
+	@Override
+    public Iterator<IntExpression> iterator() {
 		return Containers.iterate(children);
 	}
 

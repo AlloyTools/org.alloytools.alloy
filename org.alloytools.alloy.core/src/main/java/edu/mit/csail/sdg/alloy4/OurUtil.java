@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -47,6 +48,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.MenuEvent;
@@ -205,8 +207,8 @@ public final class OurUtil {
 				(iconFileName != null && iconFileName.length() > 0) ? loadIcon(iconFileName) : null);
 		if (func != null)
 			button.addActionListener(func);
-		button.setVerticalTextPosition(JButton.BOTTOM);
-		button.setHorizontalTextPosition(JButton.CENTER);
+		button.setVerticalTextPosition(SwingConstants.BOTTOM);
+		button.setHorizontalTextPosition(SwingConstants.CENTER);
 		button.setBorderPainted(false);
 		button.setFocusable(false);
 		if (!Util.onMac())
@@ -449,16 +451,19 @@ public final class OurUtil {
 				x.setMnemonic(i);
 		}
 		x.addMenuListener(new MenuListener() {
-			public void menuSelected(MenuEvent e) {
+			@Override
+            public void menuSelected(MenuEvent e) {
 				if (func != null)
 					func.run();
 			}
 
-			public void menuDeselected(MenuEvent e) {
+			@Override
+            public void menuDeselected(MenuEvent e) {
 				OurUtil.enableAll(x);
 			}
 
-			public void menuCanceled(MenuEvent e) {
+			@Override
+            public void menuCanceled(MenuEvent e) {
 				OurUtil.enableAll(x);
 			}
 		});
@@ -528,19 +533,19 @@ public final class OurUtil {
 
 	/** This method minimizes the window. */
 	public static void minimize(JFrame frame) {
-		frame.setExtendedState(JFrame.ICONIFIED);
+		frame.setExtendedState(Frame.ICONIFIED);
 	}
 
 	/** This method alternatingly maximizes or restores the window. */
 	public static void zoom(JFrame frame) {
-		int both = JFrame.MAXIMIZED_BOTH;
-		frame.setExtendedState((frame.getExtendedState() & both) != both ? both : JFrame.NORMAL);
+		int both = Frame.MAXIMIZED_BOTH;
+		frame.setExtendedState((frame.getExtendedState() & both) != both ? both : Frame.NORMAL);
 	}
 
 	/** Make the frame visible, non-iconized, and focused. */
 	public static void show(JFrame frame) {
 		frame.setVisible(true);
-		frame.setExtendedState(frame.getExtendedState() & ~JFrame.ICONIFIED);
+		frame.setExtendedState(frame.getExtendedState() & ~Frame.ICONIFIED);
 		frame.requestFocus();
 		frame.toFront();
 	}

@@ -188,7 +188,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @return #this.elts
 	 * @see java.util.Set#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -198,7 +199,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @return no this.elts
 	 * @see java.util.Set#isEmpty()
 	 */
-	public boolean isEmpty() {
+	@Override
+    public boolean isEmpty() {
 		return size == 0;
 	}
 
@@ -209,7 +211,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @throws NullPointerException elt = null
 	 * @see java.util.Set#contains(java.lang.Object)
 	 */
-	public boolean contains(Object elt) {
+	@Override
+    public boolean contains(Object elt) {
 		Entry<E> e = table[indexFor(hash(elt), table.length)];
 		while (e != null) {
 			if (e.val.equals(elt))
@@ -225,7 +228,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @return an iterator over this.elts.
 	 * @see java.util.Set#iterator()
 	 */
-	public Iterator<E> iterator() {
+	@Override
+    public Iterator<E> iterator() {
 		return new SetIterator();
 	}
 
@@ -236,7 +240,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @throws NullPointerException elt = null
 	 * @return elt !in this.elts
 	 */
-	public boolean add(E elt) {
+	@Override
+    public boolean add(E elt) {
 		final int i = indexFor(hash(elt), table.length);
 
 		for (Entry<E> e = table[i]; e != null; e = e.next) {
@@ -307,7 +312,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @throws NullPointerException elt = null
 	 * @see java.util.Set#remove(java.lang.Object)
 	 */
-	public boolean remove(Object elt) {
+	@Override
+    public boolean remove(Object elt) {
 		int i = indexFor(hash(elt), table.length);
 		Entry<E> prev = table[i];
 		Entry<E> e = prev;
@@ -342,14 +348,16 @@ public final class CacheSet<E> extends AbstractSet<E> {
 
 			Entry<E> current = null, next = table[i];
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				while (next != null && next.val.hashCode() != hash) {
 					next = next.next;
 				}
 				return next != null;
 			}
 
-			public E next() {
+			@Override
+            public E next() {
 				if (!hasNext())
 					throw new NoSuchElementException();
 				current = next;
@@ -357,7 +365,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 				return current.val;
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				if (current == null)
 					throw new IllegalStateException();
 				Entry<E> prev = table[i];
@@ -385,7 +394,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 	 * @ensures no this.elts'
 	 * @see java.util.Set#clear()
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		for (int i = 0; i < table.length; i++)
 			table[i] = null;
 		size = 0;
@@ -415,11 +425,13 @@ public final class CacheSet<E> extends AbstractSet<E> {
 			}
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next != null;
 		}
 
-		public E next() {
+		@Override
+        public E next() {
 			Entry<E> e = next;
 			if (e == null)
 				throw new NoSuchElementException();
@@ -432,7 +444,8 @@ public final class CacheSet<E> extends AbstractSet<E> {
 
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (current == null)
 				throw new IllegalStateException();
 

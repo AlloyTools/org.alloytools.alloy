@@ -182,14 +182,14 @@ final class InstanceCreator {
 		for (int i = 0; i < modules.getLength(); i++) {
 			Element module = (Element) modules.item(i);
 			for (Iterator<Element> sigs = getChildrenByTag(module, SIG); sigs.hasNext();) {
-				Element sig = (Element) sigs.next();
+				Element sig = sigs.next();
 				processAtoms(module, sig);
 				for (Iterator<Element> fields = getChildrenByTag(sig, FIELD); fields.hasNext();) {
-					processField(module, (Element) fields.next());
+					processField(module, fields.next());
 				}
 			}
 			for (Iterator<Element> skolems = getChildrenByTag(module, SKOLEM); skolems.hasNext();) {
-				processAtoms(module, (Element) skolems.next());
+				processAtoms(module, skolems.next());
 			}
 		}
 
@@ -205,7 +205,7 @@ final class InstanceCreator {
 		final TupleFactory f = u.factory();
 		final Instance instance = new Instance(u);
 		for (Map.Entry<Relation,Set<List<String>>> entry : relations.entrySet()) {
-			Relation r = (Relation) entry.getKey();
+			Relation r = entry.getKey();
 			TupleSet s = f.noneOf(r.arity());
 			for (List< ? > atoms : entry.getValue()) {
 				s.add(f.tuple(atoms));

@@ -78,11 +78,13 @@ public abstract class SATFactory {
 	 * @see org.sat4j.core.ASolverFactory#defaultSolver()
 	 */
 	public static final SATFactory	DefaultSAT4J	= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new SAT4J(SolverFactory.instance().defaultSolver());
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "DefaultSAT4J";
 														}
 													};
@@ -95,11 +97,13 @@ public abstract class SATFactory {
 	 * @see org.sat4j.core.ASolverFactory#lightSolver()
 	 */
 	public static final SATFactory	LightSAT4J		= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new SAT4J(SolverFactory.instance().lightSolver());
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "LightSAT4J";
 														}
 													};
@@ -109,11 +113,13 @@ public abstract class SATFactory {
 	 * S&ouml;rensson's MiniSat solver.
 	 */
 	public static final SATFactory	MiniSat			= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new MiniSat();
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "MiniSat";
 														}
 													};
@@ -125,7 +131,8 @@ public abstract class SATFactory {
 	 * the {@link #MiniSat} factory instead.
 	 */
 	public static final SATFactory	MiniSatProver	= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new MiniSatProver();
 														}
 
@@ -134,7 +141,8 @@ public abstract class SATFactory {
 															return true;
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "MiniSatProver";
 														}
 													};
@@ -144,11 +152,13 @@ public abstract class SATFactory {
 	 * solver.
 	 */
 	public static final SATFactory	Glucose			= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new Glucose();
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "Glucose";
 														}
 													};
@@ -158,11 +168,13 @@ public abstract class SATFactory {
 	 * Soos.
 	 */
 	public static final SATFactory	CryptoMiniSat	= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new CryptoMiniSat();
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "CryptoMiniSat";
 														}
 													};
@@ -171,15 +183,18 @@ public abstract class SATFactory {
 	 * The factory that produces instances of Armin Biere's Lingeling solver.
 	 */
 	public static final SATFactory	Lingeling		= new SATFactory() {
-														public SATSolver instance() {
+														@Override
+                                                        public SATSolver instance() {
 															return new Lingeling();
 														}
 
-														public boolean incremental() {
+														@Override
+                                                        public boolean incremental() {
 															return false;
 														}
 
-														public String toString() {
+														@Override
+                                                        public String toString() {
 															return "Lingeling";
 														}
 													};
@@ -278,7 +293,8 @@ public abstract class SATFactory {
 				return new SAT4J(SolverFactory.instance().createSolverByName(solverName));
 			}
 
-			public String toString() {
+			@Override
+            public String toString() {
 				return solverName;
 			}
 		};
@@ -325,7 +341,8 @@ public abstract class SATFactory {
 				return false;
 			}
 
-			public String toString() {
+			@Override
+            public String toString() {
 				return (new File(executable)).getName();
 			}
 		};

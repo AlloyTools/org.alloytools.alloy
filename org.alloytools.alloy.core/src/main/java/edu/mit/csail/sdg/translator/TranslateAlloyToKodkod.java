@@ -239,7 +239,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 	private void makeFacts(Expr facts) throws Err {
 		rep.debug("Generating facts...\n");
 		// convert into a form that hopefully gives better unsat core
-		facts = (Expr) (new ConvToConjunction()).visitThis(facts);
+		facts = (new ConvToConjunction()).visitThis(facts);
 		// add the field facts and appended facts
 		for (Sig s : frame.getAllReachableSigs()) {
 			for (Decl d : s.getFieldDecls()) {
@@ -257,7 +257,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 					if (s.isOne == null) {
 						Expression sr = a2k(s), fr = a2k(f);
 						for (int i = f.type().arity(); i > 1; i--)
-							fr = fr.join(Relation.UNIV);
+							fr = fr.join(Expression.UNIV);
 						frame.addFormula(fr.in(sr), f);
 					}
 				}
@@ -434,15 +434,18 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 			A4Reporter rep2 = new A4Reporter(rep) {
 				private boolean first = true;
 
-				public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+				@Override
+                public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
 					if (first)
 						super.translate(solver, bitwidth, maxseq, skolemDepth, symmetry);
 					first = false;
 				}
 
-				public void resultSAT(Object command, long solvingTime, Object solution) {}
+				@Override
+                public void resultSAT(Object command, long solvingTime, Object solution) {}
 
-				public void resultUNSAT(Object command, long solvingTime, Object solution) {}
+				@Override
+                public void resultUNSAT(Object command, long solvingTime, Object solution) {}
 			};
 			// Form the list of commands
 			List<Command> commands = new ArrayList<Command>();
@@ -850,7 +853,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 			case CAST2INT :
 				return sum(cset(x.sub));
 			case RCLOSURE :
-				Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Relation.UNIV));
+				Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
 				return cset(x.sub).closure().union(iden);
 			case CLOSURE :
 				return cset(x.sub).closure();
@@ -1014,7 +1017,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 		if (x.op == ExprList.Op.TOTALORDER) {
 			Expression elem = cset(x.args.get(0)), first = cset(x.args.get(1)), next = cset(x.args.get(2));
 			if (elem instanceof Relation && first instanceof Relation && next instanceof Relation) {
-				Relation lst = frame.addRel("", null, frame.query(true, (Relation) elem, false));
+				Relation lst = frame.addRel("", null, frame.query(true, elem, false));
 				totalOrderPredicates.add((Relation) elem);
 				totalOrderPredicates.add((Relation) first);
 				totalOrderPredicates.add(lst);
@@ -1299,9 +1302,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 				if (a.arity() == 1)
 					d = v.oneOf(a);
 				else if (d == null)
-					d = v.oneOf(Relation.UNIV);
+					d = v.oneOf(Expression.UNIV);
 				else
-					d = v.oneOf(Relation.UNIV).and(d);
+					d = v.oneOf(Expression.UNIV).and(d);
 			} else {
 				d = am(a, d, i, v);
 			}
@@ -1348,9 +1351,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 				if (b.arity() == 1)
 					d2 = v.oneOf(b);
 				else if (d2 == null)
-					d2 = v.oneOf(Relation.UNIV);
+					d2 = v.oneOf(Expression.UNIV);
 				else
-					d2 = v.oneOf(Relation.UNIV).and(d2);
+					d2 = v.oneOf(Expression.UNIV).and(d2);
 			} else {
 				d2 = am(b, d2, i, v);
 			}
@@ -1392,7 +1395,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 		if (ab.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
 			Expression rr = r;
 			while (rr.arity() > 1)
-				rr = rr.join(Relation.UNIV);
+				rr = rr.join(Expression.UNIV);
 			ans = rr.difference(rr.join(A4Solution.KK_NEXT)).in(A4Solution.KK_ZERO).and(ans);
 		}
 		return ans;
@@ -1405,7 +1408,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 			colType = a;
 		} else {
 			// colType = a.project(IntConstant.constant(i - 1))); //UNSOUND
-			colType = Relation.UNIV;
+			colType = Expression.UNIV;
 		}
 		return (d == null) ? v.oneOf(colType) : d.and(v.oneOf(colType));
 	}

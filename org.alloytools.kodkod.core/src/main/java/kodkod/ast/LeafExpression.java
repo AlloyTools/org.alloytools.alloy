@@ -58,7 +58,8 @@ public abstract class LeafExpression extends Expression {
 	 * 
 	 * @return this.arity
 	 */
-	public final int arity() {
+	@Override
+    public final int arity() {
 		return arity;
 	}
 
@@ -76,7 +77,8 @@ public abstract class LeafExpression extends Expression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return name;
 	}
 

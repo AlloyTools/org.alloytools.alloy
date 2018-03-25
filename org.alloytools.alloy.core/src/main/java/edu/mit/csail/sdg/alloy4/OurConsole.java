@@ -188,7 +188,8 @@ public final class OurConsole extends JScrollPane {
 		// When caret moves in the sub JTextPane, we cancel any active selection
 		// in the main JTextPane
 		subCaret.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				if (mainCaret.getMark() != mainCaret.getDot())
 					mainCaret.setDot(mainCaret.getDot());
 			}
@@ -196,7 +197,8 @@ public final class OurConsole extends JScrollPane {
 		// When caret moves in the main JTextPane, we cancel any active
 		// selection in the sub JTextPane
 		mainCaret.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				if (subCaret.getMark() != subCaret.getDot())
 					subCaret.setDot(subCaret.getDot());
 			}
@@ -205,14 +207,16 @@ public final class OurConsole extends JScrollPane {
 		AbstractAction alloy_paste = new AbstractAction("alloy_paste") {
 			static final long serialVersionUID = 0;
 
-			public void actionPerformed(ActionEvent x) {
+			@Override
+            public void actionPerformed(ActionEvent x) {
 				sub.paste();
 			}
 		};
 		AbstractAction alloy_copy = new AbstractAction("alloy_copy") {
 			static final long serialVersionUID = 0;
 
-			public void actionPerformed(ActionEvent x) {
+			@Override
+            public void actionPerformed(ActionEvent x) {
 				System.out.println("copy");
 				if (sub.getSelectionStart() != sub.getSelectionEnd())
 					sub.copy();
@@ -223,7 +227,8 @@ public final class OurConsole extends JScrollPane {
 		AbstractAction alloy_cut = new AbstractAction("alloy_cut") {
 			static final long serialVersionUID = 0;
 
-			public void actionPerformed(ActionEvent x) {
+			@Override
+            public void actionPerformed(ActionEvent x) {
 				if (sub.getSelectionStart() != sub.getSelectionEnd())
 					sub.cut();
 				else
@@ -246,7 +251,8 @@ public final class OurConsole extends JScrollPane {
 		// configure so that, upon receiving focus, we automatically focus and
 		// scroll to the sub-JTextPane
 		FocusAdapter focus = new FocusAdapter() {
-			public void focusGained(FocusEvent e) {
+			@Override
+            public void focusGained(FocusEvent e) {
 				sub.requestFocusInWindow();
 				sub.scrollRectToVisible(new Rectangle(0, sub.getY(), 1, sub.getHeight()));
 			}
@@ -257,18 +263,21 @@ public final class OurConsole extends JScrollPane {
 		// configure so that mouse clicks in the main JTextPane will immediately
 		// transfer focus to the sub JTextPane
 		main.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
+			@Override
+            public void mousePressed(MouseEvent e) {
 				sub.requestFocusInWindow();
 			}
 
-			public void mouseClicked(MouseEvent e) {
+			@Override
+            public void mouseClicked(MouseEvent e) {
 				sub.requestFocusInWindow();
 			}
 		});
 		// configure the behavior for PAGE_UP, PAGE_DOWN, UP, DOWN, TAB, and
 		// ENTER
 		sub.addKeyListener(new KeyListener() {
-			public void keyTyped(KeyEvent e) {
+			@Override
+            public void keyTyped(KeyEvent e) {
 				if (e.getKeyChar() == '\t') {
 					e.consume();
 				}
@@ -280,7 +289,8 @@ public final class OurConsole extends JScrollPane {
 				}
 			}
 
-			public void keyPressed(KeyEvent e) {
+			@Override
+            public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_TAB)
 					e.consume();
 				if (e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
@@ -310,7 +320,8 @@ public final class OurConsole extends JScrollPane {
 				}
 			}
 
-			public void keyReleased(KeyEvent e) {
+			@Override
+            public void keyReleased(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_TAB)
 					e.consume();
 			}

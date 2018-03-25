@@ -46,7 +46,8 @@ public class SkolemizationTest extends TestCase {
 		this.bounds = new Bounds(universe);
 	}
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		bounds.bound(r1a, factory.setOf("0", "1", "2", "3", "4"));
 		bounds.bound(r1b, factory.setOf("5", "6", "7", "8", "9"));

@@ -74,7 +74,8 @@ public final class StrategyUtils {
 		final Set<Formula> roots = log.roots();
 		final Map<Formula,int[]> maxRootVar = new LinkedHashMap<Formula,int[]>(roots.size());
 		final RecordFilter filter = new RecordFilter() {
-			public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+			@Override
+            public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 				return roots.contains(translated) && env.isEmpty();
 			}
 		};
@@ -125,7 +126,8 @@ public final class StrategyUtils {
 		final Set<Formula> roots = log.roots();
 		final Map<Formula,int[]> maxRootVar = new IdentityHashMap<Formula,int[]>(roots.size());
 		final RecordFilter filter = new RecordFilter() {
-			public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+			@Override
+            public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 				return roots.contains(translated) && env.isEmpty();
 			}
 		};

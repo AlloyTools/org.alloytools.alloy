@@ -86,7 +86,8 @@ public interface ResolutionTrace extends Iterable<Clause> {
 	 * 
 	 * @return an iterator over the elements in this trace in proper sequence.
 	 */
-	public abstract Iterator<Clause> iterator();
+	@Override
+    public abstract Iterator<Clause> iterator();
 
 	/**
 	 * Returns an iterator over the elements at the given indices in this trace,

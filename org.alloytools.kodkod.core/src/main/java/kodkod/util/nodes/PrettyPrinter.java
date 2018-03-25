@@ -225,27 +225,32 @@ public final class PrettyPrinter {
 
 		/*--------------LEAVES---------------*/
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
-		public void visit(Relation node) {
+		@Override
+        public void visit(Relation node) {
 			append(node);
 		}
 
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
-		public void visit(Variable node) {
+		@Override
+        public void visit(Variable node) {
 			append(node);
 		}
 
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
-		public void visit(ConstantExpression node) {
+		@Override
+        public void visit(ConstantExpression node) {
 			append(node);
 		}
 
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
-		public void visit(IntConstant node) {
+		@Override
+        public void visit(IntConstant node) {
 			append(node);
 		}
 
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
-		public void visit(ConstantFormula node) {
+		@Override
+        public void visit(ConstantFormula node) {
 			append(node);
 		}
 
@@ -254,7 +259,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, tokenize[ node.variable
 		 *          ], ":", tokenize[ node.expression ]
 		 **/
-		public void visit(Decl node) {
+		@Override
+        public void visit(Decl node) {
 			node.variable().accept(this);
 			colon();
 			if (node.multiplicity() != Multiplicity.ONE) {
@@ -269,7 +275,8 @@ public final class PrettyPrinter {
 		 *          node.declarations[0] ], ",", ..., tokenize[
 		 *          node.declarations[ node.size() - 1 ] ] ]
 		 **/
-		public void visit(Decls node) {
+		@Override
+        public void visit(Decls node) {
 			Iterator<Decl> decls = node.iterator();
 			decls.next().accept(this);
 			while (decls.hasNext()) {
@@ -326,7 +333,8 @@ public final class PrettyPrinter {
 		 *          parenthesized if it's an instance of binary expression or an
 		 *          if expression.
 		 **/
-		public void visit(UnaryExpression node) {
+		@Override
+        public void visit(UnaryExpression node) {
 			append(node.op());
 			visitChild(node.expression(), parenthesize(node.expression()));
 		}
@@ -336,7 +344,8 @@ public final class PrettyPrinter {
 		 *          parenthesized if it's not an instance of unary int
 		 *          expression or int constant.
 		 **/
-		public void visit(UnaryIntExpression node) {
+		@Override
+        public void visit(UnaryIntExpression node) {
 			final IntExpression child = node.intExpr();
 			final IntOperator op = node.op();
 			final boolean parens = (op == IntOperator.ABS) || (op == IntOperator.SGN) || parenthesize(child);
@@ -349,7 +358,8 @@ public final class PrettyPrinter {
 		 *          parenthesized if it's not an instance of not formula,
 		 *          constant formula, or relation predicate.
 		 **/
-		public void visit(NotFormula node) {
+		@Override
+        public void visit(NotFormula node) {
 			append("!");
 			final boolean pchild = parenthesize(node.formula());
 			indent += pchild ? 2 : 1;
@@ -362,7 +372,8 @@ public final class PrettyPrinter {
 		 *          parenthesized if it's an instance of binary expression or an
 		 *          if expression.
 		 **/
-		public void visit(MultiplicityFormula node) {
+		@Override
+        public void visit(MultiplicityFormula node) {
 			keyword(node.multiplicity());
 			visitChild(node.expression(), parenthesize(node.expression()));
 		}
@@ -382,7 +393,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(BinaryExpression node) {
+		@Override
+        public void visit(BinaryExpression node) {
 			final ExprOperator op = node.op();
 			visitChild(node.left(), parenthesize(op, node.left()));
 			infix(op);
@@ -416,7 +428,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(BinaryIntExpression node) {
+		@Override
+        public void visit(BinaryIntExpression node) {
 			final IntOperator op = node.op();
 			visitChild(node.left(), parenthesize(op, node.left()));
 			infix(op);
@@ -437,7 +450,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(BinaryFormula node) {
+		@Override
+        public void visit(BinaryFormula node) {
 			final FormulaOperator op = node.op();
 			final boolean pleft = parenthesize(op, node.left());
 			if (pleft)
@@ -459,7 +473,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, tokenize[node.left],
 		 *          node.op, tokenize[node.right]
 		 */
-		public void visit(ComparisonFormula node) {
+		@Override
+        public void visit(ComparisonFormula node) {
 			visitChild(node.left(), parenthesize(node.left()));
 			infix(node.op());
 			visitChild(node.right(), parenthesize(node.right()));
@@ -469,7 +484,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, tokenize[node.left],
 		 *          node.op, tokenize[node.right]
 		 */
-		public void visit(IntComparisonFormula node) {
+		@Override
+        public void visit(IntComparisonFormula node) {
 			visitChild(node.left(), parenthesize(node.left()));
 			infix(node.op());
 			visitChild(node.right(), parenthesize(node.right()));
@@ -480,7 +496,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(IfExpression node) {
+		@Override
+        public void visit(IfExpression node) {
 			visitChild(node.condition(), parenthesize(node.condition()));
 			infix("=>");
 			indent++;
@@ -495,7 +512,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(IfIntExpression node) {
+		@Override
+        public void visit(IfIntExpression node) {
 			visitChild(node.condition(), parenthesize(node.condition()));
 			infix("=>");
 			indent++;
@@ -512,7 +530,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, "{",
 		 *          tokenize[node.decls], "|", tokenize[ node.formula ], "}" ]
 		 */
-		public void visit(Comprehension node) {
+		@Override
+        public void visit(Comprehension node) {
 			append("{");
 			node.decls().accept(this);
 			infix("|");
@@ -524,7 +543,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, "sum",
 		 *          tokenize[node.decls], "|", tokenize[ node.intExpr ], ]
 		 */
-		public void visit(SumExpression node) {
+		@Override
+        public void visit(SumExpression node) {
 			keyword("sum");
 			node.decls().accept(this);
 			infix("|");
@@ -535,7 +555,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, node.quantifier,
 		 *          tokenize[node.decls], "|", tokenize[ node.formula ] ]
 		 */
-		public void visit(QuantifiedFormula node) {
+		@Override
+        public void visit(QuantifiedFormula node) {
 			keyword(node.quantifier());
 			node.decls().accept(this);
 			if (node.domain() != Formula.TRUE) {
@@ -562,7 +583,8 @@ public final class PrettyPrinter {
 			}
 		}
 
-		public void visit(FixFormula node) {
+		@Override
+        public void visit(FixFormula node) {
 			keyword("fix {");
 			newline();
 			indent++;
@@ -583,7 +605,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(NaryExpression node) {
+		@Override
+        public void visit(NaryExpression node) {
 			final ExprOperator op = node.op();
 			visitChild(node.child(0), parenthesize(op, node.child(0)));
 			for (int i = 1, size = node.size(); i < size; i++) {
@@ -595,7 +618,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(NaryIntExpression node) {
+		@Override
+        public void visit(NaryIntExpression node) {
 			final IntOperator op = node.op();
 			visitChild(node.child(0), parenthesize(op, node.child(0)));
 			for (int i = 1, size = node.size(); i < size; i++) {
@@ -607,7 +631,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(NaryFormula node) {
+		@Override
+        public void visit(NaryFormula node) {
 			final FormulaOperator op = node.op();
 			boolean parens = parenthesize(op, node.child(0));
 			if (parens)
@@ -631,7 +656,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(ProjectExpression node) {
+		@Override
+        public void visit(ProjectExpression node) {
 			append("project");
 			append("[");
 			node.expression().accept(this);
@@ -651,7 +677,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, "Int","[",
 		 *          tokenize[node.intExpr], "]" ]
 		 **/
-		public void visit(IntToExprCast node) {
+		@Override
+        public void visit(IntToExprCast node) {
 			append("Int");
 			append("[");
 			node.intExpr().accept(this);
@@ -662,7 +689,8 @@ public final class PrettyPrinter {
 		 * @ensures this.tokens' = concat[ this.tokens, "int","[",
 		 *          tokenize[node.expression], "]" ]
 		 **/
-		public void visit(ExprToIntCast node) {
+		@Override
+        public void visit(ExprToIntCast node) {
 			switch (node.op()) {
 				case SUM :
 					append("int");
@@ -685,7 +713,8 @@ public final class PrettyPrinter {
 		/**
 		 * @ensures appends the tokenization of the given node to this.tokens
 		 */
-		public void visit(RelationPredicate node) {
+		@Override
+        public void visit(RelationPredicate node) {
 			switch (node.name()) {
 				case ACYCLIC :
 					append("acyclic");
@@ -828,119 +857,148 @@ public final class PrettyPrinter {
 			}
 		}
 
-		public void visit(Decls decls) {
+		@Override
+        public void visit(Decls decls) {
 			visit(decls, "decls", decls.iterator());
 		}
 
-		public void visit(Decl decl) {
+		@Override
+        public void visit(Decl decl) {
 			visit(decl, "decl", decl.variable(), decl.expression());
 		}
 
-		public void visit(Relation relation) {
+		@Override
+        public void visit(Relation relation) {
 			visit(relation, relation.name());
 		}
 
-		public void visit(Variable variable) {
+		@Override
+        public void visit(Variable variable) {
 			visit(variable, variable.name());
 		}
 
-		public void visit(ConstantExpression constExpr) {
+		@Override
+        public void visit(ConstantExpression constExpr) {
 			visit(constExpr, constExpr.name());
 		}
 
-		public void visit(NaryExpression expr) {
+		@Override
+        public void visit(NaryExpression expr) {
 			visit(expr, expr.op(), expr.iterator());
 		}
 
-		public void visit(BinaryExpression binExpr) {
+		@Override
+        public void visit(BinaryExpression binExpr) {
 			visit(binExpr, binExpr.op(), binExpr.left(), binExpr.right());
 		}
 
-		public void visit(UnaryExpression unaryExpr) {
+		@Override
+        public void visit(UnaryExpression unaryExpr) {
 			visit(unaryExpr, unaryExpr.op(), unaryExpr.expression());
 		}
 
-		public void visit(Comprehension comprehension) {
+		@Override
+        public void visit(Comprehension comprehension) {
 			visit(comprehension, "setcomp", comprehension.decls(), comprehension.formula());
 		}
 
-		public void visit(IfExpression ifExpr) {
+		@Override
+        public void visit(IfExpression ifExpr) {
 			visit(ifExpr, "ite", ifExpr.condition(), ifExpr.thenExpr(), ifExpr.elseExpr());
 		}
 
-		public void visit(ProjectExpression project) {
+		@Override
+        public void visit(ProjectExpression project) {
 			visit(project, "proj", project.expression(), project.columns());
 		}
 
-		public void visit(IntToExprCast castExpr) {
+		@Override
+        public void visit(IntToExprCast castExpr) {
 			visit(castExpr, castExpr.op(), castExpr.intExpr());
 		}
 
-		public void visit(IntConstant intConst) {
+		@Override
+        public void visit(IntConstant intConst) {
 			visit(intConst, intConst.value());
 		}
 
-		public void visit(IfIntExpression intExpr) {
+		@Override
+        public void visit(IfIntExpression intExpr) {
 			visit(intExpr, "ite", intExpr.condition(), intExpr.thenExpr(), intExpr.elseExpr());
 		}
 
-		public void visit(ExprToIntCast intExpr) {
+		@Override
+        public void visit(ExprToIntCast intExpr) {
 			visit(intExpr, intExpr.op(), intExpr.expression());
 		}
 
-		public void visit(NaryIntExpression intExpr) {
+		@Override
+        public void visit(NaryIntExpression intExpr) {
 			visit(intExpr, intExpr.op(), intExpr.iterator());
 		}
 
-		public void visit(BinaryIntExpression intExpr) {
+		@Override
+        public void visit(BinaryIntExpression intExpr) {
 			visit(intExpr, intExpr.op(), intExpr.left(), intExpr.right());
 		}
 
-		public void visit(UnaryIntExpression intExpr) {
+		@Override
+        public void visit(UnaryIntExpression intExpr) {
 			visit(intExpr, intExpr.op(), intExpr.intExpr());
 		}
 
-		public void visit(SumExpression intExpr) {
+		@Override
+        public void visit(SumExpression intExpr) {
 			visit(intExpr, "sum", intExpr.decls(), intExpr.intExpr());
 		}
 
-		public void visit(IntComparisonFormula intComp) {
+		@Override
+        public void visit(IntComparisonFormula intComp) {
 			visit(intComp, intComp.op(), intComp.left(), intComp.right());
 		}
 
-		public void visit(QuantifiedFormula quantFormula) {
+		@Override
+        public void visit(QuantifiedFormula quantFormula) {
 			visit(quantFormula, quantFormula.quantifier(), quantFormula.decls(), quantFormula.formula());
 		}
 
-		public void visit(FixFormula fixFormula) {
+		@Override
+        public void visit(FixFormula fixFormula) {
 			visit(fixFormula, "fix", fixFormula.formula(), fixFormula.condition());
 		}
 
-		public void visit(NaryFormula formula) {
+		@Override
+        public void visit(NaryFormula formula) {
 			visit(formula, formula.op(), formula.iterator());
 		}
 
-		public void visit(BinaryFormula binFormula) {
+		@Override
+        public void visit(BinaryFormula binFormula) {
 			visit(binFormula, binFormula.op(), binFormula.left(), binFormula.right());
 		}
 
-		public void visit(NotFormula not) {
+		@Override
+        public void visit(NotFormula not) {
 			visit(not, "not", not.formula());
 		}
 
-		public void visit(ConstantFormula constant) {
+		@Override
+        public void visit(ConstantFormula constant) {
 			visit(constant, constant.booleanValue());
 		}
 
-		public void visit(ComparisonFormula compFormula) {
+		@Override
+        public void visit(ComparisonFormula compFormula) {
 			visit(compFormula, compFormula.op(), compFormula.left(), compFormula.right());
 		}
 
-		public void visit(MultiplicityFormula multFormula) {
+		@Override
+        public void visit(MultiplicityFormula multFormula) {
 			visit(multFormula, multFormula.multiplicity(), multFormula.expression());
 		}
 
-		public void visit(RelationPredicate pred) {
+		@Override
+        public void visit(RelationPredicate pred) {
 			if (visited(pred))
 				return;
 

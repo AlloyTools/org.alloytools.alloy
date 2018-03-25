@@ -464,6 +464,7 @@ public abstract class Expression extends Node {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public abstract <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor);
+	@Override
+    public abstract <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor);
 
 }

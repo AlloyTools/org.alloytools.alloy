@@ -28,13 +28,15 @@ public enum Quantifier {
 
 	/** Universal quantifier. */
 	ALL {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "all";
 		}
 	},
 	/** Existential quantifier. */
 	SOME {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "some";
 		}
 	};

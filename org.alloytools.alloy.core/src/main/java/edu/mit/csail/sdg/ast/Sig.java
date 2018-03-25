@@ -339,7 +339,8 @@ public abstract class Sig extends Expr implements Clause {
 	public abstract boolean isSameOrDescendentOf(Sig that);
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		return 1;
 	}
 

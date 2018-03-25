@@ -115,18 +115,21 @@ final class WriteCNF implements SATSolver {
 	}
 
 	/** {@inheritDoc} */
-	public void free() {
+	@Override
+    public void free() {
 		Util.close(cnf);
 	}
 
 	/** {@inheritDoc} */
-	public void addVariables(int numVars) {
+	@Override
+    public void addVariables(int numVars) {
 		if (numVars >= 0)
 			vars += numVars;
 	}
 
 	/** {@inheritDoc} */
-	public boolean addClause(int[] lits) {
+	@Override
+    public boolean addClause(int[] lits) {
 		if (lits.length > 0) {
 			clauses++;
 			if (buffer.length() > capacity)
@@ -140,17 +143,20 @@ final class WriteCNF implements SATSolver {
 	}
 
 	/** {@inheritDoc} */
-	public int numberOfVariables() {
+	@Override
+    public int numberOfVariables() {
 		return vars;
 	}
 
 	/** {@inheritDoc} */
-	public int numberOfClauses() {
+	@Override
+    public int numberOfClauses() {
 		return clauses;
 	}
 
 	/** {@inheritDoc} */
-	public boolean solve() {
+	@Override
+    public boolean solve() {
 		try {
 			flush();
 			cnf.seek(0);
@@ -163,7 +169,8 @@ final class WriteCNF implements SATSolver {
 	}
 
 	/** {@inheritDoc} */
-	public boolean valueOf(int variable) {
+	@Override
+    public boolean valueOf(int variable) {
 		throw new IllegalStateException("This solver just writes the CNF without solving them.");
 	}
 }

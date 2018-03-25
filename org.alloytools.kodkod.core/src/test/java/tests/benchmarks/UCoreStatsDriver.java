@@ -168,7 +168,7 @@ public final class UCoreStatsDriver {
 				Integer.MAX_VALUE, 6, 5, 4, 3, 2, 1
 		};
 		for (MaxSpec spec : MAX_SPECS) {
-			final int scope = (int) Math.round(0.75 * (double) spec.scope);
+			final int scope = (int) Math.round(0.75 * spec.scope);
 
 			for (int depth : depths) {
 

@@ -127,7 +127,8 @@ public final class ITEGate extends BooleanFormula {
 	 * 
 	 * @return a string representation of this ITE gate.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "(" + inputs[0] + "?" + inputs[1] + ":" + inputs[2] + ")";
 	}
 
@@ -136,7 +137,8 @@ public final class ITEGate extends BooleanFormula {
 	 * 
 	 * @return the hashcode for this gate.
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return hashcode;
 	}
 

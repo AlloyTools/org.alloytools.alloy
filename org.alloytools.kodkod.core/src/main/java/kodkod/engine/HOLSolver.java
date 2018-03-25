@@ -90,7 +90,8 @@ public final class HOLSolver implements KodkodSolver {
 	 *             {@code f} and {@code b} are violated
 	 * @throws AbortedException this solving task has been aborted
 	 */
-	public Solution solve(Formula f, Bounds b) throws HigherOrderDeclException, UnboundLeafException, AbortedException {
+	@Override
+    public Solution solve(Formula f, Bounds b) throws HigherOrderDeclException, UnboundLeafException, AbortedException {
 		if (outcome == Boolean.FALSE)
 			throw new IllegalStateException(
 					"Cannot use this solver since a prior call to solve(...) produced an UNSAT solution.");
@@ -179,14 +180,16 @@ public final class HOLSolver implements KodkodSolver {
 	 * 
 	 * @return this.options.clone()
 	 */
-	public Options options() {
+	@Override
+    public Options options() {
 		return options;
 	}
 
 	/**
 	 * Releases the resources, if any, associated with this solver.
 	 */
-	public void free() {
+	@Override
+    public void free() {
 		if (translation != null) {
 			// TODO: translation.cnf().free();
 			translation = null;

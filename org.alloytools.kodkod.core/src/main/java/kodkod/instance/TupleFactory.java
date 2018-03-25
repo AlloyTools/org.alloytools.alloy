@@ -387,27 +387,32 @@ public final class TupleFactory {
 		}
 
 		/** {@inheritDoc} */
-		public Universe universe() {
+		@Override
+        public Universe universe() {
 			return universe;
 		}
 
 		/** {@inheritDoc} */
-		public int arity() {
+		@Override
+        public int arity() {
 			return arity;
 		}
 
 		/** {@inheritDoc} */
-		public int index() {
+		@Override
+        public int index() {
 			return index;
 		}
 
 		/** {@inheritDoc} */
-		public Object atom(int i) {
+		@Override
+        public Object atom(int i) {
 			return universe.atom(atomIndex(i));
 		}
 
 		/** {@inheritDoc} */
-		public int atomIndex(int i) {
+		@Override
+        public int atomIndex(int i) {
 			return project(index, arity, i);
 			// if (i < 0 || i >= arity) throw new IndexOutOfBoundsException("i <
 			// 0 || i >= this.arity");
@@ -415,7 +420,8 @@ public final class TupleFactory {
 		}
 
 		/** {@inheritDoc} */
-		public boolean contains(Object atom) {
+		@Override
+        public boolean contains(Object atom) {
 			for (int remainder = index, atomIndex = universe.index(atom); remainder > 0; remainder = remainder / base) {
 				if (remainder % base == atomIndex)
 					return true;
@@ -424,7 +430,8 @@ public final class TupleFactory {
 		}
 
 		/** {@inheritDoc} */
-		public Tuple product(Tuple tuple) {
+		@Override
+        public Tuple product(Tuple tuple) {
 			if (!universe.equals(tuple.universe()))
 				throw new IllegalArgumentException("tuple.universe != this.universe");
 			return new IntTuple(arity + tuple.arity(), index * ((int) Math.pow(base, tuple.arity())) + tuple.index());

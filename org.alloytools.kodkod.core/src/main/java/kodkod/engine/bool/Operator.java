@@ -56,7 +56,8 @@ public abstract class Operator implements Comparable<Operator> {
 	 *         op.ordinal => i = 0, i > 0
 	 * @throws NullPointerException op = null
 	 */
-	public int compareTo(Operator op) {
+	@Override
+    public int compareTo(Operator op) {
 		return ordinal() - op.ordinal();
 	}
 
@@ -64,22 +65,26 @@ public abstract class Operator implements Comparable<Operator> {
 	 * N-ary {@link MultiGate AND} operator.
 	 */
 	public static final Nary		AND		= new Nary(0) {
-												public String toString() {
+												@Override
+                                                public String toString() {
 													return "&";
 												}
 
 												/** @return true */
-												public BooleanConstant identity() {
+												@Override
+                                                public BooleanConstant identity() {
 													return BooleanConstant.TRUE;
 												}
 
 												/** @return false */
-												public BooleanConstant shortCircuit() {
+												@Override
+                                                public BooleanConstant shortCircuit() {
 													return BooleanConstant.FALSE;
 												}
 
 												/** @return OR */
-												public Nary complement() {
+												@Override
+                                                public Nary complement() {
 													return OR;
 												}
 											};
@@ -88,22 +93,26 @@ public abstract class Operator implements Comparable<Operator> {
 	 * N-ary {@link MultiGate OR} operator.
 	 */
 	public static final Nary		OR		= new Nary(1) {
-												public String toString() {
+												@Override
+                                                public String toString() {
 													return "|";
 												}
 
 												/** @return false */
-												public BooleanConstant identity() {
+												@Override
+                                                public BooleanConstant identity() {
 													return BooleanConstant.FALSE;
 												}
 
 												/** @return true */
-												public BooleanConstant shortCircuit() {
+												@Override
+                                                public BooleanConstant shortCircuit() {
 													return BooleanConstant.TRUE;
 												}
 
 												/** @return AND */
-												public Nary complement() {
+												@Override
+                                                public Nary complement() {
 													return AND;
 												}
 											};
@@ -112,7 +121,8 @@ public abstract class Operator implements Comparable<Operator> {
 	 * Ternary {@link ITEGate if-then-else} operator.
 	 */
 	public static final Ternary		ITE		= new Ternary(2) {
-												public String toString() {
+												@Override
+                                                public String toString() {
 													return "?";
 												}
 											};
@@ -121,7 +131,8 @@ public abstract class Operator implements Comparable<Operator> {
 	 * Unary {@link NotGate negation} operator.
 	 */
 	public static final Operator	NOT		= new Operator(3) {
-												public String toString() {
+												@Override
+                                                public String toString() {
 													return "!";
 												}
 											};
@@ -130,7 +141,8 @@ public abstract class Operator implements Comparable<Operator> {
 	 * Zero-arity {@link BooleanVariable variable} operator.
 	 */
 	public static final Operator	VAR		= new Operator(4) {
-												public String toString() {
+												@Override
+                                                public String toString() {
 													return "var";
 												}
 											};
@@ -139,7 +151,8 @@ public abstract class Operator implements Comparable<Operator> {
 	 * Zero-arity {@link BooleanConstant constant} operator.
 	 */
 	public static final Operator	CONST	= new Operator(5) {
-												public String toString() {
+												@Override
+                                                public String toString() {
 													return "const";
 												}
 											};

@@ -150,7 +150,8 @@ public abstract class Proc {
 
 		public OR(Proc... splits) {
 			super(union(map(splits, new Bounds[0], new Func1<Proc,Bounds>() {
-				public Bounds run(Proc a) {
+				@Override
+                public Bounds run(Proc a) {
 					return a.bounds();
 				}
 			})));
@@ -185,7 +186,8 @@ public abstract class Proc {
 		@Override
 		public Formula formula() {
 			return Formula.or(map(disjuncts, new Formula[0], new Func1<Proc,Formula>() {
-				public Formula run(Proc p) {
+				@Override
+                public Formula run(Proc p) {
 					return p.formula();
 				}
 			}));
@@ -302,9 +304,11 @@ public abstract class Proc {
 
 		public Formula[] qpFormulas() {
 			return cache("qpf", new Func<Formula[]>() {
-				public Formula[] run() {
+				@Override
+                public Formula[] run() {
 					return map(quantProcs, new Formula[0], new Func1<QuantProc,Formula>() {
-						public Formula run(QuantProc a) {
+						@Override
+                        public Formula run(QuantProc a) {
 							return a.original;
 						}
 					});
@@ -314,9 +318,11 @@ public abstract class Proc {
 
 		public Formula[] qpFlippedFormulas() {
 			return cache("qpff", new Func<Formula[]>() {
-				public Formula[] run() {
+				@Override
+                public Formula[] run() {
 					return map(quantProcs, new Formula[0], new Func1<QuantProc,Formula>() {
-						public Formula run(QuantProc a) {
+						@Override
+                        public Formula run(QuantProc a) {
 							return a.flipped;
 						}
 					});
@@ -326,9 +332,11 @@ public abstract class Proc {
 
 		public Proc fullBodyProc() {
 			return cache("fbp", new Func<Proc>() {
-				public Proc run() {
+				@Override
+                public Proc run() {
 					return foldCompose(FormulaOperator.AND, map(quantProcs, new Proc[0], new Func1<QuantProc,Proc>() {
-						public Proc run(QuantProc a) {
+						@Override
+                        public Proc run(QuantProc a) {
 							return a.proc;
 						}
 					}));
@@ -338,7 +346,8 @@ public abstract class Proc {
 
 		public Proc fullFlippedProc() {
 			return cache("ffp", new Func<Proc>() {
-				public Proc run() {
+				@Override
+                public Proc run() {
 					Proc fbp = fullBodyProc();
 					return new FOL(bounds, conjuncts).compose(FormulaOperator.AND, fbp);
 				}
@@ -420,9 +429,11 @@ public abstract class Proc {
 
 		public Formula[] qpConditionFormulas() {
 			return cache("qpcf", new Func<Formula[]>() {
-				public Formula[] run() {
+				@Override
+                public Formula[] run() {
 					return map(quantProcs, new Formula[0], new Func1<QuantProc,Formula>() {
-						public Formula run(QuantProc a) {
+						@Override
+                        public Formula run(QuantProc a) {
 							return ((FixFormula) a.original).condition();
 						}
 					});

@@ -82,7 +82,8 @@ final class ResolutionBasedProof extends Proof {
 	private Set<Formula> connectedCore(final IntSet coreVars) {
 		final Set<Formula> coreNodes = new IdentityHashSet<Formula>();
 		final RecordFilter filter = new RecordFilter() {
-			public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+			@Override
+            public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 				return coreVars.contains(StrictMath.abs(literal));
 			}
 		};
@@ -103,7 +104,8 @@ final class ResolutionBasedProof extends Proof {
 			 *          connected + n else connected' = connected
 			 * @return n in visited || n !in coreNodes
 			 */
-			protected boolean visited(Node n) {
+			@Override
+            protected boolean visited(Node n) {
 				if (visited.add(n) && coreNodes.contains(n)) {
 					connected.add((Formula) n);
 					return false;
@@ -122,13 +124,15 @@ final class ResolutionBasedProof extends Proof {
 	 * 
 	 * @see kodkod.engine.Proof#core()
 	 */
-	public final Iterator<TranslationRecord> core() {
+	@Override
+    public final Iterator<TranslationRecord> core() {
 		if (coreFilter == null) {
 			coreFilter = new RecordFilter() {
 				final IntSet		coreVariables	= StrategyUtils.coreVars(solver.proof());
 				final Set<Formula>	coreNodes		= connectedCore(coreVariables);
 
-				public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+				@Override
+                public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 					return coreNodes.contains(translated) && coreVariables.contains(StrictMath.abs(literal));
 				}
 			};
@@ -141,13 +145,15 @@ final class ResolutionBasedProof extends Proof {
 	 * 
 	 * @see kodkod.engine.Proof#highLevelCore()
 	 */
-	public final Map<Formula,Node> highLevelCore() {
+	@Override
+    public final Map<Formula,Node> highLevelCore() {
 		if (coreRoots == null) {
 			final RecordFilter unitFilter = new RecordFilter() {
 				final IntSet		coreUnits	= StrategyUtils.coreUnits(solver.proof());
 				final Set<Formula>	roots		= log().roots();
 
-				public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+				@Override
+                public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 					return roots.contains(translated) && coreUnits.contains(Math.abs(literal));
 				}
 
@@ -175,7 +181,8 @@ final class ResolutionBasedProof extends Proof {
 	 * 
 	 * @see kodkod.engine.Proof#minimize(kodkod.engine.satlab.ReductionStrategy)
 	 */
-	public void minimize(ReductionStrategy strategy) {
+	@Override
+    public void minimize(ReductionStrategy strategy) {
 		solver.reduce(strategy);
 		coreFilter = null;
 		coreRoots = null;

@@ -104,7 +104,8 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
 	 * As a special cosmetic enhancement: if we're comparing integer atoms, we
 	 * want to ignore the difference between seqInt and Int.
 	 */
-	public int compareTo(AlloyAtom otherAtom) {
+	@Override
+    public int compareTo(AlloyAtom otherAtom) {
 		if (otherAtom == null)
 			return 1;
 		AlloyType at = type;

@@ -105,7 +105,8 @@ public final class BinaryIntExpression extends IntExpression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "(" + left + " " + op + " " + right + ")";
 	}
 }

@@ -159,7 +159,8 @@ public final class FormulaFlattener extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NotFormula)
 	 */
-	public final void visit(NotFormula nf) {
+	@Override
+    public final void visit(NotFormula nf) {
 		if (visited(nf))
 			return;
 
@@ -191,7 +192,8 @@ public final class FormulaFlattener extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.BinaryFormula)
 	 */
-	public final void visit(BinaryFormula bf) {
+	@Override
+    public final void visit(BinaryFormula bf) {
 		if (visited(bf))
 			return;
 		final FormulaOperator op = bf.op();
@@ -222,7 +224,8 @@ public final class FormulaFlattener extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NaryFormula)
 	 */
-	public final void visit(NaryFormula nf) {
+	@Override
+    public final void visit(NaryFormula nf) {
 		if (visited(nf))
 			return;
 		final FormulaOperator op = nf.op();
@@ -243,7 +246,8 @@ public final class FormulaFlattener extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.QuantifiedFormula)
 	 */
-	public final void visit(QuantifiedFormula qf) {
+	@Override
+    public final void visit(QuantifiedFormula qf) {
 		if (visited(qf))
 			return;
 
@@ -290,27 +294,32 @@ public final class FormulaFlattener extends AbstractVoidVisitor {
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(ComparisonFormula cf) {
+	@Override
+    public final void visit(ComparisonFormula cf) {
 		visitFormula(cf);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(IntComparisonFormula cf) {
+	@Override
+    public final void visit(IntComparisonFormula cf) {
 		visitFormula(cf);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(MultiplicityFormula mf) {
+	@Override
+    public final void visit(MultiplicityFormula mf) {
 		visitFormula(mf);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(ConstantFormula constant) {
+	@Override
+    public final void visit(ConstantFormula constant) {
 		visitFormula(constant);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(RelationPredicate pred) {
+	@Override
+    public final void visit(RelationPredicate pred) {
 		visitFormula(pred);
 	}
 

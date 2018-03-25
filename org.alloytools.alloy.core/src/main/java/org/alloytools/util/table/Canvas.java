@@ -268,7 +268,8 @@ public class Canvas {
 		return buffer.length / width;
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		StringBuilder sb = new StringBuilder();
 		toString(sb);
 		return sb.toString();
@@ -288,7 +289,7 @@ public class Canvas {
 	}
 
 	private char boxchar(char c) {
-		char out = boxchars[(int) (c & 0xFF)];
+		char out = boxchars[c & 0xFF];
 		assert out != 0;
 		return out;
 	}

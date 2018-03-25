@@ -165,7 +165,8 @@ final class SwingLogPanel {
 			@Override
 			public final ViewFactory getViewFactory() {
 				return new ViewFactory() {
-					public final View create(Element x) {
+					@Override
+                    public final View create(Element x) {
 						if (!AbstractDocument.SectionElementName.equals(x.getName()))
 							return defaultFactory.create(x);
 						return new BoxView(x, View.Y_AXIS) {
@@ -196,12 +197,14 @@ final class SwingLogPanel {
 		});
 		log.setEditable(false);
 		log.addFocusListener(new FocusListener() {
-			public final void focusGained(FocusEvent e) {
+			@Override
+            public final void focusGained(FocusEvent e) {
 				if (handler != null)
 					handler.notifyFocusLost();
 			}
 
-			public final void focusLost(FocusEvent e) {}
+			@Override
+            public final void focusLost(FocusEvent e) {}
 		});
 		StyledDocument doc = log.getStyledDocument();
 		styleRegular = doc.addStyle("regular", null);
@@ -251,20 +254,25 @@ final class SwingLogPanel {
 		label.setAlignmentY(0.8f);
 		label.setMaximumSize(label.getPreferredSize());
 		label.addMouseListener(new MouseListener() {
-			public final void mousePressed(MouseEvent e) {
+			@Override
+            public final void mousePressed(MouseEvent e) {
 				if (handler != null)
 					handler.doVisualize(linkDestination);
 			}
 
-			public final void mouseClicked(MouseEvent e) {}
+			@Override
+            public final void mouseClicked(MouseEvent e) {}
 
-			public final void mouseReleased(MouseEvent e) {}
+			@Override
+            public final void mouseReleased(MouseEvent e) {}
 
-			public final void mouseEntered(MouseEvent e) {
+			@Override
+            public final void mouseEntered(MouseEvent e) {
 				label.setForeground(hoverColor);
 			}
 
-			public final void mouseExited(MouseEvent e) {
+			@Override
+            public final void mouseExited(MouseEvent e) {
 				label.setForeground(linkColor);
 			}
 		});

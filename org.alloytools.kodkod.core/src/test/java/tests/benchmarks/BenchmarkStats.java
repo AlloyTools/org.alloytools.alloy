@@ -68,12 +68,14 @@ public final class BenchmarkStats {
 		// System.out.println("Primary vars and gates : " + primaryVars + " " +
 		// gates);
 		// }
-		public void translatingToCNF(BooleanFormula v) {
+		@Override
+        public void translatingToCNF(BooleanFormula v) {
 			final long start = System.currentTimeMillis();
 			final IntSet s = new IntTreeSet();
 			final BooleanVisitor<Object,Object> counter = new BooleanVisitor<Object,Object>() {
 
-				public Object visit(MultiGate multigate, Object arg) {
+				@Override
+                public Object visit(MultiGate multigate, Object arg) {
 					if (s.add(multigate.label())) {
 						for (BooleanFormula f : multigate) {
 							f.accept(this, arg);
@@ -82,7 +84,8 @@ public final class BenchmarkStats {
 					return null;
 				}
 
-				public Object visit(ITEGate ite, Object arg) {
+				@Override
+                public Object visit(ITEGate ite, Object arg) {
 					if (s.add(ite.label())) {
 						for (BooleanFormula f : ite) {
 							f.accept(this, arg);
@@ -91,19 +94,21 @@ public final class BenchmarkStats {
 					return null;
 				}
 
-				public Object visit(NotGate negation, Object arg) {
+				@Override
+                public Object visit(NotGate negation, Object arg) {
 					if (s.add(negation.label())) {
 						negation.input(0).accept(this, arg);
 					}
 					return null;
 				}
 
-				public Object visit(BooleanVariable variable, Object arg) {
+				@Override
+                public Object visit(BooleanVariable variable, Object arg) {
 					return null;
 				}
 
 			};
-			((BooleanFormula) v).accept(counter, null);
+			v.accept(counter, null);
 			gates = s.size();
 
 			final long end = System.currentTimeMillis();

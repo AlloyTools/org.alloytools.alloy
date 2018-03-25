@@ -96,7 +96,8 @@ public final class ExprToIntCast extends IntExpression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return op + "(" + expression.toString() + ")";
 	}
 

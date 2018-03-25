@@ -113,7 +113,8 @@ public final class AdaptiveRCEStrategy implements ReductionStrategy {
 	 * 
 	 * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
 	 */
-	public IntSet next(ResolutionTrace trace) {
+	@Override
+    public IntSet next(ResolutionTrace trace) {
 		if (varsToTry.isEmpty())
 			return Ints.EMPTY_SET; // tried everything
 

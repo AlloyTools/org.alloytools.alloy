@@ -47,47 +47,58 @@ public final class Ints {
 	 * itself.
 	 */
 	public static final IntSet				EMPTY_SET		= new AbstractIntSet() {
-																public boolean contains(int i) {
+																@Override
+                                                                public boolean contains(int i) {
 																	return false;
 																}
 
-																public int min() {
+																@Override
+                                                                public int min() {
 																	throw new NoSuchElementException();
 																}
 
-																public int max() {
+																@Override
+                                                                public int max() {
 																	throw new NoSuchElementException();
 																}
 
-																public IntIterator iterator(int from, int to) {
+																@Override
+                                                                public IntIterator iterator(int from, int to) {
 																	return new IntIterator() {
-																																public boolean hasNext() {
+																																@Override
+                                                                                                                                public boolean hasNext() {
 																																	return false;
 																																}
 
-																																public int next() {
+																																@Override
+                                                                                                                                public int next() {
 																																	throw new NoSuchElementException();
 																																}
 
-																																public void remove() {
+																																@Override
+                                                                                                                                public void remove() {
 																																	throw new UnsupportedOperationException();
 																																}
 																															};
 																}
 
-																public int size() {
+																@Override
+                                                                public int size() {
 																	return 0;
 																}
 
-																public int floor(int i) {
+																@Override
+                                                                public int floor(int i) {
 																	throw new NoSuchElementException();
 																}
 
-																public int ceil(int i) {
+																@Override
+                                                                public int ceil(int i) {
 																	throw new NoSuchElementException();
 																}
 
-																public IntSet clone() {
+																@Override
+                                                                public IntSet clone() {
 																	return EMPTY_SET;
 																}
 															};
@@ -97,32 +108,39 @@ public final class Ints {
 	 * itself.
 	 */
 	public static final SparseSequence< ? >	EMPTY_SEQUENCE	= new AbstractSparseSequence<Object>() {
-																public int size() {
+																@Override
+                                                                public int size() {
 																	return 0;
 																}
 
-																public boolean containsIndex(int idx) {
+																@Override
+                                                                public boolean containsIndex(int idx) {
 																	return false;
 																}
 
-																public boolean contains(Object o) {
+																@Override
+                                                                public boolean contains(Object o) {
 																	return false;
 																}
 
-																public IntSet indices() {
+																@Override
+                                                                public IntSet indices() {
 																	return EMPTY_SET;
 																}
 
-																public Object get(int index) {
+																@Override
+                                                                public Object get(int index) {
 																	return null;
 																}
 
-																public Iterator<IndexedEntry<Object>> iterator(int from,
+																@Override
+                                                                public Iterator<IndexedEntry<Object>> iterator(int from,
 																		int to) {
 																	return Containers.emptyIterator();
 																}
 
-																public SparseSequence<Object> clone() {
+																@Override
+                                                                public SparseSequence<Object> clone() {
 																	return this;
 																}
 															};
@@ -253,15 +271,18 @@ public final class Ints {
 	 */
 	public static IntVector asIntVector(final int[] ints) {
 		return new AbstractIntVector() {
-			public int get(int index) {
+			@Override
+            public int get(int index) {
 				return ints[index];
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return ints.length;
 			}
 
-			public int[] toArray(int[] array) {
+			@Override
+            public int[] toArray(int[] array) {
 				if (array.length < ints.length) {
 					array = new int[ints.length];
 				}
@@ -280,17 +301,20 @@ public final class Ints {
 	 */
 	public static IntVector nCopies(final int n, final int elt) {
 		return new AbstractIntVector() {
-			public int get(int index) {
+			@Override
+            public int get(int index) {
 				if (index < 0 || index >= n)
 					throw new IndexOutOfBoundsException();
 				return elt;
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return n;
 			}
 
-			public int[] toArray(int[] array) {
+			@Override
+            public int[] toArray(int[] array) {
 				if (array.length < n) {
 					array = new int[n];
 				}
@@ -462,19 +486,23 @@ public final class Ints {
 			this.range = range;
 		}
 
-		public boolean contains(int i) {
+		@Override
+        public boolean contains(int i) {
 			return range.contains(i);
 		}
 
-		public int min() {
+		@Override
+        public int min() {
 			return range.min();
 		}
 
-		public int max() {
+		@Override
+        public int max() {
 			return range.max();
 		}
 
-		public IntIterator iterator(final int from, final int to) {
+		@Override
+        public IntIterator iterator(final int from, final int to) {
 			return new IntIterator() {
 				final boolean	ascending	= (from <= to);
 				long			cursor		= ascending ? StrictMath.max(range.min(), from)
@@ -482,24 +510,28 @@ public final class Ints {
 				final int		end			= ascending ? StrictMath.min(range.max(), to)
 						: StrictMath.max(range.min(), to);
 
-				public boolean hasNext() {
+				@Override
+                public boolean hasNext() {
 					return ascending && cursor <= end || !ascending && cursor >= end;
 				}
 
-				public int next() {
+				@Override
+                public int next() {
 					if (!hasNext())
 						throw new NoSuchElementException();
 					return ascending ? (int) cursor++ : (int) cursor--;
 				}
 
-				public void remove() {
+				@Override
+                public void remove() {
 					throw new UnsupportedOperationException();
 				}
 
 			};
 		}
 
-		public int size() {
+		@Override
+        public int size() {
 			return range.size();
 		}
 
@@ -508,19 +540,22 @@ public final class Ints {
 			return this;
 		}
 
-		public int floor(int i) {
+		@Override
+        public int floor(int i) {
 			if (i < range.min())
 				throw new NoSuchElementException();
 			return StrictMath.min(i, range.max());
 		}
 
-		public int ceil(int i) {
+		@Override
+        public int ceil(int i) {
 			if (i > range.max())
 				throw new NoSuchElementException();
 			return StrictMath.max(i, range.min());
 		}
 
-		public IntSet clone() {
+		@Override
+        public IntSet clone() {
 			return this;
 		}
 	}
@@ -538,40 +573,48 @@ public final class Ints {
 			this.i = i;
 		}
 
-		public boolean contains(int j) {
+		@Override
+        public boolean contains(int j) {
 			return i == j;
 		}
 
-		public int min() {
+		@Override
+        public int min() {
 			return i;
 		}
 
-		public int max() {
+		@Override
+        public int max() {
 			return i;
 		}
 
-		public IntIterator iterator(final int from, final int to) {
+		@Override
+        public IntIterator iterator(final int from, final int to) {
 			return new IntIterator() {
 				boolean cursor = (from <= i && i <= to) || (to <= i && i <= from);
 
-				public boolean hasNext() {
+				@Override
+                public boolean hasNext() {
 					return cursor;
 				}
 
-				public int next() {
+				@Override
+                public int next() {
 					if (!hasNext())
 						throw new NoSuchElementException();
 					cursor = false;
 					return i;
 				}
 
-				public void remove() {
+				@Override
+                public void remove() {
 					throw new UnsupportedOperationException();
 				}
 			};
 		}
 
-		public int size() {
+		@Override
+        public int size() {
 			return 1;
 		}
 
@@ -580,7 +623,8 @@ public final class Ints {
 			return this;
 		}
 
-		public boolean equals(Object o) {
+		@Override
+        public boolean equals(Object o) {
 			if (this == o)
 				return true;
 			else if (o instanceof IntSet) {
@@ -590,25 +634,29 @@ public final class Ints {
 				return super.equals(o);
 		}
 
-		public int hashCode() {
+		@Override
+        public int hashCode() {
 			return i;
 		}
 
-		public int floor(int j) {
+		@Override
+        public int floor(int j) {
 			if (i <= j)
 				return i;
 			else
 				throw new NoSuchElementException();
 		}
 
-		public int ceil(int j) {
+		@Override
+        public int ceil(int j) {
 			if (i >= j)
 				return i;
 			else
 				throw new NoSuchElementException();
 		}
 
-		public IntSet clone() {
+		@Override
+        public IntSet clone() {
 			return this;
 		}
 	}
@@ -630,19 +678,23 @@ public final class Ints {
 			this.s = set;
 		}
 
-		public int size() {
+		@Override
+        public int size() {
 			return s.size();
 		}
 
-		public boolean contains(int i) {
+		@Override
+        public boolean contains(int i) {
 			return s.contains(i);
 		}
 
-		public int min() {
+		@Override
+        public int min() {
 			return s.min();
 		}
 
-		public int max() {
+		@Override
+        public int max() {
 			return s.max();
 		}
 
@@ -651,33 +703,40 @@ public final class Ints {
 			return s.containsAll(other);
 		}
 
-		public IntIterator iterator(final int from, final int to) {
+		@Override
+        public IntIterator iterator(final int from, final int to) {
 			return new IntIterator() {
 				IntIterator iter = s.iterator(from, to);
 
-				public boolean hasNext() {
+				@Override
+                public boolean hasNext() {
 					return iter.hasNext();
 				}
 
-				public int next() {
+				@Override
+                public int next() {
 					return iter.next();
 				}
 
-				public void remove() {
+				@Override
+                public void remove() {
 					throw new UnsupportedOperationException();
 				}
 			};
 		}
 
-		public int floor(int i) {
+		@Override
+        public int floor(int i) {
 			return s.floor(i);
 		}
 
-		public int ceil(int i) {
+		@Override
+        public int ceil(int i) {
 			return s.ceil(i);
 		}
 
-		public IntSet clone() throws CloneNotSupportedException {
+		@Override
+        public IntSet clone() throws CloneNotSupportedException {
 			return s.clone();
 		}
 	}
@@ -694,70 +753,86 @@ public final class Ints {
 			this.s = s;
 		}
 
-		public Iterator<IndexedEntry<V>> iterator(final int from, final int to) {
+		@Override
+        public Iterator<IndexedEntry<V>> iterator(final int from, final int to) {
 			return new Iterator<IndexedEntry<V>>() {
 				Iterator<IndexedEntry<V>> iter = s.iterator(from, to);
 
-				public boolean hasNext() {
+				@Override
+                public boolean hasNext() {
 					return iter.hasNext();
 				}
 
-				public IndexedEntry<V> next() {
+				@Override
+                public IndexedEntry<V> next() {
 					return iter.next();
 				}
 
-				public void remove() {
+				@Override
+                public void remove() {
 					throw new UnsupportedOperationException();
 				}
 
 			};
 		}
 
-		public int size() {
+		@Override
+        public int size() {
 			return s.size();
 		}
 
-		public void clear() {
+		@Override
+        public void clear() {
 			throw new UnsupportedOperationException();
 		}
 
-		public V put(int index, V value) {
+		@Override
+        public V put(int index, V value) {
 			throw new UnsupportedOperationException();
 		}
 
-		public V get(int index) {
+		@Override
+        public V get(int index) {
 			return s.get(index);
 		}
 
-		public V remove(int index) {
+		@Override
+        public V remove(int index) {
 			throw new UnsupportedOperationException();
 		}
 
-		public IndexedEntry<V> first() {
+		@Override
+        public IndexedEntry<V> first() {
 			return s.first();
 		}
 
-		public IndexedEntry<V> last() {
+		@Override
+        public IndexedEntry<V> last() {
 			return s.last();
 		}
 
-		public IndexedEntry<V> ceil(int index) {
+		@Override
+        public IndexedEntry<V> ceil(int index) {
 			return s.ceil(index);
 		}
 
-		public IndexedEntry<V> floor(int index) {
+		@Override
+        public IndexedEntry<V> floor(int index) {
 			return s.floor(index);
 		}
 
-		public boolean containsIndex(int index) {
+		@Override
+        public boolean containsIndex(int index) {
 			return s.containsIndex(index);
 		}
 
-		public boolean contains(Object value) {
+		@Override
+        public boolean contains(Object value) {
 			return s.contains(value);
 		}
 
-		public SparseSequence<V> clone() throws CloneNotSupportedException {
+		@Override
+        public SparseSequence<V> clone() throws CloneNotSupportedException {
 			return s.clone();
 		}
 

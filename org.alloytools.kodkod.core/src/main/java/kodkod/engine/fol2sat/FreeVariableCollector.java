@@ -120,7 +120,8 @@ abstract class FreeVariableCollector extends AbstractCollector<Variable> {
 	 * 
 	 * @return freeVars(decl.expression)
 	 */
-	public Set<Variable> visit(Decl decl) {
+	@Override
+    public Set<Variable> visit(Decl decl) {
 		final Set<Variable> ret = lookup(decl);
 		return ret != null ? ret : cache(decl, decl.expression().accept(this));
 	}

@@ -469,7 +469,8 @@ final class CBCFactory {
 												 * 
 												 * @requires f0.op in (AND + OR)
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op().ordinal < 2;
 													final int label = f1.label();
 													if (f0.contains(f0.op(), label, cmpMax) > 0)
@@ -499,7 +500,8 @@ final class CBCFactory {
 												 * @requires f0.op = AND &&
 												 *           f1.op = OR
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == AND && f1.op() == OR;
 													scrap0.clear();
 													scrap1.clear();
@@ -539,7 +541,8 @@ final class CBCFactory {
 												 *           (f0+f1).op in (AND
 												 *           + OR)
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == f1.op();
 													if (f0 == f1)
 														return f0;
@@ -572,7 +575,8 @@ final class CBCFactory {
 												 * @requires f0.op in (AND + OR)
 												 *           && f1.op = ITE
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op().ordinal < 2 && f1.op() == ITE;
 													if (f0.label() < f1.label())												// f0
 																																// created
@@ -599,7 +603,8 @@ final class CBCFactory {
 												 * @requires f0.op in (AND + OR)
 												 *           && f1.op = NOT
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op().ordinal < 2 && f1.op() == NOT;
 													if (f0.label() == -f1.label())
 														return op.shortCircuit();
@@ -623,7 +628,8 @@ final class CBCFactory {
 												 * @requires f0.op = ITE &&
 												 *           f1.op = VAR
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == ITE && f1.op() == VAR;
 													return cache(op, f0, f1);
 												}
@@ -644,7 +650,8 @@ final class CBCFactory {
 												 * @requires f0.op = ITE &&
 												 *           f1.op = NOT
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == ITE && f1.op() == NOT;
 													if (f0.label() == -f1.label())
 														return op.shortCircuit();
@@ -676,7 +683,8 @@ final class CBCFactory {
 												 * 
 												 * @requires f0.op = NOT
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == NOT;
 													final int label = f1.label();
 													if (f0.input(0).contains(op.complement(), label, cmpMax) > 0)
@@ -700,7 +708,8 @@ final class CBCFactory {
 												 * 
 												 * @requires f1.op + f0.op = NOT
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == NOT && f1.op() == NOT;
 													if (f0 == f1)
 														return f0;
@@ -727,7 +736,8 @@ final class CBCFactory {
 												 * @requires f1.op = NOT &&
 												 *           f1.op = VAR
 												 */
-												BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
+												@Override
+                                                BooleanValue assemble(Nary op, BooleanFormula f0, BooleanFormula f1) {
 													assert f0.op() == NOT && f1.op() == VAR;
 													if (f0.label() == -f1.label())
 														return op.shortCircuit();

@@ -276,7 +276,8 @@ public final class BooleanMatrix implements Iterable<IndexedEntry<BooleanValue>>
 	 * @return an iterator over IndexedEntries representing the non-FALSE
 	 *         entries in this matrix.
 	 */
-	public final Iterator<IndexedEntry<BooleanValue>> iterator() {
+	@Override
+    public final Iterator<IndexedEntry<BooleanValue>> iterator() {
 		return cells.iterator();
 	}
 
@@ -1170,7 +1171,8 @@ public final class BooleanMatrix implements Iterable<IndexedEntry<BooleanValue>>
 	 * @return {m: BooleanMatrix - this | m.dimensions = this.dimensions &&
 	 *         m.elements = copy of this.elements }
 	 */
-	public BooleanMatrix clone() {
+	@Override
+    public BooleanMatrix clone() {
 		try {
 			final BooleanMatrix ret = new BooleanMatrix(dims, factory, cells.clone());
 			ret.mergeDefConds(this);
@@ -1183,7 +1185,8 @@ public final class BooleanMatrix implements Iterable<IndexedEntry<BooleanValue>>
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder buff = new StringBuilder("dimensions: ");
 		buff.append(dims);
 		buff.append(", elements: ");

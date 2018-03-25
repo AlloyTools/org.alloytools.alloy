@@ -174,7 +174,7 @@ public final class A4SolutionWriter {
 		out.print("\">\n");
 		try {
 			if (sol != null && x != Sig.UNIV && x != Sig.SIGINT && x != Sig.SEQIDX) {
-				ts = (A4TupleSet) (sol.eval(x));
+				ts = (sol.eval(x));
 				for (A4Tuple t : ts.minus(ts2))
 					Util.encodeXMLs(out, "   <atom label=\"", t.atom(0), "\"/>\n");
 			}

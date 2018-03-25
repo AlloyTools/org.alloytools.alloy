@@ -137,7 +137,8 @@ final class MiniSatProver extends NativeSolver implements SATProver {
 	 * 
 	 * @see kodkod.engine.satlab.SATProver#proof()
 	 */
-	public ResolutionTrace proof() {
+	@Override
+    public ResolutionTrace proof() {
 		if (!Boolean.FALSE.equals(status()))
 			throw new IllegalStateException();
 		if (proof == null) {
@@ -161,7 +162,8 @@ final class MiniSatProver extends NativeSolver implements SATProver {
 	 * 
 	 * @see kodkod.engine.satlab.SATProver#reduce(kodkod.engine.satlab.ReductionStrategy)
 	 */
-	public void reduce(ReductionStrategy strategy) {
+	@Override
+    public void reduce(ReductionStrategy strategy) {
 		proof();
 		if (proof.resolvents().isEmpty()) {
 			return; // nothing to minimize; we had an empty axiom added to the
@@ -195,7 +197,8 @@ final class MiniSatProver extends NativeSolver implements SATProver {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "MiniSatProver";
 	}
 
@@ -211,35 +214,40 @@ final class MiniSatProver extends NativeSolver implements SATProver {
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#free(long)
 	 */
-	native void free(long peer);
+	@Override
+    native void free(long peer);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
 	 */
-	native void addVariables(long peer, int numVariables);
+	@Override
+    native void addVariables(long peer, int numVariables);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
 	 */
-	native boolean addClause(long peer, int[] lits);
+	@Override
+    native boolean addClause(long peer, int[] lits);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#solve(long)
 	 */
-	native boolean solve(long peer);
+	@Override
+    native boolean solve(long peer);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
 	 */
-	native boolean valueOf(long peer, int literal);
+	@Override
+    native boolean valueOf(long peer, int literal);
 
 	/**
 	 * Returns an array of arrays that encodes the most recently generated

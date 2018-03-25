@@ -99,7 +99,8 @@ public final class IfIntExpression extends IntExpression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "(if " + condition + " then " + thenExpr + " else " + elseExpr + ")";
 	}
 

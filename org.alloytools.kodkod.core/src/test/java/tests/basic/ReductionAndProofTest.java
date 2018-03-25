@@ -57,7 +57,8 @@ public class ReductionAndProofTest extends TestCase {
 		this.bounds = new Bounds(universe);
 	}
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		bounds.bound(a, factory.setOf("0", "1", "2", "3", "4"));
 		bounds.bound(b, factory.setOf("5", "6", "7", "8", "9"));

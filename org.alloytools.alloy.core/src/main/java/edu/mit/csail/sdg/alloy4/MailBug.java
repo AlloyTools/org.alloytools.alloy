@@ -218,7 +218,8 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
 	}
 
 	/** This method will query alloy.mit.edu for the latest version number. */
-	public void run() {
+	@Override
+    public void run() {
 		String result = readAll(ALLOY_NOW + "?buildnum=" + Version.buildNumber() + "&builddate=" + Version.buildDate(),
 				"", "");
 		if (!result.startsWith("Alloy Build "))
@@ -264,10 +265,12 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
 			final JTextArea status = OurUtil.textarea("Sending the bug report... please wait...", 10, 40, false, true,
 					new LineBorder(Color.GRAY));
 			new Thread(new Runnable() {
-				public void run() {
+				@Override
+                public void run() {
 					final String output = readAll(ALLOY_URL, report, alt);
 					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
+						@Override
+                        public void run() {
 							status.setText(output);
 							status.setCaretPosition(0);
 						}
@@ -281,7 +284,8 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
 	}
 
 	/** This method is an exception handler for uncaught exceptions. */
-	public void uncaughtException(Thread thread, Throwable ex) {
+	@Override
+    public void uncaughtException(Thread thread, Throwable ex) {
 		if (isGUI(ex))
 			return;
 		final int ver;

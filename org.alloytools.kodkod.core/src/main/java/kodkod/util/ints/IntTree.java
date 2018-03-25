@@ -368,7 +368,8 @@ final class IntTree<N extends IntTree.Node<N>> implements Cloneable {
 	 * @throws CloneNotSupportedException nodes contained in this tree are not
 	 *             cloneable
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	protected IntTree<N> clone() throws CloneNotSupportedException {
 		final IntTree<N> ret = (IntTree<N>) super.clone();
 		ret.root = clone(root, null);
@@ -539,7 +540,8 @@ final class IntTree<N extends IntTree.Node<N>> implements Cloneable {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return root.toString();
 	}
 
@@ -611,7 +613,8 @@ final class IntTree<N extends IntTree.Node<N>> implements Cloneable {
 		 * @throws CloneNotSupportedException
 		 * @see java.lang.Object#clone()
 		 */
-		@SuppressWarnings("unchecked")
+		@Override
+        @SuppressWarnings("unchecked")
 		protected Node<N> clone() throws CloneNotSupportedException {
 			Node<N> ret = (Node<N>) super.clone();
 			ret.parent = ret.left = ret.right = null;
@@ -621,7 +624,8 @@ final class IntTree<N extends IntTree.Node<N>> implements Cloneable {
 		/**
 		 * @see java.lang.Object#toString()
 		 */
-		public String toString() {
+		@Override
+        public String toString() {
 			return "[" + key + " " + (color ? "b" : "r") + " " + (left == this ? key : left) + " "
 					+ (right == this ? key : right) + "]";
 

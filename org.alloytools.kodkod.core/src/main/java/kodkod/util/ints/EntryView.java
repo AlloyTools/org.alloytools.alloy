@@ -103,28 +103,32 @@ class EntryView<V> implements IndexedEntry<V> {
 	/**
 	 * @see kodkod.util.ints.IndexedEntry#index()
 	 */
-	public int index() {
+	@Override
+    public int index() {
 		return index;
 	}
 
 	/**
 	 * @see kodkod.util.ints.IndexedEntry#value()
 	 */
-	public V value() {
+	@Override
+    public V value() {
 		return value;
 	}
 
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public final String toString() {
+	@Override
+    public final String toString() {
 		return index + "=" + value;
 	}
 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public final boolean equals(Object o) {
+	@Override
+    public final boolean equals(Object o) {
 		if (o == this)
 			return true;
 		if (!(o instanceof IndexedEntry))
@@ -135,7 +139,8 @@ class EntryView<V> implements IndexedEntry<V> {
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
-	public final int hashCode() {
+	@Override
+    public final int hashCode() {
 		return AbstractSparseSequence.hashCode(this);
 	}
 }

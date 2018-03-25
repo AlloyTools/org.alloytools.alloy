@@ -19,7 +19,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -336,12 +335,14 @@ public final class SimTupleset implements Iterable<SimTuple> {
 	}
 
 	/** Returns a read-only iterator over the tuples. */
-	public Iterator<SimTuple> iterator() {
+	@Override
+    public Iterator<SimTuple> iterator() {
 		return new Iterator<SimTuple>() {
 			private long	n	= longsize();
 			private long	i	= 0;
 
-			public SimTuple next() {
+			@Override
+            public SimTuple next() {
 				if (i >= n)
 					throw new NoSuchElementException();
 				else {
@@ -350,11 +351,13 @@ public final class SimTupleset implements Iterable<SimTuple> {
 				}
 			}
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return i < n;
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};
@@ -887,7 +890,8 @@ public final class SimTupleset implements Iterable<SimTuple> {
 			private long i = (-1); // -1 if we haven't started yet; otherwise it
 									// is the next element to return
 
-			public SimTupleset next() {
+			@Override
+            public SimTupleset next() {
 				if (i < 0) {
 					i++;
 					return EMPTY;
@@ -898,11 +902,13 @@ public final class SimTupleset implements Iterable<SimTuple> {
 				return ans;
 			}
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return i < longsize();
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};
@@ -929,7 +935,8 @@ public final class SimTupleset implements Iterable<SimTuple> {
 														// null, it means no
 														// more results
 
-			public SimTupleset next() {
+			@Override
+            public SimTupleset next() {
 				if (in == null)
 					throw new NoSuchElementException();
 				TempList<SimTuple> ans = new TempList<SimTuple>();
@@ -949,11 +956,13 @@ public final class SimTupleset implements Iterable<SimTuple> {
 				return new SimTupleset(ans.makeConst());
 			}
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return in != null;
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};

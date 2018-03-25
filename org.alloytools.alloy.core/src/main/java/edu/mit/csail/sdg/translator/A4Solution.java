@@ -283,7 +283,7 @@ public final class A4Solution {
 		this.sigs = new SafeList<Sig>(Arrays.asList(UNIV, SIGINT, SEQIDX, STRING, NONE));
 		this.a2k = Util.asMap(new Expr[] {
 				UNIV, SIGINT, SEQIDX, STRING, NONE
-		}, Relation.INTS.union(KK_STRING), Relation.INTS, KK_SEQIDX, KK_STRING, Relation.NONE);
+		}, Expression.INTS.union(KK_STRING), Expression.INTS, KK_SEQIDX, KK_STRING, Expression.NONE);
 		this.k2pos = new LinkedHashMap<Formula, Object>();
 		this.rel2type = new LinkedHashMap<Relation, Type>();
 		this.decl2type = new LinkedHashMap<Variable, Pair<Type, Pos>>();
@@ -746,9 +746,9 @@ public final class A4Solution {
 	 * if expr is not Relation, nor a {union, product} of Relations.
 	 */
 	TupleSet query(boolean findUpper, Expression expr, boolean makeMutable) throws ErrorFatal {
-		if (expr == Relation.NONE)
+		if (expr == Expression.NONE)
 			return factory.noneOf(1);
-		if (expr == Relation.INTS)
+		if (expr == Expression.INTS)
 			return makeMutable ? sigintBounds.clone() : sigintBounds;
 		if (expr == KK_SEQIDX)
 			return makeMutable ? seqidxBounds.clone() : seqidxBounds;
@@ -1092,12 +1092,14 @@ public final class A4Solution {
 		}
 
 		/** {@inheritDoc} */
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return hasFirst || iterator.hasNext();
 		}
 
 		/** {@inheritDoc} */
-		public T next() {
+		@Override
+        public T next() {
 			if (hasFirst) {
 				hasFirst = false;
 				T ans = first;
@@ -1108,7 +1110,8 @@ public final class A4Solution {
 		}
 
 		/** {@inheritDoc} */
-		public void remove() {
+		@Override
+        public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -1245,7 +1248,7 @@ public final class A4Solution {
 						}
 					}
 			// Assign atom->name and atom->MostSignificantSig
-			for (Tuple t : frame.eval.evaluate(Relation.INTS)) {
+			for (Tuple t : frame.eval.evaluate(Expression.INTS)) {
 				frame.atom2sig.put(t.atom(0), SIGINT);
 			}
 			for (Tuple t : frame.eval.evaluate(KK_SEQIDX)) {
@@ -1260,7 +1263,7 @@ public final class A4Solution {
 			// These are redundant atoms that were not chosen to be in the final
 			// instance
 			int unused = 0;
-			for (Tuple tuple : frame.eval.evaluate(Relation.UNIV)) {
+			for (Tuple tuple : frame.eval.evaluate(Expression.UNIV)) {
 				Object atom = tuple.atom(0);
 				if (!frame.atom2sig.containsKey(atom)) {
 					frame.atom2name.put(atom, "unused" + unused);

@@ -44,7 +44,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#contains(int)
 	 */
-	public boolean contains(int element) {
+	@Override
+    public boolean contains(int element) {
 		for (int i = 0, max = size(); i < max; i++) {
 			if (get(i) == element)
 				return true;
@@ -57,7 +58,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#set(int,int)
 	 */
-	public int set(int index, int element) {
+	@Override
+    public int set(int index, int element) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -66,7 +68,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#indexOf(int)
 	 */
-	public int indexOf(int element) {
+	@Override
+    public int indexOf(int element) {
 		for (int i = 0, length = size(); i < length; i++) {
 			if (get(i) == element)
 				return i;
@@ -79,7 +82,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#lastIndexOf(int)
 	 */
-	public int lastIndexOf(int element) {
+	@Override
+    public int lastIndexOf(int element) {
 		for (int i = size() - 1; i >= 0; i--) {
 			if (get(i) == element)
 				return i;
@@ -93,7 +97,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * @see kodkod.util.ints.IntVector#add(int)
 	 * @see kodkod.util.ints.IntVector#add(int,int)
 	 */
-	public boolean add(int element) {
+	@Override
+    public boolean add(int element) {
 		final int length = size();
 		add(length, element);
 		return length != size();
@@ -104,7 +109,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#add(int, int)
 	 */
-	public void add(int index, int element) {
+	@Override
+    public void add(int index, int element) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -115,7 +121,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * @return this.addAll(size(), c)
 	 * @see kodkod.util.ints.AbstractIntCollection#addAll(kodkod.util.ints.IntCollection)
 	 */
-	public boolean addAll(IntCollection c) {
+	@Override
+    public boolean addAll(IntCollection c) {
 		return addAll(size(), c);
 	}
 
@@ -125,7 +132,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * @see kodkod.util.ints.IntVector#addAll(int,
 	 *      kodkod.util.ints.IntCollection)
 	 */
-	public boolean addAll(int index, IntCollection c) {
+	@Override
+    public boolean addAll(int index, IntCollection c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -134,7 +142,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#removeAt(int)
 	 */
-	public int removeAt(int index) {
+	@Override
+    public int removeAt(int index) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -144,7 +153,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * @see kodkod.util.ints.IntVector#iterator()
 	 * @see kodkod.util.ints.IntVector#iterator(int,int)
 	 */
-	public IntIterator iterator() {
+	@Override
+    public IntIterator iterator() {
 		return iterator(0, size());
 	}
 
@@ -153,7 +163,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see kodkod.util.ints.IntVector#iterator(int, int)
 	 */
-	public IntIterator iterator(int fromIndex, int toIndex) {
+	@Override
+    public IntIterator iterator(int fromIndex, int toIndex) {
 		return fromIndex <= toIndex ? new AscendingIntVectorIterator(fromIndex, toIndex)
 				: new DescendingIntVectorIterator(fromIndex, toIndex);
 	}
@@ -166,7 +177,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * @see Object#equals(Object)
 	 * @see #equals(Object)
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		final int length = size();
 		int hash = length;
 		for (int i = 0; i < length; i++) {
@@ -183,7 +195,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @return <tt>true</tt> if the specified object is equal to this vector.
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this)
 			return true;
 		if (o instanceof IntVector) {
@@ -205,7 +218,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append("[");
 		IntIterator itr = iterator();
@@ -228,7 +242,8 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 			last = -1;
 		}
 
-		public final void remove() {
+		@Override
+        public final void remove() {
 			if (last < 0)
 				throw new IllegalStateException();
 			AbstractIntVector.this.removeAt(last);
@@ -247,11 +262,13 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 			super(fromIndex, toIndex);
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return last < Integer.MAX_VALUE && next < end;
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			last = next++;
@@ -269,11 +286,13 @@ public abstract class AbstractIntVector extends AbstractIntCollection implements
 			super(fromIndex, toIndex);
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next > end;
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			last = next--;

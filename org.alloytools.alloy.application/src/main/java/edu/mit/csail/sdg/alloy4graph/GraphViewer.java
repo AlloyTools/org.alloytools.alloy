@@ -173,7 +173,8 @@ public final strictfp class GraphViewer extends JPanel {
 		pop.add(zoomToFit);
 		pop.add(print);
 		ActionListener act = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				Container c = getParent();
 				while (c != null) {
 					if (c instanceof JViewport)
@@ -437,41 +438,50 @@ public final strictfp class GraphViewer extends JPanel {
 		dp1.setPreferredSize(dim);
 		dp1.setEnabled(false);
 		w1.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
+			@Override
+            public void changedUpdate(DocumentEvent e) {
 				alloyRefresh(1, ratio, w1, w2, h1, h2, d1, d2, msg);
 			}
 
-			public void insertUpdate(DocumentEvent e) {
+			@Override
+            public void insertUpdate(DocumentEvent e) {
 				changedUpdate(null);
 			}
 
-			public void removeUpdate(DocumentEvent e) {
+			@Override
+            public void removeUpdate(DocumentEvent e) {
 				changedUpdate(null);
 			}
 		});
 		h1.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
+			@Override
+            public void changedUpdate(DocumentEvent e) {
 				alloyRefresh(2, ratio, w1, w2, h1, h2, d1, d2, msg);
 			}
 
-			public void insertUpdate(DocumentEvent e) {
+			@Override
+            public void insertUpdate(DocumentEvent e) {
 				changedUpdate(null);
 			}
 
-			public void removeUpdate(DocumentEvent e) {
+			@Override
+            public void removeUpdate(DocumentEvent e) {
 				changedUpdate(null);
 			}
 		});
 		d1.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
+			@Override
+            public void changedUpdate(DocumentEvent e) {
 				alloyRefresh(3, ratio, w1, w2, h1, h2, d1, d2, msg);
 			}
 
-			public void insertUpdate(DocumentEvent e) {
+			@Override
+            public void insertUpdate(DocumentEvent e) {
 				changedUpdate(null);
 			}
 
-			public void removeUpdate(DocumentEvent e) {
+			@Override
+            public void removeUpdate(DocumentEvent e) {
 				changedUpdate(null);
 			}
 		});
@@ -479,7 +489,8 @@ public final strictfp class GraphViewer extends JPanel {
 		final JRadioButton b2 = new JRadioButton("As a PNG with a specific width, height, and resolution:", false);
 		final JRadioButton b3 = new JRadioButton("As a PDF with the given resolution:", false);
 		b1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				b2.setSelected(false);
 				b3.setSelected(false);
 				if (!b1.isSelected())
@@ -495,7 +506,8 @@ public final strictfp class GraphViewer extends JPanel {
 			}
 		});
 		b2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				b1.setSelected(false);
 				b3.setSelected(false);
 				if (!b2.isSelected())
@@ -509,7 +521,8 @@ public final strictfp class GraphViewer extends JPanel {
 			}
 		});
 		b3.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				b1.setSelected(false);
 				b2.setSelected(false);
 				if (!b3.isSelected())

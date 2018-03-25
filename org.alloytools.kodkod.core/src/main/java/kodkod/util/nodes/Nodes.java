@@ -228,11 +228,13 @@ public final class Nodes {
 	public static Set<Formula> allRoots(Formula formula, Collection< ? extends Node> descendants) {
 		final Set<Node> desc = new IdentityHashSet<Node>(descendants);
 		final AbstractDetector detector = new AbstractDetector(Collections.EMPTY_SET) {
-			protected Boolean lookup(Node n) {
+			@Override
+            protected Boolean lookup(Node n) {
 				return desc.contains(n) ? Boolean.TRUE : cache.get(n);
 			}
 
-			protected Boolean cache(Node n, boolean val) {
+			@Override
+            protected Boolean cache(Node n, boolean val) {
 				final Boolean ret = Boolean.valueOf(val);
 				cache.put(n, ret);
 				return ret;

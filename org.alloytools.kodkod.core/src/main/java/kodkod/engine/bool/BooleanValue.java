@@ -73,7 +73,8 @@ public abstract class BooleanValue implements Comparable<BooleanValue> {
 	 *         if the label of this is smaller than the label of other; and a
 	 *         positive integer otherwise.
 	 */
-	public final int compareTo(BooleanValue other) {
+	@Override
+    public final int compareTo(BooleanValue other) {
 		return label() - other.label();
 	}
 }

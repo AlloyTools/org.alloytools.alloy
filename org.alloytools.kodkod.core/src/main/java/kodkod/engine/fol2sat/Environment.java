@@ -202,7 +202,8 @@ public final class Environment<T, E> {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return (parent.isEmpty() ? "[]" : parent.toString()) + "[" + variable + "=" + value + "]";
 	}
 

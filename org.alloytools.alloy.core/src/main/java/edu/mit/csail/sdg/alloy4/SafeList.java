@@ -248,13 +248,15 @@ public final class SafeList<T> implements Serializable, Iterable<T> {
 	 * existed at the time that the iterator was created (even if the list is
 	 * modified after that point).
 	 */
-	public Iterator<T> iterator() {
+	@Override
+    public Iterator<T> iterator() {
 		synchronized (SafeList.class) {
 			return new Iterator<T>() {
 				private final int	imax	= (max >= 0 ? max : list.size());
 				private int			now		= 0;
 
-				public final T next() {
+				@Override
+                public final T next() {
 					if (now >= imax)
 						throw new NoSuchElementException();
 					synchronized (SafeList.class) {
@@ -264,11 +266,13 @@ public final class SafeList<T> implements Serializable, Iterable<T> {
 					}
 				}
 
-				public final boolean hasNext() {
+				@Override
+                public final boolean hasNext() {
 					return now < imax;
 				}
 
-				public final void remove() {
+				@Override
+                public final void remove() {
 					throw new UnsupportedOperationException();
 				}
 			};

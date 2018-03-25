@@ -91,7 +91,8 @@ public final class BooleanConstant extends BooleanValue {
 	 * 
 	 * @return a string representation of this boolean value.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return label > 0 ? "T" : "F";
 	}
 

@@ -186,7 +186,8 @@ public class A4Preferences {
 
 		public Action getAction(final T value) {
 			return new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
+				@Override
+                public void actionPerformed(ActionEvent e) {
 					set(value);
 				}
 			};
@@ -237,11 +238,13 @@ public class A4Preferences {
 			this.defaultValue2 = (T) x[1];
 		}
 
-		protected T defaultValue() {
+		@Override
+        protected T defaultValue() {
 			return defaultValue2 != null ? defaultValue2 : super.defaultValue();
 		}
 
-		public List<T> validChoices() {
+		@Override
+        public List<T> validChoices() {
 			return validChoices2 != null ? validChoices2 : super.validChoices();
 		}
 	}
@@ -472,7 +475,8 @@ public class A4Preferences {
 			this.pref = pref;
 		}
 
-		public void actionPerformed(ActionEvent e) {
+		@Override
+        public void actionPerformed(ActionEvent e) {
 			pref.toggle();
 		}
 	}

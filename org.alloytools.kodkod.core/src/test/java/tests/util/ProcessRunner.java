@@ -110,7 +110,8 @@ public final class ProcessRunner extends Thread {
 	 * 
 	 * @see java.lang.Thread#run()
 	 */
-	public void run() {
+	@Override
+    public void run() {
 		try {
 			process = Runtime.getRuntime().exec(cmd);
 			process.waitFor();

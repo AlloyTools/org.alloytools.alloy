@@ -126,7 +126,8 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 	 * 
 	 * @see kodkod.util.ints.IntSet#ceil(int)
 	 */
-	public int ceil(int i) {
+	@Override
+    public int ceil(int i) {
 		if (i <= 0)
 			return min();
 		int wordIndex = wordIndex(i);
@@ -148,7 +149,8 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 	 * 
 	 * @see kodkod.util.ints.IntSet#floor(int)
 	 */
-	public int floor(int i) {
+	@Override
+    public int floor(int i) {
 		if (i < 0)
 			throw new NoSuchElementException();
 		int wordIndex = wordIndex(i);
@@ -183,7 +185,8 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 	 * 
 	 * @see kodkod.util.ints.IntSet#iterator(int, int)
 	 */
-	public IntIterator iterator(int from, int to) {
+	@Override
+    public IntIterator iterator(int from, int to) {
 		return from > to ? new DescendingIterator(from, to) : new AscendingIterator(from, to);
 	}
 
@@ -192,7 +195,8 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 	 * 
 	 * @see kodkod.util.ints.IntSet#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -430,7 +434,7 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 	public IntBitSet clone() {
 		try {
 			final IntBitSet ret = (IntBitSet) super.clone();
-			ret.elements = (long[]) this.elements.clone();
+			ret.elements = this.elements.clone();
 			return ret;
 		} catch (CloneNotSupportedException e) {
 			throw new InternalError(); // unreachable code
@@ -446,7 +450,8 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 		long	unseen;
 		int		unseenIndex, lastReturned;
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (lastReturned < 0)
 				throw new IllegalStateException();
 			elements[wordIndex(lastReturned)] -= bitMask(lastReturned);
@@ -492,13 +497,15 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 			lastReturned = -1;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			while (unseen == 0 && unseenIndex < elements.length - 1)
 				unseen = elements[++unseenIndex];
 			return (unseenIndex < maxIndex && unseen != 0) || (unseenIndex == maxIndex && (unseen & maxMask) != 0);
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			final long lastReturnedMask = Long.lowestOneBit(unseen);
@@ -545,13 +552,15 @@ public final class IntBitSet extends AbstractIntSet implements Cloneable {
 			lastReturned = -1;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			while (unseen == 0 && unseenIndex > 0)
 				unseen = elements[--unseenIndex];
 			return (unseenIndex > minIndex && unseen != 0) || (unseenIndex == minIndex && (unseen & minMask) != 0);
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			final long lastReturnedMask = Long.highestOneBit(unseen);

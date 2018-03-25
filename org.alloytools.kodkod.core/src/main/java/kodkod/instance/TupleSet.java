@@ -249,7 +249,8 @@ public final class TupleSet extends AbstractSet<Tuple> implements Cloneable {
 	 * @return {s: TupleSet - this | s.universe = this.universe && s.tuples =
 	 *         this.tuples }
 	 */
-	public TupleSet clone() {
+	@Override
+    public TupleSet clone() {
 		// ok to use a copy constructor to clone a final class
 		return new TupleSet(this);
 	}
@@ -264,15 +265,18 @@ public final class TupleSet extends AbstractSet<Tuple> implements Cloneable {
 		return new Iterator<Tuple>() {
 			IntIterator indexIter = tuples.iterator();
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return indexIter.hasNext();
 			}
 
-			public Tuple next() {
+			@Override
+            public Tuple next() {
 				return universe.factory().tuple(arity, indexIter.next());
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				indexIter.remove();
 			}
 		};

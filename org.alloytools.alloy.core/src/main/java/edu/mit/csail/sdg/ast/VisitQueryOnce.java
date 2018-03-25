@@ -1,8 +1,6 @@
 package edu.mit.csail.sdg.ast;
 
 import java.util.IdentityHashMap;
-import java.util.Set;
-
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Sig.Field;
 

@@ -26,7 +26,6 @@ import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.engine.bool.BooleanConstant;
 import kodkod.engine.bool.BooleanMatrix;
-import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Int;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.Translator;
@@ -169,7 +168,8 @@ public final class Evaluator {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return options + "\n" + instance;
 	}
 }

@@ -87,7 +87,8 @@ public class ArrayStack<T> extends Stack<T> {
 	/**
 	 * @see kodkod.util.collections.Stack#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -96,7 +97,8 @@ public class ArrayStack<T> extends Stack<T> {
 	 * 
 	 * @see kodkod.util.collections.Stack#push
 	 */
-	public T push(T item) {
+	@Override
+    public T push(T item) {
 		ensureCapacity(size + 1);
 		elems[size++] = item;
 		return item;
@@ -105,7 +107,8 @@ public class ArrayStack<T> extends Stack<T> {
 	/**
 	 * @see kodkod.util.collections.Stack#pop()
 	 */
-	public T pop() {
+	@Override
+    public T pop() {
 		if (empty())
 			throw new EmptyStackException();
 		final T top = elems[--size];
@@ -116,7 +119,8 @@ public class ArrayStack<T> extends Stack<T> {
 	/**
 	 * @see kodkod.util.collections.Stack#peek()
 	 */
-	public T peek() {
+	@Override
+    public T peek() {
 		if (empty())
 			throw new EmptyStackException();
 		return elems[size - 1];
@@ -125,7 +129,8 @@ public class ArrayStack<T> extends Stack<T> {
 	/**
 	 * @see kodkod.util.collections.Stack#search(java.lang.Object)
 	 */
-	public int search(Object o) {
+	@Override
+    public int search(Object o) {
 		for (int i = size - 1; i >= 0; i--) {
 			if (equal(o, elems[i]))
 				return i;
@@ -136,7 +141,8 @@ public class ArrayStack<T> extends Stack<T> {
 	/**
 	 * @see kodkod.util.collections.Stack#empty()
 	 */
-	public boolean empty() {
+	@Override
+    public boolean empty() {
 		return size == 0;
 	}
 
@@ -145,22 +151,26 @@ public class ArrayStack<T> extends Stack<T> {
 	 * 
 	 * @see kodkod.util.collections.Stack#iterator()
 	 */
-	public Iterator<T> iterator() {
+	@Override
+    public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			int cursor = size - 1, lastReturned = -1;
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return cursor >= 0;
 			}
 
-			public T next() {
+			@Override
+            public T next() {
 				if (cursor < 0)
 					throw new NoSuchElementException();
 				lastReturned = cursor;
 				return elems[cursor--];
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				if (lastReturned < 0)
 					throw new UnsupportedOperationException();
 				size--;

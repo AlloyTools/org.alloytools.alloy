@@ -123,43 +123,52 @@ public final class Bounds implements Cloneable {
 	private static Set<Relation> relations(final Map<Relation,TupleSet> lowers, final Map<Relation,TupleSet> uppers) {
 		return new AbstractSet<Relation>() {
 
-			public Iterator<Relation> iterator() {
+			@Override
+            public Iterator<Relation> iterator() {
 				return new Iterator<Relation>() {
 					final Iterator<Relation>	itr		= uppers.keySet().iterator();
 					Relation					last	= null;
 
-					public boolean hasNext() {
+					@Override
+                    public boolean hasNext() {
 						return itr.hasNext();
 					}
 
-					public Relation next() {
+					@Override
+                    public Relation next() {
 						return last = itr.next();
 					}
 
-					public void remove() {
+					@Override
+                    public void remove() {
 						itr.remove();
 						lowers.remove(last);
 					}
 				};
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return uppers.size();
 			}
 
-			public boolean contains(Object key) {
+			@Override
+            public boolean contains(Object key) {
 				return uppers.containsKey(key);
 			}
 
-			public boolean remove(Object key) {
+			@Override
+            public boolean remove(Object key) {
 				return (uppers.remove(key) != null) && (lowers.remove(key) != null);
 			}
 
-			public boolean removeAll(Collection< ? > c) {
+			@Override
+            public boolean removeAll(Collection< ? > c) {
 				return uppers.keySet().removeAll(c) && lowers.keySet().removeAll(c);
 			}
 
-			public boolean retainAll(Collection< ? > c) {
+			@Override
+            public boolean retainAll(Collection< ? > c) {
 				return uppers.keySet().retainAll(c) && lowers.keySet().retainAll(c);
 			}
 		};
@@ -428,7 +437,8 @@ public final class Bounds implements Cloneable {
 	 * 
 	 * @return a deep (modifiable) copy of this Bounds object.
 	 */
-	public Bounds clone() {
+	@Override
+    public Bounds clone() {
 		try {
 			return new Bounds(factory, new LinkedHashMap<Relation,TupleSet>(lowers),
 					new LinkedHashMap<Relation,TupleSet>(uppers), intbounds.clone());
@@ -440,7 +450,8 @@ public final class Bounds implements Cloneable {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder str = new StringBuilder();
 		str.append("relation bounds:");
 		for (Map.Entry<Relation,TupleSet> entry : lowers.entrySet()) {

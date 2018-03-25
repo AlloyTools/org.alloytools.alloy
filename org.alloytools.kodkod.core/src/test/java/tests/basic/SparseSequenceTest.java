@@ -20,7 +20,8 @@ import kodkod.util.ints.TreeSequence;
 public class SparseSequenceTest extends TestCase {
 	private SparseSequence<Integer> s0;
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		s0 = new TreeSequence<Integer>();
 	}
 

@@ -12,21 +12,27 @@ public class FakeDefCond implements IDefCond {
 
 	private final Set<Variable> vars = Collections.unmodifiableSet(new HashSet<Variable>());
 
-	public BooleanValue getOverflow() {
+	@Override
+    public BooleanValue getOverflow() {
 		return BooleanConstant.FALSE;
 	}
 
-	public BooleanValue getAccumOverflow() {
+	@Override
+    public BooleanValue getAccumOverflow() {
 		return BooleanConstant.FALSE;
 	}
 
-	public void setOverflows(BooleanValue of, BooleanValue accumOF) {}
+	@Override
+    public void setOverflows(BooleanValue of, BooleanValue accumOF) {}
 
-	public void addVar(Variable v) {}
+	@Override
+    public void addVar(Variable v) {}
 
-	public void addVars(Collection<Variable> vars) {}
+	@Override
+    public void addVars(Collection<Variable> vars) {}
 
-	public Set<Variable> vars() {
+	@Override
+    public Set<Variable> vars() {
 		return vars;
 	}
 

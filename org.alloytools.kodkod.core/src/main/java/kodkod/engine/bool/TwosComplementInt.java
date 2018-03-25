@@ -145,7 +145,8 @@ final class TwosComplementInt extends Int {
 	 * 
 	 * @see kodkod.engine.bool.Int#isConstant()
 	 */
-	public final boolean isConstant() {
+	@Override
+    public final boolean isConstant() {
 		for (int i = width() - 1; i >= 0; i--) {
 			BooleanValue b = bit(i);
 			if (b != TRUE && b != FALSE)
@@ -191,7 +192,8 @@ final class TwosComplementInt extends Int {
 	 * 
 	 * @see kodkod.engine.bool.Int#value()
 	 */
-	public final int value() {
+	@Override
+    public final int value() {
 		int ret = 0;
 		final int max = bits.length - 1;
 		for (int i = 0; i < max; i++) {
@@ -213,7 +215,8 @@ final class TwosComplementInt extends Int {
 	 * @requires 0 <= i < this.factory.bitwidth
 	 * @return this.bits[i]
 	 */
-	public final BooleanValue bit(int i) {
+	@Override
+    public final BooleanValue bit(int i) {
 		return bits[StrictMath.min(i, bits.length - 1)];
 	}
 
@@ -222,7 +225,8 @@ final class TwosComplementInt extends Int {
 	 * 
 	 * @see kodkod.engine.bool.Int#msb(kodkod.engine.bool.Int)
 	 */
-	public final BooleanValue msb() {
+	@Override
+    public final BooleanValue msb() {
 		return bits[bits.length - 1];
 	}
 
@@ -246,12 +250,14 @@ final class TwosComplementInt extends Int {
 	 * 
 	 * @see kodkod.engine.bool.Int#eq(kodkod.engine.bool.Int)
 	 */
-	public final BooleanValue eq(Int other, Environment env) {
+	@Override
+    public final BooleanValue eq(Int other, Environment env) {
 		BooleanValue ret = eqWithoutOverflow(other);
 		return ensureNoOverflow(env, ret, this, other);
 	}
 
-	public final BooleanValue neq(Int other, Environment env) {
+	@Override
+    public final BooleanValue neq(Int other, Environment env) {
 		BooleanValue ret = factory.not(eqWithoutOverflow(other));
 		return ensureNoOverflow(env, ret, this, other);
 	}
@@ -272,7 +278,8 @@ final class TwosComplementInt extends Int {
 	 * 
 	 * @see kodkod.engine.bool.Int#lt(kodkod.engine.bool.Int)
 	 */
-	public final BooleanValue lt(Int other, Environment env) {
+	@Override
+    public final BooleanValue lt(Int other, Environment env) {
 		final BooleanValue leq = lte(other);
 		final BooleanAccumulator acc = BooleanAccumulator.treeGate(OR);
 		for (int i = 0, width = StrictMath.max(width(), other.width()); i < width; i++) {
@@ -430,7 +437,7 @@ final class TwosComplementInt extends Int {
 		BooleanValue overflow = FALSE;
 		BooleanValue accumOF = FALSE;
 		if (factory.noOverflow != OverflowPolicy.NONE) {
-			BooleanAccumulator acc = BooleanAccumulator.treeGate(Nary.OR);
+			BooleanAccumulator acc = BooleanAccumulator.treeGate(Operator.OR);
 			for (int i = multTrunc.length; i < mult.length; i++) {
 				acc.add(factory.xor(mult[i - 1], mult[i]));
 			}
@@ -715,7 +722,7 @@ final class TwosComplementInt extends Int {
 		final TwosComplementInt shifted = new TwosComplementInt(factory, extend(width), unionVars(this, other), FALSE,
 				FALSE);
 		final int max = 32 - Integer.numberOfLeadingZeros(width - 1);
-		BooleanAccumulator acc = BooleanAccumulator.treeGate(Nary.OR);
+		BooleanAccumulator acc = BooleanAccumulator.treeGate(Operator.OR);
 		for (int i = 0; i < width; i++) {
 			int shift = 1 << i;
 			BooleanValue bit = other.bit(i);
@@ -838,7 +845,8 @@ final class TwosComplementInt extends Int {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "b" + Arrays.toString(bits);
 	}
 

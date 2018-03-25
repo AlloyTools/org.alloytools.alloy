@@ -28,28 +28,34 @@ public class DefCond implements IDefCond {
 	private BooleanValue	accumOverflow	= BooleanConstant.FALSE;
 	private Set<Variable>	vars			= new HashSet<Variable>();
 
-	public BooleanValue getOverflow() {
+	@Override
+    public BooleanValue getOverflow() {
 		return overflow;
 	}
 
-	public BooleanValue getAccumOverflow() {
+	@Override
+    public BooleanValue getAccumOverflow() {
 		return accumOverflow;
 	}
 
-	public void setOverflows(BooleanValue of, BooleanValue accumOF) {
+	@Override
+    public void setOverflows(BooleanValue of, BooleanValue accumOF) {
 		this.overflow = of;
 		this.accumOverflow = accumOF;
 	}
 
-	public void addVar(Variable v) {
+	@Override
+    public void addVar(Variable v) {
 		vars.add(v);
 	}
 
-	public void addVars(Collection<Variable> vars) {
+	@Override
+    public void addVars(Collection<Variable> vars) {
 		this.vars.addAll(vars);
 	}
 
-	public Set<Variable> vars() {
+	@Override
+    public Set<Variable> vars() {
 		return vars;
 	}
 

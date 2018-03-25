@@ -218,7 +218,8 @@ public class OverflowNumTest extends TestCase {
 		return 5;
 	}
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		setupOptions();
 	}
@@ -230,7 +231,8 @@ public class OverflowNumTest extends TestCase {
 		options.setSolver(SATFactory.MiniSat);
 	}
 
-	protected void tearDown() throws Exception {
+	@Override
+    protected void tearDown() throws Exception {
 		super.tearDown();
 	}
 

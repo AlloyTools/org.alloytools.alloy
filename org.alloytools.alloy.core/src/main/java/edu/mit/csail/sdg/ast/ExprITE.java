@@ -181,7 +181,8 @@ public final class ExprITE extends Expr {
 	}
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		int a = cond.getDepth(), b = left.getDepth(), c = right.getDepth();
 		if (a >= b)
 			return 1 + (a >= c ? a : c);

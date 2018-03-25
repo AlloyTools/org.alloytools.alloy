@@ -29,7 +29,8 @@ public class StringCell implements Cell {
 		return value.length+2;
 	}
 	
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.join("\n", value);
 	}
 

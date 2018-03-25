@@ -206,7 +206,8 @@ final class FOL2BoolCache {
 		/**
 		 * @see kodkod.engine.fol2sat.FOL2BoolCache.Record#get(kodkod.engine.fol2sat.Environment)
 		 */
-		Object get(Environment<BooleanMatrix,Expression> e) {
+		@Override
+        Object get(Environment<BooleanMatrix,Expression> e) {
 			if (translation == null)
 				return null;
 			for (int i = 0; i < vars.length; i++) {
@@ -220,7 +221,8 @@ final class FOL2BoolCache {
 		 * @see kodkod.engine.fol2sat.FOL2BoolCache.Record#set(java.lang.Object,
 		 *      kodkod.engine.fol2sat.Environment)
 		 */
-		void set(Object transl, Environment<BooleanMatrix,Expression> env) {
+		@Override
+        void set(Object transl, Environment<BooleanMatrix,Expression> env) {
 			translation = transl;
 			for (int i = 0; i < vars.length; i++) {
 				final BooleanMatrix varVal = env.lookup(vars[i]);
@@ -234,7 +236,8 @@ final class FOL2BoolCache {
 		/**
 		 * @see java.lang.Object#toString()
 		 */
-		public String toString() {
+		@Override
+        public String toString() {
 			final StringBuilder b = new StringBuilder("{");
 			b.append(String.valueOf(translation));
 			for (int i = 0; i < vars.length; i++) {
@@ -257,7 +260,8 @@ final class FOL2BoolCache {
 		/**
 		 * @see kodkod.engine.fol2sat.FOL2BoolCache.Record#get(kodkod.engine.fol2sat.Environment)
 		 */
-		Object get(Environment<BooleanMatrix,Expression> e) {
+		@Override
+        Object get(Environment<BooleanMatrix,Expression> e) {
 			return translation;
 		}
 
@@ -265,14 +269,16 @@ final class FOL2BoolCache {
 		 * @see kodkod.engine.fol2sat.FOL2BoolCache.Record#set(java.lang.Object,
 		 *      kodkod.engine.fol2sat.Environment)
 		 */
-		void set(Object transl, Environment<BooleanMatrix,Expression> env) {
+		@Override
+        void set(Object transl, Environment<BooleanMatrix,Expression> env) {
 			translation = transl;
 		}
 
 		/**
 		 * @see java.lang.Object#toString()
 		 */
-		public String toString() {
+		@Override
+        public String toString() {
 			return "{" + translation + "}";
 		}
 	}

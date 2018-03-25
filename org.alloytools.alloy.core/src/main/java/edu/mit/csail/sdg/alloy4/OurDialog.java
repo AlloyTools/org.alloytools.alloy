@@ -37,6 +37,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.QUESTION_MESSAGE;
@@ -229,7 +230,8 @@ public final class OurDialog {
 			open.setDirectory(dir);
 			if (exts != null && exts.length > 0)
 				open.setFilenameFilter(new FilenameFilter() {
-					public boolean accept(File dir, String name) {
+					@Override
+                    public boolean accept(File dir, String name) {
 						for ( String ext : exts) {
 							if ( name.toLowerCase(Locale.US).endsWith(ext) )
 								return true;
@@ -249,7 +251,8 @@ public final class OurDialog {
 				JFileChooser open = new JFileChooser(dir) {
 					private static final long serialVersionUID = 0;
 
-					public JDialog createDialog(Component parent) throws HeadlessException {
+					@Override
+                    public JDialog createDialog(Component parent) throws HeadlessException {
 						JDialog dialog = super.createDialog(null);
 						dialog.setAlwaysOnTop(true);
 						return dialog;
@@ -260,7 +263,8 @@ public final class OurDialog {
 				open.setDialogType(isOpen ? JFileChooser.OPEN_DIALOG : JFileChooser.SAVE_DIALOG);
 				if (exts != null && exts.length > 0)
 					open.setFileFilter(new FileFilter() {
-						public boolean accept(File file) {
+						@Override
+                        public boolean accept(File file) {
 							for ( String ext : exts) {
 								boolean result = !file.isFile() || file.getPath().toLowerCase(Locale.US).endsWith(ext);
 								if ( result )
@@ -269,7 +273,8 @@ public final class OurDialog {
 							return false;
 						}
 
-						public String getDescription() {
+						@Override
+                        public String getDescription() {
 							return description;
 						}
 					});
@@ -335,16 +340,19 @@ public final class OurDialog {
 		for (Object obj : objects)
 			if (obj instanceof JTextField || obj instanceof JCheckBox) {
 				((JComponent) obj).addKeyListener(new KeyListener() {
-					public void keyPressed(KeyEvent e) {
+					@Override
+                    public void keyPressed(KeyEvent e) {
 						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 							pane.setValue("Ok");
 							dialog.dispose();
 						}
 					}
 
-					public void keyReleased(KeyEvent e) {}
+					@Override
+                    public void keyReleased(KeyEvent e) {}
 
-					public void keyTyped(KeyEvent e) {}
+					@Override
+                    public void keyTyped(KeyEvent e) {}
 				});
 			}
 		dialog.setAlwaysOnTop(true);
@@ -360,7 +368,7 @@ public final class OurDialog {
 		JButton done = new JButton("Close");
 		done.addActionListener(Runner.createDispose(window));
 		JScrollPane scrollPane = OurUtil.scrollpane(OurUtil.textarea(text, 20, 60, false, false));
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		window.getContentPane().setLayout(new BorderLayout());
 		window.getContentPane().add(scrollPane, BorderLayout.CENTER);
 		window.getContentPane().add(done, BorderLayout.SOUTH);

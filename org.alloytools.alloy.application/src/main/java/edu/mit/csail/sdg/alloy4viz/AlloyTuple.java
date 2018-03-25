@@ -118,7 +118,8 @@ public final class AlloyTuple implements Comparable<AlloyTuple> {
 	 * we compare atom-by-atom. <br>
 	 * We guarantee x.equals(y) iff x.compareTo(y)==0
 	 */
-	public int compareTo(AlloyTuple that) {
+	@Override
+    public int compareTo(AlloyTuple that) {
 		if (that == null)
 			return 1;
 		if (atoms.size() < that.atoms.size())

@@ -513,12 +513,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	}
 
 	/** Called when this window is resized. */
-	public void componentResized(ComponentEvent e) {
+	@Override
+    public void componentResized(ComponentEvent e) {
 		componentMoved(e);
 	}
 
 	/** Called when this window is moved. */
-	public void componentMoved(ComponentEvent e) {
+	@Override
+    public void componentMoved(ComponentEvent e) {
 		AnalyzerWidth.set(frame.getWidth());
 		AnalyzerHeight.set(frame.getHeight());
 		AnalyzerX.set(frame.getX());
@@ -526,10 +528,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	}
 
 	/** Called when this window is shown. */
-	public void componentShown(ComponentEvent e) {}
+	@Override
+    public void componentShown(ComponentEvent e) {}
 
 	/** Called when this window is hidden. */
-	public void componentHidden(ComponentEvent e) {}
+	@Override
+    public void componentHidden(ComponentEvent e) {}
 
 	/**
 	 * Wraps the calling method into a Runnable whose run() will call the
@@ -553,7 +557,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		return new Runner() {
 			private static final long serialVersionUID = 0;
 
-			public void run() {
+			@Override
+            public void run() {
 				try {
 					method.setAccessible(true);
 					method.invoke(SimpleGUI.this, new Object[] {});
@@ -563,7 +568,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 				}
 			}
 
-			public void run(Object arg) {
+			@Override
+            public void run(Object arg) {
 				run();
 			}
 		};
@@ -591,7 +597,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		return new Runner() {
 			private static final long serialVersionUID = 0;
 
-			public void run(Object arg) {
+			@Override
+            public void run(Object arg) {
 				try {
 					method.setAccessible(true);
 					method.invoke(SimpleGUI.this, new Object[] {
@@ -603,7 +610,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 				}
 			}
 
-			public void run() {
+			@Override
+            public void run() {
 				run(argument);
 			}
 		};
@@ -1555,7 +1563,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 			html1.setPage(this.getClass().getResource("/help/Nav.html"));
 			html2.setPage(this.getClass().getResource("/help/index.html"));
 			HyperlinkListener hl = new HyperlinkListener() {
-				public final void hyperlinkUpdate(HyperlinkEvent e) {
+				@Override
+                public final void hyperlinkUpdate(HyperlinkEvent e) {
 					try {
 						if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
 							return;
@@ -1734,7 +1743,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 	/** This object performs solution enumeration. */
 	private final Computer enumerator = new Computer() {
-		public String compute(Object input) {
+		@Override
+        public String compute(Object input) {
 			final String arg = (String) input;
 			OurUtil.show(frame);
 			if (WorkerEngine.isBusy())
@@ -1809,7 +1819,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private static Computer evaluator = new Computer() {
 		private String filename = null;
 
-		public final Object compute(final Object input) throws Exception {
+		@Override
+        public final Object compute(final Object input) throws Exception {
 			if (input instanceof File) {
 				filename = ((File) input).getAbsolutePath();
 				return "";
@@ -1932,7 +1943,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		}
 
 		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				new SimpleGUI(args);
 			}
 		});
@@ -2218,7 +2230,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
 		// Pre-load the preferences dialog
 		prefDialog = new PreferencesDialog(log, binary);
-		prefDialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		prefDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		try {
 			wrap = true;
 			prefDialog.addChangeListener(wrapToChangeListener(doOptRefreshFont()), FontName, FontSize, TabSize);
@@ -2290,7 +2302,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 		final long now = System.currentTimeMillis();
 		final Timer t = new Timer(800, null);
 		t.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				int n = MailBug.latestBuildNumber();
 				// If beyond 3 seconds, then we should stop because the log
 				// message may run into other user messages
@@ -2312,7 +2325,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	}
 
 	/** {@inheritDoc} */
-	public Object do_action(Object sender, Event e) {
+	@Override
+    public Object do_action(Object sender, Event e) {
 		if (sender instanceof OurTabbedSyntaxWidget)
 			switch (e) {
 				case FOCUSED :
@@ -2328,7 +2342,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	}
 
 	/** {@inheritDoc} */
-	public Object do_action(Object sender, Event e, Object arg) {
+	@Override
+    public Object do_action(Object sender, Event e, Object arg) {
 		if (sender instanceof OurTree && e == Event.CLICK && arg instanceof Browsable) {
 			Pos p = ((Browsable) arg).pos();
 			if (p == Pos.UNKNOWN)
@@ -2390,7 +2405,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 	private static ChangeListener wrapToChangeListener(final Runner r) {
 		assert r != null;
 		return new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				r.run();
 			}
 		};

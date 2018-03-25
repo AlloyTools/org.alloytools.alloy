@@ -32,91 +32,106 @@ package kodkod.ast.operator;
 public enum IntOperator {
 	/** `+' operator */
 	PLUS {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "+";
 		}
 	},
 	/** `*' operator */
 	MULTIPLY {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "*";
 		}
 	},
 	/** `-' operator */
 	MINUS {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "-";
 		}
 	},
 	/** `/' operator */
 	DIVIDE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "/";
 		}
 	},
 	/** `%' operator */
 	MODULO {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "%";
 		}
 	},
 	/** Bitwise AND operator */
 	AND {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "&";
 		}
 	},
 	/** Bitwise OR operator */
 	OR {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "|";
 		}
 	},
 	/** Bitwise XOR operator */
 	XOR {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "^";
 		}
 	},
 	/** Left shift operator */
 	SHL {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "<<";
 		}
 	},
 	/** Right shift operator with zero extension */
 	SHR {
-		public String toString() {
+		@Override
+        public String toString() {
 			return ">>>";
 		}
 	},
 	/** Right shift operator with sign extension */
 	SHA {
-		public String toString() {
+		@Override
+        public String toString() {
 			return ">>";
 		}
 	},
 	/** unary negation (`-') operator */
 	NEG {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "-";
 		}
 	},
 	/** bit negation (`~') operator */
 	NOT {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "~";
 		}
 	},
 	/** absolute value function */
 	ABS {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "abs";
 		}
 	},
 	/** signum function */
 	SGN {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "sgn";
 		}
 	};

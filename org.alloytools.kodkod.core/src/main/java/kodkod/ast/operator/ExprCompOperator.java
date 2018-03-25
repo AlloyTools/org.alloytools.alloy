@@ -27,13 +27,15 @@ package kodkod.ast.operator;
 public enum ExprCompOperator {
 	/** Subset operator (in). */
 	SUBSET {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "in";
 		}
 	},
 	/** Equality operator (=). */
 	EQUALS {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "=";
 		}
 	};

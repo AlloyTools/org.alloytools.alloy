@@ -430,7 +430,8 @@ public final strictfp class Graph {
 				bc[n.pos()] = count == 0 ? 0 : (sum / count);
 			}
 			sortLayer(layer + 1, new Comparator<GraphNode>() {
-				public int compare(GraphNode o1, GraphNode o2) {
+				@Override
+                public int compare(GraphNode o1, GraphNode o2) {
 					// If the two nodes have the same barycenter, we use their
 					// ordering that was established during layout_assignOrder()
 					if (o1 == o2)
@@ -849,7 +850,8 @@ public final strictfp class Graph {
 		if (straighten)
 			for (int i = 0; i < layers(); i++) {
 				sortLayer(i, new Comparator<GraphNode>() {
-					public int compare(GraphNode o1, GraphNode o2) {
+					@Override
+                    public int compare(GraphNode o1, GraphNode o2) {
 						if (o1.x() < o2.x())
 							return -1;
 						else if (o1.x() > o2.x())

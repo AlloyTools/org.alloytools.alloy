@@ -69,7 +69,8 @@ public class BooleanMatrixTest extends TestCase {
 	/*
 	 * @see TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 
 		mF324 = f.matrix(dim324);
@@ -82,7 +83,8 @@ public class BooleanMatrixTest extends TestCase {
 	/*
 	 * @see TestCase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
+	@Override
+    protected void tearDown() throws Exception {
 		super.tearDown();
 	}
 
@@ -288,7 +290,7 @@ public class BooleanMatrixTest extends TestCase {
 
 		BooleanValue[] result = new BooleanValue[dim324.dot(dim43).capacity()];
 		for (int i = 0; i < result.length; i++) {
-			result[i] = BooleanAccumulator.treeGate(Operator.Nary.OR);
+			result[i] = BooleanAccumulator.treeGate(Operator.OR);
 		}
 		int rows43 = dim324.dimension(dim324.numDimensions() - 1);
 		int rows324 = dim324.capacity() / rows43;

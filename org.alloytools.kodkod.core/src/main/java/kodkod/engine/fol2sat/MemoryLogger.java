@@ -155,7 +155,8 @@ final class MemoryLogger extends TranslationLogger {
 		 * 
 		 * @see kodkod.engine.fol2sat.TranslationLog#bounds()
 		 */
-		public Bounds bounds() {
+		@Override
+        public Bounds bounds() {
 			return bounds;
 		}
 
@@ -194,7 +195,8 @@ final class MemoryLogger extends TranslationLogger {
 
 												};
 
-				@SuppressWarnings("unchecked")
+				@Override
+                @SuppressWarnings("unchecked")
 				public boolean hasNext() {
 					while (!ready && itr.hasNext()) {
 						root = itr.next();
@@ -207,14 +209,16 @@ final class MemoryLogger extends TranslationLogger {
 					return ready;
 				}
 
-				public TranslationRecord next() {
+				@Override
+                public TranslationRecord next() {
 					if (!hasNext())
 						throw new NoSuchElementException();
 					ready = false;
 					return current;
 				}
 
-				public void remove() {
+				@Override
+                public void remove() {
 					throw new UnsupportedOperationException();
 				}
 			};

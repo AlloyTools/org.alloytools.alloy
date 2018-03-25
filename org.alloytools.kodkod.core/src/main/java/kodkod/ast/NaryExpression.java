@@ -87,7 +87,8 @@ public final class NaryExpression extends Expression implements Iterable<Express
 	 * @return this.arity
 	 * @see kodkod.ast.Expression#arity()
 	 */
-	public final int arity() {
+	@Override
+    public final int arity() {
 		return arity;
 	}
 
@@ -126,7 +127,8 @@ public final class NaryExpression extends Expression implements Iterable<Express
 	 * @return an iterator over this expression's children, in the increasing
 	 *         order of indices.
 	 */
-	public Iterator<Expression> iterator() {
+	@Override
+    public Iterator<Expression> iterator() {
 		return Containers.iterate(children);
 	}
 

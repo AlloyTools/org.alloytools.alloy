@@ -22,8 +22,6 @@ import kodkod.instance.Instance;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-import kodkod.util.nodes.PrettyPrinter;
-
 import org.junit.Test;
 
 //FIXED: tests are failing because atom relations are not automatically created
@@ -51,7 +49,8 @@ public class HOLSome4AllTest extends TestCase {
 		return 5;
 	}
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		createRelations();
 		createBounds();
@@ -61,7 +60,7 @@ public class HOLSome4AllTest extends TestCase {
 	@Test
 	public void testE1() {
 		// SAT: some s: ints | all ns: set Node | #ns > s
-		Formula f = ns.count().gt(si).forAll(ns.setOf(Node)).forSome(s.oneOf(Relation.INTS));
+		Formula f = ns.count().gt(si).forAll(ns.setOf(Node)).forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertEquals(true, sol.sat());
 		assertEquals(-1, evalS(sol));
@@ -71,7 +70,7 @@ public class HOLSome4AllTest extends TestCase {
 	public void testE1i() {
 		// SAT: some s: ints | all s: set Node | #s > s
 		Variable ns = Variable.unary("s");
-		Formula f = ns.count().gt(si).forAll(ns.setOf(Node)).forSome(s.oneOf(Relation.INTS));
+		Formula f = ns.count().gt(si).forAll(ns.setOf(Node)).forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertEquals(true, sol.sat());
 		assertEquals(-1, evalS(sol));
@@ -81,7 +80,7 @@ public class HOLSome4AllTest extends TestCase {
 	public void testE1ii() {
 		// SAT: some s: ints | all $s: set Node | #$s > s
 		Variable ns = Variable.unary("$s");
-		Formula f = ns.count().gt(si).forAll(ns.setOf(Node)).forSome(s.oneOf(Relation.INTS));
+		Formula f = ns.count().gt(si).forAll(ns.setOf(Node)).forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertEquals(true, sol.sat());
 		assertEquals(-1, evalS(sol));
@@ -91,7 +90,7 @@ public class HOLSome4AllTest extends TestCase {
 	public void testE2() {
 		// UNSAT: some s: ints | s > 0 && (all ns: set Node | #ns > s)
 		Formula cnd = si.gt(I0);
-		Formula f = cnd.and(ns.count().gt(si).forAll(ns.setOf(Node))).forSome(s.oneOf(Relation.INTS));
+		Formula f = cnd.and(ns.count().gt(si).forAll(ns.setOf(Node))).forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertEquals(false, sol.sat());
 	}
@@ -101,7 +100,7 @@ public class HOLSome4AllTest extends TestCase {
 		// SAT: some s: ints | s > 0 && (all ns: set Node | some ns => #ns > s)
 		Formula cnd = si.gt(I0);
 		Formula f = cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node)))
-				.forSome(s.oneOf(Relation.INTS));
+				.forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertTrue(sol.sat());
 		assertEquals(0, eval(sol, Node).size());
@@ -113,7 +112,7 @@ public class HOLSome4AllTest extends TestCase {
 		// ns => #ns > s)
 		Formula cnd = si.gt(I0);
 		Formula f = Node.some().and(
-				cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node))).forSome(s.oneOf(Relation.INTS)));
+				cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node))).forSome(s.oneOf(Expression.INTS)));
 		Solution sol = solve(f);
 		assertFalse(sol.sat());
 	}
@@ -126,7 +125,7 @@ public class HOLSome4AllTest extends TestCase {
 		Variable n = Variable.unary("n");
 		Formula cnd = si.gt(I0);
 		Formula f = Formula.and(Node.some(), n.some().forAll(n.oneOf(Node)),
-				cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node))).forSome(s.oneOf(Relation.INTS)));
+				cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node))).forSome(s.oneOf(Expression.INTS)));
 		Solution sol = solve(f);
 		assertFalse(sol.sat());
 	}
@@ -137,7 +136,7 @@ public class HOLSome4AllTest extends TestCase {
 		// ns => #ns > s)
 		Formula cnd = si.gte(I0);
 		Formula f = Node.some().and(
-				cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node))).forSome(s.oneOf(Relation.INTS)));
+				cnd.and(ns.some().implies(ns.count().gt(si)).forAll(ns.setOf(Node))).forSome(s.oneOf(Expression.INTS)));
 		Solution sol = solve(f);
 		assertEquals(true, sol.sat());
 		assertEquals(0, evalS(sol));
@@ -148,7 +147,7 @@ public class HOLSome4AllTest extends TestCase {
 		// SAT: some s: ints |
 		// s > 1 || (all ns: set Node | #ns > s)
 		Formula cnd = si.gt(I1);
-		Formula f = cnd.or(ns.count().gt(si).forAll(ns.setOf(Node))).forSome(s.oneOf(Relation.INTS));
+		Formula f = cnd.or(ns.count().gt(si).forAll(ns.setOf(Node))).forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertTrue(sol.sat());
 	}
@@ -159,7 +158,7 @@ public class HOLSome4AllTest extends TestCase {
 		// s > 3 || (all ns: set Node | #ns > s)
 		Formula cnd = si.gt(I3);
 		QuantifiedFormula allQF = (QuantifiedFormula) ns.count().gt(si).forAll(ns.setOf(Node));
-		Decl someDecls = s.oneOf(Relation.INTS);
+		Decl someDecls = s.oneOf(Expression.INTS);
 		{
 			Formula f = cnd.or(allQF).forSome(someDecls);
 			Solution sol = solve(f);
@@ -180,7 +179,7 @@ public class HOLSome4AllTest extends TestCase {
 		// s > 3 || (all ns: set Node | #ns > s)
 		Formula cnd = si.gt(I3);
 		QuantifiedFormula allQF = (QuantifiedFormula) ns.count().gt(si).forAll(ns.setOf(Node));
-		Decl someDecls = s.oneOf(Relation.INTS.difference(M1.toExpression()));
+		Decl someDecls = s.oneOf(Expression.INTS.difference(M1.toExpression()));
 		{
 			Formula f = cnd.or(allQF).forSome(someDecls);
 			assertFalse(solve(f).sat());
@@ -200,7 +199,7 @@ public class HOLSome4AllTest extends TestCase {
 		// s > 3 || (some ns: set Node | #ns > s + 3)
 		Formula cnd = si.gt(I3);
 		QuantifiedFormula innerSomeQF = (QuantifiedFormula) ns.count().gt(si.plus(I3)).forSome(ns.setOf(Node));
-		Decl someDecls = s.oneOf(Relation.INTS.difference(M1.toExpression()));
+		Decl someDecls = s.oneOf(Expression.INTS.difference(M1.toExpression()));
 		Formula f = cnd.or(innerSomeQF).forSome(someDecls);
 		assertFalse(solve(f).sat());
 	}
@@ -211,7 +210,7 @@ public class HOLSome4AllTest extends TestCase {
 		// s > 3 || (some ns: set Node | #ns > s + 3)
 		Formula cnd = si.gt(I3);
 		QuantifiedFormula innerSomeQF = (QuantifiedFormula) ns.count().gt(si.plus(I3)).forSome(ns.setOf(Node));
-		Decl someDecls = s.oneOf(Relation.INTS);
+		Decl someDecls = s.oneOf(Expression.INTS);
 		Formula f = cnd.or(innerSomeQF).forSome(someDecls);
 		Solution sol = solve(f);
 		assertTrue(sol.sat());
@@ -224,7 +223,7 @@ public class HOLSome4AllTest extends TestCase {
 		// s > 2 || (some ns: set Node | #ns > s + 3)
 		Formula cnd = si.gt(I2);
 		QuantifiedFormula innerSomeQF = (QuantifiedFormula) ns.count().gt(si.plus(I3)).forSome(ns.setOf(Node));
-		Decl someDecls = s.oneOf(Relation.INTS.difference(M1.toExpression()));
+		Decl someDecls = s.oneOf(Expression.INTS.difference(M1.toExpression()));
 		Formula f = cnd.or(innerSomeQF).forSome(someDecls);
 		Solution sol = solve(f);
 		assertTrue(sol.sat());
@@ -262,7 +261,7 @@ public class HOLSome4AllTest extends TestCase {
 		// }
 		Formula h1 = ns.count().gt(si).forAll(ns.setOf(Node));
 		Formula h2 = ns2.count().gt(si).forAll(ns2.setOf(Node));
-		Formula f = h1.and(h2).forSome(s.oneOf(Relation.INTS));
+		Formula f = h1.and(h2).forSome(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertTrue(sol.sat());
 		assertEquals(-1, evalS(sol));
@@ -276,7 +275,7 @@ public class HOLSome4AllTest extends TestCase {
 		// }
 		Formula h1 = ns.count().gt(si).forAll(ns.setOf(Node));
 		Formula h2 = ns2.count().gt(si).forAll(ns2.setOf(Node));
-		Formula f = h1.and(h2).and(si.gt(I0)).forSome(s.oneOf(Relation.INTS));
+		Formula f = h1.and(h2).and(si.gt(I0)).forSome(s.oneOf(Expression.INTS));
 		assertFalse(solve(f).sat());
 	}
 
@@ -288,14 +287,14 @@ public class HOLSome4AllTest extends TestCase {
 		Variable ns2 = Variable.unary("ns2");
 		Formula h1 = ns.count().gt(si).forAll(ns.setOf(Node));
 		Formula h2 = ns2.count().lt(si).forAll(ns2.setOf(Node));
-		Formula f = h1.and(h2).forSome(s.oneOf(Relation.INTS));
+		Formula f = h1.and(h2).forSome(s.oneOf(Expression.INTS));
 		assertFalse(solve(f).sat());
 	}
 
 	@Test
 	public void testA1() {
 		// SAT: all s: ints | s < 0 => (all ns: set Node | #ns > s)
-		Formula f = si.lt(I0).implies(ns.count().gt(si).forAll(ns.setOf(Node))).forAll(s.oneOf(Relation.INTS));
+		Formula f = si.lt(I0).implies(ns.count().gt(si).forAll(ns.setOf(Node))).forAll(s.oneOf(Expression.INTS));
 		Solution sol = solve(f);
 		assertTrue(sol.sat());
 	}

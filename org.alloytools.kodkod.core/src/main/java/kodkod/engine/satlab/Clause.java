@@ -125,7 +125,8 @@ public abstract class Clause {
 	 * @return o in Clause && o.literals.equals(this.literals) &&
 	 *         o.antecedents.equals(this.antecedents)
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this)
 			return true;
 		if (o instanceof Clause) {
@@ -160,7 +161,8 @@ public abstract class Clause {
 	 * 
 	 * @return hashcode for this clause
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		int hash = size() + numberOfAntecedents();
 		for (IntIterator iter = literals(); iter.hasNext();) {
 			hash = Ints.superFastHashIncremental(iter.next(), hash);
@@ -176,7 +178,8 @@ public abstract class Clause {
 	 * 
 	 * @return a string representation of this clause.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder ret = new StringBuilder();
 		if (numberOfAntecedents() == 0) {
 			ret.append("AXIOM");

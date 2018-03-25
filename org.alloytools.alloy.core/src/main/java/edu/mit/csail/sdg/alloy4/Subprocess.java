@@ -56,7 +56,8 @@ public final class Subprocess {
 		final Subprocess pro = new Subprocess();
 		final InputStream f1 = p.getInputStream(), f2 = p.getErrorStream();
 		TimerTask stoptask = new TimerTask() {
-			public void run() {
+			@Override
+            public void run() {
 				synchronized (pro) {
 					if (pro.stdout != null && pro.stderr != null)
 						return;
@@ -70,7 +71,8 @@ public final class Subprocess {
 			stopper.schedule(stoptask, timeLimit);
 		}
 		new Thread(new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				String err = null;
 				try {
 					if (f2.read() >= 0)

@@ -589,7 +589,8 @@ public final class XMLNode implements Iterable<XMLNode> {
 	}
 
 	/** Returns a read-only iterator over the immediate subelements. */
-	public Iterator<XMLNode> iterator() {
+	@Override
+    public Iterator<XMLNode> iterator() {
 		return Collections.unmodifiableList(sub).iterator();
 	}
 
@@ -599,12 +600,14 @@ public final class XMLNode implements Iterable<XMLNode> {
 	 */
 	public Iterable<XMLNode> getChildren(final String type) {
 		return new Iterable<XMLNode>() {
-			public Iterator<XMLNode> iterator() {
+			@Override
+            public Iterator<XMLNode> iterator() {
 				return new Iterator<XMLNode>() {
 					private final Iterator<XMLNode>	it		= sub.iterator();
 					private XMLNode					peek	= null;
 
-					public boolean hasNext() {
+					@Override
+                    public boolean hasNext() {
 						while (true) {
 							if (peek != null && peek.type.equals(type))
 								return true;
@@ -615,7 +618,8 @@ public final class XMLNode implements Iterable<XMLNode> {
 						}
 					}
 
-					public XMLNode next() {
+					@Override
+                    public XMLNode next() {
 						if (!hasNext())
 							throw new NoSuchElementException();
 						XMLNode ans = peek;
@@ -623,7 +627,8 @@ public final class XMLNode implements Iterable<XMLNode> {
 						return ans;
 					}
 
-					public void remove() {
+					@Override
+                    public void remove() {
 						throw new UnsupportedOperationException();
 					}
 				};

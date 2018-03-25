@@ -32,7 +32,8 @@ public final class ALG195 extends Quasigroups7 {
 	 * 
 	 * @requires e's are unary, op is ternary
 	 */
-	Formula ax12and13(Relation[] e, Relation op) {
+	@Override
+    Formula ax12and13(Relation[] e, Relation op) {
 		return Formula.TRUE;
 	}
 
@@ -41,7 +42,8 @@ public final class ALG195 extends Quasigroups7 {
 	 * 
 	 * @requires e's are unary, op is ternary
 	 */
-	Formula ax14and15(Relation[] e, Relation op) {
+	@Override
+    Formula ax14and15(Relation[] e, Relation op) {
 		final Expression expr0 = e[5].join(op); // op(e5,...)
 		final Expression expr1 = e[5].join(expr0); // op(e5,e5)
 		final Expression expr2 = expr1.join(expr0); // op(e5,op(e5,e5))
@@ -67,7 +69,8 @@ public final class ALG195 extends Quasigroups7 {
 	 * 
 	 * @requires e is unary, h is binary
 	 */
-	Formula ax16_22(Relation e, Relation h) {
+	@Override
+    Formula ax16_22(Relation e, Relation h) {
 		final Expression expr0 = e.join(op2); // op2(e,...)
 		final Expression expr1 = e.join(expr0); // op2(e,e)
 		final Expression expr2 = expr1.join(expr0); // op2(e,op2(e,e))
@@ -106,7 +109,8 @@ public final class ALG195 extends Quasigroups7 {
 	 * 
 	 * @return the bounds for the problem
 	 */
-	public final Bounds bounds() {
+	@Override
+    public final Bounds bounds() {
 		final Bounds b = super.bounds();
 		final TupleFactory f = b.universe().factory();
 

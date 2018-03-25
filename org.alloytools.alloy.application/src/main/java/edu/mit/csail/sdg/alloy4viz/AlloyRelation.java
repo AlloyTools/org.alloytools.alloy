@@ -132,7 +132,8 @@ public final class AlloyRelation extends AlloyElement {
 	 * the arity, then the types. <br>
 	 * We guarantee x.equals(y) iff x.compareTo(y)==0
 	 */
-	public int compareTo(AlloyElement other) {
+	@Override
+    public int compareTo(AlloyElement other) {
 		if (!(other instanceof AlloyRelation))
 			return 1;
 		return compareTo((AlloyRelation) other);

@@ -26,13 +26,16 @@ public class DefaultSymbolFactory implements SymbolFactory {
 	 *             runtime.ComplexSymbolFactory
 	 */
 	// @deprecated
-	public DefaultSymbolFactory() {}
+	@Deprecated
+    public DefaultSymbolFactory() {}
 
-	public Symbol newSymbol(String name, int id, Symbol left, Symbol right, Object value) {
+	@Override
+    public Symbol newSymbol(String name, int id, Symbol left, Symbol right, Object value) {
 		return new Symbol(id, left, right, value);
 	}
 
-	public Symbol newSymbol(String name, int id, Symbol left, Symbol right) {
+	@Override
+    public Symbol newSymbol(String name, int id, Symbol left, Symbol right) {
 		return new Symbol(id, left, right);
 	}
 
@@ -44,15 +47,18 @@ public class DefaultSymbolFactory implements SymbolFactory {
 		return new Symbol(id, left, right);
 	}
 
-	public Symbol startSymbol(String name, int id, int state) {
+	@Override
+    public Symbol startSymbol(String name, int id, int state) {
 		return new Symbol(id, state);
 	}
 
-	public Symbol newSymbol(String name, int id) {
+	@Override
+    public Symbol newSymbol(String name, int id) {
 		return new Symbol(id);
 	}
 
-	public Symbol newSymbol(String name, Pos pos, int id, Object value) {
+	@Override
+    public Symbol newSymbol(String name, Pos pos, int id, Object value) {
 		return new Symbol(id, pos, value);
 	}
 }

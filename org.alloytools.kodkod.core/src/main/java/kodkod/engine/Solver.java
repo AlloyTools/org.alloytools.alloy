@@ -90,7 +90,8 @@ public final class Solver implements KodkodSolver {
 	 * 
 	 * @return this.options
 	 */
-	public Options options() {
+	@Override
+    public Options options() {
 		return options;
 	}
 
@@ -99,7 +100,8 @@ public final class Solver implements KodkodSolver {
 	 * 
 	 * @see kodkod.engine.KodkodSolver#free()
 	 */
-	public void free() {}
+	@Override
+    public void free() {}
 
 	/**
 	 * Attempts to satisfy the given {@code formula} and {@code bounds} with
@@ -127,7 +129,8 @@ public final class Solver implements KodkodSolver {
 	 * @see Instance
 	 * @see Proof
 	 */
-	public Solution solve(Formula formula, Bounds bounds)
+	@Override
+    public Solution solve(Formula formula, Bounds bounds)
 			throws HigherOrderDeclException, UnboundLeafException, AbortedException {
 		final long startTransl = System.currentTimeMillis();
 
@@ -185,7 +188,8 @@ public final class Solver implements KodkodSolver {
 	 * @see Options
 	 * @see Proof
 	 */
-	public Iterator<Solution> solveAll(final Formula formula, final Bounds bounds)
+	@Override
+    public Iterator<Solution> solveAll(final Formula formula, final Bounds bounds)
 			throws HigherOrderDeclException, UnboundLeafException, AbortedException {
 		// if (Options.isDebug()) flushFormula(formula, bounds); //[AM]
 		if (!options.solver().incremental())
@@ -212,7 +216,8 @@ public final class Solver implements KodkodSolver {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return options.toString();
 	}
 

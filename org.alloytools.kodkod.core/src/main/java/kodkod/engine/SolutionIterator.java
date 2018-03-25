@@ -41,7 +41,8 @@ public final class SolutionIterator implements Iterator<Solution> {
 	 * 
 	 * @see java.util.Iterator#hasNext()
 	 */
-	public boolean hasNext() {
+	@Override
+    public boolean hasNext() {
 		return translation != null;
 	}
 
@@ -50,7 +51,8 @@ public final class SolutionIterator implements Iterator<Solution> {
 	 * 
 	 * @see java.util.Iterator#next()
 	 */
-	public Solution next() {
+	@Override
+    public Solution next() {
 		if (!hasNext())
 			throw new NoSuchElementException();
 		try {
@@ -62,7 +64,8 @@ public final class SolutionIterator implements Iterator<Solution> {
 	}
 
 	/** @throws UnsupportedOperationException */
-	public void remove() {
+	@Override
+    public void remove() {
 		throw new UnsupportedOperationException();
 	}
 

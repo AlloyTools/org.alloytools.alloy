@@ -74,14 +74,16 @@ public class Table implements Cell {
 		return cells[row];
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		if (cols == 1 && rows > 3)
 			return transpose(0).toString("⁻¹");
 		else
 			return toString(null);
 	}
 
-	public Canvas render(int width, int height) {
+	@Override
+    public Canvas render(int width, int height) {
 		return render(width, height, 0, 0, 0, 0);
 	}
 

@@ -67,31 +67,38 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 			this.prev = prev;
 		}
 
-		public final boolean isFirstOrder() {
+		@Override
+        public final boolean isFirstOrder() {
 			return true;
 		}
 
-		public Formula formula() {
+		@Override
+        public Formula formula() {
 			return proc.formula;
 		}
 
-		public Translation getCurrentFOLTranslation() {
+		@Override
+        public Translation getCurrentFOLTranslation() {
 			return folTr;
 		}
 
-		public int numCandidates() {
+		@Override
+        public int numCandidates() {
 			return 1;
 		}
 
-		public IntSet primaryVariables(Relation relation) {
+		@Override
+        public IntSet primaryVariables(Relation relation) {
 			return folTr.primaryVariables(relation);
 		}
 
-		public int numPrimaryVariables() {
+		@Override
+        public int numPrimaryVariables() {
 			return folTr.numPrimaryVariables();
 		}
 
-		public SATSolver cnf() {
+		@Override
+        public SATSolver cnf() {
 			return folTr.cnf();
 		}
 
@@ -130,7 +137,8 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 			this.numCandidates = -1;
 		}
 
-		public Formula formula() {
+		@Override
+        public Formula formula() {
 			return proc.formula();
 		}
 
@@ -138,39 +146,47 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 			return candTr;
 		}
 
-		public Translation getCurrentFOLTranslation() {
+		@Override
+        public Translation getCurrentFOLTranslation() {
 			return candTr.getCurrentFOLTranslation();
 		}
 
-		public HOLTranslation next() {
+		@Override
+        public HOLTranslation next() {
 			candTr = candTr.next();
 			return this;
 		}
 
-		public HOLTranslation next(Formula f, Bounds b) {
+		@Override
+        public HOLTranslation next(Formula f, Bounds b) {
 			candTr = candTr.next(f, b);
 			return this;
 		}
 
-		public int numCandidates() {
+		@Override
+        public int numCandidates() {
 			return numCandidates;
 		}
 
 		// Translation methods -----------
 
-		public IntSet primaryVariables(Relation relation) {
+		@Override
+        public IntSet primaryVariables(Relation relation) {
 			return candTr.primaryVariables(relation);
 		}
 
-		public int numPrimaryVariables() {
+		@Override
+        public int numPrimaryVariables() {
 			return candTr.numPrimaryVariables();
 		}
 
-		public SATSolver cnf() {
+		@Override
+        public SATSolver cnf() {
 			return new Solver();
 		}
 
-		public Instance interpret() {
+		@Override
+        public Instance interpret() {
 			return candTr.interpret(bounds);
 		}
 
@@ -185,27 +201,33 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 		// SATSolver methods -------------
 
 		class Solver implements SATSolver {
-			public int numberOfVariables() {
+			@Override
+            public int numberOfVariables() {
 				return candTr.cnf().numberOfVariables();
 			}
 
-			public int numberOfClauses() {
+			@Override
+            public int numberOfClauses() {
 				return candTr.cnf().numberOfClauses();
 			}
 
-			public void addVariables(int numVars) {
+			@Override
+            public void addVariables(int numVars) {
 				candTr.cnf().addVariables(numVars);
 			}
 
-			public boolean addClause(int[] lits) {
+			@Override
+            public boolean addClause(int[] lits) {
 				return candTr.cnf().addClause(lits);
 			}
 
-			public boolean valueOf(int variable) {
+			@Override
+            public boolean valueOf(int variable) {
 				return candTr.cnf().valueOf(variable);
 			}
 
-			public void free() {
+			@Override
+            public void free() {
 				candTr.cnf().free();
 			}
 
@@ -298,7 +320,8 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 				return false;
 			}
 
-			public boolean solve() throws SATAbortedException {
+			@Override
+            public boolean solve() throws SATAbortedException {
 				rep.holLoopStart(Some4All.this, candTr.formula(), candTr.bounds());
 				return solveNext();
 			}
@@ -330,7 +353,8 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 			this.convTr = proc.fullFlippedProc().translate(options, depth + 1);
 		}
 
-		public Formula formula() {
+		@Override
+        public Formula formula() {
 			return proc.formula();
 		}
 
@@ -338,39 +362,47 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 			return convTr;
 		}
 
-		public Translation getCurrentFOLTranslation() {
+		@Override
+        public Translation getCurrentFOLTranslation() {
 			return convTr.getCurrentFOLTranslation();
 		}
 
-		public HOLTranslation next() {
+		@Override
+        public HOLTranslation next() {
 			convTr = convTr.next();
 			return this;
 		}
 
-		public HOLTranslation next(Formula f, Bounds b) {
+		@Override
+        public HOLTranslation next(Formula f, Bounds b) {
 			convTr = convTr.next(f, b);
 			return this;
 		}
 
-		public int numCandidates() {
+		@Override
+        public int numCandidates() {
 			return iterCnt;
 		}
 
 		// Translation methods -----------
 
-		public IntSet primaryVariables(Relation relation) {
+		@Override
+        public IntSet primaryVariables(Relation relation) {
 			return convTr.primaryVariables(relation);
 		}
 
-		public int numPrimaryVariables() {
+		@Override
+        public int numPrimaryVariables() {
 			return convTr.numPrimaryVariables();
 		}
 
-		public SATSolver cnf() {
+		@Override
+        public SATSolver cnf() {
 			return new Solver();
 		}
 
-		public Instance interpret() {
+		@Override
+        public Instance interpret() {
 			return convInst;
 		}
 
@@ -385,27 +417,33 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 		// SATSolver methods -------------
 
 		class Solver implements SATSolver {
-			public int numberOfVariables() {
+			@Override
+            public int numberOfVariables() {
 				return convTr.cnf().numberOfVariables();
 			}
 
-			public int numberOfClauses() {
+			@Override
+            public int numberOfClauses() {
 				return convTr.cnf().numberOfClauses();
 			}
 
-			public void addVariables(int numVars) {
+			@Override
+            public void addVariables(int numVars) {
 				convTr.cnf().addVariables(numVars);
 			}
 
-			public boolean addClause(int[] lits) {
+			@Override
+            public boolean addClause(int[] lits) {
 				return convTr.cnf().addClause(lits);
 			}
 
-			public boolean valueOf(int variable) {
+			@Override
+            public boolean valueOf(int variable) {
 				return convTr.cnf().valueOf(variable);
 			}
 
-			public void free() {
+			@Override
+            public void free() {
 				convTr.cnf().free();
 			}
 
@@ -457,7 +495,8 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 				return convInst != null;
 			}
 
-			public boolean solve() throws SATAbortedException {
+			@Override
+            public boolean solve() throws SATAbortedException {
 				rep.holFixpointStart(Fixpoint.this, convTr.formula(), convTr.bounds());
 				return solveNext();
 			}
@@ -485,13 +524,15 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 
 		public OR(final Proc.OR proc, final Options options, final int depth) {
 			super(Proc.union(map(proc.disjuncts, new Bounds[0], new Func1<Proc,Bounds>() {
-				public Bounds run(Proc a) {
+				@Override
+                public Bounds run(Proc a) {
 					return a.bounds;
 				}
 			})), options, depth);
 			this.proc = proc;
 			this.splitTransl = map(proc.disjuncts, new HOLTranslation[0], new Func1<Proc,HOLTranslation>() {
-				public HOLTranslation run(Proc a) {
+				@Override
+                public HOLTranslation run(Proc a) {
 					return a.translate(options, depth + 1);
 				}
 			});
@@ -501,57 +542,69 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 			return splitTransl[currTrIdx];
 		}
 
-		public Formula formula() {
+		@Override
+        public Formula formula() {
 			return proc.formula();
 		}
 
-		public Translation getCurrentFOLTranslation() {
+		@Override
+        public Translation getCurrentFOLTranslation() {
 			return currTr().getCurrentFOLTranslation();
 		}
 
-		public HOLTranslation next() {
+		@Override
+        public HOLTranslation next() {
 			splitTransl[currTrIdx] = currTr().next();
 			return this;
 		}
 
-		public HOLTranslation next(Formula f) {
+		@Override
+        public HOLTranslation next(Formula f) {
 			splitTransl[currTrIdx] = currTr().next(f);
 			return this;
 		}
 
-		public HOLTranslation next(Formula f, Bounds b) {
+		@Override
+        public HOLTranslation next(Formula f, Bounds b) {
 			splitTransl[currTrIdx] = currTr().next(f, b);
 			return this;
 		}
 
-		public int numCandidates() {
+		@Override
+        public int numCandidates() {
 			return currTrIdx;
 		}
 
 		// Translation methods -----------
 
-		public IntSet primaryVariables(Relation relation) {
+		@Override
+        public IntSet primaryVariables(Relation relation) {
 			return splitTransl[0].primaryVariables(relation);
 		} // TODO enough?
 
-		public int numPrimaryVariables() {
+		@Override
+        public int numPrimaryVariables() {
 			return foldPlus(splitTransl, new Func1<HOLTranslation,Integer>() {
-				public Integer run(HOLTranslation a) {
+				@Override
+                public Integer run(HOLTranslation a) {
 					return a.numPrimaryVariables();
 				}
 			});
 		}
 
-		public SATSolver cnf() {
+		@Override
+        public SATSolver cnf() {
 			return new Solver();
 		}
 
-		public Instance interpret() {
+		@Override
+        public Instance interpret() {
 			assert solTr != null : "no solution was found";
 			return solTr.interpret();
 		}
 
-		public Instance interpret(Bounds bnds) {
+		@Override
+        public Instance interpret(Bounds bnds) {
 			assert solTr != null : "no solution was found";
 			return solTr.interpret(bnds);
 		}
@@ -559,27 +612,33 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 		// SATSolver methods -------------
 
 		class Solver implements SATSolver {
-			public int numberOfVariables() {
+			@Override
+            public int numberOfVariables() {
 				return currTr().cnf().numberOfVariables();
 			}
 
-			public int numberOfClauses() {
+			@Override
+            public int numberOfClauses() {
 				return currTr().cnf().numberOfClauses();
 			}
 
-			public void addVariables(int numVars) {
+			@Override
+            public void addVariables(int numVars) {
 				currTr().cnf().addVariables(numVars);
 			}
 
-			public boolean addClause(int[] lits) {
+			@Override
+            public boolean addClause(int[] lits) {
 				return currTr().cnf().addClause(lits);
 			}
 
-			public boolean valueOf(int variable) {
+			@Override
+            public boolean valueOf(int variable) {
 				return currTr().cnf().valueOf(variable);
 			}
 
-			public void free() {
+			@Override
+            public void free() {
 				currTr().cnf().free();
 			}
 
@@ -601,7 +660,8 @@ public abstract class HOLTranslationNew extends HOLTranslation {
 				return false;
 			}
 
-			public boolean solve() throws SATAbortedException {
+			@Override
+            public boolean solve() throws SATAbortedException {
 				rep.holSplitStart(OR.this, formula());
 				currTrIdx = 0;
 				return solveNext();

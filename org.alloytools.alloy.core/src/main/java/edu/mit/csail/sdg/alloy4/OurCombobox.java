@@ -103,7 +103,8 @@ public class OurCombobox extends JComboBox {
 		super(do_copy(list, addNull));
 		setFont(OurUtil.getVizFont());
 		setRenderer(new ListCellRenderer() {
-			public Component getListCellRendererComponent(JList list, Object value, int i, boolean selected,
+			@Override
+            public Component getListCellRendererComponent(JList list, Object value, int i, boolean selected,
 					boolean focused) {
 				if (jlabel == null)
 					jlabel = OurUtil.label("", Color.BLACK, Color.WHITE, new EmptyBorder(0, 2, 0, 0));
@@ -128,7 +129,8 @@ public class OurCombobox extends JComboBox {
 			setSelectedItem(initialValue);
 		}
 		addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				do_changed(getSelectedItem());
 			}
 		});

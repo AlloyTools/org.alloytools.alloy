@@ -340,12 +340,14 @@ public final class UCoreStats {
 				System.out.println("solving time: " + stats.solvingTime() + " ms");
 			}
 
-			void printSat(String check, Formula formula, Bounds bounds, Solution sol) {
+			@Override
+            void printSat(String check, Formula formula, Bounds bounds, Solution sol) {
 				print(check, formula, bounds, sol.outcome(), sol.stats());
 				System.out.println("instance: " + sol.instance());
 			}
 
-			void printFalse(String check, Formula formula, Bounds bounds, Solution sol) {
+			@Override
+            void printFalse(String check, Formula formula, Bounds bounds, Solution sol) {
 				print(check, formula, bounds, sol.outcome(), sol.stats());
 				System.out.println("trivial core:");
 				for (Node f : sol.proof().highLevelCore().values()) {
@@ -353,7 +355,8 @@ public final class UCoreStats {
 				}
 			}
 
-			void printUnsat(String check, Formula formula, Bounds bounds, Statistics stats, Set<Formula> initialCore,
+			@Override
+            void printUnsat(String check, Formula formula, Bounds bounds, Statistics stats, Set<Formula> initialCore,
 					Set<Formula> minCore, long minTime) {
 				print(check, formula, bounds, Solution.Outcome.UNSATISFIABLE, stats);
 				System.out.println("formulas: " + Nodes.roots(formula).size());
@@ -379,18 +382,21 @@ public final class UCoreStats {
 				System.out.print(stats.solvingTime());
 			}
 
-			void printSat(String check, Formula formula, Bounds bounds, Solution sol) {
+			@Override
+            void printSat(String check, Formula formula, Bounds bounds, Solution sol) {
 				print(check, formula, bounds, sol.outcome(), sol.stats());
 				System.out.println();
 			}
 
-			void printFalse(String check, Formula formula, Bounds bounds, Solution sol) {
+			@Override
+            void printFalse(String check, Formula formula, Bounds bounds, Solution sol) {
 				print(check, formula, bounds, sol.outcome(), sol.stats());
 				System.out.print("\t");
 				System.out.println(sol.proof().highLevelCore().size());
 			}
 
-			void printUnsat(String check, Formula formula, Bounds bounds, Statistics stats, Set<Formula> initialCore,
+			@Override
+            void printUnsat(String check, Formula formula, Bounds bounds, Statistics stats, Set<Formula> initialCore,
 					Set<Formula> minCore, long minTime) {
 				print(check, formula, bounds, Solution.Outcome.UNSATISFIABLE, stats);
 				System.out.print("\t");

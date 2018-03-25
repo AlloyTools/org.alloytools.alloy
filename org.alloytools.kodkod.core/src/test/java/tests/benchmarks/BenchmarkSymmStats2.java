@@ -319,7 +319,8 @@ class BenchmarkSymmStats2 {
 				gbpTime = bean.getCurrentThreadUserTime();
 			}
 
-			public void detectedSymmetries(Set<IntSet> parts) {
+			@Override
+            public void detectedSymmetries(Set<IntSet> parts) {
 				final long end = bean.getCurrentThreadUserTime();
 				gbpTime = (end - gbpTime) / 1000000;
 				symms = new BigInteger("1");
@@ -359,7 +360,8 @@ class BenchmarkSymmStats2 {
 				this.bounds = bounds.clone();
 			}
 
-			public void detectedSymmetries(Set<IntSet> parts) {
+			@Override
+            public void detectedSymmetries(Set<IntSet> parts) {
 				parts.clear();
 				final SymmInfo allSymms = allSymms(bounds);
 				parts.addAll(allSymms.parts);

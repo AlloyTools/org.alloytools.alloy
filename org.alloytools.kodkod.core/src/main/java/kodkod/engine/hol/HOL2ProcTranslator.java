@@ -42,13 +42,15 @@ public class HOL2ProcTranslator extends AbstractReplacer {
 			super(HOL2ProcTranslator.this);
 		}
 
-		protected <T> T end(Node n, T ans) {
+		@Override
+        protected <T> T end(Node n, T ans) {
 			stack.pop();
 			skolemizable.pop();
 			return ans;
 		}
 
-		protected void start(Node n) {
+		@Override
+        protected void start(Node n) {
 			stack.push(n);
 			// ***NOTE*** assumes the formula is already in NNF !!!
 			boolean skolemizableSoFar = skolemizable.empty() ? true : skolemizable.lastElement();

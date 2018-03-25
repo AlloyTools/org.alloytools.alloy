@@ -212,7 +212,7 @@ public final class StaticInstanceReader {
 		sig2atom.put(s, atom);
 		sig2type.put(s, type);
 		ts.put(type, AlloyType.SET);
-		for (Sig p : ((SubsetSig) s).parents) {
+		for (Sig p : s.parents) {
 			if (p instanceof SubsetSig)
 				sigMETA((SubsetSig) p);
 			else

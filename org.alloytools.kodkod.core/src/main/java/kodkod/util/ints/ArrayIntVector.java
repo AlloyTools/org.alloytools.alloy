@@ -146,7 +146,8 @@ public final class ArrayIntVector extends AbstractIntVector {
 	 * 
 	 * @see kodkod.util.ints.IntVector#get(int)
 	 */
-	public int get(int index) {
+	@Override
+    public int get(int index) {
 		checkExcludeLength(index);
 		return elements[index];
 	}
@@ -156,7 +157,8 @@ public final class ArrayIntVector extends AbstractIntVector {
 	 * 
 	 * @see kodkod.util.ints.IntVector#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 

@@ -24,6 +24,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeModelListener;
@@ -78,14 +79,15 @@ public abstract class OurTree extends JTree {
 			super("Anything"); // This ensures that the height is calculated
 								// properly
 			setFont(OurUtil.getVizFont().deriveFont((float) fontSize));
-			setVerticalAlignment(JLabel.BOTTOM);
+			setVerticalAlignment(SwingConstants.BOTTOM);
 			setBorder(new EmptyBorder(0, 3, 0, 3));
 			setText("Anything"); // So that we can derive the height
 			height = super.getPreferredSize().height;
 		}
 
 		/** This method is called by Swing to return an object to be drawn. */
-		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected, boolean expanded,
+		@Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected, boolean expanded,
 				boolean isLeaf, int row, boolean isFocused) {
 			String string = tree.convertValueToText(value, isSelected, expanded, isLeaf, row, isFocused);
 			this.isFocused = isFocused;
@@ -166,7 +168,8 @@ public abstract class OurTree extends JTree {
 			// OBJECT REFERENCE when navigating the tree
 			private final IdentityHashMap<Object,List< ? >> map = new IdentityHashMap<Object,List< ? >>();
 
-			public Object getChild(Object parent, int index) {
+			@Override
+            public Object getChild(Object parent, int index) {
 				List< ? > ans = map.get(parent);
 				if (ans == null) {
 					ans = do_ask(parent);
@@ -175,7 +178,8 @@ public abstract class OurTree extends JTree {
 				return (index >= 0 && index < ans.size()) ? ans.get(index) : null;
 			}
 
-			public int getIndexOfChild(Object parent, Object child) {
+			@Override
+            public int getIndexOfChild(Object parent, Object child) {
 				getChild(parent, 0);
 				List< ? > ans = map.get(parent);
 				for (int i = 0;; i++)
@@ -185,25 +189,31 @@ public abstract class OurTree extends JTree {
 						return i;
 			}
 
-			public Object getRoot() {
+			@Override
+            public Object getRoot() {
 				return do_root();
 			}
 
-			public int getChildCount(Object node) {
+			@Override
+            public int getChildCount(Object node) {
 				getChild(node, 0);
 				return map.get(node).size();
 			}
 
-			public boolean isLeaf(Object node) {
+			@Override
+            public boolean isLeaf(Object node) {
 				getChild(node, 0);
 				return map.get(node).isEmpty();
 			}
 
-			public void valueForPathChanged(TreePath path, Object newValue) {}
+			@Override
+            public void valueForPathChanged(TreePath path, Object newValue) {}
 
-			public void addTreeModelListener(TreeModelListener l) {}
+			@Override
+            public void addTreeModelListener(TreeModelListener l) {}
 
-			public void removeTreeModelListener(TreeModelListener l) {}
+			@Override
+            public void removeTreeModelListener(TreeModelListener l) {}
 		});
 	}
 
@@ -233,7 +243,8 @@ public abstract class OurTree extends JTree {
 		setBackground(Color.WHITE);
 		setOpaque(true);
 		addTreeSelectionListener(new TreeSelectionListener() {
-			public void valueChanged(TreeSelectionEvent e) {
+			@Override
+            public void valueChanged(TreeSelectionEvent e) {
 				TreePath path = OurTree.this.getSelectionPath();
 				if (path != null)
 					OurTree.this.listeners.fire(OurTree.this, Listener.Event.CLICK, path.getLastPathComponent());

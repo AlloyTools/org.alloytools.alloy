@@ -23,17 +23,20 @@ public class BooleanCircuitTest extends TestCase {
 
 	private static final Composer[]	COMPOSERS	= {
 			new Composer() {
-				public BooleanValue compose(BooleanFactory f, BooleanValue v0, BooleanValue v1) {
+				@Override
+                public BooleanValue compose(BooleanFactory f, BooleanValue v0, BooleanValue v1) {
 					return f.and(v0, v1);
 				}
 			}, new Composer() {
-				public BooleanValue compose(BooleanFactory f, BooleanValue v0, BooleanValue v1) {
+				@Override
+                public BooleanValue compose(BooleanFactory f, BooleanValue v0, BooleanValue v1) {
 					return f.or(v0, v1);
 				}
 			}
 	};
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		init();
 	}
@@ -181,16 +184,16 @@ public class BooleanCircuitTest extends TestCase {
 		final BooleanValue composition = compose(op, compose(op, compose(op, p, q), r), s);
 
 		for (int i0 = 0; i0 < 4; i0++) {
-			BooleanValue f0 = (BooleanValue) formulas.get(i0);
+			BooleanValue f0 = formulas.get(i0);
 			formulas.remove(i0);
 			for (int i1 = 0; i1 < 3; i1++) {
-				BooleanValue f1 = (BooleanValue) formulas.get(i1);
+				BooleanValue f1 = formulas.get(i1);
 				formulas.remove(i1);
 
 				for (int i2 = 0; i2 < 2; i2++) {
-					BooleanValue f2 = (BooleanValue) formulas.get(i2);
+					BooleanValue f2 = formulas.get(i2);
 					formulas.remove(i2);
-					testParenthesis(composition, op, f0, f1, f2, (BooleanValue) formulas.get(0));
+					testParenthesis(composition, op, f0, f1, f2, formulas.get(0));
 					formulas.add(i2, f2);
 				}
 

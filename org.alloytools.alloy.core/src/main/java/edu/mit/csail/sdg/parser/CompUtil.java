@@ -40,7 +40,6 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprCall;
-import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Module;

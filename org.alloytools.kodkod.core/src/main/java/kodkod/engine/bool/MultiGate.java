@@ -73,7 +73,8 @@ public abstract class MultiGate extends BooleanFormula {
 	 * 
 	 * @return this.op
 	 */
-	public final Operator.Nary op() {
+	@Override
+    public final Operator.Nary op() {
 		return op;
 	}
 
@@ -94,7 +95,8 @@ public abstract class MultiGate extends BooleanFormula {
 	 * 
 	 * @return a string representation of this multigate.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder builder = new StringBuilder("(");
 		final Iterator<BooleanFormula> children = iterator();
 		builder.append(children.next());

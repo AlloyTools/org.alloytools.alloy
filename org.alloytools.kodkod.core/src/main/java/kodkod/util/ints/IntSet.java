@@ -36,21 +36,24 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * 
 	 * @return #this.ints
 	 */
-	public abstract int size();
+	@Override
+    public abstract int size();
 
 	/**
 	 * Returns true if this set has no elements; otherwise returns false.
 	 * 
 	 * @return no this.ints
 	 */
-	public abstract boolean isEmpty();
+	@Override
+    public abstract boolean isEmpty();
 
 	/**
 	 * Returns true if i is in this set.
 	 * 
 	 * @return i in this.ints
 	 */
-	public abstract boolean contains(int i);
+	@Override
+    public abstract boolean contains(int i);
 
 	/**
 	 * Returns the smallest element in this set. Throws a NoSuchElementException
@@ -96,7 +99,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * 
 	 * @return an IntIterator over the integers in this set.
 	 */
-	public abstract IntIterator iterator();
+	@Override
+    public abstract IntIterator iterator();
 
 	/**
 	 * Returns an iterator over the elements of this set that are in the closed
@@ -117,7 +121,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @throws IllegalArgumentException this is a bounded set and i is out of
 	 *             bounds
 	 */
-	public abstract boolean add(int i);
+	@Override
+    public abstract boolean add(int i);
 
 	/**
 	 * Removes the given integer from this set if already present and returns
@@ -126,7 +131,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @ensures this.ints' = this.ints - i
 	 * @return i !in this.ints'
 	 */
-	public abstract boolean remove(int i);
+	@Override
+    public abstract boolean remove(int i);
 
 	/**
 	 * Returns true if the elements of c are a subset of this set.
@@ -134,7 +140,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @return { i: int | c.contains(i) } in this.ints
 	 * @throws NullPointerException c = null
 	 */
-	public abstract boolean containsAll(IntCollection c);
+	@Override
+    public abstract boolean containsAll(IntCollection c);
 
 	/**
 	 * Adds all of the elements in the specified collection to this set if
@@ -148,7 +155,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 *             specified collection prevents it from being added to this
 	 *             collection.
 	 */
-	public abstract boolean addAll(IntCollection c);
+	@Override
+    public abstract boolean addAll(IntCollection c);
 
 	/**
 	 * Removes from this set all of its elements that are contained in the
@@ -159,7 +167,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @throws NullPointerException s = null
 	 * @throws UnsupportedOperationException this is an unmodifiable set
 	 */
-	public abstract boolean removeAll(IntCollection c);
+	@Override
+    public abstract boolean removeAll(IntCollection c);
 
 	/**
 	 * Retains only the elements in this set that are contained in the specified
@@ -170,14 +179,16 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @throws NullPointerException s = null
 	 * @throws UnsupportedOperationException this is an unmodifiable set
 	 */
-	public abstract boolean retainAll(IntCollection c);
+	@Override
+    public abstract boolean retainAll(IntCollection c);
 
 	/**
 	 * Removes all elements from this set.
 	 * 
 	 * @ensures no this.ints'
 	 */
-	public abstract void clear();
+	@Override
+    public abstract void clear();
 
 	/**
 	 * Returns a copy of this IntSet. The copy is independent of this IntSet
@@ -197,7 +208,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @return an array containing all of the elements in this set in the
 	 *         ascending order.
 	 */
-	public abstract int[] toArray();
+	@Override
+    public abstract int[] toArray();
 
 	/**
 	 * Copies the elements of this set into the specified array, in the
@@ -210,7 +222,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @return array.length>=this.size() => array' else this.toArray()
 	 * @throws NullPointerException array = null
 	 */
-	public abstract int[] toArray(int[] array);
+	@Override
+    public abstract int[] toArray(int[] array);
 
 	/**
 	 * Compares the specified object with this set for equality. Returns true if
@@ -223,7 +236,8 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * @return o instanceof IntSet and o.size() = this.size() and
 	 *         this.containsAll(o)
 	 */
-	public abstract boolean equals(Object o);
+	@Override
+    public abstract boolean equals(Object o);
 
 	/**
 	 * Returns the hash code value for this set. The hash code of a set is
@@ -235,5 +249,6 @@ public interface IntSet extends IntCollection, Cloneable {
 	 * 
 	 * @return Ints.superFastHash(this.toArray())
 	 */
-	public abstract int hashCode();
+	@Override
+    public abstract int hashCode();
 }

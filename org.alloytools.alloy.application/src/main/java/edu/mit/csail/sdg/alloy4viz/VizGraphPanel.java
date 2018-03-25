@@ -178,21 +178,24 @@ public final class VizGraphPanel extends JPanel {
 			if (Util.onMac())
 				atomCombo.setBorder(BorderFactory.createEmptyBorder(4, 1, 0, 1));
 			left.addActionListener(new ActionListener() {
-				public final void actionPerformed(ActionEvent e) {
+				@Override
+                public final void actionPerformed(ActionEvent e) {
 					int curIndex = atomCombo.getSelectedIndex();
 					if (curIndex > 0)
 						atomCombo.setSelectedIndex(curIndex - 1);
 				}
 			});
 			right.addActionListener(new ActionListener() {
-				public final void actionPerformed(ActionEvent e) {
+				@Override
+                public final void actionPerformed(ActionEvent e) {
 					int curIndex = atomCombo.getSelectedIndex();
 					if (curIndex < atomCombo.getItemCount() - 1)
 						atomCombo.setSelectedIndex(curIndex + 1);
 				}
 			});
 			atomCombo.addActionListener(new ActionListener() {
-				public final void actionPerformed(ActionEvent e) {
+				@Override
+                public final void actionPerformed(ActionEvent e) {
 					left.setEnabled(atomCombo.getSelectedIndex() > 0);
 					right.setEnabled(atomCombo.getSelectedIndex() < atomnames.length - 1);
 					remakeAll();
@@ -259,14 +262,16 @@ public final class VizGraphPanel extends JPanel {
 		});
 		diagramScrollPanel = OurUtil.scrollpane(graphPanel, new OurBorder(true, true, true, false));
 		diagramScrollPanel.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-			public void adjustmentValueChanged(AdjustmentEvent e) {
+			@Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
 				diagramScrollPanel.invalidate();
 				diagramScrollPanel.repaint();
 				diagramScrollPanel.validate();
 			}
 		});
 		diagramScrollPanel.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-			public void adjustmentValueChanged(AdjustmentEvent e) {
+			@Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
 				diagramScrollPanel.invalidate();
 				diagramScrollPanel.repaint();
 				diagramScrollPanel.validate();

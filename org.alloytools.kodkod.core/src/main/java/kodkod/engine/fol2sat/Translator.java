@@ -642,7 +642,8 @@ public final class Translator {
 	private AnnotatedNode<Formula> inlinePredicates(final AnnotatedNode<Formula> annotated,
 			final Set<RelationPredicate> truePreds) {
 		final AbstractReplacer inliner = new AbstractReplacer(annotated.sharedNodes()) {
-			public Formula visit(RelationPredicate pred) {
+			@Override
+            public Formula visit(RelationPredicate pred) {
 				Formula ret = lookup(pred);
 				if (ret != null)
 					return ret;
@@ -683,7 +684,8 @@ public final class Translator {
 		final AbstractReplacer inliner = new AbstractReplacer(annotated.sharedNodes()) {
 			private RelationPredicate source = null;
 
-			protected <N extends Node> N cache(N node, N replacement) {
+			@Override
+            protected <N extends Node> N cache(N node, N replacement) {
 				if (replacement instanceof Formula) {
 					if (source == null) {
 						final Node nsource = annotated.sourceOf(node);
@@ -696,7 +698,8 @@ public final class Translator {
 				return super.cache(node, replacement);
 			}
 
-			public Formula visit(RelationPredicate pred) {
+			@Override
+            public Formula visit(RelationPredicate pred) {
 				Formula ret = lookup(pred);
 				if (ret != null)
 					return ret;
@@ -826,7 +829,7 @@ public final class Translator {
 		} else {
 			final Map<Relation,IntSet> varUsage = interpreter.vars();
 			interpreter = null; // enable gc
-			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula) circuit, maxPrimaryVar,
+			final SATSolver cnf = Bool2CNFTranslator.translate(circuit, maxPrimaryVar,
 					options.solver());
 			return new Translation.Whole(completeBounds(), options, cnf, varUsage, maxPrimaryVar, log);
 		}
@@ -854,7 +857,7 @@ public final class Translator {
 		} else {
 			return new Translation.Whole(completeBounds(), options,
 					Bool2CNFTranslator.translate(outcome, options.solver()),
-					(Map<Relation,IntSet>) Collections.EMPTY_MAP, 0, log);
+					Collections.EMPTY_MAP, 0, log);
 		}
 	}
 

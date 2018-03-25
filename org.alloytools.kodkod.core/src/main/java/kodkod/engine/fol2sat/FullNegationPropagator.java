@@ -25,7 +25,6 @@ import static kodkod.ast.operator.FormulaOperator.AND;
 import static kodkod.ast.operator.FormulaOperator.OR;
 
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -119,7 +118,8 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NotFormula)
 	 */
-	public final void visit(NotFormula nf) {
+	@Override
+    public final void visit(NotFormula nf) {
 		if (visited(nf))
 			return;
 
@@ -140,7 +140,8 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.BinaryFormula)
 	 */
-	public final void visit(BinaryFormula bf) {
+	@Override
+    public final void visit(BinaryFormula bf) {
 		if (visited(bf))
 			return;
 		final FormulaOperator op = bf.op();
@@ -231,7 +232,8 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NaryFormula)
 	 */
-	public final void visit(NaryFormula nf) {
+	@Override
+    public final void visit(NaryFormula nf) {
 		if (visited(nf))
 			return;
 		final FormulaOperator op = nf.op();
@@ -281,7 +283,8 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 		addConjunct(f);
 	}
 
-	public final void visit(QuantifiedFormula qf) {
+	@Override
+    public final void visit(QuantifiedFormula qf) {
 		if (visited(qf))
 			return;
 		FullNegationPropagator fneBody = new FullNegationPropagator(shared, annotations);
@@ -304,7 +307,8 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 		negated = wasNegated;
 	}
 
-	public final void visit(FixFormula qf) {
+	@Override
+    public final void visit(FixFormula qf) {
 		addConjunct(qf);
 		// if (visited(qf)) return;
 		// if (!negated) {
@@ -318,12 +322,14 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(ComparisonFormula cf) {
+	@Override
+    public final void visit(ComparisonFormula cf) {
 		visitFormula(cf);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(IntComparisonFormula cf) {
+	@Override
+    public final void visit(IntComparisonFormula cf) {
 		if (visited(cf))
 			return;
 		if (!negated) {
@@ -361,17 +367,20 @@ public final class FullNegationPropagator extends AbstractVoidVisitor {
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(MultiplicityFormula mf) {
+	@Override
+    public final void visit(MultiplicityFormula mf) {
 		visitFormula(mf);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(ConstantFormula constant) {
+	@Override
+    public final void visit(ConstantFormula constant) {
 		visitFormula(constant);
 	}
 
 	/** @see #visitFormula(Formula) */
-	public final void visit(RelationPredicate pred) {
+	@Override
+    public final void visit(RelationPredicate pred) {
 		visitFormula(pred);
 	}
 

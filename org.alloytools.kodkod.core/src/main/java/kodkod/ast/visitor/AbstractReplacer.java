@@ -143,7 +143,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { d: Decls | d.size = decls.size && all i: [0..d.size) |
 	 *         d.declarations[i] = decls.declarations[i].accept(delegate) }
 	 */
-	public Decls visit(Decls decls) {
+	@Override
+    public Decls visit(Decls decls) {
 		Decls ret = lookup(decls);
 		if (ret != null)
 			return ret;
@@ -171,7 +172,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         decl.multiplicity && d.expression =
 	 *         declaration.expression.accept(delegate)
 	 */
-	public Decl visit(Decl decl) {
+	@Override
+    public Decl visit(Decl decl) {
 		Decl ret = lookup(decl);
 		if (ret != null)
 			return ret;
@@ -189,7 +191,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * 
 	 * @return relation
 	 */
-	public Expression visit(Relation relation) {
+	@Override
+    public Expression visit(Relation relation) {
 		final Expression ret = lookup(relation);
 		return ret == null ? cache(relation, relation) : ret;
 	}
@@ -200,7 +203,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * 
 	 * @return variable
 	 */
-	public Expression visit(Variable variable) {
+	@Override
+    public Expression visit(Variable variable) {
 		final Expression ret = lookup(variable);
 		return ret == null ? cache(variable, variable) : variable;
 	}
@@ -211,7 +215,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * 
 	 * @return constExpr
 	 */
-	public Expression visit(ConstantExpression constExpr) {
+	@Override
+    public Expression visit(ConstantExpression constExpr) {
 		final Expression ret = lookup(constExpr);
 		return ret == null ? cache(constExpr, constExpr) : constExpr;
 	}
@@ -226,7 +231,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         && all i: [0..expr.children) | e.child(i) =
 	 *         expr.child(i).accept(delegate) }
 	 */
-	public Expression visit(NaryExpression expr) {
+	@Override
+    public Expression visit(NaryExpression expr) {
 		Expression ret = lookup(expr);
 		if (ret != null)
 			return ret;
@@ -252,7 +258,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { b: BinaryExpression | b.left = binExpr.left.accept(delegate) &&
 	 *         b.right = binExpr.right.accept(delegate) && b.op = binExpr.op }
 	 */
-	public Expression visit(BinaryExpression binExpr) {
+	@Override
+    public Expression visit(BinaryExpression binExpr) {
 		Expression ret = lookup(binExpr);
 		if (ret != null)
 			return ret;
@@ -272,7 +279,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { u: UnaryExpression | u.left =
 	 *         unaryExpr.expression.accept(delegate) && u.op = unaryExpr.op }
 	 */
-	public Expression visit(UnaryExpression unaryExpr) {
+	@Override
+    public Expression visit(UnaryExpression unaryExpr) {
 		Expression ret = lookup(unaryExpr);
 		if (ret != null)
 			return ret;
@@ -292,12 +300,13 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         comprehension.declarations.accept(delegate) && c.formula =
 	 *         comprehension.formula.accept(delegate) }
 	 */
-	public Expression visit(Comprehension comprehension) {
+	@Override
+    public Expression visit(Comprehension comprehension) {
 		Expression ret = lookup(comprehension);
 		if (ret != null)
 			return ret;
 
-		final Decls decls = (Decls) comprehension.decls().accept(delegate);
+		final Decls decls = comprehension.decls().accept(delegate);
 		final Formula formula = comprehension.formula().accept(delegate);
 		ret = (decls == comprehension.decls() && formula == comprehension.formula()) ? comprehension
 				: formula.comprehension(decls);
@@ -315,7 +324,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         ifExpr.thenExpr.accept(delegate) && i.elseExpr =
 	 *         ifExpr.elseExpr.accept(delegate) }
 	 */
-	public Expression visit(IfExpression ifExpr) {
+	@Override
+    public Expression visit(IfExpression ifExpr) {
 		Expression ret = lookup(ifExpr);
 		if (ret != null)
 			return ret;
@@ -338,7 +348,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { d: Decls | d.size = decls.size && all i: [0..d.size) |
 	 *         d.declarations[i] = decls.declarations[i].accept(delegate) }
 	 */
-	public Expression visit(ProjectExpression project) {
+	@Override
+    public Expression visit(ProjectExpression project) {
 		Expression ret = lookup(project);
 		if (ret != null)
 			return ret;
@@ -363,7 +374,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { e: Expression | e =
 	 *         castExpr.intExpr.accept(delegate).toExpression() }
 	 */
-	public Expression visit(IntToExprCast castExpr) {
+	@Override
+    public Expression visit(IntToExprCast castExpr) {
 		Expression ret = lookup(castExpr);
 		if (ret != null)
 			return ret;
@@ -379,7 +391,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * 
 	 * @return intconst
 	 */
-	public IntExpression visit(IntConstant intconst) {
+	@Override
+    public IntExpression visit(IntConstant intconst) {
 		IntExpression ret = lookup(intconst);
 		return ret == null ? cache(intconst, intconst) : intconst;
 	}
@@ -395,7 +408,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         intExpr.thenExpr.accept(delegate) && i.elseExpr =
 	 *         intExpr.elseExpr.accept(delegate) }
 	 */
-	public IntExpression visit(IfIntExpression intExpr) {
+	@Override
+    public IntExpression visit(IfIntExpression intExpr) {
 		IntExpression ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -418,7 +432,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { i: ExprToIntCast | i.expression =
 	 *         intExpr.expression.accept(delegate) && i.op = intExpr.op}
 	 */
-	public IntExpression visit(ExprToIntCast intExpr) {
+	@Override
+    public IntExpression visit(ExprToIntCast intExpr) {
 		IntExpression ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -438,7 +453,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         #intExpr.children && all i: [0..intExpr.children) | e.child(i) =
 	 *         intExpr.child(i).accept(delegate) }
 	 */
-	public IntExpression visit(NaryIntExpression intExpr) {
+	@Override
+    public IntExpression visit(NaryIntExpression intExpr) {
 		IntExpression ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -464,7 +480,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { c: IntExpression | [[c]] = intExpr.left.accept(delegate) op
 	 *         intExpr.right.accept(delegate) }
 	 */
-	public IntExpression visit(BinaryIntExpression intExpr) {
+	@Override
+    public IntExpression visit(BinaryIntExpression intExpr) {
 		IntExpression ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -484,7 +501,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { u: UnaryIntExpression | u.expression =
 	 *         intExpr.expression.accept(delegate) && u.op = intExpr.op }
 	 */
-	public IntExpression visit(UnaryIntExpression intExpr) {
+	@Override
+    public IntExpression visit(UnaryIntExpression intExpr) {
 		IntExpression ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -503,7 +521,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { c: IntExpression | [[c]] = sum intExpr.decls.accept(delegate) |
 	 *         intExpr.intExpr.accept(delegate) }
 	 */
-	public IntExpression visit(SumExpression intExpr) {
+	@Override
+    public IntExpression visit(SumExpression intExpr) {
 		IntExpression ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -523,7 +542,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { c: Formula | [[c]] = intComp.left.accept(delegate) op
 	 *         intComp.right.accept(delegate) }
 	 */
-	public Formula visit(IntComparisonFormula intComp) {
+	@Override
+    public Formula visit(IntComparisonFormula intComp) {
 		Formula ret = lookup(intComp);
 		if (ret != null)
 			return ret;
@@ -540,7 +560,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * 
 	 * @return constant
 	 */
-	public Formula visit(ConstantFormula constant) {
+	@Override
+    public Formula visit(ConstantFormula constant) {
 		final Formula ret = lookup(constant);
 		return ret == null ? cache(constant, constant) : constant;
 	}
@@ -555,12 +576,13 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         quantFormula.declarations.accept(delegate) && q.formula =
 	 *         quantFormula.formula.accept(delegate) }
 	 */
-	public Formula visit(QuantifiedFormula quantFormula) {
+	@Override
+    public Formula visit(QuantifiedFormula quantFormula) {
 		Formula ret = lookup(quantFormula);
 		if (ret != null)
 			return ret;
 
-		final Decls decls = (Decls) quantFormula.decls().accept(delegate);
+		final Decls decls = quantFormula.decls().accept(delegate);
 		final Formula domain = quantFormula.domain().accept(delegate);
 		final Formula body = quantFormula.body().accept(delegate);
 		ret = (decls == quantFormula.decls() && domain == quantFormula.domain() && body == quantFormula.body())
@@ -579,7 +601,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         #formula.children && all i: [0..formula.children) | e.child(i) =
 	 *         formula.child(i).accept(delegate) }
 	 */
-	public Formula visit(NaryFormula formula) {
+	@Override
+    public Formula visit(NaryFormula formula) {
 		Formula ret = lookup(formula);
 		if (ret != null)
 			return ret;
@@ -605,7 +628,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * @return { b: BinaryFormula | b.left = binExpr.left.accept(delegate) &&
 	 *         b.right = binExpr.right.accept(delegate) && b.op = binExpr.op }
 	 */
-	public Formula visit(BinaryFormula binFormula) {
+	@Override
+    public Formula visit(BinaryFormula binFormula) {
 		Formula ret = lookup(binFormula);
 		if (ret != null)
 			return ret;
@@ -625,7 +649,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 * 
 	 * @return { n: NotFormula | n.child = not.child.accept(delegate) }
 	 */
-	public Formula visit(NotFormula not) {
+	@Override
+    public Formula visit(NotFormula not) {
 		Formula ret = lookup(not);
 		if (ret != null)
 			return ret;
@@ -645,7 +670,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         compFormula.left.accept(delegate) && c.right =
 	 *         compFormula.right.accept(delegate) && c.op = compFormula.op }
 	 */
-	public Formula visit(ComparisonFormula compFormula) {
+	@Override
+    public Formula visit(ComparisonFormula compFormula) {
 		Formula ret = lookup(compFormula);
 		if (ret != null)
 			return ret;
@@ -667,7 +693,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         multFormula.multiplicity && m.expression =
 	 *         multFormula.expression.accept(delegate) }
 	 */
-	public Formula visit(MultiplicityFormula multFormula) {
+	@Override
+    public Formula visit(MultiplicityFormula multFormula) {
 		Formula ret = lookup(multFormula);
 		if (ret != null)
 			return ret;
@@ -692,7 +719,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 	 *         pred.first.accept(delegate) && p.last =
 	 *         pred.last.accept(delegate) }
 	 */
-	public Formula visit(RelationPredicate pred) {
+	@Override
+    public Formula visit(RelationPredicate pred) {
 		Formula ret = lookup(pred);
 		if (ret != null)
 			return ret;
@@ -724,7 +752,8 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression,Formu
 		return cache(pred, ret);
 	}
 
-	public Formula visit(FixFormula fixFormula) {
+	@Override
+    public Formula visit(FixFormula fixFormula) {
 		Formula ret = lookup(fixFormula);
 		if (ret != null)
 			return ret;

@@ -41,7 +41,7 @@ public class ExampleCompilingFromSource {
 			SafeList<Field> fields = sig.getFields();
 			for (Field field : fields) {
 				System.out.println("  traversing field: " + field);
-				A4TupleSet ts = (A4TupleSet) (sol.eval(field));
+				A4TupleSet ts = (sol.eval(field));
 				for (A4Tuple t : ts) {
 					System.out.print("    [");
 					for (int i = 0; i < t.arity(); i++)

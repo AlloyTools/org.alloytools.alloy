@@ -93,7 +93,8 @@ public final class NaryFormula extends Formula implements Iterable<Formula> {
 	 * @return an iterator over this formula's children, in the increasing order
 	 *         of indices.
 	 */
-	public Iterator<Formula> iterator() {
+	@Override
+    public Iterator<Formula> iterator() {
 		return Containers.iterate(children);
 	}
 

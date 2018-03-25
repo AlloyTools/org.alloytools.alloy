@@ -119,11 +119,13 @@ public final class Util {
 	 */
 	public static <E> Iterable<E> fastJoin(final Iterable<E> collection1, final Iterable<E> collection2) {
 		return new Iterable<E>() {
-			public Iterator<E> iterator() {
+			@Override
+            public Iterator<E> iterator() {
 				return new Iterator<E>() {
 					private Iterator<E> a = collection1.iterator(), b = collection2.iterator();
 
-					public boolean hasNext() {
+					@Override
+                    public boolean hasNext() {
 						if (a != null) {
 							if (a.hasNext())
 								return true;
@@ -137,7 +139,8 @@ public final class Util {
 						return false;
 					}
 
-					public E next() {
+					@Override
+                    public E next() {
 						if (a != null) {
 							if (a.hasNext())
 								return a.next();
@@ -151,7 +154,8 @@ public final class Util {
 						throw new NoSuchElementException();
 					}
 
-					public void remove() {
+					@Override
+                    public void remove() {
 						throw new UnsupportedOperationException();
 					}
 				};
@@ -378,7 +382,8 @@ public final class Util {
 	 * (5) Finally, we compare them lexically with case-sensitivity.
 	 */
 	public static final Comparator<String> slashComparator = new Comparator<String>() {
-		public final int compare(String a, String b) {
+		@Override
+        public final int compare(String a, String b) {
 			if (a == null)
 				return (b == null) ? 0 : -1;
 			else if (b == null)

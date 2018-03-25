@@ -63,7 +63,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#iterator(int, int)
 	 */
-	public Iterator<IndexedEntry<V>> iterator(int from, int to) {
+	@Override
+    public Iterator<IndexedEntry<V>> iterator(int from, int to) {
 		return from <= to ? new AscendingIterator(from, to) : new DescendingIterator(from, to);
 	}
 
@@ -72,7 +73,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -82,7 +84,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * @ensures no this.entries'
 	 * @see kodkod.util.ints.SparseSequence#clear()
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		tree.clear();
 		size = 0;
 	}
@@ -92,7 +95,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#put(int, Object)
 	 */
-	public V put(int index, V value) {
+	@Override
+    public V put(int index, V value) {
 		final Entry<V> e = tree.search(index);
 		if (e == null) {
 			size++;
@@ -108,7 +112,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#get(int)
 	 */
-	public V get(int index) {
+	@Override
+    public V get(int index) {
 		final Entry<V> e = tree.search(index);
 		return e == null ? null : e.value;
 	}
@@ -122,7 +127,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * @return this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#remove(int)
 	 */
-	public V remove(int index) {
+	@Override
+    public V remove(int index) {
 		final Entry<V> e = tree.search(index);
 		if (e == null)
 			return null;
@@ -138,7 +144,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#containsIndex(int)
 	 */
-	public boolean containsIndex(int index) {
+	@Override
+    public boolean containsIndex(int index) {
 		return tree.search(index) != null;
 	}
 
@@ -147,7 +154,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#first()
 	 */
-	public IndexedEntry<V> first() {
+	@Override
+    public IndexedEntry<V> first() {
 		return tree.min();
 	}
 
@@ -156,7 +164,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#last()
 	 */
-	public IndexedEntry<V> last() {
+	@Override
+    public IndexedEntry<V> last() {
 		return tree.max();
 	}
 
@@ -165,7 +174,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#ceil(int)
 	 */
-	public IndexedEntry<V> ceil(int index) {
+	@Override
+    public IndexedEntry<V> ceil(int index) {
 		return tree.searchGTE(index);
 	}
 
@@ -174,7 +184,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#floor(int)
 	 */
-	public IndexedEntry<V> floor(int index) {
+	@Override
+    public IndexedEntry<V> floor(int index) {
 		return tree.searchLTE(index);
 	}
 
@@ -185,7 +196,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 	 * @return a copy of this sparse sequence.
 	 * @see kodkod.util.ints.SparseSequence#clone()
 	 */
-	public TreeSequence<V> clone() {
+	@Override
+    public TreeSequence<V> clone() {
 		// ok to use copy constructor to clone a final class
 		return new TreeSequence<V>(this);
 
@@ -203,11 +215,13 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 			this.value = value;
 		}
 
-		public int index() {
+		@Override
+        public int index() {
 			return key;
 		}
 
-		public V value() {
+		@Override
+        public V value() {
 			return value;
 		}
 
@@ -223,7 +237,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 			return oldValue;
 		}
 
-		public boolean equals(Object o) {
+		@Override
+        public boolean equals(Object o) {
 			if (o == this)
 				return true;
 			if (!(o instanceof IndexedEntry))
@@ -231,15 +246,18 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 			return AbstractSparseSequence.equal(this, (IndexedEntry< ? >) o);
 		}
 
-		public int hashCode() {
+		@Override
+        public int hashCode() {
 			return AbstractSparseSequence.hashCode(this);
 		}
 
-		public String toString() {
+		@Override
+        public String toString() {
 			return key + "=" + value;
 		}
 
-		protected Entry<V> clone() throws CloneNotSupportedException {
+		@Override
+        protected Entry<V> clone() throws CloneNotSupportedException {
 			return (Entry<V>) super.clone();
 		}
 	}
@@ -268,9 +286,11 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 		 */
 		abstract void advance();
 
-		public abstract boolean hasNext();
+		@Override
+        public abstract boolean hasNext();
 
-		public IndexedEntry<V> next() {
+		@Override
+        public IndexedEntry<V> next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			lastReturned = next;
@@ -278,7 +298,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 			return lastReturned;
 		}
 
-		public final void remove() {
+		@Override
+        public final void remove() {
 			if (lastReturned == null)
 				throw new IllegalStateException();
 			if (next == null) {
@@ -309,7 +330,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 		/**
 		 * Sets next to its successor.
 		 */
-		final void advance() {
+		@Override
+        final void advance() {
 			next = tree.successor(next);
 		}
 
@@ -317,7 +339,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 		 * Returns true if next != NIL and its index is less than or equal to
 		 * the ending index.
 		 */
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next != null && next.key <= endIndex;
 		}
 	}
@@ -336,7 +359,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 		/**
 		 * Sets next to its predecessor.
 		 */
-		final void advance() {
+		@Override
+        final void advance() {
 			next = tree.predecessor(next);
 		}
 
@@ -344,7 +368,8 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V> implements 
 		 * Returns true if next != NIL and its index is greater than or equal to
 		 * the ending index.
 		 */
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next != null && next.key >= endIndex;
 		}
 	}

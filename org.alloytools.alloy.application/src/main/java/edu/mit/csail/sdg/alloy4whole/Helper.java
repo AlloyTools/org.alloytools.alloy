@@ -22,7 +22,6 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4Tuple;
-import edu.mit.csail.sdg.translator.A4TupleSet;
 
 /**
  * This class contains convenient methods for people using Alloy4 API. These
@@ -48,7 +47,7 @@ public final class Helper {
 		Map<String,PrimSig> map = new HashMap<String,PrimSig>();
 		for (Sig s : solution.getAllReachableSigs())
 			if (s instanceof PrimSig)
-				for (A4Tuple t : (A4TupleSet) solution.eval(s)) {
+				for (A4Tuple t : solution.eval(s)) {
 					// We skip over SubsetSig and only care about PrimSig
 					String atom = t.atom(0);
 					PrimSig old = map.get(atom);

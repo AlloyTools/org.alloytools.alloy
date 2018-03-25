@@ -61,7 +61,8 @@ public final class ArrayIntSet extends AbstractIntSet {
 	 * 
 	 * @see kodkod.util.ints.IntSet#iterator(int, int)
 	 */
-	public IntIterator iterator(final int from, final int to) {
+	@Override
+    public IntIterator iterator(final int from, final int to) {
 		return from <= to ? new AscendingIntArrayIterator(from, to) : new DescendingIntArrayIterator(from, to);
 	}
 
@@ -70,14 +71,16 @@ public final class ArrayIntSet extends AbstractIntSet {
 	 * 
 	 * @see kodkod.util.ints.IntSet#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return ints.length;
 	}
 
 	/**
 	 * @see kodkod.util.ints.IntSet#ceil(int)
 	 */
-	public int ceil(int i) {
+	@Override
+    public int ceil(int i) {
 		final int index = Arrays.binarySearch(ints, i);
 		if (index == -ints.length - 1)
 			throw new NoSuchElementException();
@@ -88,7 +91,8 @@ public final class ArrayIntSet extends AbstractIntSet {
 	/**
 	 * @see kodkod.util.ints.IntSet#floor(int)
 	 */
-	public int floor(int i) {
+	@Override
+    public int floor(int i) {
 		final int index = Arrays.binarySearch(ints, i);
 		if (index == -1)
 			throw new NoSuchElementException();
@@ -102,7 +106,8 @@ public final class ArrayIntSet extends AbstractIntSet {
 	 * @return i in this.ints
 	 * @see kodkod.util.ints.IntSet#contains(int)
 	 */
-	public boolean contains(int i) {
+	@Override
+    public boolean contains(int i) {
 		return Arrays.binarySearch(ints, i) >= 0;
 	}
 
@@ -203,17 +208,20 @@ public final class ArrayIntSet extends AbstractIntSet {
 			end = toIndex >= 0 ? toIndex : -toIndex - 2;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next >= 0 && next <= end;
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return ints[next++];
 		}
 
-		public final void remove() {
+		@Override
+        public final void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -239,17 +247,20 @@ public final class ArrayIntSet extends AbstractIntSet {
 			end = toIndex >= 0 ? toIndex : -toIndex - 1;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next >= end;
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return ints[next--];
 		}
 
-		public final void remove() {
+		@Override
+        public final void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}

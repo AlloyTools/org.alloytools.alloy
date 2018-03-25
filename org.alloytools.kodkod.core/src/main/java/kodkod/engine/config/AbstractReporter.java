@@ -51,19 +51,22 @@ public abstract class AbstractReporter implements Reporter {
 	 * 
 	 * @see kodkod.engine.config.Reporter#detectingSymmetries(kodkod.instance.Bounds)
 	 */
-	public void detectingSymmetries(Bounds bounds) {}
+	@Override
+    public void detectingSymmetries(Bounds bounds) {}
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.config.Reporter#detectedSymmetries(java.util.Set)
 	 */
-	public void detectedSymmetries(Set<IntSet> parts) {}
+	@Override
+    public void detectedSymmetries(Set<IntSet> parts) {}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#generatingSBP()
 	 */
-	public void generatingSBP() {}
+	@Override
+    public void generatingSBP() {}
 
 	/**
 	 * {@inheritDoc}
@@ -71,59 +74,80 @@ public abstract class AbstractReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#skolemizing(kodkod.ast.Decl,
 	 *      kodkod.ast.Relation, java.util.List)
 	 */
-	public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
+	@Override
+    public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
 	 */
-	public void solvingCNF(int primaryVars, int vars, int clauses) {}
+	@Override
+    public void solvingCNF(int primaryVars, int vars, int clauses) {}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#optimizingBoundsAndFormula()
 	 */
-	public void optimizingBoundsAndFormula() {}
+	@Override
+    public void optimizingBoundsAndFormula() {}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#translatingToBoolean(kodkod.ast.Formula,
 	 *      kodkod.instance.Bounds)
 	 */
-	public void translatingToBoolean(Formula formula, Bounds bounds) {}
+	@Override
+    public void translatingToBoolean(Formula formula, Bounds bounds) {}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#translatingToCNF(kodkod.engine.bool.BooleanFormula)
 	 */
-	public void translatingToCNF(BooleanFormula circuit) {}
+	@Override
+    public void translatingToCNF(BooleanFormula circuit) {}
 
-	public void convertingToNNF() {}
+	@Override
+    public void convertingToNNF() {}
 
-	public void holLoopStart(HOLTranslation tr, Formula formula, Bounds bounds) {}
+	@Override
+    public void holLoopStart(HOLTranslation tr, Formula formula, Bounds bounds) {}
 
-	public void holCandidateFound(HOLTranslation tr, Instance candidate) {}
+	@Override
+    public void holCandidateFound(HOLTranslation tr, Instance candidate) {}
 
-	public void holVerifyingCandidate(HOLTranslation tr, Instance candidate, Formula checkFormula, Bounds bounds) {}
+	@Override
+    public void holVerifyingCandidate(HOLTranslation tr, Instance candidate, Formula checkFormula, Bounds bounds) {}
 
-	public void holCandidateVerified(HOLTranslation tr, Instance candidate) {}
+	@Override
+    public void holCandidateVerified(HOLTranslation tr, Instance candidate) {}
 
-	public void holCandidateNotVerified(HOLTranslation tr, Instance candidate, Instance cex) {}
+	@Override
+    public void holCandidateNotVerified(HOLTranslation tr, Instance candidate, Instance cex) {}
 
-	public void holFindingNextCandidate(HOLTranslation tr, Formula inc) {}
+	@Override
+    public void holFindingNextCandidate(HOLTranslation tr, Formula inc) {}
 
-	public void holSplitStart(HOLTranslation tr, Formula formula) {}
+	@Override
+    public void holSplitStart(HOLTranslation tr, Formula formula) {}
 
-	public void holSplitChoice(HOLTranslation tr, Formula formula, Bounds bounds) {}
+	@Override
+    public void holSplitChoice(HOLTranslation tr, Formula formula, Bounds bounds) {}
 
-	public void holSplitChoiceSAT(HOLTranslation tr, Instance inst) {}
+	@Override
+    public void holSplitChoiceSAT(HOLTranslation tr, Instance inst) {}
 
-	public void holSplitChoiceUNSAT(HOLTranslation tr) {}
+	@Override
+    public void holSplitChoiceUNSAT(HOLTranslation tr) {}
 
-	public void holFixpointStart(HOLTranslation tr, Formula formula, Bounds bounds) {}
+	@Override
+    public void holFixpointStart(HOLTranslation tr, Formula formula, Bounds bounds) {}
 
-	public void holFixpointNoSolution(HOLTranslation tr) {}
+	@Override
+    public void holFixpointNoSolution(HOLTranslation tr) {}
 
-	public void holFixpointFirstSolution(HOLTranslation tr, Instance candidate) {}
+	@Override
+    public void holFixpointFirstSolution(HOLTranslation tr, Instance candidate) {}
 
-	public void holFixpointIncrementing(HOLTranslation tr, Formula inc) {}
+	@Override
+    public void holFixpointIncrementing(HOLTranslation tr, Formula inc) {}
 
-	public void holFixpointIncrementingOutcome(HOLTranslation tr, Instance next) {}
+	@Override
+    public void holFixpointIncrementingOutcome(HOLTranslation tr, Instance next) {}
 
 }

@@ -99,7 +99,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 		if (options.logTranslation() > 0) {
 			final Map<Node,Node> source = new IdentityHashMap<Node,Node>();
 			final Skolemizer r = new Skolemizer(annotated, bounds, options) {
-				protected Formula source(Formula f, Node n) {
+				@Override
+                protected Formula source(Formula f, Node n) {
 					// System.out.println("logging " + f + " <-- " + n);
 					final Node nsource = annotated.sourceOf(n);
 					if (f != nsource)
@@ -195,11 +196,13 @@ public abstract class Skolemizer extends AbstractReplacer {
 		this.repEnv = Environment.empty();
 		this.nonSkolems = new ArrayList<DeclInfo>();
 		this.nonSkolemsView = new AbstractList<Decl>() {
-			public Decl get(int index) {
+			@Override
+            public Decl get(int index) {
 				return nonSkolems.get(index).decl;
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return nonSkolems.size();
 			}
 		};
@@ -281,7 +284,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * @return { d: Decls | d.size = decls.size && all i: [0..d.size) |
 	 *         d.declarations[i] = decls.declarations[i].accept(this) }
 	 */
-	public final Decls visit(Decls decls) {
+	@Override
+    public final Decls visit(Decls decls) {
 		Decls ret = lookup(decls);
 		if (ret == null) {
 			Decls visitedDecls = null;
@@ -338,7 +342,7 @@ public abstract class Skolemizer extends AbstractReplacer {
 																		// at
 																		// this
 																		// point
-		final Decls decls = visit((Decls) expr.decls());
+		final Decls decls = visit(expr.decls());
 		final Formula formula = expr.formula().accept(this);
 		ret = (decls == expr.decls() && formula == expr.formula()) ? expr : formula.comprehension(decls);
 		repEnv = oldRepEnv;
@@ -358,7 +362,7 @@ public abstract class Skolemizer extends AbstractReplacer {
 																		// at
 																		// this
 																		// point
-		final Decls decls = visit((Decls) intExpr.decls());
+		final Decls decls = visit(intExpr.decls());
 		final IntExpression expr = intExpr.intExpr().accept(this);
 		ret = (decls == intExpr.decls() && expr == intExpr.intExpr()) ? intExpr : expr.sum(decls);
 		repEnv = oldRepEnv;
@@ -443,7 +447,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.QuantifiedFormula)
 	 */
-	public final Formula visit(QuantifiedFormula qf) {
+	@Override
+    public final Formula visit(QuantifiedFormula qf) {
 		Formula ret = lookup(qf);
 		if (ret != null)
 			return ret;
@@ -487,7 +492,7 @@ public abstract class Skolemizer extends AbstractReplacer {
 
 		} else { // non-skolemizable formula
 
-			final Decls newDecls = visit((Decls) qf.decls());
+			final Decls newDecls = visit(qf.decls());
 			if (skolemDepth >= nonSkolems.size() + newDecls.size()) { // could
 																		// skolemize
 																		// below
@@ -525,7 +530,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.NotFormula)
 	 **/
-	public final Formula visit(NotFormula not) {
+	@Override
+    public final Formula visit(NotFormula not) {
 		Formula ret = lookup(not);
 		if (ret != null)
 			return ret;
@@ -541,7 +547,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.BinaryFormula)
 	 */
-	public final Formula visit(BinaryFormula bf) {
+	@Override
+    public final Formula visit(BinaryFormula bf) {
 		Formula ret = lookup(bf);
 		if (ret != null)
 			return ret;
@@ -575,7 +582,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.NaryFormula)
 	 */
-	public final Formula visit(NaryFormula bf) {
+	@Override
+    public final Formula visit(NaryFormula bf) {
 		Formula ret = lookup(bf);
 		if (ret != null)
 			return ret;
@@ -616,7 +624,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @return super.visit(icf)
 	 **/
-	public final Formula visit(IntComparisonFormula icf) {
+	@Override
+    public final Formula visit(IntComparisonFormula icf) {
 		final int oldDepth = skolemDepth;
 		skolemDepth = -1; // cannot skolemize inside an int comparison formula
 		final Formula ret = super.visit(icf);
@@ -630,7 +639,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @return super.visit(cf)
 	 **/
-	public final Formula visit(ComparisonFormula cf) {
+	@Override
+    public final Formula visit(ComparisonFormula cf) {
 		final int oldDepth = skolemDepth;
 		skolemDepth = -1; // cannot skolemize inside a comparison formula
 		final Formula ret = super.visit(cf);
@@ -644,7 +654,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @return super.visit(mf)
 	 **/
-	public final Formula visit(MultiplicityFormula mf) {
+	@Override
+    public final Formula visit(MultiplicityFormula mf) {
 		final int oldDepth = skolemDepth;
 		skolemDepth = -1; // cannot skolemize inside a multiplicity formula
 		final Formula ret = super.visit(mf);
@@ -658,7 +669,8 @@ public abstract class Skolemizer extends AbstractReplacer {
 	 * 
 	 * @return super.visit(pred)
 	 **/
-	public final Formula visit(RelationPredicate pred) {
+	@Override
+    public final Formula visit(RelationPredicate pred) {
 		final int oldDepth = skolemDepth;
 		skolemDepth = -1; // cannot skolemize inside a relation predicate
 		final Formula ret = super.visit(pred);

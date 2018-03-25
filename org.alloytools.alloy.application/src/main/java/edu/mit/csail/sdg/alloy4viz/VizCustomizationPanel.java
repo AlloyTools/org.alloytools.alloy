@@ -189,11 +189,13 @@ public final class VizCustomizationPanel extends JPanel {
 				setRootVisible(false);
 				setShowsRootHandles(false);
 				listeners.add(new Listener() {
-					public Object do_action(Object sender, Event event) {
+					@Override
+                    public Object do_action(Object sender, Event event) {
 						return null;
 					}
 
-					public Object do_action(Object sender, Event event, Object arg) {
+					@Override
+                    public Object do_action(Object sender, Event event, Object arg) {
 						zoom(arg);
 						return null;
 					}
@@ -307,7 +309,8 @@ public final class VizCustomizationPanel extends JPanel {
 			}
 		});
 		labelText.addActionListener(new ActionListener() {
-			public final void actionPerformed(ActionEvent e) {
+			@Override
+            public final void actionPerformed(ActionEvent e) {
 				vizState.label.put(elt, labelText.getText());
 			}
 		});
@@ -408,7 +411,8 @@ public final class VizCustomizationPanel extends JPanel {
 						enabled ? OurCheckbox.ALL_OFF : OurCheckbox.ALL_ON) {
 					private static final long serialVersionUID = 0;
 
-					public Icon do_action() {
+					@Override
+                    public Icon do_action() {
 						if (enabled)
 							projectAlloyType((AlloyType) elt);
 						else
@@ -457,7 +461,8 @@ public final class VizCustomizationPanel extends JPanel {
 			}
 		});
 		labelText.addActionListener(new ActionListener() {
-			public final void actionPerformed(ActionEvent e) {
+			@Override
+            public final void actionPerformed(ActionEvent e) {
 				vizState.label.put(rel, labelText.getText());
 			}
 		});
@@ -494,7 +499,8 @@ public final class VizCustomizationPanel extends JPanel {
 			}
 		});
 		weightSpinner.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				vizState.weight.put(rel, (Integer) (weightSpinner.getValue()));
 			}
 		});
@@ -611,7 +617,8 @@ public final class VizCustomizationPanel extends JPanel {
 				vizState.useOriginalName() ? OurCheckbox.ON : OurCheckbox.OFF) {
 			private static final long serialVersionUID = 0;
 
-			public Icon do_action() {
+			@Override
+            public Icon do_action() {
 				boolean x = vizState.useOriginalName();
 				vizState.useOriginalName(!x);
 				return (!x ? ON : OFF);
@@ -622,7 +629,8 @@ public final class VizCustomizationPanel extends JPanel {
 				vizState.hidePrivate() ? OurCheckbox.ON : OurCheckbox.OFF) {
 			private static final long serialVersionUID = 0;
 
-			public Icon do_action() {
+			@Override
+            public Icon do_action() {
 				boolean x = vizState.hidePrivate();
 				vizState.hidePrivate(!x);
 				remakeAll();
@@ -634,7 +642,8 @@ public final class VizCustomizationPanel extends JPanel {
 				vizState.hideMeta() ? OurCheckbox.ON : OurCheckbox.OFF) {
 			private static final long serialVersionUID = 0;
 
-			public Icon do_action() {
+			@Override
+            public Icon do_action() {
 				boolean x = vizState.hideMeta();
 				vizState.hideMeta(!x);
 				remakeAll();

@@ -53,7 +53,8 @@ public interface RecordFilter {
 		 * 
 		 * @return true
 		 */
-		public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+		@Override
+        public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
 			return true;
 		}
 	};

@@ -188,7 +188,7 @@ public final class ConstList<T> extends AbstractList<T> implements Serializable,
 	/** Return an unmodifiable empty list. */
 	@SuppressWarnings("unchecked")
 	public static <T> ConstList<T> make() {
-		return (ConstList<T>) emptylist;
+		return emptylist;
 	}
 
 	/**

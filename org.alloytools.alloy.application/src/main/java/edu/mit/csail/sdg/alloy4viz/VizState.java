@@ -623,7 +623,8 @@ public final class VizState {
 					(Boolean.TRUE.equals(get(null)) ? OurCheckbox.ON : OurCheckbox.OFF)) {
 				private static final long serialVersionUID = 0;
 
-				public Icon do_action() {
+				@Override
+                public Icon do_action() {
 					T old = get(null);
 					boolean ans = (old != null && old.equals(onValue));
 					MMap.this.put(null, ans ? offValue : onValue);
@@ -639,7 +640,8 @@ public final class VizState {
 			return new OurCheckbox(label, tooltip, icon) {
 				private static final long serialVersionUID = 0;
 
-				public Icon do_action() {
+				@Override
+                public Icon do_action() {
 					T a = get(obj);
 					if (a == null)
 						a = onValue;

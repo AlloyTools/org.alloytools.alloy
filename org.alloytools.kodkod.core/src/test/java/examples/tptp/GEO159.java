@@ -58,7 +58,8 @@ public class GEO159 extends GEO158 {
 	 * 
 	 * @return the type declarations
 	 */
-	public Formula decls() {
+	@Override
+    public Formula decls() {
 		return super.decls().and(between.in(curve.product(point).product(point).product(point)));
 	}
 
@@ -76,7 +77,8 @@ public class GEO159 extends GEO158 {
 	 * 
 	 * @return a bounds with the given number of maximum curves and points
 	 */
-	public Bounds bounds(int scope) {
+	@Override
+    public Bounds bounds(int scope) {
 		final Bounds b = super.bounds(scope);
 		final TupleSet c = b.upperBound(curve);
 		final TupleSet p = b.upperBound(point);

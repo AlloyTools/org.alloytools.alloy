@@ -51,7 +51,8 @@ public abstract class ExprHasName extends Expr {
 	}
 
 	/** {@inheritDoc} */
-	public final int getDepth() {
+	@Override
+    public final int getDepth() {
 		return 1;
 	}
 }

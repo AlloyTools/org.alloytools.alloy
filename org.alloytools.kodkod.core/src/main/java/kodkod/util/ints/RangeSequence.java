@@ -111,7 +111,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#iterator(int, int)
 	 */
-	public Iterator<IndexedEntry<V>> iterator(int from, int to) {
+	@Override
+    public Iterator<IndexedEntry<V>> iterator(int from, int to) {
 		return from <= to ? new AscendingIterator(from, to) : new DescendingIterator(from, to);
 	}
 
@@ -120,7 +121,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -130,7 +132,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * @ensures no this.entries'
 	 * @see kodkod.util.ints.SparseSequence#clear()
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		tree.clear();
 		size = 0;
 	}
@@ -207,7 +210,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#put(int, Object)
 	 */
-	public V put(int index, V value) {
+	@Override
+    public V put(int index, V value) {
 		Entry<V> c = tree.searchGTE(index);
 		if (c == null || c.min() > index) { // we are adding a new index
 			size++;
@@ -237,7 +241,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#get(int)
 	 */
-	public V get(int index) {
+	@Override
+    public V get(int index) {
 		final Entry<V> e = tree.searchGTE(index);
 		return e == null || e.min() > index ? null : e.value;
 	}
@@ -299,7 +304,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * @return this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#remove(int)
 	 */
-	public V remove(int index) {
+	@Override
+    public V remove(int index) {
 		final Entry<V> z = tree.searchGTE(index);
 		if (z == null || index < z.min())
 			return null;
@@ -312,7 +318,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#containsIndex(int)
 	 */
-	public boolean containsIndex(int index) {
+	@Override
+    public boolean containsIndex(int index) {
 		final Entry<V> e = tree.searchGTE(index);
 		return e != null && e.min() <= index;
 	}
@@ -322,7 +329,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#first()
 	 */
-	public IndexedEntry<V> first() {
+	@Override
+    public IndexedEntry<V> first() {
 		final Entry<V> e = tree.min();
 		return e == null ? null : view.setView(e.min(), e.value);
 	}
@@ -332,7 +340,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#last()
 	 */
-	public IndexedEntry<V> last() {
+	@Override
+    public IndexedEntry<V> last() {
 		final Entry<V> e = tree.max();
 		return e == null ? null : view.setView(e.max(), e.value);
 	}
@@ -342,7 +351,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#ceil(int)
 	 */
-	public IndexedEntry<V> ceil(int index) {
+	@Override
+    public IndexedEntry<V> ceil(int index) {
 		final Entry<V> e = tree.searchGTE(index);
 		return e == null ? null : view.setView(StrictMath.max(index, e.min()), e.value);
 	}
@@ -352,7 +362,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#floor(int)
 	 */
-	public IndexedEntry<V> floor(int index) {
+	@Override
+    public IndexedEntry<V> floor(int index) {
 		Entry<V> e = tree.searchGTE(index);
 		if (e == null || e.min() > index) {
 			e = tree.searchLTE(index);
@@ -368,7 +379,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 	 * @return a copy of this sparse sequence.
 	 * @see kodkod.util.ints.SparseSequence#clone()
 	 */
-	public RangeSequence<V> clone() {
+	@Override
+    public RangeSequence<V> clone() {
 		// ok to use copy constructor to clone a final class
 		return new RangeSequence<V>(this);
 
@@ -427,7 +439,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 		 * @throws CloneNotSupportedException
 		 * @see java.lang.Object#clone()
 		 */
-		protected Entry<V> clone() throws CloneNotSupportedException {
+		@Override
+        protected Entry<V> clone() throws CloneNotSupportedException {
 			return (Entry<V>) super.clone();
 		}
 	}
@@ -462,7 +475,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return true;
 		}
 
-		protected Point<V> clone() throws CloneNotSupportedException {
+		@Override
+        protected Point<V> clone() throws CloneNotSupportedException {
 			return (Point<V>) super.clone();
 		}
 	}
@@ -499,7 +513,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return false;
 		}
 
-		protected Range<V> clone() throws CloneNotSupportedException {
+		@Override
+        protected Range<V> clone() throws CloneNotSupportedException {
 			return (Range<V>) super.clone();
 		}
 	}
@@ -522,15 +537,18 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			this.canRemove = false;
 		}
 
-		public final int index() {
+		@Override
+        public final int index() {
 			return index;
 		}
 
-		public final V value() {
+		@Override
+        public final V value() {
 			return value;
 		}
 
-		public final boolean equals(Object o) {
+		@Override
+        public final boolean equals(Object o) {
 			if (o == this)
 				return true;
 			if (!(o instanceof IndexedEntry))
@@ -538,11 +556,13 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return AbstractSparseSequence.equal(this, (IndexedEntry< ? >) o);
 		}
 
-		public final int hashCode() {
+		@Override
+        public final int hashCode() {
 			return AbstractSparseSequence.hashCode(this);
 		}
 
-		public final String toString() {
+		@Override
+        public final String toString() {
 			return index + "=" + value;
 		}
 	}
@@ -577,7 +597,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			}
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			if (cursor > endpoint) {
 				if (next == null)
 					return false;
@@ -589,7 +610,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return index < Integer.MAX_VALUE && cursor <= endIndex;
 		}
 
-		public IndexedEntry<V> next() {
+		@Override
+        public IndexedEntry<V> next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			index = cursor++;
@@ -597,7 +619,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return this;
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (!canRemove)
 				throw new IllegalStateException();
 			RangeSequence.this.remove(index);
@@ -643,7 +666,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			}
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			if (cursor < endpoint) {
 				if (next == null)
 					return false;
@@ -655,7 +679,8 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return index > Integer.MIN_VALUE && cursor >= endIndex;
 		}
 
-		public IndexedEntry<V> next() {
+		@Override
+        public IndexedEntry<V> next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			index = cursor--;
@@ -663,11 +688,12 @@ public final class RangeSequence<V> extends AbstractSparseSequence<V> implements
 			return this;
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (!canRemove)
 				throw new IllegalStateException();
-			RangeSequence.this.remove((int) index);
-			next = tree.searchLTE((int) cursor);
+			RangeSequence.this.remove(index);
+			next = tree.searchLTE(cursor);
 			canRemove = false;
 		}
 	}

@@ -47,23 +47,28 @@ public abstract class HOLTranslationOld extends HOLTranslation {
 			this.prev = prev;
 		}
 
-		public final boolean isFirstOrder() {
+		@Override
+        public final boolean isFirstOrder() {
 			return true;
 		}
 
-		public Formula formula() {
+		@Override
+        public Formula formula() {
 			return annotated.node();
 		}
 
-		public IntSet primaryVariables(Relation relation) {
+		@Override
+        public IntSet primaryVariables(Relation relation) {
 			return folTr.primaryVariables(relation);
 		}
 
-		public int numPrimaryVariables() {
+		@Override
+        public int numPrimaryVariables() {
 			return folTr.numPrimaryVariables();
 		}
 
-		public SATSolver cnf() {
+		@Override
+        public SATSolver cnf() {
 			return folTr.cnf();
 		}
 
@@ -99,35 +104,42 @@ public abstract class HOLTranslationOld extends HOLTranslation {
 			}
 		}
 
-		public HOLTranslation next() {
+		@Override
+        public HOLTranslation next() {
 			convTr = convTr.next();
 			return this;
 		}
 
-		public HOLTranslation next(Formula f, Bounds b) {
+		@Override
+        public HOLTranslation next(Formula f, Bounds b) {
 			convTr = convTr.next(f, b);
 			return this;
 		}
 
 		// Translation methods -----------
 
-		public IntSet primaryVariables(Relation relation) {
+		@Override
+        public IntSet primaryVariables(Relation relation) {
 			return convTr.primaryVariables(relation);
 		}
 
-		public int numPrimaryVariables() {
+		@Override
+        public int numPrimaryVariables() {
 			return convTr.numPrimaryVariables();
 		}
 
-		public SATSolver cnf() {
+		@Override
+        public SATSolver cnf() {
 			return new Solver();
 		}
 
-		public Instance interpret() {
+		@Override
+        public Instance interpret() {
 			return convTr.interpret();
 		}
 
-		public Formula formula() {
+		@Override
+        public Formula formula() {
 			return convTr.formula();
 		}
 
@@ -142,27 +154,33 @@ public abstract class HOLTranslationOld extends HOLTranslation {
 		// SATSolver methods -------------
 
 		class Solver implements SATSolver {
-			public int numberOfVariables() {
+			@Override
+            public int numberOfVariables() {
 				return convTr.cnf().numberOfVariables();
 			}
 
-			public int numberOfClauses() {
+			@Override
+            public int numberOfClauses() {
 				return convTr.cnf().numberOfClauses();
 			}
 
-			public void addVariables(int numVars) {
+			@Override
+            public void addVariables(int numVars) {
 				convTr.cnf().addVariables(numVars);
 			}
 
-			public boolean addClause(int[] lits) {
+			@Override
+            public boolean addClause(int[] lits) {
 				return convTr.cnf().addClause(lits);
 			}
 
-			public boolean valueOf(int variable) {
+			@Override
+            public boolean valueOf(int variable) {
 				return convTr.cnf().valueOf(variable);
 			}
 
-			public void free() {
+			@Override
+            public void free() {
 				convTr.cnf().free();
 			}
 
@@ -215,7 +233,8 @@ public abstract class HOLTranslationOld extends HOLTranslation {
 				return false;
 			}
 
-			public boolean solve() throws SATAbortedException {
+			@Override
+            public boolean solve() throws SATAbortedException {
 				rep.holLoopStart(Some4All.this, convTr.formula(), convTr.bounds());
 				return solveNext();
 			}
@@ -226,15 +245,18 @@ public abstract class HOLTranslationOld extends HOLTranslation {
 		super(bounds, options, 0);
 	}
 
-	public boolean isFirstOrder() {
+	@Override
+    public boolean isFirstOrder() {
 		return false;
 	}
 
-	public Translation getCurrentFOLTranslation() {
+	@Override
+    public Translation getCurrentFOLTranslation() {
 		return null;
 	}
 
-	public int numCandidates() {
+	@Override
+    public int numCandidates() {
 		return 1;
 	}
 

@@ -67,13 +67,15 @@ public class IntTest extends TestCase {
 		r1 = Relation.unary("r1");
 	}
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		bounds = new Bounds(factory.universe());
 		solver.options().setSolver(SATFactory.MiniSat);
 	}
 
-	protected void tearDown() throws Exception {
+	@Override
+    protected void tearDown() throws Exception {
 		super.tearDown();
 	}
 

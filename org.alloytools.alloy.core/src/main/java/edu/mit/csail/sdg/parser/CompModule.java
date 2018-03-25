@@ -155,7 +155,8 @@ public final class CompModule extends Browsable implements Module {
 	 * Return the simplest path pointing to this Module ("" if this is the main
 	 * module)
 	 */
-	public String path() {
+	@Override
+    public String path() {
 		return path;
 	}
 
@@ -916,7 +917,8 @@ public final class CompModule extends Browsable implements Module {
 	/**
 	 * Parse one expression by starting fromt this module as the root module.
 	 */
-	public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException {
+	@Override
+    public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException {
 		Map<String, String> fc = new LinkedHashMap<String, String>();
 		fc.put("", "run {\n" + input + "}"); // We prepend the line "run{"
 		CompModule m = CompUtil.parse(new ArrayList<Object>(), null, fc, null, -1, "", "", 1);
@@ -1003,7 +1005,8 @@ public final class CompModule extends Browsable implements Module {
 	 * Return the list containing THIS MODULE and all modules reachable from
 	 * this module.
 	 */
-	public SafeList<CompModule> getAllReachableModules() {
+	@Override
+    public SafeList<CompModule> getAllReachableModules() {
 		SafeList<CompModule> ans = new SafeList<CompModule>();
 		getHelper(-1, ans, new Object()); // The object must be new, since we
 											// need it to be a unique key
@@ -1011,7 +1014,8 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return the list of all relative filenames included from this MODULE. */
-	public List<String> getAllReachableModulesFilenames() {
+	@Override
+    public List<String> getAllReachableModulesFilenames() {
 		Set<String> set = new LinkedHashSet<String>();
 		for (Open o : opens.values())
 			set.add(o.filename);
@@ -1033,7 +1037,8 @@ public final class CompModule extends Browsable implements Module {
 	 * Return the list containing UNIV, SIGINT, SEQIDX, STRING, NONE, and all
 	 * sigs defined in this module or a reachable submodule.
 	 */
-	public ConstList<Sig> getAllReachableSigs() {
+	@Override
+    public ConstList<Sig> getAllReachableSigs() {
 		TempList<Sig> x = new TempList<Sig>();
 		x.add(UNIV);
 		x.add(SIGINT);
@@ -1048,7 +1053,8 @@ public final class CompModule extends Browsable implements Module {
 	 * Return the list containing all sigs defined in this module or a reachable
 	 * submodule.
 	 */
-	public ConstList<Sig> getAllReachableUserDefinedSigs() {
+	@Override
+    public ConstList<Sig> getAllReachableUserDefinedSigs() {
 		TempList<Sig> x = new TempList<Sig>();
 		for (CompModule m : getAllReachableModules())
 			x.addAll(m.sigs.values());
@@ -1189,7 +1195,8 @@ public final class CompModule extends Browsable implements Module {
 	 * Returns the text of the "MODULE" line at the top of the file; "unknown"
 	 * if the line has not be parsed from the file yet.
 	 */
-	public String getModelName() {
+	@Override
+    public String getModelName() {
 		return moduleName;
 	}
 
@@ -1536,7 +1543,8 @@ public final class CompModule extends Browsable implements Module {
 	 * Returns an unmodifiable list of all signatures defined inside this
 	 * module.
 	 */
-	public SafeList<Sig> getAllSigs() {
+	@Override
+    public SafeList<Sig> getAllSigs() {
 		return new SafeList<Sig>(sigs.values());
 		// SafeList<Sig> x = new SafeList<Sig>(sigs.values());
 		// return x.dup();
@@ -1696,7 +1704,8 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return an unmodifiable list of all functions in this module. */
-	public SafeList<Func> getAllFunc() {
+	@Override
+    public SafeList<Func> getAllFunc() {
 		SafeList<Func> ans = new SafeList<Func>();
 		for (ArrayList<Func> e : funcs.values())
 			ans.addAll(e);
@@ -1739,7 +1748,8 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return an unmodifiable list of all assertions in this module. */
-	public ConstList<Pair<String, Expr>> getAllAssertions() {
+	@Override
+    public ConstList<Pair<String, Expr>> getAllAssertions() {
 		TempList<Pair<String, Expr>> ans = new TempList<Pair<String, Expr>>(asserts.size());
 		for (Map.Entry<String, Expr> e : asserts.entrySet()) {
 			ans.add(new Pair<String, Expr>(e.getKey(), e.getValue()));
@@ -1802,7 +1812,8 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return an unmodifiable list of all facts in this module. */
-	public SafeList<Pair<String, Expr>> getAllFacts() {
+	@Override
+    public SafeList<Pair<String, Expr>> getAllFacts() {
 		return (new SafeList<Pair<String, Expr>>(facts)).dup();
 	}
 
@@ -1811,7 +1822,8 @@ public final class CompModule extends Browsable implements Module {
 	 * submodules (not including field constraints, nor including sig appended
 	 * constraints)
 	 */
-	public Expr getAllReachableFacts() {
+	@Override
+    public Expr getAllReachableFacts() {
 		ArrayList<Expr> facts = new ArrayList<Expr>();
 		for (CompModule m : world.getAllReachableModules())
 			for (Pair<String, Expr> f : m.facts)
@@ -1946,7 +1958,8 @@ public final class CompModule extends Browsable implements Module {
 	}
 
 	/** Return an unmodifiable list of all commands in this module. */
-	public ConstList<Command> getAllCommands() {
+	@Override
+    public ConstList<Command> getAllCommands() {
 		return ConstList.make(commands);
 	}
 
@@ -2191,7 +2204,8 @@ public final class CompModule extends Browsable implements Module {
 	/**
 	 * Add a global expression; if the name already exists, it is removed first.
 	 */
-	public void addGlobal(String name, Expr value) {
+	@Override
+    public void addGlobal(String name, Expr value) {
 		globals.put(name, value);
 	}
 

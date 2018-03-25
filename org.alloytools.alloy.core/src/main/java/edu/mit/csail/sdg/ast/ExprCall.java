@@ -398,7 +398,8 @@ public final class ExprCall extends Expr {
 	// ============================================================================================================//
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		int max = 1;
 		for (Expr x : args) {
 			int tmp = x.getDepth();

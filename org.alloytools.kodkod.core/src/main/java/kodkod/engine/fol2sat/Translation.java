@@ -275,7 +275,8 @@ public abstract class Translation {
 		 * 
 		 * @see kodkod.engine.fol2sat.Translation#cnf()
 		 */
-		public final SATSolver cnf() {
+		@Override
+        public final SATSolver cnf() {
 			return solver;
 		}
 
@@ -417,7 +418,8 @@ public abstract class Translation {
 		 * 
 		 * @see kodkod.engine.fol2sat.Translation#cnf()
 		 */
-		public final SATSolver cnf() {
+		@Override
+        public final SATSolver cnf() {
 			return incrementer.solver();
 		}
 

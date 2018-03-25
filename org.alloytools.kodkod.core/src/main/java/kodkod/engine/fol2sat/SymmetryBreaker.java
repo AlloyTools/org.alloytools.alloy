@@ -266,7 +266,8 @@ public final class SymmetryBreaker {
 			relParts.add(new RelationParts(r, reps));
 		}
 		final Comparator<RelationParts> cmp = new Comparator<RelationParts>() {
-			public int compare(RelationParts o1, RelationParts o2) {
+			@Override
+            public int compare(RelationParts o1, RelationParts o2) {
 				final int acmp = o1.relation.arity() - o2.relation.arity();
 				return acmp != 0 ? acmp
 						: String.valueOf(o1.relation.name()).compareTo(String.valueOf(o2.relation.name()));
@@ -342,7 +343,8 @@ public final class SymmetryBreaker {
 	 */
 	private static final <P extends RelationPredicate> P[] sort(final P[] preds) {
 		final Comparator<RelationPredicate> cmp = new Comparator<RelationPredicate>() {
-			public int compare(RelationPredicate o1, RelationPredicate o2) {
+			@Override
+            public int compare(RelationPredicate o1, RelationPredicate o2) {
 				return String.valueOf(o1.relation().name()).compareTo(String.valueOf(o2.relation().name()));
 			}
 		};

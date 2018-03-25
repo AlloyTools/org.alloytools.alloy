@@ -131,7 +131,8 @@ public final class Statistics {
 	 * 
 	 * @return a string representation of this Statistics object.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder ret = new StringBuilder();
 		ret.append("p cnf ");
 		ret.append(vars);

@@ -315,6 +315,7 @@ public abstract class Formula extends Node {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public abstract <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor);
+	@Override
+    public abstract <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor);
 
 }

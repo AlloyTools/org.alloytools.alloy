@@ -59,5 +59,6 @@ public abstract class Node {
 	 * @return a string representation of this node
 	 * @see kodkod.util.nodes.PrettyPrinter
 	 */
-	public abstract String toString();
+	@Override
+    public abstract String toString();
 }

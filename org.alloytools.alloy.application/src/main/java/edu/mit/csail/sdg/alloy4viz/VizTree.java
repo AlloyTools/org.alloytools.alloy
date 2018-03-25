@@ -131,7 +131,8 @@ public final class VizTree extends OurTree {
 							// order
 			}
 			Collections.sort(ans, new Comparator<Object>() {
-				public int compare(Object a, Object b) {
+				@Override
+                public int compare(Object a, Object b) {
 					String t1, t2;
 					if (a instanceof Pair) {
 						t1 = ((ExprHasName) (((Pair< ? , ? >) a).b)).label;
@@ -182,7 +183,8 @@ public final class VizTree extends OurTree {
 			if (v.type().arity() == 1 && v.label.startsWith("$"))
 				toplevel.add(v);
 		Collections.sort(toplevel, new Comparator<Object>() {
-			public int compare(Object a, Object b) {
+			@Override
+            public int compare(Object a, Object b) {
 				String t1, t2;
 				if (a instanceof Sig) {
 					t1 = ((Sig) a).label;

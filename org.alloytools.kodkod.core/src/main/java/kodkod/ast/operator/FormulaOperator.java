@@ -31,25 +31,29 @@ package kodkod.ast.operator;
 public enum FormulaOperator {
 	/** Logical AND operator. */
 	AND {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "&&";
 		}
 	},
 	/** Logical OR operator. */
 	OR {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "||";
 		}
 	},
 	/** Logical bi-implication operator. */
 	IFF {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "<=>";
 		}
 	},
 	/** Logical implication operator. */
 	IMPLIES {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "=>";
 		}
 	};

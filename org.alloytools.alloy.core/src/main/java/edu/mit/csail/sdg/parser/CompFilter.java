@@ -164,7 +164,8 @@ final class CompFilter implements Scanner {
 	 * Reads one or more tokens from the underlying lexer, transform them if
 	 * necessarly.
 	 */
-	public Symbol next_token() throws Err {
+	@Override
+    public Symbol next_token() throws Err {
 		Symbol a = myread(), b;
 		int c;
 		if (last == null || (last.sym != COLON && last.sym != DISJ)) {
@@ -228,7 +229,8 @@ final class CompFilter implements Scanner {
 		final Scanner A = new Scanner() {
 			private Symbol a, b, c, d;
 
-			public final Symbol next_token() throws Exception {
+			@Override
+            public final Symbol next_token() throws Exception {
 				if (a == null)
 					a = L.next_token();
 				if (a.sym == EOF) {
@@ -272,7 +274,8 @@ final class CompFilter implements Scanner {
 		final Scanner B = new Scanner() {
 			private Symbol undo;
 
-			public final Symbol next_token() throws Exception {
+			@Override
+            public final Symbol next_token() throws Exception {
 				Symbol x = undo;
 				undo = null;
 				if (x == null)
@@ -424,7 +427,8 @@ final class CompFilter implements Scanner {
 		final Scanner C = new Scanner() {
 			private Symbol last, undo;
 
-			public final Symbol next_token() throws Exception {
+			@Override
+            public final Symbol next_token() throws Exception {
 				Symbol x = undo;
 				undo = null;
 				if (x == null)

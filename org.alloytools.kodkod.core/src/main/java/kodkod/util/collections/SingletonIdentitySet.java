@@ -64,14 +64,16 @@ public final class SingletonIdentitySet<V> extends AbstractSet<V> {
 	 * 
 	 * @return this.element == obj
 	 */
-	public boolean contains(Object obj) {
+	@Override
+    public boolean contains(Object obj) {
 		return element == obj;
 	}
 
 	/**
 	 * @see java.util.Set#containsAll(java.util.Collection)
 	 */
-	public boolean containsAll(Collection< ? > collection) {
+	@Override
+    public boolean containsAll(Collection< ? > collection) {
 		if (collection.isEmpty())
 			return true;
 		else if (collection.size() == 1)
@@ -85,14 +87,16 @@ public final class SingletonIdentitySet<V> extends AbstractSet<V> {
 	 * 
 	 * @return false.
 	 */
-	public boolean isEmpty() {
+	@Override
+    public boolean isEmpty() {
 		return false;
 	}
 
 	/**
 	 * @see java.util.Set#iterator()
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public Iterator<V> iterator() {
 		return Containers.iterate(this.element);
 	}
@@ -102,7 +106,8 @@ public final class SingletonIdentitySet<V> extends AbstractSet<V> {
 	 * 
 	 * @return 1
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return 1;
 	}
 
@@ -120,7 +125,8 @@ public final class SingletonIdentitySet<V> extends AbstractSet<V> {
 	 * @return <tt>true</tt> if the specified object is equal to this set.
 	 * @see Object#equals(Object)
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this) {
 			return true;
 		} else if (o instanceof Set) {
@@ -138,7 +144,8 @@ public final class SingletonIdentitySet<V> extends AbstractSet<V> {
 	 * @return this.element = null ? 0 : this.element.hashCode()
 	 * @see java.util.AbstractSet#hashCode()
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return this.element == null ? 0 : element.hashCode();
 	}
 }

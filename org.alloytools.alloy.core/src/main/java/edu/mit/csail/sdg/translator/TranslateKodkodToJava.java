@@ -87,106 +87,131 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 				return (a >= b) ? (a >= c ? a : c) : (b >= c ? b : c);
 			}
 
-			public Integer visit(Relation x) {
+			@Override
+            public Integer visit(Relation x) {
 				return 1;
 			}
 
-			public Integer visit(IntConstant x) {
+			@Override
+            public Integer visit(IntConstant x) {
 				return 1;
 			}
 
-			public Integer visit(ConstantFormula x) {
+			@Override
+            public Integer visit(ConstantFormula x) {
 				return 1;
 			}
 
-			public Integer visit(Variable x) {
+			@Override
+            public Integer visit(Variable x) {
 				return 1;
 			}
 
-			public Integer visit(ConstantExpression x) {
+			@Override
+            public Integer visit(ConstantExpression x) {
 				return 1;
 			}
 
-			public Integer visit(NotFormula x) {
+			@Override
+            public Integer visit(NotFormula x) {
 				return 1 + x.formula().accept(this);
 			}
 
-			public Integer visit(IntToExprCast x) {
+			@Override
+            public Integer visit(IntToExprCast x) {
 				return 1 + x.intExpr().accept(this);
 			}
 
-			public Integer visit(Decl x) {
+			@Override
+            public Integer visit(Decl x) {
 				return 1 + x.expression().accept(this);
 			}
 
-			public Integer visit(ExprToIntCast x) {
+			@Override
+            public Integer visit(ExprToIntCast x) {
 				return 1 + x.expression().accept(this);
 			}
 
-			public Integer visit(UnaryExpression x) {
+			@Override
+            public Integer visit(UnaryExpression x) {
 				return 1 + x.expression().accept(this);
 			}
 
-			public Integer visit(UnaryIntExpression x) {
+			@Override
+            public Integer visit(UnaryIntExpression x) {
 				return 1 + x.intExpr().accept(this);
 			}
 
-			public Integer visit(MultiplicityFormula x) {
+			@Override
+            public Integer visit(MultiplicityFormula x) {
 				return 1 + x.expression().accept(this);
 			}
 
-			public Integer visit(BinaryExpression x) {
+			@Override
+            public Integer visit(BinaryExpression x) {
 				return 1 + max(x.left().accept(this), x.right().accept(this));
 			}
 
-			public Integer visit(ComparisonFormula x) {
+			@Override
+            public Integer visit(ComparisonFormula x) {
 				return 1 + max(x.left().accept(this), x.right().accept(this));
 			}
 
-			public Integer visit(BinaryFormula x) {
+			@Override
+            public Integer visit(BinaryFormula x) {
 				return 1 + max(x.left().accept(this), x.right().accept(this));
 			}
 
-			public Integer visit(BinaryIntExpression x) {
+			@Override
+            public Integer visit(BinaryIntExpression x) {
 				return 1 + max(x.left().accept(this), x.right().accept(this));
 			}
 
-			public Integer visit(IntComparisonFormula x) {
+			@Override
+            public Integer visit(IntComparisonFormula x) {
 				return 1 + max(x.left().accept(this), x.right().accept(this));
 			}
 
-			public Integer visit(IfExpression x) {
+			@Override
+            public Integer visit(IfExpression x) {
 				return 1 + max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this));
 			}
 
-			public Integer visit(IfIntExpression x) {
+			@Override
+            public Integer visit(IfIntExpression x) {
 				return 1 + max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this));
 			}
 
-			public Integer visit(SumExpression x) {
+			@Override
+            public Integer visit(SumExpression x) {
 				return 1 + max(x.decls().accept(this), x.intExpr().accept(this));
 			}
 
-			public Integer visit(QuantifiedFormula x) {
+			@Override
+            public Integer visit(QuantifiedFormula x) {
 				return 1 + max(x.decls().accept(this), x.formula().accept(this));
 			}
 
-			public Integer visit(FixFormula x) {
+			@Override
+            public Integer visit(FixFormula x) {
 				return 1 + max(x.condition().accept(this), x.formula().accept(this));
 			}
 
-			public Integer visit(Comprehension x) {
+			@Override
+            public Integer visit(Comprehension x) {
 				return 1 + max(x.decls().accept(this), x.formula().accept(this));
 			}
 
-			public Integer visit(Decls x) {
+			@Override
+            public Integer visit(Decls x) {
 				int max = 0, n = x.size();
 				for (int i = 0; i < n; i++)
 					max = max(max, x.get(i).accept(this));
 				return max;
 			}
 
-			public Integer visit(ProjectExpression x) {
+			@Override
+            public Integer visit(ProjectExpression x) {
 				int max = x.expression().accept(this);
 				for (Iterator<IntExpression> t = x.columns(); t.hasNext();) {
 					max = max(max, t.next().accept(this));
@@ -194,7 +219,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 				return max;
 			}
 
-			public Integer visit(RelationPredicate x) {
+			@Override
+            public Integer visit(RelationPredicate x) {
 				if (x instanceof Function) {
 					Function f = ((Function) x);
 					return max(f.domain().accept(this), f.range().accept(this));
@@ -202,7 +228,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 				return 1;
 			}
 
-			public Integer visit(NaryExpression x) {
+			@Override
+            public Integer visit(NaryExpression x) {
 				int max = 0;
 				for (int m = 0, n = x.size(), i = 0; i < n; i++) {
 					m = x.child(i).accept(this);
@@ -212,7 +239,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 				return max + 1;
 			}
 
-			public Integer visit(NaryIntExpression x) {
+			@Override
+            public Integer visit(NaryIntExpression x) {
 				int max = 0;
 				for (int m = 0, n = x.size(), i = 0; i < n; i++) {
 					m = x.child(i).accept(this);
@@ -222,7 +250,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 				return max + 1;
 			}
 
-			public Integer visit(NaryFormula x) {
+			@Override
+            public Integer visit(NaryFormula x) {
 				int max = 0;
 				for (int m = 0, n = x.size(), i = 0; i < n; i++) {
 					m = x.child(i).accept(this);
@@ -411,13 +440,15 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(Relation x) {
+	@Override
+    public void visit(Relation x) {
 		if (!map.containsKey(x))
 			throw new RuntimeException("Unknown kodkod relation \"" + x.name() + "\" encountered");
 	}
 
 	/** {@inheritDoc} */
-	public void visit(BinaryExpression x) {
+	@Override
+    public void visit(BinaryExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -448,7 +479,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(ComparisonFormula x) {
+	@Override
+    public void visit(ComparisonFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -467,7 +499,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(ProjectExpression x) {
+	@Override
+    public void visit(ProjectExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -487,7 +520,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(IntComparisonFormula x) {
+	@Override
+    public void visit(IntComparisonFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -518,7 +552,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(BinaryFormula x) {
+	@Override
+    public void visit(BinaryFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -543,7 +578,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(BinaryIntExpression x) {
+	@Override
+    public void visit(BinaryIntExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -589,7 +625,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(UnaryIntExpression x) {
+	@Override
+    public void visit(UnaryIntExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -613,7 +650,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(UnaryExpression x) {
+	@Override
+    public void visit(UnaryExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -634,7 +672,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(IfExpression x) {
+	@Override
+    public void visit(IfExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -645,7 +684,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(IfIntExpression x) {
+	@Override
+    public void visit(IfIntExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -656,7 +696,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(NotFormula x) {
+	@Override
+    public void visit(NotFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -665,7 +706,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(IntToExprCast x) {
+	@Override
+    public void visit(IntToExprCast x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -683,7 +725,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(ExprToIntCast x) {
+	@Override
+    public void visit(ExprToIntCast x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -701,7 +744,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(IntConstant x) {
+	@Override
+    public void visit(IntConstant x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -709,7 +753,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(ConstantFormula x) {
+	@Override
+    public void visit(ConstantFormula x) {
 		if (map.containsKey(x))
 			return;
 		String newname = (x.booleanValue() ? "Formula.TRUE" : "Formula.FALSE");
@@ -717,7 +762,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(ConstantExpression x) {
+	@Override
+    public void visit(ConstantExpression x) {
 		if (map.containsKey(x))
 			return;
 		String newname = null;
@@ -735,7 +781,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(Variable x) {
+	@Override
+    public void visit(Variable x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -747,7 +794,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(Comprehension x) {
+	@Override
+    public void visit(Comprehension x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -757,7 +805,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(QuantifiedFormula x) {
+	@Override
+    public void visit(QuantifiedFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -776,7 +825,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(FixFormula x) {
+	@Override
+    public void visit(FixFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -786,7 +836,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(SumExpression x) {
+	@Override
+    public void visit(SumExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -796,7 +847,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(MultiplicityFormula x) {
+	@Override
+    public void visit(MultiplicityFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -820,7 +872,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(Decl x) {
+	@Override
+    public void visit(Decl x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -845,7 +898,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(Decls x) {
+	@Override
+    public void visit(Decls x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -866,7 +920,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(RelationPredicate x) {
+	@Override
+    public void visit(RelationPredicate x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -904,7 +959,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(NaryExpression x) {
+	@Override
+    public void visit(NaryExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -934,7 +990,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(NaryIntExpression x) {
+	@Override
+    public void visit(NaryIntExpression x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;
@@ -964,7 +1021,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 	}
 
 	/** {@inheritDoc} */
-	public void visit(NaryFormula x) {
+	@Override
+    public void visit(NaryFormula x) {
 		String newname = makename(x);
 		if (newname == null)
 			return;

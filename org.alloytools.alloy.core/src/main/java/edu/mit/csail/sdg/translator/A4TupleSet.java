@@ -54,21 +54,25 @@ public final class A4TupleSet implements Iterable<A4Tuple> {
 	 * Returns a read-only iterator that iterates over each tuple in this
 	 * TupleSet.
 	 */
-	public Iterator<A4Tuple> iterator() {
+	@Override
+    public Iterator<A4Tuple> iterator() {
 		return new Iterator<A4Tuple>() {
 			private final Iterator<Tuple> it = tuples.iterator();
 
-			public final boolean hasNext() {
+			@Override
+            public final boolean hasNext() {
 				return it.hasNext();
 			}
 
-			public final A4Tuple next() {
+			@Override
+            public final A4Tuple next() {
 				if (!it.hasNext())
 					throw new NoSuchElementException();
 				return new A4Tuple(it.next(), sol);
 			}
 
-			public final void remove() {
+			@Override
+            public final void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};

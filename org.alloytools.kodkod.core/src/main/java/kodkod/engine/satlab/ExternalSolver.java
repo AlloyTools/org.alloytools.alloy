@@ -134,7 +134,8 @@ final class ExternalSolver implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
 	 */
-	public boolean addClause(int[] lits) {
+	@Override
+    public boolean addClause(int[] lits) {
 		clauses++;
 		if (buffer.length() > capacity)
 			flush();
@@ -149,7 +150,8 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * @see kodkod.engine.satlab.SATSolver#addVariables(int)
 	 */
-	public void addVariables(int numVars) {
+	@Override
+    public void addVariables(int numVars) {
 		if (numVars < 0)
 			throw new IllegalArgumentException("vars < 0: " + numVars);
 		vars += numVars;
@@ -158,7 +160,8 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * @see kodkod.engine.satlab.SATSolver#free()
 	 */
-	public synchronized void free() {
+	@Override
+    public synchronized void free() {
 		close(cnf);
 		if (deleteTemp) {
 			(new File(inTemp)).delete();
@@ -168,7 +171,8 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * Releases the resources used by this external solver.
 	 */
-	protected final void finalize() throws Throwable {
+	@Override
+    protected final void finalize() throws Throwable {
 		super.finalize();
 		free();
 	}
@@ -176,14 +180,16 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * @see kodkod.engine.satlab.SATSolver#numberOfClauses()
 	 */
-	public int numberOfClauses() {
+	@Override
+    public int numberOfClauses() {
 		return clauses;
 	}
 
 	/**
 	 * @see kodkod.engine.satlab.SATSolver#numberOfVariables()
 	 */
-	public int numberOfVariables() {
+	@Override
+    public int numberOfVariables() {
 		return vars;
 	}
 
@@ -203,7 +209,8 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * @see kodkod.engine.satlab.SATSolver#solve()
 	 */
-	@SuppressWarnings("resource") // suppressing spurious warning about "out"
+	@Override
+    @SuppressWarnings("resource") // suppressing spurious warning about "out"
 									// not being closed (it is, in the finally
 									// block)
 	public boolean solve() throws SATAbortedException {
@@ -276,7 +283,8 @@ final class ExternalSolver implements SATSolver {
 	 */
 	private static Runnable drain(final InputStream input) {
 		return new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				try {
 					final byte[] buffer = new byte[8192];
 					while (true) {
@@ -309,7 +317,8 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * @see kodkod.engine.satlab.SATSolver#valueOf(int)
 	 */
-	public boolean valueOf(int variable) {
+	@Override
+    public boolean valueOf(int variable) {
 		if (!Boolean.TRUE.equals(sat))
 			throw new IllegalStateException();
 		if (variable < 1 || variable > vars)
@@ -320,7 +329,8 @@ final class ExternalSolver implements SATSolver {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return executable + " " + options;
 	}
 }

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alloytools.util.table.Cell;
 import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.ast.Sig;

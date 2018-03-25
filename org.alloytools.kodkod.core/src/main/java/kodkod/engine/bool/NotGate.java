@@ -70,18 +70,21 @@ public final class NotGate extends BooleanFormula {
 		return new Iterator<BooleanFormula>() {
 			boolean hasNext = true;
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return hasNext;
 			}
 
-			public BooleanFormula next() {
+			@Override
+            public BooleanFormula next() {
 				if (!hasNext)
 					throw new NoSuchElementException();
 				hasNext = false;
 				return negation();
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 
@@ -125,7 +128,8 @@ public final class NotGate extends BooleanFormula {
 	 * 
 	 * @return a string representation of this inverter.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "!" + negation().toString();
 	}
 
@@ -157,7 +161,8 @@ public final class NotGate extends BooleanFormula {
 	 * 
 	 * @return a hashcode for this inverter.
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return hashcode;
 	}
 }

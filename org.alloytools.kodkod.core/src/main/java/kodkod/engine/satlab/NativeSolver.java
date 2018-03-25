@@ -84,7 +84,8 @@ abstract class NativeSolver implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#numberOfVariables()
 	 */
-	public final int numberOfVariables() {
+	@Override
+    public final int numberOfVariables() {
 		return vars;
 	}
 
@@ -93,7 +94,8 @@ abstract class NativeSolver implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#numberOfClauses()
 	 */
-	public final int numberOfClauses() {
+	@Override
+    public final int numberOfClauses() {
 		return clauses;
 	}
 
@@ -116,7 +118,8 @@ abstract class NativeSolver implements SATSolver {
 	 * @see kodkod.engine.satlab.SATSolver#addVariables(int)
 	 * @see #addVariables(long, int)
 	 */
-	public final void addVariables(int numVars) {
+	@Override
+    public final void addVariables(int numVars) {
 		if (numVars < 0)
 			throw new IllegalArgumentException("vars < 0: " + numVars);
 		else if (numVars > 0) {
@@ -131,7 +134,8 @@ abstract class NativeSolver implements SATSolver {
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
 	 * @see #addClause(long, int[])
 	 */
-	public final boolean addClause(int[] lits) {
+	@Override
+    public final boolean addClause(int[] lits) {
 		if (addClause(peer, lits)) {
 			// for(int i : lits) {
 			// System.out.print(i + " ");
@@ -170,7 +174,8 @@ abstract class NativeSolver implements SATSolver {
 	 * @see kodkod.engine.satlab.SATSolver#solve()
 	 * @see #solve(long)
 	 */
-	public final boolean solve() {
+	@Override
+    public final boolean solve() {
 		if (sat == Boolean.FALSE)
 			return sat;
 		else
@@ -193,7 +198,8 @@ abstract class NativeSolver implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#valueOf(int)
 	 */
-	public final boolean valueOf(int variable) {
+	@Override
+    public final boolean valueOf(int variable) {
 		if (sat != Boolean.TRUE)
 			throw new IllegalStateException();
 		validateVariable(variable);
@@ -205,7 +211,8 @@ abstract class NativeSolver implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#free()
 	 */
-	public synchronized final void free() {
+	@Override
+    public synchronized final void free() {
 		if (peer != 0) {
 			// System.out.println("freeing " + peer + " " + getClass());
 			free(peer);
@@ -217,7 +224,8 @@ abstract class NativeSolver implements SATSolver {
 	/**
 	 * Releases the resources used by this native solver.
 	 */
-	protected final void finalize() throws Throwable {
+	@Override
+    protected final void finalize() throws Throwable {
 		super.finalize();
 		free();
 	}

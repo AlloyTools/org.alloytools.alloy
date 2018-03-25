@@ -91,7 +91,8 @@ public abstract class BooleanFormula extends BooleanValue implements Iterable<Bo
 	 * @return !this
 	 * @see kodkod.engine.bool.BooleanValue#negation()
 	 */
-	final BooleanFormula negation() {
+	@Override
+    final BooleanFormula negation() {
 		if (negation == null) {
 			negation = new NotGate(this);
 		}
@@ -121,7 +122,8 @@ public abstract class BooleanFormula extends BooleanValue implements Iterable<Bo
 	 * 
 	 * @return an iterator over this.inputs.
 	 */
-	public abstract Iterator<BooleanFormula> iterator();
+	@Override
+    public abstract Iterator<BooleanFormula> iterator();
 
 	/**
 	 * Returns the number of inputs to this gate.

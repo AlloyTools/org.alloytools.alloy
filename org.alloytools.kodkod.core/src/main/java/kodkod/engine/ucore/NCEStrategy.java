@@ -68,7 +68,8 @@ public final class NCEStrategy implements ReductionStrategy {
 	 * 
 	 * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
 	 */
-	public IntSet next(ResolutionTrace trace) {
+	@Override
+    public IntSet next(ResolutionTrace trace) {
 		if (varsToTry.isEmpty())
 			return Ints.EMPTY_SET;
 		// if the last attempt at reduction was unsuccessful,

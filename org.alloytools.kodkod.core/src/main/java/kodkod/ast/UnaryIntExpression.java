@@ -93,7 +93,8 @@ public final class UnaryIntExpression extends IntExpression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return (op == IntOperator.NEG || op == IntOperator.NOT) ? "(" + op + intExpr + ")" : op + "(" + intExpr + ")";
 	}
 }

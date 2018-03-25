@@ -488,7 +488,8 @@ public final class ExprUnary extends Expr {
 	// ============================================================================================================//
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		return 1 + sub.getDepth();
 	}
 

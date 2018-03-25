@@ -34,25 +34,29 @@ public enum Multiplicity {
 	 * only be used in a multiplicity formula.
 	 */
 	NO {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "no";
 		}
 	},
 	/** <tt>lone expr</tt>: expr contains at most one element. */
 	LONE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "lone";
 		}
 	},
 	/** <tt>one expr</tt>: expr contains exactly one element. */
 	ONE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "one";
 		}
 	},
 	/** <tt>some expr</tt>: expr contains at least one element. */
 	SOME {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "some";
 		}
 	},
@@ -61,7 +65,8 @@ public enum Multiplicity {
 	 * only be used in a declaration.
 	 */
 	SET {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "set";
 		}
 	}

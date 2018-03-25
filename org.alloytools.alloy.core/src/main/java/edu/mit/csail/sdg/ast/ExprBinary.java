@@ -737,7 +737,8 @@ public final class ExprBinary extends Expr {
 	// ============================================================================================================//
 
 	/** {@inheritDoc} */
-	public int getDepth() {
+	@Override
+    public int getDepth() {
 		int a = left.getDepth(), b = right.getDepth();
 		if (a >= b)
 			return 1 + a;

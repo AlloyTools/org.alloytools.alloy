@@ -408,7 +408,8 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
 	 * <p>
 	 * This iterator will reject all modification requests.
 	 */
-	public Iterator<ProductType> iterator() {
+	@Override
+    public Iterator<ProductType> iterator() {
 		return entries.iterator();
 	}
 

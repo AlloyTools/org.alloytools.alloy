@@ -49,7 +49,8 @@ public final class ConsoleReporter implements Reporter {
 	/**
 	 * @see kodkod.engine.config.Reporter#generatingSBP()
 	 */
-	public void generatingSBP() {
+	@Override
+    public void generatingSBP() {
 		System.out.println("generating lex-leader symmetry breaking predicate ...");
 	}
 
@@ -59,14 +60,16 @@ public final class ConsoleReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#skolemizing(kodkod.ast.Decl,
 	 *      kodkod.ast.Relation, java.util.List)
 	 */
-	public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {
+	@Override
+    public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {
 		System.out.println("skolemizing " + decl + ": skolem relation=" + skolem + ", arity=" + skolem.arity());
 	}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
 	 */
-	public void solvingCNF(int primaryVars, int vars, int clauses) {
+	@Override
+    public void solvingCNF(int primaryVars, int vars, int clauses) {
 		System.out.println("solving p cnf " + vars + " " + clauses);
 	}
 
@@ -75,7 +78,8 @@ public final class ConsoleReporter implements Reporter {
 	 * 
 	 * @see kodkod.engine.config.Reporter#detectingSymmetries(kodkod.instance.Bounds)
 	 */
-	public void detectingSymmetries(Bounds bounds) {
+	@Override
+    public void detectingSymmetries(Bounds bounds) {
 		System.out.println("detecting symmetries ...");
 	}
 
@@ -84,14 +88,16 @@ public final class ConsoleReporter implements Reporter {
 	 * 
 	 * @see kodkod.engine.config.Reporter#detectedSymmetries(java.util.Set)
 	 */
-	public void detectedSymmetries(Set<IntSet> parts) {
+	@Override
+    public void detectedSymmetries(Set<IntSet> parts) {
 		System.out.println("detected " + parts.size() + " equivalence classes of atoms ...");
 	}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#optimizingBoundsAndFormula()
 	 */
-	public void optimizingBoundsAndFormula() {
+	@Override
+    public void optimizingBoundsAndFormula() {
 		System.out.println("optimizing bounds and formula (breaking predicate symmetries, inlining, skolemizing) ...");
 	}
 
@@ -99,21 +105,24 @@ public final class ConsoleReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#translatingToBoolean(kodkod.ast.Formula,
 	 *      kodkod.instance.Bounds)
 	 */
-	public void translatingToBoolean(Formula formula, Bounds bounds) {
+	@Override
+    public void translatingToBoolean(Formula formula, Bounds bounds) {
 		System.out.println("translating to boolean ...");
 	}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#translatingToCNF(kodkod.engine.bool.BooleanFormula)
 	 */
-	public void translatingToCNF(BooleanFormula circuit) {
+	@Override
+    public void translatingToCNF(BooleanFormula circuit) {
 		System.out.println("translating to cnf ...");
 	}
 
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "ConsoleReporter";
 	}
 

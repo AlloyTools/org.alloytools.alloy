@@ -39,7 +39,6 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.parser.CompUtil;
 
 /**
  * Immutable; this class computes the scopes for each sig and computes the

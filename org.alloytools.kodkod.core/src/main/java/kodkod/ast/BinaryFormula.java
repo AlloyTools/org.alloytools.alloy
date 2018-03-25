@@ -84,7 +84,8 @@ public final class BinaryFormula extends Formula {
 	 * 
 	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+	@Override
+    public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
 		return visitor.visit(this);
 	}
 
@@ -93,7 +94,8 @@ public final class BinaryFormula extends Formula {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
-	public void accept(VoidVisitor visitor) {
+	@Override
+    public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
 
@@ -102,7 +104,8 @@ public final class BinaryFormula extends Formula {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "(" + left + " " + op + " " + right + ")";
 	}
 

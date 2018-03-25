@@ -52,6 +52,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
@@ -363,7 +365,8 @@ public final class VizGUI implements ComponentListener {
 		return new Runner() {
 			private static final long serialVersionUID = 0;
 
-			public void run() {
+			@Override
+            public void run() {
 				try {
 					method.setAccessible(true);
 					method.invoke(VizGUI.this, new Object[] {});
@@ -373,7 +376,8 @@ public final class VizGUI implements ComponentListener {
 				}
 			}
 
-			public void run(Object arg) {
+			@Override
+            public void run(Object arg) {
 				run();
 			}
 		};
@@ -406,7 +410,8 @@ public final class VizGUI implements ComponentListener {
 		return new Runner() {
 			private static final long serialVersionUID = 0;
 
-			public void run(Object arg) {
+			@Override
+            public void run(Object arg) {
 				try {
 					method.setAccessible(true);
 					method.invoke(VizGUI.this, new Object[] {
@@ -418,7 +423,8 @@ public final class VizGUI implements ComponentListener {
 				}
 			}
 
-			public void run() {
+			@Override
+            public void run() {
 				run(argument);
 			}
 		};
@@ -549,7 +555,8 @@ public final class VizGUI implements ComponentListener {
 		projectionPopup = new JPopupMenu();
 		projectionButton = new JButton("Projection: none");
 		projectionButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				repopulateProjectionPopup();
 				if (projectionPopup.getComponentCount() > 0)
 					projectionPopup.show(projectionButton, 10, 10);
@@ -638,7 +645,7 @@ public final class VizGUI implements ComponentListener {
 			}
 			frame.setSize(width, height);
 			frame.setLocation(x, y);
-			frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+			frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 			try {
 				wrap = true;
 				frame.addWindowListener(doClose());
@@ -652,12 +659,14 @@ public final class VizGUI implements ComponentListener {
 	}
 
 	/** Invoked when the Visualizationwindow is resized. */
-	public void componentResized(ComponentEvent e) {
+	@Override
+    public void componentResized(ComponentEvent e) {
 		componentMoved(e);
 	}
 
 	/** Invoked when the Visualizationwindow is moved. */
-	public void componentMoved(ComponentEvent e) {
+	@Override
+    public void componentMoved(ComponentEvent e) {
 		if (frame != null) {
 			VizWidth.set(frame.getWidth());
 			VizHeight.set(frame.getHeight());
@@ -667,10 +676,12 @@ public final class VizGUI implements ComponentListener {
 	}
 
 	/** Invoked when the Visualizationwindow is shown. */
-	public void componentShown(ComponentEvent e) {}
+	@Override
+    public void componentShown(ComponentEvent e) {}
 
 	/** Invoked when the Visualizationwindow is hidden. */
-	public void componentHidden(ComponentEvent e) {}
+	@Override
+    public void componentHidden(ComponentEvent e) {}
 
 	/** Helper method that repopulates the Porjection popup menu. */
 	private void repopulateProjectionPopup() {
@@ -688,7 +699,8 @@ public final class VizGUI implements ComponentListener {
 				final boolean on = projected.contains(t);
 				final JMenuItem m = new JMenuItem(t.getName(), on ? OurCheckbox.ON : OurCheckbox.OFF);
 				m.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+					@Override
+                    public void actionPerformed(ActionEvent e) {
 						if (on)
 							myState.deproject(t);
 						else
@@ -762,11 +774,13 @@ public final class VizGUI implements ComponentListener {
 				final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE,
 						new OurBorder(true, false, true, false));
 				scroll.addFocusListener(new FocusListener() {
-					public final void focusGained(FocusEvent e) {
+					@Override
+                    public final void focusGained(FocusEvent e) {
 						t.requestFocusInWindow();
 					}
 
-					public final void focusLost(FocusEvent e) {}
+					@Override
+                    public final void focusLost(FocusEvent e) {}
 				});
 				content = scroll;
 				break;
@@ -916,8 +930,8 @@ public final class VizGUI implements ComponentListener {
 	/** Helper method returns a JTextArea containing the given text. */
 	private JComponent getTextComponent(String text) {
 		final JTextArea ta = OurUtil.textarea(text, 10, 10, false, true);
-		final JScrollPane ans = new JScrollPane(ta, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+		final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
 			private static final long serialVersionUID = 0;
 
 			@Override

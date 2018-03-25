@@ -50,7 +50,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @return this.size()==0
 	 */
-	public boolean isEmpty() {
+	@Override
+    public boolean isEmpty() {
 		return size() == 0;
 	}
 
@@ -62,7 +63,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * @return an iterator over this.entries starting at the entry with the
 	 *         smallest index
 	 */
-	public Iterator<IndexedEntry<V>> iterator() {
+	@Override
+    public Iterator<IndexedEntry<V>> iterator() {
 		return iterator(Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 
@@ -73,7 +75,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#first()
 	 */
-	public IndexedEntry<V> first() {
+	@Override
+    public IndexedEntry<V> first() {
 		return isEmpty() ? null : iterator().next();
 	}
 
@@ -84,7 +87,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#last()
 	 */
-	public IndexedEntry<V> last() {
+	@Override
+    public IndexedEntry<V> last() {
 		return isEmpty() ? null : iterator(Integer.MAX_VALUE, Integer.MIN_VALUE).next();
 	}
 
@@ -95,7 +99,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#ceil(int)
 	 */
-	public IndexedEntry<V> ceil(int index) {
+	@Override
+    public IndexedEntry<V> ceil(int index) {
 		final Iterator<IndexedEntry<V>> itr = iterator(index, Integer.MAX_VALUE);
 		return itr.hasNext() ? itr.next() : null;
 	}
@@ -107,7 +112,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#floor(int)
 	 */
-	public IndexedEntry<V> floor(int index) {
+	@Override
+    public IndexedEntry<V> floor(int index) {
 		final Iterator<IndexedEntry<V>> itr = iterator(index, Integer.MIN_VALUE);
 		return itr.hasNext() ? itr.next() : null;
 	}
@@ -119,73 +125,87 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @return {s: IntSet | s.ints = this.entries.V}
 	 */
-	public IntSet indices() {
+	@Override
+    public IntSet indices() {
 		return new AbstractIntSet() {
-			public IntIterator iterator(final int from, final int to) {
+			@Override
+            public IntIterator iterator(final int from, final int to) {
 				return new IntIterator() {
 					Iterator<IndexedEntry<V>> iter = AbstractSparseSequence.this.iterator(from, to);
 
-					public boolean hasNext() {
+					@Override
+                    public boolean hasNext() {
 						return iter.hasNext();
 					}
 
-					public int next() {
+					@Override
+                    public int next() {
 						return iter.next().index();
 					}
 
-					public void remove() {
+					@Override
+                    public void remove() {
 						iter.remove();
 					}
 				};
 			}
 
-			public int size() {
+			@Override
+            public int size() {
 				return AbstractSparseSequence.this.size();
 			}
 
-			public boolean contains(int i) {
+			@Override
+            public boolean contains(int i) {
 				return containsIndex(i);
 			}
 
-			public int min() {
+			@Override
+            public int min() {
 				final IndexedEntry<V> first = AbstractSparseSequence.this.first();
 				if (first == null)
 					throw new NoSuchElementException();
 				return first.index();
 			}
 
-			public int max() {
+			@Override
+            public int max() {
 				final IndexedEntry<V> last = AbstractSparseSequence.this.last();
 				if (last == null)
 					throw new NoSuchElementException();
 				return last.index();
 			}
 
-			public boolean remove(int i) {
+			@Override
+            public boolean remove(int i) {
 				final boolean isMapped = containsIndex(i);
 				AbstractSparseSequence.this.remove(i);
 				return isMapped;
 			}
 
-			public int floor(int i) {
+			@Override
+            public int floor(int i) {
 				final IndexedEntry<V> floor = AbstractSparseSequence.this.floor(i);
 				if (floor == null)
 					throw new NoSuchElementException();
 				return floor.index();
 			}
 
-			public int ceil(int i) {
+			@Override
+            public int ceil(int i) {
 				final IndexedEntry<V> ceil = AbstractSparseSequence.this.ceil(i);
 				if (ceil == null)
 					throw new NoSuchElementException();
 				return ceil.index();
 			}
 
-			public void clear() {
+			@Override
+            public void clear() {
 				AbstractSparseSequence.this.clear();
 			}
 
-			public IntSet clone() throws CloneNotSupportedException {
+			@Override
+            public IntSet clone() throws CloneNotSupportedException {
 				final IntSet s;
 				if (size() == 0)
 					s = Ints.bestSet(Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -202,40 +222,49 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#values()
 	 */
-	public Collection<V> values() {
+	@Override
+    public Collection<V> values() {
 		return new AbstractCollection<V>() {
 
-			public int size() {
+			@Override
+            public int size() {
 				return AbstractSparseSequence.this.size();
 			}
 
-			public boolean isEmpty() {
+			@Override
+            public boolean isEmpty() {
 				return AbstractSparseSequence.this.isEmpty();
 			}
 
-			public boolean contains(Object arg0) {
+			@Override
+            public boolean contains(Object arg0) {
 				return AbstractSparseSequence.this.contains(arg0);
 			}
 
-			public Iterator<V> iterator() {
+			@Override
+            public Iterator<V> iterator() {
 				return new Iterator<V>() {
 					Iterator<IndexedEntry<V>> iter = AbstractSparseSequence.this.iterator();
 
-					public boolean hasNext() {
+					@Override
+                    public boolean hasNext() {
 						return iter.hasNext();
 					}
 
-					public V next() {
+					@Override
+                    public V next() {
 						return iter.next().value();
 					}
 
-					public void remove() {
+					@Override
+                    public void remove() {
 						iter.remove();
 					}
 				};
 			}
 
-			public void clear() {
+			@Override
+            public void clear() {
 				AbstractSparseSequence.this.clear();
 			}
 		};
@@ -248,7 +277,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#containsIndex(int)
 	 */
-	public boolean containsIndex(int index) {
+	@Override
+    public boolean containsIndex(int index) {
 		return iterator(index, index).hasNext();
 	}
 
@@ -259,7 +289,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * @return {@inheritDoc}
 	 * @see kodkod.util.ints.SparseSequence#contains(java.lang.Object)
 	 */
-	public boolean contains(Object value) {
+	@Override
+    public boolean contains(Object value) {
 		for (IndexedEntry< ? > v : this) {
 			if (equal(value, v.value()))
 				return true;
@@ -272,7 +303,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see java.lang.Object#clone()
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public SparseSequence<V> clone() throws CloneNotSupportedException {
 		return (SparseSequence<V>) super.clone();
 	}
@@ -287,7 +319,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#remove(int)
 	 */
-	public V remove(int index) {
+	@Override
+    public V remove(int index) {
 		final Iterator<IndexedEntry<V>> itr = iterator(index, index);
 		if (itr.hasNext()) {
 			final V ret = itr.next().value();
@@ -304,7 +337,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#clear()
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		final Iterator<IndexedEntry<V>> itr = iterator();
 		while (itr.hasNext()) {
 			itr.next();
@@ -317,7 +351,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @throws UnsupportedOperationException
 	 */
-	public V put(int index, V value) {
+	@Override
+    public V put(int index, V value) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -328,7 +363,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @ensures this.entries' = this.entries ++ s.entries
 	 */
-	public void putAll(SparseSequence< ? extends V> s) {
+	@Override
+    public void putAll(SparseSequence< ? extends V> s) {
 		Iterator< ? extends IndexedEntry< ? extends V>> i = s.iterator();
 		while (i.hasNext()) {
 			IndexedEntry< ? extends V> e = i.next();
@@ -371,7 +407,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @return o in SparseSequence && o.entries = this.entries
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
@@ -419,7 +456,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 * 
 	 * @return sum(this.entries.hashCode())
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		int h = 0;
 		for (IndexedEntry<V> e : this)
 			h += hashCode(e);
@@ -445,7 +483,8 @@ public abstract class AbstractSparseSequence<V> implements SparseSequence<V> {
 	 *
 	 * @return a String representation of this map.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append("[");
 

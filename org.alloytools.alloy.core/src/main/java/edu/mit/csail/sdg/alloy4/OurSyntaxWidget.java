@@ -165,6 +165,7 @@ public final class OurSyntaxWidget {
             @Override
             public ViewFactory getViewFactory() {
                 return new ViewFactory() {
+                    @Override
                     public View create(Element x) {
                         if (!AbstractDocument.SectionElementName.equals(x.getName()))
                             return defaultFactory.create(x);
@@ -196,37 +197,44 @@ public final class OurSyntaxWidget {
         }
         doc.do_clearUndo();
         pane.getActionMap().put("alloy_copy", new AbstractAction("alloy_copy") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pane.copy();
             }
         });
         pane.getActionMap().put("alloy_cut", new AbstractAction("alloy_cut") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pane.cut();
             }
         });
         pane.getActionMap().put("alloy_paste", new AbstractAction("alloy_paste") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pane.paste();
             }
         });
         pane.getActionMap().put("alloy_ctrl_pageup", new AbstractAction("alloy_ctrl_pageup") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 listeners.fire(me, Event.CTRL_PAGE_UP);
             }
         });
         pane.getActionMap().put("alloy_ctrl_pagedown", new AbstractAction("alloy_ctrl_pagedown") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 listeners.fire(me, Event.CTRL_PAGE_DOWN);
             }
         });
         pane.getActionMap().put("alloy_tab_insert", new AbstractAction("alloy_tab_insert") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doTabInsert();
             }
 
         });
         pane.getActionMap().put("alloy_tab_remove", new AbstractAction("alloy_tab_remove") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doTabRemove();
             }
@@ -234,11 +242,13 @@ public final class OurSyntaxWidget {
         });
 
         pane.getActionMap().put("alloy-comment-block", new AbstractAction("alloy-comment-block") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doComment();
             }
         });
         pane.getActionMap().put("alloy-nav", new AbstractAction("alloy-comment-block") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 doNav();
             }
@@ -259,16 +269,19 @@ public final class OurSyntaxWidget {
         pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, InputEvent.CTRL_MASK),
                         "alloy_ctrl_pagedown");
         doc.addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 modified = true;
                 listeners.fire(me, Event.STATUS_CHANGE);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 modified = true;
                 listeners.fire(me, Event.STATUS_CHANGE);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {}
         });
         pane.addFocusListener(new FocusAdapter() {
@@ -278,6 +291,7 @@ public final class OurSyntaxWidget {
             }
         });
         pane.addCaretListener(new CaretListener() {
+            @Override
             public void caretUpdate(CaretEvent e) {
                 listeners.fire(me, Event.CARET_MOVED);
             }

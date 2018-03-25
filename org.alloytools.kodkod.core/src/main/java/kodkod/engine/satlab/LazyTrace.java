@@ -360,7 +360,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return trace.length;
 	}
 
@@ -369,7 +370,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#core()
 	 */
-	public IntSet core() {
+	@Override
+    public IntSet core() {
 		return core;
 	}
 
@@ -378,7 +380,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#axioms()
 	 */
-	public IntSet axioms() {
+	@Override
+    public IntSet axioms() {
 		return Ints.rangeSet(Ints.range(0, axioms - 1));
 	}
 
@@ -387,7 +390,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#resolvents()
 	 */
-	public IntSet resolvents() {
+	@Override
+    public IntSet resolvents() {
 		if (trace.length > axioms)
 			return Ints.rangeSet(Ints.range(axioms, trace.length - 1));
 		else
@@ -399,34 +403,41 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#get(int)
 	 */
-	public Clause get(final int index) {
+	@Override
+    public Clause get(final int index) {
 		if (index >= 0 && index < trace.length) {
 			if (axiom(index)) { // return a self-contained clause
 				return new Clause() {
 					final int[]	literals	= trace[index];
 					final int	hashCode	= Ints.superFastHash(literals);
 
-					public Iterator<Clause> antecedents() {
+					@Override
+                    public Iterator<Clause> antecedents() {
 						return Containers.emptyIterator();
 					}
 
-					public IntIterator literals() {
+					@Override
+                    public IntIterator literals() {
 						return new IntArrayIterator(literals, 0, literals.length);
 					}
 
-					public int maxVariable() {
+					@Override
+                    public int maxVariable() {
 						return StrictMath.abs(literals[literals.length - 1]);
 					}
 
-					public int numberOfAntecedents() {
+					@Override
+                    public int numberOfAntecedents() {
 						return 0;
 					}
 
-					public int size() {
+					@Override
+                    public int size() {
 						return literals.length;
 					}
 
-					public int[] toArray(int[] array) {
+					@Override
+                    public int[] toArray(int[] array) {
 						if (array.length < literals.length) {
 							array = new int[literals.length];
 						}
@@ -434,7 +445,8 @@ final class LazyTrace implements ResolutionTrace {
 						return array;
 					}
 
-					public int hashCode() {
+					@Override
+                    public int hashCode() {
 						return hashCode;
 					}
 				};
@@ -450,21 +462,25 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#iterator()
 	 */
-	public Iterator<Clause> iterator() {
+	@Override
+    public Iterator<Clause> iterator() {
 		return new ClauseIterator(new IntIterator() {
 			int index = 0;
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return index >= 0 && index < trace.length;
 			}
 
-			public int next() {
+			@Override
+            public int next() {
 				if (!hasNext())
 					throw new NoSuchElementException();
 				return index++;
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		});
@@ -485,7 +501,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#iterator(kodkod.util.ints.IntSet)
 	 */
-	public Iterator<Clause> iterator(IntSet indices) {
+	@Override
+    public Iterator<Clause> iterator(IntSet indices) {
 		if (indices.isEmpty() || valid(indices)) {
 			return new ClauseIterator(indices.iterator());
 		}
@@ -497,7 +514,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#reverseIterator(kodkod.util.ints.IntSet)
 	 */
-	public Iterator<Clause> reverseIterator(IntSet indices) {
+	@Override
+    public Iterator<Clause> reverseIterator(IntSet indices) {
 		if (indices.isEmpty() || valid(indices)) {
 			return new ClauseIterator(indices.iterator(Integer.MAX_VALUE, Integer.MIN_VALUE));
 		}
@@ -509,7 +527,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#implicants(kodkod.util.ints.IntSet)
 	 */
-	public IntSet reachable(IntSet indices) {
+	@Override
+    public IntSet reachable(IntSet indices) {
 		if (indices.isEmpty())
 			return Ints.EMPTY_SET;
 		else if (valid(indices)) {
@@ -539,7 +558,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#backwardReachable(kodkod.util.ints.IntSet)
 	 */
-	public IntSet backwardReachable(IntSet indices) {
+	@Override
+    public IntSet backwardReachable(IntSet indices) {
 		if (indices.isEmpty())
 			return Ints.EMPTY_SET;
 		else if (valid(indices)) {
@@ -573,7 +593,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#learnable(kodkod.util.ints.IntSet)
 	 */
-	public IntSet learnable(IntSet indices) {
+	@Override
+    public IntSet learnable(IntSet indices) {
 		if (indices.isEmpty())
 			return Ints.EMPTY_SET;
 		else if (valid(indices)) {
@@ -606,7 +627,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see kodkod.engine.satlab.ResolutionTrace#directlyLearnable(kodkod.util.ints.IntSet)
 	 */
-	public IntSet directlyLearnable(IntSet indices) {
+	@Override
+    public IntSet directlyLearnable(IntSet indices) {
 		if (indices.isEmpty())
 			return Ints.EMPTY_SET;
 		else if (valid(indices)) {
@@ -641,7 +663,8 @@ final class LazyTrace implements ResolutionTrace {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder ret = new StringBuilder();
 		for (int i = 0; i < axioms; i++) {
 			ret.append("AXIOM.  Literals: ");
@@ -721,30 +744,36 @@ final class LazyTrace implements ResolutionTrace {
 			}
 		}
 
-		public int maxVariable() {
+		@Override
+        public int maxVariable() {
 			ensureLiterals();
 			return StrictMath.abs(clause[clause.length - 1]);
 		}
 
-		public int numberOfAntecedents() {
+		@Override
+        public int numberOfAntecedents() {
 			return litOffset < 0 ? clause.length : StrictMath.max(0, litOffset - 1);
 		}
 
-		public int size() {
+		@Override
+        public int size() {
 			ensureLiterals();
 			return clause.length - litOffset;
 		}
 
-		public Iterator<Clause> antecedents() {
+		@Override
+        public Iterator<Clause> antecedents() {
 			return new ClauseIterator(new IntArrayIterator(clause, 1, litOffset));
 		}
 
-		public IntIterator literals() {
+		@Override
+        public IntIterator literals() {
 			ensureLiterals();
 			return new IntArrayIterator(clause, litOffset, clause.length);
 		}
 
-		public int[] toArray(int[] array) {
+		@Override
+        public int[] toArray(int[] array) {
 			final int size = size();
 			if (array.length < size) {
 				array = new int[size];
@@ -771,15 +800,18 @@ final class LazyTrace implements ResolutionTrace {
 			this.itr = itr;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return itr.hasNext();
 		}
 
-		public Clause next() {
+		@Override
+        public Clause next() {
 			return set(itr.next());
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -807,17 +839,20 @@ final class LazyTrace implements ResolutionTrace {
 			this.to = to;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return from >= 0 && from < to;
 		}
 
-		public int next() {
+		@Override
+        public int next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return array[from++];
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}

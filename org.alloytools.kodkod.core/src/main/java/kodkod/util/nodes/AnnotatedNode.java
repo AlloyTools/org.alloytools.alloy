@@ -225,11 +225,13 @@ public final class AnnotatedNode<N extends Node> {
 		final AbstractVoidVisitor visitor = new AbstractVoidVisitor() {
 			private final Set<Node> visited = new IdentityHashSet<Node>(sharedNodes.size());
 
-			protected boolean visited(Node n) {
+			@Override
+            protected boolean visited(Node n) {
 				return sharedNodes.contains(n) && !visited.add(n);
 			}
 
-			public void visit(Relation relation) {
+			@Override
+            public void visit(Relation relation) {
 				relations.add(relation);
 			}
 		};
@@ -264,17 +266,20 @@ public final class AnnotatedNode<N extends Node> {
 	 */
 	public final boolean usesInts() {
 		final AbstractDetector detector = new AbstractDetector(sharedNodes) {
-			public Boolean visit(IntToExprCast expr) {
+			@Override
+            public Boolean visit(IntToExprCast expr) {
 				return cache(expr, Boolean.TRUE);
 			}
 
-			public Boolean visit(ExprToIntCast intExpr) {
+			@Override
+            public Boolean visit(ExprToIntCast intExpr) {
 				if (intExpr.op() == ExprCastOperator.CARDINALITY)
 					super.visit(intExpr);
 				return cache(intExpr, Boolean.TRUE);
 			}
 
-			public Boolean visit(ConstantExpression expr) {
+			@Override
+            public Boolean visit(ConstantExpression expr) {
 				return expr == Expression.INTS ? Boolean.TRUE : Boolean.FALSE;
 			}
 		};
@@ -305,7 +310,8 @@ public final class AnnotatedNode<N extends Node> {
 	 */
 	public final AbstractDetector quantifiedFormulaDetector() {
 		return new AbstractDetector(sharedNodes) {
-			public Boolean visit(QuantifiedFormula quantFormula) {
+			@Override
+            public Boolean visit(QuantifiedFormula quantFormula) {
 				return cache(quantFormula, true);
 			}
 		};
@@ -327,7 +333,8 @@ public final class AnnotatedNode<N extends Node> {
 	 * 
 	 * @return string representation of this annotated node.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder ret = new StringBuilder();
 		ret.append("node: ");
 		ret.append(node);
@@ -383,7 +390,8 @@ public final class AnnotatedNode<N extends Node> {
 		 *          this.shared + node->TRUE, this.shared' = this.shared
 		 * @return this.shared'[node]
 		 */
-		protected final boolean visited(Node node) {
+		@Override
+        protected final boolean visited(Node node) {
 			Boolean status = sharingStatus.get(node);
 			if (!Boolean.TRUE.equals(status)) {
 				if (status == null) {
@@ -446,26 +454,31 @@ public final class AnnotatedNode<N extends Node> {
 		 * @return TRUE if the given variable is free in its parent, otherwise
 		 *         returns FALSE.
 		 */
-		public Boolean visit(Variable variable) {
+		@Override
+        public Boolean visit(Variable variable) {
 			return Boolean.valueOf(varsInScope.search(variable) < 0);
 		}
 
-		public Boolean visit(Decl decl) {
+		@Override
+        public Boolean visit(Decl decl) {
 			Boolean ret = lookup(decl);
 			if (ret != null)
 				return ret;
 			return cache(decl, decl.expression().accept(this));
 		}
 
-		public Boolean visit(Comprehension comprehension) {
+		@Override
+        public Boolean visit(Comprehension comprehension) {
 			return visit(comprehension, comprehension.decls(), comprehension.formula());
 		}
 
-		public Boolean visit(SumExpression intExpr) {
+		@Override
+        public Boolean visit(SumExpression intExpr) {
 			return visit(intExpr, intExpr.decls(), intExpr.intExpr());
 		}
 
-		public Boolean visit(QuantifiedFormula qformula) {
+		@Override
+        public Boolean visit(QuantifiedFormula qformula) {
 			return visit(qformula, qformula.decls(), qformula.formula());
 		}
 	}
@@ -538,7 +551,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(comp); comp's children are not top-level formulas so
 		 * they are not visited.
 		 */
-		public void visit(Comprehension comp) {
+		@Override
+        public void visit(Comprehension comp) {
 			visited(comp);
 		}
 
@@ -546,7 +560,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(ifexpr); ifexpr's children are not top-level formulas
 		 * so they are not visited.
 		 */
-		public void visit(IfExpression ifexpr) {
+		@Override
+        public void visit(IfExpression ifexpr) {
 			visited(ifexpr);
 		}
 
@@ -554,7 +569,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(ifexpr); ifexpr's children are not top-level formulas
 		 * so they are not visited.
 		 */
-		public void visit(IfIntExpression ifexpr) {
+		@Override
+        public void visit(IfIntExpression ifexpr) {
 			visited(ifexpr);
 		}
 
@@ -562,7 +578,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(intComp); intComp's children are not top-level formulas
 		 * so they are not visited.
 		 */
-		public void visit(IntComparisonFormula intComp) {
+		@Override
+        public void visit(IntComparisonFormula intComp) {
 			visited(intComp);
 		}
 
@@ -570,7 +587,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(quantFormula); quantFormula's children are not
 		 * top-level formulas so they are not visited.
 		 */
-		public void visit(QuantifiedFormula quantFormula) {
+		@Override
+        public void visit(QuantifiedFormula quantFormula) {
 			visited(quantFormula);
 		}
 
@@ -582,7 +600,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * 
 		 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.BinaryFormula)
 		 */
-		public void visit(BinaryFormula binFormula) {
+		@Override
+        public void visit(BinaryFormula binFormula) {
 			if (visited(binFormula))
 				return;
 			final FormulaOperator op = binFormula.op();
@@ -608,7 +627,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * 
 		 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NaryFormula)
 		 */
-		public void visit(NaryFormula formula) {
+		@Override
+        public void visit(NaryFormula formula) {
 			if (visited(formula))
 				return;
 			final FormulaOperator op = formula.op();
@@ -626,7 +646,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * already been visited with the current value of this.negated;
 		 * otherwise does nothing.
 		 */
-		public void visit(NotFormula not) {
+		@Override
+        public void visit(NotFormula not) {
 			if (visited(not))
 				return;
 			negated = !negated;
@@ -638,7 +659,8 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(compFormula); compFormula's children are not top-level
 		 * formulas so they are not visited.
 		 */
-		public void visit(ComparisonFormula compFormula) {
+		@Override
+        public void visit(ComparisonFormula compFormula) {
 			visited(compFormula);
 		}
 
@@ -646,14 +668,16 @@ public final class AnnotatedNode<N extends Node> {
 		 * Calls visited(multFormula); multFormula's child is not top-level
 		 * formulas so it is not visited.
 		 */
-		public void visit(MultiplicityFormula multFormula) {
+		@Override
+        public void visit(MultiplicityFormula multFormula) {
 			visited(multFormula);
 		}
 
 		/**
 		 * Records the visit to this predicate if it is not negated.
 		 */
-		public void visit(RelationPredicate pred) {
+		@Override
+        public void visit(RelationPredicate pred) {
 			if (visited(pred))
 				return;
 			if (!negated) {
@@ -698,48 +722,59 @@ public final class AnnotatedNode<N extends Node> {
 			return place(n, acc);
 		}
 
-		public Boolean visit(Decls decls) {
+		@Override
+        public Boolean visit(Decls decls) {
 			return checkVisitedThenAccum(decls, Boolean.FALSE, decls);
 		}
 
-		public Boolean visit(Decl decl) {
+		@Override
+        public Boolean visit(Decl decl) {
 			return checkVisitedThenAccumA(decl, decl.multiplicity() != Multiplicity.ONE, decl.variable(),
 					decl.expression());
 		}
 
-		public Boolean visit(Relation relation) {
+		@Override
+        public Boolean visit(Relation relation) {
 			return noHOL(relation);
 		}
 
-		public Boolean visit(Variable variable) {
+		@Override
+        public Boolean visit(Variable variable) {
 			return noHOL(variable);
 		}
 
-		public Boolean visit(ConstantExpression constExpr) {
+		@Override
+        public Boolean visit(ConstantExpression constExpr) {
 			return noHOL(constExpr);
 		}
 
-		public Boolean visit(NaryExpression expr) {
+		@Override
+        public Boolean visit(NaryExpression expr) {
 			return checkVisitedThenAccum(expr, Boolean.FALSE, expr);
 		}
 
-		public Boolean visit(BinaryExpression expr) {
+		@Override
+        public Boolean visit(BinaryExpression expr) {
 			return checkVisitedThenAccumA(expr, Boolean.FALSE, expr.left(), expr.right());
 		}
 
-		public Boolean visit(UnaryExpression expr) {
+		@Override
+        public Boolean visit(UnaryExpression expr) {
 			return checkVisitedThenAccumA(expr, Boolean.FALSE, expr.expression());
 		}
 
-		public Boolean visit(Comprehension cph) {
+		@Override
+        public Boolean visit(Comprehension cph) {
 			return checkVisitedThenAccumA(cph, Boolean.FALSE, cph.decls(), cph.formula());
 		}
 
-		public Boolean visit(IfExpression ife) {
+		@Override
+        public Boolean visit(IfExpression ife) {
 			return checkVisitedThenAccumA(ife, Boolean.FALSE, ife.condition(), ife.thenExpr(), ife.elseExpr());
 		}
 
-		public Boolean visit(ProjectExpression project) {
+		@Override
+        public Boolean visit(ProjectExpression project) {
 			Boolean ans = get(project);
 			if (ans != null)
 				return ans;
@@ -750,71 +785,88 @@ public final class AnnotatedNode<N extends Node> {
 			return accum(project, project.expression().accept(this), cols);
 		}
 
-		public Boolean visit(IntToExprCast castExpr) {
+		@Override
+        public Boolean visit(IntToExprCast castExpr) {
 			return checkVisitedThenAccumA(castExpr, Boolean.FALSE, castExpr.intExpr());
 		}
 
-		public Boolean visit(IntConstant intConst) {
+		@Override
+        public Boolean visit(IntConstant intConst) {
 			return noHOL(intConst);
 		}
 
-		public Boolean visit(IfIntExpression e) {
+		@Override
+        public Boolean visit(IfIntExpression e) {
 			return checkVisitedThenAccumA(e, Boolean.FALSE, e.condition(), e.thenExpr(), e.elseExpr());
 		}
 
-		public Boolean visit(ExprToIntCast e) {
+		@Override
+        public Boolean visit(ExprToIntCast e) {
 			return checkVisitedThenAccumA(e, Boolean.FALSE, e.expression());
 		}
 
-		public Boolean visit(NaryIntExpression e) {
+		@Override
+        public Boolean visit(NaryIntExpression e) {
 			return checkVisitedThenAccum(e, Boolean.FALSE, e);
 		}
 
-		public Boolean visit(BinaryIntExpression e) {
+		@Override
+        public Boolean visit(BinaryIntExpression e) {
 			return checkVisitedThenAccumA(e, Boolean.FALSE, e.left(), e.right());
 		}
 
-		public Boolean visit(UnaryIntExpression e) {
+		@Override
+        public Boolean visit(UnaryIntExpression e) {
 			return checkVisitedThenAccumA(e, Boolean.FALSE, e.intExpr());
 		}
 
-		public Boolean visit(SumExpression e) {
+		@Override
+        public Boolean visit(SumExpression e) {
 			return checkVisitedThenAccumA(e, Boolean.FALSE, e.decls(), e.intExpr());
 		}
 
-		public Boolean visit(IntComparisonFormula f) {
+		@Override
+        public Boolean visit(IntComparisonFormula f) {
 			return checkVisitedThenAccumA(f, Boolean.FALSE, f.left(), f.right());
 		}
 
-		public Boolean visit(QuantifiedFormula f) {
+		@Override
+        public Boolean visit(QuantifiedFormula f) {
 			return checkVisitedThenAccumA(f, Boolean.FALSE, f.decls(), f.formula());
 		}
 
-		public Boolean visit(NaryFormula f) {
+		@Override
+        public Boolean visit(NaryFormula f) {
 			return checkVisitedThenAccum(f, Boolean.FALSE, f);
 		}
 
-		public Boolean visit(BinaryFormula f) {
+		@Override
+        public Boolean visit(BinaryFormula f) {
 			return checkVisitedThenAccumA(f, Boolean.FALSE, f.left(), f.right());
 		}
 
-		public Boolean visit(NotFormula f) {
+		@Override
+        public Boolean visit(NotFormula f) {
 			return checkVisitedThenAccumA(f, Boolean.FALSE, f.formula());
 		}
 
-		public Boolean visit(ConstantFormula cnst) {
+		@Override
+        public Boolean visit(ConstantFormula cnst) {
 			return noHOL(cnst);
 		}
 
-		public Boolean visit(ComparisonFormula f) {
+		@Override
+        public Boolean visit(ComparisonFormula f) {
 			return checkVisitedThenAccumA(f, Boolean.FALSE, f.left(), f.right());
 		}
 
-		public Boolean visit(MultiplicityFormula f) {
+		@Override
+        public Boolean visit(MultiplicityFormula f) {
 			return checkVisitedThenAccumA(f, Boolean.FALSE, f.expression());
 		}
 
-		public Boolean visit(RelationPredicate pred) {
+		@Override
+        public Boolean visit(RelationPredicate pred) {
 			Boolean ans = get(pred);
 			if (ans != null)
 				return ans;

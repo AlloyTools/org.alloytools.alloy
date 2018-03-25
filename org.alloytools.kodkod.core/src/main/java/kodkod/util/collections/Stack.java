@@ -102,7 +102,8 @@ public abstract class Stack<T> implements Iterable<T> {
 	 * 
 	 * @return iterator over the elements in this stack.
 	 */
-	public abstract Iterator<T> iterator();
+	@Override
+    public abstract Iterator<T> iterator();
 
 	/**
 	 * Returns true if both o1 and o2 are null, or if they are non-null and
@@ -120,7 +121,8 @@ public abstract class Stack<T> implements Iterable<T> {
 	 * 
 	 * @return o in Stack && this.elems = o.elems
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
@@ -143,7 +145,8 @@ public abstract class Stack<T> implements Iterable<T> {
 	 * 
 	 * @return the hashcode for this stack.
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		int code = 0;
 		for (T item : this) {
 			if (item != null)
@@ -155,7 +158,8 @@ public abstract class Stack<T> implements Iterable<T> {
 	/**
 	 * Returns a string represention of this stack.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		final StringBuilder buffer = new StringBuilder("[ ");
 		final Iterator<T> elems = iterator();
 		if (elems.hasNext())

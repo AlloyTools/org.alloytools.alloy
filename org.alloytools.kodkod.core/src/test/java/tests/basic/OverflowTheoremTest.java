@@ -42,7 +42,8 @@ public class OverflowTheoremTest extends TestCase {
 
 	private Bounds			bounds;
 
-	protected void setUp() throws Exception {
+	@Override
+    protected void setUp() throws Exception {
 		super.setUp();
 		setupOptions();
 		setupBounds();
@@ -82,7 +83,8 @@ public class OverflowTheoremTest extends TestCase {
 		options.setSkolemDepth(0);
 	}
 
-	protected void tearDown() throws Exception {
+	@Override
+    protected void tearDown() throws Exception {
 		super.tearDown();
 	}
 

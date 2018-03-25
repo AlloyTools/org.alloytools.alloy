@@ -62,7 +62,8 @@ public final class ProjectExpression extends Expression {
 	 * 
 	 * @see kodkod.ast.Expression#arity()
 	 */
-	public int arity() {
+	@Override
+    public int arity() {
 		return columns.length;
 	}
 
@@ -109,7 +110,8 @@ public final class ProjectExpression extends Expression {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
-	public void accept(VoidVisitor visitor) {
+	@Override
+    public void accept(VoidVisitor visitor) {
 		visitor.visit(this);
 	}
 
@@ -118,7 +120,8 @@ public final class ProjectExpression extends Expression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return expr.toString() + Arrays.toString(columns);
 	}
 

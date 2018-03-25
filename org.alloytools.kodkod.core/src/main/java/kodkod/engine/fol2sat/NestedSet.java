@@ -51,7 +51,7 @@ public class NestedSet<T> implements Iterable<T> {
 	private static final NestedSet EMPTY = new NestedSet(null);
 
 	public static <T> NestedSet<T> empty() {
-		return (NestedSet<T>) EMPTY;
+		return EMPTY;
 	}
 
 }

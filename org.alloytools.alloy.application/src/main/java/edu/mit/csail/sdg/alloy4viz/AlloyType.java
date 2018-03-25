@@ -129,7 +129,8 @@ public final class AlloyType extends AlloyNodeElement {
 	 * When comparing two AlloyType objects, we compare their names. <br>
 	 * We guarantee x.equals(y) iff x.compareTo(y)==0
 	 */
-	public int compareTo(AlloyElement other) {
+	@Override
+    public int compareTo(AlloyElement other) {
 		if (other == null)
 			return 1;
 		if (!(other instanceof AlloyType))

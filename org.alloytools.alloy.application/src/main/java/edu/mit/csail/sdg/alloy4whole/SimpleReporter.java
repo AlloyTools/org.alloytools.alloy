@@ -84,7 +84,8 @@ final class SimpleReporter extends A4Reporter {
 			len2 = len3 = span.getLength();
 		}
 
-		public void done() {
+		@Override
+        public void done() {
 			if (viz != null)
 				span.setLength(len2);
 			else
@@ -93,14 +94,16 @@ final class SimpleReporter extends A4Reporter {
 			gui.doStop(0);
 		}
 
-		public void fail() {
+		@Override
+        public void fail() {
 			span.logBold("\nAn error has occurred!\n");
 			span.logDivider();
 			span.flush();
 			gui.doStop(1);
 		}
 
-		public void callback(Object msg) {
+		@Override
+        public void callback(Object msg) {
 			if (msg == null) {
 				span.logBold("Done\n");
 				span.flush();
@@ -574,7 +577,8 @@ final class SimpleReporter extends A4Reporter {
 			out.callback(objs);
 		}
 
-		public void run(WorkerCallback out) throws Exception {
+		@Override
+        public void run(WorkerCallback out) throws Exception {
 			this.out = out;
 			cb("S2", "Enumerating...\n");
 			A4Solution sol;
@@ -660,7 +664,8 @@ final class SimpleReporter extends A4Reporter {
 			out.callback(objs);
 		}
 
-		public void run(WorkerCallback out) throws Exception {
+		@Override
+        public void run(WorkerCallback out) throws Exception {
 			cb(out, "S2", "Starting the solver...\n\n");
 			final SimpleReporter rep = new SimpleReporter(out, options.recordKodkod);
 			final Module world = CompUtil.parseEverything_fromFile(rep, map, options.originalFilename, resolutionMode);

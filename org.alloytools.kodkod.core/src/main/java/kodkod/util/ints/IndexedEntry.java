@@ -54,7 +54,8 @@ public interface IndexedEntry<E> {
 	 * 
 	 * @return o in IndexedEntry && o.index = this.index && o.value = this.value
 	 */
-	public abstract boolean equals(Object o);
+	@Override
+    public abstract boolean equals(Object o);
 
 	/**
 	 * Returns the hash code value for this indexed entry. The hash code of an
@@ -63,5 +64,6 @@ public interface IndexedEntry<E> {
 	 * e1.hashCode()==e2.hashCode() for any two IndexedEntries e1 and e2, as
 	 * required by the general contract of Object.hashCode.
 	 */
-	public abstract int hashCode();
+	@Override
+    public abstract int hashCode();
 }

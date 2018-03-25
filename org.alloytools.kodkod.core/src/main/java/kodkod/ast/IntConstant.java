@@ -66,7 +66,8 @@ public final class IntConstant extends IntExpression {
 	 * 
 	 * @return o in IntConstant && o.value = this.value
 	 */
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (o == this)
 			return true;
 		else if (o instanceof IntConstant)
@@ -80,7 +81,8 @@ public final class IntConstant extends IntExpression {
 	 * 
 	 * @return this.value
 	 */
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return value;
 	}
 
@@ -109,7 +111,8 @@ public final class IntConstant extends IntExpression {
 	 * 
 	 * @see kodkod.ast.Node#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.valueOf(value);
 	}
 

@@ -91,25 +91,30 @@ public class PreferencesDialog extends JFrame {
 		public MyIntSpinnerModel(final IntPref pref) {
 			this.pref = pref;
 			this.pref.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
+				@Override
+                public void stateChanged(ChangeEvent e) {
 					fireStateChanged();
 				}
 			});
 		}
 
-		public Object getValue() {
+		@Override
+        public Object getValue() {
 			return pref.get();
 		}
 
-		public void setValue(Object value) {
+		@Override
+        public void setValue(Object value) {
 			pref.set((Integer) value);
 		}
 
-		public Object getNextValue() {
+		@Override
+        public Object getNextValue() {
 			return Math.min(pref.max, pref.get() + 1);
 		}
 
-		public Object getPreviousValue() {
+		@Override
+        public Object getPreviousValue() {
 			return Math.max(pref.min, pref.get() - 1);
 		}
 	}
@@ -121,25 +126,30 @@ public class PreferencesDialog extends JFrame {
 		public CBModel(final ChoicePref<T> pref) {
 			this.pref = pref;
 			this.pref.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
+				@Override
+                public void stateChanged(ChangeEvent e) {
 					fireContentsChanged(pref, -1, -1);
 				}
 			});
 		}
 
-		public int getSize() {
+		@Override
+        public int getSize() {
 			return pref.validChoices().size();
 		}
 
-		public Object getElementAt(int index) {
+		@Override
+        public Object getElementAt(int index) {
 			return pref.validChoices().get(index);
 		}
 
-		public void setSelectedItem(Object anItem) {
+		@Override
+        public void setSelectedItem(Object anItem) {
 			pref.set((T) anItem);
 		}
 
-		public Object getSelectedItem() {
+		@Override
+        public Object getSelectedItem() {
 			return pref.get();
 		}
 	}
@@ -151,54 +161,67 @@ public class PreferencesDialog extends JFrame {
 			this.pref = pref;
 		}
 
-		public int getMinimum() {
+		@Override
+        public int getMinimum() {
 			return 0;
 		}
 
-		public int getMaximum() {
+		@Override
+        public int getMaximum() {
 			return pref.validChoices().size() - 1;
 		}
 
-		public int getValue() {
+		@Override
+        public int getValue() {
 			return pref.getSelectedIndex();
 		}
 
-		public int getExtent() {
+		@Override
+        public int getExtent() {
 			return 0;
 		}
 
-		public void setValueIsAdjusting(boolean b) {}
+		@Override
+        public void setValueIsAdjusting(boolean b) {}
 
-		public boolean getValueIsAdjusting() {
+		@Override
+        public boolean getValueIsAdjusting() {
 			return false;
 		}
 
-		public void setRangeProperties(int value, int extent, int min, int max, boolean adjusting) {
+		@Override
+        public void setRangeProperties(int value, int extent, int min, int max, boolean adjusting) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void addChangeListener(ChangeListener x) {
+		@Override
+        public void addChangeListener(ChangeListener x) {
 			pref.addChangeListener(x);
 		}
 
-		public void removeChangeListener(ChangeListener x) {
+		@Override
+        public void removeChangeListener(ChangeListener x) {
 			pref.removeChangeListener(x);
 		}
 
-		public void setValue(int n) {
+		@Override
+        public void setValue(int n) {
 			if (n >= getMinimum() && n <= getMaximum())
 				pref.setSelectedIndex(n);
 		}
 
-		public void setExtent(int n) {
+		@Override
+        public void setExtent(int n) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void setMinimum(int n) {
+		@Override
+        public void setMinimum(int n) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void setMaximum(int n) {
+		@Override
+        public void setMaximum(int n) {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -367,7 +390,8 @@ public class PreferencesDialog extends JFrame {
 		addToGrid(p, mkCheckBox(RecordKodkod), gbc().pos(0, r++).gridwidth(2));
 
 		Solver.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				boolean enableCore = Solver.get() == SatSolver.MiniSatProverJNI;
 				pref2comp.get(CoreGranularity).setEnabled(enableCore);
 				pref2comp.get(CoreMinimization).setEnabled(enableCore);
@@ -391,7 +415,8 @@ public class PreferencesDialog extends JFrame {
 		final JCheckBox cb = make(new JCheckBox(pref.getTitleAction()));
 		pref2comp.put(pref, cb);
 		ChangeListener ctrl = new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				cb.setSelected(pref.get());
 			}
 		};
@@ -410,14 +435,17 @@ public class PreferencesDialog extends JFrame {
 		sl.setSnapToTicks(true);
 		sl.setLabelTable(mkDict(pref));
 		pref.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+			@Override
+            public void stateChanged(ChangeEvent e) {
 				sl.setLabelTable(mkDict(pref));
 			}
 		});
 		sl.addMouseListener(new MouseAdapter() {
-			public void mouseReleased(MouseEvent e) {
+			@Override
+            public void mouseReleased(MouseEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
+					@Override
+                    public void run() {
 						sl.updateUI();
 					}
 				});
@@ -460,7 +488,8 @@ public class PreferencesDialog extends JFrame {
 			}
 		});
 		jtf.addKeyListener(new KeyAdapter() {
-			public void keyTyped(KeyEvent e) {
+			@Override
+            public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
 				if (c < '0' || c > '9') {
 					e.consume(); // ignore event
@@ -468,15 +497,18 @@ public class PreferencesDialog extends JFrame {
 			}
 		});
 		jtf.getDocument().addDocumentListener(new DocumentListener() {
-			public void removeUpdate(DocumentEvent e) {
+			@Override
+            public void removeUpdate(DocumentEvent e) {
 				updatePref();
 			}
 
-			public void insertUpdate(DocumentEvent e) {
+			@Override
+            public void insertUpdate(DocumentEvent e) {
 				updatePref();
 			}
 
-			public void changedUpdate(DocumentEvent e) {
+			@Override
+            public void changedUpdate(DocumentEvent e) {
 				updatePref();
 			}
 
@@ -575,7 +607,8 @@ public class PreferencesDialog extends JFrame {
 		return new AbstractAction((String) action.getValue(Action.NAME), (Icon) action.getValue(Action.SMALL_ICON)) {
 			private static final long serialVersionUID = -2790668001235140089L;
 
-			public void actionPerformed(ActionEvent e) {
+			@Override
+            public void actionPerformed(ActionEvent e) {
 				Object oldVal = pref.get();
 				action.actionPerformed(e);
 				Object newVal = pref.get();
@@ -600,7 +633,8 @@ public class PreferencesDialog extends JFrame {
 			return;
 		for (final Pref< ? > pref : prefs) {
 			pref.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
+				@Override
+                public void stateChanged(ChangeEvent e) {
 					logPrefChanged(log, pref);
 				}
 			});
@@ -609,7 +643,8 @@ public class PreferencesDialog extends JFrame {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				PreferencesDialog sd = new PreferencesDialog(null, null);
 				sd.setDefaultCloseOperation(EXIT_ON_CLOSE);
 				sd.setVisible(true);

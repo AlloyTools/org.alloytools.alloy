@@ -151,7 +151,8 @@ public interface SparseSequence<V> extends Iterable<IndexedEntry<V>> {
 	 * @return an iterator over this.entries starting at the entry with the
 	 *         smallest index
 	 */
-	public abstract Iterator<IndexedEntry<V>> iterator();
+	@Override
+    public abstract Iterator<IndexedEntry<V>> iterator();
 
 	/**
 	 * Returns an iterator over the entries in this sequence, whose indeces are
@@ -214,7 +215,8 @@ public interface SparseSequence<V> extends Iterable<IndexedEntry<V>> {
 	 * 
 	 * @return o in SparseSequence && o.entries = this.entries
 	 */
-	public abstract boolean equals(Object o);
+	@Override
+    public abstract boolean equals(Object o);
 
 	/**
 	 * Returns the hash code value for this sparse sequence. A hash function for
@@ -224,7 +226,8 @@ public interface SparseSequence<V> extends Iterable<IndexedEntry<V>> {
 	 * 
 	 * @return hash code for this sparse sequence
 	 */
-	public abstract int hashCode();
+	@Override
+    public abstract int hashCode();
 
 	/**
 	 * Returns a copy of this sparse sequence. The copy is independent of this

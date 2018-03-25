@@ -160,7 +160,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         decls.declarations[0].accept(this) +...+
 	 *         decls.declarations[decls.size-1].accept(this))
 	 */
-	public Set<T> visit(Decls decls) {
+	@Override
+    public Set<T> visit(Decls decls) {
 		Set<T> ret = lookup(decls);
 		if (ret != null)
 			return ret;
@@ -179,7 +180,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(decl) | x != null => x, cache(decls,
 	 *         decl.variable.accept(this) + decl.expression.accept(this))
 	 */
-	public Set<T> visit(Decl decl) {
+	@Override
+    public Set<T> visit(Decl decl) {
 		Set<T> ret = lookup(decl);
 		if (ret != null)
 			return ret;
@@ -194,7 +196,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * 
 	 * @return Collections.EMPTY_SET
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public Set<T> visit(Relation relation) {
 		return Collections.EMPTY_SET;
 	}
@@ -204,7 +207,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * 
 	 * @return Collections.EMPTY_SET
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public Set<T> visit(Variable variable) {
 		return Collections.EMPTY_SET;
 	}
@@ -214,7 +218,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * 
 	 * @return Collections.EMPTY_SET
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public Set<T> visit(ConstantExpression constExpr) {
 		return Collections.EMPTY_SET;
 	}
@@ -228,7 +233,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         expr.child(0).accept(this) + .. +
 	 *         expr.child(expr.size()-1).accept(this))
 	 */
-	public Set<T> visit(NaryExpression expr) {
+	@Override
+    public Set<T> visit(NaryExpression expr) {
 		Set<T> ret = lookup(expr);
 		if (ret != null)
 			return ret;
@@ -247,7 +253,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(binExpr) | x != null => x, cache(binExpr,
 	 *         binExpr.left.accept(this) + binExpr.right.accept(this))
 	 */
-	public Set<T> visit(BinaryExpression binExpr) {
+	@Override
+    public Set<T> visit(BinaryExpression binExpr) {
 		Set<T> ret = lookup(binExpr);
 		if (ret != null)
 			return ret;
@@ -265,7 +272,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(unaryExpr) | x != null => x, cache(unaryExpr,
 	 *         unaryExpr.expression.accept(this))
 	 */
-	public Set<T> visit(UnaryExpression unaryExpr) {
+	@Override
+    public Set<T> visit(UnaryExpression unaryExpr) {
 		Set<T> ret = lookup(unaryExpr);
 		if (ret != null)
 			return ret;
@@ -283,7 +291,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         cache(comprehension, comprehension.declarations.accept(this) +
 	 *         comprehension.formula.accept(this))
 	 */
-	public Set<T> visit(Comprehension comprehension) {
+	@Override
+    public Set<T> visit(Comprehension comprehension) {
 		Set<T> ret = lookup(comprehension);
 		if (ret != null)
 			return ret;
@@ -302,7 +311,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         ifExpr.condition.accept(this) + ifExpr.thenExpr.accept(this) +
 	 *         ifExpr.elseExpr.accept(this))
 	 */
-	public Set<T> visit(IfExpression ifExpr) {
+	@Override
+    public Set<T> visit(IfExpression ifExpr) {
 		Set<T> ret = lookup(ifExpr);
 		if (ret != null)
 			return ret;
@@ -322,7 +332,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         project.expression.accept(this) +
 	 *         project.columns[int].accept(this))
 	 */
-	public Set<T> visit(ProjectExpression project) {
+	@Override
+    public Set<T> visit(ProjectExpression project) {
 		Set<T> ret = lookup(project);
 		if (ret != null)
 			return ret;
@@ -341,7 +352,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(castExpr) | x != null => x, cache(intExpr,
 	 *         castExpr.intExpr.accept(this))
 	 */
-	public Set<T> visit(IntToExprCast castExpr) {
+	@Override
+    public Set<T> visit(IntToExprCast castExpr) {
 		Set<T> ret = lookup(castExpr);
 		if (ret != null)
 			return ret;
@@ -355,7 +367,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * 
 	 * @return Collections.EMPTY_SET
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public Set<T> visit(IntConstant intConst) {
 		return Collections.EMPTY_SET;
 	}
@@ -369,7 +382,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         intExpr.condition.accept(this) + intExpr.thenExpr.accept(this) +
 	 *         intExpr.elseExpr.accept(this))
 	 */
-	public Set<T> visit(IfIntExpression intExpr) {
+	@Override
+    public Set<T> visit(IfIntExpression intExpr) {
 		Set<T> ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -387,7 +401,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.expression.accept(this))
 	 */
-	public Set<T> visit(ExprToIntCast intExpr) {
+	@Override
+    public Set<T> visit(ExprToIntCast intExpr) {
 		Set<T> ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -405,7 +420,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         intExpr.child(0).accept(this) + .. +
 	 *         intExpr.child(intExpr.size()-1).accept(this))
 	 */
-	public Set<T> visit(NaryIntExpression intExpr) {
+	@Override
+    public Set<T> visit(NaryIntExpression intExpr) {
 		Set<T> ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -424,7 +440,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.left.accept(this) + intExpr.right.accept(this))
 	 */
-	public Set<T> visit(BinaryIntExpression intExpr) {
+	@Override
+    public Set<T> visit(BinaryIntExpression intExpr) {
 		Set<T> ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -441,7 +458,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.expression.accept(this))
 	 */
-	public Set<T> visit(UnaryIntExpression intExpr) {
+	@Override
+    public Set<T> visit(UnaryIntExpression intExpr) {
 		Set<T> ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -458,7 +476,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(intExpr) | x != null => x, cache(intExpr,
 	 *         intExpr.decls.accept(this) + intExpr.intExpr.accept(this))
 	 */
-	public Set<T> visit(SumExpression intExpr) {
+	@Override
+    public Set<T> visit(SumExpression intExpr) {
 		Set<T> ret = lookup(intExpr);
 		if (ret != null)
 			return ret;
@@ -476,7 +495,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(intComp) | x != null => x, cache(intComp,
 	 *         intComp.left.accept(this) + intComp.right.accept(this))
 	 */
-	public Set<T> visit(IntComparisonFormula intComp) {
+	@Override
+    public Set<T> visit(IntComparisonFormula intComp) {
 		Set<T> ret = lookup(intComp);
 		if (ret != null)
 			return ret;
@@ -495,7 +515,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         cache(quantFormula, quantFormula.declarations.accept(this) +
 	 *         quantFormula.formula.accept(this))
 	 */
-	public Set<T> visit(QuantifiedFormula quantFormula) {
+	@Override
+    public Set<T> visit(QuantifiedFormula quantFormula) {
 		Set<T> ret = lookup(quantFormula);
 		if (ret != null)
 			return ret;
@@ -514,7 +535,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         formula.child(0).accept(this) + .. +
 	 *         formula.child(formula.size()-1).accept(this))
 	 */
-	public Set<T> visit(NaryFormula formula) {
+	@Override
+    public Set<T> visit(NaryFormula formula) {
 		Set<T> ret = lookup(formula);
 		if (ret != null)
 			return ret;
@@ -533,7 +555,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(binFormula) | x != null => x, cache(binFormula,
 	 *         binFormula.left.accept(this) + binFormula.right.accept(this))
 	 */
-	public Set<T> visit(BinaryFormula binFormula) {
+	@Override
+    public Set<T> visit(BinaryFormula binFormula) {
 		Set<T> ret = lookup(binFormula);
 		if (ret != null)
 			return ret;
@@ -550,7 +573,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(not) | x != null => x, cache(not,
 	 *         not.formula.accept(this))
 	 */
-	public Set<T> visit(NotFormula not) {
+	@Override
+    public Set<T> visit(NotFormula not) {
 		Set<T> ret = lookup(not);
 		if (ret != null)
 			return ret;
@@ -564,7 +588,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * 
 	 * @return Collections.EMPTY_SET
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	public Set<T> visit(ConstantFormula constant) {
 		return Collections.EMPTY_SET;
 	}
@@ -578,7 +603,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 *         cache(compFormula,compFormula.left.accept(this) +
 	 *         compFormula.right.accept(this))
 	 */
-	public Set<T> visit(ComparisonFormula compFormula) {
+	@Override
+    public Set<T> visit(ComparisonFormula compFormula) {
 		Set<T> ret = lookup(compFormula);
 		if (ret != null)
 			return ret;
@@ -596,7 +622,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(multFormula) | x != null => x, cache(multFormula,
 	 *         multFormula.expression.accept(this))
 	 */
-	public Set<T> visit(MultiplicityFormula multFormula) {
+	@Override
+    public Set<T> visit(MultiplicityFormula multFormula) {
 		Set<T> ret = lookup(multFormula);
 		if (ret != null)
 			return ret;
@@ -613,7 +640,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 	 * @return let x = lookup(predicate) | x != null => x, cache(predicate, some
 	 *         n: predicate.children | n.accept(this))
 	 */
-	public Set<T> visit(RelationPredicate pred) {
+	@Override
+    public Set<T> visit(RelationPredicate pred) {
 		Set<T> ret = lookup(pred);
 		if (ret != null)
 			return ret;
@@ -639,7 +667,8 @@ public abstract class AbstractCollector<T> implements ReturnVisitor<Set<T>,Set<T
 		return cache(pred, ret);
 	}
 
-	public Set<T> visit(FixFormula fixFormula) {
+	@Override
+    public Set<T> visit(FixFormula fixFormula) {
 		Set<T> ret = lookup(fixFormula);
 		if (ret != null)
 			return ret;

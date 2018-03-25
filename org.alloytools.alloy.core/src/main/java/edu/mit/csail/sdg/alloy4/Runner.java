@@ -48,7 +48,8 @@ public abstract class Runner extends AbstractAction
 	 * This method should be overriden to provide the default action that this
 	 * Runner would perform.
 	 */
-	public abstract void run();
+	@Override
+    public abstract void run();
 
 	/**
 	 * This method should be overriden to provide the default action that this
@@ -60,7 +61,8 @@ public abstract class Runner extends AbstractAction
 	 * This method is defined in java.awt.event.ActionListener; (this
 	 * implementation calls this.run())
 	 */
-	public final void actionPerformed(ActionEvent e) {
+	@Override
+    public final void actionPerformed(ActionEvent e) {
 		run();
 	}
 
@@ -68,7 +70,8 @@ public abstract class Runner extends AbstractAction
 	 * This method is defined in javax.swing.event.MenuListener; (this
 	 * implementation calls this.run())
 	 */
-	public final void menuSelected(MenuEvent e) {
+	@Override
+    public final void menuSelected(MenuEvent e) {
 		run();
 	}
 
@@ -76,19 +79,22 @@ public abstract class Runner extends AbstractAction
 	 * This method is defined in javax.swing.event.MenuListener; (this
 	 * implementation does nothing)
 	 */
-	public final void menuDeselected(MenuEvent e) {}
+	@Override
+    public final void menuDeselected(MenuEvent e) {}
 
 	/**
 	 * This method is defined in javax.swing.event.MenuListener; (this
 	 * implementation does nothing)
 	 */
-	public final void menuCanceled(MenuEvent e) {}
+	@Override
+    public final void menuCanceled(MenuEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.CaretListener; (this
 	 * implementation calls this.run())
 	 */
-	public final void caretUpdate(CaretEvent e) {
+	@Override
+    public final void caretUpdate(CaretEvent e) {
 		run();
 	}
 
@@ -96,7 +102,8 @@ public abstract class Runner extends AbstractAction
 	 * This method is defined in java.awt.event.FocusListener; (this
 	 * implementation calls this.run())
 	 */
-	public final void focusGained(FocusEvent e) {
+	@Override
+    public final void focusGained(FocusEvent e) {
 		run();
 	}
 
@@ -104,13 +111,15 @@ public abstract class Runner extends AbstractAction
 	 * This method is defined in java.awt.event.FocusListener; (this
 	 * implementation does nothing)
 	 */
-	public final void focusLost(FocusEvent e) {}
+	@Override
+    public final void focusLost(FocusEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation calls this.run())
 	 */
-	public final void windowClosing(WindowEvent e) {
+	@Override
+    public final void windowClosing(WindowEvent e) {
 		run();
 	}
 
@@ -118,37 +127,43 @@ public abstract class Runner extends AbstractAction
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation does nothing)
 	 */
-	public final void windowClosed(WindowEvent e) {}
+	@Override
+    public final void windowClosed(WindowEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation does nothing)
 	 */
-	public final void windowOpened(WindowEvent e) {}
+	@Override
+    public final void windowOpened(WindowEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation does nothing)
 	 */
-	public final void windowIconified(WindowEvent e) {}
+	@Override
+    public final void windowIconified(WindowEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation does nothing)
 	 */
-	public final void windowDeiconified(WindowEvent e) {}
+	@Override
+    public final void windowDeiconified(WindowEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation does nothing)
 	 */
-	public final void windowActivated(WindowEvent e) {}
+	@Override
+    public final void windowActivated(WindowEvent e) {}
 
 	/**
 	 * This method is defined in java.awt.event.WindowListener; (this
 	 * implementation does nothing)
 	 */
-	public final void windowDeactivated(WindowEvent e) {}
+	@Override
+    public final void windowDeactivated(WindowEvent e) {}
 
 	/**
 	 * This helper method returns a Runnable whose run() method will call
@@ -158,11 +173,13 @@ public abstract class Runner extends AbstractAction
 		return new Runner() {
 			private static final long serialVersionUID = 0;
 
-			public final void run() {
+			@Override
+            public final void run() {
 				window.dispose();
 			}
 
-			public final void run(Object arg) {
+			@Override
+            public final void run(Object arg) {
 				window.dispose();
 			}
 		};

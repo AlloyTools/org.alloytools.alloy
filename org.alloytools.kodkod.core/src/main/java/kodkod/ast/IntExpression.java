@@ -503,13 +503,15 @@ public abstract class IntExpression extends Node {
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
-	public abstract <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor);
+	@Override
+    public abstract <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
 	 */
-	public abstract void accept(VoidVisitor visitor);
+	@Override
+    public abstract void accept(VoidVisitor visitor);
 
 }

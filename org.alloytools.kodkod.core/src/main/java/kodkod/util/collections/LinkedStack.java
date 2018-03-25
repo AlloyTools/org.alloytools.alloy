@@ -47,7 +47,8 @@ public final class LinkedStack<T> extends Stack<T> {
 	/**
 	 * @see kodkod.util.collections.Stack#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -58,7 +59,8 @@ public final class LinkedStack<T> extends Stack<T> {
 	 *          [0..this.size) | this.elems'[i+1] = this.elems[i]
 	 * @return item
 	 */
-	public T push(T item) {
+	@Override
+    public T push(T item) {
 		head = new StackEntry<T>(item, head);
 		size++;
 		return item;
@@ -73,7 +75,8 @@ public final class LinkedStack<T> extends Stack<T> {
 	 * @return this.elems[0]
 	 * @throws EmptyStackException no this.elems
 	 */
-	public T pop() {
+	@Override
+    public T pop() {
 		if (head == null)
 			throw new EmptyStackException();
 		final T pop = head.data;
@@ -89,7 +92,8 @@ public final class LinkedStack<T> extends Stack<T> {
 	 * @return this.elems[0]
 	 * @throws EmptyStackException no this.elems
 	 */
-	public T peek() {
+	@Override
+    public T peek() {
 		if (head == null)
 			throw new EmptyStackException();
 		return head.data;
@@ -104,7 +108,8 @@ public final class LinkedStack<T> extends Stack<T> {
 	 * 
 	 * @return o in this.elems[int] => min(this.elems.o) + 1, -1
 	 */
-	public int search(Object o) {
+	@Override
+    public int search(Object o) {
 		StackEntry<T> e = head;
 		int position = 1;
 		while (e != null) {
@@ -121,7 +126,8 @@ public final class LinkedStack<T> extends Stack<T> {
 	 * 
 	 * @return no this.elems
 	 */
-	public boolean empty() {
+	@Override
+    public boolean empty() {
 		return head == null;
 	}
 
@@ -131,15 +137,18 @@ public final class LinkedStack<T> extends Stack<T> {
 	 * 
 	 * @return iterator over the elements in this stack.
 	 */
-	public Iterator<T> iterator() {
+	@Override
+    public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			private StackEntry<T> cursor = head, prev = null, pprev = null;
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return cursor != null;
 			}
 
-			public T next() {
+			@Override
+            public T next() {
 				if (cursor == null)
 					throw new NoSuchElementException();
 				pprev = prev;
@@ -148,7 +157,8 @@ public final class LinkedStack<T> extends Stack<T> {
 				return prev.data;
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				if (prev == pprev) {
 					throw new UnsupportedOperationException();
 				} else if (prev == head) {

@@ -59,7 +59,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#numberOfVariables()
 	 */
-	public int numberOfVariables() {
+	@Override
+    public int numberOfVariables() {
 		return vars;
 	}
 
@@ -68,7 +69,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#numberOfClauses()
 	 */
-	public int numberOfClauses() {
+	@Override
+    public int numberOfClauses() {
 		return clauses;
 	}
 
@@ -77,7 +79,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#addVariables(int)
 	 */
-	public void addVariables(int numVars) {
+	@Override
+    public void addVariables(int numVars) {
 		if (numVars < 0)
 			throw new IllegalArgumentException("numVars < 0: " + numVars);
 		else if (numVars > 0) {
@@ -91,7 +94,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
 	 */
-	public boolean addClause(int[] lits) {
+	@Override
+    public boolean addClause(int[] lits) {
 		try {
 			if (!Boolean.FALSE.equals(sat)) {
 				clauses++;
@@ -114,7 +118,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#solve()
 	 */
-	public boolean solve() {
+	@Override
+    public boolean solve() {
 		try {
 			if (solver == null)
 				return false;
@@ -131,7 +136,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#valueOf(int)
 	 */
-	public final boolean valueOf(int variable) {
+	@Override
+    public final boolean valueOf(int variable) {
 		if (!Boolean.TRUE.equals(sat))
 			throw new IllegalStateException();
 		if (variable < 1 || variable > vars)
@@ -144,7 +150,8 @@ final class SAT4J implements SATSolver {
 	 * 
 	 * @see kodkod.engine.satlab.SATSolver#free()
 	 */
-	public synchronized final void free() {
+	@Override
+    public synchronized final void free() {
 		sat = Boolean.FALSE;
 		solver = null;
 	}
@@ -167,33 +174,40 @@ final class SAT4J implements SATSolver {
 			return this;
 		}
 
-		public int size() {
+		@Override
+        public int size() {
 			return vec.length;
 		}
 
-		public boolean isEmpty() {
+		@Override
+        public boolean isEmpty() {
 			return size() == 0;
 		}
 
-		public int unsafeGet(int arg0) {
+		@Override
+        public int unsafeGet(int arg0) {
 			return vec[arg0];
 		}
 
-		public int last() {
+		@Override
+        public int last() {
 			return vec[vec.length - 1];
 		}
 
-		public int[] toArray() {
+		@Override
+        public int[] toArray() {
 			return vec;
 		}
 
-		public int get(int arg0) {
+		@Override
+        public int get(int arg0) {
 			if (arg0 < 0 || arg0 >= vec.length)
 				throw new IndexOutOfBoundsException("arg0: " + arg0);
 			return vec[arg0];
 		}
 
-		public boolean contains(int arg0) {
+		@Override
+        public boolean contains(int arg0) {
 			final int[] workArray = vec; // faster access
 			for (int i : workArray) {
 				if (i == arg0)
@@ -202,7 +216,8 @@ final class SAT4J implements SATSolver {
 			return false;
 		}
 
-		public void copyTo(IVecInt arg0) {
+		@Override
+        public void copyTo(IVecInt arg0) {
 			int argLength = arg0.size();
 			final int[] workArray = vec; // faster access
 			arg0.ensure(argLength + workArray.length);
@@ -211,20 +226,24 @@ final class SAT4J implements SATSolver {
 			}
 		}
 
-		public void copyTo(int[] arg0) {
+		@Override
+        public void copyTo(int[] arg0) {
 			assert arg0.length >= vec.length;
 			System.arraycopy(vec, 0, arg0, 0, vec.length);
 		}
 
-		public IteratorInt iterator() {
+		@Override
+        public IteratorInt iterator() {
 			return new IteratorInt() {
 				int cursor = 0;
 
-				public boolean hasNext() {
+				@Override
+                public boolean hasNext() {
 					return cursor < vec.length;
 				}
 
-				public int next() {
+				@Override
+                public int next() {
 					if (!hasNext())
 						throw new NoSuchElementException();
 					return vec[cursor++];
@@ -232,7 +251,8 @@ final class SAT4J implements SATSolver {
 			};
 		}
 
-		public int containsAt(int e) {
+		@Override
+        public int containsAt(int e) {
 			final int[] workArray = vec; // faster access
 			for (int n = workArray.length, i = 0; i < n; i++)
 				if (workArray[i] == e)
@@ -240,7 +260,8 @@ final class SAT4J implements SATSolver {
 			return -1;
 		}
 
-		public int containsAt(int e, int from) {
+		@Override
+        public int containsAt(int e, int from) {
 			final int[] workArray = vec; // faster access
 			if (from < workArray.length)
 				for (int n = workArray.length, i = from + 1; i < n; i++)
@@ -249,7 +270,8 @@ final class SAT4J implements SATSolver {
 			return -1;
 		}
 
-		public int indexOf(int e) {
+		@Override
+        public int indexOf(int e) {
 			final int[] workArray = vec; // faster access
 			for (int i = 0, n = workArray.length; i < n; i++) {
 				if (workArray[i] == e)
@@ -259,83 +281,103 @@ final class SAT4J implements SATSolver {
 		}
 
 		// unsupported
-		public void shrink(int arg0) {
+		@Override
+        public void shrink(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void shrinkTo(int arg0) {
+		@Override
+        public void shrinkTo(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public IVecInt pop() {
+		@Override
+        public IVecInt pop() {
 			throw new UnsupportedOperationException();
 		}
 
-		public void growTo(int arg0, int arg1) {
+		@Override
+        public void growTo(int arg0, int arg1) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void ensure(int arg0) {
+		@Override
+        public void ensure(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public IVecInt push(int arg0) {
+		@Override
+        public IVecInt push(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void unsafePush(int arg0) {
+		@Override
+        public void unsafePush(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void clear() {
+		@Override
+        public void clear() {
 			throw new UnsupportedOperationException();
 		}
 
-		public void moveTo(IVecInt arg0) {
+		@Override
+        public void moveTo(IVecInt arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void moveTo2(IVecInt arg0) {
+		@Override
+        public void moveTo2(IVecInt arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void moveTo(int[] arg0) {
+		@Override
+        public void moveTo(int[] arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void moveTo(int arg0, int arg1) {
+		@Override
+        public void moveTo(int arg0, int arg1) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void moveTo(int i, int[] arg1) {
+		@Override
+        public void moveTo(int i, int[] arg1) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void insertFirst(int arg0) {
+		@Override
+        public void insertFirst(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void remove(int arg0) {
+		@Override
+        public void remove(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public int delete(int arg0) {
+		@Override
+        public int delete(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void set(int arg0, int arg1) {
+		@Override
+        public void set(int arg0, int arg1) {
 			throw new UnsupportedOperationException();
 		}
 
-		public void sort() {
+		@Override
+        public void sort() {
 			throw new UnsupportedOperationException();
 		}
 
-		public void sortUnique() {
+		@Override
+        public void sortUnique() {
 			throw new UnsupportedOperationException();
 		}
 
-		public IVecInt[] subset(int arg0) {
+		@Override
+        public IVecInt[] subset(int arg0) {
 			throw new UnsupportedOperationException();
 		}
 	}

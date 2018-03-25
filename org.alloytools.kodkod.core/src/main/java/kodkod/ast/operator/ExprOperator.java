@@ -32,61 +32,71 @@ package kodkod.ast.operator;
 public enum ExprOperator {
 	/** Relational union (+) operator. */
 	UNION {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "+";
 		}
 	},
 	/** Relational intersection (&) operator. */
 	INTERSECTION {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "&";
 		}
 	},
 	/** Relational override (++) operator. */
 	OVERRIDE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "++";
 		}
 	},
 	/** Relational product (->) operator. */
 	PRODUCT {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "->";
 		}
 	},
 	/** Relational difference (-) operator. */
 	DIFFERENCE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "-";
 		}
 	},
 	/** Relational join (.) operator. */
 	JOIN {
-		public String toString() {
+		@Override
+        public String toString() {
 			return ".";
 		}
 	},
 	/** Transpose (~) operator. */
 	TRANSPOSE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "~";
 		}
 	},
 	/** Transitive closure (^) operator. */
 	CLOSURE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "^";
 		}
 	},
 	/** Reflexive transitive closure (*) operator. */
 	REFLEXIVE_CLOSURE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "*";
 		}
 	},
 	/** Value in post-state (used only for fixpoint computation. */
 	PRE {
-		public String toString() {
+		@Override
+        public String toString() {
 			return "PRE";
 		}
 	};

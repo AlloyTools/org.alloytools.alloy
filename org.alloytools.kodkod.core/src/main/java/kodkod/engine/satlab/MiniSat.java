@@ -45,7 +45,8 @@ final class MiniSat extends NativeSolver {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "MiniSat";
 	}
 
@@ -61,33 +62,38 @@ final class MiniSat extends NativeSolver {
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#free(long)
 	 */
-	native void free(long peer);
+	@Override
+    native void free(long peer);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
 	 */
-	native void addVariables(long peer, int numVariables);
+	@Override
+    native void addVariables(long peer, int numVariables);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
 	 */
-	native boolean addClause(long peer, int[] lits);
+	@Override
+    native boolean addClause(long peer, int[] lits);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#solve(long)
 	 */
-	native boolean solve(long peer);
+	@Override
+    native boolean solve(long peer);
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
 	 */
-	native boolean valueOf(long peer, int literal);
+	@Override
+    native boolean valueOf(long peer, int literal);
 }

@@ -83,7 +83,8 @@ public final class WorkerEngine {
 	 */
 	private static InputStream wrap(final InputStream stream) {
 		return new InputStream() {
-			public int read(byte b[], int off, int len) throws IOException {
+			@Override
+            public int read(byte b[], int off, int len) throws IOException {
 				if (len == 0)
 					return 0;
 				else if (stream == null)
@@ -92,14 +93,16 @@ public final class WorkerEngine {
 					return stream.read(b, off, len);
 			}
 
-			public int read() throws IOException {
+			@Override
+            public int read() throws IOException {
 				if (stream == null)
 					return -1;
 				else
 					return stream.read();
 			}
 
-			public long skip(long n) throws IOException {
+			@Override
+            public long skip(long n) throws IOException {
 				if (stream == null)
 					return 0;
 				else
@@ -115,22 +118,26 @@ public final class WorkerEngine {
 	 */
 	private static OutputStream wrap(final OutputStream stream) {
 		return new OutputStream() {
-			public void write(int b) throws IOException {
+			@Override
+            public void write(int b) throws IOException {
 				if (stream != null)
 					stream.write(b);
 			}
 
-			public void write(byte b[], int off, int len) throws IOException {
+			@Override
+            public void write(byte b[], int off, int len) throws IOException {
 				if (stream != null)
 					stream.write(b, off, len);
 			}
 
-			public void flush() throws IOException {
+			@Override
+            public void flush() throws IOException {
 				if (stream != null)
 					stream.flush();
 			}
 
-			public void close() throws IOException {
+			@Override
+            public void close() throws IOException {
 				if (stream != null)
 					stream.flush();
 			}
@@ -266,7 +273,8 @@ public final class WorkerEngine {
 				sub = latest_sub;
 			}
 			latest_manager = new Thread(new Runnable() {
-				public void run() {
+				@Override
+                public void run() {
 					ObjectInputStream sub2main = null;
 					ObjectOutputStream main2sub = null;
 					try {
@@ -340,7 +348,8 @@ public final class WorkerEngine {
 		// To prevent a zombie process, we set a default handler to terminate
 		// itself if something does slip through our detection
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-			public void uncaughtException(Thread t, Throwable e) {
+			@Override
+            public void uncaughtException(Thread t, Throwable e) {
 				halt("UncaughtException: " + e, 1);
 			}
 		});
@@ -401,14 +410,16 @@ public final class WorkerEngine {
 				}
 			}
 			t = new Thread(new Runnable() {
-				public void run() {
+				@Override
+                public void run() {
 					ObjectOutputStream x = null;
 					Throwable e = null;
 					try {
 						x = new ObjectOutputStream(wrap(out));
 						final ObjectOutputStream xx = x;
 						WorkerCallback y = new WorkerCallback() {
-							public void callback(Object x) {
+							@Override
+                            public void callback(Object x) {
 								try {
 									xx.writeObject(x);
 								} catch (IOException ex) {
@@ -416,9 +427,11 @@ public final class WorkerEngine {
 								}
 							}
 
-							public void done() {}
+							@Override
+                            public void done() {}
 
-							public void fail() {}
+							@Override
+                            public void fail() {}
 						};
 						task.run(y);
 						x.writeObject(null);

@@ -32,6 +32,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 import edu.mit.csail.sdg.alloy4.Listener.Event;
 
@@ -98,7 +99,8 @@ public final class OurTabbedSyntaxWidget {
 
 	/** This object receives messages from sub-JTextPane objects. */
 	private final Listener				listener				= new Listener() {
-																	public Object do_action(Object sender, Event e) {
+																	@Override
+                                                                    public Object do_action(Object sender, Event e) {
 																		final OurTabbedSyntaxWidget me = OurTabbedSyntaxWidget.this;
 																		if (sender instanceof OurSyntaxWidget)
 																			switch (e) {
@@ -145,7 +147,8 @@ public final class OurTabbedSyntaxWidget {
 																		return true;
 																	}
 
-																	public Object do_action(Object sender, Event e,
+																	@Override
+                                                                    public Object do_action(Object sender, Event e,
 																			Object arg) {
 																		return true;
 																	}
@@ -164,26 +167,30 @@ public final class OurTabbedSyntaxWidget {
 			tabBar.setOpaque(true);
 			tabBar.setBackground(GRAY);
 		}
-		tabBarScroller = new JScrollPane(tabBar, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		tabBarScroller = new JScrollPane(tabBar, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		tabBarScroller.setFocusable(false);
 		tabBarScroller.setBorder(null);
 		setFont(fontName, fontSize, tabSize);
 		newtab(null);
 		tabBarScroller.addComponentListener(new ComponentListener() {
-			public final void componentResized(ComponentEvent e) {
+			@Override
+            public final void componentResized(ComponentEvent e) {
 				select(me);
 			}
 
-			public final void componentMoved(ComponentEvent e) {
+			@Override
+            public final void componentMoved(ComponentEvent e) {
 				select(me);
 			}
 
-			public final void componentShown(ComponentEvent e) {
+			@Override
+            public final void componentShown(ComponentEvent e) {
 				select(me);
 			}
 
-			public final void componentHidden(ComponentEvent e) {}
+			@Override
+            public final void componentHidden(ComponentEvent e) {}
 		});
 	}
 

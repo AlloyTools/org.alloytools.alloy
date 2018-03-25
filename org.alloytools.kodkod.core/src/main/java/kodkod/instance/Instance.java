@@ -237,7 +237,8 @@ public final class Instance implements Cloneable {
 	 * 
 	 * @return a deep copy of this Instance object.
 	 */
-	public Instance clone() {
+	@Override
+    public Instance clone() {
 		try {
 			return new Instance(universe, new LinkedHashMap<Relation,TupleSet>(tuples), ints.clone());
 		} catch (CloneNotSupportedException cnse) {
@@ -250,7 +251,8 @@ public final class Instance implements Cloneable {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return "relations: " + tuples.toString() + "\nints: " + ints;
 	}
 

@@ -121,17 +121,20 @@ final class BinaryGate extends MultiGate {
 		return new Iterator<BooleanFormula>() {
 			int next = 0;
 
-			public boolean hasNext() {
+			@Override
+            public boolean hasNext() {
 				return next < 2;
 			}
 
-			public BooleanFormula next() {
+			@Override
+            public BooleanFormula next() {
 				if (!hasNext())
 					throw new NoSuchElementException();
 				return (next++ == 0 ? low : high);
 			}
 
-			public void remove() {
+			@Override
+            public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};

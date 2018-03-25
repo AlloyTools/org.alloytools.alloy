@@ -96,7 +96,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @return #this.entries
 	 * @see kodkod.util.ints.SparseSequence#size()
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -106,7 +107,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @return no this.entries
 	 * @see kodkod.util.ints.SparseSequence#isEmpty()
 	 */
-	public boolean isEmpty() {
+	@Override
+    public boolean isEmpty() {
 		return size == 0;
 	}
 
@@ -115,7 +117,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * 
 	 * @see kodkod.util.ints.SparseSequence#clear()
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		for (EntryView<V> e : entries) {
 			e.setValue(null);
 		}
@@ -160,7 +163,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @throws NullPointerException value = null
 	 * @see kodkod.util.ints.SparseSequence#put(int, Object)
 	 */
-	public V put(int index, V value) {
+	@Override
+    public V put(int index, V value) {
 		if (value == null)
 			throw new NullPointerException();
 		final int position = search(index);
@@ -178,7 +182,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @return this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#get(int)
 	 */
-	public V get(int index) {
+	@Override
+    public V get(int index) {
 		final int position = search(index);
 		return position < 0 ? null : entries[position].value();
 	}
@@ -192,7 +197,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @return this.entries[index]
 	 * @see kodkod.util.ints.SparseSequence#remove(int)
 	 */
-	public V remove(int index) {
+	@Override
+    public V remove(int index) {
 		final int position = search(index);
 		if (position < 0)
 			return null;
@@ -210,7 +216,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @return index in this.indeces
 	 * @see kodkod.util.ints.SparseSequence#containsIndex(int)
 	 */
-	public boolean containsIndex(int index) {
+	@Override
+    public boolean containsIndex(int index) {
 		final int position = search(index);
 		return position >= 0 && entries[position].value() != null;
 	}
@@ -228,7 +235,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 *         this.ceil(to).
 	 * @see kodkod.util.ints.SparseSequence#iterator(int, int)
 	 */
-	public Iterator<IndexedEntry<V>> iterator(int from, int to) {
+	@Override
+    public Iterator<IndexedEntry<V>> iterator(int from, int to) {
 		return from <= to ? new AscendingIterator(from, to) : new DescendingIterator(from, to);
 	}
 
@@ -240,7 +248,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 *         this.entries[e.index] }
 	 * @see kodkod.util.ints.SparseSequence#first()
 	 */
-	public IndexedEntry<V> first() {
+	@Override
+    public IndexedEntry<V> first() {
 		if (size == 0)
 			return null;
 		for (EntryView<V> e : entries) {
@@ -258,7 +267,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 *         this.entries[e.index] }
 	 * @see kodkod.util.ints.SparseSequence#last()
 	 */
-	public IndexedEntry<V> last() {
+	@Override
+    public IndexedEntry<V> last() {
 		if (size == 0)
 			return null;
 		for (int i = entries.length - 1; i >= 0; i--) {
@@ -276,7 +286,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 *         && e.value = this.entries[index] }, successor(index)
 	 * @see kodkod.util.ints.SparseSequence#ceil(int)
 	 */
-	public IndexedEntry<V> ceil(int index) {
+	@Override
+    public IndexedEntry<V> ceil(int index) {
 		final int position = search(index);
 		for (int i = position < 0 ? -position - 1 : position; i < entries.length; i++) {
 			if (entries[i].value() != null)
@@ -293,7 +304,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 *         && e.value = this.entries[index] }, predecessor(index)
 	 * @see kodkod.util.ints.SparseSequence#floor(int)
 	 */
-	public IndexedEntry<V> floor(int index) {
+	@Override
+    public IndexedEntry<V> floor(int index) {
 		final int position = search(index);
 		for (int i = position < -1 ? -position - 2 : position; i >= 0; i--) {
 			if (entries[i].value() != null)
@@ -309,7 +321,8 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 	 * @return a copy of this sparse sequence.
 	 * @see kodkod.util.ints.SparseSequence#clone()
 	 */
-	public ArraySequence<V> clone() {
+	@Override
+    public ArraySequence<V> clone() {
 		return new ArraySequence<V>(this);
 	}
 
@@ -333,19 +346,22 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 			endIndex = toPos < -1 ? -toPos - 2 : toPos;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			while (cursor < entries.length && entries[cursor].value() == null)
 				cursor++;
 			return cursor <= endIndex;
 		}
 
-		public IndexedEntry<V> next() {
+		@Override
+        public IndexedEntry<V> next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return lastReturned = entries[cursor++];
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (lastReturned == null)
 				throw new IllegalStateException();
 			entries[lastReturned.index()].setValue(null);
@@ -373,19 +389,22 @@ public final class ArraySequence<V> extends AbstractSparseSequence<V> implements
 			endIndex = toPos < 0 ? -toPos - 1 : toPos;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			while (cursor >= 0 && entries[cursor].value() == null)
 				cursor--;
 			return cursor >= endIndex;
 		}
 
-		public IndexedEntry<V> next() {
+		@Override
+        public IndexedEntry<V> next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			return lastReturned = entries[cursor--];
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (lastReturned == null)
 				throw new IllegalStateException();
 			entries[lastReturned.index()].setValue(null);

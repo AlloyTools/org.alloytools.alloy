@@ -80,7 +80,8 @@ public class BenchmarkSymmStats {
 			gbpTime = bean.getCurrentThreadUserTime();
 		}
 
-		public void detectedSymmetries(Set<IntSet> parts) {
+		@Override
+        public void detectedSymmetries(Set<IntSet> parts) {
 			final long end = bean.getCurrentThreadUserTime();
 			gbpTime = (end - gbpTime) / 1000000;
 			symms = new int[parts.size()];
@@ -90,7 +91,8 @@ public class BenchmarkSymmStats {
 			}
 		}
 
-		public void optimizingBoundsAndFormula() {
+		@Override
+        public void optimizingBoundsAndFormula() {
 			throw new RuntimeException();
 		}
 

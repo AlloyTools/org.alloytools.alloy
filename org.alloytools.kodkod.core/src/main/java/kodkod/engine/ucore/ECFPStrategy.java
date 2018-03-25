@@ -53,7 +53,8 @@ public final class ECFPStrategy implements ReductionStrategy {
 	 * 
 	 * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
 	 */
-	public IntSet next(final ResolutionTrace trace) {
+	@Override
+    public IntSet next(final ResolutionTrace trace) {
 		final IntSet core = trace.core();
 		if (lastCore > core.size()) {
 			lastCore = core.size();
