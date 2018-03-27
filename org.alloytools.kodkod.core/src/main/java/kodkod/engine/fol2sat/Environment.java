@@ -38,172 +38,172 @@ import kodkod.ast.operator.Quantifier;
  * @author Emina Torlak
  */
 public final class Environment<T, E> {
-	private final Variable			variable;
-	private final T					value;
-	private final E					type;
-	private final Environment<T,E>	parent;
-	private final Quantifier		envType;	// may be null, but will
-												// typically contain
-												// Quantifier.ALL or
-												// Quantifier.SOME
 
-	private boolean					negated;
+    private final Variable         variable;
+    private final T                value;
+    private final E                type;
+    private final Environment<T,E> parent;
+    private final Quantifier       envType;   	// may be null, but will
+    // typically contain
+    // Quantifier.ALL or
+    // Quantifier.SOME
 
-	/**
-	 * Constructs the empty environment.
-	 */
-	private Environment() {
-		this.variable = null;
-		this.value = null;
-		this.type = null;
-		this.parent = this;
-		this.envType = null;
-		this.negated = false;
-	}
+    private boolean negated;
 
-	/**
-	 * Constructs a new environment with the specified parent and mapping.
-	 *
-	 * @ensures this.parent' = parent && this.variable' = variable &&
-	 *          this.value' = value
-	 */
-	private Environment(Environment<T,E> parent, Variable variable, E type, T value, Quantifier quant,
-			boolean negated) {
-		this.variable = variable;
-		this.value = value;
-		this.type = type;
-		this.parent = parent;
-		this.envType = quant;
-		this.negated = negated;
-	}
+    /**
+     * Constructs the empty environment.
+     */
+    private Environment() {
+        this.variable = null;
+        this.value = null;
+        this.type = null;
+        this.parent = this;
+        this.envType = null;
+        this.negated = false;
+    }
 
-	/**
-	 * Returns the empty environment.
-	 * 
-	 * @return the empty environment.
-	 */
-	public static <T, E> Environment<T,E> empty() {
-		return new Environment<T,E>();
-	}
+    /**
+     * Constructs a new environment with the specified parent and mapping.
+     *
+     * @ensures this.parent' = parent && this.variable' = variable && this.value' =
+     *          value
+     */
+    private Environment(Environment<T,E> parent, Variable variable, E type, T value, Quantifier quant, boolean negated) {
+        this.variable = variable;
+        this.value = value;
+        this.type = type;
+        this.parent = parent;
+        this.envType = quant;
+        this.negated = negated;
+    }
 
-	/**
-	 * Returns the parent environment of this, or null if this does not have a
-	 * parent.
-	 *
-	 * @return this.parent
-	 */
-	public Environment<T,E> parent() {
-		return parent;
-	}
+    /**
+     * Returns the empty environment.
+     *
+     * @return the empty environment.
+     */
+    public static <T, E> Environment<T,E> empty() {
+        return new Environment<T,E>();
+    }
 
-	/**
-	 * Returns a new environment that extends this environment with the
-	 * specified mapping.
-	 * 
-	 * @requires variable != null
-	 * @return e : Environment | e.parent = this && e.variable = variable &&
-	 *         e.value = value
-	 */
-	public Environment<T,E> extend(Variable variable, E type, T value) {
-		return extend(variable, type, value, null);
-	}
+    /**
+     * Returns the parent environment of this, or null if this does not have a
+     * parent.
+     *
+     * @return this.parent
+     */
+    public Environment<T,E> parent() {
+        return parent;
+    }
 
-	public Environment<T,E> extend(Variable variable, E type, T value, Quantifier envType) {
-		if (envType == null)
-			return new Environment<T,E>(this, variable, type, value, envType, false);
-		Quantifier q = negated ? envType.opposite : envType;
-		return new Environment<T,E>(this, variable, type, value, q, negated);
-	}
+    /**
+     * Returns a new environment that extends this environment with the specified
+     * mapping.
+     *
+     * @requires variable != null
+     * @return e : Environment | e.parent = this && e.variable = variable && e.value
+     *         = value
+     */
+    public Environment<T,E> extend(Variable variable, E type, T value) {
+        return extend(variable, type, value, null);
+    }
 
-	public void negate() {
-		negated = !negated;
-	}
+    public Environment<T,E> extend(Variable variable, E type, T value, Quantifier envType) {
+        if (envType == null)
+            return new Environment<T,E>(this, variable, type, value, envType, false);
+        Quantifier q = negated ? envType.opposite : envType;
+        return new Environment<T,E>(this, variable, type, value, q, negated);
+    }
 
-	/**
-	 * Returns this.variable.
-	 * 
-	 * @return this.variable
-	 */
-	public Variable variable() {
-		return this.variable;
-	}
+    public void negate() {
+        negated = !negated;
+    }
 
-	/**
-	 * Return this.type.
-	 * 
-	 * @return this.type
-	 */
-	public E type() {
-		return this.type;
-	}
+    /**
+     * Returns this.variable.
+     *
+     * @return this.variable
+     */
+    public Variable variable() {
+        return this.variable;
+    }
 
-	/**
-	 * Returns this.value.
-	 * 
-	 * @return this.value
-	 */
-	public T value() {
-		return this.value;
-	}
+    /**
+     * Return this.type.
+     *
+     * @return this.type
+     */
+    public E type() {
+        return this.type;
+    }
 
-	/**
-	 * Returns this.quant.
-	 * 
-	 * @return this.quant
-	 */
-	public Quantifier envType() {
-		return envType;
-	}
+    /**
+     * Returns this.value.
+     *
+     * @return this.value
+     */
+    public T value() {
+        return this.value;
+    }
 
-	public boolean isNegated() {
-		return negated;
-	}
+    /**
+     * Returns this.quant.
+     *
+     * @return this.quant
+     */
+    public Quantifier envType() {
+        return envType;
+    }
 
-	/**
-	 * Returns true if this is the empty (root) environment; otherwise returns
-	 * false.
-	 * 
-	 * @return this.parent = this
-	 */
-	public boolean isEmpty() {
-		return this == this.parent;
-	}
+    public boolean isNegated() {
+        return negated;
+    }
 
-	/**
-	 * Looks up the given variable in this environment and its ancestors. If the
-	 * variable is not bound in this environment or any of its ancestors, null
-	 * is returned. If the variable is bound in multiple environments, the first
-	 * found binding is returned. Note that null will also be returned if the
-	 * variable is bound to null.
-	 * 
-	 * @return variable = this.variable => this.value,
-	 *         this.parent.lookup(variable)
-	 */
-	public T lookup(Variable variable) {
-		Environment<T,E> p = this;
-		// ok to use == for testing variable equality:
-		// see kodkod.ast.LeafExpression#equals
-		while (!p.isEmpty() && p.variable != variable) {
-			p = p.parent;
-		}
-		return p.value;
-	}
+    /**
+     * Returns true if this is the empty (root) environment; otherwise returns
+     * false.
+     *
+     * @return this.parent = this
+     */
+    public boolean isEmpty() {
+        return this == this.parent;
+    }
 
-	public E lookupType(Variable variable) {
-		Environment<T,E> p = this;
-		// ok to use == for testing variable equality:
-		// see kodkod.ast.LeafExpression#equals
-		while (!p.isEmpty() && p.variable != variable) {
-			p = p.parent;
-		}
-		return p.type;
-	}
+    /**
+     * Looks up the given variable in this environment and its ancestors. If the
+     * variable is not bound in this environment or any of its ancestors, null is
+     * returned. If the variable is bound in multiple environments, the first found
+     * binding is returned. Note that null will also be returned if the variable is
+     * bound to null.
+     *
+     * @return variable = this.variable => this.value, this.parent.lookup(variable)
+     */
+    public T lookup(Variable variable) {
+        Environment<T,E> p = this;
+        // ok to use == for testing variable equality:
+        // see kodkod.ast.LeafExpression#equals
+        while (!p.isEmpty() && p.variable != variable) {
+            p = p.parent;
+        }
+        return p.value;
+    }
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return (parent.isEmpty() ? "[]" : parent.toString()) + "[" + variable + "=" + value + "]";
-	}
+    public E lookupType(Variable variable) {
+        Environment<T,E> p = this;
+        // ok to use == for testing variable equality:
+        // see kodkod.ast.LeafExpression#equals
+        while (!p.isEmpty() && p.variable != variable) {
+            p = p.parent;
+        }
+        return p.type;
+    }
+
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return (parent.isEmpty() ? "[]" : parent.toString()) + "[" + variable + "=" + value + "]";
+    }
 
 }

@@ -24,62 +24,61 @@ import edu.mit.csail.sdg.ast.Sig.Field;
 
 public abstract class VisitReturn<T> {
 
-	/** Constructs a VisitReturn object. */
-	public VisitReturn() {}
+    /** Constructs a VisitReturn object. */
+    public VisitReturn() {}
 
-	/**
-	 * This is the start method that begins a traversal over the given
-	 * expression.
-	 */
-	public final T visitThis(Expr x) throws Err {
-		return x.accept(this);
-	}
+    /**
+     * This is the start method that begins a traversal over the given expression.
+     */
+    public final T visitThis(Expr x) throws Err {
+        return x.accept(this);
+    }
 
-	/** Visits a ExprBad node */
-	public T visit(ExprBad x) throws Err {
-		throw x.errors.pick();
-	}
+    /** Visits a ExprBad node */
+    public T visit(ExprBad x) throws Err {
+        throw x.errors.pick();
+    }
 
-	/** Visits a ExprBadCall node */
-	public T visit(ExprBadCall x) throws Err {
-		throw x.errors.pick();
-	}
+    /** Visits a ExprBadCall node */
+    public T visit(ExprBadCall x) throws Err {
+        throw x.errors.pick();
+    }
 
-	/** Visits a ExprBadJoin node */
-	public T visit(ExprBadJoin x) throws Err {
-		throw x.errors.pick();
-	}
+    /** Visits a ExprBadJoin node */
+    public T visit(ExprBadJoin x) throws Err {
+        throw x.errors.pick();
+    }
 
-	/** Visits an ExprBinary node. */
-	public abstract T visit(ExprBinary x) throws Err;
+    /** Visits an ExprBinary node. */
+    public abstract T visit(ExprBinary x) throws Err;
 
-	/** Visits an ExprList node. */
-	public abstract T visit(ExprList x) throws Err;
+    /** Visits an ExprList node. */
+    public abstract T visit(ExprList x) throws Err;
 
-	/** Visits an ExprCall node. */
-	public abstract T visit(ExprCall x) throws Err;
+    /** Visits an ExprCall node. */
+    public abstract T visit(ExprCall x) throws Err;
 
-	/** Visits an ExprConstant node. */
-	public abstract T visit(ExprConstant x) throws Err;
+    /** Visits an ExprConstant node. */
+    public abstract T visit(ExprConstant x) throws Err;
 
-	/** Visits an ExprITE node. */
-	public abstract T visit(ExprITE x) throws Err;
+    /** Visits an ExprITE node. */
+    public abstract T visit(ExprITE x) throws Err;
 
-	/** Visits an ExprLet node. */
-	public abstract T visit(ExprLet x) throws Err;
+    /** Visits an ExprLet node. */
+    public abstract T visit(ExprLet x) throws Err;
 
-	/** Visits an ExprQt node. */
-	public abstract T visit(ExprQt x) throws Err;
+    /** Visits an ExprQt node. */
+    public abstract T visit(ExprQt x) throws Err;
 
-	/** Visits an ExprUnary node. */
-	public abstract T visit(ExprUnary x) throws Err;
+    /** Visits an ExprUnary node. */
+    public abstract T visit(ExprUnary x) throws Err;
 
-	/** Visits an ExprVar node. */
-	public abstract T visit(ExprVar x) throws Err;
+    /** Visits an ExprVar node. */
+    public abstract T visit(ExprVar x) throws Err;
 
-	/** Visits a Sig node. */
-	public abstract T visit(Sig x) throws Err;
+    /** Visits a Sig node. */
+    public abstract T visit(Sig x) throws Err;
 
-	/** Visits a Field node. */
-	public abstract T visit(Field x) throws Err;
+    /** Visits a Field node. */
+    public abstract T visit(Field x) throws Err;
 }

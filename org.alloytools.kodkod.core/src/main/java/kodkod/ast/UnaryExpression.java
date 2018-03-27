@@ -35,83 +35,88 @@ import kodkod.ast.visitor.VoidVisitor;
  * @author Emina Torlak
  */
 public final class UnaryExpression extends Expression {
-	private final Expression	expression;
-	private final ExprOperator	op;
-	private final int			arity;
 
-	/**
-	 * Constructs a new unary expression: op expression
-	 *
-	 * @ensures this.expression' = expression && this.op' = op
-	 * @throws NullPointerException expression = null || op = null
-	 * @throws IllegalArgumentException op in {TRANSPOSE, CLOSURE,
-	 *             REFLEXIVE_CLOSURE} && child.arity != 2
-	 */
-	UnaryExpression(ExprOperator op, Expression child) {
-		if (!op.unary()) {
-			throw new IllegalArgumentException("Not a unary operator: " + op);
-		}
-		if (child.arity() != 2 && op != ExprOperator.PRE) {
-			throw new IllegalArgumentException("Invalid arity: " + child + "::" + child.arity());
-		}
-		this.expression = child;
-		this.op = op;
-		this.arity = child.arity();
-	}
+    private final Expression   expression;
+    private final ExprOperator op;
+    private final int          arity;
 
-	/**
-	 * Returns the arity of this expression.
-	 * 
-	 * @return this.arity
-	 * @see kodkod.ast.Expression#arity()
-	 */
-	public int arity() {
-		return arity;
-	}
+    /**
+     * Constructs a new unary expression: op expression
+     *
+     * @ensures this.expression' = expression && this.op' = op
+     * @throws NullPointerException expression = null || op = null
+     * @throws IllegalArgumentException op in {TRANSPOSE, CLOSURE,
+     *             REFLEXIVE_CLOSURE} && child.arity != 2
+     */
+    UnaryExpression(ExprOperator op, Expression child) {
+        if (!op.unary()) {
+            throw new IllegalArgumentException("Not a unary operator: " + op);
+        }
+        if (child.arity() != 2 && op != ExprOperator.PRE) {
+            throw new IllegalArgumentException("Invalid arity: " + child + "::" + child.arity());
+        }
+        this.expression = child;
+        this.op = op;
+        this.arity = child.arity();
+    }
 
-	/**
-	 * Returns this.expression.
-	 * 
-	 * @return this.expression
-	 */
-	public Expression expression() {
-		return expression;
-	}
+    /**
+     * Returns the arity of this expression.
+     *
+     * @return this.arity
+     * @see kodkod.ast.Expression#arity()
+     */
+    @Override
+    public int arity() {
+        return arity;
+    }
 
-	/**
-	 * Returns this.op.
-	 * 
-	 * @return this.op
-	 */
-	public ExprOperator op() {
-		return op;
-	}
+    /**
+     * Returns this.expression.
+     *
+     * @return this.expression
+     */
+    public Expression expression() {
+        return expression;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns this.op.
+     *
+     * @return this.op
+     */
+    public ExprOperator op() {
+        return op;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> E accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return op.toString() + expression.toString();
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return op.toString() + expression.toString();
+    }
 
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,75 +27,78 @@ import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * A multiplicity formula, e.g. some x
- * 
+ *
  * @specfield expression: Expression
  * @specfield multiplicity: (ONE + LONE + SOME + NO)
  * @invariant children = 0->expression
  * @author Emina Torlak
  */
 public final class MultiplicityFormula extends Formula {
-	private final Expression	expression;
-	private final Multiplicity	multiplicity;
 
-	/**
-	 * Constructs a new multiplicity formula: multiplicity expression
-	 * 
-	 * @ensures this.expression' = expression && this.multiplicity' =
-	 *          multiplicity
-	 * @throws NullPointerException multiplicity = null || expression = null
-	 * @throws IllegalArgumentException multiplicity = SET
-	 */
-	MultiplicityFormula(Multiplicity multiplicity, Expression expression) {
-		if (multiplicity == Multiplicity.SET)
-			throw new IllegalArgumentException("invalid expression mulitplicity: SET");
-		if (multiplicity == null || expression == null)
-			throw new NullPointerException("null arg");
-		this.multiplicity = multiplicity;
-		this.expression = expression;
-	}
+    private final Expression   expression;
+    private final Multiplicity multiplicity;
 
-	/**
-	 * Returns the mulitplicity of this.
-	 * 
-	 * @return this.multiplicity
-	 */
-	public Multiplicity multiplicity() {
-		return multiplicity;
-	}
+    /**
+     * Constructs a new multiplicity formula: multiplicity expression
+     *
+     * @ensures this.expression' = expression && this.multiplicity' = multiplicity
+     * @throws NullPointerException multiplicity = null || expression = null
+     * @throws IllegalArgumentException multiplicity = SET
+     */
+    MultiplicityFormula(Multiplicity multiplicity, Expression expression) {
+        if (multiplicity == Multiplicity.SET)
+            throw new IllegalArgumentException("invalid expression mulitplicity: SET");
+        if (multiplicity == null || expression == null)
+            throw new NullPointerException("null arg");
+        this.multiplicity = multiplicity;
+        this.expression = expression;
+    }
 
-	/**
-	 * Returns the expression of this.
-	 * 
-	 * @return this.expression
-	 */
-	public Expression expression() {
-		return expression;
-	}
+    /**
+     * Returns the mulitplicity of this.
+     *
+     * @return this.multiplicity
+     */
+    public Multiplicity multiplicity() {
+        return multiplicity;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Returns the expression of this.
+     *
+     * @return this.expression
+     */
+    public Expression expression() {
+        return expression;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return multiplicity + " " + expression;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return multiplicity + " " + expression;
+    }
 }

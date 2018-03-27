@@ -23,7 +23,6 @@ import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
 
 import edu.mit.csail.sdg.alloy4.Runner;
-import edu.mit.csail.sdg.alloy4whole.SimpleGUI;
 
 /**
  * This class provides better integration on Mac OS X.
@@ -37,92 +36,97 @@ import edu.mit.csail.sdg.alloy4whole.SimpleGUI;
 
 public final class MacUtil {
 
-	/**
-	 * Constructor is private, since this class never needs to be instantiated.
-	 */
-	public MacUtil() {}
+    /**
+     * Constructor is private, since this class never needs to be instantiated.
+     */
+    public MacUtil() {}
 
-	/** The cached Application object. */
-	private Application			app			= null;
+    /** The cached Application object. */
+    private Application         app      = null;
 
-	/** The previous ApplicationListener (or null if there was none). */
-	private ApplicationListener	listener	= null;
+    /**
+     * The previous ApplicationListener (or null if there was none).
+     */
+    private ApplicationListener listener = null;
 
-	/**
-	 * Register a Mac OS X "ApplicationListener"; if there was a previous
-	 * listener, it will be removed first.
-	 * 
-	 * @param reopen - when the user clicks on the Dock icon, we'll call
-	 *            reopen.run() using SwingUtilities.invokeLater
-	 * @param about - when the user clicks on About Alloy4, we'll call
-	 *            about.run() using SwingUtilities.invokeLater
-	 * @param open - when a file needs to be opened, we'll call
-	 *            open.run(filename) using SwingUtilities.invokeLater
-	 * @param quit - when the user clicks on Quit, we'll call quit.run() using
-	 *            SwingUtilities.invokeAndWait
-	 */
-	public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runner open,
-			final Runnable quit) {
-		if (app == null)
-			app = new Application();
-		else if (listener != null)
-			app.removeApplicationListener(listener);
-		listener = new ApplicationAdapter() {
-			@Override
-			public void handleReOpenApplication(ApplicationEvent arg) {
-				SwingUtilities.invokeLater(reopen);
-			}
+    /**
+     * Register a Mac OS X "ApplicationListener"; if there was a previous listener,
+     * it will be removed first.
+     *
+     * @param reopen - when the user clicks on the Dock icon, we'll call
+     *            reopen.run() using SwingUtilities.invokeLater
+     * @param about - when the user clicks on About Alloy4, we'll call about.run()
+     *            using SwingUtilities.invokeLater
+     * @param open - when a file needs to be opened, we'll call open.run(filename)
+     *            using SwingUtilities.invokeLater
+     * @param quit - when the user clicks on Quit, we'll call quit.run() using
+     *            SwingUtilities.invokeAndWait
+     */
+    public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runner open, final Runnable quit) {
+        if (app == null)
+            app = new Application();
+        else if (listener != null)
+            app.removeApplicationListener(listener);
+        listener = new ApplicationAdapter() {
 
-			@Override
-			public void handleAbout(ApplicationEvent arg) {
-				arg.setHandled(true);
-				SwingUtilities.invokeLater(about);
-			}
+            @Override
+            public void handleReOpenApplication(ApplicationEvent arg) {
+                SwingUtilities.invokeLater(reopen);
+            }
 
-			@Override
-			public void handleOpenFile(ApplicationEvent arg) {
-				final String filename = arg.getFilename();
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						open.run(filename);
-					}
-				});
-			}
+            @Override
+            public void handleAbout(ApplicationEvent arg) {
+                arg.setHandled(true);
+                SwingUtilities.invokeLater(about);
+            }
 
-			@Override
-			public void handleQuit(ApplicationEvent arg) {
-				try {
-					if (SwingUtilities.isEventDispatchThread())
-						quit.run();
-					else
-						SwingUtilities.invokeAndWait(quit);
-				} catch (Throwable e) {
-					// Nothing we can do; we're already trying to quit!
-				}
-				arg.setHandled(false);
-			}
-		};
-		app.addApplicationListener(listener);
-	}
+            @Override
+            public void handleOpenFile(ApplicationEvent arg) {
+                final String filename = arg.getFilename();
+                SwingUtilities.invokeLater(new Runnable() {
 
-	public void addMenus(SimpleGUI simpleGUI) {
-		Application.getApplication().addPreferencesMenuItem();
-		Application.getApplication().addAboutMenuItem();
-		Application.getApplication().addApplicationListener(new ApplicationAdapter() {
-			@Override
-			public void handleAbout(ApplicationEvent ae) {
-				simpleGUI.doAbout();
-			}
+                    @Override
+                    public void run() {
+                        open.run(filename);
+                    }
+                });
+            }
 
-			@Override
-			public void handlePreferences(ApplicationEvent ae) {
-				simpleGUI.doPreferences();
-			}
+            @Override
+            public void handleQuit(ApplicationEvent arg) {
+                try {
+                    if (SwingUtilities.isEventDispatchThread())
+                        quit.run();
+                    else
+                        SwingUtilities.invokeAndWait(quit);
+                } catch (Throwable e) {
+                    // Nothing we can do; we're already trying to quit!
+                }
+                arg.setHandled(false);
+            }
+        };
+        app.addApplicationListener(listener);
+    }
 
-			@Override
-			public void handleQuit(ApplicationEvent arg0) {
-				simpleGUI.doQuit();
-			}
-		});
-	}
+    public void addMenus(SimpleGUI simpleGUI) {
+        Application.getApplication().addPreferencesMenuItem();
+        Application.getApplication().addAboutMenuItem();
+        Application.getApplication().addApplicationListener(new ApplicationAdapter() {
+
+            @Override
+            public void handleAbout(ApplicationEvent ae) {
+                simpleGUI.doAbout();
+            }
+
+            @Override
+            public void handlePreferences(ApplicationEvent ae) {
+                simpleGUI.doPreferences();
+            }
+
+            @Override
+            public void handleQuit(ApplicationEvent arg0) {
+                simpleGUI.doQuit();
+            }
+        });
+    }
 }

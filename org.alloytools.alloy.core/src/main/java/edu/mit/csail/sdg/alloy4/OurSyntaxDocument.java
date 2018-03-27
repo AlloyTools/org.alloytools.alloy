@@ -52,7 +52,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      */
     private final List<Mode>                comments         = new ArrayList<>();
 
-    /** Whether syntax highlighting is currently enabled or not. */
+    /**
+     * Whether syntax highlighting is currently enabled or not.
+     */
     private boolean                         enabled          = true;
 
     /** The current font name is. */
@@ -65,14 +67,13 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     private int                             tabSize          = 4;
 
     /**
-     * The list of font+color styles (eg. regular text, symbols, keywords,
-     * comments, etc).
+     * The list of font+color styles (eg. regular text, symbols, keywords, comments,
+     * etc).
      */
     private final List<MutableAttributeSet> all              = new ArrayList<>();
 
     /** The character style for regular text. */
-    private final MutableAttributeSet       styleNormal      = style(font, fontSize, false, false, false,
-                    Color.BLACK, 0);
+    private final MutableAttributeSet       styleNormal      = style(font, fontSize, false, false, false, Color.BLACK, 0);
     {
         all.add(styleNormal);
     }
@@ -84,33 +85,28 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     }
 
     /** The character style for YAML header bars. */
-    private final MutableAttributeSet yamlHeaderBars = style(font, fontSize, false, false, false, new Color(0xD86556),
-                    0);
+    private final MutableAttributeSet yamlHeaderBars = style(font, fontSize, false, false, false, new Color(0xD86556), 0);
     {
         all.add(yamlHeaderBars);
     }
     /** The character style for YAML header field. */
-    private final MutableAttributeSet yamlHeaderLines = style(font, fontSize, false, false, false, new Color(0xC58D6D),
-                    0);
+    private final MutableAttributeSet yamlHeaderLines = style(font, fontSize, false, false, false, new Color(0xC58D6D), 0);
     {
         all.add(yamlHeaderLines);
     }
 
     /** The character style for ### field. */
-    private final MutableAttributeSet styleHead3 = style(font, fontSize + 2, true, false, false, new Color(0x772222),
-                    0);
+    private final MutableAttributeSet styleHead3 = style(font, fontSize + 2, true, false, false, new Color(0x772222), 0);
     {
         all.add(styleHead3);
     }
     /** The character style for ## field. */
-    private final MutableAttributeSet styleHead2 = style(font, fontSize + 4, true, false, false, new Color(0x772222),
-                    0);
+    private final MutableAttributeSet styleHead2 = style(font, fontSize + 4, true, false, false, new Color(0x772222), 0);
     {
         all.add(styleHead2);
     }
     /** The character style for # field. */
-    private final MutableAttributeSet styleHead1 = style(font, fontSize + 20, true, false, false, new Color(0x772222),
-                    0);
+    private final MutableAttributeSet styleHead1 = style(font, fontSize + 20, true, false, false, new Color(0x772222), 0);
     {
         all.add(styleHead1);
     }
@@ -155,13 +151,17 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         all.add(styleString);
     }
 
-    /** The character style for up-to-end-of-line-style comment. */
+    /**
+     * The character style for up-to-end-of-line-style comment.
+     */
     private final MutableAttributeSet styleComment = style(font, fontSize, false, false, false, new Color(0x0A940A), 0);
     {
         all.add(styleComment);
     }
 
-    /** The character style for non-javadoc-style block comment. */
+    /**
+     * The character style for non-javadoc-style block comment.
+     */
     private final MutableAttributeSet styleBlock = style(font, fontSize, false, false, false, new Color(0x0A940A), 0);
     {
         all.add(styleBlock);
@@ -176,15 +176,11 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     /** The paragraph style for indentation. */
     private final MutableAttributeSet tabset   = new SimpleAttributeSet();
 
-    /** This stores the currently recognized set of reserved keywords. */
+    /**
+     * This stores the currently recognized set of reserved keywords.
+     */
     private static final String[]     keywords = new String[] {
-                    "abstract", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum",
-                    "exactly",
-                    "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in",
-                    "Int",
-                    "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition",
-                    "pred",
-                    "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ"
+                                                               "abstract", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ"
     };
 
     /**
@@ -206,12 +202,10 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     }
 
     /**
-     * Returns true if "c" can be in the start or middle or end of an
-     * identifier.
+     * Returns true if "c" can be in the start or middle or end of an identifier.
      */
     private static final boolean do_iden(char c) {
-        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '$' || (c >= '0' && c <= '9') || c == '_'
-                        || c == '\'' || c == '\"';
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '$' || (c >= '0' && c <= '9') || c == '_' || c == '\'' || c == '\"';
     }
 
     /** Constructor. */
@@ -219,9 +213,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
         tabSize++;
         do_setFont(fontName, fontSize, tabSize - 1); // assigns the given font,
-                                                     // and also forces
-                                                     // recomputation of the
-                                                     // tab size
+                                                    // and also forces
+                                                    // recomputation of the
+                                                    // tab size
     }
 
     /** Enables or disables syntax highlighting. */
@@ -258,8 +252,8 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * Return the starting offset of the given line (If "line" argument is too
      * large, it will return the last line's starting offset)
      * <p>
-     * For example: given "ab\ncd\n", start(0)==0, start(1)==3, start(2...)==6.
-     * Same thing when given "ab\ncd\ne".
+     * For example: given "ab\ncd\n", start(0)==0, start(1)==3, start(2...)==6. Same
+     * thing when given "ab\ncd\ne".
      */
     public final int do_getLineStartOffset(int line) {
         String txt = toString();
@@ -302,8 +296,8 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         }
         int startLine = do_getLineOfOffset(offset);
         for (int i = 0; i < string.length(); i++) { // For each inserted '\n' we
-                                                    // need to shift the values
-                                                    // in "comments" array down
+                                                   // need to shift the values
+                                                   // in "comments" array down
             if (string.charAt(i) == '\n') {
                 if (startLine < comments.size() - 1)
                     comments.add(startLine + 1, Mode.NONE);
@@ -317,7 +311,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         }
     }
 
-    /** This method is called by Swing to delete text from this document. */
+    /**
+     * This method is called by Swing to delete text from this document.
+     */
     @Override
     public void remove(int offset, int length) throws BadLocationException {
         if (!enabled) {
@@ -326,11 +322,11 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         }
         int i = 0, startLine = do_getLineOfOffset(offset);
         for (String oldText = toString(); i < length; i++) { // For each deleted
-                                                             // '\n' we need
-                                                             // to shift the
-                                                             // values in
-                                                             // "comments"
-                                                             // array up
+                                                            // '\n' we need
+                                                            // to shift the
+                                                            // values in
+                                                            // "comments"
+                                                            // array up
             if (oldText.charAt(offset + i) == '\n')
                 if (startLine < comments.size() - 1)
                     comments.remove(startLine + 1);
@@ -343,7 +339,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         }
     }
 
-    /** This method is called by Swing to replace text in this document. */
+    /**
+     * This method is called by Swing to replace text in this document.
+     */
     @Override
     public void replace(int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
         if (length > 0)
@@ -352,7 +350,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
             this.insertString(offset, string, styleNormal);
     }
 
-    /** Reapply styles assuming the given line has just been modified */
+    /**
+     * Reapply styles assuming the given line has just been modified
+     */
     private final void do_update(int line) throws BadLocationException {
         String content = toString();
         int lineCount = do_getLineCount();
@@ -360,9 +360,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
             line--; // "-1" in comments array are always contiguous
         Mode comment = do_reapply(line == 0 ? Mode.ALLOY : comments.get(line), content, line);
         for (line++; line < lineCount; line++) { // update each subsequent line
-                                                 // until it already starts
-                                                 // with its expected comment
-                                                 // mode
+                                                // until it already starts
+                                                // with its expected comment
+                                                // mode
             if (line < comments.size() && comments.get(line) == comment)
                 break;
             else
@@ -371,17 +371,17 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     }
 
     /**
-     * Re-color the given line assuming it starts with a given comment mode,
-     * then return the comment mode for start of next line.
+     * Re-color the given line assuming it starts with a given comment mode, then
+     * return the comment mode for start of next line.
      */
 
     enum Mode {
-            NONE,
-            ALLOY,
-            BLOCK_COMMENT,
-            LINE_COMMENT,
-            YAML,
-            MARKDOWN;
+               NONE,
+               ALLOY,
+               BLOCK_COMMENT,
+               LINE_COMMENT,
+               YAML,
+               MARKDOWN;
     }
 
     private final Mode do_reapply(Mode mode, final String txt, final int line) {
@@ -389,7 +389,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
             comments.add(Mode.NONE); // enlarge array if needed
 
         comments.set(line, mode); // record the fact that this line starts
-                                  // with the given comment mode
+                                 // with the given comment mode
         int startOfLine = do_getLineStartOffset(line);
         int endOfLine = txt.indexOf('\n', startOfLine);
 
@@ -433,8 +433,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
                 setCharacterAttributes(startOfLine, endOfLine - startOfLine, styleNormal, false);
                 Pattern charStyles = Pattern.compile("(([*_~])\\2?)[^*_\n]+\\1");
                 Matcher m = charStyles.matcher(txt);
-                if (endOfLine < txt.length() && startOfLine <= endOfLine && startOfLine > 0
-                                && endOfLine >= startOfLine) {
+                if (endOfLine < txt.length() && startOfLine <= endOfLine && startOfLine > 0 && endOfLine >= startOfLine) {
                     m.region(startOfLine, endOfLine);
                     while (m.find()) {
                         String type = m.group(1);
@@ -471,8 +470,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
             if (c == '\n')
                 break;
 
-            if (mode == Mode.ALLOY && c == '/' && i < n - 3 && txt.charAt(i + 1) == '*' && txt.charAt(i + 2) == '*'
-                            && txt.charAt(i + 3) != '/')
+            if (mode == Mode.ALLOY && c == '/' && i < n - 3 && txt.charAt(i + 1) == '*' && txt.charAt(i + 2) == '*' && txt.charAt(i + 3) != '/')
                 mode = Mode.LINE_COMMENT;
             if (mode == Mode.ALLOY && c == '/' && i == n - 3 && txt.charAt(i + 1) == '*' && txt.charAt(i + 2) == '*')
                 mode = Mode.LINE_COMMENT;
@@ -483,8 +481,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
 
             if (mode != Mode.ALLOY) {
                 AttributeSet style = (mode == Mode.BLOCK_COMMENT ? styleBlock : styleJavadoc);
-                while (i < n && txt.charAt(i) != '\n'
-                                && (txt.charAt(i) != '*' || i + 1 == n || txt.charAt(i + 1) != '/'))
+                while (i < n && txt.charAt(i) != '\n' && (txt.charAt(i) != '*' || i + 1 == n || txt.charAt(i + 1) != '/'))
                     i = i + 1;
                 if (i < n - 1 && txt.charAt(i) == '*' && txt.charAt(i + 1) == '/') {
                     i = i + 2;
@@ -509,12 +506,10 @@ class OurSyntaxDocument extends DefaultStyledDocument {
                 setCharacterAttributes(oldi, i - oldi, styleString, false);
             } else if (do_iden(c)) {
                 for (i++; i < n && do_iden(txt.charAt(i)); i++) {}
-                AttributeSet style = (c >= '0' && c <= '9') ? styleNumber
-                                : (do_keyword(txt, oldi, i - oldi) ? styleKeyword : styleNormal);
+                AttributeSet style = (c >= '0' && c <= '9') ? styleNumber : (do_keyword(txt, oldi, i - oldi) ? styleKeyword : styleNormal);
                 setCharacterAttributes(oldi, i - oldi, style, false);
             } else {
-                for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-'
-                                && txt.charAt(i) != '/'; i++) {}
+                for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-' && txt.charAt(i) != '/'; i++) {}
                 setCharacterAttributes(oldi, i - oldi, styleSymbol, false);
             }
         }
@@ -559,13 +554,13 @@ class OurSyntaxDocument extends DefaultStyledDocument {
         }
         do_reapplyAll();
         BufferedImage im = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB); // this
-                                                                                  // is
-                                                                                  // used
-                                                                                  // to
-                                                                                  // derive
-                                                                                  // the
-                                                                                  // tab
-                                                                                  // width
+                                                                                 // is
+                                                                                 // used
+                                                                                 // to
+                                                                                 // derive
+                                                                                 // the
+                                                                                 // tab
+                                                                                 // width
         int gap = tabSize * im.createGraphics().getFontMetrics(new Font(fontName, Font.PLAIN, fontSize)).charWidth('X');
         TabStop[] pos = new TabStop[100];
         for (int i = 0; i < 100; i++) {

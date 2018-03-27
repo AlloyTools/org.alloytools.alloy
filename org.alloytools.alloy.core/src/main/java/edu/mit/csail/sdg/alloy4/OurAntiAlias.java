@@ -47,14 +47,14 @@ public final class OurAntiAlias {
     private static boolean                         antiAlias = Util.onMac() || Util.onWindows();
 
     /**
-     * Stores weak references of all objects that need to be redrawn when
-     * anti-alias setting changes.
+     * Stores weak references of all objects that need to be redrawn when anti-alias
+     * setting changes.
      */
     private static WeakHashMap<JComponent,Boolean> map       = new WeakHashMap<>();
 
     /**
-     * Changes whether anti-aliasing should be done or not (when changed, we
-     * will automatically repaint all affected components).
+     * Changes whether anti-aliasing should be done or not (when changed, we will
+     * automatically repaint all affected components).
      */
     public static void enableAntiAlias(boolean enableAntiAlias) {
         if (antiAlias == enableAntiAlias || Util.onMac() || Util.onWindows())
@@ -71,19 +71,18 @@ public final class OurAntiAlias {
     /**
      * Constructs an antialias-capable JLabel.
      *
-     * @param attributes
-     *            - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
+     * @param attributes - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
      *            OurUtil.make(component, attributes...)}
      */
     public static JLabel label(String label, Object... attributes) {
         JLabel ans = new JLabel(label) {
+
             static final long serialVersionUID = 0;
 
             @Override
             public void paint(Graphics gr) {
                 if (antiAlias && gr instanceof Graphics2D) {
-                    ((Graphics2D) gr).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                    ((Graphics2D) gr).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 }
                 super.paint(gr);
             }
@@ -97,20 +96,19 @@ public final class OurAntiAlias {
      * Constructs an antialias-capable JTextPane with a DefaultHighlighter
      * associated with it.
      *
-     * @param attributes
-     *            - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
+     * @param attributes - see {@link edu.mit.csail.sdg.alloy4.OurUtil#make
      *            OurUtil.make(component, attributes...)}
      */
 
     public static JTextPane pane(Function<MouseEvent,String> tooltip, Object... attributes) {
         JTextPane ans = new JTextPane() {
+
             static final long serialVersionUID = 0;
 
             @Override
             public void paint(Graphics gr) {
                 if (antiAlias && gr instanceof Graphics2D) {
-                    ((Graphics2D) gr).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                    ((Graphics2D) gr).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 }
                 super.paint(gr);
             }

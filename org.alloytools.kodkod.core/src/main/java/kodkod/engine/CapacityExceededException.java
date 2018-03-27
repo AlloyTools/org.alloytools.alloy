@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,56 +26,55 @@ import kodkod.util.ints.IntVector;
 /**
  * Indicates that a problem construction or translation task failed because the
  * capacity of the index representation was exceeded.
- * 
+ *
  * @specfield dims: IntVector // contains a vector of dimensions which exceed
  *            the representation capacity
  * @author Emina Torlak
  */
 public final class CapacityExceededException extends RuntimeException {
 
-	private static final long	serialVersionUID	= -8098615204149641969L;
-	private final IntVector		dims;
+    private static final long serialVersionUID = -8098615204149641969L;
+    private final IntVector   dims;
 
-	/**
-	 * Constructs a CapacityExceededException from the given dimensions.
-	 */
-	public CapacityExceededException(IntVector dims) {
-		this.dims = dims;
-	}
+    /**
+     * Constructs a CapacityExceededException from the given dimensions.
+     */
+    public CapacityExceededException(IntVector dims) {
+        this.dims = dims;
+    }
 
-	/**
-	 * Constructs a CapacityExceededException with the given message and
-	 * dimensions.
-	 */
-	public CapacityExceededException(String arg0, IntVector dims) {
-		super(arg0);
-		this.dims = dims;
-	}
+    /**
+     * Constructs a CapacityExceededException with the given message and dimensions.
+     */
+    public CapacityExceededException(String arg0, IntVector dims) {
+        super(arg0);
+        this.dims = dims;
+    }
 
-	/**
-	 * Constructs a CapacityExceededException with the given cause.
-	 */
-	public CapacityExceededException(Throwable arg0, IntVector dims) {
-		super(arg0);
-		this.dims = dims;
-	}
+    /**
+     * Constructs a CapacityExceededException with the given cause.
+     */
+    public CapacityExceededException(Throwable arg0, IntVector dims) {
+        super(arg0);
+        this.dims = dims;
+    }
 
-	/**
-	 * Constructs a CapacityExceededException with the given message and cause.
-	 */
-	public CapacityExceededException(String arg0, Throwable arg1, IntVector dims) {
-		super(arg0, arg1);
-		this.dims = dims;
-	}
+    /**
+     * Constructs a CapacityExceededException with the given message and cause.
+     */
+    public CapacityExceededException(String arg0, Throwable arg1, IntVector dims) {
+        super(arg0, arg1);
+        this.dims = dims;
+    }
 
-	/**
-	 * Returns the vector of dimensions which, when multiplied together, exceed
-	 * the representation capacity.
-	 * 
-	 * @return this.dims
-	 */
-	public final IntVector dims() {
-		return dims;
-	}
+    /**
+     * Returns the vector of dimensions which, when multiplied together, exceed the
+     * representation capacity.
+     *
+     * @return this.dims
+     */
+    public final IntVector dims() {
+        return dims;
+    }
 
 }

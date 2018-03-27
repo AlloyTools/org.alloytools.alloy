@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,77 +23,78 @@ package kodkod.engine.satlab;
 
 /**
  * Java wrapper for the CryptoMiniSat solver by Mate Soos.
- * 
+ *
  * @author Emina Torlak
  */
 final class CryptoMiniSat extends NativeSolver {
 
-	/**
-	 * Constructs a new MiniSAT wrapper.
-	 */
-	public CryptoMiniSat() {
-		super(make());
-		// TODO Auto-generated constructor stub
-	}
+    /**
+     * Constructs a new MiniSAT wrapper.
+     */
+    public CryptoMiniSat() {
+        super(make());
+        // TODO Auto-generated constructor stub
+    }
 
-	static {
-		loadLibrary(CryptoMiniSat.class);
-	}
+    static {
+        loadLibrary(CryptoMiniSat.class);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "CryptoMiniSat";
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "CryptoMiniSat";
+    }
 
-	/**
-	 * Returns a pointer to an instance of MiniSAT.
-	 * 
-	 * @return a pointer to an instance of minisat.
-	 */
-	private static native long make();
+    /**
+     * Returns a pointer to an instance of MiniSAT.
+     *
+     * @return a pointer to an instance of minisat.
+     */
+    private static native long make();
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.engine.satlab.NativeSolver#free(long)
-	 */
-	@Override
-	native void free(long peer);
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.engine.satlab.NativeSolver#free(long)
+     */
+    @Override
+    native void free(long peer);
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
-	 */
-	@Override
-	native void addVariables(long peer, int numVariables);
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
+     */
+    @Override
+    native void addVariables(long peer, int numVariables);
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
-	 */
-	@Override
-	native boolean addClause(long peer, int[] lits);
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
+     */
+    @Override
+    native boolean addClause(long peer, int[] lits);
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.engine.satlab.NativeSolver#solve(long)
-	 */
-	@Override
-	native boolean solve(long peer);
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.engine.satlab.NativeSolver#solve(long)
+     */
+    @Override
+    native boolean solve(long peer);
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
-	 */
-	@Override
-	native boolean valueOf(long peer, int literal);
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
+     */
+    @Override
+    native boolean valueOf(long peer, int literal);
 
 }

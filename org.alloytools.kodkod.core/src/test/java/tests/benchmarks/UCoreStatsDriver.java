@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-2008, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,363 +37,326 @@ import tests.util.ProcessRunner;
 /**
  * Calls UCoreUnitTest on all unsatisfiable problems in examples.tptp.* and
  * selected unsatisfiable problems in examples.*
- * 
+ *
  * @author Emina Torlak
  */
 public final class UCoreStatsDriver {
 
-	private static final String[] RANGE_PROBLEMS = {
-			"examples.alloy.Lists", "examples.alloy.RingElection", "examples.alloy.Trees", "examples.alloy.Hotel",
-			"examples.tptp.ALG212", "examples.tptp.COM008", "examples.tptp.GEO091", "examples.tptp.GEO092",
-			"examples.tptp.GEO115", "examples.tptp.GEO158", "examples.tptp.GEO159", "examples.tptp.LAT258",
-			"examples.tptp.MED007", "examples.tptp.MED009", "examples.tptp.TOP020", "examples.tptp.SET943",
-			"examples.tptp.SET948", "examples.tptp.SET967", "examples.tptp.NUM374"
-	};
+    private static final String[] RANGE_PROBLEMS = {
+                                                    "examples.alloy.Lists", "examples.alloy.RingElection", "examples.alloy.Trees", "examples.alloy.Hotel", "examples.tptp.ALG212", "examples.tptp.COM008", "examples.tptp.GEO091", "examples.tptp.GEO092", "examples.tptp.GEO115", "examples.tptp.GEO158", "examples.tptp.GEO159", "examples.tptp.LAT258", "examples.tptp.MED007", "examples.tptp.MED009", "examples.tptp.TOP020", "examples.tptp.SET943", "examples.tptp.SET948", "examples.tptp.SET967", "examples.tptp.NUM374"
+    };
 
-	private static final class MaxSpec {
-		final String	problem, check;
-		@SuppressWarnings("unused")
-		final int		scope, depth;
+    private static final class MaxSpec {
 
-		MaxSpec(String problem, String check, int scope, int depth) {
-			this.problem = problem;
-			this.check = check;
-			this.scope = scope;
-			this.depth = depth;
-		}
+        final String problem, check;
+        @SuppressWarnings("unused" )
+        final int    scope, depth;
 
-		MaxSpec(String problem, int scope, int depth) {
-			this(problem, checks(findClass(problem)).iterator().next().getName(), scope, depth);
-		}
-	}
+        MaxSpec(String problem, String check, int scope, int depth) {
+            this.problem = problem;
+            this.check = check;
+            this.scope = scope;
+            this.depth = depth;
+        }
 
-	private static final MaxSpec[]	TRAIN_SPECS	= {
-			/** NCE, SCE, RCE */
-			new MaxSpec("examples.alloy.Trees", 7, 1), new MaxSpec("examples.alloy.Hotel", 5, 4),
-			new MaxSpec("examples.alloy.RingElection", 8, 3), new MaxSpec("examples.tptp.ALG212", 7, 6),
-			new MaxSpec("examples.tptp.COM008", 9, 2), new MaxSpec("examples.tptp.NUM374", 3, 4),
-			new MaxSpec("examples.tptp.SET943", 5, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.LAT258", 7, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO092", 8, 3),
-			new MaxSpec("examples.tptp.GEO158", 8, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.GEO159", 8, Integer.MAX_VALUE),
+        MaxSpec(String problem, int scope, int depth) {
+            this(problem, checks(findClass(problem)).iterator().next().getName(), scope, depth);
+        }
+    }
 
-			/** SCE, RCE */
-			new MaxSpec("examples.tptp.SET948", 14, 6), new MaxSpec("examples.tptp.SET967", 4, 5),
-			new MaxSpec("examples.tptp.TOP020", 10, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.Lists", "checkEmpties", 60, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.Lists", "checkReflexive", 14, 5),
-			new MaxSpec("examples.alloy.Lists", "checkSymmetric", 8, 6),
-			new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkA241", 10, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbIgnore_inv", 10, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbTransfer_inv", 7, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.Dijkstra", 25, Integer.MAX_VALUE),
+    private static final MaxSpec[] TRAIN_SPECS = {
+                                                  /** NCE, SCE, RCE */
+                                                  new MaxSpec("examples.alloy.Trees", 7, 1), new MaxSpec("examples.alloy.Hotel", 5, 4), new MaxSpec("examples.alloy.RingElection", 8, 3), new MaxSpec("examples.tptp.ALG212", 7, 6), new MaxSpec("examples.tptp.COM008", 9, 2), new MaxSpec("examples.tptp.NUM374", 3, 4), new MaxSpec("examples.tptp.SET943", 5, Integer.MAX_VALUE), new MaxSpec("examples.tptp.LAT258", 7, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO092", 8, 3), new MaxSpec("examples.tptp.GEO158", 8, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO159", 8, Integer.MAX_VALUE),
 
-			/** RCE */
-			new MaxSpec("examples.tptp.GEO091", 10, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO115", 9, 5),
-			new MaxSpec("examples.tptp.MED007", 35, 6), new MaxSpec("examples.tptp.MED009", 35, 6),
-	};
+                                                  /** SCE, RCE */
+                                                  new MaxSpec("examples.tptp.SET948", 14, 6), new MaxSpec("examples.tptp.SET967", 4, 5), new MaxSpec("examples.tptp.TOP020", 10, Integer.MAX_VALUE), new MaxSpec("examples.alloy.Lists", "checkEmpties", 60, Integer.MAX_VALUE), new MaxSpec("examples.alloy.Lists", "checkReflexive", 14, 5), new MaxSpec("examples.alloy.Lists", "checkSymmetric", 8, 6), new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkA241", 10, Integer.MAX_VALUE), new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbIgnore_inv", 10, Integer.MAX_VALUE), new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbTransfer_inv", 7, Integer.MAX_VALUE), new MaxSpec("examples.alloy.Dijkstra", 25, Integer.MAX_VALUE),
 
-	private static final MaxSpec[]	MAX_SPECS	= {
-			/** NCE, SCE, RCE */
-			new MaxSpec("examples.alloy.Trees", 7, 2), new MaxSpec("examples.alloy.Hotel", 5, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.RingElection", 8, 1), new MaxSpec("examples.tptp.ALG212", 7, 2),
-			new MaxSpec("examples.tptp.COM008", 9, 4), new MaxSpec("examples.tptp.NUM374", 3, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.SET943", 5, 3), new MaxSpec("examples.tptp.LAT258", 7, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.GEO092", 8, 4), new MaxSpec("examples.tptp.GEO158", 8, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.GEO159", 8, Integer.MAX_VALUE),
+                                                  /** RCE */
+                                                  new MaxSpec("examples.tptp.GEO091", 10, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO115", 9, 5), new MaxSpec("examples.tptp.MED007", 35, 6), new MaxSpec("examples.tptp.MED009", 35, 6),
+    };
 
-			/** SCE, RCE */
-			new MaxSpec("examples.tptp.SET948", 14, 2), new MaxSpec("examples.tptp.SET967", 4, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.TOP020", 10, 2), new MaxSpec("examples.alloy.Lists", "checkEmpties", 60, 4),
-			new MaxSpec("examples.alloy.Lists", "checkReflexive", 14, 4),
-			new MaxSpec("examples.alloy.Lists", "checkSymmetric", 8, 4),
+    private static final MaxSpec[] MAX_SPECS   = {
+                                                  /** NCE, SCE, RCE */
+                                                  new MaxSpec("examples.alloy.Trees", 7, 2), new MaxSpec("examples.alloy.Hotel", 5, Integer.MAX_VALUE), new MaxSpec("examples.alloy.RingElection", 8, 1), new MaxSpec("examples.tptp.ALG212", 7, 2), new MaxSpec("examples.tptp.COM008", 9, 4), new MaxSpec("examples.tptp.NUM374", 3, Integer.MAX_VALUE), new MaxSpec("examples.tptp.SET943", 5, 3), new MaxSpec("examples.tptp.LAT258", 7, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO092", 8, 4), new MaxSpec("examples.tptp.GEO158", 8, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO159", 8, Integer.MAX_VALUE),
 
-			/** RCE */
-			new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkA241", 10, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbIgnore_inv", 10, Integer.MAX_VALUE),
-			new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbTransfer_inv", 7, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.GEO091", 10, Integer.MAX_VALUE),
-			new MaxSpec("examples.tptp.GEO115", 9, Integer.MAX_VALUE), new MaxSpec("examples.tptp.MED007", 17, 6),
-			new MaxSpec("examples.tptp.MED009", 17, 6),
-	};
+                                                  /** SCE, RCE */
+                                                  new MaxSpec("examples.tptp.SET948", 14, 2), new MaxSpec("examples.tptp.SET967", 4, Integer.MAX_VALUE), new MaxSpec("examples.tptp.TOP020", 10, 2), new MaxSpec("examples.alloy.Lists", "checkEmpties", 60, 4), new MaxSpec("examples.alloy.Lists", "checkReflexive", 14, 4), new MaxSpec("examples.alloy.Lists", "checkSymmetric", 8, 4),
 
-	private static long				FIVE_MIN	= 300000, ONE_HOUR = 3600000;
+                                                  /** RCE */
+                                                  new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkA241", 10, Integer.MAX_VALUE), new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbIgnore_inv", 10, Integer.MAX_VALUE), new MaxSpec("examples.alloy.AbstractWorldDefinitions", "checkAbTransfer_inv", 7, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO091", 10, Integer.MAX_VALUE), new MaxSpec("examples.tptp.GEO115", 9, Integer.MAX_VALUE), new MaxSpec("examples.tptp.MED007", 17, 6), new MaxSpec("examples.tptp.MED009", 17, 6),
+    };
 
-	private static void usage() {
-		System.out.println("Usage: java tests.UCoreTestDriver strategy [-train | -test] [<start scope> <end scope>]");
-		System.exit(1);
-	}
+    private static long            FIVE_MIN    = 300000, ONE_HOUR = 3600000;
 
-	private static void commonHeaders(String strategy) {
-		System.out.print("problem\t");
-		System.out.print("cmd\t");
-		System.out.print("scope\t");
-		System.out.print("status\t");
-		System.out.print("vars\t");
-		System.out.print("clauses\t");
-		System.out.print("transl(ms)\t");
-		System.out.print("solve(ms)\t");
-		System.out.print("all core\t");
-		System.out.print("init core\t");
-		System.out.print("min core\t");
-		System.out.print(strategy.substring(strategy.lastIndexOf(".") + 1) + "(ms)\t");
-	}
+    private static void usage() {
+        System.out.println("Usage: java tests.UCoreTestDriver strategy [-train | -test] [<start scope> <end scope>]");
+        System.exit(1);
+    }
 
-	private static void trainHeaders(String strategy) {
-		commonHeaders(strategy);
-		System.out.println("depth");
-	}
+    private static void commonHeaders(String strategy) {
+        System.out.print("problem\t");
+        System.out.print("cmd\t");
+        System.out.print("scope\t");
+        System.out.print("status\t");
+        System.out.print("vars\t");
+        System.out.print("clauses\t");
+        System.out.print("transl(ms)\t");
+        System.out.print("solve(ms)\t");
+        System.out.print("all core\t");
+        System.out.print("init core\t");
+        System.out.print("min core\t");
+        System.out.print(strategy.substring(strategy.lastIndexOf(".") + 1) + "(ms)\t");
+    }
 
-	private static void testHeaders(String strategy) {
-		commonHeaders(strategy);
-		System.out.println();
-	}
+    private static void trainHeaders(String strategy) {
+        commonHeaders(strategy);
+        System.out.println("depth");
+    }
 
-	private static void skip(String problem, String check, int scope, String status) {
-		System.out.print(problem.substring(problem.lastIndexOf(".") + 1) + "\t");
-		System.out.print(check + "\t");
-		System.out.println(scope + "\t" + status);
-	}
+    private static void testHeaders(String strategy) {
+        commonHeaders(strategy);
+        System.out.println();
+    }
 
-	/**
-	 * Trains the given strategy at 75% of the test scope.
-	 */
-	private static void trainMax(String strategy) {
-		if (strategy.toLowerCase().indexOf("rce") < 0)
-			return;
-		trainHeaders(strategy);
+    private static void skip(String problem, String check, int scope, String status) {
+        System.out.print(problem.substring(problem.lastIndexOf(".") + 1) + "\t");
+        System.out.print(check + "\t");
+        System.out.println(scope + "\t" + status);
+    }
 
-		final long timeout = FIVE_MIN;
-		final int[] depths = {
-				Integer.MAX_VALUE, 6, 5, 4, 3, 2, 1
-		};
-		for (MaxSpec spec : MAX_SPECS) {
-			final int scope = (int) Math.round(0.75 * (double) spec.scope);
+    /**
+     * Trains the given strategy at 75% of the test scope.
+     */
+    private static void trainMax(String strategy) {
+        if (strategy.toLowerCase().indexOf("rce") < 0)
+            return;
+        trainHeaders(strategy);
 
-			for (int depth : depths) {
+        final long timeout = FIVE_MIN;
+        final int[] depths = {
+                              Integer.MAX_VALUE, 6, 5, 4, 3, 2, 1
+        };
+        for (MaxSpec spec : MAX_SPECS) {
+            final int scope = (int) Math.round(0.75 * spec.scope);
 
-				final String opt = " -m " + spec.check + " -s " + strategy + " -d " + depth + " -o stats";
-				final String cmd = "java -cp bin -Xmx2G tests.benchmarks.UCoreStats " + spec.problem + " " + scope + " "
-						+ opt;
+            for (int depth : depths) {
 
-				final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
-				runner.start();
+                final String opt = " -m " + spec.check + " -s " + strategy + " -d " + depth + " -o stats";
+                final String cmd = "java -cp bin -Xmx2G tests.benchmarks.UCoreStats " + spec.problem + " " + scope + " " + opt;
 
-				try {
-					runner.join(timeout);
-					if (runner.getState() != Thread.State.TERMINATED) {
-						runner.interrupt();
-						runner.destroyProcess();
-						skip(spec.problem, spec.check, spec.scope, "G");
-						continue;
-					}
+                final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
+                runner.start();
 
-					final BufferedReader out = new BufferedReader(
-							new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
-					String line = null;
+                try {
+                    runner.join(timeout);
+                    if (runner.getState() != Thread.State.TERMINATED) {
+                        runner.interrupt();
+                        runner.destroyProcess();
+                        skip(spec.problem, spec.check, spec.scope, "G");
+                        continue;
+                    }
 
-					while ((line = out.readLine()) != null) {
+                    final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
+                    String line = null;
 
-						final String[] parsed = line.split("\\s");
+                    while ((line = out.readLine()) != null) {
 
-						System.out.print(spec.problem.substring(spec.problem.lastIndexOf(".") + 1) + "\t");
-						System.out.print(parsed[0] + "\t");
-						System.out.print(scope);
+                        final String[] parsed = line.split("\\s");
 
-						for (int i = 1; i < parsed.length; i++) {
-							System.out.print("\t" + parsed[i]);
-						}
+                        System.out.print(spec.problem.substring(spec.problem.lastIndexOf(".") + 1) + "\t");
+                        System.out.print(parsed[0] + "\t");
+                        System.out.print(scope);
 
-						System.out.println("\t" + depth);
-					}
+                        for (int i = 1; i < parsed.length; i++) {
+                            System.out.print("\t" + parsed[i]);
+                        }
 
-				} catch (InterruptedException e) {
-					System.out.println("INTERRUPTED");
-					runner.destroyProcess();
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-					System.exit(1);
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.exit(1);
-				}
-			}
-		}
+                        System.out.println("\t" + depth);
+                    }
 
-	}
+                } catch (InterruptedException e) {
+                    System.out.println("INTERRUPTED");
+                    runner.destroyProcess();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+        }
 
-	/**
-	 * Runs all problems with the given strategy for the predetermined maximum
-	 * scopes.
-	 * 
-	 * @requires strategy is the name of a reduction strategy supported by
-	 *           {@linkplain UCoreStats#main(String[])}
-	 */
-	private static void testMax(String strategy) {
-		testHeaders(strategy);
+    }
 
-		final long timeout = ONE_HOUR;
-		for (MaxSpec spec : TRAIN_SPECS) {
-			final String opt = " -m " + spec.check + " -s " + strategy + " -d " + Integer.MAX_VALUE + " -o stats";
-			// final String opt = " -m " + spec.check + " -s " +strategy + " -d
-			// " + spec.depth + " -o stats";
-			final String cmd = "java -cp bin -Xmx2G tests.benchmarks.UCoreStats " + spec.problem + " " + spec.scope
-					+ " " + opt;
+    /**
+     * Runs all problems with the given strategy for the predetermined maximum
+     * scopes.
+     *
+     * @requires strategy is the name of a reduction strategy supported by
+     *           {@linkplain UCoreStats#main(String[])}
+     */
+    private static void testMax(String strategy) {
+        testHeaders(strategy);
 
-			final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
-			runner.start();
+        final long timeout = ONE_HOUR;
+        for (MaxSpec spec : TRAIN_SPECS) {
+            final String opt = " -m " + spec.check + " -s " + strategy + " -d " + Integer.MAX_VALUE + " -o stats";
+            // final String opt = " -m " + spec.check + " -s " +strategy + " -d
+            // " + spec.depth + " -o stats";
+            final String cmd = "java -cp bin -Xmx2G tests.benchmarks.UCoreStats " + spec.problem + " " + spec.scope + " " + opt;
 
-			try {
-				runner.join(timeout);
-				if (runner.getState() != Thread.State.TERMINATED) {
-					runner.interrupt();
-					runner.destroyProcess();
-					skip(spec.problem, spec.check, spec.scope, "G");
-					continue;
-				}
+            final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
+            runner.start();
 
-				final BufferedReader out = new BufferedReader(
-						new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
-				String line = null;
+            try {
+                runner.join(timeout);
+                if (runner.getState() != Thread.State.TERMINATED) {
+                    runner.interrupt();
+                    runner.destroyProcess();
+                    skip(spec.problem, spec.check, spec.scope, "G");
+                    continue;
+                }
 
-				while ((line = out.readLine()) != null) {
+                final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
+                String line = null;
 
-					final String[] parsed = line.split("\\s");
+                while ((line = out.readLine()) != null) {
 
-					System.out.print(spec.problem.substring(spec.problem.lastIndexOf(".") + 1) + "\t");
-					System.out.print(parsed[0] + "\t");
-					System.out.print(spec.scope);
+                    final String[] parsed = line.split("\\s");
 
-					for (int i = 1; i < parsed.length; i++) {
-						System.out.print("\t" + parsed[i]);
-					}
-					System.out.println();
-				}
-			} catch (InterruptedException e) {
-				System.out.println("INTERRUPTED");
-				runner.destroyProcess();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-				System.exit(1);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+                    System.out.print(spec.problem.substring(spec.problem.lastIndexOf(".") + 1) + "\t");
+                    System.out.print(parsed[0] + "\t");
+                    System.out.print(spec.scope);
 
-		}
+                    for (int i = 1; i < parsed.length; i++) {
+                        System.out.print("\t" + parsed[i]);
+                    }
+                    System.out.println();
+                }
+            } catch (InterruptedException e) {
+                System.out.println("INTERRUPTED");
+                runner.destroyProcess();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                System.exit(1);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
 
-	}
+        }
 
-	/**
-	 * Runs all problems with the given strategy for the given scope range.
-	 * 
-	 * @requires 1 < min <= max
-	 * @requires strategy is the name of a reduction strategy supported by
-	 *           {@linkplain UCoreStats#main(String[])}
-	 */
-	private static void runAllInScopes(String strategy, int min, int max) {
-		testHeaders(strategy);
+    }
 
-		final Set<Method> timedOut = new LinkedHashSet<Method>();
-		final Set<Method> sat = new LinkedHashSet<Method>();
+    /**
+     * Runs all problems with the given strategy for the given scope range.
+     *
+     * @requires 1 < min <= max
+     * @requires strategy is the name of a reduction strategy supported by
+     *           {@linkplain UCoreStats#main(String[])}
+     */
+    private static void runAllInScopes(String strategy, int min, int max) {
+        testHeaders(strategy);
 
-		for (int scope = min; scope <= max; scope++) {
-			for (String problem : RANGE_PROBLEMS) {
-				for (Method m : checks(findClass(problem))) {
-					if (timedOut.contains(m)) {
-						skip(problem, m.getName(), scope, "G");
-						continue;
-					}
-					if (sat.contains(m)) {
-						skip(problem, m.getName(), scope, "S");
-						continue;
-					}
+        final Set<Method> timedOut = new LinkedHashSet<Method>();
+        final Set<Method> sat = new LinkedHashSet<Method>();
 
-					final String cmd = "java -cp bin -Xmx2G tests.UCoreStats " + problem + " " + String.valueOf(scope)
-							+ " -o stats -m " + m.getName() + " -s " + strategy;
-					final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
-					runner.start();
+        for (int scope = min; scope <= max; scope++) {
+            for (String problem : RANGE_PROBLEMS) {
+                for (Method m : checks(findClass(problem))) {
+                    if (timedOut.contains(m)) {
+                        skip(problem, m.getName(), scope, "G");
+                        continue;
+                    }
+                    if (sat.contains(m)) {
+                        skip(problem, m.getName(), scope, "S");
+                        continue;
+                    }
 
-					try {
-						runner.join(FIVE_MIN);
-						if (runner.getState() != Thread.State.TERMINATED) {
-							runner.interrupt();
-							runner.destroyProcess();
-							skip(problem, m.getName(), scope, "G");
-							timedOut.add(m);
-							continue;
-						}
+                    final String cmd = "java -cp bin -Xmx2G tests.UCoreStats " + problem + " " + String.valueOf(scope) + " -o stats -m " + m.getName() + " -s " + strategy;
+                    final ProcessRunner runner = new ProcessRunner(cmd.split("\\s"));
+                    runner.start();
 
-						final BufferedReader out = new BufferedReader(
-								new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
-						String line = null;
+                    try {
+                        runner.join(FIVE_MIN);
+                        if (runner.getState() != Thread.State.TERMINATED) {
+                            runner.interrupt();
+                            runner.destroyProcess();
+                            skip(problem, m.getName(), scope, "G");
+                            timedOut.add(m);
+                            continue;
+                        }
 
-						while ((line = out.readLine()) != null) {
+                        final BufferedReader out = new BufferedReader(new InputStreamReader(runner.processOutput(), "ISO-8859-1"));
+                        String line = null;
 
-							final String[] parsed = line.split("\\s");
+                        while ((line = out.readLine()) != null) {
 
-							System.out.print(problem.substring(problem.lastIndexOf(".") + 1) + "\t");
-							System.out.print(parsed[0] + "\t");
-							System.out.print(scope);
+                            final String[] parsed = line.split("\\s");
 
-							for (int i = 1; i < parsed.length; i++) {
-								System.out.print("\t" + parsed[i]);
-							}
-							System.out.println();
+                            System.out.print(problem.substring(problem.lastIndexOf(".") + 1) + "\t");
+                            System.out.print(parsed[0] + "\t");
+                            System.out.print(scope);
 
-							if ("S".equals(parsed[1]) || "T".equals(parsed[1])) {
-								sat.add(m);
-							}
-						}
-					} catch (InterruptedException e) {
-						System.out.println("INTERRUPTED");
-						runner.destroyProcess();
-					} catch (UnsupportedEncodingException e) {
-						e.printStackTrace();
-						System.exit(1);
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.exit(1);
-					}
-				}
-			}
-		}
-	}
+                            for (int i = 1; i < parsed.length; i++) {
+                                System.out.print("\t" + parsed[i]);
+                            }
+                            System.out.println();
 
-	/**
-	 * Usage: java tests.benchmarks.UCoreStatsDriver strategy [-train | -test]
-	 * [<start scope> <end scope>]
-	 */
-	public static void main(String[] args) {
-		if (args.length < 1)
-			usage();
+                            if ("S".equals(parsed[1]) || "T".equals(parsed[1])) {
+                                sat.add(m);
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        System.out.println("INTERRUPTED");
+                        runner.destroyProcess();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                }
+            }
+        }
+    }
 
-		switch (args.length) {
+    /**
+     * Usage: java tests.benchmarks.UCoreStatsDriver strategy [-train | -test]
+     * [<start scope> <end scope>]
+     */
+    public static void main(String[] args) {
+        if (args.length < 1)
+            usage();
 
-			case 2 :
-				if (args[1].equals("-test")) {
-					testMax(args[0]);
-				} else if (args[1].equals("-train")) {
-					trainMax(args[0]);
-				} else
-					usage();
-				break;
+        switch (args.length) {
 
-			case 3 :
-				try {
-					int min = Integer.parseInt(args[1]);
-					int max = Integer.parseInt(args[2]);
-					if (min < 1 || min > max)
-						usage();
-					runAllInScopes(args[0], min, max);
-				} catch (NumberFormatException e) {
-					usage();
-				}
-				break;
+            case 2 :
+                if (args[1].equals("-test")) {
+                    testMax(args[0]);
+                } else if (args[1].equals("-train")) {
+                    trainMax(args[0]);
+                } else
+                    usage();
+                break;
 
-			default :
-				usage();
-		}
-	}
+            case 3 :
+                try {
+                    int min = Integer.parseInt(args[1]);
+                    int max = Integer.parseInt(args[2]);
+                    if (min < 1 || min > max)
+                        usage();
+                    runAllInScopes(args[0], min, max);
+                } catch (NumberFormatException e) {
+                    usage();
+                }
+                break;
+
+            default :
+                usage();
+        }
+    }
 
 }

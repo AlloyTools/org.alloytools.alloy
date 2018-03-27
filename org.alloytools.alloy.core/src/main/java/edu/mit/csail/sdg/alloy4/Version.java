@@ -30,75 +30,74 @@ import java.util.jar.Manifest;
 
 public final class Version {
 
-	/**
-	 * The constructor is private, since this class never needs to be
-	 * instantiated.
-	 */
-	private Version() {}
+    /**
+     * The constructor is private, since this class never needs to be instantiated.
+     */
+    private Version() {}
 
-	public static String	version			= "unknown";
-	public static long		buildnumber		= -1;
-	public static Instant	builddate		= Instant.ofEpochMilli(0);
-	public static String	commit			= "unknown";
-	public static boolean	experimental	= true;
+    public static String  version      = "unknown";
+    public static long    buildnumber  = -1;
+    public static Instant builddate    = Instant.ofEpochMilli(0);
+    public static String  commit       = "unknown";
+    public static boolean experimental = true;
 
-	static {
-		Manifest manifest = getManifest();
-		if (manifest != null) {
+    static {
+        Manifest manifest = getManifest();
+        if (manifest != null) {
 
-			String version = manifest.getMainAttributes().getValue("Bundle-Version");
-			if (version != null)
-				Version.version = version;
+            String version = manifest.getMainAttributes().getValue("Bundle-Version");
+            if (version != null)
+                Version.version = version;
 
-			String commit = manifest.getMainAttributes().getValue("Git-SHA");
-			if (commit != null)
-				Version.commit = commit;
+            String commit = manifest.getMainAttributes().getValue("Git-SHA");
+            if (commit != null)
+                Version.commit = commit;
 
-			String buildnumber = manifest.getMainAttributes().getValue("Bnd-LastModified");
-			if (buildnumber != null && buildnumber.matches("\\d+")) {
-				Version.buildnumber = Long.parseLong(buildnumber);
-				builddate = Instant.ofEpochMilli(Version.buildnumber);
-			}
-		}
+            String buildnumber = manifest.getMainAttributes().getValue("Bnd-LastModified");
+            if (buildnumber != null && buildnumber.matches("\\d+")) {
+                Version.buildnumber = Long.parseLong(buildnumber);
+                builddate = Instant.ofEpochMilli(Version.buildnumber);
+            }
+        }
 
-	}
+    }
 
-	/**
-	 * This is true if this is an experimental version rather than a release
-	 * version.
-	 */
+    /**
+     * This is true if this is an experimental version rather than a release
+     * version.
+     */
 
-	/** Returns the build number. */
-	public static long buildNumber() {
-		return buildnumber;
-	}
+    /** Returns the build number. */
+    public static long buildNumber() {
+        return buildnumber;
+    }
 
-	/** Returns the version string. */
-	public static String version() {
-		return version;
-	}
+    /** Returns the version string. */
+    public static String version() {
+        return version;
+    }
 
-	private static Manifest getManifest() {
-		try {
-			Enumeration<URL> resources = Version.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
-			while (resources.hasMoreElements()) {
-				URL url = resources.nextElement();
-				Manifest m = new Manifest(url.openStream());
-				String value = m.getMainAttributes().getValue("Bundle-SymbolicName");
-				if (value != null && value.equals("org.alloytools.alloy.dist")) {
-					return m;
-				}
-			}
-		} catch (IOException e) {
-			// we ignore
-		}
+    private static Manifest getManifest() {
+        try {
+            Enumeration<URL> resources = Version.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                Manifest m = new Manifest(url.openStream());
+                String value = m.getMainAttributes().getValue("Bundle-SymbolicName");
+                if (value != null && value.equals("org.alloytools.alloy.dist")) {
+                    return m;
+                }
+            }
+        } catch (IOException e) {
+            // we ignore
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	/** Returns the build date. */
-	public static String buildDate() {
-		return builddate.toString();
-	}
+    /** Returns the build date. */
+    public static String buildDate() {
+        return builddate.toString();
+    }
 
 }

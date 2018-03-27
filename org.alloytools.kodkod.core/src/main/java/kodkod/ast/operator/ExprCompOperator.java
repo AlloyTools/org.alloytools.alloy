@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,16 +25,20 @@ package kodkod.ast.operator;
  * Enumerates relational comparison operators.
  */
 public enum ExprCompOperator {
-	/** Subset operator (in). */
-	SUBSET {
-		public String toString() {
-			return "in";
-		}
-	},
-	/** Equality operator (=). */
-	EQUALS {
-		public String toString() {
-			return "=";
-		}
-	};
+                              /** Subset operator (in). */
+                              SUBSET {
+
+                                  @Override
+                                  public String toString() {
+                                      return "in";
+                                  }
+                              },
+                              /** Equality operator (=). */
+                              EQUALS {
+
+                                  @Override
+                                  public String toString() {
+                                      return "=";
+                                  }
+                              };
 }

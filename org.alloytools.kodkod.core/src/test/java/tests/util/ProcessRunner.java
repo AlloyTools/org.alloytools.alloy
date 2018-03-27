@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-2008, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,102 +27,101 @@ import java.io.OutputStream;
 
 /**
  * A simple thread that runs a given command in a fresh process.
- * 
+ *
  * @specfield cmd: String[]
  * @author Emina Torlak
  */
 public final class ProcessRunner extends Thread {
-	private final String[]	cmd;
-	private Process			process;
 
-	/**
-	 * Constructs a process runner for the given command.
-	 * 
-	 * @effects this.cmd' = cmd
-	 */
-	public ProcessRunner(String... cmd) {
-		this.cmd = cmd;
-		process = null;
-	}
+    private final String[] cmd;
+    private Process        process;
 
-	/**
-	 * Destroys the process wrapped by this thread, if any.
-	 * 
-	 * @effects destroys the process wrapped by this thread, if any.
-	 */
-	public void destroyProcess() {
-		if (process != null) {
-			process.destroy();
-			process = null;
-		}
-	}
+    /**
+     * Constructs a process runner for the given command.
+     *
+     * @effects this.cmd' = cmd
+     */
+    public ProcessRunner(String... cmd) {
+        this.cmd = cmd;
+        process = null;
+    }
 
-	/**
-	 * Gets the input stream of the subprocess running this.com. The stream
-	 * obtains data piped from the standard output stream of the process run by
-	 * this thread.
-	 * 
-	 * @return input stream of the subprocess running this.com
-	 */
-	public InputStream processOutput() {
-		if (process == null) {
-			System.out.println("process not started.");
-			throw new IllegalStateException();
-		} else {
-			return process.getInputStream();
-		}
-	}
+    /**
+     * Destroys the process wrapped by this thread, if any.
+     *
+     * @effects destroys the process wrapped by this thread, if any.
+     */
+    public void destroyProcess() {
+        if (process != null) {
+            process.destroy();
+            process = null;
+        }
+    }
 
-	/**
-	 * Gets the output stream of the subprocess running this.com. The stream
-	 * pipes data to the standard input stream of the process run by this
-	 * thread.
-	 * 
-	 * @return output stream of the subprocess running this.com.
-	 */
-	public OutputStream processInput() {
-		if (process == null) {
-			System.out.println("process not started.");
-			throw new IllegalStateException();
-		} else {
-			return process.getOutputStream();
-		}
-	}
+    /**
+     * Gets the input stream of the subprocess running this.com. The stream obtains
+     * data piped from the standard output stream of the process run by this thread.
+     *
+     * @return input stream of the subprocess running this.com
+     */
+    public InputStream processOutput() {
+        if (process == null) {
+            System.out.println("process not started.");
+            throw new IllegalStateException();
+        } else {
+            return process.getInputStream();
+        }
+    }
 
-	/**
-	 * Gets the error stream of the subprocess running this.com. The stream
-	 * obtains data piped from the standard error stream of the process run by
-	 * this thread.
-	 * 
-	 * @return error stream of the subprocess running this.com
-	 */
-	public InputStream processError() {
-		if (process == null) {
-			System.out.println("process not started.");
-			throw new IllegalStateException();
-		} else {
-			return process.getErrorStream();
-		}
-	}
+    /**
+     * Gets the output stream of the subprocess running this.com. The stream pipes
+     * data to the standard input stream of the process run by this thread.
+     *
+     * @return output stream of the subprocess running this.com.
+     */
+    public OutputStream processInput() {
+        if (process == null) {
+            System.out.println("process not started.");
+            throw new IllegalStateException();
+        } else {
+            return process.getOutputStream();
+        }
+    }
 
-	/**
-	 * Starts and waits for a process that runs this.cmd
-	 * 
-	 * @see java.lang.Thread#run()
-	 */
-	public void run() {
-		try {
-			process = Runtime.getRuntime().exec(cmd);
-			process.waitFor();
-		} catch (IOException e) {
-			System.out.print("Could not run: ");
-			for (String c : cmd) {
-				System.out.print(c + " ");
-			}
-			System.out.println();
-			System.exit(1);
-		} catch (InterruptedException e) {
-			// ignore
-		}
-	}
+    /**
+     * Gets the error stream of the subprocess running this.com. The stream obtains
+     * data piped from the standard error stream of the process run by this thread.
+     *
+     * @return error stream of the subprocess running this.com
+     */
+    public InputStream processError() {
+        if (process == null) {
+            System.out.println("process not started.");
+            throw new IllegalStateException();
+        } else {
+            return process.getErrorStream();
+        }
+    }
+
+    /**
+     * Starts and waits for a process that runs this.cmd
+     *
+     * @see java.lang.Thread#run()
+     */
+    @Override
+    public void run() {
+        try {
+            process = Runtime.getRuntime().exec(cmd);
+            process.waitFor();
+        } catch (IOException e) {
+            System.out.print("Could not run: ");
+            for (String c : cmd) {
+                System.out.print(c + " ");
+            }
+            System.out.println();
+            System.exit(1);
+        } catch (InterruptedException e) {
+            // ignore
+        }
+    }
 }

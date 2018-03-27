@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,26 +25,30 @@ package kodkod.ast.operator;
  * Represents an intexpression 'cast' operator.
  */
 public enum IntCastOperator {
-	/** The Int cast operator Int[intExpr]. */
-	INTCAST {
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			return "Int";
-		}
-	},
-	/** The Bitset cast operator Bits[intExpr]. */
-	BITSETCAST {
-		/**
-		 * {@inheritDoc}
-		 * 
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			return "Bits";
-		}
-	};
+                             /** The Int cast operator Int[intExpr]. */
+                             INTCAST {
+
+                                 /**
+                                  * {@inheritDoc}
+                                  *
+                                  * @see java.lang.Object#toString()
+                                  */
+                                 @Override
+                                 public String toString() {
+                                     return "Int";
+                                 }
+                             },
+                             /** The Bitset cast operator Bits[intExpr]. */
+                             BITSETCAST {
+
+                                 /**
+                                  * {@inheritDoc}
+                                  *
+                                  * @see java.lang.Object#toString()
+                                  */
+                                 @Override
+                                 public String toString() {
+                                     return "Bits";
+                                 }
+                             };
 }

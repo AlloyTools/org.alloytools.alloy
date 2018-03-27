@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,17 +25,21 @@ package kodkod.ast.operator;
  * Enumerates expression 'cast' operators.
  */
 public enum ExprCastOperator {
-	/** The cardinality operator (#). */
-	CARDINALITY {
-		public String toString() {
-			return "#";
-		}
-	},
-	/** The sum operator. */
-	SUM {
-		public String toString() {
-			return "sum";
-		}
-	};
+                              /** The cardinality operator (#). */
+                              CARDINALITY {
+
+                                  @Override
+                                  public String toString() {
+                                      return "#";
+                                  }
+                              },
+                              /** The sum operator. */
+                              SUM {
+
+                                  @Override
+                                  public String toString() {
+                                      return "sum";
+                                  }
+                              };
 
 }

@@ -22,45 +22,45 @@ package edu.mit.csail.sdg.alloy4;
 
 public final class ErrorWarning extends Err {
 
-	/** This ensures this class can be serialized reliably. */
-	private static final long serialVersionUID = 0;
+    /** This ensures this class can be serialized reliably. */
+    private static final long serialVersionUID = 0;
 
-	/**
-	 * Constructs a new warning.
-	 * 
-	 * @param msg - the actual error message (can be null)
-	 */
-	public ErrorWarning(String msg) {
-		super(null, msg, null);
-	}
+    /**
+     * Constructs a new warning.
+     *
+     * @param msg - the actual error message (can be null)
+     */
+    public ErrorWarning(String msg) {
+        super(null, msg, null);
+    }
 
-	/**
-	 * Constructs a new warning with "cause" as the underlying cause.
-	 * 
-	 * @param msg - the actual error message (can be null)
-	 * @param cause - if nonnull, it is the cause of this exception
-	 */
-	public ErrorWarning(String msg, Throwable cause) {
-		super(null, msg, cause);
-	}
+    /**
+     * Constructs a new warning with "cause" as the underlying cause.
+     *
+     * @param msg - the actual error message (can be null)
+     * @param cause - if nonnull, it is the cause of this exception
+     */
+    public ErrorWarning(String msg, Throwable cause) {
+        super(null, msg, cause);
+    }
 
-	/**
-	 * Constructs a new warning.
-	 * 
-	 * @param pos - the filename/line/row information (can be null if unknown)
-	 * @param msg - the actual error message (can be null)
-	 */
-	public ErrorWarning(Pos pos, String msg) {
-		super(pos, msg, null);
-	}
+    /**
+     * Constructs a new warning.
+     *
+     * @param pos - the filename/line/row information (can be null if unknown)
+     * @param msg - the actual error message (can be null)
+     */
+    public ErrorWarning(Pos pos, String msg) {
+        super(pos, msg, null);
+    }
 
-	/** Returns a textual description of the error. */
-	@Override
-	public String toString() {
-		if (pos == Pos.UNKNOWN)
-			return msg;
-		if (pos.filename.length() > 0)
-			return "Line " + pos.y + " column " + pos.x + " in " + pos.filename + ":\n" + msg;
-		return "Line " + pos.y + " column " + pos.x + ":\n" + msg;
-	}
+    /** Returns a textual description of the error. */
+    @Override
+    public String toString() {
+        if (pos == Pos.UNKNOWN)
+            return msg;
+        if (pos.filename.length() > 0)
+            return "Line " + pos.y + " column " + pos.x + " in " + pos.filename + ":\n" + msg;
+        return "Line " + pos.y + " column " + pos.x + ":\n" + msg;
+    }
 }

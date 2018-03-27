@@ -21,45 +21,45 @@ package edu.mit.csail.sdg.alloy4;
 
 public final class ErrorType extends Err {
 
-	/** This ensures this class can be serialized reliably. */
-	private static final long serialVersionUID = 0;
+    /** This ensures this class can be serialized reliably. */
+    private static final long serialVersionUID = 0;
 
-	/**
-	 * Constructs a new type error.
-	 * 
-	 * @param msg - the actual error message (can be null)
-	 */
-	public ErrorType(String msg) {
-		super(null, msg, null);
-	}
+    /**
+     * Constructs a new type error.
+     *
+     * @param msg - the actual error message (can be null)
+     */
+    public ErrorType(String msg) {
+        super(null, msg, null);
+    }
 
-	/**
-	 * Constructs a new type error with "cause" as the underlying cause.
-	 * 
-	 * @param msg - the actual error message (can be null)
-	 * @param cause - if nonnull, it is the cause of this exception
-	 */
-	public ErrorType(String msg, Throwable cause) {
-		super(null, msg, cause);
-	}
+    /**
+     * Constructs a new type error with "cause" as the underlying cause.
+     *
+     * @param msg - the actual error message (can be null)
+     * @param cause - if nonnull, it is the cause of this exception
+     */
+    public ErrorType(String msg, Throwable cause) {
+        super(null, msg, cause);
+    }
 
-	/**
-	 * Constructs a new type error.
-	 * 
-	 * @param pos - the filename/line/row information (can be null if unknown)
-	 * @param msg - the actual error message (can be null)
-	 */
-	public ErrorType(Pos pos, String msg) {
-		super(pos, msg, null);
-	}
+    /**
+     * Constructs a new type error.
+     *
+     * @param pos - the filename/line/row information (can be null if unknown)
+     * @param msg - the actual error message (can be null)
+     */
+    public ErrorType(Pos pos, String msg) {
+        super(pos, msg, null);
+    }
 
-	/** Returns a textual description of the error. */
-	@Override
-	public String toString() {
-		if (pos == Pos.UNKNOWN)
-			return "Type error:\n" + msg;
-		if (pos.filename.length() > 0)
-			return "Type error in " + pos.filename + " at line " + pos.y + " column " + pos.x + ":\n" + msg;
-		return "Type error at line " + pos.y + " column " + pos.x + ":\n" + msg;
-	}
+    /** Returns a textual description of the error. */
+    @Override
+    public String toString() {
+        if (pos == Pos.UNKNOWN)
+            return "Type error:\n" + msg;
+        if (pos.filename.length() > 0)
+            return "Type error in " + pos.filename + " at line " + pos.y + " column " + pos.x + ":\n" + msg;
+        return "Type error at line " + pos.y + " column " + pos.x + ":\n" + msg;
+    }
 }

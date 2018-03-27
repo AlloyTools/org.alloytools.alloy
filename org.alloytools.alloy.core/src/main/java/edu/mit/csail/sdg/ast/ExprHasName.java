@@ -24,34 +24,35 @@ import edu.mit.csail.sdg.alloy4.Pos;
 
 public abstract class ExprHasName extends Expr {
 
-	/**
-	 * The label associated with this object; it's used for pretty-printing and
-	 * does not have to be unique.
-	 */
-	public final String label;
+    /**
+     * The label associated with this object; it's used for pretty-printing and does
+     * not have to be unique.
+     */
+    public final String label;
 
-	/** Constructs an ExprHasName object */
-	ExprHasName(Pos pos, String label, Type type) {
-		super(pos, null, false, type, 0, 0, null);
-		this.label = (label == null ? "" : label);
-	}
+    /** Constructs an ExprHasName object */
+    ExprHasName(Pos pos, String label, Type type) {
+        super(pos, null, false, type, 0, 0, null);
+        this.label = (label == null ? "" : label);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isSame(Expr obj) {
-		while (obj instanceof ExprUnary && ((ExprUnary) obj).op == ExprUnary.Op.NOOP)
-			obj = ((ExprUnary) obj).sub;
-		return this == obj;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isSame(Expr obj) {
+        while (obj instanceof ExprUnary && ((ExprUnary) obj).op == ExprUnary.Op.NOOP)
+            obj = ((ExprUnary) obj).sub;
+        return this == obj;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public final Pos span() {
-		return pos;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public final Pos span() {
+        return pos;
+    }
 
-	/** {@inheritDoc} */
-	public final int getDepth() {
-		return 1;
-	}
+    /** {@inheritDoc} */
+    @Override
+    public final int getDepth() {
+        return 1;
+    }
 }

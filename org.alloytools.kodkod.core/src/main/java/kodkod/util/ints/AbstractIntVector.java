@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,252 +32,272 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractIntVector extends AbstractIntCollection implements IntVector {
 
-	/**
-	 * Constructs an empty int vector.
-	 * 
-	 * @ensures no this.elements'
-	 */
-	protected AbstractIntVector() {}
+    /**
+     * Constructs an empty int vector.
+     *
+     * @ensures no this.elements'
+     */
+    protected AbstractIntVector() {}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.util.ints.IntVector#contains(int)
-	 */
-	public boolean contains(int element) {
-		for (int i = 0, max = size(); i < max; i++) {
-			if (get(i) == element)
-				return true;
-		}
-		return false;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.util.ints.IntVector#contains(int)
+     */
+    @Override
+    public boolean contains(int element) {
+        for (int i = 0, max = size(); i < max; i++) {
+            if (get(i) == element)
+                return true;
+        }
+        return false;
+    }
 
-	/**
-	 * Throws {@link UnsupportedOperationException}.
-	 * 
-	 * @see kodkod.util.ints.IntVector#set(int,int)
-	 */
-	public int set(int index, int element) {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * Throws {@link UnsupportedOperationException}.
+     *
+     * @see kodkod.util.ints.IntVector#set(int,int)
+     */
+    @Override
+    public int set(int index, int element) {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.util.ints.IntVector#indexOf(int)
-	 */
-	public int indexOf(int element) {
-		for (int i = 0, length = size(); i < length; i++) {
-			if (get(i) == element)
-				return i;
-		}
-		return -1;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.util.ints.IntVector#indexOf(int)
+     */
+    @Override
+    public int indexOf(int element) {
+        for (int i = 0, length = size(); i < length; i++) {
+            if (get(i) == element)
+                return i;
+        }
+        return -1;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.util.ints.IntVector#lastIndexOf(int)
-	 */
-	public int lastIndexOf(int element) {
-		for (int i = size() - 1; i >= 0; i--) {
-			if (get(i) == element)
-				return i;
-		}
-		return -1;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.util.ints.IntVector#lastIndexOf(int)
+     */
+    @Override
+    public int lastIndexOf(int element) {
+        for (int i = size() - 1; i >= 0; i--) {
+            if (get(i) == element)
+                return i;
+        }
+        return -1;
+    }
 
-	/**
-	 * Calls this.add(this.size(), element)
-	 * 
-	 * @see kodkod.util.ints.IntVector#add(int)
-	 * @see kodkod.util.ints.IntVector#add(int,int)
-	 */
-	public boolean add(int element) {
-		final int length = size();
-		add(length, element);
-		return length != size();
-	}
+    /**
+     * Calls this.add(this.size(), element)
+     *
+     * @see kodkod.util.ints.IntVector#add(int)
+     * @see kodkod.util.ints.IntVector#add(int,int)
+     */
+    @Override
+    public boolean add(int element) {
+        final int length = size();
+        add(length, element);
+        return length != size();
+    }
 
-	/**
-	 * Throws {@link UnsupportedOperationException}
-	 * 
-	 * @see kodkod.util.ints.IntVector#add(int, int)
-	 */
-	public void add(int index, int element) {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * Throws {@link UnsupportedOperationException}
+     *
+     * @see kodkod.util.ints.IntVector#add(int, int)
+     */
+    @Override
+    public void add(int index, int element) {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * Returns the result of calling {@linkplain #addAll(int, IntCollection)
-	 * this.addAll(size(), c)}.
-	 * 
-	 * @return this.addAll(size(), c)
-	 * @see kodkod.util.ints.AbstractIntCollection#addAll(kodkod.util.ints.IntCollection)
-	 */
-	public boolean addAll(IntCollection c) {
-		return addAll(size(), c);
-	}
+    /**
+     * Returns the result of calling {@linkplain #addAll(int, IntCollection)
+     * this.addAll(size(), c)}.
+     *
+     * @return this.addAll(size(), c)
+     * @see kodkod.util.ints.AbstractIntCollection#addAll(kodkod.util.ints.IntCollection)
+     */
+    @Override
+    public boolean addAll(IntCollection c) {
+        return addAll(size(), c);
+    }
 
-	/**
-	 * Throws an UnsupportedOperationException.
-	 * 
-	 * @see kodkod.util.ints.IntVector#addAll(int,
-	 *      kodkod.util.ints.IntCollection)
-	 */
-	public boolean addAll(int index, IntCollection c) {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * Throws an UnsupportedOperationException.
+     *
+     * @see kodkod.util.ints.IntVector#addAll(int, kodkod.util.ints.IntCollection)
+     */
+    @Override
+    public boolean addAll(int index, IntCollection c) {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * Throws an UnsupportedOperationException.
-	 * 
-	 * @see kodkod.util.ints.IntVector#removeAt(int)
-	 */
-	public int removeAt(int index) {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * Throws an UnsupportedOperationException.
+     *
+     * @see kodkod.util.ints.IntVector#removeAt(int)
+     */
+    @Override
+    public int removeAt(int index) {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * Calls this.iterator(0, length())
-	 * 
-	 * @see kodkod.util.ints.IntVector#iterator()
-	 * @see kodkod.util.ints.IntVector#iterator(int,int)
-	 */
-	public IntIterator iterator() {
-		return iterator(0, size());
-	}
+    /**
+     * Calls this.iterator(0, length())
+     *
+     * @see kodkod.util.ints.IntVector#iterator()
+     * @see kodkod.util.ints.IntVector#iterator(int,int)
+     */
+    @Override
+    public IntIterator iterator() {
+        return iterator(0, size());
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.util.ints.IntVector#iterator(int, int)
-	 */
-	public IntIterator iterator(int fromIndex, int toIndex) {
-		return fromIndex <= toIndex ? new AscendingIntVectorIterator(fromIndex, toIndex)
-				: new DescendingIntVectorIterator(fromIndex, toIndex);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.util.ints.IntVector#iterator(int, int)
+     */
+    @Override
+    public IntIterator iterator(int fromIndex, int toIndex) {
+        return fromIndex <= toIndex ? new AscendingIntVectorIterator(fromIndex, toIndex) : new DescendingIntVectorIterator(fromIndex, toIndex);
+    }
 
-	/**
-	 * Returns the hash code value for this vector.
-	 *
-	 * @return the hash code value for this vector.
-	 * @see Object#hashCode()
-	 * @see Object#equals(Object)
-	 * @see #equals(Object)
-	 */
-	public int hashCode() {
-		final int length = size();
-		int hash = length;
-		for (int i = 0; i < length; i++) {
-			hash = Ints.superFastHashIncremental(get(i), hash);
-		}
-		return Ints.superFastHashAvalanche(hash);
-	}
+    /**
+     * Returns the hash code value for this vector.
+     *
+     * @return the hash code value for this vector.
+     * @see Object#hashCode()
+     * @see Object#equals(Object)
+     * @see #equals(Object)
+     */
+    @Override
+    public int hashCode() {
+        final int length = size();
+        int hash = length;
+        for (int i = 0; i < length; i++) {
+            hash = Ints.superFastHashIncremental(get(i), hash);
+        }
+        return Ints.superFastHashAvalanche(hash);
+    }
 
-	/**
-	 * Compares the specified object with this vector for equality. Returns
-	 * <tt>true</tt> if and only if the specified object is also an int vector,
-	 * both vectors have the same size, and all corresponding pairs of elements
-	 * in the two vectors are <i>equal</i>.
-	 * 
-	 * @return <tt>true</tt> if the specified object is equal to this vector.
-	 */
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (o instanceof IntVector) {
-			final IntVector l = (IntVector) o;
-			final int length = size();
-			if (l.size() == length) {
-				for (int i = 0; i < length; i++) {
-					if (get(i) != l.get(i))
-						return false;
-				}
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Compares the specified object with this vector for equality. Returns
+     * <tt>true</tt> if and only if the specified object is also an int vector, both
+     * vectors have the same size, and all corresponding pairs of elements in the
+     * two vectors are <i>equal</i>.
+     *
+     * @return <tt>true</tt> if the specified object is equal to this vector.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (o instanceof IntVector) {
+            final IntVector l = (IntVector) o;
+            final int length = size();
+            if (l.size() == length) {
+                for (int i = 0; i < length; i++) {
+                    if (get(i) != l.get(i))
+                        return false;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		final StringBuilder buf = new StringBuilder();
-		buf.append("[");
-		IntIterator itr = iterator();
-		if (itr.hasNext())
-			buf.append(itr.next());
-		while (itr.hasNext()) {
-			buf.append(", ");
-			buf.append(itr.next());
-		}
-		buf.append("]");
-		return buf.toString();
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        final StringBuilder buf = new StringBuilder();
+        buf.append("[");
+        IntIterator itr = iterator();
+        if (itr.hasNext())
+            buf.append(itr.next());
+        while (itr.hasNext()) {
+            buf.append(", ");
+            buf.append(itr.next());
+        }
+        buf.append("]");
+        return buf.toString();
+    }
 
-	private abstract class IntVectorIterator implements IntIterator {
-		int next, end, last;
+    private abstract class IntVectorIterator implements IntIterator {
 
-		IntVectorIterator(int fromIndex, int toIndex) {
-			next = fromIndex;
-			end = toIndex;
-			last = -1;
-		}
+        int next, end, last;
 
-		public final void remove() {
-			if (last < 0)
-				throw new IllegalStateException();
-			AbstractIntVector.this.removeAt(last);
-			next = last;
-			last = -1;
-		}
-	}
+        IntVectorIterator(int fromIndex, int toIndex) {
+            next = fromIndex;
+            end = toIndex;
+            last = -1;
+        }
 
-	private final class AscendingIntVectorIterator extends IntVectorIterator {
-		/**
-		 * Constructs a new AscendingIntArrayIterator.
-		 * 
-		 * @requires fromIndex <= toIndex
-		 */
-		AscendingIntVectorIterator(int fromIndex, int toIndex) {
-			super(fromIndex, toIndex);
-		}
+        @Override
+        public final void remove() {
+            if (last < 0)
+                throw new IllegalStateException();
+            AbstractIntVector.this.removeAt(last);
+            next = last;
+            last = -1;
+        }
+    }
 
-		public boolean hasNext() {
-			return last < Integer.MAX_VALUE && next < end;
-		}
+    private final class AscendingIntVectorIterator extends IntVectorIterator {
 
-		public int next() {
-			if (!hasNext())
-				throw new NoSuchElementException();
-			last = next++;
-			return get(last);
-		}
-	}
+        /**
+         * Constructs a new AscendingIntArrayIterator.
+         *
+         * @requires fromIndex <= toIndex
+         */
+        AscendingIntVectorIterator(int fromIndex, int toIndex) {
+            super(fromIndex, toIndex);
+        }
 
-	private final class DescendingIntVectorIterator extends IntVectorIterator {
-		/**
-		 * Constructs a new AscendingIntArrayIterator.
-		 * 
-		 * @requires fromIndex >= toIndex
-		 */
-		DescendingIntVectorIterator(int fromIndex, int toIndex) {
-			super(fromIndex, toIndex);
-		}
+        @Override
+        public boolean hasNext() {
+            return last < Integer.MAX_VALUE && next < end;
+        }
 
-		public boolean hasNext() {
-			return next > end;
-		}
+        @Override
+        public int next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+            last = next++;
+            return get(last);
+        }
+    }
 
-		public int next() {
-			if (!hasNext())
-				throw new NoSuchElementException();
-			last = next--;
-			return get(last);
-		}
-	}
+    private final class DescendingIntVectorIterator extends IntVectorIterator {
+
+        /**
+         * Constructs a new AscendingIntArrayIterator.
+         *
+         * @requires fromIndex >= toIndex
+         */
+        DescendingIntVectorIterator(int fromIndex, int toIndex) {
+            super(fromIndex, toIndex);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return next > end;
+        }
+
+        @Override
+        public int next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+            last = next--;
+            return get(last);
+        }
+    }
 }

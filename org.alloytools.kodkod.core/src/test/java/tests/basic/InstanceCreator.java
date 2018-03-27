@@ -41,208 +41,209 @@ import kodkod.instance.Universe;
  * @author Emina Torlak
  */
 final class InstanceCreator {
-	private final String							MODULE	= "module";
-	private final String							SIG		= "sig";
-	private final String							FIELD	= "field";
-	private final String							SKOLEM	= "skolem";
-	private final String							TUPLE	= "tuple";
-	private final String							ARITY	= "arity";
-	private final String							ATOM	= "atom";
-	private final String							NAME	= "name";
 
-	private Document								document;
-	private final Set<String>						atoms;
-	private final Map<Relation,Set<List<String>>>	relations;
+    private final String                          MODULE = "module";
+    private final String                          SIG    = "sig";
+    private final String                          FIELD  = "field";
+    private final String                          SKOLEM = "skolem";
+    private final String                          TUPLE  = "tuple";
+    private final String                          ARITY  = "arity";
+    private final String                          ATOM   = "atom";
+    private final String                          NAME   = "name";
 
-	private InstanceCreator(File file) {
-		this(getStream(file));
-	}
+    private Document                              document;
+    private final Set<String>                     atoms;
+    private final Map<Relation,Set<List<String>>> relations;
 
-	private static FileInputStream getStream(File file) {
-		try {
-			return new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    private InstanceCreator(File file) {
+        this(getStream(file));
+    }
 
-	public InstanceCreator(InputStream in) {
-		try {
-			this.relations = new HashMap<Relation,Set<List<String>>>();
-			this.atoms = new LinkedHashSet<String>();
+    private static FileInputStream getStream(File file) {
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			this.document = builder.parse(in);
-		} catch (SAXException sxe) {
-			// Error generated during parsing
-			Exception x = sxe;
-			if (sxe.getException() != null)
-				x = sxe.getException();
-			throw new InstanceCreationException("Error generated during parsing: " + x.getMessage());
+    public InstanceCreator(InputStream in) {
+        try {
+            this.relations = new HashMap<Relation,Set<List<String>>>();
+            this.atoms = new LinkedHashSet<String>();
 
-		} catch (ParserConfigurationException pce) {
-			// Parser with specified options can't be built
-			throw new InstanceCreationException("Parser with specified options cannot be built: " + pce.getMessage());
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            this.document = builder.parse(in);
+        } catch (SAXException sxe) {
+            // Error generated during parsing
+            Exception x = sxe;
+            if (sxe.getException() != null)
+                x = sxe.getException();
+            throw new InstanceCreationException("Error generated during parsing: " + x.getMessage());
 
-		} catch (IOException ioe) {
-			// I/O error
-			throw new InstanceCreationException("I/O error: " + ioe.getMessage());
-		} finally {
-			try {
-				in.close();
-			} catch (IOException e) {
-				// ignore
-			}
-		}
-	}
+        } catch (ParserConfigurationException pce) {
+            // Parser with specified options can't be built
+            throw new InstanceCreationException("Parser with specified options cannot be built: " + pce.getMessage());
 
-	/**
-	 * Returns an Iterator of all children of the given element that are
-	 * themselves elements with the given tag. The order of children is given by
-	 * element.getChildNodes
-	 */
-	private Iterator<Element> getChildrenByTag(Element element, String tag) {
-		final List<Element> elts = new LinkedList<Element>();
-		final NodeList children = element.getChildNodes();
-		for (int i = 0; i < children.getLength(); i++) {
-			Node child = children.item(i);
-			if (child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals(tag)) {
-				elts.add((Element) child);
-			}
-		}
-		return elts.iterator();
-	}
+        } catch (IOException ioe) {
+            // I/O error
+            throw new InstanceCreationException("I/O error: " + ioe.getMessage());
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+    }
 
-	/**
-	 * Returns the value of the NAME attribute of the given element.
-	 */
-	private String getName(Element element) {
-		return element.getAttribute(NAME).intern();
-	}
+    /**
+     * Returns an Iterator of all children of the given element that are themselves
+     * elements with the given tag. The order of children is given by
+     * element.getChildNodes
+     */
+    private Iterator<Element> getChildrenByTag(Element element, String tag) {
+        final List<Element> elts = new LinkedList<Element>();
+        final NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals(tag)) {
+                elts.add((Element) child);
+            }
+        }
+        return elts.iterator();
+    }
 
-	/**
-	 * Returns the values of the NAME attributes of the elements returned by the
-	 * given iterator.
-	 */
-	private List<String> getNames(Iterator<Element> elements) {
-		List<String> names = new LinkedList<String>();
-		while (elements.hasNext()) {
-			names.add(getName(elements.next()));
-		}
-		return names;
-	}
+    /**
+     * Returns the value of the NAME attribute of the given element.
+     */
+    private String getName(Element element) {
+        return element.getAttribute(NAME).intern();
+    }
 
-	/**
-	 * Creates a unary Relation r with the name specified by the NAME attribute
-	 * of the module and the unaryRelation. It adds a mapping to this.relations
-	 * from r to a set of unary tuples assigned to the given unaryRelation.
-	 */
-	private void processAtoms(Element module, Element unaryRelation) {
+    /**
+     * Returns the values of the NAME attributes of the elements returned by the
+     * given iterator.
+     */
+    private List<String> getNames(Iterator<Element> elements) {
+        List<String> names = new LinkedList<String>();
+        while (elements.hasNext()) {
+            names.add(getName(elements.next()));
+        }
+        return names;
+    }
 
-		final Set<List<String>> tuples = new LinkedHashSet<List<String>>();
-		for (Iterator<Element> t = getChildrenByTag(unaryRelation, ATOM); t.hasNext();) {
-			String atom = getName(t.next()).intern();
-			tuples.add(Collections.singletonList(atom));
-			atoms.add(atom); // add the atom to the pool of atoms
-		}
-		relations.put(Relation.unary(getName(module) + "/" + getName(unaryRelation)), tuples);
+    /**
+     * Creates a unary Relation r with the name specified by the NAME attribute of
+     * the module and the unaryRelation. It adds a mapping to this.relations from r
+     * to a set of unary tuples assigned to the given unaryRelation.
+     */
+    private void processAtoms(Element module, Element unaryRelation) {
 
-	}
+        final Set<List<String>> tuples = new LinkedHashSet<List<String>>();
+        for (Iterator<Element> t = getChildrenByTag(unaryRelation, ATOM); t.hasNext();) {
+            String atom = getName(t.next()).intern();
+            tuples.add(Collections.singletonList(atom));
+            atoms.add(atom); // add the atom to the pool of atoms
+        }
+        relations.put(Relation.unary(getName(module) + "/" + getName(unaryRelation)), tuples);
 
-	/**
-	 * Creates a Relation r whose name specified by the NAME attribute of the
-	 * module and the field, and whose arity is specified by the ARITY attribute
-	 * of the field. It adds a mapping to this.relations from r to a set of
-	 * tuples that represents all the tuples assigned to the given field.
-	 */
-	private void processField(Element module, Element field) {
-		try {
-			final Relation fieldRelation = Relation.nary(getName(module) + "/" + getName(field),
-					Integer.parseInt(field.getAttribute(ARITY)));
-			final Set<List<String>> tuples = new LinkedHashSet<List<String>>();
-			for (Iterator<Element> t = getChildrenByTag(field, TUPLE); t.hasNext();) {
-				tuples.add(getNames(getChildrenByTag(t.next(), ATOM)));
-			}
+    }
 
-			relations.put(fieldRelation, tuples);
+    /**
+     * Creates a Relation r whose name specified by the NAME attribute of the module
+     * and the field, and whose arity is specified by the ARITY attribute of the
+     * field. It adds a mapping to this.relations from r to a set of tuples that
+     * represents all the tuples assigned to the given field.
+     */
+    private void processField(Element module, Element field) {
+        try {
+            final Relation fieldRelation = Relation.nary(getName(module) + "/" + getName(field), Integer.parseInt(field.getAttribute(ARITY)));
+            final Set<List<String>> tuples = new LinkedHashSet<List<String>>();
+            for (Iterator<Element> t = getChildrenByTag(field, TUPLE); t.hasNext();) {
+                tuples.add(getNames(getChildrenByTag(t.next(), ATOM)));
+            }
 
-		} catch (NumberFormatException nfe) {
-			throw new InstanceCreationException("Fields must have an arity atribute: " + field.getAttribute(NAME));
-		}
-	}
+            relations.put(fieldRelation, tuples);
 
-	/**
-	 * Intializes the list of all atoms and the relations map. Throws an
-	 * InstanceCreationException if an error is encountered.
-	 */
-	private void initAtomsAndRelations() {
+        } catch (NumberFormatException nfe) {
+            throw new InstanceCreationException("Fields must have an arity atribute: " + field.getAttribute(NAME));
+        }
+    }
 
-		final NodeList modules = document.getElementsByTagName(MODULE);
-		for (int i = 0; i < modules.getLength(); i++) {
-			Element module = (Element) modules.item(i);
-			for (Iterator<Element> sigs = getChildrenByTag(module, SIG); sigs.hasNext();) {
-				Element sig = (Element) sigs.next();
-				processAtoms(module, sig);
-				for (Iterator<Element> fields = getChildrenByTag(sig, FIELD); fields.hasNext();) {
-					processField(module, (Element) fields.next());
-				}
-			}
-			for (Iterator<Element> skolems = getChildrenByTag(module, SKOLEM); skolems.hasNext();) {
-				processAtoms(module, (Element) skolems.next());
-			}
-		}
+    /**
+     * Intializes the list of all atoms and the relations map. Throws an
+     * InstanceCreationException if an error is encountered.
+     */
+    private void initAtomsAndRelations() {
 
-	}
+        final NodeList modules = document.getElementsByTagName(MODULE);
+        for (int i = 0; i < modules.getLength(); i++) {
+            Element module = (Element) modules.item(i);
+            for (Iterator<Element> sigs = getChildrenByTag(module, SIG); sigs.hasNext();) {
+                Element sig = sigs.next();
+                processAtoms(module, sig);
+                for (Iterator<Element> fields = getChildrenByTag(sig, FIELD); fields.hasNext();) {
+                    processField(module, fields.next());
+                }
+            }
+            for (Iterator<Element> skolems = getChildrenByTag(module, SKOLEM); skolems.hasNext();) {
+                processAtoms(module, skolems.next());
+            }
+        }
 
-	/**
-	 * Fills the instance with the relations specified in this.document; if an
-	 * error occurs during processing, the instance remains null
-	 */
-	private Instance getInstance() {
-		initAtomsAndRelations();
-		final Universe u = new Universe(atoms);
-		final TupleFactory f = u.factory();
-		final Instance instance = new Instance(u);
-		for (Map.Entry<Relation,Set<List<String>>> entry : relations.entrySet()) {
-			Relation r = (Relation) entry.getKey();
-			TupleSet s = f.noneOf(r.arity());
-			for (List< ? > atoms : entry.getValue()) {
-				s.add(f.tuple(atoms));
-			}
-			instance.add(r, s);
-		}
+    }
 
-		return instance;
-	}
+    /**
+     * Fills the instance with the relations specified in this.document; if an error
+     * occurs during processing, the instance remains null
+     */
+    private Instance getInstance() {
+        initAtomsAndRelations();
+        final Universe u = new Universe(atoms);
+        final TupleFactory f = u.factory();
+        final Instance instance = new Instance(u);
+        for (Map.Entry<Relation,Set<List<String>>> entry : relations.entrySet()) {
+            Relation r = entry.getKey();
+            TupleSet s = f.noneOf(r.arity());
+            for (List< ? > atoms : entry.getValue()) {
+                s.add(f.tuple(atoms));
+            }
+            instance.add(r, s);
+        }
 
-	/**
-	 * Creates an Instance from the specified file.
-	 *
-	 * @return an Instance corresponding to the data in the file designated by
-	 *         the given fileName
-	 * @throws a InstanceCreationException if an error occurs during processing
-	 */
-	public static Instance getInstance(String fileName) {
-		InstanceCreator creator = new InstanceCreator(new File(fileName));
-		return creator.getInstance();
-	}
+        return instance;
+    }
 
-	public static Instance getInstance(InputStream in) {
-		InstanceCreator creator = new InstanceCreator(in);
-		return creator.getInstance();
-	}
+    /**
+     * Creates an Instance from the specified file.
+     *
+     * @return an Instance corresponding to the data in the file designated by the
+     *         given fileName
+     * @throws a InstanceCreationException if an error occurs during processing
+     */
+    public static Instance getInstance(String fileName) {
+        InstanceCreator creator = new InstanceCreator(new File(fileName));
+        return creator.getInstance();
+    }
 
-	public static void main(String[] args) {
-		System.out.println(getInstance(args[0]));
-	}
+    public static Instance getInstance(InputStream in) {
+        InstanceCreator creator = new InstanceCreator(in);
+        return creator.getInstance();
+    }
 
-	public static class InstanceCreationException extends RuntimeException {
-		private static final long serialVersionUID = 0;
+    public static void main(String[] args) {
+        System.out.println(getInstance(args[0]));
+    }
 
-		public InstanceCreationException(String msg) {
-			super(msg);
-		}
-	}
+    public static class InstanceCreationException extends RuntimeException {
+
+        private static final long serialVersionUID = 0;
+
+        public InstanceCreationException(String msg) {
+            super(msg);
+        }
+    }
 
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ import kodkod.util.ints.Ints;
 
 /**
  * A logic NOT gate.
- * 
+ *
  * @invariant this.op = Operator.NOT
  * @invariant #inputs = 1
  * @invariant this.label = -inputs.label
@@ -37,127 +37,133 @@ import kodkod.util.ints.Ints;
  */
 public final class NotGate extends BooleanFormula {
 
-	private final int hashcode;
+    private final int hashcode;
 
-	/**
-	 * Constructs a new NotGate with the given formula as its input.
-	 * 
-	 * @requires input != null && input !in NotGate
-	 * @ensures this.inputs' = 0->input && this.output'.label = -input.label
-	 */
-	NotGate(BooleanFormula input) {
-		super(input);
-		this.hashcode = Ints.superFastHash(-input.label());
-	}
+    /**
+     * Constructs a new NotGate with the given formula as its input.
+     *
+     * @requires input != null && input !in NotGate
+     * @ensures this.inputs' = 0->input && this.output'.label = -input.label
+     */
+    NotGate(BooleanFormula input) {
+        super(input);
+        this.hashcode = Ints.superFastHash(-input.label());
+    }
 
-	/**
-	 * Returns a hash of this inverter's label.
-	 * 
-	 * @return Ints.superFastHash(this.label)
-	 */
-	@Override
-	int hash(Operator op) {
-		return hashcode;
-	}
+    /**
+     * Returns a hash of this inverter's label.
+     *
+     * @return Ints.superFastHash(this.label)
+     */
+    @Override
+    int hash(Operator op) {
+        return hashcode;
+    }
 
-	/**
-	 * Returns an iterator that returns this gate's single input.
-	 * 
-	 * @return an iterator over this.inputs.
-	 */
-	@Override
-	public Iterator<BooleanFormula> iterator() {
-		return new Iterator<BooleanFormula>() {
-			boolean hasNext = true;
+    /**
+     * Returns an iterator that returns this gate's single input.
+     *
+     * @return an iterator over this.inputs.
+     */
+    @Override
+    public Iterator<BooleanFormula> iterator() {
+        return new Iterator<BooleanFormula>() {
 
-			public boolean hasNext() {
-				return hasNext;
-			}
+            boolean hasNext = true;
 
-			public BooleanFormula next() {
-				if (!hasNext)
-					throw new NoSuchElementException();
-				hasNext = false;
-				return negation();
-			}
+            @Override
+            public boolean hasNext() {
+                return hasNext;
+            }
 
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
+            @Override
+            public BooleanFormula next() {
+                if (!hasNext)
+                    throw new NoSuchElementException();
+                hasNext = false;
+                return negation();
+            }
 
-		};
-	}
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
 
-	/**
-	 * Returns the label for this value.
-	 * 
-	 * @return this.label
-	 */
-	@Override
-	public final int label() {
-		return -negation().label();
-	}
+        };
+    }
 
-	/**
-	 * Returns 1.
-	 * 
-	 * @return 1.
-	 */
-	@Override
-	public int size() {
-		return 1;
-	}
+    /**
+     * Returns the label for this value.
+     *
+     * @return this.label
+     */
+    @Override
+    public final int label() {
+        return -negation().label();
+    }
 
-	/**
-	 * Passes this value and the given argument value to the visitor, and
-	 * returns the resulting value.
-	 * 
-	 * @return the value produced by the visitor when visiting this node with
-	 *         the given argument.
-	 */
-	@Override
-	public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
-		return visitor.visit(this, arg);
-	}
+    /**
+     * Returns 1.
+     *
+     * @return 1.
+     */
+    @Override
+    public int size() {
+        return 1;
+    }
 
-	/**
-	 * Returns a string representation of this inverter.
-	 * 
-	 * @return a string representation of this inverter.
-	 */
-	public String toString() {
-		return "!" + negation().toString();
-	}
+    /**
+     * Passes this value and the given argument value to the visitor, and returns
+     * the resulting value.
+     *
+     * @return the value produced by the visitor when visiting this node with the
+     *         given argument.
+     */
+    @Override
+    public <T, A> T accept(BooleanVisitor<T,A> visitor, A arg) {
+        return visitor.visit(this, arg);
+    }
 
-	/**
-	 * Returns Operator.NOT.
-	 * 
-	 * @return Operator.NOT
-	 */
-	@Override
-	public kodkod.engine.bool.Operator op() {
-		return kodkod.engine.bool.Operator.NOT;
-	}
+    /**
+     * Returns a string representation of this inverter.
+     *
+     * @return a string representation of this inverter.
+     */
+    @Override
+    public String toString() {
+        return "!" + negation().toString();
+    }
 
-	/**
-	 * Returns this.input[i].
-	 * 
-	 * @return this.input[i]
-	 * @throws IndexOutOfBoundsException i != 0
-	 */
-	@Override
-	public BooleanFormula input(int i) {
-		if (i != 0)
-			throw new IndexOutOfBoundsException();
-		return negation();
-	}
+    /**
+     * Returns Operator.NOT.
+     *
+     * @return Operator.NOT
+     */
+    @Override
+    public kodkod.engine.bool.Operator op() {
+        return kodkod.engine.bool.Operator.NOT;
+    }
 
-	/**
-	 * Returns a hashcode for this inverter.
-	 * 
-	 * @return a hashcode for this inverter.
-	 */
-	public int hashCode() {
-		return hashcode;
-	}
+    /**
+     * Returns this.input[i].
+     *
+     * @return this.input[i]
+     * @throws IndexOutOfBoundsException i != 0
+     */
+    @Override
+    public BooleanFormula input(int i) {
+        if (i != 0)
+            throw new IndexOutOfBoundsException();
+        return negation();
+    }
+
+    /**
+     * Returns a hashcode for this inverter.
+     *
+     * @return a hashcode for this inverter.
+     */
+    @Override
+    public int hashCode() {
+        return hashcode;
+    }
 }

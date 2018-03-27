@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,32 +26,33 @@ import kodkod.ast.LeafExpression;
 /**
  * Thrown when a node contains an undeclared variable or a relation with no
  * bounds.
- * 
+ *
  * @specfield leaf: LeafExpression // the unbound leaf that caused the exception
  *            to be thrown
  * @author Emina Torlak
  */
 public final class UnboundLeafException extends RuntimeException {
-	private final LeafExpression	leaf;
-	private static final long		serialVersionUID	= 2472395272061454465L;
 
-	/**
-	 * Constructs an UnboundLeafException for the given leaf.
-	 * 
-	 * @ensures this.leaf' = leaf
-	 */
-	UnboundLeafException(String msg, LeafExpression leaf) {
-		super(msg + ": " + leaf);
-		this.leaf = leaf;
-	}
+    private final LeafExpression leaf;
+    private static final long    serialVersionUID = 2472395272061454465L;
 
-	/**
-	 * Returns this.leaf.
-	 * 
-	 * @return this.leaf
-	 */
-	public LeafExpression leaf() {
-		return leaf;
-	}
+    /**
+     * Constructs an UnboundLeafException for the given leaf.
+     *
+     * @ensures this.leaf' = leaf
+     */
+    UnboundLeafException(String msg, LeafExpression leaf) {
+        super(msg + ": " + leaf);
+        this.leaf = leaf;
+    }
+
+    /**
+     * Returns this.leaf.
+     *
+     * @return this.leaf
+     */
+    public LeafExpression leaf() {
+        return leaf;
+    }
 
 }

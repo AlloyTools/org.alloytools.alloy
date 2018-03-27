@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,32 +30,32 @@ package kodkod.engine.bool;
  */
 public interface BooleanVisitor<T, A> {
 
-	/**
-	 * Visits the multigate and returns the result.
-	 * 
-	 * @return the result of visiting the given multigate
-	 */
-	public T visit(MultiGate multigate, A arg);
+    /**
+     * Visits the multigate and returns the result.
+     *
+     * @return the result of visiting the given multigate
+     */
+    public T visit(MultiGate multigate, A arg);
 
-	/**
-	 * Visits the if-then-else gate and returns the result.
-	 * 
-	 * @return the result of visiting the given ITEGate
-	 */
-	public T visit(ITEGate ite, A arg);
+    /**
+     * Visits the if-then-else gate and returns the result.
+     *
+     * @return the result of visiting the given ITEGate
+     */
+    public T visit(ITEGate ite, A arg);
 
-	/**
-	 * Visits the inverter and returns the result.
-	 * 
-	 * @return the result of visiting the given inverter
-	 */
-	public T visit(NotGate negation, A arg);
+    /**
+     * Visits the inverter and returns the result.
+     *
+     * @return the result of visiting the given inverter
+     */
+    public T visit(NotGate negation, A arg);
 
-	/**
-	 * Visits the variable and returns the result.
-	 * 
-	 * @return the result of visiting the given variable
-	 */
-	public T visit(BooleanVariable variable, A arg);
+    /**
+     * Visits the variable and returns the result.
+     *
+     * @return the result of visiting the given variable
+     */
+    public T visit(BooleanVariable variable, A arg);
 
 }

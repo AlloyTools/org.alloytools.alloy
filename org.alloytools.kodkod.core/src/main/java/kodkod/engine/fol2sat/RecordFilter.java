@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,29 +33,32 @@ import kodkod.instance.TupleSet;
  * literal fields.
  **/
 public interface RecordFilter {
-	/**
-	 * Returns true if the records with the given node, formula derived from the
-	 * node, literal, and environment should be returned by iterators produced
-	 * by the {@linkplain TranslationLog#replay()} method.
-	 * 
-	 * @return true if the records with the given node, formula derived from the
-	 *         node, literal, and environment should be returned by iterators
-	 *         produced by {@linkplain TranslationLog#replay()}.
-	 */
-	public abstract boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env);
 
-	/**
-	 * A record filter that accepts all records.
-	 */
-	public static RecordFilter ALL = new RecordFilter() {
-		/**
-		 * Returns true.
-		 * 
-		 * @return true
-		 */
-		public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
-			return true;
-		}
-	};
+    /**
+     * Returns true if the records with the given node, formula derived from the
+     * node, literal, and environment should be returned by iterators produced by
+     * the {@linkplain TranslationLog#replay()} method.
+     *
+     * @return true if the records with the given node, formula derived from the
+     *         node, literal, and environment should be returned by iterators
+     *         produced by {@linkplain TranslationLog#replay()}.
+     */
+    public abstract boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env);
+
+    /**
+     * A record filter that accepts all records.
+     */
+    public static RecordFilter ALL = new RecordFilter() {
+
+        /**
+         * Returns true.
+         *
+         * @return true
+         */
+        @Override
+        public boolean accept(Node node, Formula translated, int literal, Map<Variable,TupleSet> env) {
+            return true;
+        }
+    };
 
 }

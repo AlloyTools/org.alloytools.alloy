@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ import kodkod.util.ints.Ints;
 
 /**
  * A non-optimal minimization strategy based on the Empty Clause Cone algorithm.
- * 
+ *
  * @author Emina Torlak
  * @see <a href=
  *      "http://research.microsoft.com/users/lintaoz/papers/SAT_2003_core.pdf">L.
@@ -38,30 +38,32 @@ import kodkod.util.ints.Ints;
  *      '03). 2003.</a>
  */
 public final class ECFPStrategy implements ReductionStrategy {
-	private int lastCore;
 
-	/**
-	 * Constructs a new instance of the empty clause cone strategy for
-	 * minimizing unsatisfiable cores.
-	 */
-	public ECFPStrategy() {
-		lastCore = Integer.MAX_VALUE;
-	}
+    private int lastCore;
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
-	 */
-	public IntSet next(final ResolutionTrace trace) {
-		final IntSet core = trace.core();
-		if (lastCore > core.size()) {
-			lastCore = core.size();
-			return core;
-		} else {
-			lastCore = Integer.MIN_VALUE;
-			return Ints.EMPTY_SET;
-		}
-	}
+    /**
+     * Constructs a new instance of the empty clause cone strategy for minimizing
+     * unsatisfiable cores.
+     */
+    public ECFPStrategy() {
+        lastCore = Integer.MAX_VALUE;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.engine.satlab.ReductionStrategy#next(kodkod.engine.satlab.ResolutionTrace)
+     */
+    @Override
+    public IntSet next(final ResolutionTrace trace) {
+        final IntSet core = trace.core();
+        if (lastCore > core.size()) {
+            lastCore = core.size();
+            return core;
+        } else {
+            lastCore = Integer.MIN_VALUE;
+            return Ints.EMPTY_SET;
+        }
+    }
 
 }

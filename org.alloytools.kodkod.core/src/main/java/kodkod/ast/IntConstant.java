@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,91 +26,95 @@ import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * An integer constant (literal).
- * 
+ *
  * @specfield value: int
  * @invariant no children
  * @author Emina Torlak
  */
 public final class IntConstant extends IntExpression {
-	private final int value;
 
-	/**
-	 * Constructs an int constant.
-	 * 
-	 * @ensures this.value' = value
-	 */
-	private IntConstant(int value) {
-		this.value = value;
-	}
+    private final int value;
 
-	/**
-	 * Returns an IntConstant corresponding to the given value.
-	 * 
-	 * @return {c: IntConstant | c.value = value}
-	 */
-	public static IntConstant constant(int value) {
-		return new IntConstant(value);
-	}
+    /**
+     * Constructs an int constant.
+     *
+     * @ensures this.value' = value
+     */
+    private IntConstant(int value) {
+        this.value = value;
+    }
 
-	/**
-	 * Returns this.value.
-	 * 
-	 * @return this.value
-	 */
-	public int value() {
-		return value;
-	}
+    /**
+     * Returns an IntConstant corresponding to the given value.
+     *
+     * @return {c: IntConstant | c.value = value}
+     */
+    public static IntConstant constant(int value) {
+        return new IntConstant(value);
+    }
 
-	/**
-	 * Return true if o is an IntConstant with the same value as this.
-	 * 
-	 * @return o in IntConstant && o.value = this.value
-	 */
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		else if (o instanceof IntConstant)
-			return value == ((IntConstant) o).value;
-		else
-			return false;
-	}
+    /**
+     * Returns this.value.
+     *
+     * @return this.value
+     */
+    public int value() {
+        return value;
+    }
 
-	/**
-	 * Return this.value
-	 * 
-	 * @return this.value
-	 */
-	public int hashCode() {
-		return value;
-	}
+    /**
+     * Return true if o is an IntConstant with the same value as this.
+     *
+     * @return o in IntConstant && o.value = this.value
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        else if (o instanceof IntConstant)
+            return value == ((IntConstant) o).value;
+        else
+            return false;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	@Override
-	public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Return this.value
+     *
+     * @return this.value
+     */
+    @Override
+    public int hashCode() {
+        return value;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	@Override
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> I accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return String.valueOf(value);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.IntExpression#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 
 }

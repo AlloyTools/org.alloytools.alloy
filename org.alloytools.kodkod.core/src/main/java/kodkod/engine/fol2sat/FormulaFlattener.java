@@ -61,257 +61,262 @@ import kodkod.util.nodes.AnnotatedNode;
  */
 public final class FormulaFlattener extends AbstractVoidVisitor {
 
-	/**
-	 * Flattens the given formula into a set of conjuncts by pushing negations
-	 * through quantifier-free formulas, if breakupQuantifiers is false.
-	 * Otherwise, pushes the negations through all formulas, breaking up
-	 * universal quantifiers whenever possible. The source map of the returned
-	 * annotated node reflects the source relationships from the descendants of
-	 * the returned formula to the sources of the corresponding descendants of
-	 * annotated.node.
-	 * 
-	 * @return a map that binds each flattened conjuncts to the corresponding
-	 *         subformula of annotated.node
-	 */
-	public static AnnotatedNode<Formula> flatten(AnnotatedNode<Formula> annotated, boolean breakupQuantifiers) {
-		final FormulaFlattener flat = new FormulaFlattener(annotated.sharedNodes(), breakupQuantifiers);
-		annotated.node().accept(flat);
-		final List<Formula> roots = new ArrayList<Formula>(flat.conjuncts.size());
-		roots.addAll(flat.conjuncts.keySet());
-		for (Iterator<Map.Entry<Formula,Node>> itr = flat.conjuncts.entrySet().iterator(); itr.hasNext();) {
-			final Map.Entry<Formula,Node> entry = itr.next();
-			final Node source = annotated.sourceOf(entry.getValue());
-			if (entry.getKey() == source) {
-				itr.remove();
-			} else {
-				entry.setValue(source);
-			}
-		}
-		return AnnotatedNode.annotate(Formula.and(roots), flat.conjuncts);
-	}
+    /**
+     * Flattens the given formula into a set of conjuncts by pushing negations
+     * through quantifier-free formulas, if breakupQuantifiers is false. Otherwise,
+     * pushes the negations through all formulas, breaking up universal quantifiers
+     * whenever possible. The source map of the returned annotated node reflects the
+     * source relationships from the descendants of the returned formula to the
+     * sources of the corresponding descendants of annotated.node.
+     *
+     * @return a map that binds each flattened conjuncts to the corresponding
+     *         subformula of annotated.node
+     */
+    public static AnnotatedNode<Formula> flatten(AnnotatedNode<Formula> annotated, boolean breakupQuantifiers) {
+        final FormulaFlattener flat = new FormulaFlattener(annotated.sharedNodes(), breakupQuantifiers);
+        annotated.node().accept(flat);
+        final List<Formula> roots = new ArrayList<Formula>(flat.conjuncts.size());
+        roots.addAll(flat.conjuncts.keySet());
+        for (Iterator<Map.Entry<Formula,Node>> itr = flat.conjuncts.entrySet().iterator(); itr.hasNext();) {
+            final Map.Entry<Formula,Node> entry = itr.next();
+            final Node source = annotated.sourceOf(entry.getValue());
+            if (entry.getKey() == source) {
+                itr.remove();
+            } else {
+                entry.setValue(source);
+            }
+        }
+        return AnnotatedNode.annotate(Formula.and(roots), flat.conjuncts);
+    }
 
-	private Map<Formula,Node>		conjuncts;
-	private final Map<Node,Boolean>	visited;
-	private final Set<Node>			shared;
-	private boolean					negated;
-	private final boolean			breakupQuantifiers;
+    private Map<Formula,Node>       conjuncts;
+    private final Map<Node,Boolean> visited;
+    private final Set<Node>         shared;
+    private boolean                 negated;
+    private final boolean           breakupQuantifiers;
 
-	/**
-	 * Constructs a flattener for a formula in which the given nodes are shared.
-	 */
-	private FormulaFlattener(Set<Node> shared, boolean breakupQuantifiers) {
-		this.conjuncts = new LinkedHashMap<Formula,Node>();
-		this.shared = shared;
-		this.visited = new IdentityHashMap<Node,Boolean>();
-		this.negated = false;
-		this.breakupQuantifiers = breakupQuantifiers;
-	}
+    /**
+     * Constructs a flattener for a formula in which the given nodes are shared.
+     */
+    private FormulaFlattener(Set<Node> shared, boolean breakupQuantifiers) {
+        this.conjuncts = new LinkedHashMap<Formula,Node>();
+        this.shared = shared;
+        this.visited = new IdentityHashMap<Node,Boolean>();
+        this.negated = false;
+        this.breakupQuantifiers = breakupQuantifiers;
+    }
 
-	/**
-	 * Returns the result of applying this visitor to the given annotated
-	 * formula.
-	 * 
-	 * @return the result of applying this visitor to the given annotated
-	 *         formula.
-	 */
-	final AnnotatedNode<Formula> apply(AnnotatedNode<Formula> annotated) {
-		annotated.node().accept(this);
-		final List<Formula> roots = new ArrayList<Formula>(conjuncts.size());
-		roots.addAll(conjuncts.keySet());
-		for (Iterator<Map.Entry<Formula,Node>> itr = conjuncts.entrySet().iterator(); itr.hasNext();) {
-			final Map.Entry<Formula,Node> entry = itr.next();
-			final Node source = annotated.sourceOf(entry.getValue());
-			if (entry.getKey() == source) {
-				itr.remove();
-			} else {
-				entry.setValue(source);
-			}
-		}
-		return AnnotatedNode.annotate(Formula.and(roots), conjuncts);
-	}
+    /**
+     * Returns the result of applying this visitor to the given annotated formula.
+     *
+     * @return the result of applying this visitor to the given annotated formula.
+     */
+    final AnnotatedNode<Formula> apply(AnnotatedNode<Formula> annotated) {
+        annotated.node().accept(this);
+        final List<Formula> roots = new ArrayList<Formula>(conjuncts.size());
+        roots.addAll(conjuncts.keySet());
+        for (Iterator<Map.Entry<Formula,Node>> itr = conjuncts.entrySet().iterator(); itr.hasNext();) {
+            final Map.Entry<Formula,Node> entry = itr.next();
+            final Node source = annotated.sourceOf(entry.getValue());
+            if (entry.getKey() == source) {
+                itr.remove();
+            } else {
+                entry.setValue(source);
+            }
+        }
+        return AnnotatedNode.annotate(Formula.and(roots), conjuncts);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visited(kodkod.ast.Node)
-	 */
-	@Override
-	protected boolean visited(Node n) {
-		if (shared.contains(n)) {
-			if (visited.containsKey(n)) {
-				final Boolean val = visited.get(n);
-				if (val == null || val.booleanValue() == negated) {
-					return true;
-				} else {
-					visited.put(n, null);
-					return false;
-				}
-			} else {
-				visited.put(n, Boolean.valueOf(negated));
-				return false;
-			}
-		}
-		return false;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.visitor.AbstractVoidVisitor#visited(kodkod.ast.Node)
+     */
+    @Override
+    protected boolean visited(Node n) {
+        if (shared.contains(n)) {
+            if (visited.containsKey(n)) {
+                final Boolean val = visited.get(n);
+                if (val == null || val.booleanValue() == negated) {
+                    return true;
+                } else {
+                    visited.put(n, null);
+                    return false;
+                }
+            } else {
+                visited.put(n, Boolean.valueOf(negated));
+                return false;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Calls nf.formula.accept(this) after flipping the negation flag.
-	 * 
-	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NotFormula)
-	 */
-	public final void visit(NotFormula nf) {
-		if (visited(nf))
-			return;
+    /**
+     * Calls nf.formula.accept(this) after flipping the negation flag.
+     *
+     * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NotFormula)
+     */
+    @Override
+    public final void visit(NotFormula nf) {
+        if (visited(nf))
+            return;
 
-		final Map<Formula,Node> oldConjuncts = conjuncts;
-		conjuncts = new LinkedHashMap<Formula,Node>();
-		negated = !negated;
-		nf.formula().accept(this);
-		negated = !negated;
-		if (conjuncts.size() > 1) { // was broken down further
-			oldConjuncts.putAll(conjuncts);
-			conjuncts = oldConjuncts;
-		} else { // wasn't broken down further
-			conjuncts = oldConjuncts;
-			conjuncts.put(negated ? nf.formula() : nf, nf);
-		}
-	}
+        final Map<Formula,Node> oldConjuncts = conjuncts;
+        conjuncts = new LinkedHashMap<Formula,Node>();
+        negated = !negated;
+        nf.formula().accept(this);
+        negated = !negated;
+        if (conjuncts.size() > 1) { // was broken down further
+            oldConjuncts.putAll(conjuncts);
+            conjuncts = oldConjuncts;
+        } else { // wasn't broken down further
+            conjuncts = oldConjuncts;
+            conjuncts.put(negated ? nf.formula() : nf, nf);
+        }
+    }
 
-	/**
-	 * Adds the given formula (or its negation, depending on the value of the
-	 * negated flag) to this.conjuncts.
-	 */
-	private final void addConjunct(Formula conjunct) {
-		conjuncts.put(negated ? conjunct.not() : conjunct, conjunct);
-	}
+    /**
+     * Adds the given formula (or its negation, depending on the value of the
+     * negated flag) to this.conjuncts.
+     */
+    private final void addConjunct(Formula conjunct) {
+        conjuncts.put(negated ? conjunct.not() : conjunct, conjunct);
+    }
 
-	/**
-	 * Visits the formula's children with appropriate settings for the negated
-	 * flag if bf has not been visited before.
-	 * 
-	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.BinaryFormula)
-	 */
-	public final void visit(BinaryFormula bf) {
-		if (visited(bf))
-			return;
-		final FormulaOperator op = bf.op();
-		if (op == IFF || (negated && op == AND) || (!negated && (op == OR || op == IMPLIES))) { // can't
-																								// break
-																								// down
-																								// further
-																								// in
-																								// these
-																								// cases
-			addConjunct(bf);
-		} else { // will break down further
-			if (negated && op == IMPLIES) { // !(a => b) = !(!a || b) = a && !b
-				negated = !negated;
-				bf.left().accept(this);
-				negated = !negated;
-				bf.right().accept(this);
-			} else {
-				bf.left().accept(this);
-				bf.right().accept(this);
-			}
-		}
-	}
+    /**
+     * Visits the formula's children with appropriate settings for the negated flag
+     * if bf has not been visited before.
+     *
+     * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.BinaryFormula)
+     */
+    @Override
+    public final void visit(BinaryFormula bf) {
+        if (visited(bf))
+            return;
+        final FormulaOperator op = bf.op();
+        if (op == IFF || (negated && op == AND) || (!negated && (op == OR || op == IMPLIES))) { // can't
+                                                                                               // break
+                                                                                               // down
+                                                                                               // further
+                                                                                               // in
+                                                                                               // these
+                                                                                               // cases
+            addConjunct(bf);
+        } else { // will break down further
+            if (negated && op == IMPLIES) { // !(a => b) = !(!a || b) = a && !b
+                negated = !negated;
+                bf.left().accept(this);
+                negated = !negated;
+                bf.right().accept(this);
+            } else {
+                bf.left().accept(this);
+                bf.right().accept(this);
+            }
+        }
+    }
 
-	/**
-	 * Visits the formula's children with appropriate settings for the negated
-	 * flag if bf has not been visited before.
-	 * 
-	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NaryFormula)
-	 */
-	public final void visit(NaryFormula nf) {
-		if (visited(nf))
-			return;
-		final FormulaOperator op = nf.op();
-		if ((negated && op == AND) || (!negated && op == OR)) { // can't break
-																// down further
-																// in these
-																// cases
-			addConjunct(nf);
-		} else { // will break down further
-			for (Formula f : nf) {
-				f.accept(this);
-			}
-		}
-	}
+    /**
+     * Visits the formula's children with appropriate settings for the negated flag
+     * if bf has not been visited before.
+     *
+     * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NaryFormula)
+     */
+    @Override
+    public final void visit(NaryFormula nf) {
+        if (visited(nf))
+            return;
+        final FormulaOperator op = nf.op();
+        if ((negated && op == AND) || (!negated && op == OR)) { // can't break
+                                                               // down further
+                                                               // in these
+                                                               // cases
+            addConjunct(nf);
+        } else { // will break down further
+            for (Formula f : nf) {
+                f.accept(this);
+            }
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.QuantifiedFormula)
-	 */
-	public final void visit(QuantifiedFormula qf) {
-		if (visited(qf))
-			return;
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.QuantifiedFormula)
+     */
+    @Override
+    public final void visit(QuantifiedFormula qf) {
+        if (visited(qf))
+            return;
 
-		if (breakupQuantifiers) {
+        if (breakupQuantifiers) {
 
-			final Quantifier quant = qf.quantifier();
+            final Quantifier quant = qf.quantifier();
 
-			if ((!negated && quant == ALL) || (negated && quant == SOME)) { // may
-																			// break
-																			// down
-																			// further
-				final Map<Formula,Node> oldConjuncts = conjuncts;
-				conjuncts = new LinkedHashMap<Formula,Node>();
-				qf.formula().accept(this);
-				if (conjuncts.size() > 1) { // was broken down further
-					final Decls decls = qf.decls();
-					for (Map.Entry<Formula,Node> entry : conjuncts.entrySet()) {
-						oldConjuncts.put(entry.getKey().forAll(decls), entry.getValue());
-					}
-					conjuncts = oldConjuncts;
-					return;
-				} else { // wasn't broken down further
-					conjuncts = oldConjuncts;
-				}
-			} // won't break down further
-		}
+            if ((!negated && quant == ALL) || (negated && quant == SOME)) { // may
+                                                                           // break
+                                                                           // down
+                                                                           // further
+                final Map<Formula,Node> oldConjuncts = conjuncts;
+                conjuncts = new LinkedHashMap<Formula,Node>();
+                qf.formula().accept(this);
+                if (conjuncts.size() > 1) { // was broken down further
+                    final Decls decls = qf.decls();
+                    for (Map.Entry<Formula,Node> entry : conjuncts.entrySet()) {
+                        oldConjuncts.put(entry.getKey().forAll(decls), entry.getValue());
+                    }
+                    conjuncts = oldConjuncts;
+                    return;
+                } else { // wasn't broken down further
+                    conjuncts = oldConjuncts;
+                }
+            } // won't break down further
+        }
 
-		addConjunct(qf);
+        addConjunct(qf);
 
-	}
+    }
 
-	/**
-	 * Adds f (resp. f.not()) to this.conjuncts if the negated flag is false
-	 * (resp. true) and the given node has not been visited; otherwise does
-	 * nothing.
-	 * 
-	 * @ensures !this.visited(f) => (this.conjuncts' = conjuncts + (negated =>
-	 *          f.not() else f)) else (this.conjuncts' = this.conjuncts)
-	 */
-	final void visitFormula(Formula f) {
-		if (visited(f))
-			return;
-		addConjunct(f);
-	}
+    /**
+     * Adds f (resp. f.not()) to this.conjuncts if the negated flag is false (resp.
+     * true) and the given node has not been visited; otherwise does nothing.
+     *
+     * @ensures !this.visited(f) => (this.conjuncts' = conjuncts + (negated =>
+     *          f.not() else f)) else (this.conjuncts' = this.conjuncts)
+     */
+    final void visitFormula(Formula f) {
+        if (visited(f))
+            return;
+        addConjunct(f);
+    }
 
-	/** @see #visitFormula(Formula) */
-	public final void visit(ComparisonFormula cf) {
-		visitFormula(cf);
-	}
+    /** @see #visitFormula(Formula) */
+    @Override
+    public final void visit(ComparisonFormula cf) {
+        visitFormula(cf);
+    }
 
-	/** @see #visitFormula(Formula) */
-	public final void visit(IntComparisonFormula cf) {
-		visitFormula(cf);
-	}
+    /** @see #visitFormula(Formula) */
+    @Override
+    public final void visit(IntComparisonFormula cf) {
+        visitFormula(cf);
+    }
 
-	/** @see #visitFormula(Formula) */
-	public final void visit(MultiplicityFormula mf) {
-		visitFormula(mf);
-	}
+    /** @see #visitFormula(Formula) */
+    @Override
+    public final void visit(MultiplicityFormula mf) {
+        visitFormula(mf);
+    }
 
-	/** @see #visitFormula(Formula) */
-	public final void visit(ConstantFormula constant) {
-		visitFormula(constant);
-	}
+    /** @see #visitFormula(Formula) */
+    @Override
+    public final void visit(ConstantFormula constant) {
+        visitFormula(constant);
+    }
 
-	/** @see #visitFormula(Formula) */
-	public final void visit(RelationPredicate pred) {
-		visitFormula(pred);
-	}
+    /** @see #visitFormula(Formula) */
+    @Override
+    public final void visit(RelationPredicate pred) {
+        visitFormula(pred);
+    }
 
 }

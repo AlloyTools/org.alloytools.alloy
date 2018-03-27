@@ -1,4 +1,4 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * A {@link kodkod.ast.Formula formula} with two children.
- * 
+ *
  * @specfield left: Formula
  * @specfield right: Formula
  * @specfield op: FormulaOperator
@@ -36,74 +36,77 @@ import kodkod.ast.visitor.VoidVisitor;
  */
 public final class BinaryFormula extends Formula {
 
-	private final Formula			left;
-	private final Formula			right;
-	private final FormulaOperator	op;
+    private final Formula         left;
+    private final Formula         right;
+    private final FormulaOperator op;
 
-	/**
-	 * Constructs a new binary formula: left op right
-	 * 
-	 * @ensures this.left' = left && this.right' = right && this.op' = op
-	 * @throws NullPointerException left = null || right = null || op = null
-	 */
-	BinaryFormula(Formula left, FormulaOperator op, Formula right) {
-		this.left = left;
-		this.right = right;
-		this.op = op;
-	}
+    /**
+     * Constructs a new binary formula: left op right
+     *
+     * @ensures this.left' = left && this.right' = right && this.op' = op
+     * @throws NullPointerException left = null || right = null || op = null
+     */
+    BinaryFormula(Formula left, FormulaOperator op, Formula right) {
+        this.left = left;
+        this.right = right;
+        this.op = op;
+    }
 
-	/**
-	 * Returns the left child of this.
-	 * 
-	 * @return this.left
-	 */
-	public Formula left() {
-		return left;
-	}
+    /**
+     * Returns the left child of this.
+     *
+     * @return this.left
+     */
+    public Formula left() {
+        return left;
+    }
 
-	/**
-	 * Returns the right child of this.
-	 * 
-	 * @return this.right
-	 */
-	public Formula right() {
-		return right;
-	}
+    /**
+     * Returns the right child of this.
+     *
+     * @return this.right
+     */
+    public Formula right() {
+        return right;
+    }
 
-	/**
-	 * Returns the operator of this.
-	 * 
-	 * @return this.op
-	 */
-	public FormulaOperator op() {
-		return op;
-	}
+    /**
+     * Returns the operator of this.
+     *
+     * @return this.op
+     */
+    public FormulaOperator op() {
+        return op;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
-	 */
-	public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
+    @Override
+    public <E, F, D, I> F accept(ReturnVisitor<E,F,D,I> visitor) {
+        return visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
-	 */
-	public void accept(VoidVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
+    @Override
+    public void accept(VoidVisitor visitor) {
+        visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see kodkod.ast.Node#toString()
-	 */
-	public String toString() {
-		return "(" + left + " " + op + " " + right + ")";
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @see kodkod.ast.Node#toString()
+     */
+    @Override
+    public String toString() {
+        return "(" + left + " " + op + " " + right + ")";
+    }
 
 }
