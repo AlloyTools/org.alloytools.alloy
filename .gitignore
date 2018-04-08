@@ -40,3 +40,6 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.iml
 .idea
 
+# Eclipse classpath and project files
+.classpath
+.project
