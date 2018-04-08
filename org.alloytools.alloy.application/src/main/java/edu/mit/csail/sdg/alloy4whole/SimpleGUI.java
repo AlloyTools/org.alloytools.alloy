@@ -1912,7 +1912,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
         if (Util.onMac()) {
             macUtil = new MacUtil();
-            macUtil.addMenus(this);
+            macUtil.tryAddMenus(this);
         }
 
         doLookAndFeel();
