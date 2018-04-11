@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.ast.Sig;
@@ -82,6 +83,9 @@ public class TableView {
     }
 
     public static String toScriptedString(String atom, Set<String> multiple) {
+
+        if (AlloyCore.isWindows())
+            return atom;
 
         if (atom.matches(".*\\$\\d+")) {
             StringBuilder sb = new StringBuilder();

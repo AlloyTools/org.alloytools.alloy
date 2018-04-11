@@ -1,5 +1,7 @@
 package org.alloytools.alloy.core;
 
+import java.io.File;
+
 /**
  * Class for globally accessible things.
  *
@@ -27,5 +29,10 @@ public class AlloyCore {
         } catch (Exception e) {
             // ignore, only running in debug mode
         }
+    }
+
+
+    public static boolean isWindows() {
+        return File.separatorChar == '\\';
     }
 }
