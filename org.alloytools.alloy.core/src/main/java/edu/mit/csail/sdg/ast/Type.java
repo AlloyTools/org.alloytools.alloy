@@ -20,8 +20,14 @@ import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+
+import org.alloytools.alloy.core.api.TColumnType;
+import org.alloytools.alloy.core.api.TRelationType;
+import org.alloytools.alloy.core.api.TSig;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -42,7 +48,7 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * B even if the caller later constructs more sigs or subsigs or subsetsigs...
  */
 
-public final class Type implements Iterable<Type.ProductType>, Clause {
+public final class Type implements Iterable<Type.ProductType>, Clause, TRelationType {
 
     // [AM]
     // /** This configuration option is true if we want to automatically cast
@@ -64,7 +70,7 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
      * result C will always be the intersection of A and B even if the caller later
      * constructs more sigs or subsigs or subsetsigs...
      */
-    public static final class ProductType {
+    public static final class ProductType implements TColumnType {
 
         /** The array of PrimSig objects. */
         private final PrimSig[]          types;
@@ -333,6 +339,11 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
                 ans.append(types[i]);
             }
             return ans.toString();
+        }
+
+        @Override
+        public Set<TSig> getSigs() {
+            return new HashSet<>(Arrays.asList(types));
         }
     }
 
@@ -1302,4 +1313,10 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
         }
         return sb.toString();
     }
+
+    @Override
+    public List<TColumnType> columns() {
+        return new ArrayList<>(entries);
+    }
+
 }
