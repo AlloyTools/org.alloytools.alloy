@@ -1,0 +1,25 @@
+#
+# org.alloytools.alloy.api DEFAULTS
+#
+
+Bundle-Version:					5.0.0.${tstamp}
+Bundle-Description: 				\
+	API
+
+Export-Package: \
+	org.alloytools.alloy.control.api,\
+	org.alloytools.alloy.core.api,\
+	org.alloytools.alloy.solver.api
+
+Require-Capability: \
+	compile-only
+
+-includeresource: {readme.md}
+
+-buildpath:  \
+	osgi.enroute.base.api;version=2.1
+
+-testpath: \
+	osgi.enroute.junit.wrapper;version=4.12, \
+	osgi.enroute.hamcrest.wrapper;version=1.3
+

@@ -1,0 +1,13 @@
+#
+# org.alloytools.alloy.core.provider DEBUG LAUNCH SPECFICATION 
+#
+
+-include: ~org.alloytools.alloy.core.provider.bndrun
+
+-runrequires.debug:  \
+	${debug-bundles}
+
+-runtrace: true
+
+-runbundles: \
+	${error;Resolve first}
