@@ -10,8 +10,26 @@ public class AlloyGraphics {
 
     private static Set<String> availableFontNames;
 
-    public static synchronized String matchBestFontName(String fontName) {
-        String[] names = fontName.trim().split("\\s*,\\s*");
+    /**
+     * The fontNames can contain a comma separated list of font names. This
+     * function will parse that list trying to match the first font name that
+     * can be found in the list against the list of available font families. 
+     * Spaces around font names are stripped. For example:
+     * <pre>
+     *   'Input Mono, Lucinda Sans Mono, Courier New, Courier, monofont' 
+     * </pre>
+     *<p>
+     * A special case is when a font name starts with a $, in that case the
+     * name is looked up in the System properties. {@see Font#getFont()}.
+     * <p>
+     * If none of the names can be found, the last font is returned as
+     * a desperate last attempt.
+     *
+     * @param fontNames comma separated list of font names
+     **/
+    
+    public static synchronized String matchBestFontName(String fontNames) {
+        String[] names = fontNames.trim().split("\\s*,\\s*");
         if (availableFontNames == null) {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             availableFontNames = new HashSet<>(Arrays.asList(ge.getAvailableFontFamilyNames()));
