@@ -6,6 +6,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * A central class for general graphic support functions in Alloy that have no good other 
+ * place
+ */
+
 public class AlloyGraphics {
 
     private static Set<String> availableFontNames;
