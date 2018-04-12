@@ -20,7 +20,7 @@ public class AlloyGraphics {
      * </pre>
      *<p>
      * A special case is when a font name starts with a $, in that case the
-     * name is looked up in the System properties. {@see Font#getFont()}.
+     * name is looked up in the System properties. {@see Font#getFont(String)}.
      * <p>
      * If none of the names can be found, the last font is returned as
      * a desperate last attempt.
