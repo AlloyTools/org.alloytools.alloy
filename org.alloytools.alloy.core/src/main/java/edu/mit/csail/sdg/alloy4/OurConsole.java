@@ -49,6 +49,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.alloytools.graphics.util.AlloyGraphics;
 import org.alloytools.util.table.Table;
 
 /**
@@ -78,7 +79,7 @@ public final class OurConsole extends JScrollPane {
     private final static AttributeSet plain               = style("Verdana", 14, false, false, false, Color.BLACK, 0);
 
     /** The style for table text. */
-    private final static AttributeSet mono                = style("Courier", 14, false, false, false, Color.BLACK, 10);
+    private final static AttributeSet mono                = style("Input Mono,DejaVu Sans Mono,Courier New,Courier", 14, false, false, false, Color.BLACK, 10);
 
     /** The style for bold text. */
     private final static AttributeSet bold                = style("Verdana", 14, true, false, false, Color.BLACK, 0);
@@ -127,6 +128,10 @@ public final class OurConsole extends JScrollPane {
      * size, boldness, color, and left indentation.
      */
     static MutableAttributeSet style(String fontName, int fontSize, boolean boldness, boolean italic, boolean strike, Color color, int leftIndent) {
+
+
+        fontName = AlloyGraphics.matchBestFontName(fontName);
+
         MutableAttributeSet s = new SimpleAttributeSet();
         StyleConstants.setFontFamily(s, fontName);
         StyleConstants.setFontSize(s, fontSize);
