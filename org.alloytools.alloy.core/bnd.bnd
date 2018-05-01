@@ -21,6 +21,7 @@
 Export-Package: \
 	edu.mit.csail.sdg.alloy4,\
 	edu.mit.csail.sdg.ast,\
+	org.alloytools.graphics.util,\
 	edu.mit.csail.sdg.parser,\
 	edu.mit.csail.sdg.sim,\
 	edu.mit.csail.sdg.translator,\
