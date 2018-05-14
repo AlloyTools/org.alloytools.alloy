@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TRun;
+import org.alloytools.alloy.core.api.TScope;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -173,8 +174,8 @@ public final class Command extends Browsable implements TCheck, TRun {
      *            specified)
      * @param expects - the expected value (0 or 1) (-1 if no expectation was
      *            specified)
-     * @param scope - a list of scopes (can be null if we want to use default)
-     * @param additionalExactSig - a list of sigs whose scope shall be considered
+     * @param scope - a   list of scopes (can be null if we want to use default)
+     * @param additionalExactSig - a   list of sigs whose scope shall be considered
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
      */
@@ -331,5 +332,15 @@ public final class Command extends Browsable implements TCheck, TRun {
     @Override
     public String getName() {
         return label;
+    }
+
+    @Override
+    public Set<TScope> getScopes() {
+        return new HashSet<TScope>(scope);
+    }
+
+    @Override
+    public Expects getExpects() {
+        return expects < 0 ? Expects.UNKNOWN : (expects > 0 ? Expects.SATISFIED : Expects.UNSATISFIED);
     }
 }
