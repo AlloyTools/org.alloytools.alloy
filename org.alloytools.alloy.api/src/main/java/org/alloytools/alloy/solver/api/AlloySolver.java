@@ -5,16 +5,20 @@ import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TRun;
 
 public interface AlloySolver {
+	
+	String getId();
+	
+	boolean isAvailable();
+	
 	SolverType getSolverType();
 
 	String getName();
 
 	String getDescription();
 
-	AlloySolution run(AlloyModule module, TRun command);
+	Class<? extends AlloyOptions> getOptionsType();
+	
+	AlloySolution run(AlloyModule module, AlloyOptions options, TRun command);
 
-	AlloySolution check(AlloyModule module, TCheck command);
-
-	AlloyOptions getOptions();
-	void setOptions();
+	AlloySolution check(AlloyModule module, AlloyOptions options, TCheck command);
 }

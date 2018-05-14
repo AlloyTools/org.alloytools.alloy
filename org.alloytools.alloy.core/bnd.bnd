@@ -3,13 +3,10 @@
     src/main/resources
     
 -buildpath: \
+    osgi.enroute.base.api,\
+    org.alloytools.alloy.api;version=latest,\
 	org.alloytools.kodkod.core;version=latest,\
 	org.sat4j.core,\
-	org.alloytools.kodkod.nativesat.util;version=latest,\
-	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
 	org.eclipse.jdt.annotation,\
 	org.alloytools.alloy.api;version=latest
 

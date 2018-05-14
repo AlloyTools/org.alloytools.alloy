@@ -1,0 +1,18 @@
+Bundle-Description: \
+    Utilities based on a standard VM (no external dependencies) that can be used by all Alloytools \
+    code. 
+
+Export-Package: \
+	org.alloytools.nativecode.util,\
+	org.allotools.conversion.util,\
+	org.alloytools.metainf.util,\
+	org.allotools.services.util
+    
+-conditionalpackage: aQute.lib*
+
+-buildpath: \
+    biz.aQute.bndlib;packages=*
+    
+-testpath: \
+    osgi.enroute.hamcrest.wrapper, \
+    osgi.enroute.junit.wrapper

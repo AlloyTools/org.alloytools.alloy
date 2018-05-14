@@ -15,6 +15,9 @@
 
 package edu.mit.csail.sdg.ast;
 
+import org.alloytools.alloy.core.api.TScope;
+import org.alloytools.alloy.core.api.TSig;
+
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
@@ -29,7 +32,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <b>Invariant:</b> increment > 0
  */
 
-public class CommandScope {
+public class CommandScope implements TScope {
 
     /**
      * The position in the original source file where this scope was declared; can
@@ -114,5 +117,20 @@ public class CommandScope {
     @Override
     public String toString() {
         return (isExact ? "exactly " : "") + startingScope + (endingScope != startingScope ? (".." + endingScope) : "") + (increment > 1 ? (":" + increment) : "") + " " + Util.tail(sig.label);
+    }
+
+    @Override
+    public TSig getSig() {
+        return sig;
+    }
+
+    @Override
+    public int size() {
+        return endingScope;
+    }
+
+    @Override
+    public boolean isExact() {
+        return isExact;
     }
 }

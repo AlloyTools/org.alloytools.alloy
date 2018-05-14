@@ -37,7 +37,7 @@ import kodkod.util.ints.Ints;
  *
  * @author Emina Torlak
  */
-final class LazyTrace implements ResolutionTrace {
+final public class LazyTrace implements ResolutionTrace {
 
     /*
      * The trace array encodes the resolution trace as follows. The first
@@ -74,7 +74,7 @@ final class LazyTrace implements ResolutionTrace {
      * this resolution trace object.
      * </p>
      */
-    LazyTrace(int[][] trace, int axioms) {
+    public LazyTrace(int[][] trace, int axioms) {
         this.axioms = axioms;
 
         // find all the clauses that are reachable from the conflict
@@ -107,7 +107,7 @@ final class LazyTrace implements ResolutionTrace {
      * this resolution trace object.
      * </p>
      */
-    LazyTrace(LazyTrace original, IntSet indices, int[][] partial) {
+    public LazyTrace(LazyTrace original, IntSet indices, int[][] partial) {
         this.axioms = reconstruct(original, indices, partial);
 
         // find all the clauses that are reachable from the conflict

@@ -5,14 +5,16 @@ package org.alloytools.alloy.core.api;
  */
 public interface TField {
 	/**
-	 * The type of this relation
+	 * The type of this relation.
 	 * 
 	 * @return the type of this relation
 	 */
 	TRelationType getType();
 	
 	/**
-	 * Parent type (not sure this is needed?)
+	 * Parent type 
+	 * 
+	 * TODO (not sure this is needed?)
 	 * 
 	 * @return the parent type
 	 */

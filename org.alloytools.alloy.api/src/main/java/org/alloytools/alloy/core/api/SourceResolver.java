@@ -8,5 +8,12 @@ import java.io.IOException;
  * caching if so desired.
  */
 public interface SourceResolver {
-	String resolve(String path) throws IOException;
+	/**
+	 * Resolve a path to a source string
+	 *  
+	 * @param path the path referenced in an Alloy file
+	 * @return
+	 * @throws IOException
+	 */
+	String resolve(String path) ;
 }

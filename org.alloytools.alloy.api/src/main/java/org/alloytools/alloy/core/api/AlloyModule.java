@@ -1,7 +1,9 @@
 package org.alloytools.alloy.core.api;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Represents an Alloy Module
@@ -9,11 +11,18 @@ import java.util.Optional;
 public interface AlloyModule {
 
 	/**
+	 * The source path of this module. In certain cases
+	 * 
+	 * @return
+	 */
+	Optional<String> getPath();
+
+	/**
 	 * Get the defined sigs in this module
 	 * 
 	 * @return a list of sigs
 	 */
-	List<TSig> getSigs();
+	Set<TSig> getSigs();
 
 	/**
 	 * Get a sig by name
@@ -22,7 +31,7 @@ public interface AlloyModule {
 	 *            the name of the request sig
 	 * @return an optional TSig
 	 */
-	Optional<? extends TSig> getSig(String name);
+	Optional<TSig> getSig(String name);
 
 	/**
 	 * Get any run commands defined in the module
@@ -38,4 +47,12 @@ public interface AlloyModule {
 	 */
 	List<TCheck> getChecks();
 
+	List<CompilerMessage> getWarnings();
+
+	List<CompilerMessage> getErrors();
+
+	boolean isValid();
+
+
+	Map<String, String> getSourceOptions(TCommand command);
 }
