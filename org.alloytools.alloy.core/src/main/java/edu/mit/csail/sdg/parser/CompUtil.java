@@ -241,7 +241,13 @@ public final class CompUtil {
                     content = Util.readAll(newCp);
                     cp = newCp;
                 } catch (IOException ex) {
-                    throw new ErrorSyntax(x.pos, "This module cannot be found.\nIt is not a built-in library module, and it cannot be found at \"" + cp + "\".\n");
+                    try {
+                        String newCp = (Util.jarPrefix() + "models/" + x.filename + ".md").replace('/', File.separatorChar);
+                        content = Util.readAll(newCp);
+                        cp = newCp;
+                    } catch (IOException exx) {
+                        throw new ErrorSyntax(x.pos, "This module cannot be found.\nIt is not a built-in library module, and it cannot be found at \"" + cp + "\".\n");
+                    }
                 }
             }
             loaded.put(cp, content);
