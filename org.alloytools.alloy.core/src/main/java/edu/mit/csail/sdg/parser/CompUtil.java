@@ -237,17 +237,15 @@ public final class CompUtil {
                 }
             } catch (IOException ex1) {
                 try {
-                    String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
+                    String newCp = cp.replaceAll("\\.als$", ".md");
                     content = Util.readAll(newCp);
-                    cp = newCp;
-                } catch (IOException ex) {
+                } catch (IOException exx) {
+
                     try {
-                        String newCp = (Util.jarPrefix() + "models/" + x.filename + ".md").replace('/', File.separatorChar);
+                        String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
                         content = Util.readAll(newCp);
                         cp = newCp;
-                    } catch (IOException exx) {
-                        throw new ErrorSyntax(x.pos, "This module cannot be found.\nIt is not a built-in library module, and it cannot be found at \"" + cp + "\".\n");
-                    }
+                    } catch (IOException ex) {}
                 }
             }
             loaded.put(cp, content);
