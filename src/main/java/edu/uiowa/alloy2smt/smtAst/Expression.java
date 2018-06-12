@@ -1,5 +1,5 @@
 package edu.uiowa.alloy2smt.smtAst;
 
-public class Sort extends SMTAst
+abstract class Expression extends SMTAst
 {
 }

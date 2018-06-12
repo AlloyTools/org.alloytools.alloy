@@ -1,5 +1,5 @@
 package edu.uiowa.alloy2smt.smtAst;
 
-public class Sort extends SMTAst
+public class StringSort extends Sort
 {
 }
