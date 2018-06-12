@@ -19,6 +19,13 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
+        <dependency>
+            <groupId>edu.mit.csail.sdg</groupId>
+            <artifactId>Alloy</artifactId>
+            <version>5.0.0.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Alloy-5.0.0.1.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <properties>
