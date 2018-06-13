@@ -19,13 +19,14 @@ public class BooleanConstant extends SMTAst
         this.value = value;
     }
     
-    public boolean getBooleanConstValue()
+    public String getValue()
     {
-        return this.value;
-    }
+        return String.valueOf(this.value);
+    }   
 
     @Override
-    public void accept(SMTAstVisitor visitor) {
+    public void accept(SMTAstVisitor visitor) 
+    {
         visitor.visit(this);
     }
 }

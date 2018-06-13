@@ -28,7 +28,12 @@ public class IntConstant extends Expression
     public IntConstant(String value)
     {
         this.value = new BigInteger(value);
-    }    
+    }  
+    
+    public String getValue()
+    {
+        return this.value.toString();
+    }
     
     @Override
     public void accept(SMTAstVisitor visitor) {
