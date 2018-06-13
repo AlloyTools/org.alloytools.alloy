@@ -12,13 +12,15 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class BinaryExpression extends Expression
 {
-    private final Expression lhsExpr;
-    private final Expression rhsExpr;
+    private final Op            op;
+    private final Expression    lhsExpr;
+    private final Expression    rhsExpr;
     
-    public BinaryExpression(Expression lhsExpr, Expression rhsExpr) 
+    public BinaryExpression(Expression lhsExpr, Op op, Expression rhsExpr) 
     {
-        this.lhsExpr = lhsExpr;
-        this.rhsExpr = rhsExpr;
+        this.op         = op;
+        this.lhsExpr    = lhsExpr;
+        this.rhsExpr    = rhsExpr;
     }
     
     public Expression getLhsExpr() 
@@ -30,6 +32,11 @@ public class BinaryExpression extends Expression
     {
         return this.rhsExpr;
     }    
+    
+    public Op getOp()
+    {
+        return this.op;
+    }
 
     @Override
     public void accept(SMTAstVisitor visitor) {
