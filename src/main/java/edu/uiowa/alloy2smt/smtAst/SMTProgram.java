@@ -48,6 +48,10 @@ public class SMTProgram {
             this.fcnDefs.add(fcnDef);
         }
     }     
+
+    public List<VariableDeclaration> getVariableDecls() {
+        return this.varDecls;
+    }
     
     public List<Expression> getExpressions() {
         return this.exprs;
