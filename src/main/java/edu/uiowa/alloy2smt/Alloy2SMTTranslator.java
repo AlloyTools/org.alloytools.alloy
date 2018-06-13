@@ -30,8 +30,8 @@ public class Alloy2SMTTranslator
     private final CompModule            alloyModel;
     private final List<Sig>             reachableSigs;
     private final List<Sig>             topLevelSigs;
-    private final SetSort               unarySetOfAtomSort;
-    private final SetSort               binarySetOfAtomSort;
+    private final SetSort               setOfUnaryAtomSort;
+    private final SetSort               setOfBinaryAtomSort;
     private final UninterpretedSort     atomSort;
     private final TupleSort             unaryAtomSort;
     private final TupleSort             binaryAtomSort;
@@ -47,8 +47,8 @@ public class Alloy2SMTTranslator
         this.atomSort               = new UninterpretedSort(this.atom);
         this.unaryAtomSort          = new TupleSort(this.atomSort);
         this.binaryAtomSort         = new TupleSort(this.atomSort, this.atomSort);
-        this.unarySetOfAtomSort     = new SetSort(this.unaryAtomSort);
-        this.binarySetOfAtomSort    = new SetSort(this.binaryAtomSort);
+        this.setOfUnaryAtomSort     = new SetSort(this.unaryAtomSort);
+        this.setOfBinaryAtomSort    = new SetSort(this.binaryAtomSort);
     }
 
     public SMTProgram execute()
@@ -83,7 +83,7 @@ public class Alloy2SMTTranslator
     {
         if(varName != null) 
         {
-            this.smtProgram.addVarDecl(new VariableDeclaration(varName, this.unarySetOfAtomSort));
+            this.smtProgram.addVarDecl(new VariableDeclaration(varName, this.setOfUnaryAtomSort));
         }        
     }
     
@@ -91,7 +91,7 @@ public class Alloy2SMTTranslator
     {
         if(varName != null) 
         {
-            this.smtProgram.addVarDecl(new VariableDeclaration(varName, this.binarySetOfAtomSort));
+            this.smtProgram.addVarDecl(new VariableDeclaration(varName, this.setOfBinaryAtomSort));
         }        
     }    
     
