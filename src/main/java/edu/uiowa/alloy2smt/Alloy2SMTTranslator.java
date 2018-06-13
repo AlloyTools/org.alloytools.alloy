@@ -25,6 +25,8 @@ public class Alloy2SMTTranslator
     public final SMTProgram smtProgram;
     
     private final Alloy2SMTLogger   LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
+    
+    private final String                atom;
     private final CompModule            alloyModel;
     private final List<Sig>             reachableSigs;
     private final List<Sig>             topLevelSigs;
@@ -38,10 +40,11 @@ public class Alloy2SMTTranslator
     {
         this.smtProgram             = new SMTProgram();
         
+        this.atom                   = "Atom";
         this.alloyModel             = alloyModel;
         this.reachableSigs          = new ArrayList<>();
         this.topLevelSigs           = new ArrayList<>();
-        this.atomSort               = new UninterpretedSort("Atom");
+        this.atomSort               = new UninterpretedSort(this.atom);
         this.unaryAtomSort          = new TupleSort(this.atomSort);
         this.binaryAtomSort         = new TupleSort(this.atomSort, this.atomSort);
         this.unarySetOfAtomSort     = new SetSort(this.unaryAtomSort);
