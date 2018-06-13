@@ -10,5 +10,11 @@ package edu.uiowa.alloy2smt.smtAst;
 
 public class IntSort extends Sort
 {
-
+    private final String intSort = "int";
+    
+    @Override
+    public String toString() 
+    {
+        return this.intSort;
+    }
 }

@@ -10,4 +10,10 @@ package edu.uiowa.alloy2smt.smtAst;
 
 public class UninterpretedSort extends Sort
 {
+    public String sortName;
+    
+    public UninterpretedSort(String sortName) 
+    {
+        this.sortName = sortName;
+    }
 }

@@ -8,6 +8,6 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-abstract class Expression extends SMTAst
+public abstract class Expression extends SMTAst
 {
 }

@@ -8,29 +8,23 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public class UnaryExpression extends Expression
-{
+public class MultiArityExpression {
     public enum Op 
-    {	        
-        NOT ("not"),
-        COMPLEMENT ("complement"),
-        TRANSPOSE ("transpose"),
-        TCLOSURE("-"),
-        SINGLETON("singleton"),
-        UNIVSET("as univset"),
-        EMPTYSET("as emptyset");
+    {        
+        MKTUPLE ("mkTuple"),
+        INSERT ("insert");    
 
         private final String opStr;
 
-        private Op(String str) 
+        private Op(String op) 
         {
-            this.opStr = str;
+            this.opStr = op;
         }
 
         @Override
         public String toString() 
         {
             return this.opStr;
-        }    
+        }        
     }     
 }

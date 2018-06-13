@@ -10,4 +10,11 @@ package edu.uiowa.alloy2smt.smtAst;
 
 public class StringSort extends Sort
 {
+    private final String stringSort = "string";
+    
+    @Override
+    public String toString() 
+    {
+        return this.stringSort;
+    }      
 }

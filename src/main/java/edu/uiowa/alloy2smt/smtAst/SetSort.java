@@ -10,4 +10,10 @@ package edu.uiowa.alloy2smt.smtAst;
 
 public class SetSort extends Sort
 {
+    public Sort elementSort;
+    
+    public SetSort(Sort elementSort) 
+    {
+        this.elementSort = elementSort;
+    }
 }
