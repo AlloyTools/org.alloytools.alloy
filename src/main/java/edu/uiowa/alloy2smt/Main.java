@@ -7,10 +7,6 @@
  */
 
 package edu.uiowa.alloy2smt;
-import edu.mit.csail.sdg.parser.CompModule;
-import edu.mit.csail.sdg.parser.CompUtil;
-import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
-import edu.uiowa.alloy2smt.smtAst.SMTAst;
 import org.apache.commons.cli.*;
 import java.util.Formatter;
 import java.io.File;
