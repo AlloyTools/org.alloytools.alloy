@@ -8,11 +8,12 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FunctionDeclaration
+public class FunctionDeclaration extends SMTAst
 {
     private final List<Sort>   inputSorts;
     private final Sort         outputSort;
@@ -50,4 +51,9 @@ public class FunctionDeclaration
     {
         return this.outputSort;
     }   
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
+    }
 }

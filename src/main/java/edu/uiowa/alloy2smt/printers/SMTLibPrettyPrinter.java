@@ -9,6 +9,8 @@
 package edu.uiowa.alloy2smt.printers;
 
 import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
+import edu.uiowa.alloy2smt.smtAst.FunctionDeclaration;
+import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.smtAst.IntConstant;
 import edu.uiowa.alloy2smt.smtAst.IntSort;
 import edu.uiowa.alloy2smt.smtAst.QuantifiedExpression;
@@ -19,6 +21,7 @@ import edu.uiowa.alloy2smt.smtAst.StringSort;
 import edu.uiowa.alloy2smt.smtAst.TupleSort;
 import edu.uiowa.alloy2smt.smtAst.UnaryExpression;
 import edu.uiowa.alloy2smt.smtAst.UninterpretedSort;
+import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
 import edu.uiowa.alloy2smt.smtAst.VariableExpression;
 
 public class SMTLibPrettyPrinter implements SMTAstVisitor
@@ -87,6 +90,21 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
 
     @Override
     public void visit(VariableExpression aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(FunctionDeclaration aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(FunctionDefinition aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(VariableDeclaration aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

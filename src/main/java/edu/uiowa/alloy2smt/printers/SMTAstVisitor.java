@@ -9,6 +9,8 @@
 package edu.uiowa.alloy2smt.printers;
 
 import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
+import edu.uiowa.alloy2smt.smtAst.FunctionDeclaration;
+import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.smtAst.IntConstant;
 import edu.uiowa.alloy2smt.smtAst.IntSort;
 import edu.uiowa.alloy2smt.smtAst.QuantifiedExpression;
@@ -18,6 +20,7 @@ import edu.uiowa.alloy2smt.smtAst.StringSort;
 import edu.uiowa.alloy2smt.smtAst.TupleSort;
 import edu.uiowa.alloy2smt.smtAst.UnaryExpression;
 import edu.uiowa.alloy2smt.smtAst.UninterpretedSort;
+import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
 import edu.uiowa.alloy2smt.smtAst.VariableExpression;
 
 public interface SMTAstVisitor 
@@ -43,4 +46,10 @@ public interface SMTAstVisitor
     public void visit(IntConstant aThis);
 
     public void visit(VariableExpression aThis);
+
+    public void visit(FunctionDeclaration aThis);
+
+    public void visit(FunctionDefinition aThis);
+
+    public void visit(VariableDeclaration aThis);
 }
