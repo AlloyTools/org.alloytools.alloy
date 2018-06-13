@@ -9,19 +9,19 @@
 package edu.uiowa.alloy2smt;
 
 import edu.mit.csail.sdg.parser.CompModule;
-import edu.uiowa.alloy2smt.smtAst.SMTAst;
+import edu.uiowa.alloy2smt.smtAst.SMTProgram;
 
 public class Alloy2SMTTranslator
 {
 
-    private CompModule alloyModel;
+    private final CompModule alloyModel;
 
     public Alloy2SMTTranslator(CompModule alloyModel)
     {
         this.alloyModel = alloyModel;
     }
 
-    public SMTAst execute()
+    public SMTProgram execute()
     {
         throw new UnsupportedOperationException();
     }

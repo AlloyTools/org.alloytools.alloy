@@ -8,15 +8,15 @@
 
 package edu.uiowa.alloy2smt.printers;
 
-import edu.uiowa.alloy2smt.smtAst.SMTAst;
+import edu.uiowa.alloy2smt.smtAst.SMTProgram;
 
 public class SMTLibPrettyPrinter
 {
-    private final SMTAst root;
+    private final SMTProgram program;
 
-    public SMTLibPrettyPrinter(SMTAst root)
+    public SMTLibPrettyPrinter(SMTProgram program)
     {
-        this.root = root;
+        this.program = program;
     }
 
     public String print()

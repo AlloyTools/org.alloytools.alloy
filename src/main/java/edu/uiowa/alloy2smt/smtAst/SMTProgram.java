@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SMTProgram {
-    public List<Expression>             exprs       = new ArrayList<>();    
-    public List<FunctionDeclaration>    fcnDecls    = new ArrayList<>();
+    private final List<Expression>             exprs       = new ArrayList<>();    
+    private final List<FunctionDeclaration>    fcnDecls    = new ArrayList<>();
+    private final List<FunctionDefinition>     fcnDefs     = new ArrayList<>();    
 
     public void addExpr(Expression expr) 
     {
@@ -29,5 +30,25 @@ public class SMTProgram {
         {
             this.fcnDecls.add(fcn);
         }
-    }    
+    } 
+    
+    public void addFcnDef(FunctionDefinition fcnDef) 
+    {
+        if(fcnDef != null) 
+        {
+            this.fcnDefs.add(fcnDef);
+        }
+    }     
+    
+    public List<Expression> getExpressions() {
+        return this.exprs;
+    }
+    
+    public List<FunctionDeclaration> getFunctionDeclaration() {
+        return this.fcnDecls;
+    } 
+    
+    public List<FunctionDefinition> getFunctionDefinition() {
+        return this.fcnDefs;
+    }     
 }

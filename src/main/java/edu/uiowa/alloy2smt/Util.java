@@ -11,7 +11,7 @@ package edu.uiowa.alloy2smt;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
-import edu.uiowa.alloy2smt.smtAst.SMTAst;
+import edu.uiowa.alloy2smt.smtAst.SMTProgram;
 
 public class Util
 {
@@ -20,8 +20,8 @@ public class Util
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTAst                  root        = translator.execute();
-        SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(root);
+        SMTProgram              program     = translator.execute();
+        SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
@@ -30,25 +30,25 @@ public class Util
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTAst                  root        = translator.execute();
-        SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(root);
+        SMTProgram              program     = translator.execute();
+        SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
 
-    public static SMTAst getSMTAstFromFile(String filePath)
+    public static SMTProgram getSMTAstFromFile(String filePath)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTAst                  root        = translator.execute();
-        return root;
+        SMTProgram              program     = translator.execute();
+        return program;
     }
 
-    public static SMTAst getSMTAstFromString(String alloyProgram)
+    public static SMTProgram getSMTAstFromString(String alloyProgram)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTAst                  root        = translator.execute();
-        return root;
+        SMTProgram              program     = translator.execute();
+        return program;
     }
 }
