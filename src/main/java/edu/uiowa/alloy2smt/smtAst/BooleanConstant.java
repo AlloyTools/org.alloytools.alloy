@@ -8,7 +8,9 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public class BooleanConstant 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
+public class BooleanConstant extends SMTAst
 {
     private final boolean value;
     
@@ -20,5 +22,10 @@ public class BooleanConstant
     public boolean getBooleanConstValue()
     {
         return this.value;
+    }
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
     }
 }

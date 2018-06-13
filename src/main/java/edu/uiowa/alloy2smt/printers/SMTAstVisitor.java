@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.printers;
 
 import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
+import edu.uiowa.alloy2smt.smtAst.BooleanConstant;
 import edu.uiowa.alloy2smt.smtAst.FunctionDeclaration;
 import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.smtAst.IntConstant;
@@ -52,4 +53,6 @@ public interface SMTAstVisitor
     public void visit(FunctionDefinition aThis);
 
     public void visit(VariableDeclaration aThis);
+
+    public void visit(BooleanConstant aThis);
 }

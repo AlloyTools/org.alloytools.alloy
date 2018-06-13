@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.printers;
 
 import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
+import edu.uiowa.alloy2smt.smtAst.BooleanConstant;
 import edu.uiowa.alloy2smt.smtAst.FunctionDeclaration;
 import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.smtAst.IntConstant;
@@ -105,6 +106,11 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
 
     @Override
     public void visit(VariableDeclaration aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(BooleanConstant aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
