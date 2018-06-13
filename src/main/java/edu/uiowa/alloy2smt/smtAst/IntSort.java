@@ -8,13 +8,25 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
 public class IntSort extends Sort
 {
     private final String intSort = "int";
+    
+    public String getSortName()
+    {
+        return this.intSort;
+    }
     
     @Override
     public String toString() 
     {
         return this.intSort;
+    }
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
     }
 }

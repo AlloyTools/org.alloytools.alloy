@@ -8,6 +8,8 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
 public class SetSort extends Sort
 {
     public Sort elementSort;
@@ -15,5 +17,10 @@ public class SetSort extends Sort
     public SetSort(Sort elementSort) 
     {
         this.elementSort = elementSort;
+    }
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -14,28 +14,50 @@ import java.util.List;
 
 public class FunctionDefinition
 {
-    public List<Sort>   inputSort;
-    public Sort         outputSort;
-    public Expression   expression;
+    private final List<Sort>   inputSorts;
+    private final Sort         outputSort;
+    private final Expression   expression;
     
     public FunctionDefinition(List<Sort> inputSort, Sort outputSort, Expression expression) 
     {
-        this.inputSort  = inputSort;
+        this.inputSorts = inputSort;
         this.outputSort = outputSort;
         this.expression = expression;
     }
     
     public FunctionDefinition(Sort inputSort, Sort outputSort, Expression expression) 
     {
-        this.inputSort  = Arrays.asList(inputSort);
+        this.inputSorts = Arrays.asList(inputSort);
         this.outputSort = outputSort;
         this.expression = expression;
     }
 
     public FunctionDefinition(Sort outputSort, Expression expression) 
     {
-        this.inputSort  = new ArrayList<>();
+        this.inputSorts = new ArrayList<>();
         this.outputSort = outputSort;
         this.expression = expression;
-    }    
+    }  
+    
+    public FunctionDefinition(Sort outputSort, Expression expression, Sort ... inputSorts) 
+    {
+        this.inputSorts = Arrays.asList(inputSorts);
+        this.outputSort = outputSort;
+        this.expression = expression;
+    }      
+    
+    public List<Sort> getInputSorts()
+    {
+        return this.inputSorts;
+    }
+    
+    public Sort getOutputSort()
+    {
+        return this.outputSort;
+    }
+    
+    public Expression getExpression()
+    {
+        return this.expression;
+    }
 }

@@ -8,8 +8,34 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
 public class BinaryExpression extends Expression
 {
+    private final Expression lhsExpr;
+    private final Expression rhsExpr;
+    
+    public BinaryExpression(Expression lhsExpr, Expression rhsExpr) 
+    {
+        this.lhsExpr = lhsExpr;
+        this.rhsExpr = rhsExpr;
+    }
+    
+    public Expression getLhsExpr() 
+    {
+        return this.lhsExpr;
+    }
+    
+    public Expression getRhsExpr() 
+    {
+        return this.rhsExpr;
+    }    
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
+    }
+    
     public enum Op 
     {        
         OR ("or"),

@@ -8,8 +8,42 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+import java.util.Arrays;
+import java.util.List;
+
 public class QuantifiedExpression extends Expression
 {
+    private final Expression                  expr;
+    private final List<VariableDeclaration>   boundVars;
+    
+    public QuantifiedExpression(List<VariableDeclaration> boundVars, Expression expr) 
+    {
+        this.boundVars  = boundVars;
+        this.expr       = expr;
+    }
+    
+    public QuantifiedExpression(Expression expr, VariableDeclaration ... boundVars) 
+    {
+        this.boundVars  = Arrays.asList(boundVars);
+        this.expr       = expr;
+    }
+    
+    public List<VariableDeclaration> getBoundVars() 
+    {
+        return this.boundVars;
+    }
+    
+    public Expression getExpression()
+    {
+        return this.expr;
+    }
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
+    }
+    
     public enum Op 
     {        
         FORALL ("forall"),

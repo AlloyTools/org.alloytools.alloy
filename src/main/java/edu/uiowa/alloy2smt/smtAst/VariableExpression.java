@@ -8,23 +8,24 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public class VariableDeclaration {
-    private final String    varName;
-    private final Sort      varSort;
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
+public class VariableExpression extends Expression
+{
+    private final String varName;
     
-    public VariableDeclaration(String varName, Sort varSort) 
+    public VariableExpression(String varName)
     {
         this.varName = varName;
-        this.varSort = varSort;
     }
     
     public String getVarName()
     {
         return this.varName;
     }
-    
-    public Sort getSort()
-    {
-        return this.varSort;
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
     }
 }

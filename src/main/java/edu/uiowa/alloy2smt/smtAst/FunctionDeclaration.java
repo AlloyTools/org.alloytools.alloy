@@ -14,24 +14,40 @@ import java.util.List;
 
 public class FunctionDeclaration
 {
-    public List<Sort>   inputSort;
-    public Sort         outputSort;
+    private final List<Sort>   inputSorts;
+    private final Sort         outputSort;
     
     public FunctionDeclaration(List<Sort> inputSort, Sort outputSort) 
     {
-        this.inputSort  = inputSort;
+        this.inputSorts = inputSort;
         this.outputSort = outputSort;
     }
     
     public FunctionDeclaration(Sort inputSort, Sort outputSort) 
     {
-        this.inputSort  = Arrays.asList(inputSort);
+        this.inputSorts = Arrays.asList(inputSort);
         this.outputSort = outputSort;
     }
 
     public FunctionDeclaration(Sort outputSort) 
     {
-        this.inputSort  = new ArrayList<>();
+        this.inputSorts = new ArrayList<>();
         this.outputSort = outputSort;
-    }    
+    } 
+    
+    public FunctionDeclaration(Sort outputSort, Sort ... inputSorts) 
+    {
+        this.inputSorts = Arrays.asList(inputSorts);
+        this.outputSort = outputSort;
+    }     
+    
+    public List<Sort> getInputSorts()
+    {
+        return this.inputSorts;
+    }
+    
+    public Sort getOutputSort()
+    {
+        return this.outputSort;
+    }   
 }

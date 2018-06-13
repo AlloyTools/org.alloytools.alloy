@@ -8,8 +8,34 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
 public class UnaryExpression extends Expression
-{
+{    
+    private final Op op;
+    private final Expression expr;
+    
+    public UnaryExpression(Op op, Expression expr)
+    {
+        this.op     = op;
+        this.expr   = expr;
+    }
+    
+    public Op getOP() 
+    {
+        return this.op;
+    }
+    
+    public Expression getExpression() 
+    {
+        return this.expr;
+    }
+
+    @Override
+    public void accept(SMTAstVisitor visitor) {
+        visitor.visit(this);
+    }
+    
     public enum Op 
     {	        
         NOT ("not"),
