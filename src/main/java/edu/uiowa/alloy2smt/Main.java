@@ -36,11 +36,7 @@ public class Main
 
                 if((file.exists() && file.canRead()))
                 {
-                    CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, file.getAbsolutePath());
-                    Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator();
-                    SMTAst                  root        = translator.execute();
-                    SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(root);
-                    String                  output      = printer.print();
+                    String  output = Util.translateFromFile(file.getAbsolutePath());
 
                     if(command.hasOption("o"))
                     {

@@ -9,10 +9,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class Alloy2SMTTranslatorTest
 {
     @Test
-    public void executeTest()
+    public void executeSimpleModel()
     {
-        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator();
-        SMTAst                  root        = translator.execute();
-        assertNotNull(root);
+
+        String input = "sig Name, Addr {}\n" +
+                        "sig Book {\n" +
+                            "addr: Name -> lone Addr\n" +
+                        "}\n" +
+                        "\n" +
+                        "pred show () {}\n" +
+                        "run show for 3 but 1 Book";
+
+        String output = Util.translateFromString(input);
+
     }
 }

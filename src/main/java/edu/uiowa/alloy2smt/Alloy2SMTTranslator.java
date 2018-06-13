@@ -8,10 +8,18 @@
 
 package edu.uiowa.alloy2smt;
 
+import edu.mit.csail.sdg.parser.CompModule;
 import edu.uiowa.alloy2smt.smtAst.SMTAst;
 
 public class Alloy2SMTTranslator
 {
+
+    private CompModule alloyModel;
+
+    public Alloy2SMTTranslator(CompModule alloyModel)
+    {
+        this.alloyModel = alloyModel;
+    }
 
     public SMTAst execute()
     {
