@@ -13,7 +13,7 @@ import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.SMTProgram;
 
-public class Util
+public class Utils
 {
 
     public static String translateFromFile(String filePath)
@@ -51,4 +51,14 @@ public class Util
         SMTProgram              program     = translator.execute();
         return program;
     }
+    
+    /**
+     * Sanitize string s by replacing "\" with "_".
+     * @param s
+     * @return 
+     */
+    public static String sanitizeName(String s) {        
+        return s.replaceAll("/", "_");
+    }
+    
 }

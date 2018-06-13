@@ -13,9 +13,18 @@ import java.util.List;
 
 public class SMTProgram {
     private final List<Expression>             exprs       = new ArrayList<>();    
+    private final List<VariableDeclaration>    varDecls    = new ArrayList<>();
     private final List<FunctionDeclaration>    fcnDecls    = new ArrayList<>();
     private final List<FunctionDefinition>     fcnDefs     = new ArrayList<>();    
 
+    public void addVarDecl(VariableDeclaration varDecl) 
+    {
+        if(varDecl != null) 
+        {
+            this.varDecls.add(varDecl);
+        }        
+    }    
+    
     public void addExpr(Expression expr) 
     {
         if(expr != null) 
@@ -24,7 +33,7 @@ public class SMTProgram {
         }        
     }
     
-    public void addFcn(FunctionDeclaration fcn) 
+    public void addFcnDecl(FunctionDeclaration fcn) 
     {
         if(fcn != null) 
         {

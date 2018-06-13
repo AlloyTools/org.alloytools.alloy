@@ -32,7 +32,7 @@ public class Main
 
                 if((file.exists() && file.canRead()))
                 {
-                    String  output = Util.translateFromFile(file.getAbsolutePath());
+                    String  output = Utils.translateFromFile(file.getAbsolutePath());
 
                     if(command.hasOption("o"))
                     {

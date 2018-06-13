@@ -20,7 +20,7 @@ class Alloy2SMTTranslatorTest
                         "pred show () {}\n" +
                         "run show for 3 but 1 Book";
 
-        String actual = Util.translateFromString(input);
+        String actual = Utils.translateFromString(input);
         String expected = "?";
         assertEquals(expected, actual);
     }
