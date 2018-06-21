@@ -10,15 +10,10 @@ package edu.uiowa.alloy2smt;
 
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
-import edu.uiowa.alloy2smt.smtAst.FunctionDeclaration;
-import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
-import edu.uiowa.alloy2smt.smtAst.SMTProgram;
-import edu.uiowa.alloy2smt.smtAst.SetSort;
-import edu.uiowa.alloy2smt.smtAst.TupleSort;
-import edu.uiowa.alloy2smt.smtAst.UninterpretedSort;
-import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
-import java.util.ArrayList;
-import java.util.List;
+import edu.uiowa.alloy2smt.smtAst.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Alloy2SMTTranslator
 {
@@ -26,15 +21,17 @@ public class Alloy2SMTTranslator
     
     private final Alloy2SMTLogger   LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
     
-    private final String                atom;
-    private final CompModule            alloyModel;
-    private final List<Sig>             reachableSigs;
-    private final List<Sig>             topLevelSigs;
-    private final SetSort               setOfUnaryAtomSort;
-    private final SetSort               setOfBinaryAtomSort;
-    private final UninterpretedSort     atomSort;
-    private final TupleSort             unaryAtomSort;
-    private final TupleSort             binaryAtomSort;
+    private final String                    atom;
+    private final CompModule                alloyModel;
+    private final List<Sig>                 reachableSigs;
+    private final List<Sig>                 topLevelSigs;
+    private final SetSort                   setOfUnaryAtomSort;
+    private final SetSort                   setOfBinaryAtomSort;
+    private final UninterpretedSort         atomSort;
+    private final TupleSort                 unaryAtomSort;
+    private final TupleSort                 binaryAtomSort;
+
+    private Map<Sig,VariableDeclaration>    signaturesMap = new HashMap<>();
 
     public Alloy2SMTTranslator(CompModule alloyModel)
     {
@@ -75,16 +72,59 @@ public class Alloy2SMTTranslator
     private void translateSigsAndHierarchy() 
     {
         this.reachableSigs.forEach((sig) -> {
-            mkAndAddUnaryAtomRelation(Utils.sanitizeName(sig.toString()));
+
+            VariableDeclaration variableDeclaration =  mkAndAddUnaryAtomRelation(Utils.sanitizeName(sig.toString()));
+            this.signaturesMap.put(sig, variableDeclaration);
+            // translate signature fields
+            for(Sig.Field field : sig.getFields())
+            {
+                translateField(field);
+            }
         });
-    } 
-    
-    private void mkAndAddUnaryAtomRelation(String varName) 
+    }
+
+    private void translateField(Sig.Field field)
     {
-        if(varName != null) 
+
+        String              fieldName   = Utils.sanitizeName(field.sig.label + "/" + field.label);
+        TupleSort           tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), this.atomSort));
+        SetSort             setSort     = new SetSort(tupleSort);
+        VariableDeclaration declaration = new VariableDeclaration(fieldName, tupleSort);
+
+        // declare a variable for the field
+        this.smtProgram.addVarDecl(declaration);
+
+        // a field relation is a subset of the product of its signatures
+        List<Sig>           fieldSignatures     =  field.type().fold().stream().flatMap(List::stream).collect(Collectors.toList());
+
+        /* alloy: sig Book{addr: Name -> lone Addr}
+        *  smt  : (assert (subset addr (product (product Book Name) Addr)))
+        */
+        VariableExpression  first   = new VariableExpression(signaturesMap.get(fieldSignatures.get(0)).getVarName());
+        VariableExpression  second  = new VariableExpression(signaturesMap.get(fieldSignatures.get(1)).getVarName());
+        BinaryExpression    product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
+
+        for(int i = 2; i < fieldSignatures.size(); i++)
         {
-            this.smtProgram.addVarDecl(new VariableDeclaration(varName, this.setOfUnaryAtomSort));
-        }        
+            VariableExpression  expr = new VariableExpression(signaturesMap.get(fieldSignatures.get(i)).getVarName());
+            product                  = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);
+        }
+
+        VariableExpression  fieldExpr   = new VariableExpression(declaration.getVarName());
+        BinaryExpression    subset      = new BinaryExpression(fieldExpr, BinaryExpression.Op.SUBSET, product);
+
+        this.smtProgram.addExpr(subset);
+    }
+
+    private VariableDeclaration mkAndAddUnaryAtomRelation(String varName)
+    {
+        VariableDeclaration variable = null;
+        if(varName != null)
+        {
+            variable = new VariableDeclaration(varName, this.setOfUnaryAtomSort);
+            this.smtProgram.addVarDecl(variable);
+        }
+        return variable;
     }
     
     private void mkAndAddBinaryAtomRelation(String varName) 

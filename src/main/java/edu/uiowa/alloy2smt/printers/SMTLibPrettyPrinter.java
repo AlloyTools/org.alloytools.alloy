@@ -29,9 +29,22 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
 {
     private final SMTProgram program;
 
+    private StringBuilder stringBuilder;
+
     public SMTLibPrettyPrinter(SMTProgram program)
     {
         this.program = program;
+        initializeStringBuilder();
+    }
+
+    private void initializeStringBuilder()
+    {
+        stringBuilder = new StringBuilder();
+        stringBuilder.append(
+                "(set-logic ALL)\n" +
+                "(set-option :produce-models true)\n" +
+                "(set-option :finite-model-find true)\n" +
+                "(declare-sort Atom 0)");
     }
 
     public String print()
