@@ -112,8 +112,9 @@ public class Alloy2SMTTranslator
 
         VariableExpression  fieldExpr   = new VariableExpression(declaration.getVarName());
         BinaryExpression    subset      = new BinaryExpression(fieldExpr, BinaryExpression.Op.SUBSET, product);
+        Assertion           assertion   = new Assertion(subset);
 
-        this.smtProgram.addExpr(subset);
+        this.smtProgram.addAssertion(assertion);
     }
 
     private VariableDeclaration mkAndAddUnaryAtomRelation(String varName)

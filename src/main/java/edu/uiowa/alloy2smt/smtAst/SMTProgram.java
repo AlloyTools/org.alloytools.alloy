@@ -15,7 +15,8 @@ public class SMTProgram {
     private final List<Expression>             exprs       = new ArrayList<>();    
     private final List<VariableDeclaration>    varDecls    = new ArrayList<>();
     private final List<FunctionDeclaration>    fcnDecls    = new ArrayList<>();
-    private final List<FunctionDefinition>     fcnDefs     = new ArrayList<>();    
+    private final List<FunctionDefinition>     fcnDefs     = new ArrayList<>();
+    private final List<Assertion>              assertions  = new ArrayList<>();
 
     public void addVarDecl(VariableDeclaration varDecl) 
     {
@@ -47,7 +48,15 @@ public class SMTProgram {
         {
             this.fcnDefs.add(fcnDef);
         }
-    }     
+    }
+
+    public void addAssertion(Assertion assertion)
+    {
+        if(assertion != null)
+        {
+            this.assertions.add(assertion);
+        }
+    }
 
     public List<VariableDeclaration> getVariableDecls() {
         return this.varDecls;
@@ -63,5 +72,5 @@ public class SMTProgram {
     
     public List<FunctionDefinition> getFunctionDefinition() {
         return this.fcnDefs;
-    }     
+    }
 }
