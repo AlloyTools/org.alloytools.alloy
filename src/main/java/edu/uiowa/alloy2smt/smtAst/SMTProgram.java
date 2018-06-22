@@ -73,4 +73,9 @@ public class SMTProgram {
     public List<FunctionDefinition> getFunctionDefinition() {
         return this.fcnDefs;
     }
+
+    public List<Assertion> getAssertions()
+    {
+        return this.assertions;
+    }
 }

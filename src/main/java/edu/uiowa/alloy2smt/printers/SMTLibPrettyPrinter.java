@@ -8,22 +8,7 @@
 
 package edu.uiowa.alloy2smt.printers;
 
-import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
-import edu.uiowa.alloy2smt.smtAst.BooleanConstant;
-import edu.uiowa.alloy2smt.smtAst.FunctionDeclaration;
-import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
-import edu.uiowa.alloy2smt.smtAst.IntConstant;
-import edu.uiowa.alloy2smt.smtAst.IntSort;
-import edu.uiowa.alloy2smt.smtAst.QuantifiedExpression;
-import edu.uiowa.alloy2smt.smtAst.RealSort;
-import edu.uiowa.alloy2smt.smtAst.SMTProgram;
-import edu.uiowa.alloy2smt.smtAst.SetSort;
-import edu.uiowa.alloy2smt.smtAst.StringSort;
-import edu.uiowa.alloy2smt.smtAst.TupleSort;
-import edu.uiowa.alloy2smt.smtAst.UnaryExpression;
-import edu.uiowa.alloy2smt.smtAst.UninterpretedSort;
-import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
-import edu.uiowa.alloy2smt.smtAst.VariableExpression;
+import edu.uiowa.alloy2smt.smtAst.*;
 
 public class SMTLibPrettyPrinter implements SMTAstVisitor
 {
@@ -44,11 +29,21 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
                 "(set-logic ALL)\n" +
                 "(set-option :produce-models true)\n" +
                 "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)");
+                "(declare-sort Atom 0)\n");
     }
 
     public String print()
     {
+        for (VariableDeclaration variableDeclaration: this.program.getVariableDecls())
+        {
+            this.visit(variableDeclaration);
+        }
+
+        for (Assertion assertion: this.program.getAssertions())
+        {
+            this.visit(assertion);
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -125,5 +120,33 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(BooleanConstant aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(Assertion assertion)
+    {
+        this.stringBuilder.append("(assert ");
+        this.visit(assertion.getExpression());
+        this.stringBuilder.append(")\n");
+    }
+
+    public void visit(Expression expression)
+    {
+        if (expression instanceof  UnaryExpression)
+        {
+            this.visit((UnaryExpression) expression);
+        }
+        else if (expression instanceof  BinaryExpression)
+        {
+            this.visit((BinaryExpression) expression);
+        }
+        else if (expression instanceof  QuantifiedExpression)
+        {
+            this.visit((QuantifiedExpression) expression);
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
     }
 }
