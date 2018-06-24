@@ -133,7 +133,7 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     public void visit(VariableDeclaration variableDeclaration)
     {
         this.stringBuilder.append("(declare-fun ");
-        this.stringBuilder.append(variableDeclaration.getVarName() + " ");
+        this.stringBuilder.append(variableDeclaration.getVarName() + " () ");
         this.visit(variableDeclaration.getVarSort());
         this.stringBuilder.append(")\n");
     }

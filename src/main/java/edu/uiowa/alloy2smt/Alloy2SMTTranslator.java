@@ -89,7 +89,7 @@ public class Alloy2SMTTranslator
         String              fieldName   = Utils.sanitizeName(field.sig.label + "/" + field.label);
         TupleSort           tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), this.atomSort));
         SetSort             setSort     = new SetSort(tupleSort);
-        VariableDeclaration declaration = new VariableDeclaration(fieldName, tupleSort);
+        VariableDeclaration declaration = new VariableDeclaration(fieldName, setSort);
 
         // declare a variable for the field
         this.smtProgram.addVarDecl(declaration);

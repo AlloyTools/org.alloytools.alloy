@@ -23,10 +23,10 @@ class Alloy2SMTTranslatorTest
                 "(set-option :produce-models true)\n" +
                 "(set-option :finite-model-find true)\n" +
                 "(declare-sort Atom 0)\n" +
-                "(declare-fun this_Name (Set (Tuple Atom )))\n" +
-                "(declare-fun this_Addr (Set (Tuple Atom )))\n" +
-                "(declare-fun this_Book (Set (Tuple Atom )))\n" +
-                "(declare-fun this_Book_addr (Tuple Atom Atom Atom ))\n" +
+                "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
         assertEquals(expected, actual);
     }
