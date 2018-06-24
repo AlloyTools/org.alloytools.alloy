@@ -12,16 +12,22 @@ class Alloy2SMTTranslatorTest
     public void executeSimpleModel()
     {
 
-        String input = "sig Name, Addr {}\n" +
-                        "sig Book {\n" +
-                            "addr: Name -> lone Addr\n" +
-                        "}\n" +
-                        "\n" +
-                        "pred show () {}\n" +
-                        "run show for 3 but 1 Book";
+        String input =
+                "sig Name, Addr {}\n" +
+                "sig Book {\n" +
+                "addr: Name -> Addr}";
 
         String actual = Utils.translateFromString(input);
-        String expected = "?";
+        String expected =
+                "(set-logic ALL)\n" +
+                "(set-option :produce-models true)\n" +
+                "(set-option :finite-model-find true)\n" +
+                "(declare-sort Atom 0)\n" +
+                "(declare-fun this_Name (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Addr (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book_addr (Tuple Atom Atom Atom ))\n" +
+                "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
         assertEquals(expected, actual);
     }
 

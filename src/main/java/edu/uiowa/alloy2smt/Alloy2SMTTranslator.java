@@ -52,7 +52,7 @@ public class Alloy2SMTTranslator
     {        
         collectReachableSigs();
         translateSigsAndHierarchy();
-        return new SMTProgram();
+        return this.smtProgram;
     }
     
     private void collectReachableSigs() 

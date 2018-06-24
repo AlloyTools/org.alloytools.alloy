@@ -44,12 +44,17 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
             this.visit(assertion);
         }
 
-        throw new UnsupportedOperationException();
+        return this.stringBuilder.toString();
     }
 
     @Override
-    public void visit(BinaryExpression bExpr) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(BinaryExpression binaryExpression)
+    {
+        this.stringBuilder.append("(" + binaryExpression.getOp().toString() + " ");
+        this.visit(binaryExpression.getLhsExpr());
+        this.stringBuilder.append(" ");
+        this.visit(binaryExpression.getRhsExpr());
+        this.stringBuilder.append(")");
     }
 
     @Override
@@ -68,8 +73,11 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(SetSort aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(SetSort setSort)
+    {
+        this.stringBuilder.append("(Set ");
+        this.visit(setSort.elementSort);
+        this.stringBuilder.append(")");
     }
 
     @Override
@@ -78,8 +86,15 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(TupleSort aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(TupleSort tupleSort)
+    {
+        this.stringBuilder.append("(Tuple ");
+        for (Sort sort: tupleSort.elementSorts)
+        {
+            this.visit(sort);
+            this.stringBuilder.append(" ");
+        }
+        this.stringBuilder.append(")");
     }
 
     @Override
@@ -88,8 +103,9 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(UninterpretedSort aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(UninterpretedSort uninterpretedSort)
+    {
+        this.stringBuilder.append(uninterpretedSort.getSortName());
     }
 
     @Override
@@ -98,8 +114,9 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(VariableExpression aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(VariableExpression variableExpression)
+    {
+        this.stringBuilder.append(variableExpression.getVarName());
     }
 
     @Override
@@ -113,8 +130,12 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(VariableDeclaration aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(VariableDeclaration variableDeclaration)
+    {
+        this.stringBuilder.append("(declare-fun ");
+        this.stringBuilder.append(variableDeclaration.getVarName() + " ");
+        this.visit(variableDeclaration.getVarSort());
+        this.stringBuilder.append(")\n");
     }
 
     @Override
@@ -130,9 +151,13 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         this.stringBuilder.append(")\n");
     }
 
-    public void visit(Expression expression)
+    private void visit(Expression expression)
     {
-        if (expression instanceof  UnaryExpression)
+        if (expression instanceof  VariableExpression)
+        {
+            this.visit((VariableExpression) expression);
+        }
+        else if (expression instanceof  UnaryExpression)
         {
             this.visit((UnaryExpression) expression);
         }
@@ -143,6 +168,42 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         else if (expression instanceof  QuantifiedExpression)
         {
             this.visit((QuantifiedExpression) expression);
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private void visit(Sort sort)
+    {
+        if (sort instanceof  UninterpretedSort)
+        {
+            this.visit((UninterpretedSort) sort);
+        }
+        else if (sort instanceof  SetSort)
+        {
+            this.visit((SetSort) sort);
+        }
+        else if (sort instanceof  TupleSort)
+        {
+            this.visit((TupleSort) sort);
+        }
+        else if (sort instanceof  IntSort)
+        {
+            this.visit((IntSort) sort);
+        }
+        else if (sort instanceof  RealSort)
+        {
+            this.visit((RealSort) sort);
+        }
+        else if (sort instanceof  StringSort)
+        {
+            this.visit((StringSort) sort);
+        }
+        else if (sort instanceof  StringSort)
+        {
+            this.visit((StringSort) sort);
         }
         else
         {
