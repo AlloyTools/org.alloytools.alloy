@@ -111,7 +111,7 @@ class SignatureTests
     }
 
     @Test
-    public void subsetSignatures()
+    public void subsetSignatures1()
     {
 
         String input =
@@ -133,7 +133,7 @@ class SignatureTests
     }
 
     @Test
-    public void subsetAbstractSignatures()
+    public void subsetSignatures2()
     {
 
         String input =
