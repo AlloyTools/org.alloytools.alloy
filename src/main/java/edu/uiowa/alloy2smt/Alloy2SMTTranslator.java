@@ -71,8 +71,8 @@ public class Alloy2SMTTranslator
                 SafeList<Sig.PrimSig> children = primSig.children();
                 if(children.size() == 1)
                 {
-                    Expression          left        = this.signaturesMap.get(children.get(0)).getVarExpr();
-                    Expression          right       = this.signaturesMap.get(sig).getVarExpr();
+                    Expression          left        = this.signaturesMap.get(sig).getVarExpr();
+                    Expression          right       = this.signaturesMap.get(children.get(0)).getVarExpr();
                     BinaryExpression    equality    = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
                     this.smtProgram.addAssertion(new Assertion(equality));
                 }

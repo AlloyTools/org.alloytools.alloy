@@ -57,7 +57,7 @@ class SignatureTests
     }
 
     @Test
-    public void abstractSignatures()
+    public void abstractSignatures1()
     {
 
         String input =
@@ -76,6 +76,37 @@ class SignatureTests
                 "(assert (= (intersection this_A1 this_A2) (as emptyset (Set (Tuple Atom )))))\n" +
                 "(assert (= (intersection this_A2 this_A1) (as emptyset (Set (Tuple Atom )))))\n" +
                 "(assert (= this_A (union this_A1 this_A2)))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void abstractSignatures2()
+    {
+
+        String input =
+                "abstract sig A {}\n" +
+                "sig A1 extends A{}\n";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix  +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
+                        "(assert (subset this_A1 this_A))\n" +
+                        "(assert (= this_A this_A1))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void abstractSignatures3()
+    {
+
+        String input = "abstract sig A {}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix  +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n";
         assertEquals(expected, actual);
     }
 }
