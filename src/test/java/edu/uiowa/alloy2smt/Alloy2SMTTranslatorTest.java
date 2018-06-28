@@ -8,14 +8,40 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class Alloy2SMTTranslatorTest
 {
+
     @Test
-    public void executeSimpleModel()
+    public void executeSimpleModelOne()
+    {
+
+        String input =
+                "sig Addr {}\n" +
+                "sig Book {\n" +
+                "addr: one Addr}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                "(set-logic ALL)\n" +
+                        "(set-option :produce-models true)\n" +
+                        "(set-option :finite-model-find true)\n" +
+                        "(declare-sort Atom 0)\n" +
+                        "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
+                        "(assert (subset this_Book_addr (product this_Book this_Addr)))\n" +
+                        "(assert (forall ((_x1 Atom)) (=> (member (mkTuple _x1 ) this_Book) (exists ((_x2 Atom)) (and (member (mkTuple _x2 ) this_Addr) (and (member (mkTuple _x1 _x2 ) this_Book_addr) (forall ((_x3 Atom)) (=> (and (member (mkTuple _x2 ) this_Addr) (not (= _x3 _x2))) (not (member (mkTuple _x1 _x3 ) this_Book_addr))))))))))\n";
+
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void executeSimpleModelSetSet()
     {
 
         String input =
                 "sig Name, Addr {}\n" +
                 "sig Book {\n" +
-                "addr: Name -> Addr}";
+                "addr: Name -> Addr}"; // set -> set
 
         String actual = Utils.translateFromString(input);
         String expected =
@@ -28,6 +54,53 @@ class Alloy2SMTTranslatorTest
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void executeSimpleModelSetOneOne()
+    {
+
+        String input =
+                "sig Name, Addr {}\n" +
+                        "sig Book {\n" +
+                        "addr: Name set -> one Addr -> one Book}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                "(set-logic ALL)\n" +
+                        "(set-option :produce-models true)\n" +
+                        "(set-option :finite-model-find true)\n" +
+                        "(declare-sort Atom 0)\n" +
+                        "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
+                        "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void executeSimpleModelSetOne()
+    {
+
+        String input =
+                "sig Name, Addr {}\n" +
+                        "sig Book {\n" +
+                        "addr: Name set -> one Addr}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                "(set-logic ALL)\n" +
+                        "(set-option :produce-models true)\n" +
+                        "(set-option :finite-model-find true)\n" +
+                        "(declare-sort Atom 0)\n" +
+                        "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
+                        "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
         assertEquals(expected, actual);
     }
 

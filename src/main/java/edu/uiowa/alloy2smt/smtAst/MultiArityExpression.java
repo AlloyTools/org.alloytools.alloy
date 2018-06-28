@@ -8,10 +8,12 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class MultiArityExpression 
+public class MultiArityExpression extends Expression
 {
     private final Op op;
     private final List<Expression> exprs;
@@ -37,12 +39,18 @@ public class MultiArityExpression
     {
         return this.exprs;
     }
-    
+
+    @Override
+    public void accept(SMTAstVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     public enum Op 
     {        
         MKTUPLE ("mkTuple"),
         INSERT ("insert");    
-
+        //ToDo: add other operators like and, or, ...
         private final String opStr;
 
         private Op(String op) 

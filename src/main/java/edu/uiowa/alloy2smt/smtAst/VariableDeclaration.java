@@ -12,13 +12,15 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class VariableDeclaration extends SMTAst 
 {
-    private final String    varName;
-    private final Sort      varSort;
+    private final String                varName;
+    private final Sort                  varSort;
+    private final VariableExpression    variableExpression;
     
     public VariableDeclaration(String varName, Sort varSort) 
     {
         this.varName = varName;
         this.varSort = varSort;
+        variableExpression = new VariableExpression(varName);
     }
     
     public String getVarName()
@@ -29,6 +31,11 @@ public class VariableDeclaration extends SMTAst
     public Sort getVarSort()
     {
         return this.varSort;
+    }
+
+    public VariableExpression getVarExpr()
+    {
+        return this.variableExpression;
     }
 
     @Override

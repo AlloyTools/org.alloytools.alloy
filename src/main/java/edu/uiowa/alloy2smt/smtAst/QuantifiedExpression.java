@@ -16,17 +16,20 @@ public class QuantifiedExpression extends Expression
 {
     private final Expression                  expr;
     private final List<VariableDeclaration>   boundVars;
+    private final Op                          op;
     
-    public QuantifiedExpression(List<VariableDeclaration> boundVars, Expression expr) 
+    public QuantifiedExpression(Op op, List<VariableDeclaration> boundVars, Expression expr)
     {
         this.boundVars  = boundVars;
         this.expr       = expr;
+        this.op         = op;
     }
     
-    public QuantifiedExpression(Expression expr, VariableDeclaration ... boundVars) 
+    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration ... boundVars)
     {
         this.boundVars  = Arrays.asList(boundVars);
         this.expr       = expr;
+        this.op         = op;
     }
     
     public List<VariableDeclaration> getBoundVars() 
@@ -37,6 +40,11 @@ public class QuantifiedExpression extends Expression
     public Expression getExpression()
     {
         return this.expr;
+    }
+
+    public Op getOp()
+    {
+        return this.op;
     }
 
     @Override

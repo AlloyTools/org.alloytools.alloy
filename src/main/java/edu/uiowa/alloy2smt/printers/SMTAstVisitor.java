@@ -43,4 +43,6 @@ public interface SMTAstVisitor
     public void visit(BooleanConstant aThis);
 
     public void visit(Assertion assertion);
+
+    public void visit(MultiArityExpression expression);
 }

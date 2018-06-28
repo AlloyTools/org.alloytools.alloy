@@ -12,9 +12,12 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.SMTProgram;
+import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
 
 public class Utils
 {
+
+    static int variableNameIndex = 0;
 
     public static String translateFromFile(String filePath)
     {
@@ -60,5 +63,10 @@ public class Utils
     public static String sanitizeName(String s) {        
         return s.replaceAll("/", "_");
     }
-    
+
+    public static String getNewVariableName()
+    {
+        variableNameIndex++;
+        return "_x" + variableNameIndex;
+    }
 }

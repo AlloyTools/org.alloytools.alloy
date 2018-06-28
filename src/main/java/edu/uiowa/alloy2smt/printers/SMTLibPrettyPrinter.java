@@ -50,7 +50,7 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(BinaryExpression binaryExpression)
     {
-        this.stringBuilder.append("(" + binaryExpression.getOp().toString() + " ");
+        this.stringBuilder.append("(" + binaryExpression.getOp() + " ");
         this.visit(binaryExpression.getLhsExpr());
         this.stringBuilder.append(" ");
         this.visit(binaryExpression.getRhsExpr());
@@ -63,8 +63,18 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(QuantifiedExpression aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(QuantifiedExpression quantifiedExpression)
+    {
+        this.stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
+        for (VariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
+        {
+            this.stringBuilder.append("(" + boundVariable.getVarName() + " ");
+            this.visit(boundVariable.getVarSort());
+            this.stringBuilder.append(")");
+        }
+        this.stringBuilder.append(") ");
+        this.visit(quantifiedExpression.getExpression());
+        this.stringBuilder.append(")");
     }
 
     @Override
@@ -98,8 +108,11 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(UnaryExpression aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(UnaryExpression unaryExpression)
+    {
+        this.stringBuilder.append("(" + unaryExpression.getOP() + " ");
+        this.visit(unaryExpression.getExpression());
+        this.stringBuilder.append(")");
     }
 
     @Override
@@ -151,6 +164,18 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         this.stringBuilder.append(")\n");
     }
 
+    @Override
+    public void visit(MultiArityExpression multiArityExpression)
+    {
+        this.stringBuilder.append("(" + multiArityExpression.getOp() + " ");
+        for (Expression expression: multiArityExpression.getExpressions())
+        {
+            this.visit(expression);
+            this.stringBuilder.append(" ");
+        }
+        this.stringBuilder.append(")");
+    }
+
     private void visit(Expression expression)
     {
         if (expression instanceof  VariableExpression)
@@ -164,6 +189,10 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         else if (expression instanceof  BinaryExpression)
         {
             this.visit((BinaryExpression) expression);
+        }
+        else if (expression instanceof  MultiArityExpression)
+        {
+            this.visit((MultiArityExpression) expression);
         }
         else if (expression instanceof  QuantifiedExpression)
         {
