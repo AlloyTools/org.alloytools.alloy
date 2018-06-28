@@ -12,7 +12,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.SMTProgram;
-import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
 
 public class Utils
 {

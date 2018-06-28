@@ -10,6 +10,8 @@ package edu.uiowa.alloy2smt.printers;
 
 import edu.uiowa.alloy2smt.smtAst.*;
 
+import java.util.List;
+
 public class SMTLibPrettyPrinter implements SMTAstVisitor
 {
     private final SMTProgram program;
@@ -34,9 +36,9 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
 
     public String print()
     {
-        for (VariableDeclaration variableDeclaration: this.program.getVariableDecls())
+        for (FunctionDeclaration declaration : this.program.getFunctionDeclarations())
         {
-            this.visit(variableDeclaration);
+            this.visit(declaration);
         }
 
         for (Assertion assertion: this.program.getAssertions())
@@ -66,11 +68,9 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     public void visit(QuantifiedExpression quantifiedExpression)
     {
         this.stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-        for (VariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
+        for (BoundVariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
         {
-            this.stringBuilder.append("(" + boundVariable.getVarName() + " ");
-            this.visit(boundVariable.getVarSort());
-            this.stringBuilder.append(")");
+            this.visit(boundVariable);
         }
         this.stringBuilder.append(") ");
         this.visit(quantifiedExpression.getExpression());
@@ -127,14 +127,25 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(VariableExpression variableExpression)
+    public void visit(ConstantExpression constantExpression)
     {
-        this.stringBuilder.append(variableExpression.getVarName());
+        this.stringBuilder.append(constantExpression.getVarName());
     }
 
     @Override
-    public void visit(FunctionDeclaration aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(FunctionDeclaration functionDeclaration)
+    {
+        this.stringBuilder.append("(declare-fun ");
+        this.stringBuilder.append(functionDeclaration.getName() + " (");
+
+        List<Sort> inputSorts  = functionDeclaration.getInputSorts();
+        for(int i = 0 ; i < inputSorts.size(); i++)
+        {
+            this.visit(inputSorts.get(i));
+        }
+        this.stringBuilder.append(") ");
+        this.visit(functionDeclaration.getOutputSort());
+        this.stringBuilder.append(")\n");
     }
 
     @Override
@@ -143,11 +154,11 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(VariableDeclaration variableDeclaration)
+    public void visit(ConstantDeclaration constantDeclaration)
     {
-        this.stringBuilder.append("(declare-fun ");
-        this.stringBuilder.append(variableDeclaration.getVarName() + " () ");
-        this.visit(variableDeclaration.getVarSort());
+        this.stringBuilder.append("(declare-const ");
+        this.stringBuilder.append(constantDeclaration.getVarName() + " ");
+        this.visit(constantDeclaration.getVarSort());
         this.stringBuilder.append(")\n");
     }
 
@@ -176,11 +187,25 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         this.stringBuilder.append(")");
     }
 
+    @Override
+    public void visit(FunctionCallExpression functionCallExpression)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void visit(BoundVariableDeclaration boundVariable)
+    {
+        this.stringBuilder.append("(" + boundVariable.getName() + " ");
+        this.visit(boundVariable.getSort());
+        this.stringBuilder.append(")");
+    }
+
     private void visit(Expression expression)
     {
-        if (expression instanceof  VariableExpression)
+        if (expression instanceof ConstantExpression)
         {
-            this.visit((VariableExpression) expression);
+            this.visit((ConstantExpression) expression);
         }
         else if (expression instanceof  UnaryExpression)
         {

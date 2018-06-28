@@ -15,24 +15,24 @@ import java.util.List;
 public class QuantifiedExpression extends Expression
 {
     private final Expression                  expr;
-    private final List<VariableDeclaration>   boundVars;
+    private final List<BoundVariableDeclaration>   boundVars;
     private final Op                          op;
     
-    public QuantifiedExpression(Op op, List<VariableDeclaration> boundVars, Expression expr)
+    public QuantifiedExpression(Op op, List<BoundVariableDeclaration> boundVars, Expression expr)
     {
         this.boundVars  = boundVars;
         this.expr       = expr;
         this.op         = op;
     }
     
-    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration ... boundVars)
+    public QuantifiedExpression(Op op, Expression expr, BoundVariableDeclaration... boundVars)
     {
         this.boundVars  = Arrays.asList(boundVars);
         this.expr       = expr;
         this.op         = op;
     }
     
-    public List<VariableDeclaration> getBoundVars() 
+    public List<BoundVariableDeclaration> getBoundVars()
     {
         return this.boundVars;
     }

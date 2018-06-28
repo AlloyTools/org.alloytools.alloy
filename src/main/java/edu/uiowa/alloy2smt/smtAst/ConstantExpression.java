@@ -10,11 +10,11 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
-public class VariableExpression extends Expression
+public class ConstantExpression extends Expression
 {
     private final String varName;
     
-    public VariableExpression(String varName)
+    public ConstantExpression(String varName)
     {
         this.varName = varName;
     }

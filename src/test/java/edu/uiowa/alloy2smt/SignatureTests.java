@@ -153,4 +153,21 @@ class SignatureTests
                 "(assert (subset this_A2 this_A))\n";
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void oneSignature()
+    {
+
+        String input = "one sig A {}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(assert (= _S (singleton _a1))\n" +
+                "(assert (= this_A _S)\n";
+        assertEquals(expected, actual);
+    }
 }

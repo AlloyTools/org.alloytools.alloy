@@ -11,18 +11,18 @@ package edu.uiowa.alloy2smt.smtAst;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SMTProgram {
-    private final List<Expression>             exprs       = new ArrayList<>();    
-    private final List<VariableDeclaration>    varDecls    = new ArrayList<>();
+public class SMTProgram
+{
+    private final List<Expression>             exprs       = new ArrayList<>();
     private final List<FunctionDeclaration>    fcnDecls    = new ArrayList<>();
     private final List<FunctionDefinition>     fcnDefs     = new ArrayList<>();
     private final List<Assertion>              assertions  = new ArrayList<>();
 
-    public void addVarDecl(VariableDeclaration varDecl) 
+    public void addFunctionDeclaration(FunctionDeclaration declaration)
     {
-        if(varDecl != null) 
+        if(declaration != null)
         {
-            this.varDecls.add(varDecl);
+            this.fcnDecls.add(declaration);
         }        
     }    
     
@@ -58,17 +58,14 @@ public class SMTProgram {
         }
     }
 
-    public List<VariableDeclaration> getVariableDecls() {
-        return this.varDecls;
+    public List<FunctionDeclaration> getFunctionDeclarations()
+    {
+        return this.fcnDecls;
     }
     
     public List<Expression> getExpressions() {
         return this.exprs;
     }
-    
-    public List<FunctionDeclaration> getFunctionDeclaration() {
-        return this.fcnDecls;
-    } 
     
     public List<FunctionDefinition> getFunctionDefinition() {
         return this.fcnDefs;

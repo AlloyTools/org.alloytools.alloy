@@ -32,17 +32,21 @@ public interface SMTAstVisitor
 
     public void visit(IntConstant aThis);
 
-    public void visit(VariableExpression aThis);
+    public void visit(ConstantExpression aThis);
 
     public void visit(FunctionDeclaration aThis);
 
     public void visit(FunctionDefinition aThis);
 
-    public void visit(VariableDeclaration aThis);
+    public void visit(ConstantDeclaration aThis);
 
     public void visit(BooleanConstant aThis);
 
     public void visit(Assertion assertion);
 
     public void visit(MultiArityExpression expression);
+
+    public void visit(FunctionCallExpression functionCallExpression);
+
+    public void visit(BoundVariableDeclaration boundVariableDeclaration);
 }
