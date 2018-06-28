@@ -109,4 +109,48 @@ class SignatureTests
                 "(declare-fun this_A () (Set (Tuple Atom )))\n";
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void subsetSignatures()
+    {
+
+        String input =
+                "sig A,B {}\n" +
+                "sig A1 in A+B{}\n" +
+                "sig A2 in A{}" ;
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix  +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
+                "(assert (subset this_A1 this_A))\n" +
+                "(assert (subset this_A1 this_B))\n" +
+                "(assert (subset this_A2 this_A))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void subsetAbstractSignatures()
+    {
+
+        String input =
+                "abstract sig A,B {}\n" +
+                "sig A1 in A+B{}\n" +
+                "sig A2 in A{}" ;
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix  +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
+                "(assert (subset this_A1 this_A))\n" +
+                "(assert (subset this_A1 this_B))\n" +
+                "(assert (subset this_A2 this_A))\n";
+        assertEquals(expected, actual);
+    }
 }

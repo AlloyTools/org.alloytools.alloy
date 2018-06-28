@@ -140,10 +140,23 @@ public class Alloy2SMTTranslator
             // if sig extends another signature
             if(! sig.isTopLevel())
             {
-                Sig                 parent              = ((Sig.PrimSig) sig).parent;
-                VariableDeclaration parentDeclaration   = this.signaturesMap.get(parent);
-                BinaryExpression    subsetExpression    = new BinaryExpression(variableDeclaration.getVarExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getVarExpr());
-                this.smtProgram.addAssertion(new Assertion(subsetExpression));
+                if(sig instanceof Sig.PrimSig)
+                {
+                    Sig                 parent              = ((Sig.PrimSig) sig).parent;
+                    VariableDeclaration parentDeclaration   = this.signaturesMap.get(parent);
+                    BinaryExpression    subsetExpression    = new BinaryExpression(variableDeclaration.getVarExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getVarExpr());
+                    this.smtProgram.addAssertion(new Assertion(subsetExpression));
+                }
+                else
+                {
+                    List<Sig>           parents             = ((Sig.SubsetSig) sig).parents;
+                    for (Sig parent: parents)
+                    {
+                        VariableDeclaration parentDeclaration   = this.signaturesMap.get(parent);
+                        BinaryExpression    subsetExpression    = new BinaryExpression(variableDeclaration.getVarExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getVarExpr());
+                        this.smtProgram.addAssertion(new Assertion(subsetExpression));
+                    }
+                }
             }
 
             // translate signature fields
