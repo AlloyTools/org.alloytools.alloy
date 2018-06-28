@@ -16,7 +16,7 @@ class Alloy2SMTTranslatorTest
     }
 
     @Test
-    public void executeSimpleModelOne()
+    public void unaryFieldRelationOne()
     {
 
         String input =
@@ -39,7 +39,7 @@ class Alloy2SMTTranslatorTest
                                                     "(and (member (mkTuple _x2 ) this_Addr) " +
                                                         "(and (member (mkTuple _x1 _x2 ) this_Book_addr) " +
                                                             "(forall ((_x3 Atom)) (=> (and " +
-                                                                "(member (mkTuple _x2 ) this_Addr) " +
+                                                                "(member (mkTuple _x3 ) this_Addr) " +
                                                                 "(not (= _x3 _x2))) " +
                                                             "(not (member (mkTuple _x1 _x3 ) this_Book_addr))))))))))\n";
 
@@ -47,7 +47,7 @@ class Alloy2SMTTranslatorTest
     }
 
     @Test
-    public void executeSimpleModelSome()
+    public void unaryFieldRelationSome()
     {
 
         String input =
@@ -74,7 +74,7 @@ class Alloy2SMTTranslatorTest
     }
 
     @Test
-    public void executeSimpleModelSet()
+    public void unaryFieldRelationSet()
     {
 
         String input =
@@ -96,7 +96,7 @@ class Alloy2SMTTranslatorTest
     }
 
     @Test
-    public void executeSimpleModelLone()
+    public void unaryFieldRelationLone()
     {
 
         String input =
@@ -114,14 +114,14 @@ class Alloy2SMTTranslatorTest
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product this_Book this_Addr)))\n" +
-                "(assert (forall ((_x1 Atom)) (=> (member (mkTuple _x1 ) this_Book) (or (forall ((_x2 Atom)) (=> (member (mkTuple _x2 ) this_Addr) (not (member (mkTuple _x1 _x2 ) this_Book_addr)))) (exists ((_x3 Atom)) (and (member (mkTuple _x3 ) this_Addr) (and (member (mkTuple _x1 _x3 ) this_Book_addr) (forall ((_x4 Atom)) (=> (and (member (mkTuple _x3 ) this_Addr) (not (= _x4 _x3))) (not (member (mkTuple _x1 _x4 ) this_Book_addr)))))))))))\n";
+                "(assert (forall ((_x1 Atom)) (=> (member (mkTuple _x1 ) this_Book) (or (forall ((_x2 Atom)) (=> (member (mkTuple _x2 ) this_Addr) (not (member (mkTuple _x1 _x2 ) this_Book_addr)))) (exists ((_x3 Atom)) (and (member (mkTuple _x3 ) this_Addr) (and (member (mkTuple _x1 _x3 ) this_Book_addr) (forall ((_x4 Atom)) (=> (and (member (mkTuple _x4 ) this_Addr) (not (= _x4 _x3))) (not (member (mkTuple _x1 _x4 ) this_Book_addr)))))))))))\n";
 
         assertEquals(expected, actual);
     }
 
 
     @Test
-    public void executeSimpleModelSetSet()
+    public void unaryFieldRelationSetSet()
     {
 
         String input =
@@ -144,13 +144,13 @@ class Alloy2SMTTranslatorTest
     }
 
     @Test
-    public void executeSimpleModelSetOneOne()
+    public void multiArityFieldRelationOneOneOne()
     {
 
         String input =
                 "sig Name, Addr {}\n" +
-                        "sig Book {\n" +
-                        "addr: Name set -> one Addr -> one Book}";
+                "sig Book {\n" +
+                "addr: Name one -> one Addr one -> one Book}";
 
         String actual = Utils.translateFromString(input);
         String expected =
@@ -168,13 +168,13 @@ class Alloy2SMTTranslatorTest
 
 
     @Test
-    public void executeSimpleModelSetOne()
+    public void multiArityFieldRelationSetOne()
     {
 
         String input =
                 "sig Name, Addr {}\n" +
-                        "sig Book {\n" +
-                        "addr: Name set -> one Addr}";
+                "sig Book {\n" +
+                "addr: Name set -> one Addr}";
 
         String actual = Utils.translateFromString(input);
         String expected =

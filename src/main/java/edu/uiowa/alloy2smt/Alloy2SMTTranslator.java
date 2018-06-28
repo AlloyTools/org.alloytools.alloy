@@ -144,40 +144,92 @@ public class Alloy2SMTTranslator
         }
         else if (expr instanceof ExprBinary)
         {
-            ExprBinary exprBinary = (ExprBinary) expr;
-            switch (exprBinary.op)
-            {
-                case ARROW:
-                case ANY_ARROW_SOME:
-                case ANY_ARROW_ONE:
-                {
-
-                }
-                break;
-                case ANY_ARROW_LONE:
-                case SOME_ARROW_ANY:
-                case SOME_ARROW_SOME:
-                case SOME_ARROW_ONE:
-                case SOME_ARROW_LONE:
-                case ONE_ARROW_ANY:
-                case ONE_ARROW_SOME:
-                case ONE_ARROW_ONE:
-                case ONE_ARROW_LONE:
-                case LONE_ARROW_ANY:
-                case LONE_ARROW_SOME:
-                case LONE_ARROW_ONE:
-                case LONE_ARROW_LONE:
-                case ISSEQ_ARROW_LONE:
-                default:
-                {
-                    throw new UnsupportedOperationException();
-                }
-            }
+            translateBinaryMultiplicities((ExprBinary) expr, field, declaration, 0);
         }
         else
         {
             throw new UnsupportedOperationException();
         }
+    }
+
+    private void translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, VariableDeclaration declaration, int index)
+    {
+        switch (exprBinary.op)
+        {
+            case ARROW              : break; // no assertion needed
+            case ANY_ARROW_SOME     :
+            case ANY_ARROW_ONE      :
+            case ANY_ARROW_LONE     :
+            case SOME_ARROW_ANY     :
+            case SOME_ARROW_SOME    :
+            case SOME_ARROW_ONE     :
+            case SOME_ARROW_LONE    :
+            case ONE_ARROW_ANY      :
+            case ONE_ARROW_SOME     :
+            case ONE_ARROW_ONE      : translateOneArrowOne(field, declaration, index);
+            case ONE_ARROW_LONE     :
+            case LONE_ARROW_ANY     :
+            case LONE_ARROW_SOME    :
+            case LONE_ARROW_ONE     :
+            case LONE_ARROW_LONE    :
+            case ISSEQ_ARROW_LONE   : break;
+            default:
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        if(exprBinary.right instanceof ExprBinary)
+        {
+            translateBinaryMultiplicities((ExprBinary) exprBinary.right, field, declaration, index + 1);
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private void translateOneArrowOne(Sig.Field field, VariableDeclaration declaration, int index)
+    {
+        //(assert
+        //	(forall ((x1 Atom) (x2 Atom) ... (xn Atom))
+        //		(=> and (
+        //                  (member (mkTuple x1) Set1)
+        //                  (member (mkTuple x2) Set2)
+        //                          ⋮
+        //                  (member (mkTuple xi-1) Seti-1)
+        //                          ⋮
+        //                  (member (mkTuple xi+1) Seti+1)
+        //                  (member (mkTuple xn) Setn)
+        //          (and
+        //			    (exists ((xi Atom))
+        //				    (and
+        //					    (member (mkTuple xi) Seti)
+        //					    (member (mkTuple x1 ... xn) addr)
+        //					    (forall ((z Atom))
+        //						    (=> (and 	(member (mkTuple z) Seti)
+        //									    (not (= z xi)))
+        //							    (not (member (mkTuple x1 x2 ... xi-1 z xi+1 xn) addr))
+        //						    )
+        //					    )
+        //				    )
+        //			    )
+        //			    (exists ((xi+1 Atom))
+        //				    (and
+        //					    (member (mkTuple xi+1) Seti+1)
+        //					    (member (mkTuple x1 ... xn) addr)
+        //					    (forall ((z Atom))
+        //						    (=> (and 	(member (mkTuple z) Seti+1)
+        //									    (not (= z xi+1)))
+        //							    (not (member (mkTuple x1 x2 ... xi z xi+2 xn) addr))
+        //						    )
+        //					    )
+        //				    )
+        //			    )
+        //          )
+        //		)
+        //	)
+        //)
     }
 
     private void translateSomeMultiplicity(Sig.Field field, VariableDeclaration declaration, ExprUnary exprUnary)
@@ -242,7 +294,7 @@ public class Alloy2SMTTranslator
         //					(member (mkTuple y) Addr)
         //					(member (mkTuple x y) addr)
         //					(forall ((z Atom))
-        //						(=> (and 	(member (mkTuple y) Addr)
+        //						(=> (and 	(member (mkTuple z) Addr)
         //									(not (= z y)))
         //							(not (member (mkTuple x z) addr))
         //						)
@@ -267,6 +319,9 @@ public class Alloy2SMTTranslator
             // (mkTuple y)
             MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVarExpr());
 
+            // (mkTuple z)
+            MultiArityExpression    zTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getVarExpr());
+
             // (mkTuple x y)
             MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,y.getVarExpr());
 
@@ -279,14 +334,17 @@ public class Alloy2SMTTranslator
             // (member (mkTuple y) Addr)
             BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
 
+            // (member (mkTuple z) Addr)
+            BinaryExpression        zMember         = new BinaryExpression(zTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
+
             // (= z y)
             BinaryExpression        zEqualsY        = new BinaryExpression(z.getVarExpr(), BinaryExpression.Op.EQ, y.getVarExpr());
 
             // (not (= z y))
             UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
 
-            //(and 	(member (mkTuple y) Addr) (not (= z y)))
-            BinaryExpression        and1            = new BinaryExpression(yMember, BinaryExpression.Op.AND, notZEqualsY);
+            //(and 	(member (mkTuple z) Addr) (not (= z y)))
+            BinaryExpression        and1            = new BinaryExpression(zMember, BinaryExpression.Op.AND, notZEqualsY);
 
             // (member (mkTuple x y) addr)
             BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
@@ -297,7 +355,7 @@ public class Alloy2SMTTranslator
             // (not (member (mkTuple x z) addr))
             UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
 
-            // (=>  (and (member (mkTuple y) Addr) (not (= z y)))
+            // (=>  (and (member (mkTuple z) Addr) (not (= z y)))
             //      (not (member (mkTuple x z) addr)))
             BinaryExpression        implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
             //(forall ((z Atom))
@@ -333,7 +391,7 @@ public class Alloy2SMTTranslator
         //					    (member (mkTuple y) Addr)
         //					    (member (mkTuple x y) addr)
         //					    (forall ((z Atom))
-        //						    (=> (and 	(member (mkTuple y) Addr)
+        //						    (=> (and 	(member (mkTuple z) Addr)
         //									    (not (= z y)))
         //							    (not (member (mkTuple x z) addr))
         //						    )
@@ -362,6 +420,9 @@ public class Alloy2SMTTranslator
 
             // (mkTuple y)
             MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVarExpr());
+
+            // (mkTuple z)
+            MultiArityExpression    zTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getVarExpr());
 
             // (mkTuple x u)
             MultiArityExpression    xuTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,u.getVarExpr());
@@ -392,14 +453,17 @@ public class Alloy2SMTTranslator
             // (member (mkTuple y) Addr)
             BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
 
+            // (member (mkTuple z) Addr)
+            BinaryExpression        zMember         = new BinaryExpression(zTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
+
             // (= z y)
             BinaryExpression        zEqualsY        = new BinaryExpression(z.getVarExpr(), BinaryExpression.Op.EQ, y.getVarExpr());
 
             // (not (= z y))
             UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
 
-            //(and 	(member (mkTuple y) Addr) (not (= z y)))
-            BinaryExpression        and1            = new BinaryExpression(yMember, BinaryExpression.Op.AND, notZEqualsY);
+            //(and 	(member (mkTuple z) Addr) (not (= z y)))
+            BinaryExpression        and1            = new BinaryExpression(zMember, BinaryExpression.Op.AND, notZEqualsY);
 
             // (member (mkTuple x y) addr)
             BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
@@ -410,11 +474,11 @@ public class Alloy2SMTTranslator
             // (not (member (mkTuple x z) addr))
             UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
 
-            // (=>  (and (member (mkTuple y) Addr) (not (= z y)))
+            // (=>  (and (member (mkTuple z) Addr) (not (= z y)))
             //      (not (member (mkTuple x z) addr)))
             BinaryExpression        implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
             //(forall ((z Atom))
-            //	(=> (and 	(member (mkTuple y) Addr)
+            //	(=> (and 	(member (mkTuple z) Addr)
             //				(not (= z y)))
             //		(not (member (mkTuple x z) addr))
             //	)
