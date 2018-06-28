@@ -131,95 +131,11 @@ public class Alloy2SMTTranslator
             ExprUnary exprUnary = (ExprUnary) expr;
             switch (exprUnary.op)
             {
-                case SOMEOF:
-                case LONEOF:
-                case ONEOF:
-                {
-                    //(assert
-                    //	(forall ((x Atom))
-                    //		(=> (member (mkTuple x) Book)
-                    //			(exists ((y Atom))
-                    //				(and
-                    //					(member (mkTuple y) Addr)
-                    //					(member (mkTuple x y) addr)
-                    //					(forall ((z Atom))
-                    //						(=> (and 	(member (mkTuple y) Addr)
-                    //									(not (= z y)))
-                    //							(not (member (mkTuple x z) addr))
-                    //						)
-                    //					)
-                    //				)
-                    //			)
-                    //		)
-                    //	)
-                    //)
-                    if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
-                    {
-
-                        VariableDeclaration     set1            = this.signaturesMap.get(field.sig);
-                        VariableDeclaration     set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-                        VariableDeclaration     x               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-                        VariableDeclaration     y               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-                        VariableDeclaration     z               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-
-                        // (mkTuple x)
-                        MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr());
-                        // (mkTuple y)
-                        MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVarExpr());
-
-                        // (mkTuple x y)
-                        MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,y.getVarExpr());
-
-                        // (mkTuple x z)
-                        MultiArityExpression    xzTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,z.getVarExpr());
-
-                        // (member (mkTuple x) Book)
-                        BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getVarExpr());
-
-                        // (member (mkTuple y) Addr)
-                        BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
-                        // (= z y)
-                        BinaryExpression        zEqualsY        = new BinaryExpression(z.getVarExpr(), BinaryExpression.Op.EQ, y.getVarExpr());
-                        // (not (= z y))
-                        UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
-
-                        //(and 	(member (mkTuple y) Addr) (not (= z y)))
-                        BinaryExpression        and1            = new BinaryExpression(yMember, BinaryExpression.Op.AND, notZEqualsY);
-
-                        // (member (mkTuple x y) addr)
-                        BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
-
-                        // (member (mkTuple x z) addr)
-                        BinaryExpression        xzMember        = new BinaryExpression(xzTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
-
-                        // (not (member (mkTuple x z) addr))
-
-                        UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
-                        // (=>  (and (member (mkTuple y) Addr) (not (= z y)))
-                        //      (not (member (mkTuple x z) addr)))
-                        BinaryExpression    implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
-                        //(forall ((z Atom))
-                        //	(=> (and 	(member (mkTuple y) Addr)
-                        //				(not (= z y)))
-                        //		(not (member (mkTuple x z) addr))
-                        //	)
-                        QuantifiedExpression forall1        = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1 , z);
-                        BinaryExpression    and2            = new BinaryExpression(xyMember, BinaryExpression.Op.AND, forall1);
-
-                        BinaryExpression    and3            = new BinaryExpression(yMember, BinaryExpression.Op.AND, and2);
-
-                        QuantifiedExpression exists         = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3 , y);
-                        BinaryExpression    implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
-                        QuantifiedExpression forall2        = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
-                        this.smtProgram.addAssertion(new Assertion(forall2));
-                    }
-                    else
-                    {
-                        throw new UnsupportedOperationException();
-                    }
-                } break;
+                case SOMEOF     :
+                case LONEOF     : translateLoneMultiplicity(field, declaration, exprUnary);break;
+                case ONEOF      : translateOneMultiplicity(field, declaration, exprUnary);break;
                 case SETOF:
-                case EXACTLYOF:
+                case EXACTLYOF  :
                 default:
                 {
                     throw new UnsupportedOperationException("Not supported yet");
@@ -257,6 +173,210 @@ public class Alloy2SMTTranslator
                     throw new UnsupportedOperationException();
                 }
             }
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+
+    private void translateOneMultiplicity(Sig.Field field, VariableDeclaration declaration, ExprUnary exprUnary)
+    {
+        //(assert
+        //	(forall ((x Atom))
+        //		(=> (member (mkTuple x) Book)
+        //			(exists ((y Atom))
+        //				(and
+        //					(member (mkTuple y) Addr)
+        //					(member (mkTuple x y) addr)
+        //					(forall ((z Atom))
+        //						(=> (and 	(member (mkTuple y) Addr)
+        //									(not (= z y)))
+        //							(not (member (mkTuple x z) addr))
+        //						)
+        //					)
+        //				)
+        //			)
+        //		)
+        //	)
+        //)
+        if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
+        {
+
+            VariableDeclaration     set1            = this.signaturesMap.get(field.sig);
+            VariableDeclaration     set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
+            VariableDeclaration     x               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            VariableDeclaration     y               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            VariableDeclaration     z               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+
+            // (mkTuple x)
+            MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr());
+
+            // (mkTuple y)
+            MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVarExpr());
+
+            // (mkTuple x y)
+            MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,y.getVarExpr());
+
+            // (mkTuple x z)
+            MultiArityExpression    xzTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,z.getVarExpr());
+
+            // (member (mkTuple x) Book)
+            BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getVarExpr());
+
+            // (member (mkTuple y) Addr)
+            BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
+
+            // (= z y)
+            BinaryExpression        zEqualsY        = new BinaryExpression(z.getVarExpr(), BinaryExpression.Op.EQ, y.getVarExpr());
+
+            // (not (= z y))
+            UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
+
+            //(and 	(member (mkTuple y) Addr) (not (= z y)))
+            BinaryExpression        and1            = new BinaryExpression(yMember, BinaryExpression.Op.AND, notZEqualsY);
+
+            // (member (mkTuple x y) addr)
+            BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
+
+            // (member (mkTuple x z) addr)
+            BinaryExpression        xzMember        = new BinaryExpression(xzTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
+
+            // (not (member (mkTuple x z) addr))
+            UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
+
+            // (=>  (and (member (mkTuple y) Addr) (not (= z y)))
+            //      (not (member (mkTuple x z) addr)))
+            BinaryExpression        implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
+            //(forall ((z Atom))
+            //	(=> (and 	(member (mkTuple y) Addr)
+            //				(not (= z y)))
+            //		(not (member (mkTuple x z) addr))
+            //	)
+            QuantifiedExpression    forall1         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1 , z);
+            BinaryExpression        and2            = new BinaryExpression(xyMember, BinaryExpression.Op.AND, forall1);
+
+            BinaryExpression        and3            = new BinaryExpression(yMember, BinaryExpression.Op.AND, and2);
+
+            QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3 , y);
+            BinaryExpression        implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
+            QuantifiedExpression    forall2         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
+            this.smtProgram.addAssertion(new Assertion(forall2));
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private void translateLoneMultiplicity(Sig.Field field, VariableDeclaration declaration, ExprUnary exprUnary)
+    {
+        //(assert
+        //	(forall ((x Atom))
+        //		(=> (member (mkTuple x) Book)
+        //          or(
+        //              (forall ((u Atom)) (=> (member (mkTuple u) Addr) (not (member (mkTuple x u) addr))))
+        //			    (exists ((y Atom))
+        //				    (and
+        //					    (member (mkTuple y) Addr)
+        //					    (member (mkTuple x y) addr)
+        //					    (forall ((z Atom))
+        //						    (=> (and 	(member (mkTuple y) Addr)
+        //									    (not (= z y)))
+        //							    (not (member (mkTuple x z) addr))
+        //						    )
+        //					    )
+        //				    )
+        //              )
+        //			)
+        //		)
+        //	)
+        //)
+        if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
+        {
+
+            VariableDeclaration     set1            = this.signaturesMap.get(field.sig);
+            VariableDeclaration     set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
+            VariableDeclaration     x               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            VariableDeclaration     u               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            VariableDeclaration     y               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            VariableDeclaration     z               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+
+            // (mkTuple x)
+            MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr());
+
+            // (mkTuple x)
+            MultiArityExpression    uTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, u.getVarExpr());
+
+            // (mkTuple y)
+            MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVarExpr());
+
+            // (mkTuple x u)
+            MultiArityExpression    xuTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,u.getVarExpr());
+
+            // (mkTuple x y)
+            MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,y.getVarExpr());
+
+            // (mkTuple x z)
+            MultiArityExpression    xzTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,z.getVarExpr());
+
+            // (member (mkTuple x) Book)
+            BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getVarExpr());
+
+            // (member (mkTuple u) Addr)
+            BinaryExpression        uMember         = new BinaryExpression(uTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
+
+            // (member (mkTuple x u) addr)
+            BinaryExpression        xuMember        = new BinaryExpression(xuTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
+
+            // (not (member (mkTuple x u) addr))
+            UnaryExpression        notXUMember      = new UnaryExpression(UnaryExpression.Op.NOT, xuMember);
+            // (=> (member (mkTuple u) Addr) (not (member (mkTuple x u) addr)))
+            BinaryExpression        implies0        = new BinaryExpression(uMember, BinaryExpression.Op.IMPLIES, notXUMember);
+
+            // (forall ((u Atom)) (=> (member (mkTuple u) Addr) (not (member (mkTuple x u) addr))))
+        QuantifiedExpression        forall0         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,  implies0, u);
+
+            // (member (mkTuple y) Addr)
+            BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
+
+            // (= z y)
+            BinaryExpression        zEqualsY        = new BinaryExpression(z.getVarExpr(), BinaryExpression.Op.EQ, y.getVarExpr());
+
+            // (not (= z y))
+            UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
+
+            //(and 	(member (mkTuple y) Addr) (not (= z y)))
+            BinaryExpression        and1            = new BinaryExpression(yMember, BinaryExpression.Op.AND, notZEqualsY);
+
+            // (member (mkTuple x y) addr)
+            BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
+
+            // (member (mkTuple x z) addr)
+            BinaryExpression        xzMember        = new BinaryExpression(xzTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
+
+            // (not (member (mkTuple x z) addr))
+            UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
+
+            // (=>  (and (member (mkTuple y) Addr) (not (= z y)))
+            //      (not (member (mkTuple x z) addr)))
+            BinaryExpression        implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
+            //(forall ((z Atom))
+            //	(=> (and 	(member (mkTuple y) Addr)
+            //				(not (= z y)))
+            //		(not (member (mkTuple x z) addr))
+            //	)
+            QuantifiedExpression    forall1         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1 , z);
+            BinaryExpression        and2            = new BinaryExpression(xyMember, BinaryExpression.Op.AND, forall1);
+
+            BinaryExpression        and3            = new BinaryExpression(yMember, BinaryExpression.Op.AND, and2);
+
+            QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3 , y);
+            BinaryExpression        or              = new BinaryExpression(forall0, BinaryExpression.Op.OR, exists);
+            BinaryExpression        implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, or);
+            QuantifiedExpression    forall2         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
+            this.smtProgram.addAssertion(new Assertion(forall2));
         }
         else
         {

@@ -17,7 +17,7 @@ import edu.uiowa.alloy2smt.smtAst.VariableDeclaration;
 public class Utils
 {
 
-    static int variableNameIndex = 0;
+    private static int variableNameIndex = 0;
 
     public static String translateFromFile(String filePath)
     {
@@ -68,5 +68,10 @@ public class Utils
     {
         variableNameIndex++;
         return "_x" + variableNameIndex;
+    }
+
+    public static void resetVariableNameIndex()
+    {
+        variableNameIndex = 0;
     }
 }
