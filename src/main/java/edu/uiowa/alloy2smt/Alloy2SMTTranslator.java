@@ -103,17 +103,17 @@ public class Alloy2SMTTranslator
         /* alloy: sig Book{addr: Name -> lone Addr}
         *  smt  : (assert (subset addr (product (product Book Name) Addr)))
         */
-        VariableExpression  first   = new VariableExpression(signaturesMap.get(fieldSignatures.get(0)).getVarName());
-        VariableExpression  second  = new VariableExpression(signaturesMap.get(fieldSignatures.get(1)).getVarName());
+        VariableExpression  first   = signaturesMap.get(fieldSignatures.get(0)).getVarExpr();
+        VariableExpression  second  = signaturesMap.get(fieldSignatures.get(1)).getVarExpr();
         BinaryExpression    product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
 
         for(int i = 2; i < fieldSignatures.size(); i++)
         {
-            VariableExpression  expr = new VariableExpression(signaturesMap.get(fieldSignatures.get(i)).getVarName());
+            VariableExpression  expr = signaturesMap.get(fieldSignatures.get(i)).getVarExpr();
             product                  = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);
         }
 
-        VariableExpression  fieldExpr   = new VariableExpression(declaration.getVarName());
+        VariableExpression  fieldExpr   = declaration.getVarExpr();
         BinaryExpression    subset      = new BinaryExpression(fieldExpr, BinaryExpression.Op.SUBSET, product);
         Assertion           assertion   = new Assertion(subset);
 
