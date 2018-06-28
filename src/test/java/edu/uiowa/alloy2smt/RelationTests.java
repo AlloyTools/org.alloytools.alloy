@@ -9,6 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class RelationTests
 {
 
+    private final String prefix =
+            "(set-logic ALL)\n" +
+            "(set-option :produce-models true)\n" +
+            "(set-option :finite-model-find true)\n" +
+            "(declare-sort Atom 0)\n";
+    
     @BeforeEach
     public void beforeEach()
     {
@@ -26,10 +32,7 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)\n" +
+                prefix  +
                 "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
@@ -57,10 +60,7 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)\n" +
+                prefix +
                 "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
@@ -88,10 +88,7 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)\n" +
+                prefix +
                 "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
@@ -115,10 +112,7 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)\n" +
+                prefix +
                 "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
@@ -137,10 +131,7 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)\n" +
+                prefix +
                 "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
@@ -161,10 +152,7 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(declare-sort Atom 0)\n" +
+                prefix +
                 "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
@@ -184,15 +172,12 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                        "(set-option :produce-models true)\n" +
-                        "(set-option :finite-model-find true)\n" +
-                        "(declare-sort Atom 0)\n" +
-                        "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
-                        "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
+                prefix +
+                "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
+                "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
         assertEquals(expected, actual);
     }
 
@@ -208,15 +193,12 @@ class RelationTests
 
         String actual = Utils.translateFromString(input);
         String expected =
-                "(set-logic ALL)\n" +
-                        "(set-option :produce-models true)\n" +
-                        "(set-option :finite-model-find true)\n" +
-                        "(declare-sort Atom 0)\n" +
-                        "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
-                        "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
+                prefix +
+                "(declare-fun this_Name () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
+                "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
         assertEquals(expected, actual);
     }
 
