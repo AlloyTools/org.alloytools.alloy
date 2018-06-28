@@ -28,7 +28,7 @@ class RelationTests
         String input =
                 "sig Addr {}\n" +
                 "sig Book {\n" +
-                "addr: Addr}";
+                    "addr: Addr}";
 
         String actual = Utils.translateFromString(input);
         String expected =

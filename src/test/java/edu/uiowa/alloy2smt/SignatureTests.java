@@ -51,8 +51,7 @@ class SignatureTests
                 "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
                 "(assert (subset this_A1 this_A))\n" +
                 "(assert (subset this_A2 this_A))\n" +
-                "(assert (= (intersection this_A1 this_A2) (as emptyset (Set (Tuple Atom )))))\n" +
-                "(assert (= (intersection this_A2 this_A1) (as emptyset (Set (Tuple Atom )))))\n";
+                "(assert (= (intersection this_A1 this_A2) (as emptyset (Set (Tuple Atom )))))\n";
         assertEquals(expected, actual);
     }
 
@@ -74,7 +73,6 @@ class SignatureTests
                 "(assert (subset this_A1 this_A))\n" +
                 "(assert (subset this_A2 this_A))\n" +
                 "(assert (= (intersection this_A1 this_A2) (as emptyset (Set (Tuple Atom )))))\n" +
-                "(assert (= (intersection this_A2 this_A1) (as emptyset (Set (Tuple Atom )))))\n" +
                 "(assert (= this_A (union this_A1 this_A2)))\n";
         assertEquals(expected, actual);
     }
@@ -126,8 +124,7 @@ class SignatureTests
                 "(declare-fun this_B () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
-                "(assert (subset this_A1 this_A))\n" +
-                "(assert (subset this_A1 this_B))\n" +
+                "(assert (subset this_A1 (union this_A this_B)))\n" +
                 "(assert (subset this_A2 this_A))\n";
         assertEquals(expected, actual);
     }
@@ -148,8 +145,7 @@ class SignatureTests
                 "(declare-fun this_B () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
-                "(assert (subset this_A1 this_A))\n" +
-                "(assert (subset this_A1 this_B))\n" +
+                "(assert (subset this_A1 (union this_A this_B)))\n" +
                 "(assert (subset this_A2 this_A))\n";
         assertEquals(expected, actual);
     }
@@ -203,5 +199,12 @@ class SignatureTests
                 "(assert (= _S1 (singleton (mkTuple _a1 ))))\n" +
                 "(assert (subset _S1 this_A))\n";
         assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void unionOfTopLevelSignsIsTheUniverse()
+    {
+        assertTrue(false);
     }
 }

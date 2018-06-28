@@ -99,19 +99,19 @@ public class Alloy2SMTTranslator
 
     private void translateDisjointSignatures(Sig.PrimSig primSig)
     {
-        for (Sig leftSig: primSig.children())
+        for (int i = 0; i < primSig.children().size(); i++)
         {
-            Expression left = this.signaturesMap.get(leftSig).getConstantExpr();
-            for (Sig rightSig: primSig.children())
+            Expression      left    = this.signaturesMap.get(primSig.children().get(i)).getConstantExpr();
+
+            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, this.signaturesMap.get(primSig.children().get(i)).getOutputSort());
+
+            for (int j = i + 1 ; j < primSig.children().size(); j++)
             {
-                if(leftSig != rightSig)
-                {
-                    Expression          right       = this.signaturesMap.get(rightSig).getConstantExpr();
-                    BinaryExpression    disjoint    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
-                    UnaryExpression     unary       = new UnaryExpression(UnaryExpression.Op.EMPTYSET, this.signaturesMap.get(leftSig).getOutputSort());
-                    BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, unary);
-                    this.smtProgram.addAssertion(new Assertion(equality));
-                }
+                Expression          right       = this.signaturesMap.get(primSig.children().get(j)).getConstantExpr();
+                BinaryExpression    disjoint    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
+                
+                BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, emptySet);
+                this.smtProgram.addAssertion(new Assertion(equality));
             }
         }
     }
@@ -262,11 +262,26 @@ public class Alloy2SMTTranslator
         else
         {
             List<Sig> parents             = ((Sig.SubsetSig) sig).parents;
-            for (Sig parent: parents)
+            if(parents.size() == 1)
             {
-                FunctionDeclaration parentDeclaration   = this.signaturesMap.get(parent);
-                BinaryExpression    subsetExpression    = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
-                this.smtProgram.addAssertion(new Assertion(subsetExpression));
+                FunctionDeclaration parentDeclaration   = this.signaturesMap.get(parents.get(0));
+                BinaryExpression    subset              = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
+                this.smtProgram.addAssertion(new Assertion(subset));
+            }
+            else
+            {
+                Expression          left    = this.signaturesMap.get(parents.get(0)).getConstantExpr();
+                Expression          right   = this.signaturesMap.get(parents.get(1)).getConstantExpr();
+                BinaryExpression    union   = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
+
+                for (int i = 2; i < parents.size(); i++)
+                {
+                    Expression expression   = this.signaturesMap.get(parents.get(i)).getConstantExpr();
+                    union                   = new BinaryExpression(union, BinaryExpression.Op.UNION, expression);
+                }
+
+                BinaryExpression subset     = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, union);
+                this.smtProgram.addAssertion(new Assertion(subset));
             }
         }
     }
