@@ -131,11 +131,11 @@ public class Alloy2SMTTranslator
             ExprUnary exprUnary = (ExprUnary) expr;
             switch (exprUnary.op)
             {
-                case SOMEOF     :
+                case SOMEOF     : translateSomeMultiplicity(field, declaration, exprUnary);break;
                 case LONEOF     : translateLoneMultiplicity(field, declaration, exprUnary);break;
                 case ONEOF      : translateOneMultiplicity(field, declaration, exprUnary);break;
-                case SETOF:
-                case EXACTLYOF  :
+                case SETOF      : break; // no assertion needed
+                case EXACTLYOF  : break; //ToDo: review this case
                 default:
                 {
                     throw new UnsupportedOperationException("Not supported yet");
@@ -180,6 +180,57 @@ public class Alloy2SMTTranslator
         }
     }
 
+    private void translateSomeMultiplicity(Sig.Field field, VariableDeclaration declaration, ExprUnary exprUnary)
+    {
+        //(assert
+        //	(forall ((x Atom))
+        //		(=> (member (mkTuple x) Book)
+        //			(exists ((y Atom))
+        //				(and
+        //					(member (mkTuple y) Addr)
+        //					(member (mkTuple x y) addr)
+        //				)
+        //			)
+        //		)
+        //	)
+        //)
+        if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
+        {
+
+            VariableDeclaration     set1            = this.signaturesMap.get(field.sig);
+            VariableDeclaration     set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
+            VariableDeclaration     x               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            VariableDeclaration     y               = new VariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+
+            // (mkTuple x)
+            MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr());
+
+            // (mkTuple y)
+            MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVarExpr());
+
+            // (mkTuple x y)
+            MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVarExpr() ,y.getVarExpr());
+
+            // (member (mkTuple x) Book)
+            BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getVarExpr());
+
+            // (member (mkTuple y) Addr)
+            BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getVarExpr());
+
+            // (member (mkTuple x y) addr)
+            BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getVarExpr());
+
+            BinaryExpression        and             = new BinaryExpression(yMember, BinaryExpression.Op.AND, xyMember);
+            QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and , y);
+            BinaryExpression        implies         = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
+            QuantifiedExpression    forall          = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies , x);
+            this.smtProgram.addAssertion(new Assertion(forall));
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     private void translateOneMultiplicity(Sig.Field field, VariableDeclaration declaration, ExprUnary exprUnary)
     {
