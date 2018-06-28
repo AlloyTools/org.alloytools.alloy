@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class Alloy2SMTTranslatorTest
+class RelationTests
 {
 
     @BeforeEach
@@ -21,27 +21,27 @@ class Alloy2SMTTranslatorTest
 
         String input =
                 "sig Addr {}\n" +
-                        "sig Book {\n" +
-                        "addr: Addr}";
+                "sig Book {\n" +
+                "addr: Addr}";
 
         String actual = Utils.translateFromString(input);
         String expected =
                 "(set-logic ALL)\n" +
-                        "(set-option :produce-models true)\n" +
-                        "(set-option :finite-model-find true)\n" +
-                        "(declare-sort Atom 0)\n" +
-                        "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
-                        "(assert (subset this_Book_addr (product this_Book this_Addr)))\n" +
-                        "(assert (forall ((_x1 Atom)) (=> (member (mkTuple _x1 ) this_Book) " +
-                        "(exists ((_x2 Atom)) " +
-                        "(and (member (mkTuple _x2 ) this_Addr) " +
-                        "(and (member (mkTuple _x1 _x2 ) this_Book_addr) " +
-                        "(forall ((_x3 Atom)) (=> (and " +
-                        "(member (mkTuple _x3 ) this_Addr) " +
-                        "(not (= _x3 _x2))) " +
-                        "(not (member (mkTuple _x1 _x3 ) this_Book_addr))))))))))\n";
+                "(set-option :produce-models true)\n" +
+                "(set-option :finite-model-find true)\n" +
+                "(declare-sort Atom 0)\n" +
+                "(declare-fun this_Addr () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
+                "(assert (subset this_Book_addr (product this_Book this_Addr)))\n" +
+                "(assert (forall ((_x1 Atom)) (=> (member (mkTuple _x1 ) this_Book) " +
+                "(exists ((_x2 Atom)) " +
+                "(and (member (mkTuple _x2 ) this_Addr) " +
+                "(and (member (mkTuple _x1 _x2 ) this_Book_addr) " +
+                "(forall ((_x3 Atom)) (=> (and " +
+                "(member (mkTuple _x3 ) this_Addr) " +
+                "(not (= _x3 _x2))) " +
+                "(not (member (mkTuple _x1 _x3 ) this_Book_addr))))))))))\n";
 
         assertEquals(expected, actual);
     }

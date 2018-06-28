@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt;
 
+import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -54,10 +55,67 @@ public class Alloy2SMTTranslator
     public SMTProgram execute()
     {        
         collectReachableSigs();
-        translateSigsAndHierarchy();
+        translateSignatures();
+        translateSignatureHierarchies();
         return this.smtProgram;
     }
-    
+
+    private void translateSignatureHierarchies()
+    {
+        for (Sig sig: this.topLevelSigs)
+        {
+            Sig.PrimSig primSig = (Sig.PrimSig) sig;
+            translateDisjointsSignatures(primSig);
+            if(primSig.isAbstract != null)
+            {
+                SafeList<Sig.PrimSig> children = primSig.children();
+                if(children.size() == 1)
+                {
+                    Expression          left        = this.signaturesMap.get(children.get(0)).getVarExpr();
+                    Expression          right       = this.signaturesMap.get(sig).getVarExpr();
+                    BinaryExpression    equality    = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+                    this.smtProgram.addAssertion(new Assertion(equality));
+                }
+                else if(children.size() > 1)
+                {
+
+                    Expression          left        = this.signaturesMap.get(children.get(0)).getVarExpr();
+                    Expression          right       = this.signaturesMap.get(children.get(1)).getVarExpr();
+                    BinaryExpression    union       = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
+
+                    for(int i = 2; i < children.size(); i++)
+                    {
+                        Expression      expression  = this.signaturesMap.get(children.get(i)).getVarExpr();
+                        union                       = new BinaryExpression(union, BinaryExpression.Op.UNION, expression);
+                    }
+
+                    Expression          leftExpr    = this.signaturesMap.get(sig).getVarExpr();
+                    BinaryExpression    equality    = new BinaryExpression(leftExpr, BinaryExpression.Op.EQ, union);
+                    this.smtProgram.addAssertion(new Assertion(equality));
+                }
+            }
+        }
+    }
+
+    private void translateDisjointsSignatures(Sig.PrimSig primSig)
+    {
+        for (Sig leftSig: primSig.children())
+        {
+            Expression left = this.signaturesMap.get(leftSig).getVarExpr();
+            for (Sig rightSig: primSig.children())
+            {
+                if(leftSig != rightSig)
+                {
+                    Expression          right       = this.signaturesMap.get(rightSig).getVarExpr();
+                    BinaryExpression    disjoint    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
+                    UnaryExpression     unary       = new UnaryExpression(UnaryExpression.Op.EMPTYSET, this.signaturesMap.get(leftSig).getVarSort());
+                    BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, unary);
+                    this.smtProgram.addAssertion(new Assertion(equality));
+                }
+            }
+        }
+    }
+
     private void collectReachableSigs() 
     {
         LOGGER.printInfo("********************** COLLECT REACHABLE SIGNATURES **********************");
@@ -72,12 +130,22 @@ public class Alloy2SMTTranslator
         }
     } 
     
-    private void translateSigsAndHierarchy() 
+    private void translateSignatures()
     {
-        this.reachableSigs.forEach((sig) -> {
-
+        this.reachableSigs.forEach((sig) ->
+        {
             VariableDeclaration variableDeclaration =  mkAndAddUnaryAtomRelation(Utils.sanitizeName(sig.toString()));
             this.signaturesMap.put(sig, variableDeclaration);
+
+            // if sig extends another signature
+            if(! sig.isTopLevel())
+            {
+                Sig                 parent              = ((Sig.PrimSig) sig).parent;
+                VariableDeclaration parentDeclaration   = this.signaturesMap.get(parent);
+                BinaryExpression    subsetExpression    = new BinaryExpression(variableDeclaration.getVarExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getVarExpr());
+                this.smtProgram.addAssertion(new Assertion(subsetExpression));
+            }
+
             // translate signature fields
             for(Sig.Field field : sig.getFields())
             {

@@ -8,6 +8,6 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public abstract class Sort extends SMTAst
+public abstract class Sort extends Expression
 {
 }

@@ -198,6 +198,10 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         {
             this.visit((QuantifiedExpression) expression);
         }
+        else if (expression instanceof  Sort)
+        {
+            this.visit((Sort) expression);
+        }
         else
         {
             throw new UnsupportedOperationException();
