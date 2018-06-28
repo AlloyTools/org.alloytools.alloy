@@ -170,4 +170,38 @@ class SignatureTests
                 "(assert (= this_A _S1))\n";
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void loneSignature()
+    {
+
+        String input = "lone sig A {}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(assert (= _S1 (singleton (mkTuple _a1 ))))\n" +
+                "(assert (subset this_A _S1))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void someSignature()
+    {
+
+        String input = "some sig A {}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(assert (= _S1 (singleton (mkTuple _a1 ))))\n" +
+                "(assert (subset _S1 this_A))\n";
+        assertEquals(expected, actual);
+    }
 }

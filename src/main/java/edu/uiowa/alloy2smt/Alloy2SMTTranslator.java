@@ -148,6 +148,16 @@ public class Alloy2SMTTranslator
                 translateSignatureOneMultiplicity(sig);
             }
 
+            if (sig.isLone != null)
+            {
+                translateSignatureLoneMultiplicity(sig);
+            }
+
+            if (sig.isSome != null)
+            {
+                translateSignatureSomeMultiplicity(sig);
+            }
+
             // translate signature fields
             for(Sig.Field field : sig.getFields())
             {
@@ -160,7 +170,35 @@ public class Alloy2SMTTranslator
     {
         FunctionDeclaration signature = this.signaturesMap.get(sig);
 
-        List<Expression>    expressions = declareNDistinctConstants(this.atomSort, 1);
+        FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
+
+        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
+        this.smtProgram.addAssertion(new Assertion(subset));
+    }
+
+    private void translateSignatureLoneMultiplicity(Sig sig)
+    {
+        FunctionDeclaration signature = this.signaturesMap.get(sig);
+
+        FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
+
+        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.SUBSET, declaration.getConstantExpr());
+        this.smtProgram.addAssertion(new Assertion(subset));
+    }
+
+    private void translateSignatureSomeMultiplicity(Sig sig)
+    {
+        FunctionDeclaration signature = this.signaturesMap.get(sig);
+
+        FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
+
+        BinaryExpression subset   = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, signature.getConstantExpr());
+        this.smtProgram.addAssertion(new Assertion(subset));
+    }
+
+    private FunctionDeclaration generateAuxiliarySetNAtoms(FunctionDeclaration signature)
+    {
+        List<Expression> expressions = declareNDistinctConstants(this.atomSort, 1);
 
         FunctionDeclaration declaration = new FunctionDeclaration(Utils.getNewSet(), signature.getOutputSort());
 
@@ -183,9 +221,7 @@ public class Alloy2SMTTranslator
         BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.EQ, set);
 
         this.smtProgram.addAssertion(new Assertion(equality));
-
-        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
-        this.smtProgram.addAssertion(new Assertion(subset));
+        return declaration;
     }
 
     private List<Expression> declareNDistinctConstants(Sort sort,int n)
