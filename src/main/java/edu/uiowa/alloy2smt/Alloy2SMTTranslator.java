@@ -158,16 +158,60 @@ public class Alloy2SMTTranslator
 
     private void translateSignatureOneMultiplicity(Sig sig)
     {
-        Sort sort = this.signaturesMap.get(sig).getOutputSort();
-        declareNDistinctConstants(sort, 1);
+        FunctionDeclaration signature = this.signaturesMap.get(sig);
+
+        List<Expression>    expressions = declareNDistinctConstants(this.atomSort, 1);
+
+        FunctionDeclaration declaration = new FunctionDeclaration(Utils.getNewSet(), signature.getOutputSort());
+
+        this.smtProgram.addFunctionDeclaration(declaration);
+
+        Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, expressions.get(expressions.size() - 1));
+
+        if(expressions.size() > 1)
+        {
+            List<Expression> atoms = Arrays.asList(set);
+
+            for(int i = expressions.size() - 2; i >= 0; i--)
+            {
+                atoms.add(expressions.get(i));
+            }
+
+            set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atoms);
+        }
+
+        BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.EQ, set);
+
+        this.smtProgram.addAssertion(new Assertion(equality));
+
+        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
+        this.smtProgram.addAssertion(new Assertion(subset));
     }
 
-    private void declareNDistinctConstants(Sort sort, int n)
+    private List<Expression> declareNDistinctConstants(Sort sort,int n)
     {
-        for(int i = 0; i < n; i++)
+        List<Expression> expressions = new ArrayList<>();
+        if(n > 0)
         {
-            throw new UnsupportedOperationException();
+            for (int i = 0; i < n; i++)
+            {
+                ConstantDeclaration constantDeclaration = new ConstantDeclaration(Utils.getNewAtom(), sort);
+                MultiArityExpression makeTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantDeclaration.getConstantExpr());
+                expressions.add(makeTuple);
+                this.smtProgram.addConstantDeclaration(constantDeclaration);
+            }
+
+            if (n > 1)
+            {
+                MultiArityExpression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
+                this.smtProgram.addAssertion(new Assertion(distinct));
+            }
         }
+        else
+        {
+            LOGGER.printSevere("Argument n should be greater than 0");
+        }
+        return expressions;
     }
 
     private void translateSigSubsetParent(Sig sig, FunctionDeclaration functionDeclaration)
@@ -356,8 +400,8 @@ public class Alloy2SMTTranslator
 
             FunctionDeclaration set1            = this.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -414,9 +458,9 @@ public class Alloy2SMTTranslator
 
             FunctionDeclaration set1            = this.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -512,10 +556,10 @@ public class Alloy2SMTTranslator
 
             FunctionDeclaration set1            = this.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-            BoundVariableDeclaration u          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewVariableName(), this.atomSort);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            BoundVariableDeclaration u          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());

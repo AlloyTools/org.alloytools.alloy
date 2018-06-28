@@ -12,28 +12,28 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class ConstantDeclaration extends SMTAst
 {
-    private final String                varName;
-    private final Sort                  varSort;
+    private final String                name;
+    private final Sort                  sort;
     private final ConstantExpression    constantExpression;
     
-    public ConstantDeclaration(String varName, Sort varSort)
+    public ConstantDeclaration(String name, Sort sort)
     {
-        this.varName = varName;
-        this.varSort = varSort;
-        constantExpression = new ConstantExpression(varName);
+        this.name = name;
+        this.sort = sort;
+        constantExpression = new ConstantExpression(name);
     }
     
-    public String getVarName()
+    public String getName()
     {
-        return this.varName;
+        return this.name;
     }
     
-    public Sort getVarSort()
+    public Sort getSort()
     {
-        return this.varSort;
+        return this.sort;
     }
 
-    public ConstantExpression getVarExpr()
+    public ConstantExpression getConstantExpr()
     {
         return this.constantExpression;
     }

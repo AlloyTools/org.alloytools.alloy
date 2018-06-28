@@ -41,6 +41,11 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
             this.visit(declaration);
         }
 
+        for (ConstantDeclaration declaration : this.program.getConstantDeclarations())
+        {
+            this.visit(declaration);
+        }
+
         for (Assertion assertion: this.program.getAssertions())
         {
             this.visit(assertion);
@@ -157,8 +162,8 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     public void visit(ConstantDeclaration constantDeclaration)
     {
         this.stringBuilder.append("(declare-const ");
-        this.stringBuilder.append(constantDeclaration.getVarName() + " ");
-        this.visit(constantDeclaration.getVarSort());
+        this.stringBuilder.append(constantDeclaration.getName() + " ");
+        this.visit(constantDeclaration.getSort());
         this.stringBuilder.append(")\n");
     }
 

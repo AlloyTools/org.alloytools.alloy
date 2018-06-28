@@ -13,16 +13,17 @@ import java.util.List;
 
 public class SMTProgram
 {
-    private final List<Expression>             exprs       = new ArrayList<>();
-    private final List<FunctionDeclaration>    fcnDecls    = new ArrayList<>();
-    private final List<FunctionDefinition>     fcnDefs     = new ArrayList<>();
-    private final List<Assertion>              assertions  = new ArrayList<>();
+    private final List<Expression>             exprs                = new ArrayList<>();
+    private final List<FunctionDeclaration>    functionDeclarations = new ArrayList<>();
+    private final List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
+    private final List<FunctionDefinition>     fcnDefs              = new ArrayList<>();
+    private final List<Assertion>              assertions           = new ArrayList<>();
 
     public void addFunctionDeclaration(FunctionDeclaration declaration)
     {
         if(declaration != null)
         {
-            this.fcnDecls.add(declaration);
+            this.functionDeclarations.add(declaration);
         }        
     }    
     
@@ -38,7 +39,7 @@ public class SMTProgram
     {
         if(fcn != null) 
         {
-            this.fcnDecls.add(fcn);
+            this.functionDeclarations.add(fcn);
         }
     } 
     
@@ -47,6 +48,14 @@ public class SMTProgram
         if(fcnDef != null) 
         {
             this.fcnDefs.add(fcnDef);
+        }
+    }
+
+    public void addConstantDeclaration(ConstantDeclaration constantDeclaration)
+    {
+        if(constantDeclaration != null)
+        {
+            this.constantDeclarations.add(constantDeclaration);
         }
     }
 
@@ -60,7 +69,12 @@ public class SMTProgram
 
     public List<FunctionDeclaration> getFunctionDeclarations()
     {
-        return this.fcnDecls;
+        return this.functionDeclarations;
+    }
+
+    public List<ConstantDeclaration> getConstantDeclarations()
+    {
+        return this.constantDeclarations;
     }
     
     public List<Expression> getExpressions() {
@@ -75,4 +89,6 @@ public class SMTProgram
     {
         return this.assertions;
     }
+
+
 }

@@ -18,7 +18,7 @@ class SignatureTests
     @BeforeEach
     public void beforeEach()
     {
-        Utils.resetVariableNameIndex();
+        Utils.reset();
     }
 
     @Test
@@ -164,10 +164,10 @@ class SignatureTests
         String expected =
                 prefix +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                "(declare-fun _S () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
                 "(declare-const _a1 Atom)\n" +
-                "(assert (= _S (singleton _a1))\n" +
-                "(assert (= this_A _S)\n";
+                "(assert (= _S1 (singleton (mkTuple _a1 ))))\n" +
+                "(assert (= this_A _S1))\n";
         assertEquals(expected, actual);
     }
 }

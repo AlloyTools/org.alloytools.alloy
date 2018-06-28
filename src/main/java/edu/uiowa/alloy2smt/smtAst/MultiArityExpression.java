@@ -49,7 +49,8 @@ public class MultiArityExpression extends Expression
     public enum Op 
     {        
         MKTUPLE ("mkTuple"),
-        INSERT ("insert");    
+        INSERT ("insert"),
+        DISTINCT ("distinct");
         //ToDo: add other operators like and, or, ...
         private final String opStr;
 

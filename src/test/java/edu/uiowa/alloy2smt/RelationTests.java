@@ -18,7 +18,7 @@ class RelationTests
     @BeforeEach
     public void beforeEach()
     {
-        Utils.resetVariableNameIndex();
+        Utils.reset();
     }
 
     @Test

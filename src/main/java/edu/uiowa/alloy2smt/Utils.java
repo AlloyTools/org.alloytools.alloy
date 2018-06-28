@@ -16,7 +16,11 @@ import edu.uiowa.alloy2smt.smtAst.SMTProgram;
 public class Utils
 {
 
-    private static int variableNameIndex = 0;
+    private static int nameIndex = 0;
+
+    private static int atomIndex = 0;
+
+    private static int setIndex = 0;
 
     public static String translateFromFile(String filePath)
     {
@@ -63,14 +67,30 @@ public class Utils
         return s.replaceAll("/", "_");
     }
 
-    public static String getNewVariableName()
+    public static String getNewName()
     {
-        variableNameIndex++;
-        return "_x" + variableNameIndex;
+        nameIndex++;
+        return "_x" + nameIndex;
     }
 
-    public static void resetVariableNameIndex()
+    public static String getNewAtom()
     {
-        variableNameIndex = 0;
+        atomIndex ++;
+        return "_a" + atomIndex;
     }
+
+    public static String getNewSet()
+    {
+        setIndex ++;
+        return "_S" + setIndex;
+    }
+
+    public static void reset()
+    {
+        nameIndex = 0;
+        atomIndex = 0;
+        setIndex  = 0;
+    }
+
+
 }
