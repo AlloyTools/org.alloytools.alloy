@@ -36,7 +36,8 @@ public class Alloy2SMTTranslator
     private final TupleSort                 unaryAtomSort;
     private final TupleSort                 binaryAtomSort;
 
-    private Map<Sig,FunctionDeclaration>    signaturesMap = new HashMap<>();
+    private Map<Sig,FunctionDeclaration>        signaturesMap = new HashMap<>();
+    private Map<Sig.Field,FunctionDeclaration>  fieldsMap = new HashMap<>();
 
     public Alloy2SMTTranslator(CompModule alloyModel)
     {
@@ -82,7 +83,75 @@ public class Alloy2SMTTranslator
         {
             return translateExprUnary((ExprUnary) expr);
         }
+        if(expr instanceof ExprBinary)
+        {
+            return translateExprBinary((ExprBinary) expr);
+        }
         throw new UnsupportedOperationException();
+    }
+
+    private Expression translateExprBinary(ExprBinary expr)
+    {
+        switch (expr.op)
+        {
+            case ARROW              : throw new UnsupportedOperationException();
+            case ANY_ARROW_SOME     : throw new UnsupportedOperationException();
+            case ANY_ARROW_ONE      : throw new UnsupportedOperationException();
+            case ANY_ARROW_LONE     : throw new UnsupportedOperationException();
+            case SOME_ARROW_ANY     : throw new UnsupportedOperationException();
+            case SOME_ARROW_SOME    : throw new UnsupportedOperationException();
+            case SOME_ARROW_ONE     : throw new UnsupportedOperationException();
+            case SOME_ARROW_LONE    : throw new UnsupportedOperationException();
+            case ONE_ARROW_ANY      : throw new UnsupportedOperationException();
+            case ONE_ARROW_SOME     : throw new UnsupportedOperationException();
+            case ONE_ARROW_ONE      : throw new UnsupportedOperationException();
+            case ONE_ARROW_LONE     : throw new UnsupportedOperationException();
+            case LONE_ARROW_ANY     : throw new UnsupportedOperationException();
+            case LONE_ARROW_SOME    : throw new UnsupportedOperationException();
+            case LONE_ARROW_ONE     : throw new UnsupportedOperationException();
+            case LONE_ARROW_LONE    : throw new UnsupportedOperationException();
+            case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
+            case JOIN               : return translateJoin(expr);
+            case DOMAIN             : throw new UnsupportedOperationException();
+            case RANGE              : throw new UnsupportedOperationException();
+            case INTERSECT          : throw new UnsupportedOperationException();
+            case PLUSPLUS           : throw new UnsupportedOperationException();
+            case PLUS               : throw new UnsupportedOperationException();
+            case IPLUS              : throw new UnsupportedOperationException();
+            case MINUS              : throw new UnsupportedOperationException();
+            case IMINUS             : throw new UnsupportedOperationException();
+            case MUL                : throw new UnsupportedOperationException();
+            case DIV                : throw new UnsupportedOperationException();
+            case REM                : throw new UnsupportedOperationException();
+            case EQUALS             : throw new UnsupportedOperationException();
+            case NOT_EQUALS         : throw new UnsupportedOperationException();
+            case IMPLIES            : throw new UnsupportedOperationException();
+            case LT                 : throw new UnsupportedOperationException();
+            case LTE                : throw new UnsupportedOperationException();
+            case GT                 : throw new UnsupportedOperationException();
+            case GTE                : throw new UnsupportedOperationException();
+            case NOT_LT             : throw new UnsupportedOperationException();
+            case NOT_LTE            : throw new UnsupportedOperationException();
+            case NOT_GT             : throw new UnsupportedOperationException();
+            case NOT_GTE            : throw new UnsupportedOperationException();
+            case SHL                : throw new UnsupportedOperationException();
+            case SHA                : throw new UnsupportedOperationException();
+            case SHR                : throw new UnsupportedOperationException();
+            case IN                 : throw new UnsupportedOperationException();
+            case NOT_IN             : throw new UnsupportedOperationException();
+            case AND                : throw new UnsupportedOperationException();
+            case OR                 : throw new UnsupportedOperationException();
+            case IFF                : throw new UnsupportedOperationException();
+            default                 : throw new UnsupportedOperationException();
+        }
+    }
+
+    private Expression translateJoin(ExprBinary expr)
+    {
+        Expression left = translateExpr(expr.left);
+        Expression right = translateExpr(expr.right);
+        BinaryExpression join = new BinaryExpression(left, BinaryExpression.Op.JOIN, right);
+        return join;
     }
 
     private Expression translateExprUnary(ExprUnary exprUnary)
@@ -107,6 +176,11 @@ public class Alloy2SMTTranslator
             return this.signaturesMap.get(exprUnary.sub).getConstantExpr();
         }
 
+        if(exprUnary.sub instanceof Sig.Field)
+        {
+            return this.fieldsMap.get(exprUnary.sub).getConstantExpr();
+        }
+
         if(exprUnary.sub instanceof ExprUnary)
         {
             return translateExprUnary((ExprUnary) exprUnary.sub);
@@ -120,18 +194,8 @@ public class Alloy2SMTTranslator
         BoundVariableDeclaration    variable    = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
         MultiArityExpression        tuple       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
         Expression                  set         = translateExpr(exprUnary.sub);
-        Expression                  expression  = null;
-
-        if(set instanceof ConstantExpression)
-        {
-            BinaryExpression member         = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
-            expression                      = new UnaryExpression(UnaryExpression.Op.NOT, member);
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
-
+        BinaryExpression            member      = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
+        Expression                  expression  = new UnaryExpression(UnaryExpression.Op.NOT, member);
         QuantifiedExpression        forall      = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, expression, variable);
         return forall;
     }
@@ -371,6 +435,7 @@ public class Alloy2SMTTranslator
 
         // declare a variable for the field
         this.smtProgram.addFunctionDeclaration(declaration);
+        this.fieldsMap.put(field, declaration);
 
         // a field relation is a subset of the product of its signatures
         List<Sig>           fieldSignatures     =  field.type().fold().stream().flatMap(List::stream).collect(Collectors.toList());
