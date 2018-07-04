@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt;
 
+import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
@@ -57,9 +58,83 @@ public class Alloy2SMTTranslator
         collectReachableSigs();
         translateSignatures();
         translateSignatureHierarchies();
+        translateFacts();
         return this.smtProgram;
     }
 
+    private void translateFacts()
+    {
+        for (Pair<String, Expr> pair :this.alloyModel.getAllFacts() )
+        {
+            translateFact(pair.a, pair.b);
+        }
+    }
+
+    private void translateFact(String factName, Expr factExpr)
+    {
+        Expression expression = translateExpr(factExpr);
+        this.smtProgram.addAssertion(new Assertion(factName, expression));
+    }
+
+    private Expression translateExpr(Expr expr)
+    {
+        if(expr instanceof ExprUnary)
+        {
+            return translateExprUnary((ExprUnary) expr);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private Expression translateExprUnary(ExprUnary exprUnary)
+    {
+        switch (exprUnary.op)
+        {
+            case NOOP   : return translateNoop(exprUnary);
+            case NO     : return translateNo(exprUnary);
+            default:
+            {
+                throw new UnsupportedOperationException("Not supported yet");
+            }
+        }
+    }
+
+
+
+    private Expression translateNoop(ExprUnary exprUnary)
+    {
+        if(exprUnary.sub instanceof Sig)
+        {
+            return this.signaturesMap.get(exprUnary.sub).getConstantExpr();
+        }
+
+        if(exprUnary.sub instanceof ExprUnary)
+        {
+            return translateExprUnary((ExprUnary) exprUnary.sub);
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
+    private Expression translateNo(ExprUnary exprUnary)
+    {
+        BoundVariableDeclaration    variable    = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+        MultiArityExpression        tuple       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
+        Expression                  set         = translateExpr(exprUnary.sub);
+        Expression                  expression  = null;
+
+        if(set instanceof ConstantExpression)
+        {
+            BinaryExpression member         = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
+            expression                      = new UnaryExpression(UnaryExpression.Op.NOT, member);
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        QuantifiedExpression        forall      = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, expression, variable);
+        return forall;
+    }
     private void translateSignatureHierarchies()
     {
         for (Sig sig: this.topLevelSigs)

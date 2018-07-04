@@ -175,6 +175,12 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(Assertion assertion)
     {
+
+        if(! assertion.getName().isEmpty())
+        {
+            // print comment
+            this.stringBuilder.append("; " + assertion.getName() + "\n");
+        }
         this.stringBuilder.append("(assert ");
         this.visit(assertion.getExpression());
         this.stringBuilder.append(")\n");
