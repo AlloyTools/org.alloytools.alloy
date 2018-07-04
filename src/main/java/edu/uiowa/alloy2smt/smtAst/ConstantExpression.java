@@ -12,16 +12,21 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class ConstantExpression extends Expression
 {
-    private final String varName;
-    
-    public ConstantExpression(String varName)
+    private final Declaration declaration;
+
+    public ConstantExpression(Declaration declaration)
     {
-        this.varName = varName;
+        this.declaration = declaration;
     }
     
     public String getVarName()
     {
-        return this.varName;
+        return this.declaration.getName();
+    }
+
+    public Declaration getDeclaration()
+    {
+        return this.declaration;
     }
 
     @Override

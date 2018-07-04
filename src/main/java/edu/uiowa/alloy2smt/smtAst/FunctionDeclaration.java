@@ -13,23 +13,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FunctionDeclaration extends SMTAst
+public class FunctionDeclaration extends Declaration
 {
-    private final String                name;
     private final List<Sort>            inputSorts;
-    private final Sort                  outputSort;
-    private final ConstantExpression    constantExpression;
 
-    
     public FunctionDeclaration(String name, List<Sort> inputSort, Sort outputSort)
     {
-        this.name       = name;
+        super(name, outputSort);
+
         this.inputSorts = inputSort;
-        this.outputSort = outputSort;
 
         if(this.inputSorts.isEmpty())
         {
-            constantExpression = new ConstantExpression(name);
+            constantExpression = new ConstantExpression(this);
         }
         else
         {
@@ -39,13 +35,12 @@ public class FunctionDeclaration extends SMTAst
     
     public FunctionDeclaration(String name, Sort inputSort, Sort outputSort)
     {
-        this.name       = name;
+        super(name, outputSort);
         this.inputSorts = Arrays.asList(inputSort);
-        this.outputSort = outputSort;
 
         if(this.inputSorts.isEmpty())
         {
-            constantExpression = new ConstantExpression(name);
+            constantExpression = new ConstantExpression(this);
         }
         else
         {
@@ -55,21 +50,19 @@ public class FunctionDeclaration extends SMTAst
 
     public FunctionDeclaration(String name, Sort outputSort)
     {
-        this.name               = name;
+        super(name, outputSort);
         this.inputSorts         = new ArrayList<>();
-        this.outputSort         = outputSort;
-        this.constantExpression = new ConstantExpression(name);
+        this.constantExpression = new ConstantExpression(this);
     } 
     
     public FunctionDeclaration(String name, Sort outputSort, Sort ... inputSorts)
     {
-        this.name       = name;
+        super(name, outputSort);
         this.inputSorts = Arrays.asList(inputSorts);
-        this.outputSort = outputSort;
 
         if(this.inputSorts.isEmpty())
         {
-            constantExpression = new ConstantExpression(name);
+            constantExpression = new ConstantExpression(this);
         }
         else
         {
@@ -82,28 +75,30 @@ public class FunctionDeclaration extends SMTAst
         return this.inputSorts;
     }
 
-    public String getName()
-    {
-        return this.name;
-    }
-
+    @Override
     public ConstantExpression getConstantExpr()
     {
-        return this.constantExpression;
+        if(this.constantExpression != null)
+        {
+            return this.constantExpression;
+        }
+        // this is a function call
+        throw new UnsupportedOperationException();
     }
 
     public FunctionCallExpression getCallExpr(Expression ... expressions)
     {
-        return new FunctionCallExpression(this.name, expressions);
+        return new FunctionCallExpression(this.getName(), expressions);
     }
 
     public Sort getOutputSort()
     {
-        return this.outputSort;
+        return this.getSort();
     }   
 
     @Override
-    public void accept(SMTAstVisitor visitor) {
+    public void accept(SMTAstVisitor visitor)
+    {
         visitor.visit(this);
     }
 }
