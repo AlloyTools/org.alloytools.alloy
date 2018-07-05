@@ -56,7 +56,7 @@ public class FieldTranslator
 
         translator.smtProgram.addAssertion(assertion);
 
-        // translate multiplicities
+        // translateExpr multiplicities
         translateMultiplicities(field, declaration);
     }
 

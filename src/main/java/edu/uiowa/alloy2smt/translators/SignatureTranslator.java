@@ -1,18 +1,13 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.alloy4.SafeList;
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprBinary;
-import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SignatureTranslator
 {
@@ -124,7 +119,7 @@ public class SignatureTranslator
                 translateSignatureSomeMultiplicity(sig);
             }
 
-            // translate signature fields
+            // translateExpr signature fields
             for(Sig.Field field : sig.getFields())
             {
                 this.fieldTranslator.translate(field);
