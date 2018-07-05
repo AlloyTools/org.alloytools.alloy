@@ -35,7 +35,7 @@ public class ExprTranslator
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateExprBinary(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprBinary(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
     {
         switch (expr.op)
         {

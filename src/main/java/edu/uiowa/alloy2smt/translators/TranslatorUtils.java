@@ -24,11 +24,11 @@ public class TranslatorUtils
         return s.replaceAll("/", "_");
     }
 
-    public static FunctionDeclaration generateAuxiliarySetNAtoms(FunctionDeclaration functionDeclaration, int n, Alloy2SMTTranslator translator)
+    public static FunctionDeclaration generateAuxiliarySetNAtoms(Sort setSort, int n, Alloy2SMTTranslator translator)
     {
         List<Expression> expressions = declareNDistinctConstants(translator.atomSort, n, translator.smtProgram);
 
-        FunctionDeclaration declaration = new FunctionDeclaration(getNewSet(), functionDeclaration.getSort());
+        FunctionDeclaration declaration = new FunctionDeclaration(getNewSet(), setSort);
 
         translator.smtProgram.addFunctionDeclaration(declaration);
 

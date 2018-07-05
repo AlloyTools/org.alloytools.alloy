@@ -65,6 +65,11 @@ public class ExprUnaryTranslator
             return exprTranslator.translateExprList((ExprList) exprUnary.sub, variablesScope);
         }
 
+        if(exprUnary.sub instanceof ExprBinary)
+        {
+            return exprTranslator.translateExprBinary((ExprBinary) exprUnary.sub, variablesScope);
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -147,8 +152,10 @@ public class ExprUnaryTranslator
         return or;
     }
 
-    private Expression translateCardinality(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateCardinality(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
     {
-        throw new UnsupportedOperationException();
+       //ToDo: review this case
+        TranslatorUtils.generateAuxiliarySetNAtoms(exprTranslator.translator.setOfUnaryAtomSort, 1, exprTranslator.translator);
+        throw  new UnsupportedOperationException();
     }
 }

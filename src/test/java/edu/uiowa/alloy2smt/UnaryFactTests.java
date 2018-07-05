@@ -268,4 +268,34 @@ class UnaryFactTests
     }
 
 
+    @Test
+    public void cardinality1()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {#A = 2}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "";
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void cardinality2()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B {r: set A}\n" +
+                "fact f {#B.r = 2 }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "";
+        assertEquals(expected, actual);
+    }
+
 }
