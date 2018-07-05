@@ -139,4 +139,40 @@ class FactTests
                             "(forall ((_x2 Atom)) (not (member (mkTuple _x2 ) (join this_B_r (singleton (mkTuple b ))))))))))\n";
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void some1()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {some A}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) this_A)))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void some2()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B {r: set A}\n" +
+                "fact f {some B.r }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                "(assert (subset this_B_r (product this_B this_A)))\n" +
+                "; f\n" +
+                "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join this_B this_B_r))))\n";
+        assertEquals(expected, actual);
+    }
 }

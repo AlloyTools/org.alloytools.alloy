@@ -1,27 +1,28 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
-import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ExprTranslator
 {
-    private final Alloy2SMTTranslator translator;
+    final Alloy2SMTTranslator translator;
+
+    final ExprUnaryTranslator exprUnaryTranslator;
 
     public ExprTranslator(Alloy2SMTTranslator translator)
     {
-        this.translator = translator;
+        this.translator     = translator;
+        exprUnaryTranslator = new ExprUnaryTranslator(this);
     }
 
     Expression translateExpr(Expr expr, Map<String, ConstantExpression> variablesScope)
     {
         if(expr instanceof ExprUnary)
         {
-            return translateExprUnary((ExprUnary) expr, variablesScope);
+            return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, variablesScope);
         }
         if(expr instanceof ExprBinary)
         {
@@ -136,55 +137,7 @@ public class ExprTranslator
         return singleton;
     }
 
-    private Expression translateExprUnary(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-        switch (exprUnary.op)
-        {
-            case NOOP   : return translateNoop(exprUnary, variablesScope);
-            case NO     : return translateNo(exprUnary, variablesScope);
-            default:
-            {
-                throw new UnsupportedOperationException("Not supported yet");
-            }
-        }
-    }
-
-    private Expression translateNoop(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-        if(exprUnary.sub instanceof Sig)
-        {
-            return translator.signaturesMap.get(exprUnary.sub).getConstantExpr();
-        }
-
-        if(exprUnary.sub instanceof Sig.Field)
-        {
-            return translator.fieldsMap.get(exprUnary.sub).getConstantExpr();
-        }
-
-        if(exprUnary.sub instanceof ExprVar)
-        {
-            return variablesScope.get(((ExprVar)exprUnary.sub).label);
-        }
-
-        if(exprUnary.sub instanceof ExprQt)
-        {
-            return translateExprQt((ExprQt) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprUnary)
-        {
-            return translateExprUnary((ExprUnary) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprList)
-        {
-            return translateExprList((ExprList) exprUnary.sub, variablesScope);
-        }
-
-        throw new UnsupportedOperationException();
-    }
-
-    private Expression translateExprList(ExprList exprList, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprList(ExprList exprList, Map<String, ConstantExpression> variablesScope)
     {
         switch (exprList.op)
         {
@@ -211,7 +164,7 @@ public class ExprTranslator
         return result;
     }
 
-    private Expression translateExprQt(ExprQt exprQt, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprQt(ExprQt exprQt, Map<String, ConstantExpression> variablesScope)
     {
         Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables = new HashMap<>();
         for (Decl decl: exprQt.decls)
@@ -295,16 +248,5 @@ public class ExprTranslator
         {
             throw new UnsupportedOperationException();
         }
-    }
-
-    private Expression translateNo(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-        BoundVariableDeclaration variable = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-        MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
-        Expression set = translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression member = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
-        Expression expression = new UnaryExpression(UnaryExpression.Op.NOT, member);
-        QuantifiedExpression forall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, expression, variable);
-        return forall;
     }
 }
