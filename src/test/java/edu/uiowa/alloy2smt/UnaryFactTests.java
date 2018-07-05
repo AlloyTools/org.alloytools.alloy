@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt;
 
+import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -7,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-class FactTests
+class UnaryFactTests
 {
 
     private final String prefix =
@@ -19,7 +20,7 @@ class FactTests
     @BeforeEach
     public void beforeEach()
     {
-        Utils.reset();
+        TranslatorUtils.reset();
     }
 
     @Test
@@ -265,4 +266,6 @@ class FactTests
                                                     "(join this_B this_B_r))))))\n";
         assertEquals(expected, actual);
     }
+
+
 }

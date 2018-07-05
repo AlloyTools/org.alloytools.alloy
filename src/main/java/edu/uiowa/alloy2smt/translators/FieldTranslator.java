@@ -25,7 +25,7 @@ public class FieldTranslator
     void translate(Sig.Field field)
     {
 
-        String              fieldName   = Utils.sanitizeName(field.sig.label + "/" + field.label);
+        String              fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
         TupleSort tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), translator.atomSort));
         SetSort setSort     = new SetSort(tupleSort);
         FunctionDeclaration declaration = new FunctionDeclaration(fieldName, setSort);
@@ -188,8 +188,8 @@ public class FieldTranslator
 
             FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -246,9 +246,9 @@ public class FieldTranslator
 
             FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -344,10 +344,10 @@ public class FieldTranslator
 
             FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration u          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration u          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());

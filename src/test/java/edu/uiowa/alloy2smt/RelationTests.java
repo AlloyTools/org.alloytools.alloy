@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt;
 
+import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ class RelationTests
     @BeforeEach
     public void beforeEach()
     {
-        Utils.reset();
+        TranslatorUtils.reset();
     }
 
     @Test

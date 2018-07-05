@@ -64,7 +64,7 @@ public class SignatureTranslator
         {
             Expression      left    = translator.signaturesMap.get(primSig.children().get(i)).getConstantExpr();
 
-            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.signaturesMap.get(primSig.children().get(i)).getOutputSort());
+            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.signaturesMap.get(primSig.children().get(i)).getSort());
 
             for (int j = i + 1 ; j < primSig.children().size(); j++)
             {
@@ -95,7 +95,7 @@ public class SignatureTranslator
     {
         translator.reachableSigs.forEach((sig) ->
         {
-            FunctionDeclaration functionDeclaration =  declareUnaryAtomFunction(Utils.sanitizeName(sig.toString()));
+            FunctionDeclaration functionDeclaration =  declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
             translator.signaturesMap.put(sig, functionDeclaration);
 
             // if sig extends another signature
@@ -131,7 +131,7 @@ public class SignatureTranslator
     {
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
-        FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
+        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(signature, 1, translator);
 
         BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));
@@ -141,7 +141,7 @@ public class SignatureTranslator
     {
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
-        FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
+        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(signature, 1, translator);
 
         BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.SUBSET, declaration.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));
@@ -151,65 +151,13 @@ public class SignatureTranslator
     {
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
-        FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
+        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(signature, 1, translator);
 
         BinaryExpression subset   = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, signature.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
-    private FunctionDeclaration generateAuxiliarySetNAtoms(FunctionDeclaration signature)
-    {
-        List<Expression> expressions = declareNDistinctConstants(translator.atomSort, 1);
 
-        FunctionDeclaration declaration = new FunctionDeclaration(Utils.getNewSet(), signature.getOutputSort());
-
-        translator.smtProgram.addFunctionDeclaration(declaration);
-
-        Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, expressions.get(expressions.size() - 1));
-
-        if(expressions.size() > 1)
-        {
-            List<Expression> atoms = Arrays.asList(set);
-
-            for(int i = expressions.size() - 2; i >= 0; i--)
-            {
-                atoms.add(expressions.get(i));
-            }
-
-            set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atoms);
-        }
-
-        BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.EQ, set);
-
-        translator.smtProgram.addAssertion(new Assertion(equality));
-        return declaration;
-    }
-
-    private List<Expression> declareNDistinctConstants(Sort sort,int n)
-    {
-        List<Expression> expressions = new ArrayList<>();
-        if(n > 0)
-        {
-            for (int i = 0; i < n; i++)
-            {
-                ConstantDeclaration constantDeclaration = new ConstantDeclaration(Utils.getNewAtom(), sort);
-                MultiArityExpression makeTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantDeclaration.getConstantExpr());
-                expressions.add(makeTuple);
-                translator.smtProgram.addConstantDeclaration(constantDeclaration);
-            }
-
-            if (n > 1)
-            {
-                MultiArityExpression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
-                translator.smtProgram.addAssertion(new Assertion(distinct));
-            }
-        }
-        else
-        {
-            translator.LOGGER.printSevere("Argument n should be greater than 0");
-        }
-        return expressions;
-    }
 
     private void translateSigSubsetParent(Sig sig, FunctionDeclaration functionDeclaration)
     {

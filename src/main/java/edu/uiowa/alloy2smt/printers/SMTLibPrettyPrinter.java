@@ -149,7 +149,7 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
             this.visit(inputSorts.get(i));
         }
         this.stringBuilder.append(") ");
-        this.visit(functionDeclaration.getOutputSort());
+        this.visit(functionDeclaration.getSort());
         this.stringBuilder.append(")\n");
     }
 

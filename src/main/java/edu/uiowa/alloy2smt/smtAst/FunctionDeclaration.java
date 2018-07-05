@@ -91,10 +91,6 @@ public class FunctionDeclaration extends Declaration
         return new FunctionCallExpression(this.getName(), expressions);
     }
 
-    public Sort getOutputSort()
-    {
-        return this.getSort();
-    }   
 
     @Override
     public void accept(SMTAstVisitor visitor)

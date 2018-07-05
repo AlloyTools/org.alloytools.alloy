@@ -19,17 +19,19 @@ public class ExprUnaryTranslator
     {
         switch (exprUnary.op)
         {
-            case NOOP   : return translateNoop(exprUnary, variablesScope);
-            case NO     : return translateNo(exprUnary, variablesScope);
-            case SOME   : return translateSome(exprUnary, variablesScope);
-            case ONE    : return translateOne(exprUnary, variablesScope);
-            case LONE   : return translateLone(exprUnary, variablesScope);
+            case NOOP       : return translateNoop(exprUnary, variablesScope);
+            case NO         : return translateNo(exprUnary, variablesScope);
+            case SOME       : return translateSome(exprUnary, variablesScope);
+            case ONE        : return translateOne(exprUnary, variablesScope);
+            case LONE       : return translateLone(exprUnary, variablesScope);
+            case CARDINALITY: return translateCardinality(exprUnary, variablesScope);
             default:
             {
                 throw new UnsupportedOperationException("Not supported yet");
             }
         }
     }
+
 
     private Expression translateNoop(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
     {
@@ -68,7 +70,7 @@ public class ExprUnaryTranslator
 
     private Expression translateNo(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    variable    = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    variable    = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         MultiArityExpression        tuple       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
         Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression            member      = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
@@ -79,7 +81,7 @@ public class ExprUnaryTranslator
 
     private Expression translateSome(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    variable    = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    variable    = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         MultiArityExpression        tuple       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
         Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression            member      = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
@@ -89,12 +91,12 @@ public class ExprUnaryTranslator
 
     private Expression translateOne(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    existsVar   = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    existsVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         MultiArityExpression        tuple1      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, existsVar.getConstantExpr());
         Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression            member1     = new BinaryExpression(tuple1, BinaryExpression.Op.MEMBER, set);
 
-        BoundVariableDeclaration    forallVar   = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    forallVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         BinaryExpression            equal       = new BinaryExpression(existsVar.getConstantExpr(), BinaryExpression.Op.EQ, forallVar.getConstantExpr());
         UnaryExpression             notEqual    = new UnaryExpression(UnaryExpression.Op.NOT, equal);
 
@@ -113,12 +115,12 @@ public class ExprUnaryTranslator
 
     private Expression translateLone(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    existsVar   = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    existsVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         MultiArityExpression        tuple1      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, existsVar.getConstantExpr());
         Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression            member1     = new BinaryExpression(tuple1, BinaryExpression.Op.MEMBER, set);
 
-        BoundVariableDeclaration    forallVar   = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    forallVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         BinaryExpression            equal       = new BinaryExpression(existsVar.getConstantExpr(), BinaryExpression.Op.EQ, forallVar.getConstantExpr());
         UnaryExpression             notEqual    = new UnaryExpression(UnaryExpression.Op.NOT, equal);
 
@@ -133,7 +135,7 @@ public class ExprUnaryTranslator
         QuantifiedExpression        exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and, existsVar);
 
 
-        BoundVariableDeclaration    emptyVar    = new BoundVariableDeclaration(Utils.getNewName(), exprTranslator.translator.atomSort);
+        BoundVariableDeclaration    emptyVar    = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
         MultiArityExpression        emptyTuple  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, emptyVar.getConstantExpr());
         BinaryExpression            emptyMember = new BinaryExpression(emptyTuple, BinaryExpression.Op.MEMBER, set);
         UnaryExpression             not         = new UnaryExpression(UnaryExpression.Op.NOT, emptyMember);
@@ -143,5 +145,10 @@ public class ExprUnaryTranslator
         BinaryExpression            or          = new BinaryExpression(exists, BinaryExpression.Op.OR, emptyForall);
 
         return or;
+    }
+
+    private Expression translateCardinality(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    {
+        throw new UnsupportedOperationException();
     }
 }

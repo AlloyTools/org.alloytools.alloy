@@ -11,17 +11,15 @@ package edu.uiowa.alloy2smt;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
-import edu.uiowa.alloy2smt.smtAst.SMTProgram;
+import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SMTTranslator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Utils
 {
-
-    private static int nameIndex = 0;
-
-    private static int atomIndex = 0;
-
-    private static int setIndex = 0;
 
     public static String translateFromFile(String filePath)
     {
@@ -58,40 +56,4 @@ public class Utils
         SMTProgram              program     = translator.execute();
         return program;
     }
-    
-    /**
-     * Sanitize string s by replacing "\" with "_".
-     * @param s
-     * @return 
-     */
-    public static String sanitizeName(String s) {        
-        return s.replaceAll("/", "_");
-    }
-
-    public static String getNewName()
-    {
-        nameIndex++;
-        return "_x" + nameIndex;
-    }
-
-    public static String getNewAtom()
-    {
-        atomIndex ++;
-        return "_a" + atomIndex;
-    }
-
-    public static String getNewSet()
-    {
-        setIndex ++;
-        return "_S" + setIndex;
-    }
-
-    public static void reset()
-    {
-        nameIndex = 0;
-        atomIndex = 0;
-        setIndex  = 0;
-    }
-
-
 }
