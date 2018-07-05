@@ -80,48 +80,4 @@ public class Alloy2SMTTranslator
         Expression expression = this.exprTranslator.translateExpr(factExpr, variablesScope);
         this.smtProgram.addAssertion(new Assertion(factName, expression));
     }
-
-    private void mkAndAddBinaryAtomRelation(String varName) 
-    {
-        if(varName != null) 
-        {
-            this.smtProgram.addFunctionDeclaration(new FunctionDeclaration(varName, this.setOfBinaryAtomSort));
-        }        
-    }    
-    
-    private void addToVarDecl(FunctionDeclaration varDecl)
-    {
-        if(varDecl != null) 
-        {
-            this.smtProgram.addFunctionDeclaration(varDecl);
-        }
-        else 
-        {
-            LOGGER.printSevere("Try to add a null variable declaration!");
-        }
-    }
-    
-    private void addToFcnDecl(FunctionDeclaration fcnDecl) 
-    {
-        if(fcnDecl != null) 
-        {
-            this.smtProgram.addFcnDecl(fcnDecl);
-        }
-        else 
-        {
-            LOGGER.printSevere("Try to add a null function declaration!");
-        }
-    }    
-    
-    private void addToFcnDef(FunctionDefinition fcnDef) 
-    {
-        if(fcnDef != null) 
-        {
-            this.smtProgram.addFcnDef(fcnDef);
-        }
-        else 
-        {
-            LOGGER.printSevere("Try to add a null function declaration!");
-        }
-    }    
 }
