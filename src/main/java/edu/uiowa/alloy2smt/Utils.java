@@ -12,6 +12,7 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.SMTProgram;
+import edu.uiowa.alloy2smt.translators.Alloy2SMTTranslator;
 
 public class Utils
 {
@@ -25,7 +26,7 @@ public class Utils
     public static String translateFromFile(String filePath)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
-        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
+        Alloy2SMTTranslator translator  = new Alloy2SMTTranslator(alloyModel);
         SMTProgram              program     = translator.execute();
         SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(program);
         String                  output      = printer.print();

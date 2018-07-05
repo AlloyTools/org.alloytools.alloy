@@ -1,375 +1,32 @@
-/*
- * This file is part of alloy2smt.
- * Copyright (C) 2018-2019  The University of Iowa
- *
- * @author Mudathir Mohamed, Paul Meng
- *
- */
+package edu.uiowa.alloy2smt.translators;
 
-package edu.uiowa.alloy2smt;
-
-import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.SafeList;
-import edu.mit.csail.sdg.ast.*;
-import edu.mit.csail.sdg.parser.CompModule;
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.Sig;
+import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class Alloy2SMTTranslator
+public class SignatureTranslator
 {
-    public final SMTProgram smtProgram;
-    
-    private final Alloy2SMTLogger   LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
-    
-    private final String                    atom;
-    private final CompModule                alloyModel;
-    private final List<Sig>                 reachableSigs;
-    private final List<Sig>                 topLevelSigs;
-    private final SetSort                   setOfUnaryAtomSort;
-    private final SetSort                   setOfBinaryAtomSort;
-    private final UninterpretedSort         atomSort;
-    private final TupleSort                 unaryAtomSort;
-    private final TupleSort                 binaryAtomSort;
 
-    private Map<Sig,FunctionDeclaration>        signaturesMap   = new HashMap<>();
-    private Map<Sig.Field,FunctionDeclaration>  fieldsMap       = new HashMap<>();
+    private final Alloy2SMTTranslator translator;
 
-    public Alloy2SMTTranslator(CompModule alloyModel)
+    public SignatureTranslator(Alloy2SMTTranslator translator)
     {
-        this.smtProgram             = new SMTProgram();
-        
-        this.atom                   = "Atom";
-        this.alloyModel             = alloyModel;
-        this.reachableSigs          = new ArrayList<>();
-        this.topLevelSigs           = new ArrayList<>();
-        this.atomSort               = new UninterpretedSort(this.atom);
-        this.unaryAtomSort          = new TupleSort(this.atomSort);
-        this.binaryAtomSort         = new TupleSort(this.atomSort, this.atomSort);
-        this.setOfUnaryAtomSort     = new SetSort(this.unaryAtomSort);
-        this.setOfBinaryAtomSort    = new SetSort(this.binaryAtomSort);
+        this.translator = translator;
     }
 
-    public SMTProgram execute()
-    {        
-        collectReachableSigs();
-        translateSignatures();
-        translateSignatureHierarchies();
-        translateFacts();
-        return this.smtProgram;
-    }
-
-    private void translateFacts()
-    {
-        for (Pair<String, Expr> pair :this.alloyModel.getAllFacts() )
-        {
-            translateFact(pair.a, pair.b);
-        }
-    }
-
-    private void translateFact(String factName, Expr factExpr)
-    {
-        Map<String, ConstantExpression> variablesScope = new HashMap<>();
-        Expression expression = translateExpr(factExpr, variablesScope);
-        this.smtProgram.addAssertion(new Assertion(factName, expression));
-    }
-
-    private Expression translateExpr(Expr expr, Map<String, ConstantExpression> variablesScope)
-    {
-        if(expr instanceof ExprUnary)
-        {
-            return translateExprUnary((ExprUnary) expr, variablesScope);
-        }
-        if(expr instanceof ExprBinary)
-        {
-            return translateExprBinary((ExprBinary) expr, variablesScope);
-        }
-        if(expr instanceof ExprQt)
-        {
-            return translateExprQt((ExprQt) expr, variablesScope);
-        }
-        throw new UnsupportedOperationException();
-    }
-
-    private Expression translateExprBinary(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
-    {
-        switch (expr.op)
-        {
-            case ARROW              : throw new UnsupportedOperationException();
-            case ANY_ARROW_SOME     : throw new UnsupportedOperationException();
-            case ANY_ARROW_ONE      : throw new UnsupportedOperationException();
-            case ANY_ARROW_LONE     : throw new UnsupportedOperationException();
-            case SOME_ARROW_ANY     : throw new UnsupportedOperationException();
-            case SOME_ARROW_SOME    : throw new UnsupportedOperationException();
-            case SOME_ARROW_ONE     : throw new UnsupportedOperationException();
-            case SOME_ARROW_LONE    : throw new UnsupportedOperationException();
-            case ONE_ARROW_ANY      : throw new UnsupportedOperationException();
-            case ONE_ARROW_SOME     : throw new UnsupportedOperationException();
-            case ONE_ARROW_ONE      : throw new UnsupportedOperationException();
-            case ONE_ARROW_LONE     : throw new UnsupportedOperationException();
-            case LONE_ARROW_ANY     : throw new UnsupportedOperationException();
-            case LONE_ARROW_SOME    : throw new UnsupportedOperationException();
-            case LONE_ARROW_ONE     : throw new UnsupportedOperationException();
-            case LONE_ARROW_LONE    : throw new UnsupportedOperationException();
-            case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
-            case JOIN               : return translateJoin(expr, variablesScope);
-            case DOMAIN             : throw new UnsupportedOperationException();
-            case RANGE              : throw new UnsupportedOperationException();
-            case INTERSECT          : throw new UnsupportedOperationException();
-            case PLUSPLUS           : throw new UnsupportedOperationException();
-            case PLUS               : return translatePlus(expr, variablesScope);
-            case IPLUS              : throw new UnsupportedOperationException();
-            case MINUS              : throw new UnsupportedOperationException();
-            case IMINUS             : throw new UnsupportedOperationException();
-            case MUL                : throw new UnsupportedOperationException();
-            case DIV                : throw new UnsupportedOperationException();
-            case REM                : throw new UnsupportedOperationException();
-            case EQUALS             : throw new UnsupportedOperationException();
-            case NOT_EQUALS         : throw new UnsupportedOperationException();
-            case IMPLIES            : throw new UnsupportedOperationException();
-            case LT                 : throw new UnsupportedOperationException();
-            case LTE                : throw new UnsupportedOperationException();
-            case GT                 : throw new UnsupportedOperationException();
-            case GTE                : throw new UnsupportedOperationException();
-            case NOT_LT             : throw new UnsupportedOperationException();
-            case NOT_LTE            : throw new UnsupportedOperationException();
-            case NOT_GT             : throw new UnsupportedOperationException();
-            case NOT_GTE            : throw new UnsupportedOperationException();
-            case SHL                : throw new UnsupportedOperationException();
-            case SHA                : throw new UnsupportedOperationException();
-            case SHR                : throw new UnsupportedOperationException();
-            case IN                 : throw new UnsupportedOperationException();
-            case NOT_IN             : throw new UnsupportedOperationException();
-            case AND                : throw new UnsupportedOperationException();
-            case OR                 : throw new UnsupportedOperationException();
-            case IFF                : throw new UnsupportedOperationException();
-            default                 : throw new UnsupportedOperationException();
-        }
-    }
-
-    private Expression translatePlus(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
-    {
-        Expression left = translateExpr(expr.left, variablesScope);
-        Expression right = translateExpr(expr.right, variablesScope);
-
-        if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
-        {
-            left = getSingleton((ConstantExpression) left);
-        }
-        if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
-        {
-            right = getSingleton((ConstantExpression) right);
-        }
-
-        BinaryExpression union = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
-        return union;
-    }
-
-    private Expression translateJoin(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
-    {
-        Expression          left    = translateExpr(expr.left, variablesScope);
-        Expression          right   = translateExpr(expr.right, variablesScope);
-
-        if(left instanceof ConstantExpression &&
-            ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
-        {
-            left = getSingleton((ConstantExpression) left);
-        }
-        if(right instanceof ConstantExpression &&
-            ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
-        {
-            right = getSingleton((ConstantExpression) right);
-        }
-        BinaryExpression    join    = new BinaryExpression(left, BinaryExpression.Op.JOIN, right);
-        return join;
-    }
-
-    private Expression getSingleton(ConstantExpression constantExpression)
-    {
-        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantExpression);
-        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-        return singleton;
-    }
-
-    private Expression translateExprUnary(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-        switch (exprUnary.op)
-        {
-            case NOOP   : return translateNoop(exprUnary, variablesScope);
-            case NO     : return translateNo(exprUnary, variablesScope);
-            default:
-            {
-                throw new UnsupportedOperationException("Not supported yet");
-            }
-        }
-    }
-
-
-
-    private Expression translateNoop(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-        if(exprUnary.sub instanceof Sig)
-        {
-            return this.signaturesMap.get(exprUnary.sub).getConstantExpr();
-        }
-
-        if(exprUnary.sub instanceof Sig.Field)
-        {
-            return this.fieldsMap.get(exprUnary.sub).getConstantExpr();
-        }
-
-        if(exprUnary.sub instanceof ExprVar)
-        {
-            return variablesScope.get(((ExprVar)exprUnary.sub).label);
-        }
-
-        if(exprUnary.sub instanceof ExprQt)
-        {
-            return translateExprQt((ExprQt) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprUnary)
-        {
-            return translateExprUnary((ExprUnary) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprList)
-        {
-            return translateExprList((ExprList) exprUnary.sub, variablesScope);
-        }
-
-        throw new UnsupportedOperationException();
-    }
-
-    private Expression translateExprList(ExprList exprList, Map<String, ConstantExpression> variablesScope)
-    {
-        switch (exprList.op)
-        {
-            case AND    : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
-            default     : throw new UnsupportedOperationException();
-        }
-    }
-
-    private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, ConstantExpression> variablesScope)
-    {
-        //ToDo: review the case of nested variable scopes
-        Expression left         = translateExpr(exprList.args.get(0), variablesScope);
-        Expression right        = translateExpr(exprList.args.get(1), variablesScope);
-        BinaryExpression result = new BinaryExpression(left, op, right);
-
-
-        for(int i = 2; i < exprList.args.size(); i++)
-        {
-            Expression expr     = translateExpr(exprList.args.get(i), variablesScope);
-            //ToDo: review right associativity
-            result              = new BinaryExpression(result, op, expr);
-        }
-
-        return result;
-    }
-
-    private Expression translateExprQt(ExprQt exprQt, Map<String, ConstantExpression> variablesScope)
-    {
-        Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables = new HashMap<>();
-        for (Decl decl: exprQt.decls)
-        {
-            FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
-            for (ExprHasName name: decl.names)
-            {
-                BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label, this.atomSort);
-                variablesScope.put(name.label, boundVariable.getConstantExpr());
-                boundVariables.put(boundVariable, functionDeclaration);
-            }
-        }
-
-        Expression           expression             = translateExpr(exprQt.sub, variablesScope);
-
-        switch (exprQt.op)
-        {
-            case ALL: return  translateAllQuantifier(boundVariables, expression);
-            default: throw new UnsupportedOperationException();
-        }
-    }
-
-    private QuantifiedExpression translateAllQuantifier(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
-    {
-        if(boundVariables.size() == 1)
-        {
-            BinaryExpression member = getMemberExpression(boundVariables, 0);
-            expression              = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, expression);
-        }
-        else if (boundVariables.size() > 1)
-        {
-            Expression member1 = getMemberExpression(boundVariables, 0);
-            Expression member2 = getMemberExpression(boundVariables, 1);
-
-            BinaryExpression and = new BinaryExpression(member1, BinaryExpression.Op.AND, member2);
-
-            for(int i = 2; i < boundVariables.size(); i++)
-            {
-                Expression member   = getMemberExpression(boundVariables, i);
-                and                 = new BinaryExpression(and, BinaryExpression.Op.AND, member);
-            }
-
-            expression              = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, expression);
-        }
-
-        QuantifiedExpression quantifiedExpression = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), expression);
-        return quantifiedExpression;
-    }
-
-    private BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, int index)
-    {
-        BoundVariableDeclaration    boundVariable       = (new ArrayList<>(boundVariables.keySet())).get(index);
-        FunctionDeclaration         functionDeclaration = boundVariables.get(boundVariable);
-        MultiArityExpression        tuple               = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, boundVariable.getConstantExpr());
-        return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, functionDeclaration.getConstantExpr());
-    }
-
-    private FunctionDeclaration getFunctionDeclaration(Decl decl)
-    {
-        if(decl.expr instanceof ExprUnary)
-        {
-            Expr expr = (((ExprUnary) decl.expr).sub);
-            if(expr instanceof ExprUnary)
-            {
-                if(((ExprUnary) expr).sub instanceof Sig)
-                {
-                    Sig sig = (Sig) ((ExprUnary) expr).sub;
-                    return this.signaturesMap.get(sig);
-                }
-                else
-                {
-                    throw new UnsupportedOperationException();
-                }
-            }
-            else
-            {
-                throw new UnsupportedOperationException();
-            }
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private Expression translateNo(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-        BoundVariableDeclaration variable = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-        MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
-        Expression set = translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression member = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
-        Expression expression = new UnaryExpression(UnaryExpression.Op.NOT, member);
-        QuantifiedExpression forall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, expression, variable);
-        return forall;
-    }
     private void translateSignatureHierarchies()
     {
-        for (Sig sig: this.topLevelSigs)
+        for (Sig sig: translator.topLevelSigs)
         {
             Sig.PrimSig primSig = (Sig.PrimSig) sig;
             translateDisjointSignatures(primSig);
@@ -378,27 +35,27 @@ public class Alloy2SMTTranslator
                 SafeList<Sig.PrimSig> children = primSig.children();
                 if(children.size() == 1)
                 {
-                    Expression          left        = this.signaturesMap.get(sig).getConstantExpr();
-                    Expression          right       = this.signaturesMap.get(children.get(0)).getConstantExpr();
-                    BinaryExpression    equality    = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
-                    this.smtProgram.addAssertion(new Assertion(equality));
+                    Expression left        = translator.signaturesMap.get(sig).getConstantExpr();
+                    Expression          right       = translator.signaturesMap.get(children.get(0)).getConstantExpr();
+                    BinaryExpression equality    = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+                    translator.smtProgram.addAssertion(new Assertion(equality));
                 }
                 else if(children.size() > 1)
                 {
 
-                    Expression          left        = this.signaturesMap.get(children.get(0)).getConstantExpr();
-                    Expression          right       = this.signaturesMap.get(children.get(1)).getConstantExpr();
+                    Expression          left        = translator.signaturesMap.get(children.get(0)).getConstantExpr();
+                    Expression          right       = translator.signaturesMap.get(children.get(1)).getConstantExpr();
                     BinaryExpression    union       = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
 
                     for(int i = 2; i < children.size(); i++)
                     {
-                        Expression      expression  = this.signaturesMap.get(children.get(i)).getConstantExpr();
+                        Expression      expression  = translator.signaturesMap.get(children.get(i)).getConstantExpr();
                         union                       = new BinaryExpression(union, BinaryExpression.Op.UNION, expression);
                     }
 
-                    Expression          leftExpr    = this.signaturesMap.get(sig).getConstantExpr();
+                    Expression          leftExpr    = translator.signaturesMap.get(sig).getConstantExpr();
                     BinaryExpression    equality    = new BinaryExpression(leftExpr, BinaryExpression.Op.EQ, union);
-                    this.smtProgram.addAssertion(new Assertion(equality));
+                    translator.smtProgram.addAssertion(new Assertion(equality));
                 }
             }
         }
@@ -408,41 +65,41 @@ public class Alloy2SMTTranslator
     {
         for (int i = 0; i < primSig.children().size(); i++)
         {
-            Expression      left    = this.signaturesMap.get(primSig.children().get(i)).getConstantExpr();
+            Expression      left    = translator.signaturesMap.get(primSig.children().get(i)).getConstantExpr();
 
-            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, this.signaturesMap.get(primSig.children().get(i)).getOutputSort());
+            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.signaturesMap.get(primSig.children().get(i)).getOutputSort());
 
             for (int j = i + 1 ; j < primSig.children().size(); j++)
             {
-                Expression          right       = this.signaturesMap.get(primSig.children().get(j)).getConstantExpr();
+                Expression          right       = translator.signaturesMap.get(primSig.children().get(j)).getConstantExpr();
                 BinaryExpression    disjoint    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
-                
+
                 BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, emptySet);
-                this.smtProgram.addAssertion(new Assertion(equality));
+                translator.smtProgram.addAssertion(new Assertion(equality));
             }
         }
     }
 
-    private void collectReachableSigs() 
+    private void collectReachableSigs()
     {
-        LOGGER.printInfo("********************** COLLECT REACHABLE SIGNATURES **********************");
-        
-        for(Sig sig : this.alloyModel.getAllSigs()) 
+        translator.LOGGER.printInfo("********************** COLLECT REACHABLE SIGNATURES **********************");
+
+        for(Sig sig : translator.alloyModel.getAllSigs())
         {
-            if(sig.isTopLevel()) 
+            if(sig.isTopLevel())
             {
-                this.topLevelSigs.add(sig);
+                translator.topLevelSigs.add(sig);
             }
-            this.reachableSigs.add(sig);
+            translator.reachableSigs.add(sig);
         }
-    } 
-    
+    }
+
     private void translateSignatures()
     {
-        this.reachableSigs.forEach((sig) ->
+        translator.reachableSigs.forEach((sig) ->
         {
             FunctionDeclaration functionDeclaration =  declareUnaryAtomFunction(Utils.sanitizeName(sig.toString()));
-            this.signaturesMap.put(sig, functionDeclaration);
+            translator.signaturesMap.put(sig, functionDeclaration);
 
             // if sig extends another signature
             if(! sig.isTopLevel())
@@ -475,41 +132,41 @@ public class Alloy2SMTTranslator
 
     private void translateSignatureOneMultiplicity(Sig sig)
     {
-        FunctionDeclaration signature = this.signaturesMap.get(sig);
+        FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
 
         BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
-        this.smtProgram.addAssertion(new Assertion(subset));
+        translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
     private void translateSignatureLoneMultiplicity(Sig sig)
     {
-        FunctionDeclaration signature = this.signaturesMap.get(sig);
+        FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
 
         BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.SUBSET, declaration.getConstantExpr());
-        this.smtProgram.addAssertion(new Assertion(subset));
+        translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
     private void translateSignatureSomeMultiplicity(Sig sig)
     {
-        FunctionDeclaration signature = this.signaturesMap.get(sig);
+        FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         FunctionDeclaration declaration = generateAuxiliarySetNAtoms(signature);
 
         BinaryExpression subset   = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, signature.getConstantExpr());
-        this.smtProgram.addAssertion(new Assertion(subset));
+        translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
     private FunctionDeclaration generateAuxiliarySetNAtoms(FunctionDeclaration signature)
     {
-        List<Expression> expressions = declareNDistinctConstants(this.atomSort, 1);
+        List<Expression> expressions = declareNDistinctConstants(translator.atomSort, 1);
 
         FunctionDeclaration declaration = new FunctionDeclaration(Utils.getNewSet(), signature.getOutputSort());
 
-        this.smtProgram.addFunctionDeclaration(declaration);
+        translator.smtProgram.addFunctionDeclaration(declaration);
 
         Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, expressions.get(expressions.size() - 1));
 
@@ -527,7 +184,7 @@ public class Alloy2SMTTranslator
 
         BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.EQ, set);
 
-        this.smtProgram.addAssertion(new Assertion(equality));
+        translator.smtProgram.addAssertion(new Assertion(equality));
         return declaration;
     }
 
@@ -541,18 +198,18 @@ public class Alloy2SMTTranslator
                 ConstantDeclaration constantDeclaration = new ConstantDeclaration(Utils.getNewAtom(), sort);
                 MultiArityExpression makeTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantDeclaration.getConstantExpr());
                 expressions.add(makeTuple);
-                this.smtProgram.addConstantDeclaration(constantDeclaration);
+                translator.smtProgram.addConstantDeclaration(constantDeclaration);
             }
 
             if (n > 1)
             {
                 MultiArityExpression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
-                this.smtProgram.addAssertion(new Assertion(distinct));
+                translator.smtProgram.addAssertion(new Assertion(distinct));
             }
         }
         else
         {
-            LOGGER.printSevere("Argument n should be greater than 0");
+            translator.LOGGER.printSevere("Argument n should be greater than 0");
         }
         return expressions;
     }
@@ -562,33 +219,33 @@ public class Alloy2SMTTranslator
         if(sig instanceof Sig.PrimSig)
         {
             Sig                 parent              = ((Sig.PrimSig) sig).parent;
-            FunctionDeclaration parentDeclaration   = this.signaturesMap.get(parent);
+            FunctionDeclaration parentDeclaration   = translator.signaturesMap.get(parent);
             BinaryExpression    subsetExpression    = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
-            this.smtProgram.addAssertion(new Assertion(subsetExpression));
+            translator.smtProgram.addAssertion(new Assertion(subsetExpression));
         }
         else
         {
             List<Sig> parents             = ((Sig.SubsetSig) sig).parents;
             if(parents.size() == 1)
             {
-                FunctionDeclaration parentDeclaration   = this.signaturesMap.get(parents.get(0));
+                FunctionDeclaration parentDeclaration   = translator.signaturesMap.get(parents.get(0));
                 BinaryExpression    subset              = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
-                this.smtProgram.addAssertion(new Assertion(subset));
+                translator.smtProgram.addAssertion(new Assertion(subset));
             }
             else
             {
-                Expression          left    = this.signaturesMap.get(parents.get(0)).getConstantExpr();
-                Expression          right   = this.signaturesMap.get(parents.get(1)).getConstantExpr();
+                Expression          left    = translator.signaturesMap.get(parents.get(0)).getConstantExpr();
+                Expression          right   = translator.signaturesMap.get(parents.get(1)).getConstantExpr();
                 BinaryExpression    union   = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
 
                 for (int i = 2; i < parents.size(); i++)
                 {
-                    Expression expression   = this.signaturesMap.get(parents.get(i)).getConstantExpr();
+                    Expression expression   = translator.signaturesMap.get(parents.get(i)).getConstantExpr();
                     union                   = new BinaryExpression(union, BinaryExpression.Op.UNION, expression);
                 }
 
                 BinaryExpression subset     = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, union);
-                this.smtProgram.addAssertion(new Assertion(subset));
+                translator.smtProgram.addAssertion(new Assertion(subset));
             }
         }
     }
@@ -597,35 +254,35 @@ public class Alloy2SMTTranslator
     {
 
         String              fieldName   = Utils.sanitizeName(field.sig.label + "/" + field.label);
-        TupleSort           tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), this.atomSort));
+        TupleSort           tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), translator.atomSort));
         SetSort             setSort     = new SetSort(tupleSort);
         FunctionDeclaration declaration = new FunctionDeclaration(fieldName, setSort);
 
         // declare a variable for the field
-        this.smtProgram.addFunctionDeclaration(declaration);
-        this.fieldsMap.put(field, declaration);
+        translator.smtProgram.addFunctionDeclaration(declaration);
+        translator.fieldsMap.put(field, declaration);
 
         // a field relation is a subset of the product of its signatures
         List<Sig>           fieldSignatures     =  field.type().fold().stream().flatMap(List::stream).collect(Collectors.toList());
 
         /* alloy: sig Book{addr: Name -> lone Addr}
-        *  smt  : (assert (subset addr (product (product Book Name) Addr)))
-        */
-        ConstantExpression first   = signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();
-        ConstantExpression second  = signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();
+         *  smt  : (assert (subset addr (product (product Book Name) Addr)))
+         */
+        ConstantExpression first   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();
+        ConstantExpression second  = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();
         BinaryExpression    product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
 
         for(int i = 2; i < fieldSignatures.size(); i++)
         {
-            ConstantExpression expr = signaturesMap.get(fieldSignatures.get(i)).getConstantExpr();
-            product                  = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);
+            ConstantExpression expr = translator.signaturesMap.get(fieldSignatures.get(i)).getConstantExpr();
+            product                 = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);
         }
 
         ConstantExpression fieldExpr   = declaration.getConstantExpr();
         BinaryExpression    subset      = new BinaryExpression(fieldExpr, BinaryExpression.Op.SUBSET, product);
         Assertion           assertion   = new Assertion(subset);
 
-        this.smtProgram.addAssertion(assertion);
+        translator.smtProgram.addAssertion(assertion);
 
         // translate multiplicities
         translateMultiplicities(field, declaration);
@@ -643,7 +300,7 @@ public class Alloy2SMTTranslator
                 case LONEOF     : translateRelationLoneMultiplicity(field, declaration, exprUnary);break;
                 case ONEOF      : translateRelationOneMultiplicity(field, declaration, exprUnary);break;
                 case SETOF      : break; // no assertion needed
-                case EXACTLYOF  : break; //ToDo: review this case
+                case EXACTLYOF  : break; //ToDo: review translator case
                 default:
                 {
                     throw new UnsupportedOperationException("Not supported yet");
@@ -757,10 +414,10 @@ public class Alloy2SMTTranslator
         if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
         {
 
-            FunctionDeclaration set1            = this.signaturesMap.get(field.sig);
-            FunctionDeclaration set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
+            FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -784,7 +441,7 @@ public class Alloy2SMTTranslator
             QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and , y);
             BinaryExpression        implies         = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
             QuantifiedExpression    forall          = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies , x);
-            this.smtProgram.addAssertion(new Assertion(forall));
+            translator.smtProgram.addAssertion(new Assertion(forall));
         }
         else
         {
@@ -815,11 +472,11 @@ public class Alloy2SMTTranslator
         if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
         {
 
-            FunctionDeclaration set1            = this.signaturesMap.get(field.sig);
-            FunctionDeclaration set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
+            FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -879,7 +536,7 @@ public class Alloy2SMTTranslator
             QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3 , y);
             BinaryExpression        implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
             QuantifiedExpression    forall2         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
-            this.smtProgram.addAssertion(new Assertion(forall2));
+            translator.smtProgram.addAssertion(new Assertion(forall2));
         }
         else
         {
@@ -913,12 +570,12 @@ public class Alloy2SMTTranslator
         if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
         {
 
-            FunctionDeclaration set1            = this.signaturesMap.get(field.sig);
-            FunctionDeclaration set2            = this.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-            BoundVariableDeclaration u          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), this.atomSort);
+            FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
+            FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration u          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(Utils.getNewName(), translator.atomSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -956,7 +613,7 @@ public class Alloy2SMTTranslator
             BinaryExpression        implies0        = new BinaryExpression(uMember, BinaryExpression.Op.IMPLIES, notXUMember);
 
             // (forall ((u Atom)) (=> (member (mkTuple u) Addr) (not (member (mkTuple x u) addr))))
-        QuantifiedExpression        forall0         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,  implies0, u);
+            QuantifiedExpression        forall0         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,  implies0, u);
 
             // (member (mkTuple y) Addr)
             BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
@@ -999,7 +656,7 @@ public class Alloy2SMTTranslator
             BinaryExpression        or              = new BinaryExpression(forall0, BinaryExpression.Op.OR, exists);
             BinaryExpression        implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, or);
             QuantifiedExpression    forall2         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
-            this.smtProgram.addAssertion(new Assertion(forall2));
+            translator.smtProgram.addAssertion(new Assertion(forall2));
         }
         else
         {
@@ -1012,53 +669,16 @@ public class Alloy2SMTTranslator
         FunctionDeclaration declaration = null;
         if(varName != null)
         {
-            declaration = new FunctionDeclaration(varName, this.setOfUnaryAtomSort);
-            this.smtProgram.addFunctionDeclaration(declaration);
+            declaration = new FunctionDeclaration(varName, translator.setOfUnaryAtomSort);
+            translator.smtProgram.addFunctionDeclaration(declaration);
         }
         return declaration;
     }
-    
-    private void mkAndAddBinaryAtomRelation(String varName) 
+
+    public void translate()
     {
-        if(varName != null) 
-        {
-            this.smtProgram.addFunctionDeclaration(new FunctionDeclaration(varName, this.setOfBinaryAtomSort));
-        }        
-    }    
-    
-    private void addToVarDecl(FunctionDeclaration varDecl)
-    {
-        if(varDecl != null) 
-        {
-            this.smtProgram.addFunctionDeclaration(varDecl);
-        }
-        else 
-        {
-            LOGGER.printSevere("Try to add a null variable declaration!");
-        }
+        collectReachableSigs();
+        translateSignatures();
+        translateSignatureHierarchies();
     }
-    
-    private void addToFcnDecl(FunctionDeclaration fcnDecl) 
-    {
-        if(fcnDecl != null) 
-        {
-            this.smtProgram.addFcnDecl(fcnDecl);
-        }
-        else 
-        {
-            LOGGER.printSevere("Try to add a null function declaration!");
-        }
-    }    
-    
-    private void addToFcnDef(FunctionDefinition fcnDef) 
-    {
-        if(fcnDef != null) 
-        {
-            this.smtProgram.addFcnDef(fcnDef);
-        }
-        else 
-        {
-            LOGGER.printSevere("Try to add a null function declaration!");
-        }
-    }    
 }
