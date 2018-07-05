@@ -1,12 +1,17 @@
+/*
+ * This file is part of alloy2smt.
+ * Copyright (C) 2018-2019  The University of Iowa
+ *
+ * @author Mudathir Mohamed, Paul Meng
+ *
+ */
+
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.ast.Sig;
-import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SignatureTranslator

@@ -1,7 +1,14 @@
+/*
+ * This file is part of alloy2smt.
+ * Copyright (C) 2018-2019  The University of Iowa
+ *
+ * @author Mudathir Mohamed, Paul Meng
+ *
+ */
+
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
-import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.Map;
