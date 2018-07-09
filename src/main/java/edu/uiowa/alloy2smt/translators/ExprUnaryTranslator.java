@@ -31,7 +31,7 @@ public class ExprUnaryTranslator
             case SOME       : return translateSome(exprUnary, variablesScope);
             case ONE        : return translateOne(exprUnary, variablesScope);
             case LONE       : return translateLone(exprUnary, variablesScope);
-            case CARDINALITY: return translateCardinality(exprUnary, variablesScope);
+            case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations");
             default:
             {
                 throw new UnsupportedOperationException("Not supported yet");
@@ -157,12 +157,5 @@ public class ExprUnaryTranslator
         BinaryExpression            or          = new BinaryExpression(exists, BinaryExpression.Op.OR, emptyForall);
 
         return or;
-    }
-
-    private Expression translateCardinality(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
-    {
-       //ToDo: review this case
-        TranslatorUtils.generateAuxiliarySetNAtoms(exprTranslator.translator.setOfUnaryAtomSort, 1, exprTranslator.translator);
-        throw  new UnsupportedOperationException();
     }
 }

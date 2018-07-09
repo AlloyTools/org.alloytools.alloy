@@ -43,12 +43,14 @@ public class TranslatorUtils
 
         if(expressions.size() > 1)
         {
-            List<Expression> atoms = Arrays.asList(set);
+            List<Expression> atoms = new ArrayList<>();
 
-            for(int i = expressions.size() - 2; i >= 0; i--)
+            for(int i = 0; i < expressions.size() - 1; i++)
             {
                 atoms.add(expressions.get(i));
             }
+
+            atoms.add(set);
 
             set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atoms);
         }

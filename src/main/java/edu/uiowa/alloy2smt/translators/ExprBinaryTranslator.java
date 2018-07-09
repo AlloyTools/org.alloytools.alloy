@@ -3,10 +3,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
-import edu.uiowa.alloy2smt.smtAst.BoundVariableDeclaration;
-import edu.uiowa.alloy2smt.smtAst.ConstantExpression;
-import edu.uiowa.alloy2smt.smtAst.Expression;
+import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.Map;
 
@@ -87,7 +84,23 @@ public class ExprBinaryTranslator
         {
             throw new UnsupportedOperationException("CVC4 doesn't support comparision between 2 cardinality expressions.");
         }
-        //ToDo: For cardinality operator, CVC4 supports only comparison with literals
+        //ToDo: For cardinality operator, CVC4 supports only comparison with numbers
+
+        if
+            (
+                (expr.left instanceof ExprUnary &&
+                ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY &&
+                (!(expr.right instanceof ExprConstant &&
+                        ((ExprConstant) expr.right).op == ExprConstant.Op.NUMBER))) ||
+                (expr.right instanceof ExprUnary &&
+                ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY &&
+                (!(expr.left instanceof ExprConstant &&
+                        ((ExprConstant) expr.left).op == ExprConstant.Op.NUMBER)))
+            )
+        {
+            throw new UnsupportedOperationException("CVC4 only supports cardinality with numbers");
+        }
+
 
         // translate cardinality differently
         if
@@ -95,9 +108,11 @@ public class ExprBinaryTranslator
                 ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY)
             )
         {
-            Expression left         = exprTranslator.exprUnaryTranslator.translateExprUnary((ExprUnary) expr.left, variablesScope);
-            Expression right        = exprTranslator.translateExpr(expr.right, variablesScope);
-            Expression equality     = translateCardinalityComparison(BinaryExpression.Op.EQ, left, right);
+            Expression          left        = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, variablesScope);
+            int                 n           = ((ExprConstant) expr.right).num;
+            FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(exprTranslator.translator.setOfUnaryAtomSort, n, exprTranslator.translator);
+            Expression          right       = declaration.getConstantExpr();
+            Expression equality             = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
             return equality;
         }
 
