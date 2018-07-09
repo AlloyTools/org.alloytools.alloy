@@ -1,6 +1,8 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprConstant;
+import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.smtAst.BinaryExpression;
 import edu.uiowa.alloy2smt.smtAst.BoundVariableDeclaration;
 import edu.uiowa.alloy2smt.smtAst.ConstantExpression;
@@ -50,7 +52,7 @@ public class ExprBinaryTranslator
             case MUL                : throw new UnsupportedOperationException();
             case DIV                : throw new UnsupportedOperationException();
             case REM                : throw new UnsupportedOperationException();
-            case EQUALS             : throw new UnsupportedOperationException();
+            case EQUALS             : return translateEquals(expr, variablesScope);
             case NOT_EQUALS         : throw new UnsupportedOperationException();
             case IMPLIES            : throw new UnsupportedOperationException();
             case LT                 : throw new UnsupportedOperationException();
@@ -71,6 +73,56 @@ public class ExprBinaryTranslator
             case IFF                : throw new UnsupportedOperationException();
             default                 : throw new UnsupportedOperationException();
         }
+    }
+
+    private Expression translateEquals(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    {
+        // CVC4 doesn't support comparison  between 2 cardinality expressions
+        if
+            (   expr.left instanceof ExprUnary &&
+                ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY &&
+                expr.right instanceof ExprUnary &&
+                ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY
+            )
+        {
+            throw new UnsupportedOperationException("CVC4 doesn't support comparision between 2 cardinality expressions.");
+        }
+        //ToDo: For cardinality operator, CVC4 supports only comparison with literals
+
+        // translate cardinality differently
+        if
+            (   (expr.left instanceof ExprUnary &&
+                ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY)
+            )
+        {
+            Expression left         = exprTranslator.exprUnaryTranslator.translateExprUnary((ExprUnary) expr.left, variablesScope);
+            Expression right        = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression equality     = translateCardinalityComparison(BinaryExpression.Op.EQ, left, right);
+            return equality;
+        }
+
+
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        if(left instanceof ConstantExpression &&
+                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
+        {
+            left = exprTranslator.getSingleton((ConstantExpression) left);
+        }
+        if(right instanceof ConstantExpression &&
+                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
+        {
+            right = exprTranslator.getSingleton((ConstantExpression) right);
+        }
+
+        BinaryExpression equality = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+        return equality;
+    }
+
+    private Expression translateCardinalityComparison(BinaryExpression.Op eq, Expression left, Expression right)
+    {
+        throw new UnsupportedOperationException();
     }
 
     private Expression translatePlus(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
