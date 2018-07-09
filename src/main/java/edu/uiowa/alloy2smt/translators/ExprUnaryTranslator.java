@@ -74,7 +74,7 @@ public class ExprUnaryTranslator
 
         if(exprUnary.sub instanceof ExprBinary)
         {
-            return exprTranslator.translateExprBinary((ExprBinary) exprUnary.sub, variablesScope);
+            return exprTranslator.exprBinaryTranslator.translateExprBinary((ExprBinary) exprUnary.sub, variablesScope);
         }
 
         throw new UnsupportedOperationException();
