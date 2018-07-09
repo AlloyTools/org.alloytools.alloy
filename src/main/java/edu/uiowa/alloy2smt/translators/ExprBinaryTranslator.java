@@ -49,13 +49,13 @@ public class ExprBinaryTranslator
             case MUL                : throw new UnsupportedOperationException();
             case DIV                : throw new UnsupportedOperationException();
             case REM                : throw new UnsupportedOperationException();
-            case EQUALS             : return translateEquals(expr, variablesScope);
-            case NOT_EQUALS         : throw new UnsupportedOperationException();
+            case EQUALS             : return translateComparison(expr, BinaryExpression.Op.EQ, variablesScope);
+            case NOT_EQUALS         : return translateComparison(expr, BinaryExpression.Op.NEQ, variablesScope);
             case IMPLIES            : throw new UnsupportedOperationException();
-            case LT                 : throw new UnsupportedOperationException();
-            case LTE                : throw new UnsupportedOperationException();
-            case GT                 : throw new UnsupportedOperationException();
-            case GTE                : throw new UnsupportedOperationException();
+            case LT                 : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
+            case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
+            case GT                 : return translateComparison(expr, BinaryExpression.Op.GT, variablesScope);
+            case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
             case NOT_LT             : throw new UnsupportedOperationException();
             case NOT_LTE            : throw new UnsupportedOperationException();
             case NOT_GT             : throw new UnsupportedOperationException();
@@ -72,7 +72,30 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateEquals(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression equality1 = translateCardinality(expr, op, variablesScope);
+        if (equality1 != null) return equality1;
+
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        if(left instanceof ConstantExpression &&
+                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
+        {
+            left = exprTranslator.getSingleton((ConstantExpression) left);
+        }
+        if(right instanceof ConstantExpression &&
+                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
+        {
+            right = exprTranslator.getSingleton((ConstantExpression) right);
+        }
+
+        BinaryExpression equality = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+        return equality;
+    }
+
+    private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, ConstantExpression> variablesScope)
     {
         // CVC4 doesn't support comparison  between 2 cardinality expressions
         if
@@ -109,7 +132,7 @@ public class ExprBinaryTranslator
             )
         {
             int         n           = ((ExprConstant)expr.right).num;
-            Expression  equality = translateCardinalityComparison((ExprUnary) expr.left, n, BinaryExpression.Op.EQ, variablesScope);
+            Expression  equality = translateCardinalityComparison((ExprUnary) expr.left, n, op, variablesScope);
             return equality;
         }
 
@@ -119,26 +142,12 @@ public class ExprBinaryTranslator
             )
         {
             int         n           = ((ExprConstant)expr.left).num;
-            Expression  equality = translateCardinalityComparison((ExprUnary) expr.right, n, BinaryExpression.Op.EQ, variablesScope);
+            Expression  equality = translateCardinalityComparison((ExprUnary) expr.right, n, op, variablesScope);
             return equality;
         }
 
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
 
-        if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
-        {
-            left = exprTranslator.getSingleton((ConstantExpression) left);
-        }
-        if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
-        {
-            right = exprTranslator.getSingleton((ConstantExpression) right);
-        }
-
-        BinaryExpression equality = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
-        return equality;
+        return null;
     }
 
     private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, ConstantExpression> variablesScope)
@@ -148,7 +157,23 @@ public class ExprBinaryTranslator
         Expression          right       = declaration.getConstantExpr();
         switch (op)
         {
-            case EQ: return new BinaryExpression(left, op, right);
+            case EQ : return new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+            case NEQ: return new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
+            case LTE: return new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
+            case LT :
+            {
+                Expression lte      = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
+                Expression notEqual = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
+                return new BinaryExpression(lte, BinaryExpression.Op.AND, notEqual);
+            }
+            case GTE: return new BinaryExpression(right, BinaryExpression.Op.LTE, left);
+            case GT :
+            {
+                Expression gte      = new BinaryExpression(right, BinaryExpression.Op.SUBSET, left);
+                Expression notEqual = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
+                return new BinaryExpression(gte, BinaryExpression.Op.AND, notEqual);
+            }
+
             default:
                 throw new UnsupportedOperationException();
         }

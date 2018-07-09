@@ -91,4 +91,67 @@ class BinaryFactTests
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void cardinality4()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {#A != 2}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(declare-const _a2 Atom)\n" +
+                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
+                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "; f\n" +
+                "(assert (not (= this_A _S1)))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void cardinality5()
+    {
+        String input =
+                "sig A {}\n" +
+                    "fact f {#A <= 2}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(declare-const _a2 Atom)\n" +
+                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
+                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "; f\n" +
+                "(assert (subset this_A _S1))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void cardinality6()
+    {
+        String input =
+                "sig A {}\n" +
+                        "fact f {#A > 2}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                        "(declare-const _a1 Atom)\n" +
+                        "(declare-const _a2 Atom)\n" +
+                        "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
+                        "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                        "; f\n" +
+                        "(assert (and (subset _S1 this_A) (not (= this_A _S1))))\n";
+        assertEquals(expected, actual);
+    }
+
 }
