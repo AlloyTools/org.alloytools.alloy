@@ -108,14 +108,20 @@ public class ExprBinaryTranslator
                 ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY)
             )
         {
-            Expression          left        = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, variablesScope);
-            int                 n           = ((ExprConstant) expr.right).num;
-            FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(exprTranslator.translator.setOfUnaryAtomSort, n, exprTranslator.translator);
-            Expression          right       = declaration.getConstantExpr();
-            Expression equality             = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+            int         n           = ((ExprConstant)expr.right).num;
+            Expression  equality = translateCardinalityComparison((ExprUnary) expr.left, n, BinaryExpression.Op.EQ, variablesScope);
             return equality;
         }
 
+        if
+            (   (expr.right instanceof ExprUnary &&
+                ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY)
+            )
+        {
+            int         n           = ((ExprConstant)expr.left).num;
+            Expression  equality = translateCardinalityComparison((ExprUnary) expr.right, n, BinaryExpression.Op.EQ, variablesScope);
+            return equality;
+        }
 
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -133,6 +139,19 @@ public class ExprBinaryTranslator
 
         BinaryExpression equality = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
         return equality;
+    }
+
+    private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, ConstantExpression> variablesScope)
+    {
+        Expression          left        = exprTranslator.translateExpr(expr.sub, variablesScope);
+        FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(exprTranslator.translator.setOfUnaryAtomSort, n, exprTranslator.translator);
+        Expression          right       = declaration.getConstantExpr();
+        switch (op)
+        {
+            case EQ: return new BinaryExpression(left, op, right);
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
     private Expression translateCardinalityComparison(BinaryExpression.Op eq, Expression left, Expression right)

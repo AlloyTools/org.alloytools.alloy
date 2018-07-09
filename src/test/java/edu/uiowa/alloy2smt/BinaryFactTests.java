@@ -49,6 +49,28 @@ class BinaryFactTests
     {
         String input =
                 "sig A {}\n" +
+                        "fact f {2 = #A}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                        "(declare-const _a1 Atom)\n" +
+                        "(declare-const _a2 Atom)\n" +
+                        "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
+                        "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                        "; f\n" +
+                        "(assert (= this_A _S1))\n";
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void cardinality3()
+    {
+        String input =
+                "sig A {}\n" +
                 "sig B {r: set A}\n" +
                 "fact f {#B.r = 2 }";
 
