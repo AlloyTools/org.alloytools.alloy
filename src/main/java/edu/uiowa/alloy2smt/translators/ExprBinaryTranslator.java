@@ -74,8 +74,17 @@ public class ExprBinaryTranslator
 
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
     {
-        Expression equality1 = translateCardinality(expr, op, variablesScope);
-        if (equality1 != null) return equality1;
+
+        if
+            (   (expr.left instanceof ExprUnary &&
+                ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY) ||
+                (expr.right instanceof ExprUnary &&
+                ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY)
+            )
+        {
+            return translateCardinality(expr, op, variablesScope);
+        }
+
 
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -146,8 +155,7 @@ public class ExprBinaryTranslator
             return equality;
         }
 
-
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, ConstantExpression> variablesScope)
