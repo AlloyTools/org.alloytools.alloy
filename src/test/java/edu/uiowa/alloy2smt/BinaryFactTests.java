@@ -210,4 +210,100 @@ class BinaryFactTests
 
         assertThrows(UnsupportedOperationException.class, executable);
     }
+
+    @Test
+    public void lt()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {2 < 3}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (< 2 3))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void lte()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {2 <= 3}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (<= 2 3))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void gt()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {2 > 3}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (> 2 3))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void gte()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {2 >= 3}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (>= 2 3))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void eq()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {2 = 3}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (= 2 3))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void notEq()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {2 != 3}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "; f\n" +
+                        "(assert (not (= 2 3)))\n";
+        assertEquals(expected, actual);
+    }
 }

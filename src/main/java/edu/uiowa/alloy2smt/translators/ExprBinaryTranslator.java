@@ -100,8 +100,14 @@ public class ExprBinaryTranslator
             right = exprTranslator.getSingleton((ConstantExpression) right);
         }
 
-        BinaryExpression equality = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
-        return equality;
+        if(op == BinaryExpression.Op.NEQ)
+        {
+            return new UnaryExpression(UnaryExpression.Op.NOT,new BinaryExpression(left, BinaryExpression.Op.EQ, right));
+        }
+        else
+        {
+            return new BinaryExpression(left, op, right);
+        }
     }
 
     private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, ConstantExpression> variablesScope)

@@ -43,9 +43,24 @@ public class ExprTranslator
         {
             return translateExprQt((ExprQt) expr, variablesScope);
         }
+
+        if(expr instanceof ExprConstant)
+        {
+            return translateExprConstant((ExprConstant) expr, variablesScope);
+        }
+
         throw new UnsupportedOperationException();
     }
 
+    private Expression translateExprConstant(ExprConstant expr, Map<String,ConstantExpression> variablesScope)
+    {
+        switch (expr.op)
+        {
+
+            case NUMBER: return new IntConstant(expr.num); // allay only  supports integers
+                default: throw new UnsupportedOperationException();
+        }
+    }
 
 
     Expression getSingleton(ConstantExpression constantExpression)

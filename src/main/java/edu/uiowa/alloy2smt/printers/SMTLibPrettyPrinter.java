@@ -127,8 +127,9 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(IntConstant aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(IntConstant intConstant)
+    {
+        this.stringBuilder.append(intConstant.getValue());
     }
 
     @Override
@@ -237,6 +238,10 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         else if (expression instanceof  Sort)
         {
             this.visit((Sort) expression);
+        }
+        else if (expression instanceof  IntConstant)
+        {
+            this.visit((IntConstant) expression);
         }
         else
         {
