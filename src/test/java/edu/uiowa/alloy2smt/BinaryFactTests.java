@@ -3,8 +3,10 @@ package edu.uiowa.alloy2smt;
 import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class BinaryFactTests
@@ -196,4 +198,16 @@ class BinaryFactTests
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void cardinalityUnsupported()
+    {
+        String input =
+                "sig A {}\n" +
+                "fact f {#A > #A}";
+
+
+        Executable executable = () -> Utils.translateFromString(input);
+
+        assertThrows(UnsupportedOperationException.class, executable);
+    }
 }
