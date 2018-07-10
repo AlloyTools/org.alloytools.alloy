@@ -166,7 +166,7 @@ public class ExprBinaryTranslator
                 Expression notEqual = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
                 return new BinaryExpression(lte, BinaryExpression.Op.AND, notEqual);
             }
-            case GTE: return new BinaryExpression(right, BinaryExpression.Op.LTE, left);
+            case GTE: return new BinaryExpression(right, BinaryExpression.Op.SUBSET, left);
             case GT :
             {
                 Expression gte      = new BinaryExpression(right, BinaryExpression.Op.SUBSET, left);
