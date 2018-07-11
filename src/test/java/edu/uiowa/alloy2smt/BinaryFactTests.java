@@ -306,4 +306,57 @@ class BinaryFactTests
                         "(assert (not (= 2 3)))\n";
         assertEquals(expected, actual);
     }
+
+
+    @Test
+    public void union()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B {}\n" +
+                "fact f { #(A + B) = 3 }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(declare-const _a2 Atom)\n" +
+                "(declare-const _a3 Atom)\n" +
+                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) (mkTuple _a3 ) ))\n" +
+                "(assert (= _S1 (insert (mkTuple _a1 ) (mkTuple _a2 ) (singleton (mkTuple _a3 )) )))\n" +
+                "; f\n" +
+                "(assert (= (union this_A this_B) _S1))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void intersection()
+    {
+        String input =
+            "sig A {}\n" +
+            "sig B, C in A {}\n" +
+            "fact f { #(B & C) = 3 }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_C () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(declare-const _a2 Atom)\n" +
+                "(declare-const _a3 Atom)\n" +
+                "(assert (subset this_B this_A))\n" +
+                "(assert (subset this_C this_A))\n" +
+                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) (mkTuple _a3 ) ))\n" +
+                "(assert (= _S1 (insert (mkTuple _a1 ) (mkTuple _a2 ) (singleton (mkTuple _a3 )) )))\n" +
+                "; f\n" +
+                "(assert (= (intersection this_B this_C) _S1))\n";
+        assertEquals(expected, actual);
+    }
+
 }

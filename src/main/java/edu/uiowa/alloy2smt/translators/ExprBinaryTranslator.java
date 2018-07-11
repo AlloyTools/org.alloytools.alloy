@@ -40,9 +40,9 @@ public class ExprBinaryTranslator
             case JOIN               : return translateJoin(expr, variablesScope);
             case DOMAIN             : throw new UnsupportedOperationException();
             case RANGE              : throw new UnsupportedOperationException();
-            case INTERSECT          : throw new UnsupportedOperationException();
+            case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
             case PLUSPLUS           : throw new UnsupportedOperationException();
-            case PLUS               : return translatePlus(expr, variablesScope);
+            case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
             case IPLUS              : throw new UnsupportedOperationException();
             case MINUS              : throw new UnsupportedOperationException();
             case IMINUS             : throw new UnsupportedOperationException();
@@ -198,7 +198,7 @@ public class ExprBinaryTranslator
         throw new UnsupportedOperationException();
     }
 
-    private Expression translatePlus(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
+    private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, ConstantExpression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -214,8 +214,8 @@ public class ExprBinaryTranslator
             right = exprTranslator.getSingleton((ConstantExpression) right);
         }
 
-        BinaryExpression union = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
-        return union;
+        BinaryExpression operation = new BinaryExpression(left, op, right);
+        return operation;
     }
 
     private Expression translateJoin(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
