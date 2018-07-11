@@ -267,4 +267,25 @@ class UnaryFactTests
         assertEquals(expected, actual);
     }
 
+
+    @Test
+    public void transpose()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B{r : set A}\n" +
+                "fact f {some ~r.B }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                        "(assert (subset this_B_r (product this_B this_A)))\n" +
+                        "; f\n" +
+                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+        assertEquals(expected, actual);
+    }
+
 }

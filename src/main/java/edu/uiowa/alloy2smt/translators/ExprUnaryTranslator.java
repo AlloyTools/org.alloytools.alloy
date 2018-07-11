@@ -32,11 +32,19 @@ public class ExprUnaryTranslator
             case ONE        : return translateOne(exprUnary, variablesScope);
             case LONE       : return translateLone(exprUnary, variablesScope);
             case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations");
+            case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);
             default:
             {
                 throw new UnsupportedOperationException("Not supported yet");
             }
         }
+    }
+
+    private Expression translateTranspose(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression      expression  = exprTranslator.translateExpr((Expr) exprUnary.sub, variablesScope);
+        UnaryExpression transpose   = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, expression);
+        return transpose;
     }
 
 
