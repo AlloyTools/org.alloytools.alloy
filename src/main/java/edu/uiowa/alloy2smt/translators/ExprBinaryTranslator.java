@@ -44,7 +44,7 @@ public class ExprBinaryTranslator
             case PLUSPLUS           : throw new UnsupportedOperationException();
             case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
             case IPLUS              : throw new UnsupportedOperationException();
-            case MINUS              : throw new UnsupportedOperationException();
+            case MINUS              : return translateSetOperation(expr, BinaryExpression.Op.SETMINUS, variablesScope);
             case IMINUS             : throw new UnsupportedOperationException();
             case MUL                : throw new UnsupportedOperationException();
             case DIV                : throw new UnsupportedOperationException();
@@ -63,8 +63,8 @@ public class ExprBinaryTranslator
             case SHL                : throw new UnsupportedOperationException();
             case SHA                : throw new UnsupportedOperationException();
             case SHR                : throw new UnsupportedOperationException();
-            case IN                 : throw new UnsupportedOperationException();
-            case NOT_IN             : throw new UnsupportedOperationException();
+            case IN                 : return translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
+            case NOT_IN             : return new UnaryExpression(UnaryExpression.Op.NOT, translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope));
             case AND                : throw new UnsupportedOperationException();
             case OR                 : throw new UnsupportedOperationException();
             case IFF                : throw new UnsupportedOperationException();

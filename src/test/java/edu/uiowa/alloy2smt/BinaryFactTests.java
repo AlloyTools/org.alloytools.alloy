@@ -359,4 +359,92 @@ class BinaryFactTests
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void difference()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B, C in A {}\n" +
+                "fact f { #(B - C) = 2 }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_C () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 Atom)\n" +
+                "(declare-const _a2 Atom)\n" +
+                "(assert (subset this_B this_A))\n" +
+                "(assert (subset this_C this_A))\n" +
+                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
+                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "; f\n" +
+                "(assert (= (setminus this_B this_C) _S1))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void equality()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B, C in A {}\n" +
+                "fact f { B = C }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_C () (Set (Tuple Atom )))\n" +
+                "(assert (subset this_B this_A))\n" +
+                "(assert (subset this_C this_A))\n" +
+                "; f\n" +
+                "(assert (= this_B this_C))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void in()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B, C in A {}\n" +
+                "fact f { B in C }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_C () (Set (Tuple Atom )))\n" +
+                "(assert (subset this_B this_A))\n" +
+                "(assert (subset this_C this_A))\n" +
+                "; f\n" +
+                "(assert (subset this_B this_C))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void notIn()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B, C in A {}\n" +
+                "fact f { B !in C }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_C () (Set (Tuple Atom )))\n" +
+                "(assert (subset this_B this_A))\n" +
+                "(assert (subset this_C this_A))\n" +
+                "; f\n" +
+                "(assert (not (subset this_B this_C)))\n";
+        assertEquals(expected, actual);
+    }
 }
