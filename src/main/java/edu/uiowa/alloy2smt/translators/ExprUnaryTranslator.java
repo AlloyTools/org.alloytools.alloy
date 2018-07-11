@@ -33,6 +33,7 @@ public class ExprUnaryTranslator
             case LONE       : return translateLone(exprUnary, variablesScope);
             case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations");
             case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);
+            case RCLOSURE   : return translateTranspose(exprUnary, variablesScope);
             default:
             {
                 throw new UnsupportedOperationException("Not supported yet");
