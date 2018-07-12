@@ -41,7 +41,7 @@ public class UnaryExpression extends Expression
         NOT ("not"),
         COMPLEMENT ("complement"),
         TRANSPOSE ("transpose"),
-        TCLOSURE("-"),
+        TCLOSURE("tclosure"),
         SINGLETON("singleton"),
         UNIVSET("as univset"),
         EMPTYSET("as emptyset");

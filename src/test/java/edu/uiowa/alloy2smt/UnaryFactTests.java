@@ -289,7 +289,25 @@ class UnaryFactTests
     }
 
     @Test
-    public void rClosure()
+    public void closure()
+    {
+        String input =
+                "sig A {r : set A}\n" +
+                "fact f {some ^r}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A_r () (Set (Tuple Atom Atom )))\n" +
+                "(assert (subset this_A_r (product this_A this_A)))\n" +
+                "; f\n" +
+                "(assert (exists ((_x1 Atom)(_x2 Atom)) (member (mkTuple _x1 _x2 ) (tclosure this_A_r))))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void reflexiveClosure()
     {
         String input =
                 "sig A {}\n" +
