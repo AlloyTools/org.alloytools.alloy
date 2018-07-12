@@ -1,26 +1,12 @@
 package edu.uiowa.alloy2smt;
 
-import edu.uiowa.alloy2smt.translators.TranslatorUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-class RelationTests
+class RelationTests extends TestBase
 {
-
-    private final String prefix =
-            "(set-logic ALL)\n" +
-            "(set-option :produce-models true)\n" +
-            "(set-option :finite-model-find true)\n" +
-            "(declare-sort Atom 0)\n";
-    
-    @BeforeEach
-    public void beforeEach()
-    {
-        TranslatorUtils.reset();
-    }
 
     @Test
     public void unaryFieldRelation()
