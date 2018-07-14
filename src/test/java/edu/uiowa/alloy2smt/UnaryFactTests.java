@@ -358,12 +358,17 @@ class UnaryFactTests extends TestBase
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
-                        "(assert (subset this_B_r (product this_B this_A)))\n" +
-                        "; f\n" +
-                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom Atom ))\n" +
+                "(assert (subset this_B_r (product this_B this_A)))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "; f\n" +
+                "(assert (= this_B_r _S1))\n";
         assertEquals(expected, actual);
     }
 
