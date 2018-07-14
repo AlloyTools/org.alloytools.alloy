@@ -372,19 +372,28 @@ class UnaryFactTests extends TestBase
     {
         String input =
                 "sig A {}\n" +
-                        "sig B {r: set A}\n" +
-                        "sig B1, B2 in B {}\n" +
-                        "fact f {#(B1 <: r) = 2}";
+                "sig B {r: set A}\n" +
+                "sig B1, B2 in B {}\n" +
+                "fact f {#(B1 <: r) = 2}";
 
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
-                        "(assert (subset this_B_r (product this_B this_A)))\n" +
-                        "; f\n" +
-                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                "(declare-fun this_B1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B2 () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom Atom ))\n" +
+                "(assert (subset this_B_r (product this_B this_A)))\n" +
+                "(assert (subset this_B1 this_B))\n" +
+                "(assert (subset this_B2 this_B))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "; f\n" +
+                "(assert (= (intersection (product this_B1 (as univset (Set (Tuple Atom )))) this_B_r) _S1))\n";
         assertEquals(expected, actual);
     }
 }

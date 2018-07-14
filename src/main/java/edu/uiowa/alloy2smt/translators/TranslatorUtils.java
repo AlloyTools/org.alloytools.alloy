@@ -13,6 +13,8 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TranslatorUtils
 {
@@ -31,9 +33,13 @@ public class TranslatorUtils
         return s.replaceAll("/", "_");
     }
 
-    public static FunctionDeclaration generateAuxiliarySetNAtoms(Sort setSort, int n, Alloy2SMTTranslator translator)
+    public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, Alloy2SMTTranslator translator)
     {
-        List<Expression> expressions = declareNDistinctConstants(translator.atomSort, n, translator.smtProgram);
+        List<Sort>  sorts       = IntStream.range(1, arity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList());
+        Sort        tupleSort   = new TupleSort(sorts);
+        Sort        setSort     = new SetSort(tupleSort);
+
+        List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
 
         FunctionDeclaration declaration = new FunctionDeclaration(getNewSet(), setSort);
 
@@ -70,8 +76,7 @@ public class TranslatorUtils
             for (int i = 0; i < n; i++)
             {
                 ConstantDeclaration constantDeclaration = new ConstantDeclaration(getNewAtom(), sort);
-                MultiArityExpression makeTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantDeclaration.getConstantExpr());
-                expressions.add(makeTuple);
+                expressions.add(constantDeclaration.getConstantExpr());
                 smtProgram.addConstantDeclaration(constantDeclaration);
             }
 

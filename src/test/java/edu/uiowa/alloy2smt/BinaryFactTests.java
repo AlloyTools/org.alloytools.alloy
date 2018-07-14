@@ -307,11 +307,11 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_B () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
-                "(declare-const _a3 Atom)\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) (mkTuple _a3 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (mkTuple _a2 ) (singleton (mkTuple _a3 )) )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(declare-const _a3 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 _a3 ))\n" +
+                "(assert (= _S1 (insert _a1 _a2 (singleton _a3) )))\n" +
                 "; f\n" +
                 "(assert (= (union this_A this_B) _S1))\n";
         assertEquals(expected, actual);

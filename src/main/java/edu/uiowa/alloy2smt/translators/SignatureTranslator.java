@@ -136,7 +136,7 @@ public class SignatureTranslator
     {
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
-        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(signature.getSort(), 1, translator);
+        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(1, 1, translator);
 
         BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));
@@ -146,7 +146,7 @@ public class SignatureTranslator
     {
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
-        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(signature.getSort(), 1, translator);
+        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(1, 1, translator);
 
         BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.SUBSET, declaration.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));
@@ -156,7 +156,7 @@ public class SignatureTranslator
     {
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
-        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(signature.getSort(), 1, translator);
+        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(1, 1, translator);
 
         BinaryExpression subset   = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, signature.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));

@@ -150,7 +150,6 @@ public class ExprBinaryTranslator
         {
             throw new UnsupportedOperationException("CVC4 doesn't support comparision between 2 cardinality expressions.");
         }
-        //ToDo: For cardinality operator, CVC4 supports only comparison with numbers
 
         if
             (
@@ -195,7 +194,7 @@ public class ExprBinaryTranslator
     private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, ConstantExpression> variablesScope)
     {
         Expression          left        = exprTranslator.translateExpr(expr.sub, variablesScope);
-        FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(exprTranslator.translator.setOfUnaryAtomSort, n, exprTranslator.translator);
+        FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(expr.sub.type().arity(), n, exprTranslator.translator);
         Expression          right       = declaration.getConstantExpr();
         switch (op)
         {
