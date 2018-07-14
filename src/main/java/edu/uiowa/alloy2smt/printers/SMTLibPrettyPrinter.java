@@ -31,6 +31,7 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
                 "(set-logic ALL)\n" +
                 "(set-option :produce-models true)\n" +
                 "(set-option :finite-model-find true)\n" +
+                "(set-option :sets-ext true)\n" +
                 "(declare-sort Atom 0)\n");
     }
 

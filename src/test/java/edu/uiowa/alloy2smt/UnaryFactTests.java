@@ -327,4 +327,64 @@ class UnaryFactTests extends TestBase
         assertEquals(expected, actual);
     }
 
+
+    @Test
+    public void reflexiveClosure2()
+    {
+        String input =
+                "sig A {r1 : set A, r2: set A}\n" +
+                "fact f { some ^(r1.r2)}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                        "(assert (subset this_B_r (product this_B this_A)))\n" +
+                        "; f\n" +
+                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void domainRestriction1()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B {r: set A}\n" +
+                "fact f {#(B <: r) = 2}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                        "(assert (subset this_B_r (product this_B this_A)))\n" +
+                        "; f\n" +
+                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void domainRestriction2()
+    {
+        String input =
+                "sig A {}\n" +
+                        "sig B {r: set A}\n" +
+                        "sig B1, B2 in B {}\n" +
+                        "fact f {#(B1 <: r) = 2}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
+                        "(assert (subset this_B_r (product this_B this_A)))\n" +
+                        "; f\n" +
+                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+        assertEquals(expected, actual);
+    }
 }

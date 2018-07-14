@@ -36,6 +36,7 @@ public class Alloy2SMTTranslator
     final TupleSort                 binaryAtomSort;
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
+    final UnaryExpression           universe;
 
     Map<Sig,FunctionDeclaration>        signaturesMap   = new HashMap<>();
     Map<Sig.Field,FunctionDeclaration>  fieldsMap       = new HashMap<>();
@@ -56,6 +57,7 @@ public class Alloy2SMTTranslator
         this.setOfBinaryAtomSort    = new SetSort(this.binaryAtomSort);
         this.signatureTranslator    = new SignatureTranslator(this);
         this.exprTranslator         = new ExprTranslator(this);
+        this.universe               = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort);
     }
 
     public SMTProgram execute()

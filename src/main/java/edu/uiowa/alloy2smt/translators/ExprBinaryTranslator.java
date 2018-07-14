@@ -38,7 +38,7 @@ public class ExprBinaryTranslator
             case LONE_ARROW_LONE    : throw new UnsupportedOperationException();
             case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
             case JOIN               : return translateJoin(expr, variablesScope);
-            case DOMAIN             : throw new UnsupportedOperationException();
+            case DOMAIN             : return translateDomainRangeRestriction(expr, ExprBinary.Op.DOMAIN , variablesScope);
             case RANGE              : throw new UnsupportedOperationException();
             case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
             case PLUSPLUS           : throw new UnsupportedOperationException();
@@ -70,6 +70,34 @@ public class ExprBinaryTranslator
             case IFF                : throw new UnsupportedOperationException();
             default                 : throw new UnsupportedOperationException();
         }
+    }
+
+    private Expression translateDomainRangeRestriction(ExprBinary expr, ExprBinary.Op op, Map<String,ConstantExpression> variablesScope)
+    {
+        if(op == ExprBinary.Op.DOMAIN)
+        {
+            int arity = expr.right.type().arity();
+
+            if(arity <= 1)
+            {
+                // arity should be greater than one
+                throw new UnsupportedOperationException();
+            }
+
+            if(arity == 2)
+            {
+                Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
+                BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.universe);
+                Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
+                BinaryExpression    intersection    = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, right);
+
+                return intersection;
+
+            }
+
+        }
+        // only restriction operators are allowed in this function
+        throw new UnsupportedOperationException();
     }
 
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
