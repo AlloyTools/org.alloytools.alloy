@@ -21,10 +21,10 @@ class BinaryFactTests extends TestBase
                 prefix +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= this_A _S1))\n";
         assertEquals(expected, actual);
@@ -43,10 +43,10 @@ class BinaryFactTests extends TestBase
                 prefix +
                         "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                         "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                        "(declare-const _a1 Atom)\n" +
-                        "(declare-const _a2 Atom)\n" +
-                        "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                        "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                        "(declare-const _a1 (Tuple Atom ))\n" +
+                        "(declare-const _a2 (Tuple Atom ))\n" +
+                        "(assert (distinct _a1 _a2 ))\n" +
+                        "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                         "; f\n" +
                         "(assert (= this_A _S1))\n";
         assertEquals(expected, actual);
@@ -68,11 +68,11 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_B () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
                 "(assert (subset this_B_r (product this_B this_A)))\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (join this_B this_B_r) _S1))\n";
         assertEquals(expected, actual);
@@ -90,10 +90,10 @@ class BinaryFactTests extends TestBase
                 prefix +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (not (= this_A _S1)))\n";
         assertEquals(expected, actual);
@@ -111,10 +111,10 @@ class BinaryFactTests extends TestBase
                 prefix +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (subset this_A _S1))\n";
         assertEquals(expected, actual);
@@ -130,14 +130,14 @@ class BinaryFactTests extends TestBase
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                        "(declare-const _a1 Atom)\n" +
-                        "(declare-const _a2 Atom)\n" +
-                        "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                        "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
-                        "; f\n" +
-                        "(assert (and (subset _S1 this_A) (not (= this_A _S1))))\n";
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "; f\n" +
+                "(assert (and (subset _S1 this_A) (not (= this_A _S1))))\n";
         assertEquals(expected, actual);
     }
 
@@ -153,10 +153,10 @@ class BinaryFactTests extends TestBase
                 prefix +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (and (subset this_A _S1) (not (= this_A _S1))))\n";
         assertEquals(expected, actual);
@@ -172,14 +172,14 @@ class BinaryFactTests extends TestBase
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                        "(declare-const _a1 Atom)\n" +
-                        "(declare-const _a2 Atom)\n" +
-                        "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                        "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
-                        "; f\n" +
-                        "(assert (subset _S1 this_A))\n";
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "; f\n" +
+                "(assert (subset _S1 this_A))\n";
         assertEquals(expected, actual);
     }
 
@@ -332,13 +332,13 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_B () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_C () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
-                "(declare-const _a3 Atom)\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(declare-const _a3 (Tuple Atom ))\n" +
                 "(assert (subset this_B this_A))\n" +
                 "(assert (subset this_C this_A))\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) (mkTuple _a3 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (mkTuple _a2 ) (singleton (mkTuple _a3 )) )))\n" +
+                "(assert (distinct _a1 _a2 _a3 ))\n" +
+                "(assert (= _S1 (insert _a1 _a2 (singleton _a3) )))\n" +
                 "; f\n" +
                 "(assert (= (intersection this_B this_C) _S1))\n";
         assertEquals(expected, actual);
@@ -359,12 +359,12 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_B () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_C () (Set (Tuple Atom )))\n" +
                 "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                "(declare-const _a1 Atom)\n" +
-                "(declare-const _a2 Atom)\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
                 "(assert (subset this_B this_A))\n" +
                 "(assert (subset this_C this_A))\n" +
-                "(assert (distinct (mkTuple _a1 ) (mkTuple _a2 ) ))\n" +
-                "(assert (= _S1 (insert (mkTuple _a1 ) (singleton (mkTuple _a2 )) )))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (setminus this_B this_C) _S1))\n";
         assertEquals(expected, actual);
