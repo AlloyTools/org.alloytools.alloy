@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -189,7 +190,7 @@ class SignatureTests extends TestBase
         assertEquals(expected, actual);
     }
 
-
+    @Disabled
     @Test
     public void unionOfTopLevelSignsIsTheUniverse()
     {
