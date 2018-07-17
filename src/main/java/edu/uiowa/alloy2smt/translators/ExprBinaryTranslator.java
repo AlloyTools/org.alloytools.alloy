@@ -41,7 +41,7 @@ public class ExprBinaryTranslator
             case DOMAIN             : return translateDomainRestriction(expr, variablesScope);
             case RANGE              : return translateRangeRestriction(expr, variablesScope);
             case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
-            case PLUSPLUS           : throw new UnsupportedOperationException();
+            case PLUSPLUS           : return translatePlusPlus(expr, variablesScope);
             case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
             case IPLUS              : throw new UnsupportedOperationException();
             case MINUS              : return translateSetOperation(expr, BinaryExpression.Op.SETMINUS, variablesScope);
@@ -72,6 +72,32 @@ public class ExprBinaryTranslator
         }
     }
 
+    private Expression translatePlusPlus(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    {
+        int arity  =  expr.right.type().arity();
+        if( arity == 1)
+        {
+            // ++ is like a single + with arity 1 (i.e. is like a union)
+            return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
+        }
+
+        if(arity == 2)
+        {
+            Expression left                 = exprTranslator.translateExpr(expr.left, variablesScope);
+            Expression right                = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression join               = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.universe);
+            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.universe);
+            Expression intersection         = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, left);
+            Expression difference           = new BinaryExpression(left, BinaryExpression.Op.SETMINUS, intersection);
+            Expression union                = new BinaryExpression(difference, BinaryExpression.Op.UNION, right);
+
+            return union;
+
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
     private Expression translateDomainRestriction(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
     {
         int arity = expr.right.type().arity();
@@ -87,9 +113,7 @@ public class ExprBinaryTranslator
             BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.universe);
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
             BinaryExpression    intersection    = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, right);
-
             return intersection;
-
         }
 
         throw new UnsupportedOperationException();

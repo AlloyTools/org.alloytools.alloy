@@ -33,8 +33,8 @@ public class FieldTranslator
     {
 
         String              fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
-        TupleSort tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), translator.atomSort));
-        SetSort setSort     = new SetSort(tupleSort);
+        TupleSort           tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), translator.atomSort));
+        SetSort             setSort     = new SetSort(tupleSort);
         FunctionDeclaration declaration = new FunctionDeclaration(fieldName, setSort);
 
         // declare a variable for the field
@@ -47,7 +47,8 @@ public class FieldTranslator
         /* alloy: sig Book{addr: Name -> lone Addr}
          *  smt  : (assert (subset addr (product (product Book Name) Addr)))
          */
-        ConstantExpression first   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();
+        ConstantExpression first   = translator.signaturesMap.get(field.sig).getConstantExpr();
+        //ToDo: review the case when the relation uses a subset signature instead of a top level signature
         ConstantExpression second  = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();
         BinaryExpression product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
 

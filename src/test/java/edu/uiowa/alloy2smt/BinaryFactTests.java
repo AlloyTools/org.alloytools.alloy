@@ -576,4 +576,89 @@ class BinaryFactTests extends TestBase
         assertEquals(expected, actual);
     }
 
+
+    @Test
+    public void override1()
+    {
+        String input =
+                "sig  A {}\n" +
+                "sig A1, A2 in A {}\n" +
+                "fact f { \n" +
+                "#(A1++A2 ) = 3\n" +
+                "#(A1 & A2)  =  1\n" +
+                "}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S2 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(declare-const _a3 (Tuple Atom ))\n" +
+                "(declare-const _a4 (Tuple Atom ))\n" +
+                "(assert (subset this_A1 this_A))\n" +
+                "(assert (subset this_A2 this_A))\n" +
+                "(assert (distinct _a1 _a2 _a3 ))\n" +
+                "(assert (= _S1 (insert _a1 _a2 (singleton _a3) )))\n" +
+                "(assert (= _S2 (singleton _a4)))\n" +
+                "; f\n" +
+                "(assert (and (= (union this_A1 this_A2) _S1) " +
+                        "(= (intersection this_A1 this_A2) _S2)))\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void override2()
+    {
+        String input =
+                "sig  A {}\n" +
+                "sig A1 in A {r1: set A}\n" +
+                "sig A2 in A {r2: set A}\n" +
+                "\n" +
+                "fact f { \n" +
+                "#(r1++r2 ) = 2\n" +
+                "#(r1 & r2)  =  1\n" +
+                "}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A1_r1 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A2_r2 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-fun _S2 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom Atom ))\n" +
+                "(declare-const _a3 (Tuple Atom Atom ))\n" +
+                "(assert (subset this_A1 this_A))\n" +
+                "(assert (subset this_A1_r1 (product this_A1 this_A)))\n" +
+                "(assert (subset this_A2 this_A))\n" +
+                "(assert (subset this_A2_r2 (product this_A2 this_A)))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "(assert (= _S2 (singleton _a3)))\n" +
+                "; f\n" +
+                "(assert " +
+                    "(and " +
+                        "(= " +
+                            "(union " +
+                                "(setminus " +
+                                    "this_A1_r1 " +
+                                    "(intersection " +
+                                        "(product " +
+                                            "(join this_A2_r2 (as univset (Set (Tuple Atom )))) " +
+                                            "(as univset (Set (Tuple Atom )))) " +
+                                        "this_A1_r1)) " +
+                                "this_A2_r2) " +
+                            "_S1) " +
+                    "(= (intersection this_A1_r1 this_A2_r2) _S2)))\n";
+        assertEquals(expected, actual);
+    }
 }
