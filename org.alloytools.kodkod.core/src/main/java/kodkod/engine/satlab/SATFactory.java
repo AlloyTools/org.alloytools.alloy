@@ -205,6 +205,29 @@ public abstract class SATFactory {
                                                  };
 
     /**
+     * The factory that produces instances of Satalia's SolveEngine solver.
+     */
+    public static final SATFactory SolveEngine(String token, String fileName){
+        return new SATFactory() {
+
+            @Override
+            public SATSolver instance() {
+                return new SolveEngine(token, fileName);
+            }
+
+            @Override
+            public boolean incremental() {
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return "SolveEngine";
+            }
+        };
+    };
+
+    /**
      * Returns a SATFactory that produces SATSolver wrappers for Armin Biere's
      * Plingeling solver. This is a parallel solver that is invoked as an external
      * program rather than via the Java Native Interface. As a result, it cannot be

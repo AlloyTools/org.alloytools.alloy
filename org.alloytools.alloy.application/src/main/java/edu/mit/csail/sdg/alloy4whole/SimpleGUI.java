@@ -249,6 +249,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
     /** The last "find" that the user issued. */
     private String                lastFind               = "";
 
+    /** The token, or api-key for the user to call the online solver SolveEngine. */
+    private String                solveEngineToken       = "";
+
     /** The last find is case-sensitive or not. */
     private boolean               lastFindCaseSensitive  = true;
 
@@ -979,6 +982,29 @@ public final class SimpleGUI implements ComponentListener, Listener {
         return null;
     }
 
+    /**
+     * This method asks the api-key the user would like to use if he choses SolveEngine as a solver.
+     */
+    private Runner doAskToken() {
+        if (wrap)
+            return wrapMe();
+
+        if (Solver.get().toString().equals("SolveEngine")) {
+            JTextField textField = OurUtil.textfield(solveEngineToken, 30);
+            textField.selectAll();
+            if (!OurDialog.getInput("We need your SolveEngine api-key", "Api-key:", textField, " ",
+                    "You can find it by signing in at solve.satalia.com",
+                    "You can change it again by changing solver and chosing SolveEngine again"))
+                return null;
+            if (textField.getText().length() == 0)
+                return null;
+            else
+                solveEngineToken = textField.getText();
+        }
+
+        return null;
+    }
+
     /** This method performs Edit->Goto. */
     private Runner doGoto() {
         if (wrap)
@@ -1167,6 +1193,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.coreGranularity = CoreGranularity.get();
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.solver = Solver.get();
+        opt.solveEngineToken = solveEngineToken;
         task.bundleIndex = i;
         task.bundleWarningNonFatal = WarningNonfatal.get();
         task.map = text.takeSnapshot();
@@ -2162,6 +2189,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             prefDialog.addChangeListener(wrapToChangeListener(doOptAntiAlias()), AntiAlias);
             prefDialog.addChangeListener(wrapToChangeListener(doOptSyntaxHighlighting()), SyntaxDisabled);
             prefDialog.addChangeListener(wrapToChangeListener(doLookAndFeel()), LAF);
+            prefDialog.addChangeListener(wrapToChangeListener(doAskToken()), Solver);
         } finally {
             wrap = false;
         }

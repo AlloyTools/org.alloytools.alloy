@@ -8,6 +8,15 @@
 
 	<packaging>pom</packaging>
 
+	<repositories>
+		<!-- Needed for JSON-B API-->
+		<repository>
+			<id>java.net-Public</id>
+			<name>Maven Java Net Snapshots and Releases</name>
+			<url>https://maven.java.net/content/groups/public/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
@@ -33,6 +42,21 @@
 			<groupId>com.github.vbmacher</groupId>
 			<artifactId>java-cup</artifactId>
 			<version>11b-20160615</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.json.bind</groupId>
+			<artifactId>javax.json.bind-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse</groupId>
+			<artifactId>yasson</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>1.1</version>
 		</dependency>
 	</dependencies>
 

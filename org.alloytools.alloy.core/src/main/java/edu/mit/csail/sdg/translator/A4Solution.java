@@ -379,6 +379,8 @@ public final class A4Solution {
             solver.options().setSolver(SATFactory.MiniSatProver);
             solver.options().setLogTranslation(2);
             solver.options().setCoreGranularity(opt.coreGranularity);
+        } else if (opt.solver.equals(A4Options.SatSolver.SolveEngine)) {
+            solver.options().setSolver(SATFactory.SolveEngine(opt.solveEngineToken, opt.originalFilename));
         } else {
             solver.options().setSolver(SATFactory.DefaultSAT4J); // Even for
                                                                 // "KK" and

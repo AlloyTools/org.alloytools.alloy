@@ -182,6 +182,8 @@ public final class A4Options implements Serializable {
         public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true);
         /** SAT4J using native Java */
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
+        /** SolveEngine using native Java and online solvers*/
+        public static final SatSolver SolveEngine      = new SatSolver("solveengine", "SolveEngine", null, null, true);
         /** Outputs the raw CNF file only */
         public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
         /** Outputs the raw Kodkod file only */
@@ -286,6 +288,12 @@ public final class A4Options implements Serializable {
      */
     public int       unrolls              = (-1);
 
+    /**
+     * This option is the api-key to use SolveEngine. It is filled after being asked in a window,
+     * which is displayded when the user choses the solver SolveEngine.
+     */
+    public String    solveEngineToken     = "";
+
     /** This method makes a copy of this Options object. */
     public A4Options dup() {
         A4Options x = new A4Options();
@@ -301,6 +309,7 @@ public final class A4Options implements Serializable {
         x.recordKodkod = recordKodkod;
         x.noOverflow = noOverflow;
         x.coreGranularity = coreGranularity;
+        x.solveEngineToken = solveEngineToken;
         return x;
     }
 }
