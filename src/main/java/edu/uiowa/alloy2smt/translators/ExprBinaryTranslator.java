@@ -20,7 +20,7 @@ public class ExprBinaryTranslator
     {
         switch (expr.op)
         {
-            case ARROW              : throw new UnsupportedOperationException();
+            case ARROW              : return translateArrow(expr, variablesScope);
             case ANY_ARROW_SOME     : throw new UnsupportedOperationException();
             case ANY_ARROW_ONE      : throw new UnsupportedOperationException();
             case ANY_ARROW_LONE     : throw new UnsupportedOperationException();
@@ -70,6 +70,15 @@ public class ExprBinaryTranslator
             case IFF                : throw new UnsupportedOperationException();
             default                 : throw new UnsupportedOperationException();
         }
+    }
+
+    private Expression translateArrow(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression product  = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, right);
+
+        return product;
     }
 
     private Expression translatePlusPlus(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
