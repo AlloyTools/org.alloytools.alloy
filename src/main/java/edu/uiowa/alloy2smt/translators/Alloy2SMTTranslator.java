@@ -12,6 +12,7 @@ import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.uiowa.alloy2smt.Alloy2SMTLogger;
+import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class Alloy2SMTTranslator
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
     final UnaryExpression           universe;
+    final FunctionDeclaration       identity;
 
     Map<Sig,FunctionDeclaration>        signaturesMap   = new HashMap<>();
     Map<Sig.Field,FunctionDeclaration>  fieldsMap       = new HashMap<>();
@@ -58,14 +60,50 @@ public class Alloy2SMTTranslator
         this.signatureTranslator    = new SignatureTranslator(this);
         this.exprTranslator         = new ExprTranslator(this);
         this.universe               = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort);
+        this.identity               = new FunctionDeclaration("identity", setOfBinaryAtomSort );
     }
 
     public SMTProgram execute()
-    {        
-
+    {
+        translateSpecialFunctions();
         this.signatureTranslator.translate();
         translateFacts();
+
+        translateSpecialAssertions();
         return this.smtProgram;
+    }
+
+    private void translateSpecialFunctions()
+    {
+        this.smtProgram.addFunctionDeclaration(this.identity);
+    }
+
+    private void translateSpecialAssertions()
+    {
+        BoundVariableDeclaration    a       = new BoundVariableDeclaration(TranslatorUtils.getNewName(), atomSort);
+        MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
+        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.universe);
+
+        BoundVariableDeclaration    b       = new BoundVariableDeclaration(TranslatorUtils.getNewName(), atomSort);
+        MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getConstantExpr());
+        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.universe);
+
+        BinaryExpression            and     = new BinaryExpression(memberA, BinaryExpression.Op.AND, memberB);
+
+        MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr(), b.getConstantExpr());
+
+        BinaryExpression            member  = new BinaryExpression(tupleAB, BinaryExpression.Op.MEMBER, this.identity.getConstantExpr());
+
+        BinaryExpression            equals  = new BinaryExpression(a.getConstantExpr(), BinaryExpression.Op.EQ, b.getConstantExpr());
+
+        BinaryExpression            equiv   = new BinaryExpression(member, BinaryExpression.Op.EQ, equals);
+
+        BinaryExpression            implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES , equiv);
+
+
+        QuantifiedExpression        forall  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
+
+        this.smtProgram.addAssertion(new Assertion(forall));
     }
 
     private void translateFacts()

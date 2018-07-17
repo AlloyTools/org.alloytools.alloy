@@ -20,7 +20,7 @@ class UnaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (forall ((_x1 Atom)) (not (member (mkTuple _x1 ) this_A))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -40,7 +40,7 @@ class UnaryFactTests extends TestBase
                 "(assert (subset this_B_r (product this_B this_A)))\n" +
                 "; f\n" +
                 "(assert (forall ((_x1 Atom)) (not (member (mkTuple _x1 ) (join this_B this_B_r)))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -65,7 +65,7 @@ class UnaryFactTests extends TestBase
                                 "(not (member " +
                                     "(mkTuple _x1 ) " +
                                         "(join (singleton (mkTuple b )) this_B_r)))))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -95,7 +95,7 @@ class UnaryFactTests extends TestBase
                                                     "(union " +
                                                             "(join (singleton (mkTuple b )) this_B_r) " +
                                                     "(singleton (mkTuple a )))))))))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -122,7 +122,7 @@ class UnaryFactTests extends TestBase
                             "(forall ((_x1 Atom)) (not (member (mkTuple _x1 ) (join (singleton (mkTuple b )) this_B_r)))))) " +
                         "(forall ((b Atom)) (=> (member (mkTuple b ) this_A) " +
                             "(forall ((_x2 Atom)) (not (member (mkTuple _x2 ) (join this_B_r (singleton (mkTuple b ))))))))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(2), actual);
     }
 
     @Test
@@ -138,7 +138,7 @@ class UnaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) this_A)))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -158,7 +158,7 @@ class UnaryFactTests extends TestBase
                 "(assert (subset this_B_r (product this_B this_A)))\n" +
                 "; f\n" +
                 "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join this_B this_B_r))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -177,7 +177,7 @@ class UnaryFactTests extends TestBase
                     "(and (member (mkTuple _x1 ) this_A) " +
                         "(forall ((_x2 Atom)) " +
                             "(=> (not (= _x1 _x2)) (not (member (mkTuple _x2 ) this_A)))))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(2), actual);
     }
 
     @Test
@@ -201,7 +201,7 @@ class UnaryFactTests extends TestBase
                         "(member (mkTuple _x1 ) (join this_B this_B_r)) " +
                         "(forall ((_x2 Atom)) (=> (not (= _x1 _x2)) " +
                             "(not (member (mkTuple _x2 ) (join this_B this_B_r))))))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(2), actual);
     }
 
     @Test
@@ -222,7 +222,7 @@ class UnaryFactTests extends TestBase
                                     "(forall ((_x2 Atom)) (=> (not (= _x1 _x2)) " +
                                         "(not (member (mkTuple _x2 ) this_A)))))) " +
                             "(forall ((_x3 Atom)) (not (member (mkTuple _x3 ) this_A)))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(3), actual);
     }
 
     @Test
@@ -248,7 +248,7 @@ class UnaryFactTests extends TestBase
                                         "(not (member (mkTuple _x2 ) (join this_B this_B_r))))))) " +
                             "(forall ((_x3 Atom)) (not (member (mkTuple _x3 ) " +
                                                     "(join this_B this_B_r))))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(3), actual);
     }
 
 
@@ -269,7 +269,7 @@ class UnaryFactTests extends TestBase
                         "(assert (subset this_B_r (product this_B this_A)))\n" +
                         "; f\n" +
                         "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(1), actual);
     }
 
     @Test
@@ -287,7 +287,7 @@ class UnaryFactTests extends TestBase
                 "(assert (subset this_A_r (product this_A this_A)))\n" +
                 "; f\n" +
                 "(assert (exists ((_x1 Atom)(_x2 Atom)) (member (mkTuple _x1 _x2 ) (tclosure this_A_r))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(2), actual);
     }
 
     @Test
@@ -305,7 +305,7 @@ class UnaryFactTests extends TestBase
                         "(assert (subset this_A_r (product this_A this_A)))\n" +
                         "; f\n" +
                         "(assert (exists ((_x1 Atom)(_x2 Atom)) (member (mkTuple _x1 _x2 ) (tclosure this_A_r))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -324,7 +324,7 @@ class UnaryFactTests extends TestBase
                         "(assert (subset this_B_r (product this_B this_A)))\n" +
                         "; f\n" +
                         "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
 
@@ -344,6 +344,6 @@ class UnaryFactTests extends TestBase
                         "(assert (subset this_B_r (product this_B this_A)))\n" +
                         "; f\n" +
                         "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 }

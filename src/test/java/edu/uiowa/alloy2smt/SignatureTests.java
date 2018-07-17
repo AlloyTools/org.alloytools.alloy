@@ -20,7 +20,7 @@ class SignatureTests extends TestBase
         String expected =
                 prefix +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -41,7 +41,7 @@ class SignatureTests extends TestBase
                 "(assert (subset this_A1 this_A))\n" +
                 "(assert (subset this_A2 this_A))\n" +
                 "(assert (= (intersection this_A1 this_A2) (as emptyset (Set (Tuple Atom )))))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -63,7 +63,7 @@ class SignatureTests extends TestBase
                 "(assert (subset this_A2 this_A))\n" +
                 "(assert (= (intersection this_A1 this_A2) (as emptyset (Set (Tuple Atom )))))\n" +
                 "(assert (= this_A (union this_A1 this_A2)))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -81,7 +81,7 @@ class SignatureTests extends TestBase
                         "(declare-fun this_A1 () (Set (Tuple Atom )))\n" +
                         "(assert (subset this_A1 this_A))\n" +
                         "(assert (= this_A this_A1))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -94,7 +94,7 @@ class SignatureTests extends TestBase
         String expected =
                 prefix  +
                 "(declare-fun this_A () (Set (Tuple Atom )))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -115,7 +115,7 @@ class SignatureTests extends TestBase
                 "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
                 "(assert (subset this_A1 (union this_A this_B)))\n" +
                 "(assert (subset this_A2 this_A))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -136,7 +136,7 @@ class SignatureTests extends TestBase
                 "(declare-fun this_A2 () (Set (Tuple Atom )))\n" +
                 "(assert (subset this_A1 (union this_A this_B)))\n" +
                 "(assert (subset this_A2 this_A))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -153,7 +153,7 @@ class SignatureTests extends TestBase
                 "(declare-const _a1 (Tuple Atom ))\n" +
                 "(assert (= _S1 (singleton _a1)))\n" +
                 "(assert (= this_A _S1))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -170,7 +170,7 @@ class SignatureTests extends TestBase
                 "(declare-const _a1 (Tuple Atom ))\n" +
                 "(assert (= _S1 (singleton _a1)))\n" +
                 "(assert (subset this_A _S1))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Test
@@ -187,7 +187,7 @@ class SignatureTests extends TestBase
                 "(declare-const _a1 (Tuple Atom ))\n" +
                 "(assert (= _S1 (singleton _a1)))\n" +
                 "(assert (subset _S1 this_A))\n";
-        assertEquals(expected, actual);
+        assertEquals(expected + getSuffix(0), actual);
     }
 
     @Disabled
