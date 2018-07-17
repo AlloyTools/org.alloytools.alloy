@@ -688,4 +688,22 @@ class BinaryFactTests extends TestBase
                 "(assert (= (join this_A1_r1 this_A2) this_A1))\n";
         assertEquals(expected + getSuffix(), actual);
     }
+
+    @Test
+    public void product1SetSet()
+    {
+        String input =
+                "sig A {}\n" +
+                "sig B {r : set A}\n" +
+                "fact f{\n" +
+                "#B = 2 # A = 2\n" +
+                "B set -> set A = r\n" +
+                "}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "";
+        assertEquals(expected + getSuffix(), actual);
+    }
 }
