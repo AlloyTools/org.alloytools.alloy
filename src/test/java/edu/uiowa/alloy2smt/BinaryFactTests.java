@@ -28,7 +28,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= this_A _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
 
@@ -50,7 +50,7 @@ class BinaryFactTests extends TestBase
                         "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                         "; f\n" +
                         "(assert (= this_A _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
 
@@ -76,7 +76,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (join this_B this_B_r) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -97,7 +97,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (not (= this_A _S1)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -118,7 +118,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (subset this_A _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -139,7 +139,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (and (subset _S1 this_A) (not (= this_A _S1))))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -160,7 +160,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (and (subset this_A _S1) (not (= this_A _S1))))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -181,7 +181,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (subset _S1 this_A))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -210,7 +210,7 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (< 2 3))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -226,7 +226,7 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (<= 2 3))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -242,7 +242,7 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (> 2 3))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -258,7 +258,7 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (>= 2 3))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -274,7 +274,7 @@ class BinaryFactTests extends TestBase
                 "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                 "; f\n" +
                 "(assert (= 2 3))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -290,7 +290,7 @@ class BinaryFactTests extends TestBase
                         "(declare-fun this_A () (Set (Tuple Atom )))\n" +
                         "; f\n" +
                         "(assert (not (= 2 3)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
 
@@ -315,7 +315,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 _a2 (singleton _a3) )))\n" +
                 "; f\n" +
                 "(assert (= (union this_A this_B) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -342,7 +342,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 _a2 (singleton _a3) )))\n" +
                 "; f\n" +
                 "(assert (= (intersection this_B this_C) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -368,7 +368,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (setminus this_B this_C) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -389,7 +389,7 @@ class BinaryFactTests extends TestBase
                 "(assert (subset this_C this_A))\n" +
                 "; f\n" +
                 "(assert (= this_B this_C))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -410,7 +410,7 @@ class BinaryFactTests extends TestBase
                 "(assert (subset this_C this_A))\n" +
                 "; f\n" +
                 "(assert (subset this_B this_C))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -431,7 +431,7 @@ class BinaryFactTests extends TestBase
                 "(assert (subset this_C this_A))\n" +
                 "; f\n" +
                 "(assert (not (subset this_B this_C)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -456,7 +456,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= this_B_r _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -486,7 +486,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (intersection (product this_B1 (as univset (Set (Tuple Atom )))) this_B_r) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Disabled
@@ -517,7 +517,7 @@ class BinaryFactTests extends TestBase
                         "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                         "; f\n" +
                         "(assert (= (intersection (product this_B1 (as univset (Set (Tuple Atom )))) this_B_r) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
 
@@ -543,7 +543,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (intersection this_B_r (product this_A (as univset (Set (Tuple Atom ))))) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -573,7 +573,7 @@ class BinaryFactTests extends TestBase
                 "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
                 "; f\n" +
                 "(assert (= (intersection this_B_r (product this_A1 (as univset (Set (Tuple Atom ))))) _S1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
 
@@ -608,7 +608,7 @@ class BinaryFactTests extends TestBase
                 "; f\n" +
                 "(assert (and (= (union this_A1 this_A2) _S1) " +
                         "(= (intersection this_A1 this_A2) _S2)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -659,7 +659,7 @@ class BinaryFactTests extends TestBase
                                 "this_A2_r2) " +
                             "_S1) " +
                     "(= (intersection this_A1_r1 this_A2_r2) _S2)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -686,6 +686,6 @@ class BinaryFactTests extends TestBase
                 "(assert (subset this_A2 this_A))\n" +
                 "; f\n" +
                 "(assert (= (join this_A1_r1 this_A2) this_A1))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 }

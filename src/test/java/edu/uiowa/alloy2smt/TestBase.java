@@ -21,18 +21,18 @@ public class TestBase
         TranslatorUtils.reset();
     }
 
-    protected String getSuffix(int lastIndex)
+    protected String getSuffix()
     {
 
-        String suffix = MessageFormat.format(
-                "(assert (forall ((_x{0} Atom)(_x{1} Atom)) " +
+        String suffix =
+                "(assert (forall ((_x1 Atom)(_x2 Atom)) " +
                         "(=> " +
                             "(and " +
-                                "(member (mkTuple _x{0} ) (as univset (Set (Tuple Atom )))) " +
-                                "(member (mkTuple _x{1} ) (as univset (Set (Tuple Atom ))))) " +
+                                "(member (mkTuple _x1 ) (as univset (Set (Tuple Atom )))) " +
+                                "(member (mkTuple _x2 ) (as univset (Set (Tuple Atom ))))) " +
                             "(= " +
-                                "(member (mkTuple _x{0} _x{1} ) identity) " +
-                                "(= _x{0} _x{1})))))\n", lastIndex + 1, lastIndex + 2);
+                                "(member (mkTuple _x1 _x2 ) identity) " +
+                                "(= _x1 _x2)))))\n";
         return suffix;
     }
 }

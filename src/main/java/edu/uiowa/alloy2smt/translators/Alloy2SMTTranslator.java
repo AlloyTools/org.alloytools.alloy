@@ -80,11 +80,11 @@ public class Alloy2SMTTranslator
 
     private void translateSpecialAssertions()
     {
-        BoundVariableDeclaration    a       = new BoundVariableDeclaration(TranslatorUtils.getNewName(), atomSort);
+        BoundVariableDeclaration    a       = new BoundVariableDeclaration("_x1", atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
         BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.universe);
 
-        BoundVariableDeclaration    b       = new BoundVariableDeclaration(TranslatorUtils.getNewName(), atomSort);
+        BoundVariableDeclaration    b       = new BoundVariableDeclaration("_x2", atomSort);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getConstantExpr());
         BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.universe);
 

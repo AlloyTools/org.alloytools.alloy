@@ -34,7 +34,7 @@ class RelationTests extends TestBase
                 "(not (= _x3 _x2))) " +
                 "(not (member (mkTuple _x1 _x3 ) this_Book_addr))))))))))\n";
 
-        assertEquals(expected + getSuffix(3), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -62,7 +62,7 @@ class RelationTests extends TestBase
                                                                 "(not (= _x3 _x2))) " +
                                                             "(not (member (mkTuple _x1 _x3 ) this_Book_addr))))))))))\n";
 
-        assertEquals(expected + getSuffix(3), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -86,7 +86,7 @@ class RelationTests extends TestBase
                                                     "(and (member (mkTuple _x2 ) this_Addr) " +
                                                         "(member (mkTuple _x1 _x2 ) this_Book_addr))))))\n";
 
-        assertEquals(expected + getSuffix(2), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -105,7 +105,7 @@ class RelationTests extends TestBase
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product this_Book this_Addr)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Test
@@ -126,7 +126,7 @@ class RelationTests extends TestBase
                 "(assert (subset this_Book_addr (product this_Book this_Addr)))\n" +
                 "(assert (forall ((_x1 Atom)) (=> (member (mkTuple _x1 ) this_Book) (or (forall ((_x2 Atom)) (=> (member (mkTuple _x2 ) this_Addr) (not (member (mkTuple _x1 _x2 ) this_Book_addr)))) (exists ((_x3 Atom)) (and (member (mkTuple _x3 ) this_Addr) (and (member (mkTuple _x1 _x3 ) this_Book_addr) (forall ((_x4 Atom)) (=> (and (member (mkTuple _x4 ) this_Addr) (not (= _x4 _x3))) (not (member (mkTuple _x1 _x4 ) this_Book_addr)))))))))))\n";
 
-        assertEquals(expected + getSuffix(4), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Disabled
@@ -147,7 +147,7 @@ class RelationTests extends TestBase
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Disabled
@@ -168,7 +168,7 @@ class RelationTests extends TestBase
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Disabled
@@ -189,7 +189,7 @@ class RelationTests extends TestBase
                 "(declare-fun this_Book () (Set (Tuple Atom )))\n" +
                 "(declare-fun this_Book_addr () (Set (Tuple Atom Atom Atom )))\n" +
                 "(assert (subset this_Book_addr (product (product this_Book this_Name) this_Addr)))\n";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 
     @Disabled
@@ -267,6 +267,6 @@ class RelationTests extends TestBase
 
         String actual = Utils.translateFromString(input);
         String expected = "?";
-        assertEquals(expected + getSuffix(0), actual);
+        assertEquals(expected + getSuffix(), actual);
     }
 }
