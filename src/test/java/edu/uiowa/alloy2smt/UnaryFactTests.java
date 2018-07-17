@@ -300,11 +300,15 @@ class UnaryFactTests extends TestBase
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_A_r () (Set (Tuple Atom Atom )))\n" +
-                        "(assert (subset this_A_r (product this_A this_A)))\n" +
-                        "; f\n" +
-                        "(assert (exists ((_x1 Atom)(_x2 Atom)) (member (mkTuple _x1 _x2 ) (tclosure this_A_r))))\n";
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A_r1 () (Set (Tuple Atom Atom )))\n" +
+                "(declare-fun this_A_r2 () (Set (Tuple Atom Atom )))\n" +
+                "(assert (subset this_A_r1 (product this_A this_A)))\n" +
+                "(assert (subset this_A_r2 (product this_A this_A)))\n" +
+                "; f\n" +
+                "(assert (exists ((_x1 Atom)(_x2 Atom)) " +
+                        "(member (mkTuple _x1 _x2 ) " +
+                        "(tclosure (join this_A_r1 this_A_r2)))))\n";
         assertEquals(expected + getSuffix(), actual);
     }
 
@@ -318,12 +322,12 @@ class UnaryFactTests extends TestBase
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
-                        "(assert (subset this_B_r (product this_B this_A)))\n" +
-                        "; f\n" +
-                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_A_r () (Set (Tuple Atom Atom )))\n" +
+                "(assert (subset this_A_r (product this_A this_A)))\n" +
+                "; f\n" +
+                "(assert (exists ((_x1 Atom)(_x2 Atom)) " +
+                        "(member (mkTuple _x1 _x2 ) (union (tclosure this_A_r) identity))))\n";
         assertEquals(expected + getSuffix(), actual);
     }
 
@@ -333,17 +337,22 @@ class UnaryFactTests extends TestBase
     {
         String input =
                 "sig A {r1 : set A, r2: set A}\n" +
-                "fact f { some ^(r1.r2)}";
+                "fact f { some *(r1.r2)}";
 
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B_r () (Set (Tuple Atom Atom )))\n" +
-                        "(assert (subset this_B_r (product this_B this_A)))\n" +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                        "(declare-fun this_A_r1 () (Set (Tuple Atom Atom )))\n" +
+                        "(declare-fun this_A_r2 () (Set (Tuple Atom Atom )))\n" +
+                        "(assert (subset this_A_r1 (product this_A this_A)))\n" +
+                        "(assert (subset this_A_r2 (product this_A this_A)))\n" +
                         "; f\n" +
-                        "(assert (exists ((_x1 Atom)) (member (mkTuple _x1 ) (join (transpose this_B_r) this_B))))\n";
+                        "(assert " +
+                            "(exists ((_x1 Atom)(_x2 Atom)) " +
+                                "(member " +
+                                    "(mkTuple _x1 _x2 ) " +
+                                    "(union (tclosure (join this_A_r1 this_A_r2)) identity))))\n";
         assertEquals(expected + getSuffix(), actual);
     }
 }

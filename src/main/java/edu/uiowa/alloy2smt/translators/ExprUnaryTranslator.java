@@ -54,7 +54,9 @@ public class ExprUnaryTranslator
 
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
-        throw new UnsupportedOperationException();
+        Expression          closure             = translateClosure(exprUnary, variablesScope);
+        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, exprTranslator.translator.identity.getConstantExpr());
+        return reflexiveClosure;
     }
 
     private Expression translateTranspose(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
