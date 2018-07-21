@@ -38,11 +38,19 @@ public class ExprUnaryTranslator
             case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);
             case CLOSURE    : return translateClosure(exprUnary, variablesScope);
             case RCLOSURE   : return translateReflexiveClosure(exprUnary, variablesScope);
+            case NOT        : return translateNot(exprUnary, variablesScope);
             default:
             {
                 throw new UnsupportedOperationException("Not supported yet");
             }
         }
+    }
+
+    private Expression translateNot(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression expression   = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression not          = new UnaryExpression(UnaryExpression.Op.NOT, expression);
+        return not;
     }
 
     private Expression translateClosure(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)

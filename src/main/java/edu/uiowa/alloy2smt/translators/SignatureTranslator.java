@@ -13,6 +13,7 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SignatureTranslator
 {
@@ -31,7 +32,7 @@ public class SignatureTranslator
         for (Sig sig: translator.topLevelSigs)
         {
             Sig.PrimSig primSig = (Sig.PrimSig) sig;
-            translateDisjointSignatures(primSig);
+            translateDisjointSignatures(primSig.children().makeCopy().stream().map(p -> (Sig) p).collect(Collectors.toList()));
             if(primSig.isAbstract != null)
             {
                 SafeList<Sig.PrimSig> children = primSig.children();
@@ -63,20 +64,20 @@ public class SignatureTranslator
         }
     }
 
-    private void translateDisjointSignatures(Sig.PrimSig primSig)
+    private void translateDisjointSignatures(List<Sig> signatures)
     {
-        for (int i = 0; i < primSig.children().size(); i++)
+        for (int i = 0; i < signatures.size(); i++)
         {
-            Expression      left    = translator.signaturesMap.get(primSig.children().get(i)).getConstantExpr();
+            Expression      left    = translator.signaturesMap.get(signatures.get(i)).getConstantExpr();
 
-            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.signaturesMap.get(primSig.children().get(i)).getSort());
+            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.signaturesMap.get(signatures.get(i)).getSort());
 
-            for (int j = i + 1 ; j < primSig.children().size(); j++)
+            for (int j = i + 1 ; j < signatures.size(); j++)
             {
-                Expression          right       = translator.signaturesMap.get(primSig.children().get(j)).getConstantExpr();
+                Expression          right       = translator.signaturesMap.get(signatures.get(j)).getConstantExpr();
                 BinaryExpression    disjoint    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
-
                 BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, emptySet);
+
                 translator.smtProgram.addAssertion(new Assertion(equality));
             }
         }
@@ -130,6 +131,10 @@ public class SignatureTranslator
                 this.fieldTranslator.translate(field);
             }
         });
+
+        //ToDo: important review the logic for cardinality in the case of
+        // top level signatures and the case of subset signatures.
+        //translateDisjointSignatures(translator.topLevelSigs);
     }
 
     private void translateSignatureOneMultiplicity(Sig sig)

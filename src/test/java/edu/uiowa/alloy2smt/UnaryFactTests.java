@@ -355,4 +355,31 @@ class UnaryFactTests extends TestBase
                                     "(union (tclosure (join this_A_r1 this_A_r2)) identity))))\n";
         assertEquals(expected + getSuffix(), actual);
     }
+
+    @Test
+    public void not()
+    {
+        String input =
+                "sig A,B {}\n" +
+                "fact f{not (#B < 2 or # A < 2)}";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S2 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(declare-const _a3 (Tuple Atom ))\n" +
+                "(declare-const _a4 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "(assert (distinct _a3 _a4 ))\n" +
+                "(assert (= _S2 (insert _a3 (singleton _a4) )))\n" +
+                "; f\n" +
+                "(assert (not (or (and (subset this_B _S1) (not (= this_B _S1))) (and (subset this_A _S2) (not (= this_A _S2))))))\n" ;
+        assertEquals(expected + getSuffix(), actual);
+    }
 }
