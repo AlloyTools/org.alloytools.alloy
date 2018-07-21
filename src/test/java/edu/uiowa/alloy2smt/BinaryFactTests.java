@@ -754,4 +754,31 @@ class BinaryFactTests extends TestBase
                 "(assert (and (and (= this_B _S1) (= this_A _S2)) (= (join (product this_B (product this_A this_B)) this_B) this_B_r)))\n";
         assertEquals(expected + getSuffix(), actual);
     }
+
+    @Test
+    public void or1()
+    {
+        String input =
+                "sig A,B {}\n" +
+                "fact f{#B = 2 or # A = 2 }";
+
+        String actual = Utils.translateFromString(input);
+        String expected =
+                prefix +
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "(declare-fun this_B () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
+                "(declare-fun _S2 () (Set (Tuple Atom )))\n" +
+                "(declare-const _a1 (Tuple Atom ))\n" +
+                "(declare-const _a2 (Tuple Atom ))\n" +
+                "(declare-const _a3 (Tuple Atom ))\n" +
+                "(declare-const _a4 (Tuple Atom ))\n" +
+                "(assert (distinct _a1 _a2 ))\n" +
+                "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
+                "(assert (distinct _a3 _a4 ))\n" +
+                "(assert (= _S2 (insert _a3 (singleton _a4) )))\n" +
+                "; f\n" +
+                "(assert (or (= this_B _S1) (= this_A _S2)))\n" ;
+        assertEquals(expected + getSuffix(), actual);
+    }
 }

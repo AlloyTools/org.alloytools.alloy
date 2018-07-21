@@ -49,6 +49,11 @@ public class ExprTranslator
             return translateExprConstant((ExprConstant) expr, variablesScope);
         }
 
+        if(expr instanceof ExprList)
+        {
+            return translateExprList((ExprList) expr, variablesScope);
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -75,6 +80,7 @@ public class ExprTranslator
         switch (exprList.op)
         {
             case AND    : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
+            case OR    : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
             default     : throw new UnsupportedOperationException();
         }
     }
