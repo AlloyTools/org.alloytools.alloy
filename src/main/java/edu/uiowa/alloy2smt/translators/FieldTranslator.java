@@ -111,7 +111,7 @@ public class FieldTranslator
             case SOME_ARROW_LONE    :
             case ONE_ARROW_ANY      :
             case ONE_ARROW_SOME     :
-            case ONE_ARROW_ONE      : translateOneArrowOne(field, declaration, index);
+            case ONE_ARROW_ONE      : translateOneArrowOne(field, declaration, index); break;
             case ONE_ARROW_LONE     :
             case LONE_ARROW_ANY     :
             case LONE_ARROW_SOME    :
@@ -136,45 +136,8 @@ public class FieldTranslator
 
     private void translateOneArrowOne(Sig.Field field, FunctionDeclaration declaration, int index)
     {
-        //(assert
-        //	(forall ((x1 Atom) (x2 Atom) ... (xn Atom))
-        //		(=> and (
-        //                  (member (mkTuple x1) Set1)
-        //                  (member (mkTuple x2) Set2)
-        //                          ⋮
-        //                  (member (mkTuple xi-1) Seti-1)
-        //                          ⋮
-        //                  (member (mkTuple xi+1) Seti+1)
-        //                  (member (mkTuple xn) Setn)
-        //          (and
-        //			    (exists ((xi Atom))
-        //				    (and
-        //					    (member (mkTuple xi) Seti)
-        //					    (member (mkTuple x1 ... xn) addr)
-        //					    (forall ((z Atom))
-        //						    (=> (and 	(member (mkTuple z) Seti)
-        //									    (not (= z xi)))
-        //							    (not (member (mkTuple x1 x2 ... xi-1 z xi+1 xn) addr))
-        //						    )
-        //					    )
-        //				    )
-        //			    )
-        //			    (exists ((xi+1 Atom))
-        //				    (and
-        //					    (member (mkTuple xi+1) Seti+1)
-        //					    (member (mkTuple x1 ... xn) addr)
-        //					    (forall ((z Atom))
-        //						    (=> (and 	(member (mkTuple z) Seti+1)
-        //									    (not (= z xi+1)))
-        //							    (not (member (mkTuple x1 x2 ... xi z xi+2 xn) addr))
-        //						    )
-        //					    )
-        //				    )
-        //			    )
-        //          )
-        //		)
-        //	)
-        //)
+
+        throw new UnsupportedOperationException();
     }
 
     private void translateRelationSomeMultiplicity(Sig.Field field, FunctionDeclaration declaration, ExprUnary exprUnary)

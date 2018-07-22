@@ -156,9 +156,9 @@ class RelationTests extends TestBase
     {
 
         String input =
-                "sig Name, Addr {}\n" +
-                "sig Book {\n" +
-                "addr: Name one -> one Addr one -> one Book}";
+                "sig A, B, C {}\n" +
+                "sig D {\n" +
+                "r: A one -> one B one -> one C}";
 
         String actual = Utils.translateFromString(input);
         String expected =
