@@ -768,11 +768,10 @@ public final class OurSyntaxWidget {
         }
         this.filename = Util.canon(filename); // a new file's canonical name may
                                              // change
-        try{
-            fileModifiedDate = Util.getModifiedDate(this.filename);
-        }catch(Exception e){
+        fileModifiedDate = Util.getModifiedDate(this.filename);
+        if (fileModifiedDate == 0)
             fileModifiedDate = new Date().getTime();
-        }
+        
         modified = false;
         isFile = true;
         listeners.fire(this, Event.STATUS_CHANGE);
