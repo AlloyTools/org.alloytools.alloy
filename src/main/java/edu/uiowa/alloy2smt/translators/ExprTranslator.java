@@ -122,7 +122,8 @@ public class ExprTranslator
 
         switch (exprQt.op)
         {
-            case ALL: return  translateAllQuantifier(boundVariables, expression);
+            case ALL    : return  translateAllQuantifier(boundVariables, expression);
+            case SOME   : return  translateSomeQuantifier(boundVariables, expression);
             default: throw new UnsupportedOperationException();
         }
     }
@@ -153,6 +154,34 @@ public class ExprTranslator
         QuantifiedExpression quantifiedExpression = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), expression);
         return quantifiedExpression;
     }
+
+    private QuantifiedExpression translateSomeQuantifier(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+    {
+        if(boundVariables.size() == 1)
+        {
+            BinaryExpression member = getMemberExpression(boundVariables, 0);
+            expression              = new BinaryExpression(member, BinaryExpression.Op.AND, expression);
+        }
+        else if (boundVariables.size() > 1)
+        {
+            Expression member1 = getMemberExpression(boundVariables, 0);
+            Expression member2 = getMemberExpression(boundVariables, 1);
+
+            BinaryExpression and = new BinaryExpression(member1, BinaryExpression.Op.AND, member2);
+
+            for(int i = 2; i < boundVariables.size(); i++)
+            {
+                Expression member   = getMemberExpression(boundVariables, i);
+                and                 = new BinaryExpression(and, BinaryExpression.Op.AND, member);
+            }
+
+            expression              = new BinaryExpression(and, BinaryExpression.Op.AND, expression);
+        }
+
+        QuantifiedExpression quantifiedExpression = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new ArrayList<>(boundVariables.keySet()), expression);
+        return quantifiedExpression;
+    }
+
 
     private BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, int index)
     {
