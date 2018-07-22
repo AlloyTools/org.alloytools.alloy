@@ -38,6 +38,7 @@ public class Alloy2SMTTranslator
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
     final UnaryExpression           universe;
+    final UnaryExpression           none;
     final FunctionDeclaration       identity;
 
     Map<Sig,FunctionDeclaration>        signaturesMap   = new HashMap<>();
@@ -60,6 +61,7 @@ public class Alloy2SMTTranslator
         this.signatureTranslator    = new SignatureTranslator(this);
         this.exprTranslator         = new ExprTranslator(this);
         this.universe               = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort);
+        this.none                   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort);
         this.identity               = new FunctionDeclaration("identity", setOfBinaryAtomSort );
     }
 

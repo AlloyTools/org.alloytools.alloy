@@ -388,25 +388,14 @@ class UnaryFactTests extends TestBase
     {
         String input =
                 "sig A{}\n" +
-                        "fact f{A != none}";
+                "fact f{A != none}";
 
         String actual = Utils.translateFromString(input);
         String expected =
                 prefix +
-                        "(declare-fun this_A () (Set (Tuple Atom )))\n" +
-                        "(declare-fun this_B () (Set (Tuple Atom )))\n" +
-                        "(declare-fun _S1 () (Set (Tuple Atom )))\n" +
-                        "(declare-fun _S2 () (Set (Tuple Atom )))\n" +
-                        "(declare-const _a1 (Tuple Atom ))\n" +
-                        "(declare-const _a2 (Tuple Atom ))\n" +
-                        "(declare-const _a3 (Tuple Atom ))\n" +
-                        "(declare-const _a4 (Tuple Atom ))\n" +
-                        "(assert (distinct _a1 _a2 ))\n" +
-                        "(assert (= _S1 (insert _a1 (singleton _a2) )))\n" +
-                        "(assert (distinct _a3 _a4 ))\n" +
-                        "(assert (= _S2 (insert _a3 (singleton _a4) )))\n" +
-                        "; f\n" +
-                        "(assert (not (or (and (subset this_B _S1) (not (= this_B _S1))) (and (subset this_A _S2) (not (= this_A _S2))))))\n" ;
+                "(declare-fun this_A () (Set (Tuple Atom )))\n" +
+                "; f\n" +
+                "(assert (not (= this_A (as emptyset (Set (Tuple Atom ))))))\n" ;
         assertEquals(expected + getSuffix(), actual);
     }
 

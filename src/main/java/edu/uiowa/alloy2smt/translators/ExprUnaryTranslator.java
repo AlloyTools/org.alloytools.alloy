@@ -86,7 +86,7 @@ public class ExprUnaryTranslator
                 {
                     case "univ": return exprTranslator.translator.universe;
                     case "iden": return exprTranslator.translator.identity.getConstantExpr();
-                    //case "none": return exprTranslator.translator.none;
+                    case "none": return exprTranslator.translator.none;
                     default:
                         throw new UnsupportedOperationException();
                 }
