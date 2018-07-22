@@ -62,8 +62,9 @@ public class ExprTranslator
         switch (expr.op)
         {
 
-            case NUMBER: return new IntConstant(expr.num); // allay only  supports integers
-                default: throw new UnsupportedOperationException();
+            case NUMBER : return new IntConstant(expr.num); // alloy only  supports integers
+            case IDEN   : return translator.identity.getConstantExpr();
+            default: throw new UnsupportedOperationException();
         }
     }
 

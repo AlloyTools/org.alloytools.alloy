@@ -79,7 +79,22 @@ public class ExprUnaryTranslator
     {
         if(exprUnary.sub instanceof Sig)
         {
-            return exprTranslator.translator.signaturesMap.get(exprUnary.sub).getConstantExpr();
+            // alloy built in signatures include: univ, none, iden
+            if(((Sig) exprUnary.sub).builtin)
+            {
+                switch (((Sig) exprUnary.sub).label)
+                {
+                    case "univ": return exprTranslator.translator.universe;
+                    case "iden": return exprTranslator.translator.identity.getConstantExpr();
+                    //case "none": return exprTranslator.translator.none;
+                    default:
+                        throw new UnsupportedOperationException();
+                }
+            }
+            else
+            {
+                return exprTranslator.translator.signaturesMap.get(exprUnary.sub).getConstantExpr();
+            }
         }
 
         if(exprUnary.sub instanceof Sig.Field)
