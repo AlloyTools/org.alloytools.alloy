@@ -302,6 +302,15 @@ public final class Util {
         return convertLineBreak(ans);
     }
 
+    /** 
+     * Returns the modified date of the given file
+     * (If filename begins with Util.jarPrefix() returns 0) 
+     */
+    public static long getModifiedDate(String filename){
+        boolean fromJar = filename.startsWith(jarPrefix());
+        return fromJar ? 0 : new File(filename).lastModified(); 
+    }
+
     /**
      * Open then overwrite the file with the given content; throws Err if an error
      * occurred.

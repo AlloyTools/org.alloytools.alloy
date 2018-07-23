@@ -26,6 +26,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Objects;
 
 import javax.swing.AbstractAction;
@@ -92,6 +93,11 @@ public final class OurSyntaxWidget {
      * event)
      */
     private String                          filename  = "";
+
+    /**
+     * the file modification date for the file loaded. If no file is loaded (!isFile), this must be -1.
+     */
+    private long                            fileModifiedDate = -1;
 
     /**
      * Whether this JTextPane has been modified since last load/save (changes will
@@ -685,6 +691,7 @@ public final class OurSyntaxWidget {
         for (int i = 1;; i++)
             if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".als")))
                 break;
+        fileModifiedDate = -1;
         pane.setText("");
         clearUndo();
         modified = false;
@@ -701,6 +708,7 @@ public final class OurSyntaxWidget {
         String x;
         try {
             x = Util.readAll(filename);
+            fileModifiedDate = Util.getModifiedDate(filename);
         } catch (Throwable ex) {
             OurDialog.alert("Error reading the file \"" + filename + "\"");
             return false;
@@ -728,6 +736,7 @@ public final class OurSyntaxWidget {
         String t;
         try {
             t = Util.readAll(filename);
+            fileModifiedDate = Util.getModifiedDate(filename);
         } catch (Throwable ex) {
             OurDialog.alert("Cannot read \"" + filename + "\"");
             return;
@@ -759,6 +768,10 @@ public final class OurSyntaxWidget {
         }
         this.filename = Util.canon(filename); // a new file's canonical name may
                                              // change
+        fileModifiedDate = Util.getModifiedDate(this.filename);
+        if (fileModifiedDate == 0)
+            fileModifiedDate = new Date().getTime();
+        
         modified = false;
         isFile = true;
         listeners.fire(this, Event.STATUS_CHANGE);
@@ -782,6 +795,14 @@ public final class OurSyntaxWidget {
             if (f.exists() && !OurDialog.askOverwrite(n))
                 return false;
         }
+
+        if (isFile && n.equals(this.filename) && Util.getModifiedDate(this.filename) > fileModifiedDate) {
+            if (!OurDialog.yesno("The file has been modified outside the editor.\n" +
+                                 "Do you want to overwrite it anyway?")) {
+                return false;
+            }
+        }
+        
         if (saveAs(n, bannedNames)) {
             Util.setCurrentDirectory(new File(filename).getParentFile());
             return true;
