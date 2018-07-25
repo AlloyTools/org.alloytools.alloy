@@ -1,9 +1,10 @@
-package org.alloytools.alloy.classic.provider;
+package org.alloytools.alloy.classic.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.alloytools.alloy.classic.provider.AlloyClassicFacade;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.AlloyModule;
 import org.alloytools.alloy.core.api.TField;
@@ -68,9 +69,10 @@ public class AlloyImplTest {
 		Alloy ai = new AlloyClassicFacade();
 		AlloyModule module = ai.compiler().compileSource(//
 				"pred foo[x, y, z: Int] {" //
+						+ " x < 5 and y < 5\n" //
 						+ " x.add[y] = z and x > y and z < x" //
 						+ "} "//
-						+ "run foo for 4 int");
+						+ "run foo for 5 int");
 
 		AlloySolver solver = ai.getSolvers().get(0);
 
