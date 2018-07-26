@@ -27,4 +27,8 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
 	@${repo;org.sat4j.core}, \
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
+	@${repo;org.eclipse.lsp4j}, \
+	@${repo;org.eclipse.lsp4j.jsonrpc}, \
+	@${repo;com.google.gson}, \
+	@${repo;org.eclipse.equinox.common}, \
 	LICENSES

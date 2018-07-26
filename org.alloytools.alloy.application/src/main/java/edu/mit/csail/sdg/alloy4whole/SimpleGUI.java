@@ -72,7 +72,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,6 +86,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.swing.Action;
 import javax.swing.Box;
@@ -122,6 +126,11 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
 import org.alloytools.alloy.core.AlloyCore;
+import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.launch.LSPLauncher;
+import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageServer;
 
 //import com.apple.eawt.Application;
 //import com.apple.eawt.ApplicationAdapter;
@@ -1903,12 +1912,68 @@ public final class SimpleGUI implements ComponentListener, Listener {
     };
 
     // ====== Main Method ====================================================//
+    public static void main(final String[] args) throws Exception {
+        if (args.length > 0 && args[0].equals("ls")) {
+            System.out.println("######## Alloy Language Server Requested!#####");
+            launchLanguageServer();
+        } else {
+            mainOld(args);
+        }
+    }
 
+    private static void launchLanguageServer() throws Exception {
+        //AlloyLS ls;
+
+        //Thread.sleep(10000);
+        ServerSocket serverSocket = new ServerSocket(5000);
+        System.out.println("listening on port " + serverSocket.getLocalPort());
+
+        while (true) {
+            try (Socket socket = serverSocket.accept()) {
+                AlloyLanguageServer langserv = new AlloyLanguageServer();
+                System.out.println("connected!");
+
+                InputStream inputStream = socket.getInputStream();
+                OutputStream outputStream = socket.getOutputStream();
+
+
+                //InputStream inputStream = System.in;
+                //OutputStream outputStream = System.out;
+
+                Launcher<AlloyLanguageClient> launcher = createServerLauncher(langserv, AlloyLanguageClient.class, inputStream, outputStream);
+                System.out.println("Starting Alloy Language Server!");
+                langserv.connect(launcher.getRemoteProxy());
+                Future<Void> res = launcher.startListening();
+                System.out.println("Alloy Language Server Started!");
+                res.get();
+
+                System.out.println("########Exited Alloy Language Server!");
+            } catch (Throwable ex) {
+                System.out.println(ex.toString());
+            }
+        }
+    }
+
+	/**
+	 * Create a new Launcher for a language server and an input and output stream.
+	 * 
+	 * @param server - the server that receives method calls from the remote client
+	 * @param in - input stream to listen for incoming messages
+	 * @param out - output stream to send outgoing messages
+	 */
+	public static <TLangClient extends LanguageClient> Launcher<TLangClient> createServerLauncher(LanguageServer server, Class<? extends TLangClient> clientType, InputStream in, OutputStream out) {
+		return new Builder<TLangClient>()
+				.setLocalService(server)
+				.setRemoteInterface(clientType)
+				.setInput(in)
+				.setOutput(out)
+				.create();
+	}
     /**
      * Main method that launches the program; this method might be called by an
      * arbitrary thread.
      */
-    public static void main(final String[] args) throws Exception {
+    public static void mainOld(final String[] args) throws Exception {
 
         List<String> remainingArgs = new ArrayList<>();
 

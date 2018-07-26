@@ -60,6 +60,23 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.5</version>
 		</dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
+			<version>0.4.1</version>
+			<!-- <type>pom</type> -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
+			<version>0.4.1</version>
+			<!-- <type>pom</type> -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.equinox</groupId>
+			<artifactId>org.eclipse.equinox.common</artifactId>
+			<version>3.6.0</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
