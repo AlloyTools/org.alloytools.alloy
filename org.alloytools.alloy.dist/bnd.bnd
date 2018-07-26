@@ -26,4 +26,8 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 	@${repo;org.alloytools.kodkod.nativesat.x86-mac}, \
 	@${repo;org.alloytools.kodkod.nativesat.x86-windows}, \
 	@${repo;org.sat4j.core}, \
+	@${repo;org.eclipse.lsp4j}, \
+	@${repo;org.eclipse.lsp4j.jsonrpc}, \
+	@${repo;com.google.gson}, \
+	@${repo;org.eclipse.equinox.common}, \
 	LICENSES

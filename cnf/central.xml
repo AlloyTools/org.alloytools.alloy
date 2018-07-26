@@ -34,6 +34,24 @@
 			<artifactId>java-cup</artifactId>
 			<version>11b-20160615</version>
 		</dependency>
+		<dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
+			<version>0.4.1</version>
+			<!-- <type>pom</type> -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
+			<version>0.4.1</version>
+			<!-- <type>pom</type> -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.equinox</groupId>
+			<artifactId>org.eclipse.equinox.common</artifactId>
+			<version>3.6.0</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
