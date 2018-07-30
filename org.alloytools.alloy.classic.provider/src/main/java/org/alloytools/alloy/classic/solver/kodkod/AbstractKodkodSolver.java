@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.alloytools.alloy.classic.provider.AlloyModuleClassic;
 import org.alloytools.alloy.classic.provider.Atom;
@@ -118,20 +119,26 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
             public Iterator<AlloyInstance> iterator() {
                 return new Iterator<AlloyInstance>() {
 
-                    A4Solution solution = ai;
-                    boolean    first    = true;
-
+                    A4Solution nextSolution = ai;
+                    boolean	first= true;
+                    
                     @Override
                     public boolean hasNext() {
-                        if (!first) {
-                            solution = solution.next();
-                        }
-                        return solution.satisfiable();
+                        return nextSolution.satisfiable();
                     }
 
                     @Override
                     public AlloyInstance next() {
-                        first = false;
+                    	
+                    	if ( !hasNext())
+                    		throw new NoSuchElementException("No instance available");
+                    	
+                    	A4Solution solution = this.nextSolution;
+                    	if ( !first) {
+                    		this.nextSolution = solution.next();
+                    	} else
+                    		first = false;
+                    	
                         return new AlloyInstance() {
 
                             @Override
