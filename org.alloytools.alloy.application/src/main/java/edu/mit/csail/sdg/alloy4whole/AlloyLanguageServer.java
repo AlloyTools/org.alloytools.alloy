@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -39,6 +40,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alloytools.alloy.core.AlloyCore;
 import org.eclipse.core.runtime.URIUtil;
@@ -89,8 +91,13 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import com.google.gson.JsonPrimitive;
+
+import edu.mit.csail.sdg.alloy4.A4Reporter;
+import edu.mit.csail.sdg.alloy4.Computer;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
@@ -102,19 +109,33 @@ import edu.mit.csail.sdg.alloy4.Runner;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
+import edu.mit.csail.sdg.alloy4.XMLNode;
 import edu.mit.csail.sdg.alloy4.WorkerEngine.WorkerCallback;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Verbosity;
+import edu.mit.csail.sdg.alloy4whole.AlloyLanguageClient.CommandsListResult;
+import edu.mit.csail.sdg.alloy4whole.AlloyLanguageClient.CommandsListResultItem;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
+import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
+import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
+import edu.mit.csail.sdg.sim.SimInstance;
+import edu.mit.csail.sdg.sim.SimTuple;
+import edu.mit.csail.sdg.sim.SimTupleset;
 import edu.mit.csail.sdg.translator.A4Options;
+import edu.mit.csail.sdg.translator.A4Solution;
+import edu.mit.csail.sdg.translator.A4SolutionReader;
+import edu.mit.csail.sdg.translator.A4Tuple;
+import edu.mit.csail.sdg.translator.A4TupleSet;
+import kodkod.engine.fol2sat.HigherOrderDeclException;
 
 import static edu.mit.csail.sdg.alloy4whole.Lsp4jUtil.*;
 
@@ -300,10 +321,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		return CompletableFuture.completedFuture(null);
 	}
 
-	@Override
-	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-
-		String uri = params.getTextDocument().getUri();
+	List<Pair<edu.mit.csail.sdg.ast.Command,Command>> getCommands(String uri) {
 		String text = fileContents.get(uri);
 		CompModule module;
 		try {
@@ -323,11 +341,11 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 			latestFileUrisWithSyntaxError.add(uri);
 			client.publishDiagnostics(diagnosticsParams );
 			
-			return CompletableFuture.completedFuture(Arrays.asList());
+			return Arrays.asList();
 		}
 		ConstList<edu.mit.csail.sdg.ast.Command> commands = module.getAllCommands();
 		
-		ArrayList<CodeLens> res = new ArrayList<>();
+		ArrayList<Pair<edu.mit.csail.sdg.ast.Command,Command>> res = new ArrayList<>();
 
 		for (int i = 0; i < commands.size(); i++) {
 			edu.mit.csail.sdg.ast.Command command = commands.get(i);
@@ -339,13 +357,48 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 					Arrays.asList(uri, i, position.getLine(), position.getCharacter()));
 			codeLens.setCommand(vsCommand);
 
-			res.add(codeLens);
+			res.add(new Pair<>(command, vsCommand) );
 		}
+		
 		if (latestFileUrisWithSyntaxError.contains(uri)) {
 			client.publishDiagnostics(newPublishDiagnosticsParams(uri, Arrays.asList()));
 			latestFileUrisWithSyntaxError.remove(uri);
 		}
+		return res;
+	}
+	
+	@Override
+	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
+
+		String uri = params.getTextDocument().getUri();
+				
+		List<CodeLens> res = getCommands(uri).stream().map(pair -> {
+			edu.mit.csail.sdg.ast.Command command = pair.a;
+			Command vsCommand = pair.b;
+			
+			Position position = posToPosition(command.pos);
+			CodeLens codeLens = new CodeLens();
+			//codeLens.setRange(createRange(position, position));
+			codeLens.setRange(createRangeFromPos(command.pos));
+			codeLens.setCommand(vsCommand);
+			
+			return codeLens;
+		}).collect(Collectors.toList());
+		
+
 		return CompletableFuture.completedFuture(res);
+	}
+	
+	@JsonRequest
+	public CompletableFuture<Void> ListAlloyCommands(JsonPrimitive documentUri){
+		System.out.println("ListAlloyCommands called with " + documentUri +", of type " + documentUri.getClass().getName() );
+		List<CommandsListResultItem> res = 
+				getCommands(documentUri.getAsString()).stream()
+				.map( pair -> new CommandsListResultItem(pair.a.toString() , pair.b))
+				.collect(Collectors.toList());
+
+		client.commandsListResult(new CommandsListResult(res));
+		return CompletableFuture.completedFuture(null);
 	}
 	
 	final Set<String> latestFileUrisWithSyntaxError = new HashSet<>();
@@ -367,10 +420,10 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 
 		edu.mit.csail.sdg.ast.Command command = commands.stream()
 				.filter(comm -> comm.pos().y == pos.y && comm.pos.x == pos.x).findFirst().orElse(null);
-		if (command != null) {
+		if (command != null || ind == -1) {
 			// System.out.println("ExecuteAlloyCommand() called with " + position);
-			MessageParams messageParams = new MessageParams();
-			messageParams.setMessage("executing " + command.label);
+			//MessageParams messageParams = new MessageParams();
+			//messageParams.setMessage("executing " + command.label);
 			//client.showMessage(messageParams);
 
 			res.thenRunAsync(() -> doRun(uri, ind));
@@ -379,6 +432,53 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		}
 
 		return res;
+	}
+	
+	void ExecuteAlloyCommands(List<ExecuteAlloyCommandParams> params) {
+		if(params.size() == 0) return;
+		String uri = params.get(0).uri;
+		CompletableFuture<Void> res = CompletableFuture.completedFuture(null);
+		CompModule module = CompUtil.parseOneModule(fileContents.get(uri));
+		ConstList<edu.mit.csail.sdg.ast.Command> commands = module.getAllCommands();
+
+		
+		for(ExecuteAlloyCommandParams execCmd : params) {
+			
+			if(!execCmd.uri.equals(uri)) {
+				System.err.println("command from a different file!");
+				continue;
+			}
+	
+			Position position = new Position(execCmd.line, execCmd.character);
+			Pos pos = positionToPos(position);
+	
+	
+			edu.mit.csail.sdg.ast.Command command = commands.stream()
+					.filter(comm -> comm.pos().y == pos.y && comm.pos.x == pos.x).findFirst().orElse(null);
+			if (command != null) {
+				// System.out.println("ExecuteAlloyCommand() called with " + position);
+				MessageParams messageParams = new MessageParams();
+				messageParams.setMessage("executing " + command.label);
+				//client.showMessage(messageParams);
+	
+				doRun(execCmd.uri, execCmd.index);
+			} else {
+				System.err.println("no matching command found");
+			}
+		}
+	}
+	public class ExecuteAlloyCommandParams{
+		public String uri;
+		public int index;
+		public int line;
+		public int character;
+		
+		public ExecuteAlloyCommandParams(String uri, int index, int line, int character) {
+			this.uri = uri;
+			this.index = index;
+			this.line = line;
+			this.character = character;
+		}	
 	}
 	
 	@JsonRequest
@@ -401,20 +501,6 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		return CompletableFuture.completedFuture(null);
 	}
 	
-	@JsonRequest
-	public CompletableFuture<Void> ListAlloyCommands(com.google.gson.JsonPrimitive documentUri){
-		CodeLensParams params = new CodeLensParams();
-		TextDocumentIdentifier textDocument = new TextDocumentIdentifier();
-		textDocument.setUri(documentUri.getAsString());
-		params.setTextDocument(textDocument );
-		List<? extends CodeLens> codeLensRes = uncheckedRun( () -> codeLens(params).get());
-		codeLensRes.stream().map( codeLens -> {
-			return codeLens.getCommand().getArguments();
-		});
-		
-		return null;
-	}
-
 
 	static Pos positionToPos(Position position) {
 		return positionToPos(position, null);
@@ -555,6 +641,8 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 	}
 	
 	private Collection<String> fileUrisOfLastPublishedDiagnostics = null;
+	private String newInstance;
+	private VizGUI viz;
 	// edu.mit.csail.sdg.alloy4whole.SimpleGUI.doRun(Integer)
 	private void doRun(String fileURI, Integer commandIndex) {
 		CompModule module = CompUtil.parseOneModule(fileContents.get(fileURI));
@@ -614,79 +702,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 			if (newmem != subMemoryNow || newstack != subStackNow)
 				WorkerEngine.stop();
 
-			List<Err> warnings = new ArrayList<>();
-			WorkerCallback cb = new WorkerCallback() {
-
-				@Override
-				public void callback(Object msg) {
-
-					// MessageParams messageParams= new MessageParams();
-					// messageParams.setMessage(solverCallbackMsgToString(msg));
-					// client.showMessage(messageParams);
-//					if(messageParams.getMessage() != null && !messageParams.getMessage().isEmpty())
-//						client.showAlloyOutput(messageParams);
-
-					Either<List<AlloyLSMessage>, Err> alloyMsgOrWarning =
-							solverCallbackMsgToAlloyMsg(msg);
-
-					if (alloyMsgOrWarning.isLeft()) {
-						for(AlloyLSMessage alloyMsg :alloyMsgOrWarning.getLeft()) {
-							if (alloyMsg.message != null && !alloyMsg.message.isEmpty())
-								client.showExecutionOutput(alloyMsg);
-						}
-
-					} else {
-						warnings.add(alloyMsgOrWarning.getRight());
-					}
-				}
-
-				@Override
-				public void done() {
-					// MessageParams messageParams= new MessageParams();
-					// messageParams.setMessage("done");
-					// client.showMessage(messageParams);
-					// client.showAlloyOutput(messageParams);
-					if(warnings.size() > 0)
-						client.showExecutionOutput(
-							new AlloyLSMessage(AlloyLSMessageType.RunResult, "There were errors/warnings!"));
-					
-					client.showExecutionOutput(new AlloyLSMessage(AlloyLSMessageType.RunCompleted, ""));
-					
-					publishDiagnostics();
-				}
-
-				@Override
-				public void fail() {
-					AlloyLSMessage alloyMsg = new AlloyLSMessage(
-							AlloyLSMessageType.RunCompleted, "failure");
-					client.showExecutionOutput(alloyMsg);
-					publishDiagnostics();
-				}
-				
-				void publishDiagnostics() {
-					
-					//cleaning previously reported diagnostics
-					if(fileUrisOfLastPublishedDiagnostics != null)
-						fileUrisOfLastPublishedDiagnostics.stream().forEach(item -> {
-							PublishDiagnosticsParams diagnostics = new PublishDiagnosticsParams();
-							diagnostics.setUri(item);
-							client.publishDiagnostics(diagnostics );
-					});
-
-					List<PublishDiagnosticsParams> diagnosticsParamsList = 
-							toPublishDiagnosticsParamsList(warnings);
-					
-					diagnosticsParamsList
-						.forEach(diagsParams -> client.publishDiagnostics(diagsParams));
-
-					fileUrisOfLastPublishedDiagnostics = 
-							diagnosticsParamsList.stream()
-							.map( item -> item.getUri())
-							.collect(Collectors.toList());
-
-				}
-
-			};
+			WorkerCallback cb = getWorkerCallback();
 
 			System.out.println("actually running the task");
 			// if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
@@ -707,6 +723,115 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 			doStop(2);
 		}
 		return;
+	}
+
+	private WorkerCallback getVizWorkerCallback() {
+		return new WorkerCallback() {
+			
+			@Override
+			public void fail() {
+				AlloyLSMessage alloyMsg = new AlloyLSMessage(AlloyLSMessageType.RunCompleted, "failure");
+				client.showExecutionOutput(alloyMsg);
+				
+			}
+			
+			@Override
+			public void done() {
+				viz.loadXML(newInstance, true);
+				
+			}
+			
+			@Override
+			public void callback(Object msg) {
+				Either<List<AlloyLSMessage>, Err> alloyMsgOrWarning = solverCallbackMsgToAlloyMsg(msg);
+
+				if (alloyMsgOrWarning.isLeft()) {
+					for(AlloyLSMessage alloyMsg :alloyMsgOrWarning.getLeft()) {
+						if (alloyMsg.message != null && !alloyMsg.message.isEmpty())
+							//client.showExecutionOutput(alloyMsg);
+							client.logMessage(newMessageParams(alloyMsg.message));
+					}
+
+				} else {
+					//warnings.add(alloyMsgOrWarning.getRight());
+				}
+				
+			}
+		};
+	}
+	private WorkerCallback getWorkerCallback() {
+		return new WorkerCallback() {
+			List<Err> warnings = new ArrayList<>();
+
+			@Override
+			public void callback(Object msg) {
+
+				// MessageParams messageParams= new MessageParams();
+				// messageParams.setMessage(solverCallbackMsgToString(msg));
+				// client.showMessage(messageParams);
+//					if(messageParams.getMessage() != null && !messageParams.getMessage().isEmpty())
+//						client.showAlloyOutput(messageParams);
+
+				Either<List<AlloyLSMessage>, Err> alloyMsgOrWarning =
+						solverCallbackMsgToAlloyMsg(msg);
+
+				if (alloyMsgOrWarning.isLeft()) {
+					for(AlloyLSMessage alloyMsg :alloyMsgOrWarning.getLeft()) {
+						if (alloyMsg.message != null && !alloyMsg.message.isEmpty())
+							client.showExecutionOutput(alloyMsg);
+					}
+
+				} else {
+					warnings.add(alloyMsgOrWarning.getRight());
+				}
+			}
+
+			@Override
+			public void done() {
+				// MessageParams messageParams= new MessageParams();
+				// messageParams.setMessage("done");
+				// client.showMessage(messageParams);
+				// client.showAlloyOutput(messageParams);
+				if(warnings.size() > 0)
+					client.showExecutionOutput(
+						new AlloyLSMessage(AlloyLSMessageType.RunResult, "There were errors/warnings!"));
+				
+				client.showExecutionOutput(new AlloyLSMessage(AlloyLSMessageType.RunCompleted, ""));
+				
+				publishDiagnostics();
+			}
+
+			@Override
+			public void fail() {
+				AlloyLSMessage alloyMsg = new AlloyLSMessage(AlloyLSMessageType.RunCompleted, "failure");
+				client.showExecutionOutput(alloyMsg);
+				publishDiagnostics();
+			}
+			
+			void publishDiagnostics() {
+				
+				//cleaning previously reported diagnostics
+				if(fileUrisOfLastPublishedDiagnostics != null)
+					fileUrisOfLastPublishedDiagnostics.stream().forEach(item -> {
+						PublishDiagnosticsParams diagnostics = new PublishDiagnosticsParams();
+						diagnostics.setUri(item);
+						client.publishDiagnostics(diagnostics );
+				});
+
+				List<PublishDiagnosticsParams> diagnosticsParamsList = 
+						toPublishDiagnosticsParamsList(warnings);
+				
+				diagnosticsParamsList
+					.forEach(diagsParams -> client.publishDiagnostics(diagsParams));
+
+				fileUrisOfLastPublishedDiagnostics = 
+						diagnosticsParamsList.stream()
+						.map( item -> item.getUri())
+						.collect(Collectors.toList());
+
+			}
+
+		};
 	}
 
 	private static String decodeUrl(String value) {
@@ -848,7 +973,9 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 //                OurDialog.alert(x);
 			}
 			if (array[0].equals("declare")) {
-//            gui.doSetLatest((String) (array[1]));
+				//gui.doSetLatest((String) (array[1]));
+				newInstance = (String) (array[1]);
+				// ==========
 			}
 			if (array[0].equals("S2")) {
 //            len3 = len2 = span.getLength();
@@ -869,7 +996,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 			if (array[0].equals("bold")) {
 				span.append("" + array[1]);
 				alloyMsg.bold = true;
-				alloyMsg.replaceLast = true;
+				//alloyMsg.replaceLast = true;
 			}
 			if (array[0].equals("")) {
 				span.append("" + array[1]);
@@ -1103,10 +1230,150 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 
 			// from SimpleGui
 			// VizGUI viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator);
-			VizGUI viz = new VizGUI(false, "", null, null, null);
+			if(viz == null)
+				viz = new VizGUI(false, "", null, enumerator, evaluator);
 			viz.loadXML(Util.canon(arg.substring(5)), false);
 		}
 	}
+	
+	/** This object performs solution enumeration. */
+    private final Computer enumerator = new Computer() {
+
+        @Override
+        public String compute(Object input) {
+            final String arg = (String) input;
+            //OurUtil.show(frame);
+            if (WorkerEngine.isBusy())
+                throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
+            //SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
+            WorkerCallback cb = getVizWorkerCallback();
+            SimpleTask2 task = new SimpleTask2();
+            task.filename = arg;
+            try {
+                if (AlloyCore.isDebug())
+                    WorkerEngine.runLocally(task, cb);
+                else
+                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
+                // task.run(cb);
+            } catch (Throwable ex) {
+                WorkerEngine.stop();
+                System.err.println("Fatal Error: Solver failed due to unknown reason.\n" + "One possible cause is that, in the Options menu, your specified\n" + "memory size is larger than the amount allowed by your OS.\n" + "Also, please make sure \"java\" is in your program path.\n");
+                //log.logBold("Fatal Error: Solver failed due to unknown reason.\n" + "One possible cause is that, in the Options menu, your specified\n" + "memory size is larger than the amount allowed by your OS.\n" + "Also, please make sure \"java\" is in your program path.\n");
+                //log.logDivider();
+                //log.flush();
+                doStop(2);
+                return arg;
+            }
+           /* subrunningTask = 2;
+            runmenu.setEnabled(false);
+            runbutton.setVisible(false);
+            showbutton.setEnabled(false);
+            stopbutton.setVisible(true);*/
+            return arg;
+        }
+    };
+    
+    /** Converts an A4TupleSet into a SimTupleset object. */
+    private static SimTupleset convert(Object object) throws Err {
+        if (!(object instanceof A4TupleSet))
+            throw new ErrorFatal("Unexpected type error: expecting an A4TupleSet.");
+        A4TupleSet s = (A4TupleSet) object;
+        if (s.size() == 0)
+            return SimTupleset.EMPTY;
+        List<SimTuple> list = new ArrayList<SimTuple>(s.size());
+        int arity = s.arity();
+        for (A4Tuple t : s) {
+            String[] array = new String[arity];
+            for (int i = 0; i < t.arity(); i++)
+                array[i] = t.atom(i);
+            list.add(SimTuple.make(array));
+        }
+        return SimTupleset.make(list);
+    }
+
+    /** Converts an A4Solution into a SimInstance object. */
+    private static SimInstance convert(Module root, A4Solution ans) throws Err {
+        SimInstance ct = new SimInstance(root, ans.getBitwidth(), ans.getMaxSeq());
+        for (Sig s : ans.getAllReachableSigs()) {
+            if (!s.builtin)
+                ct.init(s, convert(ans.eval(s)));
+            for (Field f : s.getFields())
+                if (!f.defined)
+                    ct.init(f, convert(ans.eval(f)));
+        }
+        for (ExprVar a : ans.getAllAtoms())
+            ct.init(a, convert(ans.eval(a)));
+        for (ExprVar a : ans.getAllSkolems())
+            ct.init(a, convert(ans.eval(a)));
+        return ct;
+    }
+
+	
+    /** This object performs expression evaluation. */
+    private static Computer evaluator = new Computer() {
+
+        private String filename = null;
+
+        @Override
+        public final Object compute(final Object input) throws Exception {
+            if (input instanceof File) {
+                filename = ((File) input).getAbsolutePath();
+                return "";
+            }
+            if (!(input instanceof String))
+                return "";
+            final String str = (String) input;
+            if (str.trim().length() == 0)
+                return ""; // Empty line
+            Module root = null;
+            A4Solution ans = null;
+            try {
+                Map<String,String> fc = new LinkedHashMap<String,String>();
+                XMLNode x = new XMLNode(new File(filename));
+                if (!x.is("alloy"))
+                    throw new Exception();
+                String mainname = null;
+                for (XMLNode sub : x)
+                    if (sub.is("instance")) {
+                        mainname = sub.getAttribute("filename");
+                        break;
+                    }
+                if (mainname == null)
+                    throw new Exception();
+                for (XMLNode sub : x)
+                    if (sub.is("source")) {
+                        String name = sub.getAttribute("filename");
+                        String content = sub.getAttribute("content");
+                        fc.put(name, content);
+                    }
+                root = CompUtil.parseEverything_fromFile(A4Reporter.NOP, fc, mainname, (Version.experimental && ImplicitThis.get()) ? 2 : 1);
+                ans = A4SolutionReader.read(root.getAllReachableSigs(), x);
+                for (ExprVar a : ans.getAllAtoms()) {
+                    root.addGlobal(a.label, a);
+                }
+                for (ExprVar a : ans.getAllSkolems()) {
+                    root.addGlobal(a.label, a);
+                }
+            } catch (Throwable ex) {
+                throw new ErrorFatal("Failed to read or parse the XML file.");
+            }
+            try {
+                Expr e = CompUtil.parseOneExpression_fromString(root, str);
+                if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
+                    SimInstance simInst = convert(root, ans);
+                    if (simInst.wasOverflow())
+                        return simInst.visitThis(e).toString() + " (OF)";
+                }
+                return ans.eval(e);
+            } catch (HigherOrderDeclException ex) {
+                throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
+            }
+        }
+    };	
+	
+	
+	//////////////////////////////////////////
+	// Utils
 	public interface Func0<T> {
 		public T call() throws Exception;
 	}
