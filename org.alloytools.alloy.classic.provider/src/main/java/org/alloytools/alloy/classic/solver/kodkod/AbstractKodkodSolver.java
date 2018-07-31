@@ -118,10 +118,10 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
             @Override
             public Iterator<AlloyInstance> iterator() {
                 return new Iterator<AlloyInstance>() {
-
+                    //This iterator delegates to the a4 iterator
+                    //We'll have a next solution when a4's next solution is satisfiable
                     A4Solution nextSolution = ai;
-                    boolean	first= true;
-                    
+
                     @Override
                     public boolean hasNext() {
                         return nextSolution.satisfiable();
@@ -129,16 +129,12 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 
                     @Override
                     public AlloyInstance next() {
-                    	
                     	if ( !hasNext())
                     		throw new NoSuchElementException("No instance available");
                     	
-                    	A4Solution solution = this.nextSolution;
-                    	if ( !first) {
-                    		this.nextSolution = solution.next();
-                    	} else
-                    		first = false;
-                    	
+                    	A4Solution solution = nextSolution;
+                        nextSolution = nextSolution.next();
+
                         return new AlloyInstance() {
 
                             @Override

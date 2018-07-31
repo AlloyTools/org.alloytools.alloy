@@ -131,6 +131,29 @@ public class AlloyImplTest {
 			}
 		}
 	}
+
+	@Test
+	public void iterator() throws Exception {
+		Alloy ai = new AlloyClassicFacade();
+		AlloyModule module = ai.compiler().compileSource("some sig B {}\n run show{} for 3");
+		AlloySolver solver = ai.getSolvers().get(0);
+		TRun run = module.getRuns().get(0);
+		AlloySolution solution = solver.run(module, null, run);
+		TSig B = module.getSig("B").get();
+
+		ArrayList<Integer> atom_counts = new ArrayList();
+		for (AlloyInstance instance : solution) {
+                  System.out.println(instance.getAtoms(B));
+			atom_counts.add(instance.getAtoms(B).size());
+		}
+
+		//We should see three solutions (one B atom, two B atoms, three B atoms)
+		assertEquals(3, atom_counts.size());
+		assert(atom_counts.contains(1));
+		assert(atom_counts.contains(2));
+		assert(atom_counts.contains(3));
+	}
+
 	@Test
 	public void iteratorImmutable() throws Exception {
 		Alloy ai = new AlloyClassicFacade();
