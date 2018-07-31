@@ -36,10 +36,3 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.exe
 *.out
 *.app
-
-*.iml
-.idea
-
-# Eclipse classpath and project files
-.classpath
-.project
