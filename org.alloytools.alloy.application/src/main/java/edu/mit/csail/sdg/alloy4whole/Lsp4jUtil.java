@@ -19,5 +19,12 @@ public class Lsp4jUtil {
 		res.setRange(range);
 		return res;
 	}
+	
+	public static MessageParams newMessageParams(String message) {
+		MessageParams res = new MessageParams();
+		res.setMessage(message);
+		res.setType(MessageType.Log);
+		return res;
+	}
 
 }

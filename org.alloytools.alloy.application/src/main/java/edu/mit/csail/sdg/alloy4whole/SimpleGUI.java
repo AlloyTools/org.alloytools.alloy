@@ -1915,42 +1915,36 @@ public final class SimpleGUI implements ComponentListener, Listener {
     public static void main(final String[] args) throws Exception {
         if (args.length > 0 && args[0].equals("ls")) {
             System.out.println("######## Alloy Language Server Requested!#####");
-            launchLanguageServer();
+            int port = Integer.parseInt(args[1]);
+            launchLanguageServer(port);
         } else {
             mainOld(args);
         }
     }
 
-    private static void launchLanguageServer() throws Exception {
-        //AlloyLS ls;
+    private static void launchLanguageServer(int port) throws Exception {
+        try {
+        	java.net.Socket socket = new Socket("localhost", port);
+        	AlloyLanguageServer langserv = new AlloyLanguageServer();
+        	System.out.println("connected!");
 
-        //Thread.sleep(10000);
-        ServerSocket serverSocket = new ServerSocket(5000);
-        System.out.println("listening on port " + serverSocket.getLocalPort());
-
-        while (true) {
-            try (Socket socket = serverSocket.accept()) {
-                AlloyLanguageServer langserv = new AlloyLanguageServer();
-                System.out.println("connected!");
-
-                InputStream inputStream = socket.getInputStream();
-                OutputStream outputStream = socket.getOutputStream();
+        	InputStream inputStream = socket.getInputStream();
+        	OutputStream outputStream = socket.getOutputStream();
 
 
-                //InputStream inputStream = System.in;
-                //OutputStream outputStream = System.out;
+        	//InputStream inputStream = System.in;
+        	//OutputStream outputStream = System.out;
 
-                Launcher<AlloyLanguageClient> launcher = createServerLauncher(langserv, AlloyLanguageClient.class, inputStream, outputStream);
-                System.out.println("Starting Alloy Language Server!");
-                langserv.connect(launcher.getRemoteProxy());
-                Future<Void> res = launcher.startListening();
-                System.out.println("Alloy Language Server Started!");
-                res.get();
+        	Launcher<AlloyLanguageClient> launcher = createServerLauncher(langserv, AlloyLanguageClient.class, inputStream, outputStream);
+        	System.out.println("Starting Alloy Language Server!");
+        	langserv.connect(launcher.getRemoteProxy());
+        	Future<Void> res = launcher.startListening();
+        	System.out.println("Alloy Language Server Started!");
+        	res.get();
 
-                System.out.println("########Exited Alloy Language Server!");
-            } catch (Throwable ex) {
-                System.out.println(ex.toString());
-            }
+        	System.out.println("########Exited Alloy Language Server!");
+        } catch (Throwable ex) {
+        	System.out.println(ex.toString());
         }
     }
 
