@@ -10,10 +10,12 @@ import org.alloytools.alloy.core.api.AlloyModule;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.solver.api.ITupleSet;
 import org.alloytools.alloy.solver.api.AlloyInstance;
 import org.alloytools.alloy.solver.api.AlloySolution;
 import org.alloytools.alloy.solver.api.AlloySolver;
 import org.junit.Test;
+import java.util.ArrayList;
 
 public class AlloyImplTest {
 	Alloy ai = new AlloyClassicFacade();
@@ -127,6 +129,31 @@ public class AlloyImplTest {
 				System.out.println(instance.getAtoms(univ));
 				System.out.println(instance.getAtoms(B));
 			}
+		}
+	}
+	@Test
+	public void iteratorImmutable() throws Exception {
+		Alloy ai = new AlloyClassicFacade();
+		AlloyModule module = ai.compiler().compileSource("some sig B {}\n run show{} for 3");
+		AlloySolver solver = ai.getSolvers().get(0);
+		TRun run = module.getRuns().get(0);
+		AlloySolution solution = solver.run(module, null, run);
+		TSig B = module.getSig("B").get();
+
+		//Advancing the iterator shouldn't change previously returned instances.
+		//Test this by comparing atoms between instances from an exhausted iterator with instances from an in-progress iterator.
+		ArrayList<AlloyInstance> instances = new ArrayList();
+		for(AlloyInstance instance : solution) {
+			instances.add(instance);
+		}
+
+		int i = 0;
+		for(AlloyInstance instance : solution) {
+			ITupleSet ts = instance.getAtoms(B);
+			ITupleSet ts_old = instances.get(i).getAtoms(B);
+			//Comparing strings since value-based equality isn't implemented for tuple sets
+			assertEquals(ts.toString(), ts_old.toString());
+			i++;
 		}
 	}
 }
