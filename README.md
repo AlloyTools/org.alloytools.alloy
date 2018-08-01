@@ -66,7 +66,7 @@ This workspace uses bnd. This means that the following have special meaning:
 
 ### Eclipse
 
-The workspace is setup for interactive development in Eclipse with the Bndtools plugin. Bndtools can be installed from the [Eclipse Market](https://marketplace.eclipse.org/content/bndtools) place (see `Help/Marketplace` and search for `Bndtools`). 
+The workspace is setup for interactive development in Eclipse with the Bndtools plugin. Download [Eclipse](https://www.eclipse.org/downloads/) and install it. You can then `Import` existing projects from the Git workspace. You should be asked to install Bndtools from the market place. You can also install Bndtools directly from the [Eclipse Market](https://marketplace.eclipse.org/content/bndtools) place (see `Help/Marketplace` and search for `Bndtools`). 
 
 Bndtools will continuously create the final executable. The projects are setup to automatically update when a downstream project changes.
 
