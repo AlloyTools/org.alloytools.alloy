@@ -270,11 +270,6 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateCardinalityComparison(BinaryExpression.Op eq, Expression left, Expression right)
-    {
-        throw new UnsupportedOperationException();
-    }
-
     private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, ConstantExpression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);

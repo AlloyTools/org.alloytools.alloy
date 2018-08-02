@@ -39,6 +39,7 @@ public class TranslatorUtils
         Sort        tupleSort   = new TupleSort(sorts);
         Sort        setSort     = new SetSort(tupleSort);
 
+        //ToDo: handle the case when n = 0
         List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
 
         FunctionDeclaration declaration = new FunctionDeclaration(getNewSet(), setSort);

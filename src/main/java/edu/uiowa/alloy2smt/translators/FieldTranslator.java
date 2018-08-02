@@ -8,15 +8,13 @@
 
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprBinary;
-import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class FieldTranslator
 {
@@ -89,7 +87,7 @@ public class FieldTranslator
         }
         else if (expr instanceof ExprBinary)
         {
-            translateBinaryMultiplicities((ExprBinary) expr, field, declaration, 0);
+            translateBinaryMultiplicities((ExprBinary) expr, field, declaration);
         }
         else
         {
@@ -97,47 +95,99 @@ public class FieldTranslator
         }
     }
 
-    private void translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration, int index)
+    private void translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
     {
         switch (exprBinary.op)
         {
             case ARROW              : break; // no assertion needed
-            case ANY_ARROW_SOME     :
-            case ANY_ARROW_ONE      :
-            case ANY_ARROW_LONE     :
-            case SOME_ARROW_ANY     :
-            case SOME_ARROW_SOME    :
-            case SOME_ARROW_ONE     :
-            case SOME_ARROW_LONE    :
-            case ONE_ARROW_ANY      :
-            case ONE_ARROW_SOME     :
-            case ONE_ARROW_ONE      : translateOneArrowOne(field, declaration, index); break;
-            case ONE_ARROW_LONE     :
-            case LONE_ARROW_ANY     :
-            case LONE_ARROW_SOME    :
-            case LONE_ARROW_ONE     :
-            case LONE_ARROW_LONE    :
-            case ISSEQ_ARROW_LONE   : break;
+            case ANY_ARROW_SOME     : translateAnyArrowSome(exprBinary, field, declaration); break;
+            case ANY_ARROW_ONE      : throw new UnsupportedOperationException();
+            case ANY_ARROW_LONE     : throw new UnsupportedOperationException();
+            case SOME_ARROW_ANY     : throw new UnsupportedOperationException();
+            case SOME_ARROW_SOME    : throw new UnsupportedOperationException();
+            case SOME_ARROW_ONE     : throw new UnsupportedOperationException();
+            case SOME_ARROW_LONE    : throw new UnsupportedOperationException();
+            case ONE_ARROW_ANY      : throw new UnsupportedOperationException();
+            case ONE_ARROW_SOME     : throw new UnsupportedOperationException();
+            case ONE_ARROW_ONE      : throw new UnsupportedOperationException();
+            case ONE_ARROW_LONE     : throw new UnsupportedOperationException();
+            case LONE_ARROW_ANY     : throw new UnsupportedOperationException();
+            case LONE_ARROW_SOME    : throw new UnsupportedOperationException();
+            case LONE_ARROW_ONE     : throw new UnsupportedOperationException();
+            case LONE_ARROW_LONE    : throw new UnsupportedOperationException();
+            case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
             default:
             {
                 throw new UnsupportedOperationException();
             }
         }
-
-        if(exprBinary.right instanceof ExprBinary)
-        {
-            translateBinaryMultiplicities((ExprBinary) exprBinary.right, field, declaration, index + 1);
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
     }
 
-    private void translateOneArrowOne(Sig.Field field, FunctionDeclaration declaration, int index)
+    private void translateAnyArrowSome(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
     {
+        TupleSort tupleSort = new TupleSort(translator.atomSort);
 
-        throw new UnsupportedOperationException();
+        BoundVariableDeclaration sigVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort);
+
+        List<Sig.PrimSig> leftSignatures = exprBinary.left.type().fold().get(0);
+
+        List<BoundVariableDeclaration> leftVariables = IntStream
+                .range(1, leftSignatures.size() + 1).boxed()
+                .map(x -> new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort))
+                .collect(Collectors.toList());
+
+        Expression leftMembers = new BinaryExpression(leftVariables.get(0).getConstantExpr(),
+                BinaryExpression.Op.MEMBER,
+                translator.signaturesMap.get(leftSignatures.get(0)).getConstantExpr());
+
+        for (int i = 1; i < leftSignatures.size(); i++)
+        {
+            Expression member = new BinaryExpression(leftVariables.get(i).getConstantExpr(),
+                    BinaryExpression.Op.MEMBER,
+                    translator.signaturesMap.get(leftSignatures.get(i)).getConstantExpr());
+            leftMembers = new BinaryExpression(leftMembers, BinaryExpression.Op.AND, member);
+        }
+
+        UnaryExpression  singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, sigVariable.getConstantExpr());
+        
+        int rightArity = exprBinary.right.type().arity();
+
+        Sort rightSort = new TupleSort(IntStream.range(1, rightArity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList()));
+
+        BoundVariableDeclaration rightVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), rightSort);
+
+        Expression join = new BinaryExpression(singleton, BinaryExpression.Op.JOIN,  declaration.getConstantExpr());
+
+        UnaryExpression unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(0).getConstantExpr());
+
+        join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
+
+        for(int i = 1; i < leftVariables.size(); i++)
+        {
+            unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(i).getConstantExpr());
+
+            join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
+        }
+
+        BinaryExpression rightMember = new BinaryExpression(rightVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, join);
+
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rightMember, rightVariable);
+
+        BinaryExpression innerImplies = new BinaryExpression(leftMembers, BinaryExpression.Op.IMPLIES, exists);
+
+        QuantifiedExpression innerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, leftVariables, innerImplies);
+
+        Expression    sigExpression = translator.signaturesMap.get(field.sig).getConstantExpr();
+
+        BinaryExpression member = new BinaryExpression(sigVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, sigExpression);
+
+        BinaryExpression outerImplies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, innerForAll);
+
+        QuantifiedExpression outerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, outerImplies, sigVariable);
+
+        translator.smtProgram.addAssertion(new Assertion(outerForAll));
+
+        //ToDo: handle nested multiplicities
     }
 
     private void translateRelationSomeMultiplicity(Sig.Field field, FunctionDeclaration declaration, ExprUnary exprUnary)
