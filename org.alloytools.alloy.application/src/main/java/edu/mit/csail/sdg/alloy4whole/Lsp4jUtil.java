@@ -26,5 +26,12 @@ public class Lsp4jUtil {
 		res.setType(MessageType.Log);
 		return res;
 	}
+	
+	public static Location newLocation(Range range, String uri) {
+		Location location = new Location();
+		location.setRange(range);
+		location.setUri(uri);
+		return location;
+	}
 
 }

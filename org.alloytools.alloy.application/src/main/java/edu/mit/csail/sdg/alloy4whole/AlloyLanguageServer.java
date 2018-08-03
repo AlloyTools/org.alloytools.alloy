@@ -1,6 +1,8 @@
 package edu.mit.csail.sdg.alloy4whole;
 
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
+
+import static edu.mit.csail.sdg.alloy4whole.AlloyLanguageServerUtil.*;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
@@ -15,6 +17,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
 
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,6 +25,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -35,6 +39,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
@@ -68,6 +73,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Position;
@@ -102,6 +108,7 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.OurDialog;
+import edu.mit.csail.sdg.alloy4.OurSyntaxWidget;
 import edu.mit.csail.sdg.alloy4.OurUtil;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -118,7 +125,9 @@ import edu.mit.csail.sdg.alloy4whole.AlloyLanguageClient.CommandsListResultItem;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
+import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBad;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Module;
@@ -147,16 +156,6 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		new Thread(() -> {
-			while (true) {
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-				}
-
-				// System.out.println("ping!");
-			}
-		}).start();
 		InitializeResult res = new InitializeResult();
 
 		ServerCapabilities caps = new ServerCapabilities();
@@ -164,6 +163,7 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 		// caps.setCompletionProvider(new CompletionOptions(false, Arrays.asList(".", "
 		// ", ",")));
 		caps.setDefinitionProvider(true);
+		caps.setHoverProvider(true);
 		CodeLensOptions codeLensProvider = new CodeLensOptions();
 		// codeLensProvider.setResolveProvider(true);
 		caps.setCodeLensProvider(codeLensProvider);
@@ -249,9 +249,56 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
-		Hover res = new Hover();
+		String hoverStr = null;
+		try {
+			
+			String uri = position.getTextDocument().getUri();
+			String text = fileContents.get(uri);
+			String path = fileUriToPath(uri);
+			CompModule module = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), path, 2);
+			
+			//int offset = pane.viewToModel(event.getPoint());
+			if (module == null)
+				return null;
 
-		return CompletableFuture.completedFuture(res);
+			Pos pos = positionToPos(position.getPosition());
+			Expr expr = module.find(pos);
+			if (expr instanceof ExprBad) {
+				hoverStr =  expr.toString();
+			}
+			else if (expr != null) {
+				Clause referenced = expr.referenced();
+				if (referenced != null) {
+					String s = referenced.explain();
+					//String table = "<html><pre>" + s + "</pre></html>";
+					//s = table.replaceAll("\n", "<br/>");
+					hoverStr = s;
+				} else if (expr instanceof ExprConstant) {
+					String token = pos.substring(text);
+					if (token != null) {
+						String match = expr.toString();
+						if (!Objects.equals(token, match))
+							hoverStr =  match;
+					}
+				}
+			}
+		} catch (Exception e) {
+			// e.printStackTrace();
+			// ignore compile errors etc.
+		}
+		if(hoverStr != null) {
+			MarkupContent markupContent = new MarkupContent();
+			markupContent.setKind("markdown");
+			
+			hoverStr = "```\n" + hoverStr + "\n```";
+			
+			markupContent.setValue(hoverStr);
+			Hover res = new Hover();
+			res.setContents(markupContent);
+			return CompletableFuture.completedFuture(res);			
+		}else {
+			return CompletableFuture.completedFuture(null);
+		}
 	}
 
 	@Override
@@ -263,36 +310,33 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 	@Override
 	public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position) {
 		try {
-			CompModule module = CompUtil.parseOneModule(fileContents.get(position.getTextDocument().getUri()));
-
-			
-			Pos pos = positionToPos(position.getPosition(), null);
-			System.out.println("definition request: module parsed! Request Position: " + pos.toString());
+			String uri = position.getTextDocument().getUri();
+			String text = fileContents.get(uri);
+			String path = fileUriToPath(uri);
+			CompModule module = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), path, 2);
+			Pos pos = positionToPos(position.getPosition(), path);
+			int[] sel = getCurrentWordSelection(text, pos);
+			pos = Pos.toPos(text, sel[0], sel[1]);
+			System.out.println("definition request: module parsed! Request Position: " + pos.toRangeString());
 
 			Expr expr = module.find(pos);
 
 			System.out.println("definition request for: " + expr);
+			
 			String exprName = getNameOf(expr);
 			System.out.println("getNameOf(expr) == " + exprName);
-			if (exprName != null) {
-				for (Sig sig : module.getAllSigs()) {
-					System.out.println("checking sig " + sig.label + "...");
-					if (sigRemovePrefix(sig.label).equals(exprName)) {
+			
+            if (expr != null) {
+                Clause clause = expr.referenced();
+                if (clause != null) {
+                    Pos where = clause.pos();
+                    System.out.println("target file name: " + where.filename);
+                    String targetUri = where.sameFile(module.pos()) ? uri : filePathToUri(where.filename);
+                    Location res = newLocation(createRangeFromPos(where),targetUri);
+                    return CompletableFuture.completedFuture(Arrays.asList(res));
+                }
+            }
 
-						System.out.println("sig " + sig + " matched!");
-						Location location = new Location();
-
-						Range range = new Range();
-
-						range.setStart(posToPosition(sig.pos));
-						range.setEnd(range.getStart());
-						location.setRange(range);
-						// FIXME the implementation is not correct
-						location.setUri(position.getTextDocument().getUri());
-						return CompletableFuture.completedFuture(Arrays.asList(location));
-					}
-				}
-			}
 		}catch(Exception ex) {
 			System.err.println("Error in providing definition: " + ex.toString());
 		}
@@ -376,16 +420,13 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 			edu.mit.csail.sdg.ast.Command command = pair.a;
 			Command vsCommand = pair.b;
 			
-			Position position = posToPosition(command.pos);
 			CodeLens codeLens = new CodeLens();
-			//codeLens.setRange(createRange(position, position));
 			codeLens.setRange(createRangeFromPos(command.pos));
 			codeLens.setCommand(vsCommand);
 			
 			return codeLens;
 		}).collect(Collectors.toList());
 		
-
 		return CompletableFuture.completedFuture(res);
 	}
 	
@@ -502,38 +543,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 	}
 	
 
-	static Pos positionToPos(Position position) {
-		return positionToPos(position, null);
-	}
-
-	static Pos positionToPos(Position position, String fileName) {
-		return new Pos(fileName, position.getCharacter() + 1, position.getLine() + 1);
-	}
-
-	static org.eclipse.lsp4j.Position posToPosition(edu.mit.csail.sdg.alloy4.Pos pos) {
-		Position position = new Position();
-		position.setLine(pos.y - 1);
-		position.setCharacter(pos.x - 1);
-		return position;
-	}
-	static Range createRange(Position start, Position end) {
-		Range res = new Range();
-		res.setStart(start);
-		res.setEnd(end);
-		return res;
-	}
-	static Range createRangeFromPos(Pos pos) {
-		Range res = new Range();
-		res.setStart(posToPosition(pos));
-		
-		Position endPosition = new Position();
-		endPosition.setLine(pos.y2 - 1);
-		endPosition.setCharacter(pos.x2 - 1);
-		
-		res.setEnd(endPosition);
-		return res;
-	}
-
+	
 	@Override
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved) {
 		return CompletableFuture.completedFuture(unresolved);
@@ -559,6 +569,12 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		return CompletableFuture.completedFuture(null);
 	}
 
+	private Map<String,String> fileContentsPathBased(){
+		HashMap<String, String> res = new HashMap<String,String>();
+		fileContents.entrySet().stream()
+			.forEach(entry -> res.put( fileUriToPath(entry.getKey()), entry.getValue() ));
+		return res;
+	}
 	private HashMap<String, String> fileContents = new HashMap<>();
 
 	@Override
@@ -582,7 +598,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
-
+		fileContents.remove(params.getTextDocument().getUri());
 	}
 
 	@Override
@@ -618,9 +634,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		return visitor.visitThis(expr);
 	}
 
-	private static String filePathToUri(String absolutePath) {
-		return Paths.get(absolutePath).toUri().toString();
-	}
+	
 	private List<PublishDiagnosticsParams> toPublishDiagnosticsParamsList(List<Err> warnings){
 		
 		Map<String, List<Err>> map =
@@ -665,8 +679,8 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		// VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
 		SimpleTask1 task = new SimpleTask1();
 		A4Options opt = new A4Options();
-		opt.tempDirectory = alloyHome() + fs + "tmp";
-		opt.solverDirectory = alloyHome() + fs + "binary";
+		opt.tempDirectory = AlloyAppUtil.alloyHome() + fs + "tmp";
+		opt.solverDirectory = AlloyAppUtil.alloyHome() + fs + "binary";
 		opt.recordKodkod = RecordKodkod.get();
 		opt.noOverflow = NoOverflow.get();
 		opt.unrolls = Version.experimental ? Unrolls.get() : (-1);
@@ -695,7 +709,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		// task.map = text.takeSnapshot();
 		task.options = opt.dup();
 		task.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
-		task.tempdir = maketemp();
+		task.tempdir = AlloyAppUtil.maketemp();
 
 		try {
 			int newmem = SubMemory.get(), newstack = SubStack.get();
@@ -708,7 +722,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 			// if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
 			//WorkerEngine.runLocally(task, cb);
 			// else
-			WorkerEngine.run(task, newmem, newstack, alloyHome() + fs + "binary", "", cb);
+			WorkerEngine.run(task, newmem, newstack, AlloyAppUtil.alloyHome() + fs + "binary", "", cb);
 			subMemoryNow = newmem;
 			subStackNow = newstack;
 		} catch (Throwable ex) {
@@ -848,54 +862,6 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 	 */
 	private static final String fs = System.getProperty("file.separator");
 
-	/**
-	 * This variable caches the result of alloyHome() function call.
-	 */
-	private static String alloyHome = null;
-
-	/**
-	 * Find a temporary directory to store Alloy files; it's guaranteed to be a
-	 * canonical absolute path.
-	 */
-	private static synchronized String alloyHome() {
-		if (alloyHome != null)
-			return alloyHome;
-		String temp = System.getProperty("java.io.tmpdir");
-		if (temp == null || temp.length() == 0)
-			OurDialog.fatal("Error. JVM need to specify a temporary directory using java.io.tmpdir property.");
-		String username = System.getProperty("user.name");
-		File tempfile = new File(temp + File.separatorChar + "alloy4tmp40-" + (username == null ? "" : username));
-		tempfile.mkdirs();
-		String ans = Util.canon(tempfile.getPath());
-		if (!tempfile.isDirectory()) {
-			OurDialog.fatal("Error. Cannot create the temporary directory " + ans);
-		}
-		if (!Util.onWindows()) {
-			String[] args = { "chmod", "700", ans };
-			try {
-				Runtime.getRuntime().exec(args).waitFor();
-			} catch (Throwable ex) {
-			} // We only intend to make a best effort.
-		}
-		return alloyHome = ans;
-	}
-
-	/**
-	 * Create an empty temporary directory for use, designate it "deleteOnExit",
-	 * then return it. It is guaranteed to be a canonical absolute path.
-	 */
-	private static String maketemp() {
-		Random r = new Random(new Date().getTime());
-		while (true) {
-			int i = r.nextInt(1000000);
-			String dest = alloyHome() + File.separatorChar + "tmp" + File.separatorChar + i;
-			File f = new File(dest);
-			if (f.mkdirs()) {
-				f.deleteOnExit();
-				return Util.canon(dest);
-			}
-		}
-	}
 
 	// edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1.callback(Object)
 	public Either<List<AlloyLSMessage>, Err> solverCallbackMsgToAlloyMsg(Object msg) {
@@ -1253,7 +1219,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
                 else
-                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
+                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), AlloyAppUtil.alloyHome() + fs + "binary", "", cb);
                 // task.run(cb);
             } catch (Throwable ex) {
                 WorkerEngine.stop();
@@ -1273,42 +1239,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
         }
     };
     
-    /** Converts an A4TupleSet into a SimTupleset object. */
-    private static SimTupleset convert(Object object) throws Err {
-        if (!(object instanceof A4TupleSet))
-            throw new ErrorFatal("Unexpected type error: expecting an A4TupleSet.");
-        A4TupleSet s = (A4TupleSet) object;
-        if (s.size() == 0)
-            return SimTupleset.EMPTY;
-        List<SimTuple> list = new ArrayList<SimTuple>(s.size());
-        int arity = s.arity();
-        for (A4Tuple t : s) {
-            String[] array = new String[arity];
-            for (int i = 0; i < t.arity(); i++)
-                array[i] = t.atom(i);
-            list.add(SimTuple.make(array));
-        }
-        return SimTupleset.make(list);
-    }
 
-    /** Converts an A4Solution into a SimInstance object. */
-    private static SimInstance convert(Module root, A4Solution ans) throws Err {
-        SimInstance ct = new SimInstance(root, ans.getBitwidth(), ans.getMaxSeq());
-        for (Sig s : ans.getAllReachableSigs()) {
-            if (!s.builtin)
-                ct.init(s, convert(ans.eval(s)));
-            for (Field f : s.getFields())
-                if (!f.defined)
-                    ct.init(f, convert(ans.eval(f)));
-        }
-        for (ExprVar a : ans.getAllAtoms())
-            ct.init(a, convert(ans.eval(a)));
-        for (ExprVar a : ans.getAllSkolems())
-            ct.init(a, convert(ans.eval(a)));
-        return ct;
-    }
-
-	
     /** This object performs expression evaluation. */
     private static Computer evaluator = new Computer() {
 
@@ -1360,7 +1291,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
             try {
                 Expr e = CompUtil.parseOneExpression_fromString(root, str);
                 if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
-                    SimInstance simInst = convert(root, ans);
+                    SimInstance simInst = AlloyAppUtil.convert(root, ans);
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
@@ -1371,20 +1302,38 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
         }
     };	
 	
-	
-	//////////////////////////////////////////
-	// Utils
-	public interface Func0<T> {
-		public T call() throws Exception;
-	}
-	public static <T> T uncheckedRun(Func0<T> func) {
-		try {
-			return func.call();
-		} catch(RuntimeException e) {
-			throw e;
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    // from OurSyntaxWidget
+    static int[] getCurrentWordSelection(String text, Pos pos ) {
+
+    	int[] startEnd = pos.toStartEnd(text);
+        int selectionStart = startEnd[0];
+        int selectionEnd = startEnd[1];
+
+        if (!isValidSelection(text, selectionStart, selectionEnd))
+            return null;
+
+        while (isValidSelection(text, selectionStart - 1, selectionEnd) && inWord(text.charAt(selectionStart - 1)))
+            selectionStart--;
+
+        while (isValidSelection(text, selectionStart, selectionEnd + 1) && inWord(text.charAt(selectionEnd)))
+            selectionEnd++;
+
+        if (!isValidSelection(text, selectionStart, selectionEnd))
+            return null;
+        return new int[] {
+                          selectionStart, selectionEnd
+        };
+    }
+    
+    // from OurSyntaxWidget
+    static boolean isValidSelection(String text, int start, int end) {
+        return start >= 0 && start <= end && end >= start && end <= text.length();
+    }
+    
+    // from OurSyntaxWidget
+    private static boolean inWord(char c) {
+        return Character.isAlphabetic(c) || Character.isDigit(c) || Character.isIdentifierIgnorable(c) || Character.isJavaIdentifierPart(c) || c == '\'' || c == '"';
+    }
+
 
 }
