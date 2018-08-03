@@ -178,6 +178,11 @@ public final class Pos implements Serializable {
             return "line " + y + ", column " + x + ", filename=" + filename;
     }
 
+    public String toRangeString() {
+        String filePart = filename.length() == 0 ? "" : ", filename=" + filename;
+        return "line " + y + ", column " + x + " to line " + y2 + ", column " + x2 + filePart;
+    }
+
     int start() {
         return y * 500 + x;
     }
