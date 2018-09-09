@@ -1,14 +1,17 @@
 package edu.mit.csail.sdg.alloy4whole;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.Util;
 
 public class AlloyLanguageServerUtil {
 	public static Pos positionToPos(Position position) {
@@ -17,6 +20,13 @@ public class AlloyLanguageServerUtil {
 
 	public static Pos positionToPos(Position position, String fileName) {
 		return new Pos(fileName, position.getCharacter() + 1, position.getLine() + 1);
+	}
+
+	public static Location posToLocation(Pos pos){
+		Location res= new Location();
+		res.setRange(createRangeFromPos(pos));
+		res.setUri(filePathToUri(pos.filename));
+		return res;
 	}
 
 	public static org.eclipse.lsp4j.Position posToPosition(edu.mit.csail.sdg.alloy4.Pos pos) {
@@ -37,7 +47,7 @@ public class AlloyLanguageServerUtil {
 		
 		Position endPosition = new Position();
 		endPosition.setLine(pos.y2 - 1);
-		endPosition.setCharacter(pos.x2 - 1);
+		endPosition.setCharacter(pos.x2 - 1 + 1 /* end position appears to be exclusive in Range */);
 		
 		res.setEnd(endPosition);
 		return res;
@@ -49,9 +59,25 @@ public class AlloyLanguageServerUtil {
 	
 	public static String fileUriToPath(String fileUri) {
 		try {
-			return new File(new URI(fileUri)).getAbsolutePath();
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			File file = new File(new URI(fileUri));
+			try {
+				return file.getCanonicalPath();
+			} catch (IOException ex) {
+				return file.getAbsolutePath();
+			}
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
 		}
 	}
+
+	public static String filePathResolved(String filename) {
+		return filename.replace(Util.jarPrefix(), AlloyAppUtil.alloyHome() + fs);
+	}
+
+	/**
+	 * The system-specific file separator (forward-slash on UNIX, back-slash on
+	 * Windows, etc.)
+	 */
+	public static final String fs = System.getProperty("file.separator");
+
 }

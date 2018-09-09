@@ -42,26 +42,26 @@ import edu.mit.csail.sdg.ast.Attr.AttrType;
 public abstract class Sig extends Expr implements Clause {
 
     /** The built-in "univ" signature. */
-    public static final PrimSig UNIV   = new PrimSig("univ", null, false);
+    public static final PrimSig UNIV   = new PrimSig("univ", null, null, false);
 
     /** The built-in "Int" signature. */
-    public static final PrimSig SIGINT = new PrimSig("Int", UNIV, false);
+    public static final PrimSig SIGINT = new PrimSig("Int", Pos.UNKNOWN, UNIV, false);
 
     /** The built-in "seq/Int" signature. */
-    public static final PrimSig SEQIDX = new PrimSig("seq/Int", SIGINT, true);
+    public static final PrimSig SEQIDX = new PrimSig("seq/Int", Pos.UNKNOWN, SIGINT, true);
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING = new PrimSig("String", UNIV, true);
+    public static final PrimSig STRING = new PrimSig("String", Pos.UNKNOWN, UNIV, true);
 
     /** The built-in "none" signature. */
-    public static final PrimSig NONE   = new PrimSig("none", null, false);
+    public static final PrimSig NONE   = new PrimSig("none", null, null, false);
 
     /** The built-in "none" signature. */
     public static final PrimSig GHOST  = mkGhostSig();
 
     private static final PrimSig mkGhostSig() {
         try {
-            return new PrimSig("Univ", null, new Attr[0]);
+            return new PrimSig(null, "Univ", null, null, new Attr[0]);
         } catch (Err e) {
             return null; // never happens
         }
@@ -219,6 +219,11 @@ public abstract class Sig extends Expr implements Clause {
     public final Pos             isMeta;
 
     /**
+     * The position of the sig label
+     */
+    public final Pos labelPos;
+
+    /**
      * The label for this sig; this name does not need to be unique.
      */
     public final String          label;
@@ -259,11 +264,12 @@ public abstract class Sig extends Expr implements Clause {
         this.isPrivate = null;
         this.isMeta = null;
         this.isEnum = null;
+        this.labelPos = null;
         this.attributes = ConstList.make();
     }
 
     /** Constructs a new PrimSig or SubsetSig. */
-    private Sig(Type type, String label, Attr... attributes) throws Err {
+    private Sig(Type type, Pos labelPos, String label, Attr... attributes) throws Err {
         super(AttrType.WHERE.find(attributes), type);
         this.attributes = Util.asList(attributes);
         Expr oneof = ExprUnary.Op.ONEOF.make(null, this);
@@ -315,6 +321,7 @@ public abstract class Sig extends Expr implements Clause {
         this.isSubsig = isSubsig;
         this.label = label;
         this.builtin = false;
+        this.labelPos = labelPos;
         if (isLone != null && isOne != null)
             throw new ErrorSyntax(isLone.merge(isOne), "You cannot declare a sig to be both lone and one.");
         if (isLone != null && isSome != null)
@@ -456,10 +463,27 @@ public abstract class Sig extends Expr implements Clause {
          */
         public final PrimSig parent;
 
+        /**
+         * The position of the reference to the parent Sig. 
+         * Can be null only if parent is null
+         */
+        public final Pos parentRefPos;
+
+
+        private Expr parentRef;
+        public Expr parentRef(){
+            if(parentRef == null ){
+                parentRef = ExprUnary.Op.NOOP.make(parentRefPos ,  parent );
+            }
+            return parentRef;
+        }
+
         /** Constructs a builtin PrimSig. */
-        private PrimSig(String label, PrimSig parent, boolean add) {
+        private PrimSig(String label, Pos parentRefPos, PrimSig parent, boolean add) {
             super(label);
             this.parent = parent;
+            assert parent == null ? parentRefPos == null : parentRefPos != null;
+            this.parentRefPos =  parentRefPos ;
             if (add)
                 this.parent.children.add(this);
         }
@@ -475,8 +499,10 @@ public abstract class Sig extends Expr implements Clause {
          * @throws ErrorType if you attempt to extend the builtin sigs NONE, SIGINT,
          *             SEQIDX, or STRING
          */
-        public PrimSig(String label, PrimSig parent, Attr... attributes) throws Err {
-            super(((parent != null && parent.isEnum != null) ? parent.type : null), label, Util.append(attributes, Attr.SUBSIG));
+        public PrimSig(Pos labelPos, String label, Pos parentRefPos, PrimSig parent, Attr... attributes) throws Err {
+            super(((parent != null && parent.isEnum != null) ? parent.type : null), labelPos, label, Util.append(attributes, Attr.SUBSIG));
+            assert parent == null ? parentRefPos == null : parentRefPos != null;
+
             if (parent == SIGINT)
                 throw new ErrorSyntax(pos, "sig " + label + " cannot extend the builtin \"Int\" signature");
             if (parent == SEQIDX)
@@ -490,6 +516,8 @@ public abstract class Sig extends Expr implements Clause {
             else if (parent != UNIV)
                 parent.children.add(this);
             this.parent = parent;
+            this.parentRefPos = parentRefPos;
+
             if (isEnum != null && parent != UNIV)
                 throw new ErrorType(pos, "sig " + label + " is not a toplevel sig, so it cannot be an enum.");
             for (; parent != null; parent = parent.parent)
@@ -510,7 +538,7 @@ public abstract class Sig extends Expr implements Clause {
          * @throws ErrorSyntax if the signature has two or more multiplicities
          */
         public PrimSig(String label, Attr... attributes) throws Err {
-            this(label, null, attributes);
+            this(null, label, null, null, attributes);
         }
 
         /** {@inheritDoc} */
@@ -599,6 +627,23 @@ public abstract class Sig extends Expr implements Clause {
         }
 
         /**
+         * The positions of references to parent Sigs (in parents field).
+         * Could be null
+         */
+        public final ConstList<Pos> parentRefPoss;
+
+        private ConstList<Expr> parentRefs;
+        public ConstList<Expr> parentRefs(){
+            if(parentRefs == null){
+                TempList<Expr> res = new TempList<>();
+                for(int i = 0; i < parents.size(); i++){
+                    res.add(ExprUnary.Op.NOOP.make(parentRefPoss != null ? parentRefPoss.get(i) : Pos.UNKNOWN,  parents.get(i) ));
+                }
+                parentRefs = res.makeConst();
+            }
+            return parentRefs;
+        }
+        /**
          * Constructs a subset sig.
          *
          * @param label - the name of this sig (it does not need to be unique)
@@ -609,8 +654,8 @@ public abstract class Sig extends Expr implements Clause {
          * @throws ErrorSyntax if the signature has two or more multiplicities
          * @throws ErrorType if parents only contains NONE
          */
-        public SubsetSig(String label, Collection<Sig> parents, Attr... attributes) throws Err {
-            super(getType(label, parents), label, Util.append(attributes, Attr.SUBSET));
+        public SubsetSig(Pos labelPos, String label, Collection<Pos> parentRefPoss, Collection<Sig> parents, Attr... attributes) throws Err {
+            super(getType(label, parents), labelPos, label, Util.append(attributes, Attr.SUBSET));
             if (isEnum != null)
                 throw new ErrorType(pos, "Subset signature cannot be an enum.");
             boolean exact = false;
@@ -643,6 +688,7 @@ public abstract class Sig extends Expr implements Clause {
             if (temp.size() == 0)
                 throw new ErrorType(pos, "Sig " + label + " must have at least one non-empty parent.");
             this.parents = temp.makeConst();
+            this.parentRefPoss = parentRefPoss != null ? new  TempList<Pos>(parentRefPoss).makeConst() : null;
         }
 
         /** {@inheritDoc} */
@@ -680,13 +726,15 @@ public abstract class Sig extends Expr implements Clause {
         /** The declaration that this field came from. */
         private Decl         decl;
 
+        public final Pos labelPos;
+
         /** Return the declaration that this field came from. */
         public Decl decl() {
             return decl;
         }
 
         /** Constructs a new Field object. */
-        private Field(Pos pos, Pos isPrivate, Pos isMeta, Pos disjoint, Pos disjoint2, Sig sig, String label, Expr bound) throws Err {
+        private Field(Pos pos, Pos isPrivate, Pos isMeta, Pos disjoint, Pos disjoint2, Sig sig, Pos labelPos, String label, Expr bound) throws Err {
             super(pos, label, sig.type.product(bound.type));
             this.defined = bound.mult() == ExprUnary.Op.EXACTLYOF;
             if (sig.builtin)
@@ -700,6 +748,7 @@ public abstract class Sig extends Expr implements Clause {
             this.isPrivate = (isPrivate != null ? isPrivate : sig.isPrivate);
             this.isMeta = (isMeta != null ? isMeta : sig.isMeta);
             this.sig = sig;
+            this.labelPos = labelPos;
         }
 
         /**
@@ -823,7 +872,7 @@ public abstract class Sig extends Expr implements Clause {
                                                          // multiplicity
                                                          // symbol, we assume
                                                          // it's oneOf
-        final Field f = new Field(null, null, null, null, null, this, label, bound);
+        final Field f = new Field(null, null, null, null, null, this, null, label, bound);
         final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
         f.decl = d;
         fields.add(d);
@@ -852,7 +901,7 @@ public abstract class Sig extends Expr implements Clause {
      * @throws ErrorType if the bound is not fully typechecked or is not a
      *             set/relation
      */
-    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, String[] labels, Expr bound) throws Err {
+    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, List<? extends ExprHasName> labels, Expr bound) throws Err {
         bound = bound.typecheck_as_set();
         if (bound.ambiguous)
             bound = bound.resolve_as_set(null);
@@ -861,9 +910,9 @@ public abstract class Sig extends Expr implements Clause {
                                                          // multiplicity
                                                          // symbol, we assume
                                                          // it's oneOf
-        final Field[] f = new Field[labels.length];
+        final Field[] f = new Field[labels.size()];
         for (int i = 0; i < f.length; i++)
-            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, this, labels[i], bound);
+            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, this, labels.get(i).pos, labels.get(i).label, bound);
         final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, Arrays.asList(f), bound);
         for (int i = 0; i < f.length; i++) {
             f[i].decl = d;
@@ -902,7 +951,7 @@ public abstract class Sig extends Expr implements Clause {
             bound = bound.resolve_as_set(null);
         if (bound.mult() != ExprUnary.Op.EXACTLYOF)
             bound = ExprUnary.Op.EXACTLYOF.make(null, bound);
-        final Field f = new Field(pos, isPrivate, isMeta, null, null, this, label, bound);
+        final Field f = new Field(pos, isPrivate, isMeta, null, null, this, null, label, bound);
         final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
         f.decl = d;
         fields.add(d);

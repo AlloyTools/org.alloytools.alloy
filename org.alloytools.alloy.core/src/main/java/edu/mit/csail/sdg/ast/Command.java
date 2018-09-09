@@ -104,6 +104,11 @@ public final class Command extends Browsable {
     public final Expr                    nameExpr;
 
     /**
+     * The 'check' or 'run' keyword
+     */
+    public final ExprVar commandKeyword;
+
+    /**
      * Returns a human-readable string that summarizes this Run or Check command.
      */
     @Override
@@ -151,8 +156,8 @@ public final class Command extends Browsable {
      *            specified)
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
-        this(null, null, "", check, overall, bitwidth, maxseq, -1, null, null, formula, null);
+    public Command(boolean check, int overall, int bitwidth, int maxseq, ExprVar commandKeyword, Expr formula) throws ErrorSyntax {
+        this(null, null, "", check, overall, bitwidth, maxseq, -1, null, null, commandKeyword, formula, null);
     }
 
     /**
@@ -175,10 +180,11 @@ public final class Command extends Browsable {
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
+    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, ExprVar commandKeyword, Expr formula, Command parent) {
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.nameExpr = e;
+        this.commandKeyword = commandKeyword;
         this.formula = formula;
         this.pos = pos;
         this.label = (label == null ? "" : label);
@@ -198,7 +204,7 @@ public final class Command extends Browsable {
      * except with a different formula.
      */
     public Command change(Expr newFormula) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, commandKeyword, newFormula, parent);
     }
 
     /**
@@ -206,7 +212,7 @@ public final class Command extends Browsable {
      * except with a different scope.
      */
     public Command change(ConstList<CommandScope> scope) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, commandKeyword, formula, parent);
     }
 
     /**
@@ -214,7 +220,7 @@ public final class Command extends Browsable {
      * except with a different list of "additional exact sigs".
      */
     public Command change(Sig... additionalExactScopes) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), commandKeyword, formula, parent);
     }
 
     /**
@@ -232,10 +238,10 @@ public final class Command extends Browsable {
     public Command change(Sig sig, boolean isExact, int startingScope, int endingScope, int increment) throws ErrorSyntax {
         for (int i = 0; i < scope.size(); i++)
             if (scope.get(i).sig == sig) {
-                CommandScope sc = new CommandScope(scope.get(i).pos, sig, isExact, startingScope, endingScope, increment);
+                CommandScope sc = new CommandScope(scope.get(i).pos, scope.get(i).sigPos, sig, isExact, startingScope, endingScope, increment);
                 return change(new TempList<CommandScope>(scope).set(i, sc).makeConst());
             }
-        CommandScope sc = new CommandScope(Pos.UNKNOWN, sig, isExact, startingScope, endingScope, increment);
+        CommandScope sc = new CommandScope(Pos.UNKNOWN, Pos.UNKNOWN, sig, isExact, startingScope, endingScope, increment);
         return change(Util.append(scope, sc));
     }
 

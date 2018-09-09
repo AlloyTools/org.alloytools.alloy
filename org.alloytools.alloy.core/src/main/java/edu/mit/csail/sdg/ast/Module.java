@@ -110,7 +110,8 @@ public interface Module extends Clause {
     public JFrame showAsTree(Listener listener);
 
     /**
-     * Parse one expression by starting fromt this module as the root module.
+     * Parse one expression by starting from this module as the root module.
      */
     public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException;
+
 }

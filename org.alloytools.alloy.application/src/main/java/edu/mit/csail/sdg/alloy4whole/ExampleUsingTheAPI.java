@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.Attr;
 import edu.mit.csail.sdg.ast.Command;
@@ -54,10 +55,10 @@ public final class ExampleUsingTheAPI {
         PrimSig B = new PrimSig("B");
 
         // one sig A1 extends A {}
-        PrimSig A1 = new PrimSig("A1", A, Attr.ONE);
+        PrimSig A1 = new PrimSig(null, "A1", Pos.UNKNOWN, A, Attr.ONE);
 
         // one sig A2 extends A {}
-        PrimSig A2 = new PrimSig("A2", A, Attr.ONE);
+        PrimSig A2 = new PrimSig(null, "A2", Pos.UNKNOWN, A, Attr.ONE);
 
         // A { f: B lone->lone B }
         Expr f = A.addField("f", B.lone_arrow_lone(B));
@@ -71,13 +72,13 @@ public final class ExampleUsingTheAPI {
         // If you want "setOf", you need: A.addField(null, "g", B.setOf())
 
         // pred someG { some g }
-        Func someG = new Func(null, "SomeG", null, null, g.some());
+        Func someG = new Func(null, Pos.UNKNOWN, "SomeG", null, null, g.some());
 
         // pred atMostThree[x:univ, y:univ] { #(x+y) >= 3 }
         Decl x = UNIV.oneOf("x");
         Decl y = UNIV.oneOf("y");
         Expr body = x.get().plus(y.get()).cardinality().lte(ExprConstant.makeNUMBER(3));
-        Func atMost3 = new Func(null, "atMost3", Util.asList(x, y), null, body);
+        Func atMost3 = new Func(null, Pos.UNKNOWN, "atMost3", Util.asList(x, y), null, body);
 
         List<Sig> sigs = Arrays.asList(new Sig[] {
                                                   A, B, A1, A2
@@ -85,14 +86,14 @@ public final class ExampleUsingTheAPI {
 
         // run { some A && atMostThree[B,B] } for 3 but 3 int, 3 seq
         Expr expr1 = A.some().and(atMost3.call(B, B));
-        Command cmd1 = new Command(false, 3, 3, 3, expr1);
+        Command cmd1 = new Command(false, 3, 3, 3, null, expr1);
         A4Solution sol1 = TranslateAlloyToKodkod.execute_command(NOP, sigs, cmd1, opt);
         System.out.println("[Solution1]:");
         System.out.println(sol1.toString());
 
         // run { some f && SomeG[] } for 3 but 2 int, 1 seq, 5 A, exactly 6 B
         Expr expr2 = f.some().and(someG.call());
-        Command cmd2 = new Command(false, 3, 2, 1, expr2);
+        Command cmd2 = new Command(false, 3, 2, 1, null, expr2);
         cmd2 = cmd2.change(A, false, 1);
         cmd2 = cmd2.change(B, true, 1);
         A4Solution sol2 = TranslateAlloyToKodkod.execute_command(NOP, sigs, cmd2, opt);

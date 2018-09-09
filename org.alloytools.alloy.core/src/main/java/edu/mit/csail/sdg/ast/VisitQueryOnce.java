@@ -122,6 +122,14 @@ public class VisitQueryOnce<T> extends VisitQuery<T> {
             return super.visit(x);
     }
 
+    @Override
+    public T visit(Func x) throws Err {
+        if (visited(x))
+            return null;
+        else
+            return super.visit(x);    
+    }
+    
     /**
      * Visits a Field node (this default implementation simply returns null)
      */

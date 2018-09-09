@@ -734,9 +734,9 @@ final class SimpleReporter extends A4Reporter {
                 rep.cb("", "\n");
             }
             if (rep.warn > 1)
-                rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings. Please scroll up to see them.\n");
+                rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings.\n");
             if (rep.warn == 1)
-                rep.cb("bold", "Note: There was 1 compilation warning. Please scroll up to see it.\n");
+                rep.cb("bold", "Note: There was 1 compilation warning.\n");
         }
     }
 }

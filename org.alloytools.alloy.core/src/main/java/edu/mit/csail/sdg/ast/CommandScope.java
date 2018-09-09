@@ -18,6 +18,7 @@ package edu.mit.csail.sdg.ast;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.ExprUnary.Op;
 
 /**
  * Immutable; reresents a scope in a "run" or "check" command.
@@ -38,9 +39,18 @@ public class CommandScope {
     public final Pos     pos;
 
     /**
+     * The position of the sig reference
+     */
+    public final Pos sigPos;
+    /**
      * The sig whose scope is being given by this CommandScope object.
      */
     public final Sig     sig;
+
+    /**
+     * the reference to the sig
+     */
+    //public final ExprUnary sigRef;
 
     /** True iff the scope is an exact scope. */
     public final boolean isExact;
@@ -69,7 +79,7 @@ public class CommandScope {
      * @throws ErrorSyntax if scope is less than zero
      */
     public CommandScope(Sig sig, boolean isExact, int scope) throws ErrorSyntax {
-        this(null, sig, isExact, scope, scope, 1);
+        this(null, null, sig, isExact, scope, scope, 1);
     }
 
     /**
@@ -87,7 +97,7 @@ public class CommandScope {
      * @throws ErrorSyntax if endingScope is less than startingScope
      * @throws ErrorSyntax if increment is less than one
      */
-    public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment) throws ErrorSyntax {
+    public CommandScope(Pos pos, Pos sigPos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment) throws ErrorSyntax {
         if (pos == null)
             pos = Pos.UNKNOWN;
         if (sig == null)
@@ -104,12 +114,18 @@ public class CommandScope {
             throw new ErrorSyntax(pos, "Sig " + sig + "'s increment value cannot be " + increment + ".\nThe increment must be 1 or greater.");
         this.pos = pos;
         this.sig = sig;
+        this.sigPos = sigPos;
         this.isExact = isExact;
         this.startingScope = startingScope;
         this.endingScope = endingScope;
         this.increment = increment;
     }
 
+    Expr sigRef = null;
+    public Expr sigRef(){
+        if(sigRef == null) sigRef =  ExprUnary.Op.NOOP.make(sigPos, sig, null, 0);
+        return sigRef;
+    }
     /** {@inheritDoc} */
     @Override
     public String toString() {

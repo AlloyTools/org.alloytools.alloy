@@ -259,6 +259,11 @@ public final class ExprCall extends Expr {
         }
 
         @Override
+        public Type visit(Func x) throws Err {
+            return x.type;
+        }
+
+        @Override
         public Type visit(Field x) {
             return x.type;
         }
