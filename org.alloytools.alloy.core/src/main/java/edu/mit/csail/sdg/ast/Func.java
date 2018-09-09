@@ -18,6 +18,7 @@ package edu.mit.csail.sdg.ast;
 import static edu.mit.csail.sdg.alloy4.TableView.clean;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,6 +26,7 @@ import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
+import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 
@@ -40,7 +42,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * predicate/function call
  */
 
-public final class Func extends Browsable implements Clause {
+public final class Func extends Expr implements Clause {
 
     /**
      * The location in the original file where this predicate/function is declared;
@@ -58,6 +60,11 @@ public final class Func extends Browsable implements Clause {
      * The label of this predicate/function; it does not need to be unique.
      */
     public final String          label;
+
+    /**
+     * The position of the label
+     */
+    public final Pos             labelPos;
 
     /**
      * True if this is a predicate; false if this is a function.
@@ -133,8 +140,8 @@ public final class Func extends Browsable implements Clause {
      * @throws ErrorSyntax if this function's return type declaration contains a
      *             predicate/function call
      */
-    public Func(Pos pos, String label, List<Decl> decls, Expr returnDecl, Expr body) throws Err {
-        this(pos, null, label, decls, returnDecl, body);
+    public Func(Pos pos, Pos labelPos, String label, List<Decl> decls, Expr returnDecl, Expr body) throws Err {
+        this(pos, null, labelPos, label, decls, returnDecl, body);
     }
 
     /**
@@ -167,12 +174,14 @@ public final class Func extends Browsable implements Clause {
      * @throws ErrorSyntax if this function's return type declaration contains a
      *             predicate/function call
      */
-    public Func(Pos pos, Pos isPrivate, String label, List<Decl> decls, Expr returnDecl, Expr body) throws Err {
+    public Func(Pos pos, Pos isPrivate, Pos labelPos, String label, List<Decl> decls, Expr returnDecl, Expr body) throws Err {
+        super(pos, Type.FORMULA);
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.pos = pos;
         this.isPrivate = isPrivate;
         this.label = (label == null ? "" : label);
+        this.labelPos = labelPos;
         this.isPred = (returnDecl == null);
         if (returnDecl == null)
             returnDecl = ExprConstant.FALSE;
@@ -252,11 +261,16 @@ public final class Func extends Browsable implements Clause {
         return (isPred ? "pred " : "fun ") + label;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public final Pos pos() {
-        return pos;
-    }
+    // /** {@inheritDoc} */
+    // @Override
+    // public final Pos pos() {
+    //     return pos;
+    // }
+    // /** {@inheritDoc} */
+    // @Override
+    // public final Pos pos() {
+    //     return pos;
+    // }
 
     /** {@inheritDoc} */
     @Override
@@ -270,6 +284,12 @@ public final class Func extends Browsable implements Clause {
         return (isPred ? "<b>pred</b> " : "<b>fun</b> ") + label;
     }
 
+    ExprVar labelExpr = null;
+    public Expr labelExpr(){
+        if(labelExpr == null)
+            labelExpr = ExprVar.make(labelPos, label);
+        return labelExpr;
+    } 
     /** {@inheritDoc} */
     @Override
     public List< ? extends Browsable> getSubnodes() {
@@ -322,6 +342,33 @@ public final class Func extends Browsable implements Clause {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public void toString(StringBuilder out, int indent) {
+        if (indent < 0) {
+            out.append("(").append(label).append(" <: ").append(label).append(")");
+        } else {
+            for (int i = 0; i < indent; i++) {
+                out.append(' ');
+            }
+            out.append( isPred? "pred " : "field ").append(label).append('\n');
+        }
+    }
+
+    @Override
+    public <T> T accept(VisitReturn<T> visitor) throws Err {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Expr resolve(Type t, Collection<ErrorWarning> warnings) {
+        return this;
+    }
+
+    @Override
+    public int getDepth() {
+        return 1;
     }
 
 }

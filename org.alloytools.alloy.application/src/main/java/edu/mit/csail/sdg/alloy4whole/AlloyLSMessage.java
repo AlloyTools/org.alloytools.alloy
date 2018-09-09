@@ -26,4 +26,5 @@ enum AlloyLSMessageType{
 	RunInProgress,
 	RunResult,
 	RunCompleted,
+	Warning
 }

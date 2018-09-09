@@ -149,6 +149,11 @@ public abstract class VisitQuery<T> extends VisitReturn<T> {
         return null;
     }
 
+    @Override
+    public T visit(Func x) throws Err {
+        return null;
+    }
+
     /**
      * Visits a Field node (this default implementation simply returns null)
      */

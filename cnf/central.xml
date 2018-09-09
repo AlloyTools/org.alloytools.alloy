@@ -76,6 +76,11 @@
 			<artifactId>org.eclipse.equinox.common</artifactId>
 			<version>3.6.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons.io</groupId>
+			<artifactId>org.apache.commons.io</artifactId>
+			<version>2.6</version>
+		</dependency>
 
 	</dependencies>
 

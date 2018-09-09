@@ -946,6 +946,11 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         return ans;
     }
 
+    @Override
+    public Object visit(Func x) throws Err {
+        return null;
+    }
+
     /* ============================= */
     /* Evaluates an ExprCall node. */
     /* ============================= */

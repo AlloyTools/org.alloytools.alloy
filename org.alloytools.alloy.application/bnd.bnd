@@ -9,7 +9,8 @@
 	org.eclipse.lsp4j,\
 	org.eclipse.lsp4j.jsonrpc,\
 	com.google.gson,\
-	org.eclipse.equinox.common
+	org.eclipse.equinox.common, \
+	org.apache.commons.io
 
 -testpath: \
 	osgi.enroute.junit.wrapper, \

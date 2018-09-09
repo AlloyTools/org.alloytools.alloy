@@ -31,4 +31,5 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
 	@${repo;org.eclipse.lsp4j.jsonrpc}, \
 	@${repo;com.google.gson}, \
 	@${repo;org.eclipse.equinox.common}, \
+	@${repo;org.apache.commons.io}, \
 	LICENSES

@@ -595,6 +595,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      */
     private static String alloyHome = null;
 
+    //TODO can be replaced by AlloyAppUtil.alloyHome()
     /**
      * Find a temporary directory to store Alloy files; it's guaranteed to be a
      * canonical absolute path.
