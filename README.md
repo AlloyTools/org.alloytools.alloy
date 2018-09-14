@@ -1,5 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.com/haslab/Electrum2.svg?branch=master)](https://travis-ci.com/haslab/Electrum2)
+<!-- [![Build Status](https://travis-ci.com/haslab/Electrum2.svg?branch=master)](https://travis-ci.com/haslab/Electrum2) -->
 # Electrum and Alloy
 
 Electrum is an extension to the Alloy Analyzer by
@@ -18,6 +18,10 @@ source code. See the release notes for details of new
 features. 
 
 More documentation can be found at: http://alloytools.org/documentation.html.
+
+# Language Server Protocol Support
+
+In this fork of the Alloy repository, support for the language server protocol is being implemented. The [VSCode Alloy extension](https://marketplace.visualstudio.com/items?itemName=ArashSahebolamri.alloy) uses this LSP implementation.
 
 # Requirements
 
@@ -63,13 +67,9 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.application](org.alloytools.alloy.application) – Main application code includes the parser, ast, visualiser, and application code
 * [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
-<<<<<<< HEAD
 * [org.alloytools.pardinus](org.alloytools.pardinus) – Kodkod's temporal extension without native code
-* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for Kodkod/Pardinus
-=======
 * [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
 * [org.alloytools.kodkod.nativesat](org.alloytools.kodkod.nativesat) – The native code libraries for kodkod
->>>>>>> simulator
 
 ### Relevant Project files
 

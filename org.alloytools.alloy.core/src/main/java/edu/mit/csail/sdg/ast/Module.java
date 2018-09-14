@@ -79,7 +79,7 @@ public interface Module extends Clause {
     /**
      * Return an unmodifiable list of all assertions in this module.
      */
-    public ConstList<Pair<String,Expr>> getAllAssertions();
+    public ConstList<Assert> getAllAssertions();
 
     /**
      * Return an unmodifiable list of all facts in this module.

@@ -83,4 +83,6 @@ public abstract class VisitReturn<T> {
     public abstract T visit(Field x) throws Err;
 
     public abstract T visit(Func x) throws Err;
+
+    public abstract T visit(Assert x) throws Err;
 }

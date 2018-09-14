@@ -34,7 +34,7 @@ import edu.mit.csail.sdg.parser.CompModule.Context;
 
 /** Immutable; this class represents a macro. */
 
-final class Macro extends ExprCustom {
+final public class Macro extends ExprCustom {
 
     /** If nonnull, this is a private macro. */
     final Pos                        isPrivate;
@@ -43,7 +43,7 @@ final class Macro extends ExprCustom {
     private final CompModule         realModule;
 
     /** The name of the macro. */
-    private final String             name;
+    public final String             name;
 
     /** The list of parameters (can be an empty list) */
     private final ConstList<ExprVar> params;

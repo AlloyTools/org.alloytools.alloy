@@ -62,7 +62,9 @@ import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
@@ -90,6 +92,7 @@ import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -98,6 +101,9 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceFolder;
+import org.eclipse.lsp4j.WorkspaceFoldersOptions;
+import org.eclipse.lsp4j.WorkspaceServerCapabilities;
+import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -135,6 +141,7 @@ import edu.mit.csail.sdg.alloy4whole.AlloyLanguageClient.CommandsListResultItem;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Expr;
@@ -144,6 +151,7 @@ import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprLet;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
@@ -169,9 +177,15 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
 	private AlloyLanguageClient client;
 	private AlloyTextDocumentService alloyTextDocumentService;
+	private InitializeParams initializeParams;
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+		System.out.println("initialize() called");
+		this.initializeParams = params;
+
+		service().directory = params.getRootUri() != null ? fileUriToPath(params.getRootUri()) : null;
+
 		InitializeResult res = new InitializeResult();
 
 		ServerCapabilities caps = new ServerCapabilities();
@@ -192,6 +206,9 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 		caps.setRenameProvider(true);
 		//caps.setDocumentHighlightProvider(true);
 		
+		caps.setWorkspaceSymbolProvider(true);
+		caps.setDocumentSymbolProvider(true);
+
 		res.setCapabilities(caps);
 		return CompletableFuture.completedFuture(res);
 	}
@@ -204,19 +221,27 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 	@Override
 	public void exit() {
 		System.exit(0);
-
 	}
 
 	@Override
 	public TextDocumentService getTextDocumentService() {
-		this.alloyTextDocumentService = new AlloyTextDocumentService(client);
+		System.out.println("getTextDocumentService() called");
+		return service();
+	}
+
+	private AlloyTextDocumentService service() {
+		if (alloyTextDocumentService == null)
+			alloyTextDocumentService = new AlloyTextDocumentService(client);
 		return alloyTextDocumentService;
 	}
 
 	@Override
 	public WorkspaceService getWorkspaceService() {
-		return null;
+		System.out.println("getWorkspaceService() called");
+		return service();
 	}
+
+	
 
 	// LanguageClientAware
 	@Override
@@ -232,16 +257,17 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
 }
 
-class AlloyTextDocumentService implements TextDocumentService, LanguageClientAware {
+class AlloyTextDocumentService implements TextDocumentService, WorkspaceService, LanguageClientAware {
 
 	public AlloyLanguageClient client;
+	public String directory;
 	private int subMemoryNow;
 	private int subStackNow;
-	private String directory;
 
-	public AlloyTextDocumentService(AlloyLanguageClient client) {
+	public AlloyTextDocumentService( AlloyLanguageClient client) {
+		log("AlloyTextDocumentService ctor");
+		//log("dir: " + params != null ? params.getRootUri() : null /* + ", client: " + client */);
 		this.client = client;
-		log("AlloyTextDocumentService ctor, client: " + client);
 	}
 
 	// LanguageClientAware
@@ -249,11 +275,6 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 	public void connect(LanguageClient client) {
 		log("AlloyTextDocumentService.connect() called");
 		this.client = (AlloyLanguageClient) client;
-		client.workspaceFolders().thenAccept(folders -> {
-			if(folders != null && !folders.isEmpty()){
-				directory = fileUriToPath(folders.get(0).getUri());
-			}
-		});
 	}
 
 	@Override
@@ -433,7 +454,7 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 
 		CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
 
-		Pos pos = positionToPos(params.getPosition(), path);
+		Pos pos = getPosOfSymbolFromPositionInOpenDoc(params.getTextDocument().getUri(), params.getPosition());
 		pos = getCurrentWordSelectionAsPos(text, pos).withFilename(path);
 		
 		log("cachedCompModuleForFileUri_Uri: " + cachedCompModuleForFileUri_Uri);
@@ -447,42 +468,57 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
-		WorkspaceEdit wEdit = new WorkspaceEdit();
+		String uri = params.getTextDocument().getUri();
+		String text = fileContents.get(uri);
+		String path = fileUriToPath(uri);
+
+		CompModule module = getCompModuleForFileUri(uri);
 		
-		CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
-		
-		Pos pos = getPosOfSymbolFromPositionInOpenDoc(params.getTextDocument().getUri(), params.getPosition());
-		
+		Pos pos = getPosOfSymbolFromPositionInOpenDoc(uri, params.getPosition());
+		pos = getCurrentWordSelectionAsPos(text, pos).withFilename(path);
+
 		Expr expr = module.find(pos);
-		Expr referencedExpr = expr.referenced() != null ?  module.find(expr.referenced().pos()) : expr;
+		Pos targetPos = expr.referenced() != null ? expr.referenced().pos() : expr.pos;
 		
-		if(referencedExpr == null || 
-		   !(referencedExpr instanceof ExprVar || referencedExpr instanceof ExprLet)) {
-			return CompletableFuture.completedFuture(null);
-		}
+		CompModule targetModule = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), filePathResolved(targetPos.filename));
+		
+		Expr targetExpr = targetModule.find(targetPos);
+
+		// if(targetExpr == null || 
+		//    !(targetExpr instanceof ExprVar || targetExpr instanceof ExprLet)) {
+		// 	   return CompletableFuture.completedFuture(null);
+		// }
+
 		Map<String, List<TextEdit>> changes = new HashMap<>();
-		List<Expr> refs = findAllReferences(module, pos, true);
+			
+		String dir = this.directory != null ? this.directory : new File(path).getParent();
+		List<Pos> refs = findAllReferencesGlobally(module, pos, dir, fileContentsPathBased(), false);
 		
-		refs.forEach(ref ->{
+		if (targetExpr instanceof Sig){
+			targetPos = ((Sig)targetExpr).labelPos;
+		} else if (targetExpr instanceof Field){
+			targetPos = ((Field) targetExpr).labelPos;
+		} else if ( targetExpr instanceof Func){
+			targetPos = ((Func) targetExpr).labelPos;
+		} else if (targetExpr instanceof Assert){
+			targetPos = ((Assert) targetExpr).labelPos;
+			log("target expr is Assert, labelPos: " + targetPos);
+		}
+		
+		WorkspaceEdit wEdit = new WorkspaceEdit();
+		Stream.concat(refs.stream().distinct(), Stream.of(targetPos)).forEach(refPos ->{
 			//log("ref: " + ref.getClass() + ", " + ref);
 			
 			TextEdit edit = new TextEdit();
 
-			Pos refPos = ref.pos;
-			if (ref instanceof Sig){
-				refPos = ((Sig)ref).labelPos;
-			} else if (ref instanceof Field){
-				refPos = ((Field) ref).labelPos;
-			}
-			
 			edit.setRange(createRangeFromPos(refPos));
 			edit.setNewText(params.getNewName());
 			
-			String uri = filePathToUri(ref.pos.filename);
+			String refUri = filePathToUri(filePathResolved(refPos.filename));
 			
-			if(!changes.containsKey(uri))
-				changes.put(uri, new ArrayList<>());
-			changes.get(uri).add(edit);
+			if(!changes.containsKey(refUri))
+				changes.put(refUri, new ArrayList<>());
+			changes.get(refUri).add(edit);
 		});
 		
 		wEdit.setChanges(changes);
@@ -522,8 +558,68 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 	}
 
 	@Override
-	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
-		return CompletableFuture.completedFuture(Arrays.asList());
+	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {		
+		CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
+		return CompletableFuture.completedFuture(moduleSymbols(module));
+	}
+
+	private List<SymbolInformation> folderSymbols(String dir){
+		List<SymbolInformation> res = new ArrayList<>();
+		
+		for(File child : alloyFilesInDir(dir)){
+			String filePath = fileUriToPath(child.toURI().toString());
+			CompModule module = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), filePath);
+			res.addAll(moduleSymbols(module));
+		}
+
+		return res;		
+	}
+
+	private static List<SymbolInformation> moduleSymbols(CompModule module){
+		Stream<SymbolInformation> commands = module.getAllCommands().stream()
+				.map(c -> newSymbolInformation(c.label, posToLocation(c.pos), SymbolKind.Event));
+
+		Stream<SymbolInformation> sigs = module.getAllSigs().makeConstList().stream()
+				.map(sig -> newSymbolInformation(sig.label, posToLocation(sig.pos), 
+				                                 sig.isOne != null || sig.isLone != null ? SymbolKind.Object : SymbolKind.Class));
+
+		Stream<SymbolInformation> fields = module.getAllSigs().makeConstList().stream()
+				.flatMap(sig -> sig.getFields().makeConstList().stream()).map(field -> {
+					SymbolInformation symbolInfo = newSymbolInformation(field.label, posToLocation(field.pos),
+							SymbolKind.Field);
+					symbolInfo.setContainerName(field.sig.label);
+					return symbolInfo;
+				});
+
+		Stream<SymbolInformation> funcs = module.getAllFunc().makeConstList().stream()
+				.map(func -> newSymbolInformation(func.label, posToLocation(func.pos), 
+												  func.isPred ? SymbolKind.Boolean : SymbolKind.Function));
+
+		Stream<SymbolInformation> macros = module.getAllMacros().makeConstList().stream().map( macro -> {
+			SymbolInformation symbolInfo = new SymbolInformation();
+			Location location = posToLocation(macro.pos);
+			symbolInfo.setLocation(location);
+
+			symbolInfo.setName(macro.name);
+			symbolInfo.setKind(SymbolKind.Constant);
+			return symbolInfo;
+		});
+
+		Stream<SymbolInformation> assertions = module.getAllAssertions().stream().map(
+				assertion -> newSymbolInformation(assertion.label, posToLocation(assertion.pos), SymbolKind.Property));
+
+		return 
+			Stream.of(commands, sigs, fields, funcs, assertions, macros)
+			.flatMap(x -> x)
+			//.sorted((sym1,sym2) -> positionCompare(sym1.getLocation().getRange().getStart(), sym2.getLocation().getRange().getStart()))
+			.collect(Collectors.toList());
+	}
+
+	static int positionCompare(Position p1, Position p2){	
+		return p1.getLine() < p2.getLine() ? -1 : p1.getLine() > p2.getLine() ? 1 :
+			   p1.getCharacter() < p2.getCharacter() ? -1 :
+			   p1.getCharacter() > p2.getCharacter() ? 1 :
+			   0;
 	}
 
 	@Override
@@ -811,9 +907,35 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		}
 	}
 	
+	// WorkspaceService methods
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
 		fileContents.remove(params.getTextDocument().getUri());
+	}
+
+	@Override
+	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params) {
+		
+		if(this.directory == null)
+			return CompletableFuture.completedFuture(null);
+		
+		List<SymbolInformation> res = folderSymbols(this.directory).stream().filter(symbol -> {
+			if (symbol.getName().toLowerCase().contains(params.getQuery().toLowerCase()))
+				return true;
+			return false;
+		}).collect(Collectors.toList());
+
+		return CompletableFuture.completedFuture(res);
+	}
+
+	@Override
+	public void didChangeConfiguration(DidChangeConfigurationParams params) {
+
+	}
+
+	@Override
+	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
+		
 	}
 
 	static String sigRemovePrefix(String sig) {
@@ -1657,44 +1779,51 @@ class AlloyTextDocumentService implements TextDocumentService, LanguageClientAwa
 		Pos targetPos = expr.referenced() != null ? expr.referenced().pos() :  expr.pos;
 		log("targetPos: " + targetPos.toRangeString());
 
+		if(targetPos.equals(Pos.UNKNOWN))
+			return references;
+
 		if(includeSelf)
 			references.add(targetPos);
 		
-		File dir = new File(rootDir);
-		File[] directoryListing = dir.listFiles();
-		for (File child:directoryListing){
-			if (child.isFile() && FilenameUtils.isExtension(child.getAbsolutePath(), new String[]{"als"}) ){
+		for (File child: alloyFilesInDir(rootDir)){
 
-				String filePath = fileUriToPath(child.toURI().toString());
-				log("parsing file " + filePath + ", loaded: " + loaded.containsKey(filePath));
-				try{
-					CompModule childModule = CompUtil.parseEverything_fromFile(null, new HashMap<>(loaded), filePath);
+			String filePath = fileUriToPath(child.toURI().toString());
+			log("parsing file " + filePath + ", loaded: " + loaded.containsKey(filePath));
+			try{
+				CompModule childModule = CompUtil.parseEverything_fromFile(null, new HashMap<>(loaded), filePath);
 
-					childModule.visitExpressionsResilient(new VisitQueryOnce<Void>(){
-						@Override
-						public boolean visited(Expr expr) {
-							boolean visited = super.visited(expr);
-							if (visited)
-								return visited;
-						
-							if (expr.referenced() != null ){
-								Pos rpos = expr.referenced().pos();
-								if(rpos.equals(targetPos)){
-								//if( rpos.x == targetPos.x && rpos.y == targetPos.y /* && rpos.x2 == targetPos.x2 &&  rpos.y2 == targetPos.y2 */){
-
-									log("reference: " + expr.toString() + "; to file: " + rpos.filename);
-									references.add(expr.pos);
-								}
-							}
+				childModule.visitExpressionsResilient(new VisitQueryOnce<Void>(){
+					@Override
+					public boolean visited(Expr expr) {
+						boolean visited = super.visited(expr);
+						if (visited)
 							return visited;
-						}	
-					});
-				}catch(Exception ex){
-					log("exception parsing" + child.toString() + ": " + ex.toString());
-				}
+					
+						if (expr.referenced() != null ){
+							Pos rpos = expr.referenced().pos();
+							if(rpos.equals(targetPos)){
+								log("reference: " + expr.toString() + "; to file: " + rpos.filename);
+								references.add(expr.pos);
+							}
+						}
+						return visited;
+					}	
+				});
+			}catch(Exception ex){
+				log("exception parsing" + child.toString() + ": " + ex.toString());
 			}
 		}  
 		return references;
+	}
+
+	static List<File> alloyFilesInDir(String dir){
+		File[] directoryListing = new File(dir).listFiles();
+		return Arrays.stream(directoryListing)
+				.filter(child -> child.isFile()
+						&& FilenameUtils.isExtension(child.getAbsolutePath(), new String[] { "als" }))
+				.collect(Collectors.toList());
 
 	}
+
+	
 }

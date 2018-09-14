@@ -37,6 +37,7 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
@@ -910,6 +911,16 @@ public final class SimInstance extends VisitReturn<Object> {
             return (SimTupleset) ans;
         else
             throw new ErrorFatal("Unknown sig " + x + " encountered during evaluation.");
+    }
+
+    @Override
+    public Object visit(Func x) throws Err {
+        return null;
+    }
+
+    @Override
+    public Object visit(Assert x) throws Err {
+        return null;
     }
 
     /** {@inheritDoc} */
