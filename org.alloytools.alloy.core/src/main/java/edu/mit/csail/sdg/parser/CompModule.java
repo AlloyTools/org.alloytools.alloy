@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,6 +89,7 @@ import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.ast.Assert;
 
 /**
  * Mutable; this class represents an Alloy module; equals() uses object
@@ -222,8 +224,9 @@ public final class CompModule extends Browsable implements Module {
     /** Each macro name is mapped to a MacroAST object. */
     private final Map<String,Macro>           macros      = new LinkedHashMap<String,Macro>();
 
+    
     /** Each assertion name is mapped to its Expr. */
-    private final Map<String,Expr>            asserts     = new LinkedHashMap<String,Expr>();
+    private final Map<String,Assert>            asserts     = new LinkedHashMap<String,Assert>();
 
     /**
      * The list of facts; each fact is either an untypechecked Exp or a typechecked
@@ -658,6 +661,12 @@ public final class CompModule extends Browsable implements Module {
         public Expr visit(Func x) throws Err {
             return x;
         }
+
+        @Override
+        public Expr visit(Assert x) throws Err {
+            return x;
+        }
+
         /** {@inheritDoc} */
         @Override
         public Expr visit(Field x) {
@@ -874,9 +883,9 @@ public final class CompModule extends Browsable implements Module {
         }
         if (asserts.size() > 0) {
             x = new ArrayList<Browsable>(asserts.size());
-            for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-                Pos sp = e.getValue().span();
-                x.add(make(sp, sp, "<b>assert</b> " + e.getKey(), e.getValue()));
+            for (Map.Entry<String,Assert> e : asserts.entrySet()) {
+                Pos sp = e.getValue().expr.span();
+                x.add(make(sp, sp, "<b>assert</b> " + e.getKey(), e.getValue().expr));
             }
             ans.add(make("<b>" + x.size() + (x.size() > 1 ? " asserts</b>" : " assert</b>"), x));
         }
@@ -917,7 +926,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /**
-     * Parse one expression by starting fromt this module as the root module.
+     * Parse one expression by starting from this module as the root module.
      */
     @Override
     public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException {
@@ -977,7 +986,7 @@ public final class CompModule extends Browsable implements Module {
             } else if (x instanceof Func) {
                 Func y = (Func) x;
                 msg.append(y.isPred ? "pred " : "fun ").append(y.label).append("\n" + "at ").append(y.pos.toShortString());
-            } else if (x instanceof Expr) {
+            } else if (x instanceof Assert) {
                 Expr y = (Expr) x;
                 msg.append("assertion at ").append(y.pos.toShortString());
             }
@@ -1079,7 +1088,7 @@ public final class CompModule extends Browsable implements Module {
                         ans.add(x);
             }
             if ((r & 2) != 0) {
-                Expr x = m.asserts.get(name);
+                Assert x = m.asserts.get(name);
                 if (x != null)
                     ans.add(x);
             }
@@ -1114,7 +1123,7 @@ public final class CompModule extends Browsable implements Module {
                             ans.add(x);
                 }
                 if ((r & 2) != 0) {
-                    Expr x = u.asserts.get(name);
+                    Assert x = u.asserts.get(name);
                     if (x != null)
                         ans.add(x);
                 }
@@ -1708,12 +1717,12 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add an ASSERT declaration. */
-    String addAssertion(Pos pos, String name, Expr value) throws Err {
+    String addAssertion(Pos pos, Pos labelPos, String name, Expr value) throws Err {
         status = 3;
         if (name == null || name.length() == 0)
             name = "assert$" + (1 + asserts.size());
         dup(pos, name, false);
-        Expr old = asserts.put(name, ExprUnary.Op.NOOP.make(value.span().merge(pos), value));
+        Assert old = asserts.put(name, new Assert(pos.merge(value.span()), labelPos, name, ExprUnary.Op.NOOP.make(value.span(), value)));
         if (old != null) {
             asserts.put(name, old);
             throw new ErrorSyntax(pos, "\"" + name + "\" is already the name of an assertion in this module.");
@@ -1727,11 +1736,12 @@ public final class CompModule extends Browsable implements Module {
      */
     private JoinableList<Err> resolveAssertions(A4Reporter rep, JoinableList<Err> errors, List<ErrorWarning> warns) throws Err {
         Context cx = new Context(this, warns);
-        for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-            Expr expr = e.getValue();
+        for (Map.Entry<String,Assert> e : asserts.entrySet()) {
+            Assert _assert = e.getValue();
+            Expr expr = _assert.expr;
             expr = cx.check(expr).resolve_as_formula(warns);
             if (expr.errors.isEmpty()) {
-                e.setValue(expr);
+                e.setValue(new Assert(_assert.pos, _assert.labelPos, _assert.label, expr));
                 rep.typecheck("Assertion " + e.getKey() + ": " + expr.type() + "\n");
             } else
                 errors = errors.make(expr.errors);
@@ -1743,10 +1753,10 @@ public final class CompModule extends Browsable implements Module {
      * Return an unmodifiable list of all assertions in this module.
      */
     @Override
-    public ConstList<Pair<String,Expr>> getAllAssertions() {
-        TempList<Pair<String,Expr>> ans = new TempList<Pair<String,Expr>>(asserts.size());
-        for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-            ans.add(new Pair<String,Expr>(e.getKey(), e.getValue()));
+    public ConstList<Assert> getAllAssertions() {
+        TempList<Assert> ans = new TempList<Assert>(asserts.size());
+        for (Assert a : asserts.values()) {
+            ans.add(a);
         }
         return ans.makeConst();
     }
@@ -1865,7 +1875,7 @@ public final class CompModule extends Browsable implements Module {
         status = 3;
         String n;
         if (check)
-            n = addAssertion(pos, "check$" + (1 + commands.size()), e);
+            n = addAssertion(pos, null, "check$" + (1 + commands.size()), e);
         else
             addFunc(e.span().merge(pos), Pos.UNKNOWN, ExprVar.make( Pos.UNKNOWN, n = "run$" + (1 + commands.size())), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
@@ -1901,7 +1911,14 @@ public final class CompModule extends Browsable implements Module {
             if (m.size() < 1)
                 throw new ErrorSyntax(cmd.pos, "The assertion \"" + cname + "\" cannot be found.");
 
-            Expr expr = (Expr) (m.get(0));
+            Expr expr;
+            if (m.get(0) instanceof Assert){
+                Assert _assert = (Assert) m.get(0);
+                expr = _assert.expr;
+                declaringClause = _assert;
+            }else{
+                expr = (Expr) m.get(0);
+            }
             e = expr.not();
         } else {
             List<Object> m = getRawQS(4, cname); // We prefer fun/pred in the
@@ -2398,6 +2415,7 @@ public final class CompModule extends Browsable implements Module {
         });
         asserts.values().forEach(assrt -> {
             assrt.accept(visitor);
+            assrt.expr.accept(visitor);
         });
         commands.forEach(cmd -> {
             if (cmd.nameExpr != null)
@@ -2463,6 +2481,7 @@ public final class CompModule extends Browsable implements Module {
         });
         asserts.values().forEach(assrt -> {
             tryIgnore ( () -> assrt.accept(visitor));
+            tryIgnore ( () -> assrt.expr.accept(visitor));
         });
         commands.forEach(cmd -> {
             if (cmd.nameExpr != null)

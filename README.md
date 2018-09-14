@@ -1,5 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
+<!-- [![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy) -->
 # Alloy
 
 Alloy 4 is a self-contained executable, which includes the Kodkod
@@ -10,6 +10,10 @@ and includes the source code. See the release notes for details of new
 features. 
 
 More documentation can be found at: http://alloytools.org/documentation.html.
+
+# Language Server Protocol Support
+
+In this fork of the Alloy repository, support for the language server protocol is being implemented. The [VSCode Alloy extension](https://marketplace.visualstudio.com/items?itemName=ArashSahebolamri.alloy) uses this LSP implementation.
 
 # Requirements
 

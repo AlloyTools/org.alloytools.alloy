@@ -12,26 +12,34 @@ public class Lsp4jUtil {
 		diagnosticsParams.setUri(uri);
 		return diagnosticsParams;
 	}
-	
+
 	public static Diagnostic newDiagnostic(String message, Range range) {
 		Diagnostic res = new Diagnostic();
 		res.setMessage(message);
 		res.setRange(range);
 		return res;
 	}
-	
+
 	public static MessageParams newMessageParams(String message) {
 		MessageParams res = new MessageParams();
 		res.setMessage(message);
 		res.setType(MessageType.Log);
 		return res;
 	}
-	
+
 	public static Location newLocation(Range range, String uri) {
 		Location location = new Location();
 		location.setRange(range);
 		location.setUri(uri);
 		return location;
+	}
+
+	public static SymbolInformation newSymbolInformation(String name, Location location, SymbolKind kind) {
+		SymbolInformation symbolInfo = new SymbolInformation();
+		symbolInfo.setLocation(location);
+		symbolInfo.setName(name);
+		symbolInfo.setKind(kind);
+		return symbolInfo;
 	}
 
 }

@@ -234,9 +234,9 @@ public final class SimpleCLI {
                             x.b.toString(sb, 4);
                             rep.flush();
                         }
-                        for (Pair<String,Expr> x : m.getAllAssertions()) {
-                            sb.append("\nAssertion ").append(x.a).append("\n");
-                            x.b.toString(sb, 4);
+                        for (edu.mit.csail.sdg.ast.Assert x : m.getAllAssertions()) {
+                            sb.append("\nAssertion ").append(x.label).append("\n");
+                            x.expr.toString(sb, 4);
                             rep.flush();
                         }
                         if (m == world)

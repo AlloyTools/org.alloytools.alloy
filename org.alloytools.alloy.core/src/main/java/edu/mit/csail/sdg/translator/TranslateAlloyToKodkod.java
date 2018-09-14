@@ -36,6 +36,7 @@ import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Decl;
@@ -911,6 +912,11 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 
     @Override
     public Object visit(Func x) throws Err {
+        return null;
+    }
+
+    @Override
+    public Object visit(Assert x) throws Err {
         return null;
     }
 
