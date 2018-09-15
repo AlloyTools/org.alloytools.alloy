@@ -158,6 +158,7 @@ import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
+import edu.mit.csail.sdg.parser.Macro;
 import edu.mit.csail.sdg.sim.SimInstance;
 import edu.mit.csail.sdg.sim.SimTuple;
 import edu.mit.csail.sdg.sim.SimTupleset;
@@ -502,7 +503,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			targetPos = ((Func) targetExpr).labelPos;
 		} else if (targetExpr instanceof Assert){
 			targetPos = ((Assert) targetExpr).labelPos;
-			log("target expr is Assert, labelPos: " + targetPos);
+		} else if (targetExpr instanceof Macro){
+			targetPos = ((Macro) targetExpr).namePos;
 		}
 		
 		WorkspaceEdit wEdit = new WorkspaceEdit();
@@ -560,7 +562,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {		
 		CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
-		return CompletableFuture.completedFuture(moduleSymbols(module));
+		return CompletableFuture.completedFuture(module != null ? moduleSymbols(module) : null);
 	}
 
 	private List<SymbolInformation> folderSymbols(String dir){
@@ -568,8 +570,12 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		
 		for(File child : alloyFilesInDir(dir)){
 			String filePath = fileUriToPath(child.toURI().toString());
-			CompModule module = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), filePath);
-			res.addAll(moduleSymbols(module));
+			try{
+				CompModule module = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), filePath);
+				res.addAll(moduleSymbols(module));
+			} catch(Exception ex){
+				log("error parsing " + child);
+			}
 		}
 
 		return res;		

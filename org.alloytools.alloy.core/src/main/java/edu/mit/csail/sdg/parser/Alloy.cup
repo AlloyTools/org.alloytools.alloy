@@ -728,11 +728,11 @@ TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Versi
 TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :}; // [HASLab] distinguish "for n" from "from n..n"
 TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, false,          a.num, Integer.MAX_VALUE, i.num); :};
 
-Macro ::= Vis:p LET:o              Name:n LPAREN   Names:d RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, d     , v); :};
-Macro ::= Vis:p LET:o              Name:n LPAREN           RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, null  , v); :};
-Macro ::= Vis:p LET:o              Name:n LBRACKET Names:d RBRACKET MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, d     , v); :};
-Macro ::= Vis:p LET:o              Name:n LBRACKET         RBRACKET MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, null  , v); :};
-Macro ::= Vis:p LET:o              Name:n                           MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, null  , v); :};
+Macro ::= Vis:p LET:o              Name:n LPAREN   Names:d RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, d     , v); :};
+Macro ::= Vis:p LET:o              Name:n LPAREN           RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, null  , v); :};
+Macro ::= Vis:p LET:o              Name:n LBRACKET Names:d RBRACKET MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, d     , v); :};
+Macro ::= Vis:p LET:o              Name:n LBRACKET         RBRACKET MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, null  , v); :};
+Macro ::= Vis:p LET:o              Name:n                           MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, null  , v); :};
 
 MacroBody ::= Super:a       {: RESULT=a; :};
 MacroBody ::= EQUALS Expr:a {: RESULT=a; :};

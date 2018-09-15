@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * Acts like VisitQuery but never traverses a node more than once.
@@ -149,6 +150,13 @@ public class VisitQueryOnce<T> extends VisitQuery<T> {
             return super.visit(x);
     }
 
+    @Override
+    public T visit(Macro x) throws Err {
+        if (visited(x))
+            return null;
+        else
+            return super.visit(x);
+    }
     /**
      * Will be called for all visit methods. If it returns true then null is
      * returned otherwise the normal visit method is called.
