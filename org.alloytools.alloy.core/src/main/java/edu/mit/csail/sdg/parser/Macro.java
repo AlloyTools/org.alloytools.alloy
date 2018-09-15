@@ -30,6 +30,7 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
 import edu.mit.csail.sdg.ast.ExprCustom;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.VisitReturn;
 import edu.mit.csail.sdg.parser.CompModule.Context;
 
 /** Immutable; this class represents a macro. */
@@ -45,6 +46,8 @@ final public class Macro extends ExprCustom {
     /** The name of the macro. */
     public final String             name;
 
+    public final Pos namePos;
+
     /** The list of parameters (can be an empty list) */
     private final ConstList<ExprVar> params;
 
@@ -52,33 +55,34 @@ final public class Macro extends ExprCustom {
      * The list of arguments (can be an empty list) (must be equal or shorter than
      * this.params)
      */
-    private final ConstList<Expr>    args;
+    public final ConstList<Expr>    args;
 
     /** The macro body. */
-    private final Expr               body;
+    public final Expr               body;
 
     /** Construct a new Macro object. */
-    private Macro(Pos pos, Pos isPrivate, CompModule realModule, String name, List<ExprVar> params, List<Expr> args, Expr body) {
+    private Macro(Pos pos, Pos isPrivate, CompModule realModule, Pos namePos, String name, List<ExprVar> params, List<Expr> args, Expr body) {
         super(pos, new ErrorFatal(pos, "Incomplete call on the macro \"" + name + "\""));
         this.realModule = realModule;
         this.isPrivate = isPrivate;
         this.name = name;
+        this.namePos = namePos;
         this.params = ConstList.make(params);
         this.args = ConstList.make(args);
         this.body = body;
     }
 
     /** Construct a new Macro object. */
-    Macro(Pos pos, Pos isPrivate, CompModule realModule, String name, List<ExprVar> params, Expr body) {
-        this(pos, isPrivate, realModule, name, params, null, body);
+    Macro(Pos pos, Pos isPrivate, CompModule realModule, Pos namePos, String name, List<ExprVar> params, Expr body) {
+        this(pos, isPrivate, realModule, namePos, name, params, null, body);
     }
 
     Macro addArg(Expr arg) {
-        return new Macro(pos, isPrivate, realModule, name, params, Util.append(args, arg), body);
+        return new Macro(pos, isPrivate, realModule, namePos, name, params, Util.append(args, arg), body);
     }
 
     Expr changePos(Pos pos) {
-        return new Macro(pos, isPrivate, realModule, name, params, args, body);
+        return new Macro(pos, isPrivate, realModule, namePos, name, params, args, body);
     }
 
     /**
@@ -132,7 +136,16 @@ final public class Macro extends ExprCustom {
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        return name;
+        StringBuilder sb = new StringBuilder();
+        sb.append(name);
+        if (! this.params.isEmpty()){
+            sb.append("[");
+            sb.append( String.join(", ", this.params.stream().map(p -> p.label).toArray(String[]::new)) );
+            sb.append("]");
+        }
+        sb.append(" = ");
+        sb.append(this.body.toString());
+        return sb.toString();
     }
 
     /** {@inheritDoc} */
@@ -148,7 +161,12 @@ final public class Macro extends ExprCustom {
     }
 
     public Macro copy() {
-        return new Macro(pos, isPrivate, realModule, name, params, args, body);
+        return new Macro(pos, isPrivate, realModule, namePos, name, params, args, body);
     }
 
+
+    @Override
+    public <T> T accept(VisitReturn<T> visitor) throws Err {
+        return visitor.visit(this);
+    }
 }

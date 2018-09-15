@@ -89,6 +89,7 @@ import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Assert;
 
 /**
@@ -367,7 +368,7 @@ public final class CompModule extends Browsable implements Module {
                 match = rootmodule.globals.get(name);
             if (match != null) {
                 if (match instanceof Macro)
-                    return ((Macro) match).changePos(pos);
+                    return ((Macro) match);//.changePos(pos);
                 match = ExprUnary.Op.NOOP.make(pos, match);
                 return ExprChoice.make(isIntsNotUsed, pos, asList(match), asList(name));
             }
@@ -469,9 +470,14 @@ public final class CompModule extends Browsable implements Module {
         public Expr visit(ExprBadJoin x) throws Err {
             Expr left = visitThis(x.left);
             Expr right = visitThis(x.right);
+            Expr rightInner = ignoreNoops(right);
             // If it's a macro invocation, instantiate it
-            if (right instanceof Macro)
-                return ((Macro) right).addArg(left).instantiate(this, warns);
+            if (rightInner instanceof Macro){
+                Expr instantiated = ((Macro) rightInner).addArg(left).instantiate(this, warns);
+                Expr res = ExprUnary.Op.NOOP.make(right.pos, instantiated);
+                res.setReferenced(right.referenced());
+                return res;
+            }
             // check to see if it is the special builtin function "Int[]"
             if (left.type().is_int() && right.isSame(Sig.SIGINT))
                 return left; // [AM] .cast2sigint();
@@ -482,6 +488,15 @@ public final class CompModule extends Browsable implements Module {
             return process(x.pos, x.closingBracket, right.pos, ((ExprChoice) right).choices, ((ExprChoice) right).reasons, left);
         }
 
+        public static Expr ignoreNoops(Expr e){
+            if (e instanceof ExprUnary){
+                ExprUnary eu = (ExprUnary) e;
+                if( eu.op == Op.NOOP){
+                    return ignoreNoops(eu.sub);
+                }
+            }
+            return e;
+        }
         /** {@inheritDoc} */
         @Override
         public Expr visit(ExprBinary x) throws Err {
@@ -489,8 +504,13 @@ public final class CompModule extends Browsable implements Module {
             Expr right = visitThis(x.right);
             if (x.op == ExprBinary.Op.JOIN) {
                 // If it's a macro invocation, instantiate it
-                if (right instanceof Macro)
-                    return ((Macro) right).addArg(left).instantiate(this, warns);
+                Expr rightInner = ignoreNoops(right);
+                if (rightInner instanceof Macro){
+                    Expr instantiated = ((Macro) rightInner).addArg(left).instantiate(this, warns);
+                    Expr res = ExprUnary.Op.NOOP.make(right.pos, instantiated);
+                    res.setReferenced(right.referenced());
+                    return res;
+                }
                 // check to see if it is the special builtin function "Int[]"
                 if (left.type().is_int() && right.isSame(Sig.SIGINT))
                     return left; // [AM] .cast2sigint();
@@ -615,20 +635,9 @@ public final class CompModule extends Browsable implements Module {
             if (obj instanceof Macro) {
                 Macro macro = ((Macro) obj).copy();
                 Expr instantiated = macro.instantiate(this, warns);
-                instantiated.setReferenced(new Clause() {
-
-                    @Override
-                    public Pos pos() {
-                        return instantiated.pos;
-                    }
-
-                    @Override
-                    public String explain() {
-                        return instantiated.toString();
-                    }
-
-                });
-                return instantiated;
+                Expr res = ExprUnary.Op.NOOP.make(x.pos, instantiated);
+                res.setReferenced(new Clause.Custom(macro.pos, macro.toString()));
+                return res;
             } else
                 return obj;
         }
@@ -1559,21 +1568,21 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a MACRO declaration. */
-    void addMacro(Pos p, Pos isPrivate, String n, List<ExprVar> decls, Expr v) throws Err {
+    void addMacro(Pos p, Pos isPrivate, Pos labelPos, String label, List<ExprVar> decls, Expr v) throws Err {
         if (!Version.experimental)
             throw new ErrorSyntax(p, "LET declaration is allowed only inside a toplevel paragraph.");
         ConstList<ExprVar> ds = ConstList.make(decls);
         status = 3;
-        dup(p, n, false);
+        dup(p, label, false);
         for (int i = 0; i < ds.size(); i++)
             for (int j = i + 1; j < ds.size(); j++)
                 if (ds.get(i).label.equals(ds.get(j).label))
                     throw new ErrorSyntax(ds.get(j).span(), "The parameter name \"" + ds.get(j).label + "\" cannot appear more than once.");
-        Macro ans = new Macro(p, isPrivate, this, n, ds, v);
-        Macro old = macros.put(n, ans);
+        Macro ans = new Macro(p, isPrivate, this, labelPos, label, ds, v);
+        Macro old = macros.put(label, ans);
         if (old != null) {
-            macros.put(n, old);
-            throw new ErrorSyntax(p, "You cannot declare more than one macro with the same name \"" + n + "\" in the same file.");
+            macros.put(label, old);
+            throw new ErrorSyntax(p, "You cannot declare more than one macro with the same name \"" + label + "\" in the same file.");
         }
     }
 
@@ -2433,9 +2442,9 @@ public final class CompModule extends Browsable implements Module {
         });
 
         // macros are not visitable for now ( accept() throws an exception)
-        //macros.values().forEach(macro -> {
-        //    macro.accept(visitor);
-        //});
+        macros.values().forEach(macro -> {
+           macro.accept(visitor);
+        });
         params.values().forEach(x -> x.accept(visitor));
         return null;
     }
@@ -2499,9 +2508,9 @@ public final class CompModule extends Browsable implements Module {
         });
 
         // macros are not visitable for now ( accept() throws an exception)
-        //macros.values().forEach(macro -> {
-        //    macro.accept(visitor);
-        //});
+        macros.values().forEach(macro -> {
+            tryIgnore( () -> macro.accept(visitor));
+        });
         params.values().forEach(x -> tryIgnore( () -> x.accept(visitor)));
     }
 
