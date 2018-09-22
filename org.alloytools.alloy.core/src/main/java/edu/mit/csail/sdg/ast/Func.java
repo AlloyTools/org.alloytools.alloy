@@ -307,8 +307,7 @@ public final class Func extends Expr implements Clause {
         return ans;
     }
 
-    @Override
-    public String explain() {
+    public String explainOld() {
         StringBuilder sb = new StringBuilder();
         if (isPred)
             sb.append("pred ");
@@ -336,7 +335,32 @@ public final class Func extends Expr implements Clause {
                 t.set(1, n, TableView.toTable(returnDecl.type));
                 n++;
             }
-            sb.append(t);
+            sb.append(t.transpose(0));
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String explain() {
+        StringBuilder sb = new StringBuilder();
+        if (isPred)
+            sb.append("pred ");
+        else
+            sb.append("fun ");
+
+        sb.append(clean(label));
+
+        if (decls.size() > 0 || !isPred) {
+            sb.append(":\n");
+
+            for (Decl decl : decls) {
+                for (Expr e : decl.names) {
+                    sb.append(e.toString()).append(" : ").append(decl.expr.type.toString() + "\n");
+                }
+            }
+            if (!isPred) {
+                sb.append("⟶ ").append(returnDecl.type.toString());
+            }
         }
         return sb.toString();
     }

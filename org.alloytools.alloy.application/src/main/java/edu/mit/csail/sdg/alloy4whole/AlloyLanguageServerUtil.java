@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
@@ -72,6 +73,11 @@ public class AlloyLanguageServerUtil {
 
 	public static String filePathResolved(String filename) {
 		return filename.replace(Util.jarPrefix(), AlloyAppUtil.alloyHome() + fs);
+	}
+
+	public static <TRes,TErr extends Exception> TRes getResult(Either<TRes,TErr> val) throws TErr{
+		if (val.isRight()) throw val.getRight();
+		return val.getLeft();
 	}
 
 	/**

@@ -959,8 +959,8 @@ public abstract class Sig extends Expr implements Clause {
         return f;
     }
 
-    @Override
-    public String explain() {
+    // TODO remove at some point
+    public String explainOld() {
         Table t = new Table(2, 1 + realFields.size(), 1);
 
         StringBuilder sb = new StringBuilder();
@@ -996,6 +996,37 @@ public abstract class Sig extends Expr implements Clause {
             t.set(1, n++, table);
         }
 
-        return t.toString();
+        return t.transpose(0).toString();
+    }
+    @Override
+    public String explain() {
+        StringBuilder sb = new StringBuilder();
+        if (builtin)
+            sb.append("builtin ");
+        if (isEnum != null)
+            sb.append("enum ");
+        if (isAbstract != null)
+            sb.append("abstract ");
+        if (isLone != null)
+            sb.append("lone ");
+        if (isOne != null)
+            sb.append("one ");
+        if (isMeta != null)
+            sb.append("meta ");
+        if (isSome != null)
+            sb.append("some ");
+        if (isSubsig != null)
+            sb.append("sig ");
+        if (isSubset != null)
+            sb.append("subset ");
+
+        sb.append(clean(label));
+        if(! realFields.isEmpty()) sb.append(":\n");
+        for (Field f : realFields) {
+            sb.append(clean(f.label)).append(" : ")
+              .append(clean(type.join(f.type).toString())).append("\n");
+        }
+
+        return sb.toString();
     }
 }

@@ -20,10 +20,10 @@ public class Lsp4jUtil {
 		return res;
 	}
 
-	public static MessageParams newMessageParams(String message) {
+	public static MessageParams newMessageParams(String message, MessageType type) {
 		MessageParams res = new MessageParams();
 		res.setMessage(message);
-		res.setType(MessageType.Log);
+		res.setType(type);
 		return res;
 	}
 
@@ -42,4 +42,11 @@ public class Lsp4jUtil {
 		return symbolInfo;
 	}
 
+
+	public static int positionCompare(Position p1, Position p2){	
+		return p1.getLine() < p2.getLine() ? -1 : p1.getLine() > p2.getLine() ? 1 :
+			   p1.getCharacter() < p2.getCharacter() ? -1 :
+			   p1.getCharacter() > p2.getCharacter() ? 1 :
+			   0;
+	}
 }
