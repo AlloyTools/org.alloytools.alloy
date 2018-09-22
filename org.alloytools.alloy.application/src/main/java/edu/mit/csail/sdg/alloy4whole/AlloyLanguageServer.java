@@ -178,35 +178,24 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
 	private AlloyLanguageClient client;
 	private AlloyTextDocumentService alloyTextDocumentService;
-	private InitializeParams initializeParams;
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		System.out.println("initialize() called");
-		this.initializeParams = params;
 
 		service().directory = params.getRootUri() != null ? fileUriToPath(params.getRootUri()) : null;
 
 		InitializeResult res = new InitializeResult();
-
 		ServerCapabilities caps = new ServerCapabilities();
+
 		caps.setTextDocumentSync(Either.forLeft(TextDocumentSyncKind.Full));
-		// caps.setCompletionProvider(new CompletionOptions(false, Arrays.asList(".", "
-		// ", ",")));
+		
 		caps.setDefinitionProvider(true);
 		caps.setHoverProvider(true);
-		CodeLensOptions codeLensProvider = new CodeLensOptions();
-		// codeLensProvider.setResolveProvider(true);
-		caps.setCodeLensProvider(codeLensProvider);
-		
-		DocumentLinkOptions documentLinkProvider = new DocumentLinkOptions();
-		documentLinkProvider.setResolveProvider(false);
-		caps.setDocumentLinkProvider(documentLinkProvider );
-
+		caps.setCodeLensProvider(new CodeLensOptions());
+		caps.setDocumentLinkProvider(new DocumentLinkOptions() );
 		caps.setReferencesProvider(true);
 		caps.setRenameProvider(true);
 		//caps.setDocumentHighlightProvider(true);
-		
 		caps.setWorkspaceSymbolProvider(true);
 		caps.setDocumentSymbolProvider(true);
 
@@ -226,7 +215,6 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
 	@Override
 	public TextDocumentService getTextDocumentService() {
-		System.out.println("getTextDocumentService() called");
 		return service();
 	}
 
@@ -238,7 +226,6 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
 	@Override
 	public WorkspaceService getWorkspaceService() {
-		System.out.println("getWorkspaceService() called");
 		return service();
 	}
 
@@ -266,8 +253,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 	private int subStackNow;
 
 	public AlloyTextDocumentService( AlloyLanguageClient client) {
-		log("AlloyTextDocumentService ctor");
-		//log("dir: " + params != null ? params.getRootUri() : null /* + ", client: " + client */);
 		this.client = client;
 	}
 
@@ -280,15 +265,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
-		List<CompletionItem> res = new ArrayList<>();
-		try {
-			CompModule module = CompUtil.parseOneModule(fileContents.get(position.getTextDocument().getUri()));
-			module.getAllSigs().forEach(item -> res.add(new CompletionItem(item.label)));
-		} catch (Exception ex) {
-			log(ex.toString());
-		}
-		res.add(new CompletionItem("Hello!"));
-		return CompletableFuture.completedFuture(Either.forLeft(res));
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
@@ -296,33 +273,24 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		return CompletableFuture.completedFuture(unresolved);
 	}
 
-	CompModule cachedCompModuleForFileUri = null;
+	Either<CompModule, Err> cachedCompModuleForFileUri = null;
 
 	/**
 	 * the file uri of the cached module. If this is not null, the cached module
-	 * is valid for the uri (whether it is not or null)
+	 * is valid for the uri
 	 */
 	String cachedCompModuleForFileUri_Uri = null;
 
 	CompModule getCompModuleForFileUri(String uri) {
-		log("getCompModuleForFileUri (" + uri + ")");
-		//FIXME what's up with this?
+		// log("getCompModuleForFileUri (" + uri + ")");
 		if(uri.equals(cachedCompModuleForFileUri_Uri)){
-			return cachedCompModuleForFileUri;
+			return getResult(cachedCompModuleForFileUri);
 		}
 
 		try {
 			String path = fileUriToPath(uri);
 			
-			log("getCompModuleForFileUri(): fileContentsPathBased() has filename '" + path + "': " + fileContentsPathBased().containsKey(path));
-			log("getCompModuleForFileUri(): calling CompUtil.parseEverything_fromFile()");
-			cachedCompModuleForFileUri = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), path, 2);
-			
-			for (edu.mit.csail.sdg.ast.Command c : cachedCompModuleForFileUri.getAllCommands()){
-	            for(CommandScope s: c.scope) {
-	                System.out.println("getCompModuleForFileUri() scope: " + s.sig.label + ", " + s.pos.toRangeString());
-	            }
-	        }
+			cachedCompModuleForFileUri = Either.forLeft(CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), path, 2));
 			
 		} catch (Err err) {
 			log("getCompModuleForFileUri(): error in parsing: " + err.toString());
@@ -333,7 +301,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			if(err instanceof ErrorSyntax)
 				latestFileUrisWithSyntaxError.add(uri);
 			
-			return null;
+			cachedCompModuleForFileUri = Either.forRight(err);
+			throw err;
 		}
 
 		if (latestFileUrisWithSyntaxError.contains(uri)) {
@@ -341,7 +310,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			latestFileUrisWithSyntaxError.remove(uri);
 		}
 		cachedCompModuleForFileUri_Uri = uri;
-		return cachedCompModuleForFileUri;
+		return getResult(cachedCompModuleForFileUri);
 	}
 
 	@Override
@@ -352,13 +321,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			
 			String uri = position.getTextDocument().getUri();
 			String text = fileContents.get(uri);
-			String path = fileUriToPath(uri);
 			CompModule module = getCompModuleForFileUri(uri);
 			
-			//int offset = pane.viewToModel(event.getPoint());
-			if (module == null)
-				return CompletableFuture.completedFuture(null);
-
 			Pos pos = positionToPos(position.getPosition());
 			Expr expr = module.find(pos);
 			if (expr instanceof ExprBad) {
@@ -367,8 +331,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			else if (expr != null) {
 				Clause referenced = expr.referenced();
 				if (referenced != null) {
-					String s = referenced.explain();
-					hoverStr = s;
+					hoverStr = referenced.explain();
 				} else if (expr instanceof ExprConstant) {
 					String token = pos.substring(text);
 					if (token != null) {
@@ -379,7 +342,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				}
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
 			// ignore compile errors etc.
 		}
 		if(hoverStr != null) {
@@ -390,7 +352,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				
 			markupContent.setValue(hoverStr);
 			Hover res = new Hover();
-			
 			res.setContents(markupContent);
 			return CompletableFuture.completedFuture(res);			
 		}else {
@@ -400,7 +361,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 	@Override
 	public CompletableFuture<SignatureHelp> signatureHelp(TextDocumentPositionParams position) {
-		return CompletableFuture.completedFuture(new SignatureHelp());
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
@@ -413,20 +374,14 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			CompModule module = getCompModuleForFileUri(uri);
 			Pos pos = positionToPos(position.getPosition(), path);
 			pos = getCurrentWordSelectionAsPos(text, pos);
-			log("definition request: module parsed! Request Position: " + pos.toRangeString());
-
 			Expr expr = module.find(pos);
 
 			log("definition request for: " + expr);
-			
-			String exprName = getNameOf(expr);
-			log("getNameOf(expr) == " + exprName);
 			
             if (expr != null) {
                 Clause clause = expr.referenced();
                 if (clause != null) {
                     Pos where = clause.pos();
-                    log("target file name: " + where.filename);
                     
                     //if path includes the jar, replace it by the created temp dir containing alloy models
                     String fileName =  filePathResolved(where.filename);
@@ -441,7 +396,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			System.err.println("Error in providing definition: " + ex.toString());
 		}
 		return CompletableFuture.completedFuture(Arrays.asList());
-		// edu.mit.csail.sdg.alloy4.OurSyntaxWidget.doNav()
 	}
 
 
@@ -453,18 +407,22 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		String text = fileContents.get(uri);
 		String path = fileUriToPath(uri);
 
-		CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
+		try{	
+			CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
 
-		Pos pos = getPosOfSymbolFromPositionInOpenDoc(params.getTextDocument().getUri(), params.getPosition());
-		pos = getCurrentWordSelectionAsPos(text, pos).withFilename(path);
-		
-		log("cachedCompModuleForFileUri_Uri: " + cachedCompModuleForFileUri_Uri);
-		String dir = this.directory != null ? this.directory : new File(path).getParent();
-		List<Location> res = findAllReferencesGlobally(module, pos, dir, fileContentsPathBased(), true)
-			.stream()
-			.map(ref -> posToLocation(ref))
-			.collect(Collectors.toList());
-		return CompletableFuture.completedFuture(res);
+			Pos pos = getPosOfSymbolFromPositionInOpenDoc(params.getTextDocument().getUri(), params.getPosition());
+			pos = getCurrentWordSelectionAsPos(text, pos).withFilename(path);
+			
+			String dir = this.directory != null ? this.directory : new File(path).getParent();
+			List<Location> res = findAllReferencesGlobally(module, pos, dir, true, true).stream()
+				.map(ref -> posToLocation(ref))
+				.collect(Collectors.toList());
+			return CompletableFuture.completedFuture(res);
+		} catch(Err err){
+			client.showMessage(
+				newMessageParams("There are errors. Fix them first.", MessageType.Warning));
+			return CompletableFuture.completedFuture(null);
+		}
 	}
 
 	@Override
@@ -473,59 +431,59 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		String text = fileContents.get(uri);
 		String path = fileUriToPath(uri);
 
-		CompModule module = getCompModuleForFileUri(uri);
-		
-		Pos pos = getPosOfSymbolFromPositionInOpenDoc(uri, params.getPosition());
-		pos = getCurrentWordSelectionAsPos(text, pos).withFilename(path);
-
-		Expr expr = module.find(pos);
-		Pos targetPos = expr.referenced() != null ? expr.referenced().pos() : expr.pos;
-		
-		CompModule targetModule = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), filePathResolved(targetPos.filename));
-		
-		Expr targetExpr = targetModule.find(targetPos);
-
-		// if(targetExpr == null || 
-		//    !(targetExpr instanceof ExprVar || targetExpr instanceof ExprLet)) {
-		// 	   return CompletableFuture.completedFuture(null);
-		// }
-
-		Map<String, List<TextEdit>> changes = new HashMap<>();
+		try{
+			CompModule module = getCompModuleForFileUri(uri);
 			
-		String dir = this.directory != null ? this.directory : new File(path).getParent();
-		List<Pos> refs = findAllReferencesGlobally(module, pos, dir, fileContentsPathBased(), false);
-		
-		if (targetExpr instanceof Sig){
-			targetPos = ((Sig)targetExpr).labelPos;
-		} else if (targetExpr instanceof Field){
-			targetPos = ((Field) targetExpr).labelPos;
-		} else if ( targetExpr instanceof Func){
-			targetPos = ((Func) targetExpr).labelPos;
-		} else if (targetExpr instanceof Assert){
-			targetPos = ((Assert) targetExpr).labelPos;
-		} else if (targetExpr instanceof Macro){
-			targetPos = ((Macro) targetExpr).namePos;
+			Pos pos = getPosOfSymbolFromPositionInOpenDoc(uri, params.getPosition());
+			pos = getCurrentWordSelectionAsPos(text, pos).withFilename(path);
+
+			Expr expr = module.find(pos);
+			Pos targetPos = expr.referenced() != null ? expr.referenced().pos() : expr.pos;
+			
+			CompModule targetModule = CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), filePathResolved(targetPos.filename));
+			
+			Expr targetExpr = targetModule.find(targetPos);
+
+			Map<String, List<TextEdit>> changes = new HashMap<>();
+				
+			String dir = this.directory != null ? this.directory : new File(path).getParent();
+			List<Pos> refs = findAllReferencesGlobally(module, pos, dir, false, false);
+			
+			if (targetExpr instanceof Sig){
+				targetPos = ((Sig)targetExpr).labelPos;
+			} else if (targetExpr instanceof Field){
+				targetPos = ((Field) targetExpr).labelPos;
+			} else if ( targetExpr instanceof Func){
+				targetPos = ((Func) targetExpr).labelPos;
+			} else if (targetExpr instanceof Assert){
+				targetPos = ((Assert) targetExpr).labelPos;
+			} else if (targetExpr instanceof Macro){
+				targetPos = ((Macro) targetExpr).namePos;
+			}
+			
+			WorkspaceEdit wEdit = new WorkspaceEdit();
+			Stream.concat(refs.stream().distinct(), Stream.of(targetPos)).forEach(refPos ->{
+				TextEdit edit = new TextEdit();
+
+				edit.setRange(createRangeFromPos(refPos));
+				edit.setNewText(params.getNewName());
+				
+				String refUri = filePathToUri(filePathResolved(refPos.filename));
+				
+				if(!changes.containsKey(refUri))
+					changes.put(refUri, new ArrayList<>());
+				changes.get(refUri).add(edit);
+			});
+			
+			wEdit.setChanges(changes);
+
+			return CompletableFuture.completedFuture(wEdit);
+
+		} catch(Err err){
+			client.showMessage(
+				newMessageParams("Cannot rename symbol while there are errors. Fix the errors first.", MessageType.Warning));
+			return CompletableFuture.completedFuture(null);
 		}
-		
-		WorkspaceEdit wEdit = new WorkspaceEdit();
-		Stream.concat(refs.stream().distinct(), Stream.of(targetPos)).forEach(refPos ->{
-			//log("ref: " + ref.getClass() + ", " + ref);
-			
-			TextEdit edit = new TextEdit();
-
-			edit.setRange(createRangeFromPos(refPos));
-			edit.setNewText(params.getNewName());
-			
-			String refUri = filePathToUri(filePathResolved(refPos.filename));
-			
-			if(!changes.containsKey(refUri))
-				changes.put(refUri, new ArrayList<>());
-			changes.get(refUri).add(edit);
-		});
-		
-		wEdit.setChanges(changes);
-
-		return CompletableFuture.completedFuture(wEdit);
 	}
 
 	Pos getPosOfSymbolFromPositionInOpenDoc(String uri, Position position){
@@ -540,29 +498,38 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
 		
-		CompModule module = getCompModuleForFileUri(position.getTextDocument().getUri());
-		
-		Pos pos = getPosOfSymbolFromPositionInOpenDoc(position.getTextDocument().getUri(), position.getPosition());
-		List<Expr> refs = findAllReferences(module, pos, true);
-		
-		String path = fileUriToPath(position.getTextDocument().getUri());
-		List<DocumentHighlight> res = refs.stream()
-			.filter(ref -> path.equals(ref.pos.filename))
-			.map(ref -> {
-				DocumentHighlight highlight = new DocumentHighlight();
-				
-				highlight.setKind(DocumentHighlightKind.Text);
-				highlight.setRange(createRangeFromPos(ref.pos));
-				return highlight;
-			}).collect(Collectors.toList());
-		
-		return CompletableFuture.completedFuture(res);
+		try{
+			CompModule module = getCompModuleForFileUri(position.getTextDocument().getUri());
+			
+			Pos pos = getPosOfSymbolFromPositionInOpenDoc(position.getTextDocument().getUri(), position.getPosition());
+			List<Expr> refs = findAllReferences(module, pos, true);
+			
+			String path = fileUriToPath(position.getTextDocument().getUri());
+			List<DocumentHighlight> res = refs.stream()
+				.filter(ref -> path.equals(ref.pos.filename))
+				.map(ref -> {
+					DocumentHighlight highlight = new DocumentHighlight();
+					
+					highlight.setKind(DocumentHighlightKind.Text);
+					highlight.setRange(createRangeFromPos(ref.pos));
+					return highlight;
+				}).collect(Collectors.toList());
+			
+			return CompletableFuture.completedFuture(res);
+
+		}catch(Exception ex){
+			return CompletableFuture.completedFuture(null);
+		}
 	}
 
 	@Override
-	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {		
-		CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
-		return CompletableFuture.completedFuture(module != null ? moduleSymbols(module) : null);
+	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
+		try{
+			CompModule module = getCompModuleForFileUri(params.getTextDocument().getUri());
+			return CompletableFuture.completedFuture(moduleSymbols(module));
+		}catch(Exception ex){
+			return CompletableFuture.completedFuture(null);
+		}
 	}
 
 	private List<SymbolInformation> folderSymbols(String dir){
@@ -593,7 +560,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				.flatMap(sig -> sig.getFields().makeConstList().stream()).map(field -> {
 					SymbolInformation symbolInfo = newSymbolInformation(field.label, posToLocation(field.pos),
 							SymbolKind.Field);
-					symbolInfo.setContainerName(field.sig.label);
+					symbolInfo.setContainerName(removeThisPrefix(field.sig.label));
 					return symbolInfo;
 				});
 
@@ -617,53 +584,25 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		return 
 			Stream.of(commands, sigs, fields, funcs, assertions, macros)
 			.flatMap(x -> x)
+			.map(x -> {x.setName(removeThisPrefix(x.getName())); return x;})
 			//.sorted((sym1,sym2) -> positionCompare(sym1.getLocation().getRange().getStart(), sym2.getLocation().getRange().getStart()))
 			.collect(Collectors.toList());
 	}
 
-	static int positionCompare(Position p1, Position p2){	
-		return p1.getLine() < p2.getLine() ? -1 : p1.getLine() > p2.getLine() ? 1 :
-			   p1.getCharacter() < p2.getCharacter() ? -1 :
-			   p1.getCharacter() > p2.getCharacter() ? 1 :
-			   0;
-	}
-
 	@Override
 	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
-		// params.getContext().getDiagnostics().get(0).
 		return CompletableFuture.completedFuture(null);
 	}
 
 	List<Pair<edu.mit.csail.sdg.ast.Command,Command>> getCommands(String uri) {
-		String text = fileContents.get(uri);
 		CompModule module;
 
-		//FIXME test and remove!
 		try {
-			//module = CompUtil.parseOneModule(text);	
-			
-		} catch (ErrorSyntax err) {
-			org.eclipse.lsp4j.Diagnostic diag = newDiagnostic(err.msg, createRangeFromPos(err.pos));
-			diag.setSeverity(DiagnosticSeverity.Error);
-			
-			PublishDiagnosticsParams diagnosticsParams = 
-					newPublishDiagnosticsParams(uri, Arrays.asList(diag));
-			
-			
-			fileUrisOfLastPublishedDiagnostics.add(uri);
-			
-			latestFileUrisWithSyntaxError.add(uri);
-			client.publishDiagnostics(diagnosticsParams );
-			
+			module = getCompModuleForFileUri(uri);
+		} catch (Exception e) {
 			return Arrays.asList();
 		}
 
-		module = getCompModuleForFileUri(uri);
-
-		if(module == null){
-			return Arrays.asList();
-		}
-		
 		ConstList<edu.mit.csail.sdg.ast.Command> commands = module.getAllCommands();
 		
 		ArrayList<Pair<edu.mit.csail.sdg.ast.Command,Command>> res = new ArrayList<>();
@@ -690,11 +629,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 	
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-		
-		log("codeLens request");
-		String uri = params.getTextDocument().getUri();
 				
-		List<CodeLens> res = getCommands(uri).stream().map(pair -> {
+		List<CodeLens> res = getCommands(params.getTextDocument().getUri()).stream().map(pair -> {
 			edu.mit.csail.sdg.ast.Command command = pair.a;
 			Command vsCommand = pair.b;
 			
@@ -750,8 +686,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 	@JsonRequest
 	public CompletableFuture<Void> ExecuteAlloyCommand(com.google.gson.JsonArray params) {
-		CompletableFuture<Void> res = CompletableFuture.completedFuture(null);
-		
 		log("ExecuteAlloyCommand() called with " + params + ", " + params.getClass());
 		String uri = params.get(0).getAsString();
 		int ind = params.get(1).getAsInt();
@@ -766,64 +700,12 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		edu.mit.csail.sdg.ast.Command command = commands.stream()
 				.filter(comm -> comm.pos().y == pos.y && comm.pos.x == pos.x).findFirst().orElse(null);
 		if (command != null || ind == -1) {
-			// log("ExecuteAlloyCommand() called with " + position);
-			//MessageParams messageParams = new MessageParams();
-			//messageParams.setMessage("executing " + command.label);
-			//client.showMessage(messageParams);
-
-			res.thenRunAsync(() -> doRun(uri, ind));
+			CompletableFuture.runAsync(() -> doRun(uri, ind));
 		} else {
 			System.err.println("no matching command found");
 		}
 
-		return res;
-	}
-	
-	void ExecuteAlloyCommands(List<ExecuteAlloyCommandParams> params) {
-		if(params.size() == 0) return;
-		String uri = params.get(0).uri;
-		CompletableFuture<Void> res = CompletableFuture.completedFuture(null);
-		CompModule module = CompUtil.parseOneModule(fileContents.get(uri));
-		ConstList<edu.mit.csail.sdg.ast.Command> commands = module.getAllCommands();
-
-		
-		for(ExecuteAlloyCommandParams execCmd : params) {
-			
-			if(!execCmd.uri.equals(uri)) {
-				System.err.println("command from a different file!");
-				continue;
-			}
-	
-			Position position = new Position(execCmd.line, execCmd.character);
-			Pos pos = positionToPos(position);
-	
-	
-			edu.mit.csail.sdg.ast.Command command = commands.stream()
-					.filter(comm -> comm.pos().y == pos.y && comm.pos.x == pos.x).findFirst().orElse(null);
-			if (command != null) {
-				// log("ExecuteAlloyCommand() called with " + position);
-				MessageParams messageParams = new MessageParams();
-				messageParams.setMessage("executing " + command.label);
-				//client.showMessage(messageParams);
-	
-				doRun(execCmd.uri, execCmd.index);
-			} else {
-				System.err.println("no matching command found");
-			}
-		}
-	}
-	public class ExecuteAlloyCommandParams{
-		public String uri;
-		public int index;
-		public int line;
-		public int character;
-		
-		public ExecuteAlloyCommandParams(String uri, int index, int line, int character) {
-			this.uri = uri;
-			this.index = index;
-			this.line = line;
-			this.character = character;
-		}	
+		return CompletableFuture.completedFuture(null);
 	}
 	
 	@JsonRequest
@@ -882,15 +764,11 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		String text = params.getTextDocument().getText();
 		String uri = params.getTextDocument().getUri();
 		fileContents.put(uri, text);
-		// log("doc: \n" + this.text);
-		log(params.getTextDocument().getUri());
 	}
 
 	@Override
 	public void didChange(DidChangeTextDocumentParams params) {
 		// https://raw.githubusercontent.com/eclipse/eclipse.jdt.ls/0ed1bf259b3edb4f184804a9df14c95ef468d4e9/org.eclipse.jdt.ls.core/src/org/eclipse/jdt/ls/core/internal/handlers/DocumentLifeCycleHandler.java
-		
-		log("didChange: " + params.getTextDocument().getUri() + ", length: " + params.getContentChanges().get(0).getText().length());
 		String text = params.getContentChanges().get(0).getText();
 		String uri = params.getTextDocument().getUri();
 		fileContents.put(uri, text);
@@ -902,7 +780,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 	@Override
 	public void didSave(DidSaveTextDocumentParams params) {
 		String text = params.getText();
-		log("disSave: " + params.getTextDocument().getUri() + "\n text null: " + (text== null));
 		
 		if(text != null) {
 			String uri = params.getTextDocument().getUri();
@@ -926,9 +803,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			return CompletableFuture.completedFuture(null);
 		
 		List<SymbolInformation> res = folderSymbols(this.directory).stream().filter(symbol -> {
-			if (symbol.getName().toLowerCase().contains(params.getQuery().toLowerCase()))
-				return true;
-			return false;
+			return symbol.getName().toLowerCase().contains(params.getQuery().toLowerCase());
 		}).collect(Collectors.toList());
 
 		return CompletableFuture.completedFuture(res);
@@ -936,40 +811,17 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params) {
-
 	}
 
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-		
 	}
 
-	static String sigRemovePrefix(String sig) {
-		if (sig.startsWith("this/")) {
-			return sig.substring("this/".length());
+	static String removeThisPrefix(String name) {
+		if (name.startsWith("this/")) {
+			return name.substring("this/".length());
 		}
-		return sig;
-	}
-
-	/**
-	 * returns the referenced variable name if the expression references a variable
-	 *
-	 * @param expr
-	 */
-	public static String getNameOf(Expr expr) {
-		VisitQueryOnce<String> visitor = new VisitQueryOnce<String>() {
-
-			@Override
-			public String visit(ExprVar x) throws Err {
-				return x.label;
-			}
-
-			@Override
-			public String visit(ExprConstant x) throws Err {
-				return x.string;
-			}
-		};
-		return visitor.visitThis(expr);
+		return name;
 	}
 
 	private PublishDiagnosticsParams toPublishDiagnosticsParams(Err err) {
@@ -1030,7 +882,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		opt.coreGranularity = CoreGranularity.get();
 
 		log("cwd :" + Paths.get("").toAbsolutePath());
-		log("uri :" + decodeUrl(fileURI));
 
 		String fileNameDecoded;
 		try {
@@ -1103,7 +954,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 					for(AlloyLSMessage alloyMsg :alloyMsgOrWarning.getLeft()) {
 						if (alloyMsg.message != null && !alloyMsg.message.isEmpty())
 							//client.showExecutionOutput(alloyMsg);
-							client.logMessage(newMessageParams(alloyMsg.message));
+							client.logMessage(newMessageParams(alloyMsg.message, MessageType.Log));
 					}
 
 				} else {
@@ -1196,14 +1047,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		};
 	}
 
-	private static String decodeUrl(String value) {
-		try {
-			return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
-		} catch (UnsupportedEncodingException e) {
-			return value;
-		}
-	}
-
 	// edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1.callback(Object)
 	public Either<List<AlloyLSMessage>, Err> solverCallbackMsgToAlloyMsg(Object msg) {
 		StringBuilder span = new StringBuilder();
@@ -1247,21 +1090,21 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				else
 					span.append("A " + text + " error has occurred:  " + "POS: " + ex.pos.x + " " + ex.pos.y + " "
 							+ ex.pos.x2 + " " + ex.pos.y2 + " " + ex.pos.filename);
-//            if (verbosity > 2) {
-//                span.log("(see the ");
-//                span.logLink("stacktrace", "MSG: " + ex.dump());
-//                span.log(")\n");
-//            } else {
-//                span.log("\n");
-//            }
+				// if (verbosity > 2) {
+				// 	span.log("(see the ");
+				// 	span.logLink("stacktrace", "MSG: " + ex.dump());
+				// 	span.log(")\n");
+				// } else {
+				// 	span.log("\n");
+				// }
 				span.append(ex.msg.trim()); // logIndented
 				return Either.forRight(ex);
 				//span.append("\n");
-//            if (fatal && latestVersion > Version.buildNumber())
-//                span.logBold("\nNote: You are running Alloy build#" + Version.buildNumber() + ",\nbut the most recent is Alloy build#" + latestVersion + ":\n( version " + latestName + " )\nPlease try to upgrade to the newest version," + "\nas the problem may have been fixed already.\n");
+				// if (fatal && latestVersion > Version.buildNumber())
+				// 	span.logBold("\nNote: You are running Alloy build#" + Version.buildNumber() + ",\nbut the most recent is Alloy build#" + latestVersion + ":\n( version " + latestName + " )\nPlease try to upgrade to the newest version," + "\nas the problem may have been fixed already.\n");
 
-//            if (!fatal)
-//                gui.doVisualize("POS: " + ex.pos.x + " " + ex.pos.y + " " + ex.pos.x2 + " " + ex.pos.y2 + " " + ex.pos.filename);
+				// if (!fatal)
+				// 	gui.doVisualize("POS: " + ex.pos.x + " " + ex.pos.y + " " + ex.pos.x2 + " " + ex.pos.y2 + " " + ex.pos.filename);
 			}
 			else /*if (msg instanceof Throwable)*/ {
 				log("exception msg from solver: " + msg.toString());
@@ -1276,8 +1119,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				String x = (String) (array[1]);
 				span.append(x);
 				alloyMsg.replaceLast = true;
-//            if (viz != null && x.length() > 0)
-//                OurDialog.alert(x);
+				// if (viz != null && x.length() > 0)
+				// 	OurDialog.alert(x);
 			}
 			if (array[0].equals("declare")) {
 				//gui.doSetLatest((String) (array[1]));
@@ -1285,16 +1128,16 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				// ==========
 			}
 			if (array[0].equals("S2")) {
-//            len3 = len2 = span.getLength();
+           		// len3 = len2 = span.getLength();
 				span.append("" + array[1]);
 			}
 			if (array[0].equals("R3")) {
-//            span.setLength(len3);
+           		//span.setLength(len3);
 				span.append("" + array[1]);
 			}
 			if (array[0].equals("link")) {
 				log("link message!!!");
-//            span.logLink((String) (array[1]), (String) (array[2]));
+          		//span.logLink((String) (array[1]), (String) (array[2]));
 				span.append(array[1].toString());
 				alloyMsg.link = (String) array[2];
 				alloyMsg.messageType = AlloyLSMessageType.RunResult;
@@ -1335,32 +1178,32 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				span.append("   Solving...\n");
 			}
 			if (array[0].equals("warnings")) {
-//            if (warnings.size() == 0)
-//                span.setLength(len2);
-//            else if (warnings.size() > 1)
-//                span.logBold("Note: There were " + warnings.size() + " compilation warnings. Please scroll up to see them.\n\n");
-//            else
-				// span.append("Note: There was 1 compilation wrearning. Please scroll up to see
-				// them.\n\n");
-				 //span.append("There were warnings!");
-//            if (warnings.size() > 0 && Boolean.FALSE.equals(array[1])) {
-//                Pos e = warnings.iterator().next().pos;
-//                gui.doVisualize("POS: " + e.x + " " + e.y + " " + e.x2 + " " + e.y2 + " " + e.filename);
-//                span.logBold("Warnings often indicate errors in the model.\n" + "Some warnings can affect the soundness of the analysis.\n" + "To proceed despite the warnings, go to the Options menu.\n");
-//            }
+				// if (warnings.size() == 0)
+				// 	span.setLength(len2);
+				// else if (warnings.size() > 1)
+				// 	span.logBold("Note: There were " + warnings.size() + " compilation warnings. Please scroll up to see them.\n\n");
+				// else
+				// 		span.append("Note: There was 1 compilation wrearning. Please scroll up to see
+				// 		them.\n\n");
+				// 		span.append("There were warnings!");
+				// if (warnings.size() > 0 && Boolean.FALSE.equals(array[1])) {
+				// 	Pos e = warnings.iterator().next().pos;
+				// 	gui.doVisualize("POS: " + e.x + " " + e.y + " " + e.x2 + " " + e.y2 + " " + e.filename);
+				// 	span.logBold("Warnings often indicate errors in the model.\n" + "Some warnings can affect the soundness of the analysis.\n" + "To proceed despite the warnings, go to the Options menu.\n");
+				// }
 			}
 			if (array[0].equals("warning")) {
 				ErrorWarning e = (ErrorWarning) (array[1]);
-//            if (!warnings.add(e))
-//                return;
+				// if (!warnings.add(e))
+				// 	return;
 				Pos p = e.pos;
-//            span.logLink("Warning #" + warnings.size(), "POS: " + p.x + " " + p.y + " " + p.x2 + " " + p.y2 + " " + p.filename);
+           		// span.logLink("Warning #" + warnings.size(), "POS: " + p.x + " " + p.y + " " + p.x2 + " " + p.y2 + " " + p.filename);
 				span.append("Warning " + e.msg.trim());// #" + warnings.size(), "POS: " + p.x + " " + p.y + " " + p.x2 +
 														// " " + p.y2 + " " + p.filename);
 				return Either.forRight(e);
-//            span.log("\n");
-//            span.logIndented(e.msg.trim());
-//            span.log("\n\n");
+				// span.log("\n");
+				// span.logIndented(e.msg.trim());
+				// span.log("\n\n");
 			}
 			if (array[0].equals("sat")) {
 				boolean chk = Boolean.TRUE.equals(array[1]);
@@ -1391,35 +1234,35 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				resMsgs.add(new AlloyLSMessage(AlloyLSMessageType.RunResult, array[5] + "ms.\n\n"));
 			}
 			if (array[0].equals("metamodel")) {
-//            String outf = (String) (array[1]);
-//            span.setLength(len2);
-//            (new File(outf)).deleteOnExit();
-//            gui.doSetLatest(outf);
-//            span.logLink("Metamodel", "XML: " + outf);
-//            span.log(" successfully generated.\n\n");
+				// String outf = (String) (array[1]);
+				// span.setLength(len2);
+				// (new File(outf)).deleteOnExit();
+				// gui.doSetLatest(outf);
+				// span.logLink("Metamodel", "XML: " + outf);
+				// span.log(" successfully generated.\n\n");
 			}
 			if (array[0].equals("minimizing")) {
-              boolean chk = Boolean.TRUE.equals(array[1]);
-//            int expects = (Integer) (array[2]);
-//            span.setLength(len3);
-//            span.log(chk ? "   No counterexample found." : "   No instance found.");
-              span.append(chk ? "   No counterexample found. " : "   No instance found. ");
-            if (chk)
-                span.append(" Assertion may be valid");
-            else
-                span.append(" Predicate may be inconsistent");
-//            if (expects == 1)
-//                span.log(", contrary to expectation");
-//            else if (expects == 0)
-//                span.log(", as expected");
-              span.append(". " + array[4] + "ms.\n");
-//            span.logBold("   Minimizing the unsat core of " + array[3] + " entries...\n");
+              	boolean chk = Boolean.TRUE.equals(array[1]);
+				// int expects = (Integer) (array[2]);
+				// span.setLength(len3);
+				// span.log(chk ? "   No counterexample found." : "   No instance found.");
+              	span.append(chk ? "   No counterexample found. " : "   No instance found. ");
+				if (chk)
+					span.append(" Assertion may be valid");
+				else
+					span.append(" Predicate may be inconsistent");
+				// if (expects == 1)
+				// 	span.log(", contrary to expectation");
+				// else if (expects == 0)
+				// 	span.log(", as expected");
+				span.append(". " + array[4] + "ms.\n");
+	           	// span.logBold("   Minimizing the unsat core of " + array[3] + " entries...\n");
 			}
 			if (array[0].equals("unsat")) {
 				boolean chk = Boolean.TRUE.equals(array[1]);
 				int expects = (Integer) (array[2]);
 				String formula = (String) (array[4]);
-//            span.setLength(len3);
+           		// span.setLength(len3);
 				alloyMsg.messageType = AlloyLSMessageType.RunResult;
 				alloyMsg.replaceLast = true;
 				alloyMsg.bold = true;
@@ -1434,7 +1277,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 					span.append(". ");
 					alloyMsg.lineBreak = false;
 					resMsgs.add(new AlloyLSMessage(RunResult, array[3] + "ms.\n\n"));
-//                span.flush();
+ 		            // span.flush();
 				} else {
 					String core = (String) (array[5]);
 					int mbefore = (Integer) (array[6]), mafter = (Integer) (array[7]);
@@ -1485,18 +1328,18 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
             }
             WorkerEngine.stop();
         }
-//        runmenu.setEnabled(true);
-//        runbutton.setVisible(true);
-//        showbutton.setEnabled(true);
-//        stopbutton.setVisible(false);
-//        if (latestAutoInstance.length() > 0) {
-//            String f = latestAutoInstance;
-//            latestAutoInstance = "";
-//            if (subrunningTask == 2)
-//                viz.loadXML(f, true);
-//            else if (AutoVisualize.get() || subrunningTask == 1)
-//                doVisualize("XML: " + f);
-//        }
+		// runmenu.setEnabled(true);
+		// runbutton.setVisible(true);
+		// showbutton.setEnabled(true);
+		// stopbutton.setVisible(false);
+		// if (latestAutoInstance.length() > 0) {
+		// 	String f = latestAutoInstance;
+		// 	latestAutoInstance = "";
+		// 	if (subrunningTask == 2)
+		// 		viz.loadXML(f, true);
+		// 	else if (AutoVisualize.get() || subrunningTask == 1)
+		// 		doVisualize("XML: " + f);
+		// }
     }
 
 	// edu.mit.csail.sdg.alloy4whole.SimpleGUI.doVisualize(String) for handling
@@ -1540,13 +1383,13 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			
 			
 			
-//            text.clearShade();
-//            text.shade(hCore.b, subCoreColor, false);
-//            text.shade(hCore.a, coreColor, false);
-//            // shade again, because if not all files were open, some shadings
-//            // will have no effect
-//            text.shade(hCore.b, subCoreColor, false);
-//            text.shade(hCore.a, coreColor, false);
+			// text.clearShade();
+			// text.shade(hCore.b, subCoreColor, false);
+			// text.shade(hCore.a, coreColor, false);
+			// // shade again, because if not all files were open, some shadings
+			// // will have no effect
+			// text.shade(hCore.b, subCoreColor, false);
+			// text.shade(hCore.a, coreColor, false);
 		}
 		if (arg.startsWith("POS: ")) { // POS: x1 y1 x2 y2 filename
 			Scanner s = new Scanner(arg.substring(5));
@@ -1752,35 +1595,21 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		return references;
 	}
 
-	static List<Pos> findAllReferencesGlobally(CompModule module, Pos pos, String rootDir, Map<String,String> loaded, boolean includeSelf){
+	List<Pos> findAllReferencesGlobally(CompModule module, Pos pos, String rootDir, boolean includeSelf, boolean continueOnError)
+		throws Err {
+
 		List<Pos> references = new ArrayList<Pos>();
 
 		Expr expr = module.find(pos);
 
 		log("finding references to " + pos.toRangeString() + ", expr: " + expr);
 
-		log("loaded: " + loaded.keySet().stream().reduce((x,y) -> x + ", " + y).orElse("[empty]"));
 		if(expr == null)
 			return references;
 
 		if(expr.referenced() != null)
 			log("expr.referenced(): " + expr.referenced().toString());
 
-		// Expr targetExpr = expr;
-		// if(expr.referenced() != null){
-		// 	if (expr.referenced().pos().filename.equals("") || expr.referenced().pos().filename.equals(module.path)){
-		// 		targetExpr =  module.find(expr.referenced().pos());
-		// 	}
-		// 	else{
-		// 		CompModule targetModule = 
-		// 			CompUtil.parseEverything_fromFile(null, new HashMap<>(loaded), 
-		// 											  filePathResolved(expr.referenced().pos().filename));
-				
-		// 	}
-		// }
-		//Expr targetExpr = expr.referenced() != null ?  module.find(expr.referenced().pos()) : expr;
-		//Expr targetExpr = expr;
-		//log("targetExpr: " + targetExpr.toString());
 
 		Pos targetPos = expr.referenced() != null ? expr.referenced().pos() :  expr.pos;
 		log("targetPos: " + targetPos.toRangeString());
@@ -1794,9 +1623,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		for (File child: alloyFilesInDir(rootDir)){
 
 			String filePath = fileUriToPath(child.toURI().toString());
-			log("parsing file " + filePath + ", loaded: " + loaded.containsKey(filePath));
 			try{
-				CompModule childModule = CompUtil.parseEverything_fromFile(null, new HashMap<>(loaded), filePath);
+				CompModule childModule = getCompModuleForFileUri(child.toURI().toString()); 
 
 				childModule.visitExpressionsResilient(new VisitQueryOnce<Void>(){
 					@Override
@@ -1817,6 +1645,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				});
 			}catch(Exception ex){
 				log("exception parsing" + child.toString() + ": " + ex.toString());
+				if(! continueOnError) throw ex;
 			}
 		}  
 		return references;
