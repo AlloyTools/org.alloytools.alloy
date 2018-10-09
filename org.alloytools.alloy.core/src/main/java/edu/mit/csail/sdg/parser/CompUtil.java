@@ -447,6 +447,7 @@ public final class CompUtil {
         }
     }
 
+    // [HASLab] NOTE: see this
     static CompModule parse(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, CompModule root, int lineOffset, String filename, String prefix, int initialResolutionMode) throws Err, FileNotFoundException, IOException {
         CompModule module = CompParser.alloy_parseStream(seenDollar, loaded, fc, root, lineOffset, filename, prefix, initialResolutionMode);
         module.addDefaultCommand();

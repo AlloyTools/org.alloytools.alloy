@@ -271,6 +271,7 @@ public final class A4SolutionReader {
         String label = label(node);
         Pos isPrivate = yes(node, "private") ? Pos.UNKNOWN : null;
         Pos isMeta = yes(node, "meta") ? Pos.UNKNOWN : null;
+        Pos isVar = yes(node, "var") ? Pos.UNKNOWN : null; // [HASLab]
         Expr type = null;
         for (XMLNode sub : node)
             if (sub.is("types")) {
@@ -295,8 +296,8 @@ public final class A4SolutionReader {
                 break;
             }
         if (field == null)
-            field = parent.addTrickyField(Pos.UNKNOWN, isPrivate, null, null, isMeta, new String[] {
-                                                                                                    label
+            field = parent.addTrickyField(Pos.UNKNOWN, isPrivate, null, null, isMeta, isVar, new String[] { // [HASLab]
+                                                                                                           label
             }, UNIV.join(type))[0];
         TupleSet ts = parseTuples(node, arity);
         expr2ts.put(field, ts);

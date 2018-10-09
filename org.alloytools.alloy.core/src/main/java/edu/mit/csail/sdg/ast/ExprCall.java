@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -36,6 +37,8 @@ import edu.mit.csail.sdg.ast.Sig.Field;
  * Immutable; represents a call.
  * <p>
  * <b>Invariant:</b> type!=EMPTY => (all x:args | x.mult==0)
+ *
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class ExprCall extends Expr {
@@ -131,6 +134,10 @@ public final class ExprCall extends Expr {
                 case IN :
                 case OR :
                 case AND :
+                case RELEASE : // [HASLab]
+                case UNTIL : // [HASLab]
+                case SINCE : // [HASLab]
+                case TRIGGER : // [HASLab]
                 case NOT_LT :
                 case NOT_GT :
                 case NOT_LTE :
@@ -189,6 +196,7 @@ public final class ExprCall extends Expr {
                 case SETOF :
                 case SOMEOF :
                 case EXACTLYOF :
+                case PRIME : // [HASLab]
                     return t;
                 case CARDINALITY :
                 case CAST2INT :

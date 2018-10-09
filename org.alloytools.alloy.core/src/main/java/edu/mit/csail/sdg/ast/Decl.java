@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -22,6 +23,8 @@ import edu.mit.csail.sdg.alloy4.Pos;
 
 /**
  * Immutable; this declaration binds a list of names to an expression.
+ *
+ * @modified Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class Decl {
@@ -43,6 +46,12 @@ public final class Decl {
      * this.disjoint2 is the location of the "disjoint" keyword)
      */
     public final Pos                               disjoint2;
+
+    /**
+     * Nonnull if this sig is a Variable.
+     */
+    // [HASLab]
+    public final Pos                               isVar;
 
     /** The list of names. */
     public final ConstList< ? extends ExprHasName> names;
@@ -71,10 +80,12 @@ public final class Decl {
     /**
      * This constructs a declaration; the list of names must not be empty.
      */
-    public Decl(Pos isPrivate, Pos disjoint, Pos disjoint2, List< ? extends ExprHasName> names, Expr expr) {
+    // [HASLab]: extended with variable declarations for fields
+    public Decl(Pos isPrivate, Pos disjoint, Pos disjoint2, Pos isVar, List< ? extends ExprHasName> names, Expr expr) {
         if (names.size() == 0)
             throw new NullPointerException();
         this.isPrivate = isPrivate;
+        this.isVar = isVar; // [HASLab]
         this.disjoint = (names.size() > 1 ? disjoint : null);
         this.disjoint2 = disjoint2;
         this.names = ConstList.make(names);

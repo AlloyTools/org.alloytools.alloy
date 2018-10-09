@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -40,6 +41,8 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * <b>Invariant:</b> type==EMPTY iff errors.size()>0 <br>
  * <b>Invariant:</b> mult==0 || mult==1 || mult==2 <br>
  * <b>Invariant:</b> weight>0
+ *
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public abstract class Expr extends Browsable {
@@ -981,7 +984,7 @@ public abstract class Expr extends Browsable {
     public final Decl someOf(String label) throws Err {
         Expr x = ExprUnary.Op.SOMEOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, Arrays.asList(v), x);
+        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
     }
 
     /**
@@ -1003,7 +1006,7 @@ public abstract class Expr extends Browsable {
     public final Decl loneOf(String label) throws Err {
         Expr x = ExprUnary.Op.LONEOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, Arrays.asList(v), x);
+        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
     }
 
     /**
@@ -1025,7 +1028,7 @@ public abstract class Expr extends Browsable {
     public final Decl oneOf(String label) throws Err {
         Expr x = ExprUnary.Op.ONEOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, Arrays.asList(v), x);
+        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
     }
 
     /**
@@ -1047,7 +1050,7 @@ public abstract class Expr extends Browsable {
     public final Decl setOf(String label) throws Err {
         Expr x = ExprUnary.Op.SETOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, Arrays.asList(v), x);
+        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
     }
 
     /**
@@ -1148,6 +1151,128 @@ public abstract class Expr extends Browsable {
      */
     public final Expr cast2sigint() {
         return ExprUnary.Op.CAST2SIGINT.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (always this)
+     * <p>
+     * this must be a formula
+     */
+    // [HASLab]
+    public final Expr always() {
+        return ExprUnary.Op.ALWAYS.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (eventually this)
+     * <p>
+     * this must be a formula
+     */
+    // [HASLab]
+    public final Expr eventually() {
+        return ExprUnary.Op.EVENTUALLY.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (after this)
+     * <p>
+     * this must be a formula
+     */
+    // [HASLab]
+    public final Expr after() {
+        return ExprUnary.Op.AFTER.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (previous this)
+     * <p>
+     * this must be a formula
+     */
+    // [HASLab]
+    public final Expr previous() {
+        return ExprUnary.Op.PREVIOUS.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (historically this)
+     * <p>
+     * this must be a formula
+     */
+    // [HASLab]
+    public final Expr historically() {
+        return ExprUnary.Op.HISTORICALLY.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (once this)
+     * <p>
+     * this must be a formula
+     */
+    // [HASLab]
+    public final Expr once() {
+        return ExprUnary.Op.ONCE.make(span(), this);
+    }
+
+    /**
+     * Returns the formula (this until x)
+     * <p>
+     * this and x must both be formulas
+     * <p>
+     * Note: as a special guarantee, if x==null, then the method will return this
+     * Expr object as-is.
+     */
+    // [HASLab]
+    public final Expr until(Expr x) {
+        return (x == null) ? this : ExprBinary.Op.UNTIL.make(span().merge(x.span()), null, this, x);
+    }
+
+    /**
+     * Returns the formula (this release x)
+     * <p>
+     * this and x must both be formulas
+     * <p>
+     * Note: as a special guarantee, if x==null, then the method will return this
+     * Expr object as-is.
+     */
+    // [HASLab]
+    public final Expr release(Expr x) {
+        return (x == null) ? this : ExprBinary.Op.RELEASE.make(span().merge(x.span()), null, this, x);
+    }
+
+    /**
+     * Returns the formula (this since x)
+     * <p>
+     * this and x must both be formulas
+     * <p>
+     * Note: as a special guarantee, if x==null, then the method will return this
+     * Expr object as-is.
+     */
+    // [HASLab]
+    public final Expr since(Expr x) {
+        return (x == null) ? this : ExprBinary.Op.SINCE.make(span().merge(x.span()), null, this, x);
+    }
+
+    /**
+     * Returns the formula (this trigger x)
+     * <p>
+     * this and x must both be formulas
+     * <p>
+     * Note: as a special guarantee, if x==null, then the method will return this
+     * Expr object as-is.
+     */
+    // [HASLab]
+    public final Expr trigger(Expr x) {
+        return (x == null) ? this : ExprBinary.Op.TRIGGER.make(span().merge(x.span()), null, this, x);
+    }
+
+    /**
+     * Returns the expression (this')
+     * <p>
+     * this must be a set or relation
+     */
+    // [HASLab]
+    public final Expr prime() {
+        return ExprUnary.Op.PRIME.make(span(), this);
     }
 
     /**

@@ -342,9 +342,9 @@ action code {:
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
         }
         if (n!=null)
-          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, -1, -1, expects, s, x); // [HASLab]
         else
-          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, -1, -1, expects, s, x); // [HASLab]
     }
     private Expr t(Pos pos, Pos oldClosing, Expr left, Expr right, Pos close) throws Err {
       if (right instanceof ExprVar) {
@@ -745,17 +745,17 @@ Namex ::= Namex:a COMMA EXACTLY Name:b {: nod(b); a.add(null); a.add(b); RESULT=
 
 Decla ::=           PART:k Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, a, mult(b)); :};
-Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, a, mult(b)); :};
-Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, a, mult(b)); :};
-Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, a, mult(b)); :};
+Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, k,    null, a, mult(b)); :}; // [HASLab]
+Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, p,    k,    null, a, mult(b)); :}; // [HASLab]
+Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(null, p,    null, null, a, mult(b)); :}; // [HASLab]
+Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :}; // [HASLab]
 
 Decla ::=           PART:k Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d,    a, mult(b)); :};
-Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d,    a, mult(b)); :};
-Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d,    a, mult(b)); :};
-Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d,    a, mult(b)); :};
+Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, k,    d,    a, mult(b)); :}; // [HASLab]
+Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, p,    k,    d,    a, mult(b)); :}; // [HASLab]
+Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, p,    null, d,    a, mult(b)); :}; // [HASLab]
+Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, null, d,    a, mult(b)); :}; // [HASLab]
 
 Declb ::= Decla:x {: RESULT=x; :};
 
@@ -763,8 +763,8 @@ Declb ::=           PART:k Names   EQUALS          Expr    {: if (1==1) throw Co
 Declb ::=           EXH:k  Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                       :};
 Declb ::=           DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
 Declb ::= PRIVATE   DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
-Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null,  a, ExprUnary.Op.EXACTLYOF.make(null, b)); :};
-Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null,  a, ExprUnary.Op.EXACTLYOF.make(null, b)); :};
+Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, p,    null, null,  a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
+Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null,  a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
 
 Declb ::=           PART:k Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "part");                                   :};
 Declb ::=           EXH:k  Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                    :};

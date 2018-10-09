@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -38,6 +39,8 @@ import edu.mit.csail.sdg.ast.Type.ProductType;
  * Immutable; represents a unary expression of the form "(OP subexpression)"
  * <p>
  * <b>Invariant:</b> type!=EMPTY => sub.mult==0
+ *
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class ExprUnary extends Expr {
@@ -158,6 +161,18 @@ public final class ExprUnary extends Expr {
                     EXACTLYOF("exactly of"),
                     /** not f (where f is a formula) */
                     NOT("!"),
+                    /** after f (where f is a formula) */
+                    AFTER("after"), // [HASLab]
+                    /** always f (where f is a formula) */
+                    ALWAYS("always"), // [HASLab]
+                    /** eventually f (where f is a formula) */
+                    EVENTUALLY("eventually"), // [HASLab]
+                    /** previous f (where f is a formula) */
+                    PREVIOUS("previous"), // [HASLab]
+                    /** historically f (where f is a formula) */
+                    HISTORICALLY("historically"), // [HASLab]
+                    /** once f (where f is a formula) */
+                    ONCE("once"), // [HASLab]
                     /** no x (where x is a set or relation) */
                     NO("no"),
                     /** some x (where x is a set or relation) */
@@ -168,6 +183,8 @@ public final class ExprUnary extends Expr {
                     ONE("one"),
                     /** transpose */
                     TRANSPOSE("~"),
+                    /** post */
+                    PRIME("\'"), // [HASLab]
                     /** reflexive closure */
                     RCLOSURE("*"),
                     /** closure */
@@ -256,6 +273,12 @@ public final class ExprUnary extends Expr {
                 case NOOP :
                     break;
                 case NOT :
+                case AFTER :        // [HASLab]
+                case ALWAYS :       // [HASLab]
+                case EVENTUALLY :   // [HASLab]
+                case PREVIOUS :     // [HASLab]
+                case HISTORICALLY : // [HASLab]
+                case ONCE :         // [HASLab]
                     sub = sub.typecheck_as_formula();
                     break;
                 case CAST2SIGINT :
@@ -298,6 +321,12 @@ public final class ExprUnary extends Expr {
                     case SOME :
                     case LONE :
                     case ONE :
+                    case AFTER :        // [HASLab]
+                    case ALWAYS :       // [HASLab]
+                    case EVENTUALLY :   // [HASLab]
+                    case PREVIOUS :     // [HASLab]
+                    case HISTORICALLY : // [HASLab]
+                    case ONCE :         // [HASLab]
                         type = Type.FORMULA;
                         break;
                     case TRANSPOSE :

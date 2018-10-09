@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -25,6 +26,7 @@ import static edu.mit.csail.sdg.ast.Attr.AttrType.WHERE;
 import static edu.mit.csail.sdg.ast.Sig.NONE;
 import static edu.mit.csail.sdg.ast.Sig.SEQIDX;
 import static edu.mit.csail.sdg.ast.Sig.SIGINT;
+import static edu.mit.csail.sdg.ast.Sig.SIGTIME;
 import static edu.mit.csail.sdg.ast.Sig.STRING;
 import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
@@ -85,12 +87,15 @@ import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.ast.VisitQuery;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
 
 /**
  * Mutable; this class represents an Alloy module; equals() uses object
  * identity.
+ *
+ * @modified: Nuno Macedo // [HASLab] temporal solving
  */
 
 public final class CompModule extends Browsable implements Module {
@@ -588,7 +593,7 @@ public final class CompModule extends Browsable implements Module {
                 TempList<ExprVar> n = new TempList<ExprVar>(d.names.size());
                 for (ExprHasName v : d.names)
                     n.add(ExprVar.make(v.pos, v.label, exp.type()));
-                Decl dd = new Decl(d.isPrivate, d.disjoint, d.disjoint2, n.makeConst(), exp);
+                Decl dd = new Decl(d.isPrivate, d.disjoint, d.disjoint2, null, n.makeConst(), exp); // [HASLab]
                 for (ExprHasName newname : dd.names)
                     put(newname.label, newname);
                 decls.add(dd);
@@ -1160,6 +1165,8 @@ public final class CompModule extends Browsable implements Module {
             return STRING;
         if (name.equals("none"))
             return NONE;
+        if (name.equals("Time")) // [HASLab]
+            return SIGTIME;
         if (name.indexOf('/') < 0) {
             s = getRawNQS(this, 1, name);
             s2 = params.get(name);
@@ -1483,7 +1490,8 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** The given Sig will now point to a nonnull Sig. */
-    private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS) throws Err {
+    // [HASLab] variable constructs warnings
+    private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS, final List<ErrorWarning> warns) throws Err {
         if (res.new2old.containsKey(oldS))
             return oldS;
         Sig realSig;
@@ -1499,19 +1507,24 @@ public final class CompModule extends Browsable implements Module {
                 Sig parentAST = u.getRawSIG(n.pos, n.label);
                 if (parentAST == null)
                     throw new ErrorSyntax(n.pos, "The sig \"" + n.label + "\" cannot be found.");
-                parents.add(resolveSig(res, topo, parentAST));
+                parents.add(resolveSig(res, topo, parentAST, warns)); // [HASLab]
             }
             realSig = new SubsetSig(fullname, parents, oldS.attributes.toArray(new Attr[0]));
+            for (Sig n : parents)
+                if (n.isVariable != null && realSig.isVariable == null) // [HASLab]
+                    warns.add(new ErrorWarning(realSig.isSubset, "Static sub-sig in variable sig.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
         } else {
             Sig sup = ((PrimSig) oldS).parent;
             Sig parentAST = u.getRawSIG(sup.pos, sup.label);
             if (parentAST == null)
                 throw new ErrorSyntax(sup.pos, "The sig \"" + sup.label + "\" cannot be found.");
-            Sig parent = resolveSig(res, topo, parentAST);
+            Sig parent = resolveSig(res, topo, parentAST, warns); // [HASLab]
             if (!(parent instanceof PrimSig))
                 throw new ErrorSyntax(sup.pos, "Cannot extend the subset signature \"" + parent + "\".\n" + "A signature can only extend a toplevel signature or a subsignature.");
             PrimSig p = (PrimSig) parent;
             realSig = new PrimSig(fullname, p, oldS.attributes.toArray(new Attr[0]));
+            if (parent.isVariable != null && realSig.isVariable == null) // [HASLab]
+                warns.add(new ErrorWarning(realSig.isSubsig, "Static sig extends variable sig.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
         }
         res.new2old.put(realSig, oldS);
         res.sig2module.put(realSig, u);
@@ -1566,7 +1579,7 @@ public final class CompModule extends Browsable implements Module {
         else
             decls = new ArrayList<Decl>(decls);
         if (f != null)
-            decls.add(0, new Decl(null, null, null, Util.asList(ExprVar.make(f.span(), "this")), f));
+            decls.add(0, new Decl(null, null, null, null, Util.asList(ExprVar.make(f.span(), "this")), f)); // [HASLab]
         for (Decl d : decls) {
             if (d.isPrivate != null) {
                 ExprHasName name = d.names.get(0);
@@ -1618,7 +1631,7 @@ public final class CompModule extends Browsable implements Module {
                         tmpvars.add(v);
                         rep.typecheck((f.isPred ? "pred " : "fun ") + fullname + ", Param " + n.label + ": " + v.type() + "\n");
                     }
-                    tmpdecls.add(new Decl(d.isPrivate, d.disjoint, d.disjoint2, tmpvars.makeConst(), val));
+                    tmpdecls.add(new Decl(d.isPrivate, d.disjoint, d.disjoint2, null, tmpvars.makeConst(), val)); // [HASLab]
                 }
                 Expr ret = null;
                 if (!f.isPred) {
@@ -1819,8 +1832,8 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a COMMAND declaration. */
-
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    // [HASLab] extended for time scopes
+    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
         if (label != null)
@@ -1832,7 +1845,7 @@ public final class CompModule extends Browsable implements Module {
             throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
         String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
+        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, tmn, tmx, exp, scopes, null, name, parent); // [HASLab]
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1840,7 +1853,8 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+    // [HASLab] extended for time scopes
+    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
 
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
@@ -1856,17 +1870,18 @@ public final class CompModule extends Browsable implements Module {
             addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, expects, scopes, null, ExprVar.make(null, n), parent);
+        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, tmn, tmx, expects, scopes, null, ExprVar.make(null, n), parent); // [HASLab]
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
             commands.add(newcommand);
     }
 
+    // [HASLab] TODO: see this
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, 0, null, null, ExprVar.make(null, "$$Default"), null));
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, 1, 5, 0, null, null, ExprVar.make(null, "$$Default"), null)); // [HASLab]
         }
     }
 
@@ -1912,13 +1927,15 @@ public final class CompModule extends Browsable implements Module {
             Sig s = getRawSIG(et.sig.pos, et.sig.label);
             if (s == null)
                 throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
+            if (et.isExact && s.isVariable != null) // [HASLab]
+                throw new ErrorSyntax(cmd.pos, "Sig " + et.sig + " is variable thus scope cannot be exact.");
             sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
         }
 
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.mintime, cmd.maxtime, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent); // [HASLab]
 
     }
 
@@ -1961,6 +1978,8 @@ public final class CompModule extends Browsable implements Module {
         // visible ancestor sig
         // * it is allowed to refer to visible sigs
         // * it is NOT allowed to refer to any predicate or function
+        // * it is NOT allowed to refer to variable fields/sigs unless it is also variable // [HASLab]
+        // * a static field is NOT allowed inside a variable sig // [HASLab]
         // For example, if A.als opens B.als, and B/SIGX extends A/SIGY,
         // then B/SIGX's fields cannot refer to A/SIGY, nor any fields in
         // A/SIGY)
@@ -1990,7 +2009,22 @@ public final class CompModule extends Browsable implements Module {
             String[] names = new String[d.names.size()];
             for (int i = 0; i < names.length; i++)
                 names[i] = d.names.get(i).label;
-            Field[] fields = s.addTrickyField(d.span(), d.isPrivate, d.disjoint, d.disjoint2, null, names, bound);
+            Field[] fields = s.addTrickyField(d.span(), d.isPrivate, d.disjoint, d.disjoint2, null, d.isVar, names, bound); // [HASLab]
+            final VisitQuery<Sig> q = new VisitQuery<Sig>() { // [HASLab]
+
+                @Override
+                public final Sig visit(Sig x) {
+                    if (x.isVariable != null)
+                        return x;
+                    else
+                        return null;
+                }
+            };
+            Sig qr = q.visitThis(bound);
+            if (d.isVar == null && qr != null)  // [HASLab]
+                warns.add(new ErrorWarning(d.span(), "Static field types with variable bound.\n" + "Field " + d.names.get(0) + " is static but " + qr.label + " is variable."));
+            if (d.isVar == null && s.isVariable != null)  // [HASLab]
+                warns.add(new ErrorWarning(d.span(), "Static field inside variable sig.\n" + "Field " + d.names.get(0) + " is static but " + s.label + " is variable."));
             for (Field f : fields) {
                 rep.typecheck("Sig " + s + ", Field " + f.label + ": " + f.type() + "\n");
             }
@@ -2122,7 +2156,7 @@ public final class CompModule extends Browsable implements Module {
         HashSet<Object> topo = new HashSet<Object>();
         for (CompModule m : root.allModules)
             for (Sig s : m.sigs.values())
-                resolveSig(root, topo, s);
+                resolveSig(root, topo, s, warns); // [HASLab] sigs also throw warnings
         // Add the non-defined fields to the sigs in topologically sorted order
         // (since fields in subsigs are allowed to refer to parent's fields)
         for (Sig oldS : root.new2old.keySet())

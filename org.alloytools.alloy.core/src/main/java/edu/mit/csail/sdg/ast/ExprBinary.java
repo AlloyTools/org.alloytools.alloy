@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -49,6 +50,8 @@ import edu.mit.csail.sdg.ast.Type.ProductType;
  * <p>
  * <b>Invariant:</b> type!=EMPTY => (right.mult==2 => (this.op==IN || this.op is
  * one of the 17 arrow operators))
+ *
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class ExprBinary extends Expr {
@@ -257,7 +260,15 @@ public final class ExprBinary extends Expr {
                            /** || */
                            OR("||", false),
                            /** &lt;=&gt; */
-                           IFF("<=>", false);
+                           IFF("<=>", false),
+                           /** until; */
+                           UNTIL("until", false), // [HASLab]
+                           /** release; */
+                           RELEASE("release", false), // [HASLab]
+                           /** since; */
+                           SINCE("since", false), // [HASLab]
+                           /** trigger */
+                           TRIGGER("trigger", false); // [HASLab]
 
         /**
          * The constructor.
@@ -319,7 +330,11 @@ public final class ExprBinary extends Expr {
                     break;
                 }
                 case IFF :
-                case IMPLIES : {
+                case IMPLIES :
+                case RELEASE :
+                case UNTIL :
+                case SINCE :
+                case TRIGGER : { // [HASLab]
                     left = left.typecheck_as_formula();
                     right = right.typecheck_as_formula();
                     break;
@@ -374,6 +389,10 @@ public final class ExprBinary extends Expr {
                     case OR :
                     case IFF :
                     case IMPLIES :
+                    case RELEASE : // [HASLab]
+                    case UNTIL : // [HASLab]
+                    case SINCE : // [HASLab]
+                    case TRIGGER : // [HASLab]
                         type = Type.FORMULA;
                         break;
                     case MUL :
@@ -489,7 +508,11 @@ public final class ExprBinary extends Expr {
             case AND :
             case OR :
             case IFF :
-            case IMPLIES : {
+            case IMPLIES :
+            case RELEASE :
+            case UNTIL :
+            case SINCE :
+            case TRIGGER : { // [HASLab]
                 a = (b = Type.FORMULA);
                 break;
             }
