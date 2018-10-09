@@ -27,6 +27,7 @@ import java.util.Map;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -35,7 +36,7 @@ import kodkod.ast.Decl;
 import kodkod.ast.Decls;
 import kodkod.ast.ExprToIntCast;
 import kodkod.ast.Expression;
-import kodkod.ast.FixFormula;
+//import kodkod.ast.FixFormula;
 import kodkod.ast.Formula;
 import kodkod.ast.IfExpression;
 import kodkod.ast.IfIntExpression;
@@ -55,8 +56,10 @@ import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.RelationPredicate.Function;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
@@ -193,10 +196,10 @@ public final class TranslateKodkodToJava implements VoidVisitor {
                 return 1 + max(x.decls().accept(this), x.formula().accept(this));
             }
 
-            @Override
-            public Integer visit(FixFormula x) {
-                return 1 + max(x.condition().accept(this), x.formula().accept(this));
-            }
+            //            @Override // [HASLab]
+            //            public Integer visit(FixFormula x) {
+            //                return 1 + max(x.condition().accept(this), x.formula().accept(this));
+            //            }
 
             @Override
             public Integer visit(Comprehension x) {
@@ -260,6 +263,24 @@ public final class TranslateKodkodToJava implements VoidVisitor {
                         max = m;
                 }
                 return max + 1;
+            }
+
+            @Override
+            public Integer visit(UnaryTempFormula temporalFormula) {
+                // TODO Auto-generated method stub
+                return null;
+            }
+
+            @Override
+            public Integer visit(BinaryTempFormula temporalFormula) {
+                // TODO Auto-generated method stub
+                return null;
+            }
+
+            @Override
+            public Integer visit(TempExpression temporalExpr) {
+                // TODO Auto-generated method stub
+                return null;
             }
         };
         Object ans = node.accept(vis);
@@ -819,16 +840,16 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void visit(FixFormula x) {
-        String newname = makename(x);
-        if (newname == null)
-            return;
-        String f = make(x.formula());
-        String c = make(x.condition());
-        file.printf("Formula %s=%s.fix(%s);%n", newname, f, c);
-    }
+    //    /** {@inheritDoc} */ [HASLab]
+    //    @Override
+    //    public void visit(FixFormula x) {
+    //        String newname = makename(x);
+    //        if (newname == null)
+    //            return;
+    //        String f = make(x.formula());
+    //        String c = make(x.condition());
+    //        file.printf("Formula %s=%s.fix(%s);%n", newname, f, c);
+    //    }
 
     /** {@inheritDoc} */
     @Override
@@ -1038,5 +1059,23 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         for (int i = 0; i < list.length; i++)
             file.printf(", %s", list[i]);
         file.printf(");%n");
+    }
+
+    @Override
+    public void visit(UnaryTempFormula temporalFormula) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void visit(BinaryTempFormula temporalFormula) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void visit(TempExpression temporalExpr) {
+        // TODO Auto-generated method stub
+
     }
 }
