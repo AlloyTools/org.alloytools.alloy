@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2008, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -58,6 +59,8 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+
+// @modified: Nuno Macedo // [HASLab] electrum-temporal
 
 //===========================================================================//
 
@@ -223,6 +226,20 @@ parser code {:
     ch.put(CompSym.ID, "NAME");
     ch.put(CompSym.NUMBER, "NUMBER");
     ch.put(CompSym.STR, "STRING");
+    ch.put(CompSym.VAR, "var");                       // [HASLab] ltl tokens
+    ch.put(CompSym.ALWAYS, "always");                 // [HASLab] ltl tokens
+    ch.put(CompSym.EVENTUALLY, "eventually");         // [HASLab] ltl tokens
+    ch.put(CompSym.AFTER, "after");                   // [HASLab] ltl tokens
+    ch.put(CompSym.PREVIOUS, "previous");             // [HASLab] ltl tokens
+    ch.put(CompSym.HISTORICALLY, "historically");     // [HASLab] ltl tokens
+    ch.put(CompSym.ONCE, "once");                     // [HASLab] ltl tokens
+    ch.put(CompSym.RELEASE, "release");               // [HASLab] ltl tokens
+    ch.put(CompSym.UNTIL, "until");                   // [HASLab] ltl tokens
+    ch.put(CompSym.SINCE, "since");                   // [HASLab] ltl tokens
+    ch.put(CompSym.TRIGGER, "trigger");               // [HASLab] ltl tokens
+    ch.put(CompSym.TRCSEQ, ";");	   	              // [HASLab] ltl tokens
+    ch.put(CompSym.PRIME, "'"); 					  // [HASLab] ltl tokens
+    ch.put(CompSym.TIME, "Time"); 					  // [HASLab] ltl tokens
     TreeSet<String> list = new TreeSet<String>();
     Pos p=Pos.UNKNOWN;
     if (x!=null && x.value instanceof Pos) p=(Pos)(x.value);
@@ -330,9 +347,11 @@ action code {:
     private void nod(List<ExprVar> names) throws Err {
         if (names!=null) for(ExprVar n:names) if (n!=null && n.label.indexOf('$')>=0) throw new ErrorSyntax(n.pos, "The name cannot contain the '$' symbol.");
     }
+    // [HASLab] extended with time scopes
     private void c(boolean follow, ExprVar o, ExprVar x, ExprVar n, Expr e, List<CommandScope> s, ExprConstant c) throws Err {
         if (n!=null) nod(n);
         int bitwidth=(-1), maxseq=(-1), overall=(-1), expects=(c==null ? -1 : c.num);
+        int maxtime = (-1), mintime = (-1); // [HASLab]
         Pos p = o.pos.merge(n!=null ? n.span() : e.span());
         for(int i=s.size()-1; i>=0; i--) {
           Sig j=s.get(i).sig;  int k=s.get(i).startingScope;
@@ -340,11 +359,19 @@ action code {:
           if (j.label.equals("univ")) { overall=k; s.remove(i); continue; }
           if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
+          if (j.label.equals("Time")) { // [HASLab]
+        	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "The time cannot be specified more than once."); 
+        	  maxtime=k; 
+        	  if (s.get(i).isExact) mintime = k; 
+        	  else if (s.get(i).endingScope == s.get(i).startingScope) mintime = 1;
+        	  else { maxtime = s.get(i).endingScope; mintime = s.get(i).startingScope; }
+        	  s.remove(i); continue; 
+      	  }
         }
         if (n!=null)
-          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, -1, -1, expects, s, x); // [HASLab]
+          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, mintime, maxtime, expects, s, x); // [HASLab]
         else
-          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, -1, -1, expects, s, x); // [HASLab]
+          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, mintime, maxtime, expects, s, x); // [HASLab]
     }
     private Expr t(Pos pos, Pos oldClosing, Expr left, Expr right, Pos close) throws Err {
       if (right instanceof ExprVar) {
@@ -476,6 +503,21 @@ terminal Pos THIS;             //  this
 terminal Pos TILDE;            //  ~
 terminal Pos UNIV;             //  univ
 
+terminal Pos VAR;              //  var   		 // [HASLab] ltl tokens  
+terminal Pos ALWAYS;           //  always      	 // [HASLab] ltl tokens
+terminal Pos EVENTUALLY;       //  eventually  	 // [HASLab] ltl tokens
+terminal Pos AFTER;            //  after  	  	 // [HASLab] ltl tokens
+terminal Pos ONCE;             //  once   	 	 // [HASLab] ltl tokens
+terminal Pos HISTORICALLY;     //  historically	 // [HASLab] ltl tokens
+terminal Pos PREVIOUS;         //  previous		 // [HASLab] ltl tokens
+terminal Pos RELEASE;          //  release		 // [HASLab] ltl tokens
+terminal Pos UNTIL;            //  until		 // [HASLab] ltl tokens
+terminal Pos SINCE;            //  since		 // [HASLab] ltl tokens
+terminal Pos TRIGGER;          //  trigger   	 // [HASLab] ltl tokens
+terminal Pos TRCSEQ;           //  trace seq     // [HASLab] ltl tokens
+terminal Pos TIME;         	   //  Time		 	 // [HASLab] ltl tokens
+terminal Pos PRIME; 	   	   // '		 		 // [HASLab] ltl tokens
+
 terminal ExprVar ID;
 
 terminal ExprConstant NUMBER, STR;
@@ -564,6 +606,13 @@ nonterminal Expr                       UnionDiffExprB;
 nonterminal Expr                       UnopExprA;
 nonterminal Expr                       UnopExprB;
 nonterminal Pos                        Vis;
+nonterminal Expr                       TempUnaryA;  // [HASLab]
+nonterminal Expr                       TempUnaryB;  // [HASLab]
+nonterminal Expr                       TempBinaryA; // [HASLab]
+nonterminal Expr                       TempBinaryB; // [HASLab]
+
+precedence left PRIME;      // [HASLab]
+precedence right TRCSEQ;    // [HASLab]
 
 //===========================================================================//
 
@@ -644,6 +693,12 @@ Typescope  ::= TypeNumber:e UNIV:f    {: if (1==1) throw new ErrorSyntax(e.pos.m
 
 Typescope  ::= TypeNumber:a STRING:b  {: RESULT = new CommandScope(a.pos.merge(b), new PrimSig("String", AttrType.WHERE.make(a.pos.merge(b))), a.isExact, a.startingScope, a.endingScope, a.increment); :};
 
+// [HASLab]
+Typescope  ::= TypeNumber:a TIME:b    {:
+    Pos p = a.pos.merge(b);
+	RESULT = new CommandScope(p, new PrimSig("Time", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
+:};
+
 //[AM] Typescope  ::= TypeNumber:e SIGINT:f  {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You can no longer set a scope on Int; the number of Int atoms is always exactly equal to 2^(integer bitwidth).\n"); :};
 
 Typescope  ::= TypeNumber:e NONE:f    {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You cannot set a scope on none."); :};
@@ -698,14 +753,15 @@ Sig ::= SigQuals:a Names:b SigIn:c LBRACE Decls:d RBRACE:o SuperOpt:e
    }
  :};
 
-SigQual  ::= ABSTRACT:x               {: RESULT=new ArrayList<Pos>(5); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
-SigQual  ::= LONE:x                   {: RESULT=new ArrayList<Pos>(5); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
-SigQual  ::= ONE:x                    {: RESULT=new ArrayList<Pos>(5); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); :};
-SigQual  ::= SOME:x                   {: RESULT=new ArrayList<Pos>(5); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); :};
-SigQual  ::= PRIVATE:x                {: RESULT=new ArrayList<Pos>(5); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    :};
+SigQual  ::= ABSTRACT:x               {: RESULT=new ArrayList<Pos>(6); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
+SigQual  ::= LONE:x                   {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
+SigQual  ::= ONE:x                    {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
+SigQual  ::= SOME:x                   {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
+SigQual  ::= PRIVATE:x                {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);  	 RESULT.add(null); :}; // [HASLab] variable sigs
+SigQual  ::= VAR:x            	      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    :}; // [HASLab] variable sigs
 
-SigQuals ::= SIG                      {: RESULT=new ArrayList<Pos>(5); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
-SigQuals ::= SigQual:a SigQuals:b     {: RESULT=a; for(int i=0;i<5;i++) if (a.get(i)==null) a.set(i,b.get(i)); else if (b.get(i)!=null) throw new ErrorSyntax(b.get(i), "The same qualifer cannot be specified more than once for the same sig."); :};
+SigQuals ::= SIG                      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
+SigQuals ::= SigQual:a SigQuals:b     {: RESULT=a; for(int i=0;i<6;i++) if (a.get(i)==null) a.set(i,b.get(i)); else if (b.get(i)!=null) throw new ErrorSyntax(b.get(i), "The same qualifer cannot be specified more than once for the same sig."); :}; // [HASLab] variable sigs
 
 SigIn    ::= EXTENDS:a SigRef:x       {: RESULT=new ArrayList<ExprVar>(2); RESULT.add(x); RESULT.add(ExprVar.make(a, "extends")); :};
 SigIn    ::= IN:a SigRefu:x           {: RESULT=x;  x.add(ExprVar.make(a,"in"));                                                  :};
@@ -715,6 +771,7 @@ SigIn    ::=                          {: RESULT=null;                           
 SigRef   ::= Name:x                   {: RESULT=x;                                    :};
 SigRef   ::= UNIV:x                   {: RESULT=ExprVar.make(x, "univ");              :};
 SigRef   ::= STRING:x                 {: RESULT=ExprVar.make(x, "String");            :};
+SigRef   ::= TIME:x                   {: RESULT=ExprVar.make(x, "Time");              :};  // [HASLab]
 SigRef   ::= SIGINT:x                 {: RESULT=ExprVar.make(x, "Int");               :};
 SigRef   ::= SEQ:a SLASH SIGINT:b     {: RESULT=ExprVar.make(a.merge(b), "seq/Int");  :};
 SigRef   ::= NONE:x                   {: RESULT=ExprVar.make(x, "none");              :};
@@ -853,10 +910,46 @@ ImpliesExprCloseB ::= AndExprB:a IMPLIES:o ImpliesExprCloseB:b ELSE ImpliesExprC
 ImpliesExprOpenB  ::= AndExprB:a IMPLIES:o ImpliesExprCloseB:b ELSE ImpliesExprOpenB:c  {: RESULT = ExprITE.make(o,a,b,c);                     :};
 ImpliesExprOpenB  ::= AndExprB:a IMPLIES:o ImpliesExprB:b                               {: RESULT = ExprBinary.Op.IMPLIES.make(o, null, a, b); :};
 
-AndExprA ::= NegExprA:a                   {: RESULT=a;                                     :};
-AndExprA ::= AndExprB:a AND:o Bind:b      {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :};
-AndExprB ::=                  NegExprB:b  {: RESULT=b;                                     :};
-AndExprB ::= AndExprB:a AND:o NegExprB:b  {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :};
+AndExprA ::= TempBinaryA:a                  {: RESULT=a;                                     :}; // [HASLab]
+AndExprA ::= AndExprB:a AND:o Bind:b        {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :};
+AndExprB ::=                  TempBinaryB:b {: RESULT=b;                                     :}; // [HASLab]
+AndExprB ::= AndExprB:a AND:o TempBinaryB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :}; // [HASLab]
+
+// [HASLab]
+TempBinaryA ::=                         TempUnaryA:a  {: RESULT=a;                                                                       :};
+TempBinaryA ::= TempBinaryB:a UNTIL:o   Bind:b        {: RESULT = ExprBinary.Op.UNTIL  .make(o, null, a, b);                             :};
+TempBinaryA ::= TempBinaryB:a SINCE:o   Bind:b        {: RESULT = ExprBinary.Op.SINCE  .make(o, null, a, b);                             :};
+TempBinaryA ::= TempBinaryB:a TRIGGER:o Bind:b        {: RESULT = ExprBinary.Op.TRIGGER.make(o, null, a, b);                             :};
+TempBinaryA ::= TempBinaryB:a RELEASE:o Bind:b        {: RESULT = ExprBinary.Op.RELEASE.make(o, null, a, b);                             :};
+TempBinaryA ::= Bind:b        TRCSEQ:o  TempBinaryB:a {: RESULT = ExprBinary.Op.AND    .make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
+TempBinaryB ::=                         TempUnaryB:b  {: RESULT=b;                                                                       :};
+TempBinaryB ::= TempBinaryB:a UNTIL:o   TempUnaryB:b  {: RESULT = ExprBinary.Op.UNTIL  .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a SINCE:o   TempUnaryB:b  {: RESULT = ExprBinary.Op.SINCE  .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a RELEASE:o TempUnaryB:b  {: RESULT = ExprBinary.Op.RELEASE.make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a TRIGGER:o TempUnaryB:b  {: RESULT = ExprBinary.Op.TRIGGER.make(o, null, a, b);                             :};
+TempBinaryB ::= TempUnaryB:a  TRCSEQ:o  TempBinaryB:b {: RESULT = ExprBinary.Op.AND    .make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
+
+// [HASLab]
+TempUnaryA ::=                NegExprA:a     {: RESULT=a; 										:};
+TempUnaryA ::= ALWAYS:o       Bind:a         {: RESULT = ExprUnary.Op.ALWAYS      .make(o, a); 	:};
+TempUnaryA ::= EVENTUALLY:o   Bind:a         {: RESULT = ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
+TempUnaryA ::= AFTER:o        Bind:a         {: RESULT = ExprUnary.Op.AFTER  	  .make(o, a); 	:};
+TempUnaryA ::= HISTORICALLY:o Bind:a         {: RESULT = ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
+TempUnaryA ::= ONCE:o         Bind:a         {: RESULT = ExprUnary.Op.ONCE        .make(o, a); 	:};
+TempUnaryA ::= PREVIOUS:o     Bind:a         {: RESULT = ExprUnary.Op.PREVIOUS    .make(o, a); 	:};
+TempUnaryA ::= ALWAYS:o       TempUnaryA:a   {: RESULT = ExprUnary.Op.ALWAYS      .make(o, a); 	:};
+TempUnaryA ::= EVENTUALLY:o   TempUnaryA:a   {: RESULT = ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
+TempUnaryA ::= AFTER:o        TempUnaryA:a   {: RESULT = ExprUnary.Op.AFTER       .make(o, a); 	:};
+TempUnaryA ::= HISTORICALLY:o TempUnaryA:a   {: RESULT = ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
+TempUnaryA ::= ONCE:o         TempUnaryA:a   {: RESULT = ExprUnary.Op.ONCE        .make(o, a); 	:};
+TempUnaryA ::= PREVIOUS:o     TempUnaryA:a   {: RESULT = ExprUnary.Op.PREVIOUS    .make(o, a); 	:};
+TempUnaryB ::=                NegExprB:a     {: RESULT=a; 										:};
+TempUnaryB ::= ALWAYS:o       TempUnaryB:a   {: RESULT = ExprUnary.Op.ALWAYS      .make(o, a); 	:};
+TempUnaryB ::= EVENTUALLY:o   TempUnaryB:a 	 {: RESULT = ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
+TempUnaryB ::= AFTER:o        TempUnaryB:a 	 {: RESULT = ExprUnary.Op.AFTER       .make(o, a); 	:};
+TempUnaryB ::= HISTORICALLY:o TempUnaryB:a 	 {: RESULT = ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
+TempUnaryB ::= ONCE:o         TempUnaryB:a   {: RESULT = ExprUnary.Op.ONCE        .make(o, a); 	:};
+TempUnaryB ::= PREVIOUS:o     TempUnaryB:a   {: RESULT = ExprUnary.Op.PREVIOUS    .make(o, a); 	:};
 
 NegExprA ::=         CompareExprA:b         {: RESULT=b;                           :};
 NegExprA ::= NOT:o   Bind:b                 {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
@@ -1021,6 +1114,9 @@ UnopExprB ::=          BaseExpr:b   {: RESULT=b;                                
 UnopExprB ::= TILDE:o  UnopExprB:b  {: RESULT=ExprUnary.Op.TRANSPOSE.make(o,b); :};
 UnopExprB ::= STAR:o   UnopExprB:b  {: RESULT=ExprUnary.Op.RCLOSURE .make(o,b); :};
 UnopExprB ::= CARET:o  UnopExprB:b  {: RESULT=ExprUnary.Op.CLOSURE  .make(o,b); :};
+UnopExprA ::= Bind:b PRIME:o        {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab]
+UnopExprA ::= UnopExprA:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab]
+UnopExprB ::= UnopExprB:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab]
 
 BaseExpr ::= NUMBER:x                               {: RESULT = x;                                                        :};
 BaseExpr ::= STR:x                                  {: RESULT = x;                                                        :};
