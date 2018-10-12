@@ -34,22 +34,20 @@ public class ExprTranslator
         if(expr instanceof ExprUnary)
         {
             return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, variablesScope);
-        }
-        if(expr instanceof ExprBinary)
+        } 
+        else if(expr instanceof ExprBinary)
         {
             return this.exprBinaryTranslator.translateExprBinary((ExprBinary) expr, variablesScope);
         }
-        if(expr instanceof ExprQt)
+        else if(expr instanceof ExprQt)
         {
             return translateExprQt((ExprQt) expr, variablesScope);
         }
-
-        if(expr instanceof ExprConstant)
+        else if(expr instanceof ExprConstant)
         {
             return translateExprConstant((ExprConstant) expr, variablesScope);
         }
-
-        if(expr instanceof ExprList)
+        else if(expr instanceof ExprList)
         {
             return translateExprList((ExprList) expr, variablesScope);
         }
@@ -63,7 +61,7 @@ public class ExprTranslator
         {
 
             case NUMBER : return new IntConstant(expr.num); // alloy only  supports integers
-            case IDEN   : return translator.identity.getConstantExpr();
+            case IDEN   : return translator.atomIden.getConstantExpr();
             default: throw new UnsupportedOperationException();
         }
     }
@@ -118,7 +116,7 @@ public class ExprTranslator
             }
         }
 
-        Expression           expression             = translateExpr(exprQt.sub, variablesScope);
+        Expression expression = translateExpr(exprQt.sub, variablesScope);
 
         switch (exprQt.op)
         {

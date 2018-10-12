@@ -37,11 +37,17 @@ public class ExprBinaryTranslator
             case LONE_ARROW_ONE     : throw new UnsupportedOperationException();
             case LONE_ARROW_LONE    : throw new UnsupportedOperationException();
             case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
+            
+            // Relational operators
             case JOIN               : return translateJoin(expr, variablesScope);
             case DOMAIN             : return translateDomainRestriction(expr, variablesScope);
             case RANGE              : return translateRangeRestriction(expr, variablesScope);
             case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
             case PLUSPLUS           : return translatePlusPlus(expr, variablesScope);
+            case EQUALS             : return translateComparison(expr, BinaryExpression.Op.EQ, variablesScope);
+            case NOT_EQUALS         : return translateComparison(expr, BinaryExpression.Op.NEQ, variablesScope);            
+            
+            // Arithmetic operators
             case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
             case IPLUS              : throw new UnsupportedOperationException();
             case MINUS              : return translateSetOperation(expr, BinaryExpression.Op.SETMINUS, variablesScope);
@@ -49,29 +55,56 @@ public class ExprBinaryTranslator
             case MUL                : throw new UnsupportedOperationException();
             case DIV                : throw new UnsupportedOperationException();
             case REM                : throw new UnsupportedOperationException();
-            case EQUALS             : return translateComparison(expr, BinaryExpression.Op.EQ, variablesScope);
-            case NOT_EQUALS         : return translateComparison(expr, BinaryExpression.Op.NEQ, variablesScope);
-            case IMPLIES            : throw new UnsupportedOperationException();
+            case IMPLIES            : return translateImplies(expr, variablesScope);
+            
+            // Comparison operators
             case LT                 : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
             case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
             case GT                 : return translateComparison(expr, BinaryExpression.Op.GT, variablesScope);
             case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
+            case IN                 : return translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
+            case NOT_IN             : return new UnaryExpression(UnaryExpression.Op.NOT, translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope));
+            case AND                : return translateAnd(expr, variablesScope);
+            case OR                 : return translateOr(expr, variablesScope);
+            case IFF                : throw new UnsupportedOperationException();
             case NOT_LT             : throw new UnsupportedOperationException();
             case NOT_LTE            : throw new UnsupportedOperationException();
             case NOT_GT             : throw new UnsupportedOperationException();
             case NOT_GTE            : throw new UnsupportedOperationException();
             case SHL                : throw new UnsupportedOperationException();
             case SHA                : throw new UnsupportedOperationException();
-            case SHR                : throw new UnsupportedOperationException();
-            case IN                 : return translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
-            case NOT_IN             : return new UnaryExpression(UnaryExpression.Op.NOT, translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope));
-            case AND                : throw new UnsupportedOperationException();
-            case OR                 : throw new UnsupportedOperationException();
-            case IFF                : throw new UnsupportedOperationException();
+            case SHR                : throw new UnsupportedOperationException();            
             default                 : throw new UnsupportedOperationException();
         }
     }
 
+    private Expression translateImplies(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression implExpr  = new BinaryExpression(left, BinaryExpression.Op.IMPLIES, right);
+
+        return implExpr;
+    }
+    
+    private Expression translateAnd(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression andExpr  = new BinaryExpression(left, BinaryExpression.Op.AND, right);
+
+        return andExpr;
+    }
+
+    private Expression translateOr(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression orExpr  = new BinaryExpression(left, BinaryExpression.Op.OR, right);
+
+        return orExpr;
+    }    
+    
     private Expression translateArrow(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
@@ -94,8 +127,8 @@ public class ExprBinaryTranslator
         {
             Expression left                 = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression right                = exprTranslator.translateExpr(expr.right, variablesScope);
-            Expression join               = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.universe);
-            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.universe);
+            Expression join               = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUniv);
+            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv);
             Expression intersection         = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, left);
             Expression difference           = new BinaryExpression(left, BinaryExpression.Op.SETMINUS, intersection);
             Expression union                = new BinaryExpression(difference, BinaryExpression.Op.UNION, right);
@@ -119,7 +152,7 @@ public class ExprBinaryTranslator
         else if(arity == 2)
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.universe);
+            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv);
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
             BinaryExpression    intersection    = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, right);
             return intersection;
@@ -141,7 +174,7 @@ public class ExprBinaryTranslator
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.universe);
+            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv);
 
             BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, product);
 
@@ -280,7 +313,7 @@ public class ExprBinaryTranslator
         {
             left = exprTranslator.getSingleton((ConstantExpression) left);
         }
-        if(right instanceof ConstantExpression &&
+        else if(right instanceof ConstantExpression &&
                 ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
         {
             right = exprTranslator.getSingleton((ConstantExpression) right);

@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.smtAst.*;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,17 +31,18 @@ public class SignatureTranslator
     private void translateSignatureHierarchies()
     {
         for (Sig sig: translator.topLevelSigs)
-        {
+        {            
             Sig.PrimSig primSig = (Sig.PrimSig) sig;
             translateDisjointSignatures(primSig.children().makeCopy().stream().map(p -> (Sig) p).collect(Collectors.toList()));
+            
             if(primSig.isAbstract != null)
             {
                 SafeList<Sig.PrimSig> children = primSig.children();
                 if(children.size() == 1)
                 {
-                    Expression left        = translator.signaturesMap.get(sig).getConstantExpr();
+                    Expression          left        = translator.signaturesMap.get(sig).getConstantExpr();
                     Expression          right       = translator.signaturesMap.get(children.get(0)).getConstantExpr();
-                    BinaryExpression equality    = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+                    BinaryExpression equality       = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
                     translator.smtProgram.addAssertion(new Assertion(equality));
                 }
                 else if(children.size() > 1)
@@ -61,6 +63,18 @@ public class SignatureTranslator
                     translator.smtProgram.addAssertion(new Assertion(equality));
                 }
             }
+        }
+        
+        // The union of all top-level sigs equals to the universe
+        if(translator.topLevelSigs.size() > 0)
+        {
+            Expression unionTopSigExprs = translator.signaturesMap.get(translator.topLevelSigs.get(0)).getConstantExpr();
+            
+            for(int i = 1; i < translator.topLevelSigs.size(); ++i)
+            {
+                unionTopSigExprs = new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.UNION, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getConstantExpr());
+            }
+            translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniv)));
         }
     }
 
@@ -97,15 +111,66 @@ public class SignatureTranslator
         }
     }
 
+    private Sig getAncestorSig(Sig sig)
+    {
+        List <Sig> ancestorSigs = new ArrayList<>();
+        
+        if(sig.isTopLevel())
+        {
+            return sig;
+        }
+        else
+        {            
+            if(sig instanceof Sig.PrimSig)
+            {
+                Sig parentSig = ((Sig.PrimSig) sig).parent;
+                ancestorSigs.add(getAncestorSig(parentSig));
+            }
+            else
+            {
+                List<Sig> parentSigs   = ((Sig.SubsetSig) sig).parents;
+                
+                for(Sig pSig : parentSigs)
+                {
+                    ancestorSigs.add(getAncestorSig(pSig));
+                }
+            }
+        }
+        Sig ancestorSig = null;
+        for(Sig s : ancestorSigs)
+        {
+            if(s == Sig.SIGINT)
+            {
+                ancestorSig = Sig.SIGINT;
+                break;
+            }
+            else
+            {
+                ancestorSig = Sig.UNIV;
+            }
+        }
+        return ancestorSig;
+    }
+    
     private void translateSignatures()
     {
         translator.reachableSigs.forEach((sig) ->
         {
-            FunctionDeclaration functionDeclaration =  declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
-            translator.signaturesMap.put(sig, functionDeclaration);
+            FunctionDeclaration functionDeclaration;
+            
+            if(getAncestorSig(sig) == Sig.SIGINT)
+            {
+                functionDeclaration = declareUnaryIntFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                translator.signaturesMap.put(sig, functionDeclaration);                
+            }
+            else
+            {
+                functionDeclaration =  declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                translator.signaturesMap.put(sig, functionDeclaration);
+            }            
 
             // if sig extends another signature
-            if(! sig.isTopLevel())
+            if(!sig.isTopLevel())
             {
                 translateSigSubsetParent(sig, functionDeclaration);
             }
@@ -114,13 +179,11 @@ public class SignatureTranslator
             {
                 translateSignatureOneMultiplicity(sig);
             }
-
-            if (sig.isLone != null)
+            else if (sig.isLone != null)
             {
                 translateSignatureLoneMultiplicity(sig);
             }
-
-            if (sig.isSome != null)
+            else if (sig.isSome != null)
             {
                 translateSignatureSomeMultiplicity(sig);
             }
@@ -180,12 +243,20 @@ public class SignatureTranslator
         }
         else
         {
-            List<Sig> parents             = ((Sig.SubsetSig) sig).parents;
+            List<Sig> parents   = ((Sig.SubsetSig) sig).parents;
+            
             if(parents.size() == 1)
             {
-                FunctionDeclaration parentDeclaration   = translator.signaturesMap.get(parents.get(0));
+                Sig parentSig = parents.get(0);
+                
+                // We consider parentSig as int
+                if(parentSig == Sig.SIGINT && !translator.signaturesMap.containsKey(parentSig))
+                {
+                    declareIntSig();
+                }
+                FunctionDeclaration parentDeclaration   = translator.signaturesMap.get(parentSig);
                 BinaryExpression    subset              = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
-                translator.smtProgram.addAssertion(new Assertion(subset));
+                translator.smtProgram.addAssertion(new Assertion(subset));                     
             }
             else
             {
@@ -204,6 +275,14 @@ public class SignatureTranslator
             }
         }
     }
+    
+    private void declareIntSig()
+    {
+        translator.signaturesMap.put(Sig.SIGINT, translator.intUnivExpr);
+        BinaryExpression    eqExpr  = new BinaryExpression(translator.intUniv, BinaryExpression.Op.EQ, translator.intUnivExpr.getConstantExpr());
+        translator.smtProgram.addFunctionDeclaration(translator.intUnivExpr);
+        translator.smtProgram.addAssertion(new Assertion(eqExpr));           
+    }
 
 
     private FunctionDeclaration declareUnaryAtomFunction(String varName)
@@ -216,6 +295,17 @@ public class SignatureTranslator
         }
         return declaration;
     }
+    
+    private FunctionDeclaration declareUnaryIntFunction(String varName)
+    {
+        FunctionDeclaration declaration = null;
+        if(varName != null)
+        {
+            declaration = new FunctionDeclaration(varName, translator.setOfUnaryIntSort);
+            translator.smtProgram.addFunctionDeclaration(declaration);
+        }
+        return declaration;
+    }    
 
     public void translate()
     {

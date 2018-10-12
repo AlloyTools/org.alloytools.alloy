@@ -67,7 +67,7 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
 
     @Override
     public void visit(IntSort intSort) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.stringBuilder.append(intSort.getSortName());
     }
 
     @Override
@@ -105,11 +105,12 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     public void visit(TupleSort tupleSort)
     {
         this.stringBuilder.append("(Tuple ");
-        for (Sort sort: tupleSort.elementSorts)
+        for(int i = 0; i < tupleSort.elementSorts.size()-1; ++i)
         {
-            this.visit(sort);
+            this.visit(tupleSort.elementSorts.get(i));
             this.stringBuilder.append(" ");
         }
+        this.visit(tupleSort.elementSorts.get(tupleSort.elementSorts.size()-1));
         this.stringBuilder.append(")");
     }
 

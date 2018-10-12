@@ -63,7 +63,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
-        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, exprTranslator.translator.identity.getConstantExpr());
+        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, exprTranslator.translator.atomIden.getConstantExpr());
         return reflexiveClosure;
     }
 
@@ -84,9 +84,9 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {
-                    case "univ": return exprTranslator.translator.universe;
-                    case "iden": return exprTranslator.translator.identity.getConstantExpr();
-                    case "none": return exprTranslator.translator.none;
+                    case "univ": return exprTranslator.translator.atomUniv;
+                    case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
+                    case "none": return exprTranslator.translator.atomNone;
                     default:
                         throw new UnsupportedOperationException();
                 }
