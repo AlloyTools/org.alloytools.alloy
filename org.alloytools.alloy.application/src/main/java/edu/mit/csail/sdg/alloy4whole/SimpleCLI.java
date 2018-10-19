@@ -114,8 +114,9 @@ public final class SimpleCLI {
         }
 
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            sb.append("   Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        public void translate(String solver, String mode, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+            // [HASLab]
+            debug("Solver=" + solver + " Mode=" + mode + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
         }
 
         @Override

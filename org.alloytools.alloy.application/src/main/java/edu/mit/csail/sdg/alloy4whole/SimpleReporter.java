@@ -358,10 +358,11 @@ final class SimpleReporter extends A4Reporter {
     }
 
     /** {@inheritDoc} */
+    // [HASLab] solving strategy
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
         lastTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
+        cb("translate", "Solver=" + solver + " Mode=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n'); // [HASLab]
     }
 
     /** {@inheritDoc} */

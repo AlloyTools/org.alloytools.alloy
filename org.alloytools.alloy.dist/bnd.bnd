@@ -10,7 +10,7 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
 	org.alloytools.kodkod.nativesat.util;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-mac;version=latest
+	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
 
 -sources: false
 
@@ -27,4 +27,5 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 	@${repo;org.sat4j.core}, \
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
+	@${repo;slf4j.api}, \
 	LICENSES

@@ -49,10 +49,11 @@
 			<artifactId>java-cup</artifactId>
 			<version>11b-20160615</version>
 		</dependency>
-		<dependency> 
-		  	<groupId>ch.qos.logback</groupId>
-  			<artifactId>logback-classic</artifactId>
-  			<version>1.0.13</version>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback-version}</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

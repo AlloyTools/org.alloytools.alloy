@@ -386,6 +386,12 @@ public final class ExprUnary extends Expr {
         Type s = p;
         switch (op) {
             case NOT :
+            case AFTER :
+            case ALWAYS :
+            case EVENTUALLY :
+            case PREVIOUS :
+            case HISTORICALLY :
+            case ONCE : // [HASLab]
                 s = Type.FORMULA;
                 break;
             case TRANSPOSE :

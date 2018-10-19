@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -18,6 +19,7 @@ package edu.mit.csail.sdg.translator;
 import static edu.mit.csail.sdg.ast.Sig.NONE;
 import static edu.mit.csail.sdg.ast.Sig.SEQIDX;
 import static edu.mit.csail.sdg.ast.Sig.SIGINT;
+import static edu.mit.csail.sdg.ast.Sig.SIGTIME;
 import static edu.mit.csail.sdg.ast.Sig.STRING;
 import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
@@ -66,6 +68,8 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * <p>
  * Please see ScopeComputer.java for the exact rules for deriving the missing
  * scopes.
+ *
+ * @modified Nuno Macedo // [HASLab] electrum-temporal
  */
 final class ScopeComputer {
 
@@ -96,6 +100,18 @@ final class ScopeComputer {
      */
     private int                                    maxstring = (-1);
 
+    /**
+     * Maximum trace length to be handled by bounded temporal solvers.
+     */
+    // [HASLab]
+    private int                                    maxtrace  = 10;
+
+    /**
+     * Minimum trace length to be handled by bounded temporal solvers.
+     */
+    // [HASLab]
+    private int                                    mintrace  = 1;
+
     /** The scope for each sig. */
     private final IdentityHashMap<PrimSig,Integer> sig2scope = new IdentityHashMap<PrimSig,Integer>();
 
@@ -121,6 +137,8 @@ final class ScopeComputer {
             return maxseq;
         if (sig == STRING)
             return maxstring;
+        if (sig == SIGTIME)  // [HASLab]
+            return maxtrace;
         Integer y = sig2scope.get(sig);
         return (y == null) ? (-1) : y;
     }
@@ -147,7 +165,7 @@ final class ScopeComputer {
 
     /** Returns whether the scope of a sig is exact or not. */
     public boolean isExact(Sig sig) {
-        return sig == SIGINT || sig == SEQIDX || sig == STRING || ((sig instanceof PrimSig) && exact.containsKey(sig));
+        return sig == SIGINT || sig == SEQIDX || sig == STRING || ((sig instanceof PrimSig) && exact.containsKey(sig)) || sig == SIGTIME; // [HASLab]
     }
 
     /** Make the given sig "exact". */
@@ -159,7 +177,7 @@ final class ScopeComputer {
 
     /**
      * Modifies the integer bitwidth of this solution's model (and sets the max
-     * sequence length to 0)
+     * sequence length to 0).
      */
     private void setBitwidth(Pos pos, int newBitwidth) throws ErrorAPI, ErrorSyntax {
         if (newBitwidth < 0)
@@ -170,6 +188,23 @@ final class ScopeComputer {
         maxseq = 0;
         sig2scope.put(SIGINT, bitwidth < 1 ? 0 : 1 << bitwidth);
         sig2scope.put(SEQIDX, 0);
+    }
+
+
+    /** Modifies the maximum trace length of this solution's model. */
+    // [HASLab]
+    private void setMaxTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
+        if (newTracelength < 0)
+            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
+        maxtrace = newTracelength;
+    }
+
+    /** Modifies the minimum trace length of this solution's model. */
+    // [HASLab]
+    private void setMinTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
+        if (newTracelength < 0)
+            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
+        mintrace = newTracelength;
     }
 
     /** Modifies the maximum sequence length. */
@@ -385,8 +420,11 @@ final class ScopeComputer {
         // Force "one" sigs to be exactly one, and "lone" to be at most one
         for (Sig s : sigs)
             if (s instanceof PrimSig) {
-                if (s.isOne != null) {
+                if (s.isOne != null && s.isVariable == null) { // [HASLab]
                     makeExact(cmd.pos, s);
+                    sig2scope(s, 1);
+                }
+                if (s.isOne != null && s.isVariable != null) { // [HASLab]
                     sig2scope(s, 1);
                 } else if (s.isLone != null && sig2scope(s) != 0)
                     sig2scope(s, 1);
@@ -434,6 +472,20 @@ final class ScopeComputer {
         if (max >= min)
             for (int i = min; i <= max; i++)
                 atoms.add("" + i);
+        // [HASLab] handle trace lengths
+        int tracelength = cmd.maxtime;
+        if (tracelength < 1) {
+            tracelength = 10;
+        }
+        setMaxTraceLength(cmd.pos, tracelength);
+        tracelength = cmd.mintime;
+        if (tracelength > cmd.maxtime) {
+            tracelength = cmd.maxtime;
+        } else if (tracelength < 1) {
+            tracelength = 1;
+        }
+        setMinTraceLength(cmd.pos, tracelength);
+
     }
 
     // ===========================================================================================================================//
@@ -473,7 +525,7 @@ final class ScopeComputer {
         for (int i = 0; set.size() < sc.maxstring; i++)
             set.add("\"String" + i + "\"");
         sc.atoms.addAll(set);
-        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
+        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
         return new Pair<A4Solution,ScopeComputer>(sol, sc);
     }
 }

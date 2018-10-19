@@ -204,6 +204,10 @@ public final class Attr {
      */
     public static final Attr ENUM     = new Attr(AttrType.ENUM, null);
 
+    /** VARIABLE; if a Sig is variable, changing in time. */
+    // [HASLab]
+    public static final Attr VARIABLE = new Attr(AttrType.VARIABLE, null);
+
     /**
      * Construct an attribute of the given type with the given position; if
      * pos==null, it is treated as Pos.UNKNOWN.

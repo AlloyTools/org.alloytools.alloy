@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -75,6 +76,8 @@ import kodkod.util.nodes.PrettyPrinter;
  * <p>
  * Requirements: atoms must be String objects (since we cannot possibly output a
  * Java source code that can re-generate arbitrary Java objects).
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class TranslateKodkodToJava implements VoidVisitor {
@@ -122,6 +125,12 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             }
 
             @Override
+            // [HASLab] temporal nodes
+            public Integer visit(UnaryTempFormula x) {
+                return 1 + x.formula().accept(this);
+            }
+
+            @Override
             public Integer visit(IntToExprCast x) {
                 return 1 + x.intExpr().accept(this);
             }
@@ -138,6 +147,12 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 
             @Override
             public Integer visit(UnaryExpression x) {
+                return 1 + x.expression().accept(this);
+            }
+
+            @Override
+            // [HASLab] temporal nodes
+            public Integer visit(TempExpression x) {
                 return 1 + x.expression().accept(this);
             }
 
@@ -163,6 +178,12 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 
             @Override
             public Integer visit(BinaryFormula x) {
+                return 1 + max(x.left().accept(this), x.right().accept(this));
+            }
+
+            @Override
+            // [HASLab] temporal nodes
+            public Integer visit(BinaryTempFormula x) {
                 return 1 + max(x.left().accept(this), x.right().accept(this));
             }
 
@@ -265,23 +286,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
                 return max + 1;
             }
 
-            @Override
-            public Integer visit(UnaryTempFormula temporalFormula) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public Integer visit(BinaryTempFormula temporalFormula) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            @Override
-            public Integer visit(TempExpression temporalExpr) {
-                // TODO Auto-generated method stub
-                return null;
-            }
         };
         Object ans = node.accept(vis);
         if (ans instanceof Integer)
@@ -594,6 +598,32 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
+    // [HASLab] temporal nodes
+    public void visit(BinaryTempFormula temporalFormula) {
+        String newname = makename(temporalFormula);
+        if (newname == null)
+            return;
+        String left = make(temporalFormula.left());
+        String right = make(temporalFormula.right());
+        switch (temporalFormula.op()) {
+            case RELEASE :
+                file.printf("Expression %s=%s.release(%s);%n", newname, left, right);
+                break;
+            case UNTIL :
+                file.printf("Expression %s=%s.until(%s);%n", newname, left, right);
+                break;
+            case SINCE :
+                file.printf("Expression %s=%s.since(%s);%n", newname, left, right);
+                break;
+            case TRIGGER :
+                file.printf("Expression %s=%s.trigger(%s);%n", newname, left, right);
+                break;
+            default :
+                throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalFormula.op() + "\" encountered");
+        }
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void visit(BinaryIntExpression x) {
         String newname = makename(x);
@@ -688,6 +718,22 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
+    // [HASLab] temporal nodes
+    public void visit(TempExpression temporalExpr) {
+        String newname = makename(temporalExpr);
+        if (newname == null)
+            return;
+        String sub = make(temporalExpr.expression());
+        switch (temporalExpr.op()) {
+            case PRIME :
+                file.printf("Expression %s=%s.prime();%n", newname, sub);
+                break;
+            default :
+                throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalExpr.op() + "\" encountered");
+        }
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void visit(IfExpression x) {
         String newname = makename(x);
@@ -719,6 +765,37 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             return;
         String sub = make(x.formula());
         file.printf("Formula %s=%s.not();%n", newname, sub);
+    }
+
+    /** {@inheritDoc} */
+    // [HASLab] temporal nodes
+    public void visit(UnaryTempFormula temporalFormula) {
+        String newname = makename(temporalFormula);
+        if (newname == null)
+            return;
+        String sub = make(temporalFormula.formula());
+        switch (temporalFormula.op()) {
+            case ALWAYS :
+                file.printf("Formula %s=%s.always();%n", newname, sub);
+                break;
+            case EVENTUALLY :
+                file.printf("Formula %s=%s.eventually();%n", newname, sub);
+                break;
+            case HISTORICALLY :
+                file.printf("Formula %s=%s.historically();%n", newname, sub);
+                break;
+            case ONCE :
+                file.printf("Formula %s=%s.once();%n", newname, sub);
+                break;
+            case PREVIOUS :
+                file.printf("Formula %s=%s.previous();%n", newname, sub);
+                break;
+            case NEXT :
+                file.printf("Formula %s=%s.next();%n", newname, sub);
+                break;
+            default :
+                throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalFormula.op() + "\" encountered");
+        }
     }
 
     /** {@inheritDoc} */
@@ -1059,23 +1136,5 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         for (int i = 0; i < list.length; i++)
             file.printf(", %s", list[i]);
         file.printf(");%n");
-    }
-
-    @Override
-    public void visit(UnaryTempFormula temporalFormula) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void visit(BinaryTempFormula temporalFormula) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void visit(TempExpression temporalExpr) {
-        // TODO Auto-generated method stub
-
     }
 }

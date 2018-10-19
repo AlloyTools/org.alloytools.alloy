@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -23,6 +24,7 @@ import java.util.Map;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
@@ -46,6 +48,9 @@ import kodkod.instance.Universe;
 /**
  * Immutable; this class assigns each sig and field to some Kodkod relation or
  * expression, then set the bounds.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-symbolic
  */
 
 final class BoundsComputer {
@@ -144,14 +149,14 @@ final class BoundsComputer {
                 continue;
             }
             // subsigs are disjoint
-            sol.addFormula(sum.intersection(childexpr).no(), child.isSubsig);
+            sol.addFormula(sum.intersection(childexpr).no().always(), child.isSubsig); // [HASLab]
             sum = sum.union(childexpr);
         }
         TupleSet lower = lb.get(sig).clone(), upper = ub.get(sig).clone();
         if (sum == null) {
             // If sig doesn't have children, then sig should make a fresh
             // relation for itself
-            sum = sol.addRel(sig.label, lower, upper);
+            sum = sol.addRel(sig.label, lower, upper, sig.isVariable != null); // [HASLab]
         } else if (sig.isAbstract == null) {
             // If sig has children, and sig is not abstract, then create a new
             // relation to act as the remainder.
@@ -167,8 +172,12 @@ final class BoundsComputer {
                 lower.removeAll(childTS);
                 upper.removeAll(childTS);
             }
-            sum = sum.union(sol.addRel(sig.label + " remainder", lower, upper));
+            sum = sum.union(sol.addRel(sig.label + "_remainder", lower, upper, sig.isVariable != null)); // [HASLab]
         }
+        if (sig.isOne != null) // [HASLab]
+            sol.addFormula(sum.one().always(), sig.isOne);
+        if (sig.isVariable == null && !sig.children().isEmpty()) // [HASLab]
+            sol.addFormula((sum.prime().eq(sum)).always(), sig.isVariable);
         sol.addSig(sig, sum);
         return sum;
     }
@@ -199,11 +208,11 @@ final class BoundsComputer {
         }
         // Allocate a relation for this subset sig, then bound it
         rep.bound("Sig " + sig + " in " + ts + "\n");
-        Relation r = sol.addRel(sig.label, null, ts);
+        Relation r = sol.addRel(sig.label, null, ts, sig.isVariable != null); // [HASLab]
         sol.addSig(sig, r);
         // Add a constraint that it is INDEED a subset of the union of its
         // parents
-        sol.addFormula(r.in(sum), sig.isSubset);
+        sol.addFormula(r.in(sum).always(), sig.isSubset); // [HASLab]
         return r;
     }
 
@@ -370,14 +379,15 @@ final class BoundsComputer {
                 }
                 if (firstTS.size() != (n > 0 ? 1 : 0) || nextTS.size() != n - 1)
                     break;
-                sol.addField(f1, sol.addRel(s.label + "." + f1.label, firstTS, firstTS));
-                sol.addField(f2, sol.addRel(s.label + "." + f2.label, nextTS, nextTS));
+                sol.addField(f1, sol.addRel(s.label + "." + f1.label, firstTS, firstTS, f1.isVariable != null)); // [HASLab]
+                sol.addField(f2, sol.addRel(s.label + "." + f2.label, nextTS, nextTS, f2.isVariable != null)); // [HASLab]
                 rep.bound("Field " + s.label + "." + f1.label + " == " + firstTS + "\n");
                 rep.bound("Field " + s.label + "." + f2.label + " == " + nextTS + "\n");
                 continue again;
             }
             for (Field f : s.getFields()) {
                 boolean isOne = s.isOne != null;
+                boolean isVar = s.isVariable != null; // [HASLab]
                 if (isOne && f.decl().expr.mult() == ExprUnary.Op.EXACTLYOF) {
                     Expression sim = sim(f.decl().expr);
                     if (sim != null) {
@@ -386,7 +396,8 @@ final class BoundsComputer {
                         continue;
                     }
                 }
-                Type t = isOne ? Sig.UNIV.type().join(f.type()) : f.type();
+                // [HASLab] avoid collapse of var one sigs
+                Type t = isOne && !isVar ? Sig.UNIV.type().join(f.type()) : f.type();
                 TupleSet ub = factory.noneOf(t.arity());
                 for (List<PrimSig> p : t.fold()) {
                     TupleSet upper = null;
@@ -399,10 +410,18 @@ final class BoundsComputer {
                     }
                     ub.addAll(upper);
                 }
-                Relation r = sol.addRel(s.label + "." + f.label, null, ub);
-                sol.addField(f, isOne ? sol.a2k(s).product(r) : r);
+                Relation r = sol.addRel(s.label + "." + f.label, null, ub, f.isVariable != null); // [HASLab]
+                // [HASLab] avoid collapse of var one sigs
+                sol.addField(f, isOne && !isVar ? sol.a2k(s).product(r) : r);
             }
         }
+        // [HASLab] Add possible symbolic bounds
+        if (Version.experimental)
+            for (Sig s : sigs) {
+                sol.addSymbolicBound(s);
+                for (Field f : s.getFields())
+                    sol.addSymbolicBound(f);
+            }
         // Add any additional SIZE constraints
         for (Sig s : sigs)
             if (!s.builtin) {
@@ -411,25 +430,25 @@ final class BoundsComputer {
                 final int n = sc.sig2scope(s);
                 if (s.isOne != null && (lower.size() != 1 || upper.size() != 1)) {
                     rep.bound("Sig " + s + " in " + upper + " with size==1\n");
-                    sol.addFormula(exp.one(), s.isOne);
+                    sol.addFormula(exp.one().always(), s.isOne); // [HASLab]
                     continue;
                 }
                 if (s.isSome != null && lower.size() < 1)
-                    sol.addFormula(exp.some(), s.isSome);
+                    sol.addFormula(exp.some().always(), s.isSome); // [HASLab]
                 if (s.isLone != null && upper.size() > 1)
-                    sol.addFormula(exp.lone(), s.isLone);
+                    sol.addFormula(exp.lone().always(), s.isLone); // [HASLab]
                 if (n < 0)
                     continue; // This means no scope was specified
                 if (lower.size() == n && upper.size() == n && sc.isExact(s)) {
                     rep.bound("Sig " + s + " == " + upper + "\n");
                 } else if (sc.isExact(s)) {
                     rep.bound("Sig " + s + " in " + upper + " with size==" + n + "\n");
-                    sol.addFormula(size(s, n, true), Pos.UNKNOWN);
+                    sol.addFormula(size(s, n, true).always(), Pos.UNKNOWN); // [HASLab]
                 } else if (upper.size() <= n) {
                     rep.bound("Sig " + s + " in " + upper + "\n");
                 } else {
                     rep.bound("Sig " + s + " in " + upper + " with size<=" + n + "\n");
-                    sol.addFormula(size(s, n, false), Pos.UNKNOWN);
+                    sol.addFormula(size(s, n, false).always(), Pos.UNKNOWN); // [HASLab]
                 }
             }
     }

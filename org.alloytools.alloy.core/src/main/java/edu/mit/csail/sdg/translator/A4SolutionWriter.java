@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -40,6 +41,8 @@ import edu.mit.csail.sdg.ast.Type;
 /**
  * This helper class contains helper routines for writing an A4Solution object
  * out as an XML file.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
  */
 
 public final class A4SolutionWriter {
@@ -87,7 +90,8 @@ public final class A4SolutionWriter {
     }
 
     /** Write the given Expr and its Type. */
-    private boolean writeExpr(String prefix, Expr expr) throws Err {
+    // [HASLab] particular instant
+    private boolean writeExpr(String prefix, Expr expr, int state) throws Err {
         Type type = expr.type();
         if (!type.hasTuple())
             return false;
@@ -99,7 +103,7 @@ public final class A4SolutionWriter {
             Expr sum = type.toExpr();
             int lastSize = (-1);
             while (true) {
-                A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum)));
+                A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum), state)); // [HASLab]
                 int n = ts.size();
                 if (n <= 0)
                     break;
@@ -111,7 +115,12 @@ public final class A4SolutionWriter {
                 sum = sum.plus(extra.toExpr());
             }
             // Now, write out the tupleset
-            A4TupleSet ts = (A4TupleSet) (sol.eval(expr));
+            A4TupleSet ts = (A4TupleSet) (sol.eval(expr, state)); // [HASLab]
+            // [HASLab] force printing of element even if empty, otherwise skolems missing from certain steps of the trace
+            if (ts.size() == 0) {
+                out.print(prefix);
+                prefix = "";
+            }
             for (A4Tuple t : ts) {
                 if (prefix.length() > 0) {
                     out.print(prefix);
@@ -136,24 +145,29 @@ public final class A4SolutionWriter {
     }
 
     /** Write the given Sig. */
-    private A4TupleSet writesig(final Sig x) throws Err {
+    // [HASLab] particular instant
+    private A4TupleSet writeSig(final Sig x, int state) throws Err {
         A4TupleSet ts = null, ts2 = null;
         if (x == Sig.NONE)
             return null; // should not happen, but we test for it anyway
         if (sol == null && x.isMeta != null)
             return null; // When writing the metamodel, skip the metamodel sigs!
         if (x instanceof PrimSig)
+            // [HASLab] variable sigs are treated as subset sigs, so do not remove atoms from parent
             for (final PrimSig sub : children((PrimSig) x)) {
-                A4TupleSet ts3 = writesig(sub);
-                if (ts2 == null)
-                    ts2 = ts3;
-                else
-                    ts2 = ts2.plus(ts3);
+                if (sub.isVariable == null) {
+                    A4TupleSet ts3 = writeSig(sub, state); // [HASLab]
+                    if (ts2 == null)
+                        ts2 = ts3;
+                    else
+                        ts2 = ts2.plus(ts3);
+                }
             }
         if (rep != null)
             rep.write(x);
         Util.encodeXMLs(out, "\n<sig label=\"", x.label, "\" ID=\"", map(x));
-        if (x instanceof PrimSig && x != Sig.UNIV)
+        // [HASLab] variable sigs are treated as subset sigs, so do not remove atoms from parent
+        if (x instanceof PrimSig && x != Sig.UNIV && x.isVariable == null)
             Util.encodeXMLs(out, "\" parentID=\"", map(((PrimSig) x).parent));
         if (x.builtin)
             out.print("\" builtin=\"yes");
@@ -173,6 +187,8 @@ public final class A4SolutionWriter {
             out.print("\" exact=\"yes");
         if (x.isEnum != null)
             out.print("\" enum=\"yes");
+        if (x.isVariable != null)
+            out.print("\" var=\"yes"); // [HASLab] mark sig as var.
         out.print("\">\n");
         try {
             if (sol != null && x != Sig.UNIV && x != Sig.SIGINT && x != Sig.SEQIDX) {
@@ -186,14 +202,18 @@ public final class A4SolutionWriter {
         if (x instanceof SubsetSig)
             for (Sig p : ((SubsetSig) x).parents)
                 Util.encodeXMLs(out, "   <type ID=\"", map(p), "\"/>\n");
+        // [HASLab] variable sigs are treated as subset sigs, so do not remove atoms from parent
+        if (x instanceof PrimSig && x != Sig.UNIV && x.isVariable != null)
+            Util.encodeXMLs(out, "   <type ID=\"", map(((PrimSig) x).parent), "\"/>\n");
         out.print("</sig>\n");
         for (Field field : x.getFields())
-            writeField(field);
+            writeField(field, state); // [HASLab]
         return ts;
     }
 
     /** Write the given Field. */
-    private void writeField(Field x) throws Err {
+    // [HASLab] particular instant
+    private void writeField(Field x, int state) throws Err {
         try {
             if (sol == null && x.isMeta != null)
                 return; // when writing the metamodel, skip the metamodel
@@ -208,8 +228,10 @@ public final class A4SolutionWriter {
                 out.print("\" private=\"yes");
             if (x.isMeta != null)
                 out.print("\" meta=\"yes");
+            if (x.isVariable != null)
+                out.print("\" var=\"yes"); // [HASLab]
             out.print("\">\n");
-            writeExpr("", x);
+            writeExpr("", x, state); // [HASLab]
             out.print("</field>\n");
         } catch (Throwable ex) {
             throw new ErrorFatal("Error evaluating field " + x.sig.label + "." + x.label, ex);
@@ -217,7 +239,8 @@ public final class A4SolutionWriter {
     }
 
     /** Write the given Skolem. */
-    private void writeSkolem(ExprVar x) throws Err {
+    // [HASLab] particular instant
+    private void writeSkolem(ExprVar x, int state) throws Err {
         try {
             if (sol == null)
                 return; // when writing a metamodel, skip the skolems
@@ -226,7 +249,7 @@ public final class A4SolutionWriter {
                        // declarations
             StringBuilder sb = new StringBuilder();
             Util.encodeXMLs(sb, "\n<skolem label=\"", x.label, "\" ID=\"", map(x), "\">\n");
-            if (writeExpr(sb.toString(), x)) {
+            if (writeExpr(sb.toString(), x, state)) { // [HASLab]
                 out.print("</skolem>\n");
             }
         } catch (Throwable ex) {
@@ -238,13 +261,15 @@ public final class A4SolutionWriter {
      * If sol==null, write the list of Sigs as a Metamodel, else write the solution
      * as an XML file.
      */
-    private A4SolutionWriter(A4Reporter rep, A4Solution sol, Iterable<Sig> sigs, int bitwidth, int maxseq, String originalCommand, String originalFileName, PrintWriter out, Iterable<Func> extraSkolems) throws Err {
+    // [HASLab] writes a specific time instant
+    private A4SolutionWriter(A4Reporter rep, A4Solution sol, Iterable<Sig> sigs, int bitwidth, int maxseq, int tracelength, int backloop, String originalCommand, String originalFileName, PrintWriter out, Iterable<Func> extraSkolems, int state) throws Err {
         this.rep = rep;
         this.out = out;
         this.sol = sol;
         for (Sig s : sigs)
             if (s instanceof PrimSig && ((PrimSig) s).parent == Sig.UNIV)
                 toplevels.add((PrimSig) s);
+        // [HASLab] write temporal metadata it not part of a trace.
         out.print("<instance bitwidth=\"");
         out.print(bitwidth);
         out.print("\" maxseq=\"");
@@ -253,18 +278,23 @@ public final class A4SolutionWriter {
         Util.encodeXML(out, originalCommand);
         out.print("\" filename=\"");
         Util.encodeXML(out, originalFileName);
+        out.print("\" tracelength=\"");
+        out.print(tracelength); // [HASLab] the trace length of the instance
+        out.print("\" backloop=\"");
+        out.print(backloop); // [HASLab] the back loop of the instance
         if (sol == null)
             out.print("\" metamodel=\"yes");
         out.print("\">\n");
-        writesig(Sig.UNIV);
+        writeSig(Sig.UNIV, state); // [HASLab]
         for (Sig s : sigs)
-            if (s instanceof SubsetSig)
-                writesig(s);
+            // [HASLab] variable sigs are treated as subset sigs, so must be processed here
+            if (s instanceof SubsetSig || s.isVariable != null)
+                writeSig(s, state); // [HASLab]
         if (sol != null)
             for (ExprVar s : sol.getAllSkolems()) {
                 if (rep != null)
                     rep.write(s);
-                writeSkolem(s);
+                writeSkolem(s, state); // [HASLab]
             }
         int m = 0;
         if (sol != null && extraSkolems != null)
@@ -279,7 +309,7 @@ public final class A4SolutionWriter {
                             rep.write(f.call());
                         StringBuilder sb = new StringBuilder();
                         Util.encodeXMLs(sb, "\n<skolem label=\"", label, "\" ID=\"m" + m + "\">\n");
-                        if (writeExpr(sb.toString(), f.call())) {
+                        if (writeExpr(sb.toString(), f.call(), state)) { // [HASLab]
                             out.print("</skolem>\n");
                         }
                         m++;
@@ -292,14 +322,31 @@ public final class A4SolutionWriter {
 
     /**
      * If this solution is a satisfiable solution, this method will write it out in
-     * XML format.
+     * XML format as a sequence of &lt;instance&gt;..&lt;/instance&gt;.
      */
     static void writeInstance(A4Reporter rep, A4Solution sol, PrintWriter out, Iterable<Func> extraSkolems, Map<String,String> sources) throws Err {
         if (!sol.satisfiable())
             throw new ErrorAPI("This solution is unsatisfiable.");
         try {
-            Util.encodeXMLs(out, "<alloy builddate=\"", Version.buildDate(), "\">\n\n");
-            new A4SolutionWriter(rep, sol, sol.getAllReachableSigs(), sol.getBitwidth(), sol.getMaxSeq(), sol.getOriginalCommand(), sol.getOriginalFilename(), out, extraSkolems);
+            // [HASLab] write metadata in the header.
+            Util.encodeXMLs(out, "<alloy builddate=\"", Version.buildDate());
+            out.print("\" bitwidth=\"");
+            out.print(sol.getBitwidth());
+            out.print("\" maxseq=\"");
+            out.print(sol.getMaxSeq());
+            out.print("\" command=\"");
+            Util.encodeXML(out, sol.getOriginalCommand());
+            out.print("\" filename=\"");
+            Util.encodeXML(out, sol.getOriginalFilename());
+            out.print("\" tracelength=\"");
+            out.print(sol.getLastState()); // [HASLab] the trace length of the instance
+            out.print("\" backloop=\"");
+            out.print(sol.getLoopState()); // [HASLab] the back loop of the instance
+            out.print("\">\n\n");
+
+            // [HASLab] write all relevant instances.
+            for (int i = 0; i <= sol.getLastState(); i++)
+                new A4SolutionWriter(rep, sol, sol.getAllReachableSigs(), sol.getBitwidth(), sol.getMaxSeq(), sol.getLastState(), sol.getLoopState(), sol.getOriginalCommand(), sol.getOriginalFilename(), out, extraSkolems, i);
             if (sources != null)
                 for (Map.Entry<String,String> e : sources.entrySet()) {
                     Util.encodeXMLs(out, "\n<source filename=\"", e.getKey(), "\" content=\"", e.getValue(), "\"/>\n");
@@ -320,7 +367,8 @@ public final class A4SolutionWriter {
      */
     public static void writeMetamodel(ConstList<Sig> sigs, String originalFilename, PrintWriter out) throws Err {
         try {
-            new A4SolutionWriter(null, null, sigs, 4, 4, "show metamodel", originalFilename, out, null);
+            // [HASLab] write at instant 0.
+            new A4SolutionWriter(null, null, sigs, 4, 4, 10, 0, "show metamodel", originalFilename, out, null, 0);
         } catch (Throwable ex) {
             if (ex instanceof Err)
                 throw (Err) ex;
