@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -59,7 +60,11 @@ import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
-/** This helper method is used by SimpleGUI. */
+/**
+ * This helper method is used by SimpleGUI.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
+ */
 
 final class SimpleReporter extends A4Reporter {
 
@@ -369,8 +374,25 @@ final class SimpleReporter extends A4Reporter {
     @Override
     public void solve(final int primaryVars, final int totalVars, final int clauses) {
         minimized = 0;
-        cb("solve", "" + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. " + (System.currentTimeMillis() - lastTime) + "ms.\n");
+        StringBuilder sb = new StringBuilder(); // [HASLab]
+        if (totalVars >= 0)
+            sb.append("" + totalVars + " vars. ");
+        if (primaryVars >= 0)
+            sb.append(primaryVars + " primary vars. ");
+        if (clauses > 0)
+            sb.append(clauses + " clauses. ");
+        if (sb.length() == 0)
+            sb.append("No translation information available.");
+        sb.append((System.currentTimeMillis() - lastTime) + "ms.\n");
+        cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
+    }
+
+    /** {@inheritDoc} */
+    // [HASLab]
+    @Override
+    public void configs(final int configs) {
+        cb("bold", "   Warning, " + configs + "+ configs...\n");
     }
 
     /** {@inheritDoc} */
@@ -681,6 +703,8 @@ final class SimpleReporter extends A4Reporter {
                         final String tempCNF = tempdir + File.separatorChar + i + ".cnf";
                         final Command cmd = cmds.get(i);
                         rep.tempfile = tempCNF;
+                        if (cmd.maxtime != -1 && options.solver.external() != null && options.solver.external().equals("electrod"))
+                            rep.warning(new ErrorWarning("Complete solver selected, Time scope will be ignored.")); // [HASLab]
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
                         A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
                         if (ai == null)

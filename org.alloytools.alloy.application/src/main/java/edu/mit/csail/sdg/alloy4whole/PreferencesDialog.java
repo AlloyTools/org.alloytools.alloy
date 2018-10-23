@@ -4,6 +4,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposedPref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
@@ -32,10 +33,15 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -74,6 +80,9 @@ import edu.mit.csail.sdg.alloy4.OurUtil.GridBagConstraintsBuilder;
 import edu.mit.csail.sdg.alloy4.Subprocess;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
+/**
+ * @modified: Nuno Macedo // [HASLab] electrum-unbounded, electrum-decomposed
+ */
 @SuppressWarnings({
                    "serial"
 } )
@@ -278,6 +287,15 @@ public class PreferencesDialog extends JFrame {
             satChoices.remove(SatSolver.GlucoseJNI);
         if (!loadLibrary("cryptominisat"))
             satChoices.remove(SatSolver.CryptoMiniSatJNI);
+        // [HASLab]
+        if (!staticLibrary("electrod")) {
+            satChoices.remove(SatSolver.ElectrodX);
+            satChoices.remove(SatSolver.ElectrodS);
+        }
+        if (!staticLibrary("NuSMV"))
+            satChoices.remove(SatSolver.ElectrodS);
+        if (!staticLibrary("nuXmv"))
+            satChoices.remove(SatSolver.ElectrodX);
         SatSolver now = Solver.get();
         if (!satChoices.contains(now)) {
             now = SatSolver.LingelingJNI;
@@ -315,11 +333,39 @@ public class PreferencesDialog extends JFrame {
     private static boolean loadLibrary(String library) {
         boolean loaded = _loadLibrary(library);
         String libName = System.mapLibraryName(library);
-        if (loaded)
-            System.out.println("Loaded: " + libName);
-        else
-            System.out.println("Failed to load: " + libName);
+        if ("yes".equals(System.getProperty("debug"))) // [HASLab]
+            if (loaded)
+                System.out.println("Loaded: " + libName);
+            else
+                System.out.println("Failed to load: " + libName);
         return loaded;
+    }
+
+    // [HASLab]
+    private static boolean staticLibrary(String name) {
+        // check if in java library path
+        final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
+        for (int i = dirs.length - 1; i >= 0; i--) {
+            final File file = new File(dirs[i] + File.separator + name);
+            if (file.canExecute()) {
+                if ("yes".equals(System.getProperty("debug")))
+                    System.out.println("Loaded: " + name);
+                return true;
+            }
+        }
+        // check if in system path
+        for (String str : (System.getenv("PATH") + ":/usr/local/bin").split(Pattern.quote(File.pathSeparator))) {
+            Path pth = Paths.get(str);
+            if (Files.exists(pth.resolve(name))) {
+                if ("yes".equals(System.getProperty("debug")))
+                    System.out.println("Loaded: " + name);
+                return true;
+            }
+        }
+
+        if ("yes".equals(System.getProperty("debug")))
+            System.out.println("Failed to load: " + name);
+        return false;
     }
 
     private static boolean _loadLibrary(String library) {
@@ -384,8 +430,8 @@ public class PreferencesDialog extends JFrame {
     }
 
     protected Component initSolverPane() {
-        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization));
-        int r = 5;
+        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization), mkSlider(DecomposedPref)); // [HASLab]
+        int r = 6; // [HASLab]
         addToGrid(p, mkCheckBox(NoOverflow), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(ImplicitThis), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(InferPartialInstance), gbc().pos(0, r++).gridwidth(2));
