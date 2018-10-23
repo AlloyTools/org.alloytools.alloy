@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -40,6 +41,8 @@ import edu.mit.csail.sdg.alloy4graph.DotStyle;
  * customization.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class VizState {
@@ -154,6 +157,15 @@ public final class VizState {
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
+        for (AlloyType r : currentModel.getTypes()) // [HASLab] paint variable sigs differently
+            if (r.isVar)
+                nodeStyle.put(r, DotStyle.DASHED);
+        for (AlloyRelation r : currentModel.getRelations()) // [HASLab] paint variable fields differently
+            if (r.isVar)
+                edgeStyle.put(r, DotStyle.DASHED);
+        for (AlloySet r : currentModel.getSets()) // [HASLab] paint variable sets differently
+            if (r.isVar)
+                nodeStyle.put(r, DotStyle.DASHED);
         // Done
         cache.clear();
         changedSinceLastSave = false;

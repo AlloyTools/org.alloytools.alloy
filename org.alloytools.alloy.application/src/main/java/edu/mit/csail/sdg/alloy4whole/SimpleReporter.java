@@ -647,7 +647,7 @@ final class SimpleReporter extends A4Reporter {
      */
     private static void validate(String filename) throws Exception {
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new File(filename))).toString();
-        StaticInstanceReader.parseInstance(new File(filename));
+        StaticInstanceReader.parseInstance(new File(filename), 0); // [HASLab] only validates first
     }
 
     /** Task that perform one command. */

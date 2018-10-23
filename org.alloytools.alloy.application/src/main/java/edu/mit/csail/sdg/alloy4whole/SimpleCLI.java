@@ -185,7 +185,7 @@ public final class SimpleCLI {
         sw.flush();
         String txt = sw.toString();
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new StringReader(txt))).toString();
-        StaticInstanceReader.parseInstance(new StringReader(txt));
+        StaticInstanceReader.parseInstance(new StringReader(txt), 0); // [HASLab] only validates first
     }
 
     public static void main(String[] args) throws Exception {
@@ -259,7 +259,7 @@ public final class SimpleCLI {
                 metasb.flush();
                 String metaxml = metasb.toString();
                 A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new StringReader(metaxml)));
-                StaticInstanceReader.parseInstance(new StringReader(metaxml));
+                StaticInstanceReader.parseInstance(new StringReader(metaxml), 0); // [HASLab] only parses first
                 // Okay, now solve the commands
                 A4Options options = new A4Options();
                 options.originalFilename = filename;

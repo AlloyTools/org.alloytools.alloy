@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -20,6 +21,7 @@ import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -41,8 +43,11 @@ import java.util.prefs.Preferences;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -52,8 +57,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
@@ -62,6 +69,7 @@ import edu.mit.csail.sdg.alloy4.Computer;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.OurBorder;
 import edu.mit.csail.sdg.alloy4.OurCheckbox;
+import edu.mit.csail.sdg.alloy4.OurCombobox;
 import edu.mit.csail.sdg.alloy4.OurConsole;
 import edu.mit.csail.sdg.alloy4.OurDialog;
 import edu.mit.csail.sdg.alloy4.OurUtil;
@@ -74,6 +82,9 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * GUI main window for the visualizer.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-base
  */
 
 public final class VizGUI implements ComponentListener {
@@ -535,7 +546,7 @@ public final class VizGUI implements ComponentListener {
         this.enumerator = enumerator;
         this.standalone = standalone;
         this.evaluator = evaluator;
-        this.frame = makeWindow ? new JFrame("Alloy Visualizer") : null;
+        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null; // [HASLab]
 
         // Figure out the desired x, y, width, and height
         int screenWidth = OurUtil.getScreenWidth(), screenHeight = OurUtil.getScreenHeight();
@@ -633,6 +644,7 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
             toolbar.add(saveAsSettingsButton = OurUtil.button("Save As", "Save the current theme customization as a new theme file", "images/24_save.gif", doSaveThemeAs()));
             toolbar.add(resetSettingsButton = OurUtil.button("Reset", "Reset the theme customization", "images/24_settings_close2.gif", doResetTheme()));
+            addTemporalJPanel(); // [HASLab] the JPanel for trace navigation
         } finally {
             wrap = false;
         }
@@ -924,7 +936,7 @@ public final class VizGUI implements ComponentListener {
         if (i >= 0)
             filename = filename.substring(i + 1);
         int n = filename.length();
-        if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".als"))
+        if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] ele extension
             filename = filename.substring(0, n - 4);
         if (filename.length() > 0)
             return "(" + filename + ") " + commandname;
@@ -997,6 +1009,13 @@ public final class VizGUI implements ComponentListener {
 
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
+        loadXML(fileName, forcefully, 0); // [HASLab] first state
+        repopulateTemporalPanel(); // [HASLab] must only be initially and not whenever the state changes
+    }
+
+    /** Load the XML instance. */
+    // [HASLab] considers particular state
+    public void loadXML(final String fileName, boolean forcefully, int state) {
         final String xmlFileName = Util.canon(fileName);
         File f = new File(xmlFileName);
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
@@ -1004,13 +1023,13 @@ public final class VizGUI implements ComponentListener {
             try {
                 if (!f.exists())
                     throw new IOException("File " + xmlFileName + " does not exist.");
-                myInstance = StaticInstanceReader.parseInstance(f);
+                myInstance = StaticInstanceReader.parseInstance(f, state); // [HASLab] state
             } catch (Throwable e) {
                 xmlLoaded.remove(fileName);
                 xmlLoaded.remove(xmlFileName);
                 OurDialog.alert("Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
                 if (xmlLoaded.size() > 0) {
-                    loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false);
+                    loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state); // [HASLab] state
                     return;
                 }
                 doCloseAll();
@@ -1034,7 +1053,7 @@ public final class VizGUI implements ComponentListener {
         windowmenu.setEnabled(true);
         if (frame != null) {
             frame.setVisible(true);
-            frame.setTitle("Alloy Visualizer " + Version.version() + " loading... Please wait...");
+            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait..."); // [HASLab]
             OurUtil.show(frame);
         }
         updateDisplay();
@@ -1529,5 +1548,182 @@ public final class VizGUI implements ComponentListener {
     // null; }
     // return wrapMe();
     // }
+
+    // ========================================TRACES=====================================================//
+
+    /** Trace navigation combo box. */
+    // [HASLab]
+    private JComboBox<String> comboTime;
+
+    /** Trace navigation buttons. */
+    private JButton           leftTime, rightTime;
+
+    /** Index of the back loop, or -1 if none. */
+    // [HASLab]
+    private int               backindex = -1;
+
+    /** Optional message to be displayed. */
+    // [HASLab]
+    private JLabel            tempMsg;
+
+    /**
+     * Populates the JPanel with the objects for trace navigation.
+     */
+    // [HASLab]
+    private final void addTemporalJPanel() {
+
+        tempMsg = new JLabel();
+        leftTime = new JButton("<<");
+        rightTime = new JButton(">>");
+        final String[] atomnames = this.createTimeAtoms(0);
+        comboTime = new OurCombobox(atomnames.length < 1 ? new String[] {
+                                                                         " "
+        } : atomnames);
+
+        comboTime.setRenderer(new TimePainter()); // color back loop and last time differently
+
+        leftTime.setEnabled(false);
+        rightTime.setEnabled(false);
+
+        leftTime.addActionListener(new ActionListener() {
+
+            public final void actionPerformed(ActionEvent e) {
+                int curIndex = comboTime.getSelectedIndex();
+                if (curIndex > 0)
+                    comboTime.setSelectedIndex(curIndex - 1);
+            }
+        });
+        rightTime.addActionListener(new ActionListener() {
+
+            public final void actionPerformed(ActionEvent e) {
+                if (comboTime.getSelectedIndex() == getVizState().getOriginalInstance().originalA4.getLastState())
+                    comboTime.setSelectedIndex(backindex);
+                else {
+                    int curIndex = comboTime.getSelectedIndex();
+                    if (curIndex < comboTime.getItemCount() - 1)
+                        comboTime.setSelectedIndex(curIndex + 1);
+                    else if (backindex >= 0)
+                        comboTime.setSelectedIndex(backindex);
+                }
+            }
+        });
+        comboTime.addActionListener(new ActionListener() {
+
+            public final void actionPerformed(ActionEvent e) {
+                int loop = getVizState().getOriginalInstance().originalA4.getLoopState();
+                int leng = getVizState().getOriginalInstance().originalA4.getLastState();
+
+                leftTime.setEnabled(comboTime.getSelectedIndex() > 0);
+                rightTime.setEnabled(comboTime.getSelectedIndex() < comboTime.getItemCount() - 1 || backindex != -1);
+                // change button when looping
+                if (comboTime.getSelectedIndex() == leng && loop != -1) {
+                    rightTime.setText(">" + loop);
+                    comboTime.setFont(comboTime.getFont().deriveFont(Font.BOLD));
+                    comboTime.setForeground(Color.BLUE);
+                    if (comboTime.getSelectedIndex() == loop)
+                        tempMsg.setText("Loop starts and ends here.");
+                    else
+                        tempMsg.setText("Last state before looping.");
+                } else {
+                    rightTime.setText(">>");
+                    // change text when loop state
+                    if (comboTime.getSelectedIndex() == loop) {
+                        comboTime.setFont(comboTime.getFont().deriveFont(Font.BOLD));
+                        comboTime.setForeground(Color.GREEN);
+                        tempMsg.setText("Loop starts here.");
+                    } else {
+                        comboTime.setFont(comboTime.getFont().deriveFont(Font.PLAIN));
+                        comboTime.setForeground(Color.BLACK);
+                        tempMsg.setText("");
+                    }
+                }
+
+                xmlLoaded.remove(getXMLfilename());
+                if (comboTime.getSelectedIndex() >= 0) {
+                    loadXML(getXMLfilename(), true, comboTime.getSelectedIndex());
+                    if (thmFileName != "")
+                        loadThemeFile(thmFileName);
+                }
+            }
+
+        });
+        comboTime.setMaximumSize(comboTime.getPreferredSize());
+        toolbar.add(Box.createHorizontalGlue());
+        toolbar.add(tempMsg);
+        toolbar.add(Box.createHorizontalStrut(15));
+        toolbar.add(leftTime);
+        toolbar.add(comboTime);
+        toolbar.add(rightTime);
+        toolbar.setBorder(new EmptyBorder(0, 0, 0, 10));
+    }
+
+    /**
+     * Updates the state of trace navigation pane given a new trace length.
+     */
+    // [HASLab]
+    private final void repopulateTemporalPanel() {
+        int last = getVizState().getOriginalInstance().originalA4.getLastState();
+        final String[] atomnames = this.createTimeAtoms(last + 1);
+        comboTime.removeAllItems();
+        for (String s : atomnames)
+            comboTime.addItem(s);
+
+        backindex = getVizState().getOriginalInstance().originalA4.getLoopState();
+
+        leftTime.setEnabled(false);
+        rightTime.setEnabled(atomnames.length > 1 || backindex == 0);
+    }
+
+    /**
+     * Creates a list with n times with the purpose of adding it to the trace
+     * navigation panel.
+     *
+     * @param n number of states
+     */
+    // [HASLab]
+    private String[] createTimeAtoms(int n) {
+        String[] times = new String[n];
+        for (int i = 0; i < n; i++)
+            times[i] = "Time " + i;
+        return times;
+    }
+
+    /** Paints the label of the loop and last states differently. */
+    // [HASLab]
+    private class TimePainter extends JLabel implements ListCellRenderer<Object> {
+
+        private static final long serialVersionUID = -7905186538514458958L;
+
+        private TimePainter() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList< ? > list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            if (value != null)
+                setText(value.toString());
+
+            int bold;
+            Color color;
+
+            if (index == list.getModel().getSize() - 1 && backindex > 0) {
+                bold = Font.BOLD;
+                color = Color.BLUE;
+            } else if (index == backindex) {
+                bold = Font.BOLD;
+                color = Color.GREEN;
+            } else {
+                bold = Font.PLAIN;
+                color = Color.BLACK;
+            }
+
+            setFont(getFont().deriveFont(bold));
+            setForeground(color);
+            setBackground(Color.WHITE);
+
+            return this;
+        }
+    }
+
 
 }

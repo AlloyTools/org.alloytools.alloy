@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -26,6 +27,8 @@ import edu.mit.csail.sdg.alloy4.Util;
  * Immutable; represents an Alloy relation of 2 or higher arity.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class AlloyRelation extends AlloyElement {
@@ -34,13 +37,13 @@ public final class AlloyRelation extends AlloyElement {
      * This caches an instance of the "extends" AlloyRelation, so we don't have to
      * keep re-constructing it.
      */
-    public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
+    public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV)); // [HASLab]
 
     /**
      * This caches an instance of the "in" AlloyRelation, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
+    public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));       // [HASLab]
 
     /** The unmodifiable list of types. */
     private final ConstList<AlloyType> types;
@@ -58,16 +61,25 @@ public final class AlloyRelation extends AlloyElement {
     public final boolean               isMeta;
 
     /**
+     * Records whether this relation is known to be "var"; NOTE: this value is NOT
+     * USED during equals() comparison.
+     */
+    // [HASLab]
+    public final boolean               isVar;
+
+    /**
      * Constructs a new AlloyRelation with that name and that list of types;
      * types.size() must be 2 or above.
      */
-    public AlloyRelation(String name, boolean isPrivate, boolean isMeta, List<AlloyType> types) {
+    // [HASLab] variable info
+    public AlloyRelation(String name, boolean isPrivate, boolean isMeta, boolean isVar, List<AlloyType> types) {
         super(name);
         if (types == null || types.size() < 2)
             throw new RuntimeException("An AlloyRelation object must have 2 or more types.");
         this.types = ConstList.make(types);
         this.isPrivate = isPrivate;
         this.isMeta = isMeta;
+        this.isVar = isVar; // [HASLab]
     }
 
     /**

@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -28,6 +29,8 @@ import java.util.Set;
  * This utility class performs projection of AlloyModel and AlloyInstance.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class StaticProjector {
@@ -98,13 +101,13 @@ public final class StaticProjector {
             // If the relation still contains at least two types, it becomes a
             // new relation
             if (relTypes.size() > 1) {
-                relations.add(new AlloyRelation(rel.getName(), rel.isPrivate, rel.isMeta, relTypes));
+                relations.add(new AlloyRelation(rel.getName(), rel.isPrivate, rel.isMeta, rel.isVar, relTypes)); // [HASLab]
                 if (data != null)
                     data.put(rel, indices);
             }
             // If it contains only one type, it becomes a new set.
             else if (relTypes.size() == 1) {
-                sets.add(new AlloySet(rel.getName(), rel.isPrivate, rel.isMeta, relTypes.get(0)));
+                sets.add(new AlloySet(rel.getName(), rel.isPrivate, rel.isMeta, rel.isVar, relTypes.get(0))); // [HASLab]
                 if (data != null)
                     data.put(rel, indices);
             }
@@ -168,7 +171,7 @@ public final class StaticProjector {
                 List<AlloyAtom> newTuple = oldTuple.project(list);
                 List<AlloyType> newObj = r.project(list);
                 if (newObj.size() > 1 && newTuple.size() > 1) {
-                    AlloyRelation r2 = new AlloyRelation(r.getName(), r.isPrivate, r.isMeta, newObj);
+                    AlloyRelation r2 = new AlloyRelation(r.getName(), r.isPrivate, r.isMeta, r.isVar, newObj); // [HASLab]
                     Set<AlloyTuple> answer = rel2tuples.get(r2);
                     if (answer == null)
                         rel2tuples.put(r2, answer = new LinkedHashSet<AlloyTuple>());
@@ -178,7 +181,7 @@ public final class StaticProjector {
                     Set<AlloySet> answer = atom2sets.get(a);
                     if (answer == null)
                         atom2sets.put(a, answer = new LinkedHashSet<AlloySet>());
-                    answer.add(new AlloySet(r.getName(), r.isPrivate, r.isMeta, newObj.get(0)));
+                    answer.add(new AlloySet(r.getName(), r.isPrivate, r.isMeta, r.isVar, newObj.get(0))); // [HASLab]
                 }
             }
         }

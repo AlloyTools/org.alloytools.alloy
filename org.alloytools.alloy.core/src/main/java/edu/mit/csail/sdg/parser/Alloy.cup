@@ -17,7 +17,6 @@
 /*
  * Warning: this file alone is not enough to correctly parse Alloy4 since the actual
  * language is not LALR(1); instead, we have to pre-process the token stream
- * using CompFilter.java to rearrange/transform the token stream, and then we can
  * parse the transformed token stream using this LALR(1) grammar.  For more information,
  * please refer to CompFilter.java
  */
@@ -749,7 +748,8 @@ Sig ::= SigQuals:a Names:b SigIn:c LBRACE Decls:d RBRACE:o SuperOpt:e
          AttrType.LONE    .makenull(a.get(1)),
          AttrType.ONE     .makenull(a.get(2)),
          AttrType.SOME    .makenull(a.get(3)),
-         AttrType.PRIVATE .makenull(a.get(4)));
+         AttrType.PRIVATE .makenull(a.get(4)),
+         AttrType.VARIABLE.makenull(a.get(5)));  // [HASLab]
    }
  :};
 
@@ -802,17 +802,27 @@ Namex ::= Namex:a COMMA EXACTLY Name:b {: nod(b); a.add(null); a.add(b); RESULT=
 
 Decla ::=           PART:k Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, k,    null, a, mult(b)); :}; // [HASLab]
-Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, p,    k,    null, a, mult(b)); :}; // [HASLab]
-Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(null, p,    null, null, a, mult(b)); :}; // [HASLab]
-Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :}; // [HASLab]
+Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, null, a, mult(b)); :}; // [HASLab] 
+Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, null, a, mult(b)); :}; // [HASLab] 
+Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, null, a, mult(b)); :}; // [HASLab] 
+Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :}; // [HASLab] 
+
+Decla ::= VAR:v 		  DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, v, a, mult(b)); :}; // [HASLab] variable decls
 
 Decla ::=           PART:k Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, k,    d,    a, mult(b)); :}; // [HASLab]
-Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, p,    k,    d,    a, mult(b)); :}; // [HASLab]
-Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, p,    null, d,    a, mult(b)); :}; // [HASLab]
-Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, null, d,    a, mult(b)); :}; // [HASLab]
+Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, null, a, mult(b)); :}; // [HASLab] 
+Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, null, a, mult(b)); :}; // [HASLab] 
+Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, null, a, mult(b)); :}; // [HASLab] 
+Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, null, a, mult(b)); :}; // [HASLab] 
+
+Decla ::= VAR:v           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, v, a, mult(b)); :}; // [HASLab] variable decls
 
 Declb ::= Decla:x {: RESULT=x; :};
 
@@ -820,8 +830,8 @@ Declb ::=           PART:k Names   EQUALS          Expr    {: if (1==1) throw Co
 Declb ::=           EXH:k  Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                       :};
 Declb ::=           DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
 Declb ::= PRIVATE   DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
-Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, p,    null, null,  a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
-Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null,  a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
+Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
+Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
 
 Declb ::=           PART:k Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "part");                                   :};
 Declb ::=           EXH:k  Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                    :};
@@ -999,14 +1009,15 @@ CompareExprB ::= SET:o  ShiftExprB:b                        {: RESULT=ExprUnary.
 CompareExprB ::= SEQ:o  ShiftExprB:b                        {: RESULT=ExprBinary.Op.ISSEQ_ARROW_LONE.make(o, null, ExprVar.make(o,"seq/Int"), b); parser.alloymodule.addSeq(o); :};
 CompareExprB ::=        ShiftExprB:b                        {: RESULT=b;                               :};
 
+// [HASLab] temporarily disabled to allow the generation of parser under java byte limit
 ShiftExprA ::=                    UnionDiffExprA:b        {: RESULT=b;                                     :};
-ShiftExprA ::= ShiftExprB:a SHL:o Bind:b                  {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
-ShiftExprA ::= ShiftExprB:a SHR:o Bind:b                  {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
-ShiftExprA ::= ShiftExprB:a SHA:o Bind:b                  {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
+//ShiftExprA ::= ShiftExprB:a SHL:o Bind:b                  {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
+//ShiftExprA ::= ShiftExprB:a SHR:o Bind:b                  {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
+//ShiftExprA ::= ShiftExprB:a SHA:o Bind:b                  {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
 ShiftExprB ::=                    UnionDiffExprB:b        {: RESULT=b;                                     :};
-ShiftExprB ::= ShiftExprB:a SHL:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
-ShiftExprB ::= ShiftExprB:a SHR:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
-ShiftExprB ::= ShiftExprB:a SHA:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
+//ShiftExprB ::= ShiftExprB:a SHL:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
+//ShiftExprB ::= ShiftExprB:a SHR:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
+//ShiftExprB ::= ShiftExprB:a SHA:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
 
 UnionDiffExprA ::=                           MulExprA:b    {: RESULT=b;                                       :};
 UnionDiffExprA ::= UnionDiffExprB:a PLUS:o   Bind:b        {: RESULT=ExprBinary.Op.PLUS .make(o, null, a, b); :};
