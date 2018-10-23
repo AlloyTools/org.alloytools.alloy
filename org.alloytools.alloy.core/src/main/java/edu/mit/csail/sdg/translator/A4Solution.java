@@ -400,7 +400,7 @@ public final class A4Solution {
             try {
                 File tmp = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
                 tmp.deleteOnExit();
-                solver_opts.setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), opt.solver.options()));
+                solver_opts.setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), false, opt.solver.options())); // [HASLab]
                 // solver.options().setSolver(SATFactory.externalFactory(ext,
                 // tmp.getAbsolutePath(), opt.solver.options()));
             } catch (IOException ex) {

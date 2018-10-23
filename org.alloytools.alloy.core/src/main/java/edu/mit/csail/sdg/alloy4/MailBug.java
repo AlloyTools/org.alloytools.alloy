@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -41,6 +42,8 @@ import org.alloytools.alloy.core.AlloyCore;
 /**
  * This class asks the user for permission to email a bug report when an
  * uncaught exception occurs.
+ *
+ * @modified Nuno Macedo // [HASLab] electrum-base
  */
 
 public final class MailBug implements UncaughtExceptionHandler, Runnable {
@@ -147,7 +150,8 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
     private static String prepareCrashReport(Thread thread, Throwable ex, String email, String problem) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        pw.printf("Alloy Analyzer %s crash report (Build Date = %s) (Commit = %s)\n", Version.version(), Version.commit);
+        // [HASLab]
+        pw.printf("Electrum Analyzer %s crash report (Build Date = %s) (Commit = %s)\n", Version.version(), Version.commit);
         pw.printf("\n========================= Email ============================\n%s\n", Util.convertLineBreak(email).trim());
         pw.printf("\n========================= Problem ==========================\n%s\n", Util.convertLineBreak(problem).trim());
         pw.printf("\n========================= Thread Name ======================\n%s\n", thread.getName().trim());

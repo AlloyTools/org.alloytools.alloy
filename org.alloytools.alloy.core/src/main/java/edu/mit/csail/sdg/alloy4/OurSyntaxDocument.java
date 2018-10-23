@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -39,6 +40,8 @@ import javax.swing.text.TabStop;
  * Graphical syntax-highlighting StyledDocument.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
  */
 
 class OurSyntaxDocument extends DefaultStyledDocument {
@@ -179,8 +182,9 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     /**
      * This stores the currently recognized set of reserved keywords.
      */
+    // [HASLab] temporal keywords
     private static final String[]     keywords = new String[] {
-                                                               "abstract", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ"
+                                                               "abstract", "var", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ", "eventually", "always", "after", "once", "historically", "since", "trigger", "previous", "until", "releas", "Time"
     };
 
     /**
@@ -188,7 +192,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * keyword.
      */
     private static final boolean do_keyword(String array, int start, int len) {
-        if (len >= 2 && len <= 10)
+        if (len >= 2 && len <= 12) // [HASLab] historically is larger
             for (int i = keywords.length - 1; i >= 0; i--) {
                 String str = keywords[i];
                 if (str.length() == len)
@@ -205,7 +209,8 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * Returns true if "c" can be in the start or middle or end of an identifier.
      */
     private static final boolean do_iden(char c) {
-        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '$' || (c >= '0' && c <= '9') || c == '_' || c == '\'' || c == '\"';
+        // [HASLab] primed expressions
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '$' || (c >= '0' && c <= '9') || c == '_' /* || c=='\'' */ || c == '\"';
     }
 
     /** Constructor. */

@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -60,6 +61,8 @@ import edu.mit.csail.sdg.parser.CompUtil;
  * Graphical syntax-highlighting editor.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread
+ *
+ * @modified Nuno Macedo // [HASLab] electrum-base
  */
 
 public final class OurSyntaxWidget {
@@ -68,10 +71,10 @@ public final class OurSyntaxWidget {
      * The current list of listeners; possible events are { STATUS_CHANGE, FOCUSED,
      * CTRL_PAGE_UP, CTRL_PAGE_DOWN, CARET_MOVED }.
      */
-    public final Listeners                  listeners = new Listeners();
+    public final Listeners                  listeners        = new Listeners();
 
     /** The JScrollPane containing everything. */
-    private final JScrollPane               component = OurUtil.make(new JScrollPane(), new EmptyBorder(0, 0, 0, 0));
+    private final JScrollPane               component        = OurUtil.make(new JScrollPane(), new EmptyBorder(0, 0, 0, 0));
 
     /** This is an optional JComponent annotation. */
     public final JComponent                 obj1;
@@ -83,19 +86,20 @@ public final class OurSyntaxWidget {
      * The underlying StyledDocument being displayed (changes will trigger the
      * STATUS_CHANGE event)
      */
-    private final OurSyntaxUndoableDocument doc       = new OurSyntaxUndoableDocument("Monospaced", 14);
+    private final OurSyntaxUndoableDocument doc              = new OurSyntaxUndoableDocument("Monospaced", 14);
 
     /** The underlying JTextPane being displayed. */
-    private final JTextPane                 pane      = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
+    private final JTextPane                 pane             = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
 
     /**
      * The filename for this JTextPane (changes will trigger the STATUS_CHANGE
      * event)
      */
-    private String                          filename  = "";
+    private String                          filename         = "";
 
     /**
-     * the file modification date for the file loaded. If no file is loaded (!isFile), this must be -1.
+     * the file modification date for the file loaded. If no file is loaded
+     * (!isFile), this must be -1.
      */
     private long                            fileModifiedDate = -1;
 
@@ -689,7 +693,7 @@ public final class OurSyntaxWidget {
         if (ans == 'c' || (ans == 's' && save(false, bannedNames) == false))
             return false;
         for (int i = 1;; i++)
-            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".als")))
+            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".ele"))) // [HASLab] ele extension
                 break;
         fileModifiedDate = -1;
         pane.setText("");
@@ -771,7 +775,7 @@ public final class OurSyntaxWidget {
         fileModifiedDate = Util.getModifiedDate(this.filename);
         if (fileModifiedDate == 0)
             fileModifiedDate = new Date().getTime();
-        
+
         modified = false;
         isFile = true;
         listeners.fire(this, Event.STATUS_CHANGE);
@@ -788,7 +792,7 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(false, null, ".als", ".als files");
+            File f = OurDialog.askFile(false, null, ".ele", ".ele files"); // [HASLab] ele extension
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
@@ -797,12 +801,11 @@ public final class OurSyntaxWidget {
         }
 
         if (isFile && n.equals(this.filename) && Util.getModifiedDate(this.filename) > fileModifiedDate) {
-            if (!OurDialog.yesno("The file has been modified outside the editor.\n" +
-                                 "Do you want to overwrite it anyway?")) {
+            if (!OurDialog.yesno("The file has been modified outside the editor.\n" + "Do you want to overwrite it anyway?")) {
                 return false;
             }
         }
-        
+
         if (saveAs(n, bannedNames)) {
             Util.setCurrentDirectory(new File(filename).getParentFile());
             return true;
