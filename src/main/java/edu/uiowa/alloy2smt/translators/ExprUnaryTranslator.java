@@ -96,7 +96,7 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {
-                    case "univ": return exprTranslator.translator.atomUniv.getConstantExpr();
+                    case "univ": return exprTranslator.translator.atomUnivExpr.getConstantExpr();
                     case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
                     case "none": return exprTranslator.translator.atomNone;
                     default:

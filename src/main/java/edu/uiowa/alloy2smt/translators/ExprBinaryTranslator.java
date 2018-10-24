@@ -131,8 +131,8 @@ public class ExprBinaryTranslator
         {
             Expression left                 = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression right                = exprTranslator.translateExpr(expr.right, variablesScope);
-            Expression join                 = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUniv.getConstantExpr());
-            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getConstantExpr());
+            Expression join                 = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUnivExpr.getConstantExpr());
+            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
             Expression intersection         = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, left);
             Expression difference           = new BinaryExpression(left, BinaryExpression.Op.SETMINUS, intersection);
             Expression union                = new BinaryExpression(difference, BinaryExpression.Op.UNION, right);
@@ -156,7 +156,7 @@ public class ExprBinaryTranslator
         else if(arity == 2)
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getConstantExpr());
+            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
             BinaryExpression    intersection    = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, right);
             return intersection;
@@ -178,7 +178,7 @@ public class ExprBinaryTranslator
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getConstantExpr());
+            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
 
             BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, product);
 
