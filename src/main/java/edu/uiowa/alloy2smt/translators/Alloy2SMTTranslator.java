@@ -85,12 +85,13 @@ public class Alloy2SMTTranslator
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
         this.comparisonOps          = new HashMap<>();  
         this.arithOps               = new HashMap<>();
+        this.signaturesMap.put(Sig.SIGINT, this.atomUniv);
     }
 
     public SMTProgram execute()
     {
         translateSpecialFunctions();
-        this.signatureTranslator.translate();
+        this.signatureTranslator.translateSigs();
         translateFacts();
         translateSpecialAssertions();
         return this.smtProgram;

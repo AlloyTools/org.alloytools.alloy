@@ -191,7 +191,7 @@ public class SignatureTranslator
             // translateExpr signature fields
             for(Sig.Field field : sig.getFields())
             {
-                this.fieldTranslator.translate(field);
+                this.fieldTranslator.fields.add(field);
             }
         });
 
@@ -307,10 +307,11 @@ public class SignatureTranslator
         return declaration;
     }    
 
-    public void translate()
+    public void translateSigs()
     {
         collectReachableSigs();
         translateSignatures();
         translateSignatureHierarchies();
+        this.fieldTranslator.translateFields();
     }
 }

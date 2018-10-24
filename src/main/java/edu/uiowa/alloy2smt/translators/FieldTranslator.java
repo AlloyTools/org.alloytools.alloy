@@ -19,13 +19,20 @@ public class FieldTranslator
 {
 
     private final Alloy2SMTTranslator translator;
+    public List<Sig.Field> fields = new ArrayList<>();
 
     public FieldTranslator(Alloy2SMTTranslator translator)
     {
         this.translator = translator;
     }
 
-
+    void translateFields()
+    {
+        for(Sig.Field f : this.fields)
+        {
+            translate(f);
+        }
+    }
     void translate(Sig.Field field)
     {
 
