@@ -4,6 +4,8 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.smtAst.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.util.Map;
 
@@ -44,18 +46,19 @@ public class ExprBinaryTranslator
             case RANGE              : return translateRangeRestriction(expr, variablesScope);
             case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
             case PLUSPLUS           : return translatePlusPlus(expr, variablesScope);
-            case EQUALS             : return translateComparison(expr, BinaryExpression.Op.EQ, variablesScope);
-            case NOT_EQUALS         : return translateComparison(expr, BinaryExpression.Op.NEQ, variablesScope);            
-            
-            // Arithmetic operators
+            case EQUALS             : return translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope);
+            case NOT_EQUALS         : return translateEqComparison(expr, BinaryExpression.Op.NEQ, variablesScope);            
+
+            // Set op
             case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
-            case IPLUS              : throw new UnsupportedOperationException();
             case MINUS              : return translateSetOperation(expr, BinaryExpression.Op.SETMINUS, variablesScope);
-            case IMINUS             : throw new UnsupportedOperationException();
-            case MUL                : throw new UnsupportedOperationException();
-            case DIV                : throw new UnsupportedOperationException();
+            
+            // Arithmetic operators            
+            case IPLUS              : return translateArithmetic(expr, BinaryExpression.Op.PLUS, variablesScope);
+            case IMINUS             : return translateArithmetic(expr, BinaryExpression.Op.MINUS, variablesScope);
+            case MUL                : return translateArithmetic(expr, BinaryExpression.Op.MULTIPLY, variablesScope);
+            case DIV                : return translateArithmetic(expr, BinaryExpression.Op.DIVIDE, variablesScope);
             case REM                : throw new UnsupportedOperationException();
-            case IMPLIES            : return translateImplies(expr, variablesScope);
             
             // Comparison operators
             case LT                 : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
@@ -64,6 +67,7 @@ public class ExprBinaryTranslator
             case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
             case IN                 : return translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
             case NOT_IN             : return new UnaryExpression(UnaryExpression.Op.NOT, translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope));
+            case IMPLIES            : return translateImplies(expr, variablesScope);            
             case AND                : return translateAnd(expr, variablesScope);
             case OR                 : return translateOr(expr, variablesScope);
             case IFF                : throw new UnsupportedOperationException();
@@ -127,8 +131,8 @@ public class ExprBinaryTranslator
         {
             Expression left                 = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression right                = exprTranslator.translateExpr(expr.right, variablesScope);
-            Expression join               = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUniv);
-            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv);
+            Expression join                 = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUniv.getConstantExpr());
+            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getConstantExpr());
             Expression intersection         = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, left);
             Expression difference           = new BinaryExpression(left, BinaryExpression.Op.SETMINUS, intersection);
             Expression union                = new BinaryExpression(difference, BinaryExpression.Op.UNION, right);
@@ -152,7 +156,7 @@ public class ExprBinaryTranslator
         else if(arity == 2)
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv);
+            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getConstantExpr());
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
             BinaryExpression    intersection    = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, right);
             return intersection;
@@ -174,7 +178,7 @@ public class ExprBinaryTranslator
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv);
+            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getConstantExpr());
 
             BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, product);
 
@@ -183,11 +187,127 @@ public class ExprBinaryTranslator
 
         throw new UnsupportedOperationException();
     }
+
+    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    {
+        Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);    
+        
+        if(!exprTranslator.translator.arithOps.containsKey(op))
+        {
+            BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", exprTranslator.translator.intSort);
+            BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", exprTranslator.translator.intSort); 
+            BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", exprTranslator.translator.intSort); 
+            Expression memUniv1 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv);
+            Expression memUniv2 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv);
+            Expression memUniv3 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv);            
+            ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
+            ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
+            ConstantExpression bdIntVar3Expr = new ConstantExpression(bdIntVar3);
+                       
+            Expression lhsExpr = new BinaryExpression(memUniv1, BinaryExpression.Op.AND, memUniv2);
+            lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, memUniv3);   
+            Expression finalExpr = null;
+            Expression rhsExpr  = null;
+            ConstantDeclaration arithVarDecl = null;
+            
+            switch(op)
+            {
+                case PLUS:     
+                    arithVarDecl = new ConstantDeclaration("PLUS", exprTranslator.translator.ternaryIntSort);
+                    Expression plusExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.PLUS, bdIntVar2Expr);
+                    plusExpr = new BinaryExpression(plusExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, plusExpr); 
+                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);
+                    break;
+                case MINUS:
+                    arithVarDecl = new ConstantDeclaration("MINUS", exprTranslator.translator.ternaryIntSort);
+                    Expression minusExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MINUS, bdIntVar2Expr);
+                    minusExpr = new BinaryExpression(minusExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, minusExpr); 
+                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);             
+                    break;
+                case MULTIPLY:
+                    arithVarDecl = new ConstantDeclaration("MUL", exprTranslator.translator.ternaryIntSort);
+                    Expression mulExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MULTIPLY, bdIntVar2Expr);
+                    mulExpr = new BinaryExpression(mulExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, mulExpr); 
+                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);
+                  
+                    break;
+                case DIVIDE:
+                    arithVarDecl = new ConstantDeclaration("MUL", exprTranslator.translator.ternaryIntSort);
+                    Expression divExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);                    
+                    divExpr = new BinaryExpression(divExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, divExpr); 
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(bdIntVar2Expr, BinaryExpression.Op.EQ, new IntConstant(0))));
+                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);                 
+                    break;
+                default:
+                    break;                   
+            }
+            exprTranslator.translator.smtProgram.addConstantDeclaration(arithVarDecl);
+            exprTranslator.translator.smtProgram.addAssertion(new Assertion(finalExpr));     
+            exprTranslator.translator.arithOps.put(op, arithVarDecl.getConstantExpr());
+        }
+        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithOps.get(op)));
+    }
+    
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
     {
+        Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);
+        
+        if(!exprTranslator.translator.comparisonOps.containsKey(op))
+        {
+            BoundVariableDeclaration  bdIntRelVar1 = new BoundVariableDeclaration("rel1", exprTranslator.translator.setOfUnaryIntSort);                
+            BoundVariableDeclaration  bdIntRelVar2 = new BoundVariableDeclaration("rel2", exprTranslator.translator.setOfUnaryIntSort);
+            BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", exprTranslator.translator.intSort);
+            BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", exprTranslator.translator.intSort);     
+            ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
+            ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
+            ConstantExpression bdIntRelVar1Expr = new ConstantExpression(bdIntRelVar1);
+            ConstantExpression bdIntRelVar2Expr = new ConstantExpression(bdIntRelVar2);     
+            FunctionDefinition comparisonFunc = null;
 
-        if
-            (   (expr.left instanceof ExprUnary &&
+            Expression funcExpr = new BinaryExpression(exprTranslator.getSingleton(bdIntVar1Expr), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
+            funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.getSingleton(bdIntVar2Expr), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
+
+            switch(op)
+            {
+                case GT:
+                    funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GT, bdIntVar2Expr));
+                    comparisonFunc = new FunctionDefinition("GT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                    break;
+                case LT:
+                    funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LT, bdIntVar2Expr));
+                    comparisonFunc = new FunctionDefinition("LT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                    break;
+                case GTE:
+                    funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GTE, bdIntVar2Expr));
+                    comparisonFunc = new FunctionDefinition("GTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                    break;
+                case LTE:
+                    funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LTE, bdIntVar2Expr));
+                    comparisonFunc = new FunctionDefinition("LTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                                        
+                    break;
+                default:break;
+            } 
+            exprTranslator.translator.smtProgram.addFcnDef(comparisonFunc);
+            exprTranslator.translator.comparisonOps.put(op, comparisonFunc);
+        }
+
+        return new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op).getFuncName(), leftExpr, rightExpr);     
+    }
+    
+    private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    {
+
+        if(   (expr.left instanceof ExprUnary &&
                 ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY) ||
                 (expr.right instanceof ExprUnary &&
                 ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY)
@@ -216,7 +336,7 @@ public class ExprBinaryTranslator
             return new UnaryExpression(UnaryExpression.Op.NOT,new BinaryExpression(left, BinaryExpression.Op.EQ, right));
         }
         else
-        {
+        { 
             return new BinaryExpression(left, op, right);
         }
     }

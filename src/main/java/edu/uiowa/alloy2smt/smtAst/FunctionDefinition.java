@@ -15,41 +15,46 @@ import java.util.List;
 
 public class FunctionDefinition extends SMTAst
 {
-    private final List<Sort>   inputSorts;
-    private final Sort         outputSort;
-    private final Expression   expression;
+    public final String funcName;
+    public final List<BoundVariableDeclaration>   inputVarDecls;
+    public final Sort         outputSort;
+    public final Expression   expression;
     
-    public FunctionDefinition(List<Sort> inputSort, Sort outputSort, Expression expression) 
+    public FunctionDefinition(String funcName, List<BoundVariableDeclaration> inputSort, Sort outputSort, Expression expression) 
     {
-        this.inputSorts = inputSort;
+        this.funcName = funcName;
+        this.inputVarDecls = inputSort;
         this.outputSort = outputSort;
         this.expression = expression;
     }
     
-    public FunctionDefinition(Sort inputSort, Sort outputSort, Expression expression) 
+    public FunctionDefinition(String funcName, BoundVariableDeclaration inputSort, Sort outputSort, Expression expression) 
     {
-        this.inputSorts = Arrays.asList(inputSort);
+        this.funcName = funcName;
+        this.inputVarDecls = Arrays.asList(inputSort);
         this.outputSort = outputSort;
         this.expression = expression;
     }
 
-    public FunctionDefinition(Sort outputSort, Expression expression) 
+    public FunctionDefinition(String funcName, Sort outputSort, Expression expression) 
     {
-        this.inputSorts = new ArrayList<>();
+        this.funcName = funcName;
+        this.inputVarDecls = new ArrayList<>();
         this.outputSort = outputSort;
         this.expression = expression;
     }  
     
-    public FunctionDefinition(Sort outputSort, Expression expression, Sort ... inputSorts) 
+    public FunctionDefinition(String funcName, Sort outputSort, Expression expression, BoundVariableDeclaration ... inputSorts) 
     {
-        this.inputSorts = Arrays.asList(inputSorts);
+        this.funcName = funcName;
+        this.inputVarDecls = Arrays.asList(inputSorts);
         this.outputSort = outputSort;
         this.expression = expression;
     }      
     
-    public List<Sort> getInputSorts()
+    public List<BoundVariableDeclaration> getInputSorts()
     {
-        return this.inputSorts;
+        return this.inputVarDecls;
     }
     
     public Sort getOutputSort()
@@ -60,6 +65,11 @@ public class FunctionDefinition extends SMTAst
     public Expression getExpression()
     {
         return this.expression;
+    }
+    
+    public String getFuncName()
+    {
+        return this.funcName;
     }
 
     @Override

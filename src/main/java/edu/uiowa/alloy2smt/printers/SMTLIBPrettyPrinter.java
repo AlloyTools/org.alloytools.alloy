@@ -12,13 +12,13 @@ import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.List;
 
-public class SMTLibPrettyPrinter implements SMTAstVisitor
+public class SMTLIBPrettyPrinter implements SMTAstVisitor
 {
     private final SMTProgram program;
 
     private StringBuilder stringBuilder;
 
-    public SMTLibPrettyPrinter(SMTProgram program)
+    public SMTLIBPrettyPrinter(SMTProgram program)
     {
         this.program = program;
         initializeStringBuilder();
@@ -47,11 +47,16 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
             this.visit(declaration);
         }
 
+        for (FunctionDefinition funcDef : this.program.getFunctionDefinition())
+        {
+            this.visit(funcDef);
+        }        
+
         for (Assertion assertion: this.program.getAssertions())
         {
             this.visit(assertion);
         }
-
+        
         return this.stringBuilder.toString();
     }
 
@@ -131,7 +136,10 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(IntConstant intConstant)
     {
-        this.stringBuilder.append(intConstant.getValue());
+        this.stringBuilder.append("(singleton (mkTuple ")
+        .append(intConstant.getValue())
+        .append("))");
+        
     }
 
     @Override
@@ -157,8 +165,18 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(FunctionDefinition aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(FunctionDefinition funcDef) {
+        this.stringBuilder.append("(define-fun ").append(funcDef.getFuncName()).append(" (");
+        for(BoundVariableDeclaration bdVar : funcDef.inputVarDecls)
+        {
+            this.visit(bdVar);
+        }
+        this.stringBuilder.append(") ");
+        this.visit(funcDef.outputSort);
+        this.stringBuilder.append(" ").append("\n");
+        this.visit(funcDef.expression);
+        this.stringBuilder.append(")");
+        this.stringBuilder.append("\n");
     }
 
     @Override
@@ -193,18 +211,27 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
     public void visit(MultiArityExpression multiArityExpression)
     {
         this.stringBuilder.append("(" + multiArityExpression.getOp() + " ");
-        for (Expression expression: multiArityExpression.getExpressions())
+        for (int i = 0; i < multiArityExpression.getExpressions().size()-1; ++i)
         {
-            this.visit(expression);
+            this.visit(multiArityExpression.getExpressions().get(i));
             this.stringBuilder.append(" ");
         }
+        this.visit(multiArityExpression.getExpressions().get(multiArityExpression.getExpressions().size()-1));
         this.stringBuilder.append(")");
     }
 
     @Override
     public void visit(FunctionCallExpression functionCallExpression)
     {
-        throw new UnsupportedOperationException();
+        this.stringBuilder.append("(");
+        this.stringBuilder.append(functionCallExpression.getFunctionName()).append(" ");
+        for(int i = 0; i < functionCallExpression.getArguments().size()-1; ++i)
+        {
+            this.visit(functionCallExpression.getArguments().get(i));
+            this.stringBuilder.append(" ");
+        }
+        this.visit(functionCallExpression.getArguments().get(functionCallExpression.getArguments().size()-1));
+        this.stringBuilder.append(")");
     }
 
     @Override
@@ -245,6 +272,10 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         {
             this.visit((IntConstant) expression);
         }
+        else if (expression instanceof  FunctionCallExpression)
+        {
+            this.visit((FunctionCallExpression) expression);
+        }      
         else
         {
             throw new UnsupportedOperationException();
@@ -281,9 +312,18 @@ public class SMTLibPrettyPrinter implements SMTAstVisitor
         {
             this.visit((StringSort) sort);
         }
+        else if (sort instanceof  BoolSort)
+        {
+            this.visit((BoolSort) sort);
+        }        
         else
         {
             throw new UnsupportedOperationException();
         }
+    }
+
+    @Override
+    public void visit(BoolSort aThis) {
+        this.stringBuilder.append(aThis.getSortName());
     }
 }

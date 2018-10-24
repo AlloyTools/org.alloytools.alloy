@@ -10,8 +10,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
-
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,13 +30,7 @@ public class FieldTranslator
     {
 
         String              fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
-        TupleSort           tupleSort   = new TupleSort(Collections.nCopies(field.type().arity(), translator.atomSort));
-        SetSort             setSort     = new SetSort(tupleSort);
-        FunctionDeclaration declaration = new FunctionDeclaration(fieldName, setSort);
-
-        // declare a variable for the field
-        translator.smtProgram.addFunctionDeclaration(declaration);
-        translator.fieldsMap.put(field, declaration);
+        List<Sort>          fieldSorts  = new ArrayList<>();
 
         // a field relation is a subset of the product of its signatures
         List<Sig> fieldSignatures     =  field.type().fold().stream().flatMap(List::stream).collect(Collectors.toList());
@@ -51,17 +44,29 @@ public class FieldTranslator
         BinaryExpression product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
 
         for(int i = 2; i < fieldSignatures.size(); i++)
-        {
-            ConstantExpression expr = translator.signaturesMap.get(fieldSignatures.get(i)).getConstantExpr();
-            product                 = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);
+        {       
+            product = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, translator.signaturesMap.get(fieldSignatures.get(i)).getConstantExpr());            
         }
-
-        ConstantExpression fieldExpr   = declaration.getConstantExpr();
-        BinaryExpression    subset      = new BinaryExpression(fieldExpr, BinaryExpression.Op.SUBSET, product);
-        Assertion           assertion   = new Assertion(subset);
-
-        translator.smtProgram.addAssertion(assertion);
-
+        // Collect field's type information
+        for(int i = 0; i < fieldSignatures.size(); i++)
+        {
+            if(translator.signatureTranslator.getAncestorSig(fieldSignatures.get(i)) == Sig.SIGINT)
+            {
+                fieldSorts.add(translator.intSort);
+            }
+            else
+            {
+                fieldSorts.add(translator.atomSort);
+            }
+        }        
+        
+      
+        FunctionDeclaration declaration = new FunctionDeclaration(fieldName, new SetSort(new TupleSort(fieldSorts)));
+        // declare a variable for the field
+        translator.smtProgram.addFunctionDeclaration(declaration);
+        translator.fieldsMap.put(field, declaration);   
+        // make a subset assertion
+        translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, product)));
         // translateExpr multiplicities
         translateMultiplicities(field, declaration);
     }
@@ -209,8 +214,10 @@ public class FieldTranslator
 
             FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            Sort fstSigSort = translator.signatureTranslator.getAncestorSig(field.sig) == Sig.SIGINT?translator.intSort:translator.atomSort;
+            Sort sndSigSort = translator.signatureTranslator.getAncestorSig((Sig) ((ExprUnary) exprUnary.sub).sub) == Sig.SIGINT?translator.intSort:translator.atomSort;
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), fstSigSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -267,9 +274,11 @@ public class FieldTranslator
 
             FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            Sort fstSigSort = translator.signatureTranslator.getAncestorSig(field.sig) == Sig.SIGINT?translator.intSort:translator.atomSort;
+            Sort sndSigSort = translator.signatureTranslator.getAncestorSig((Sig) ((ExprUnary) exprUnary.sub).sub) == Sig.SIGINT?translator.intSort:translator.atomSort;            
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), fstSigSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
@@ -365,10 +374,12 @@ public class FieldTranslator
 
             FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
             FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration u          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), translator.atomSort);
+            Sort fstSigSort = translator.signatureTranslator.getAncestorSig(field.sig) == Sig.SIGINT?translator.intSort:translator.atomSort;
+            Sort sndSigSort = translator.signatureTranslator.getAncestorSig((Sig) ((ExprUnary) exprUnary.sub).sub) == Sig.SIGINT?translator.intSort:translator.atomSort;                        
+            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), fstSigSort);
+            BoundVariableDeclaration u          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
+            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
+            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
 
             // (mkTuple x)
             MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());

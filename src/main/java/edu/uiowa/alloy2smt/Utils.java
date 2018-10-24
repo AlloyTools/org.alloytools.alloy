@@ -10,13 +10,9 @@ package edu.uiowa.alloy2smt;
 
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
-import edu.uiowa.alloy2smt.printers.SMTLibPrettyPrinter;
+import edu.uiowa.alloy2smt.printers.SMTLIBPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SMTTranslator;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Utils
 {
@@ -26,7 +22,7 @@ public class Utils
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
         Alloy2SMTTranslator translator  = new Alloy2SMTTranslator(alloyModel);
         SMTProgram              program     = translator.execute();
-        SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(program);
+        SMTLIBPrettyPrinter     printer     = new SMTLIBPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
@@ -36,7 +32,7 @@ public class Utils
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
         SMTProgram              program     = translator.execute();
-        SMTLibPrettyPrinter     printer     = new SMTLibPrettyPrinter(program);
+        SMTLIBPrettyPrinter     printer     = new SMTLIBPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }

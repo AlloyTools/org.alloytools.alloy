@@ -12,6 +12,7 @@ import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ExprTranslator
@@ -51,6 +52,10 @@ public class ExprTranslator
         {
             return translateExprList((ExprList) expr, variablesScope);
         }
+        else if(expr instanceof ExprCall)
+        {
+            return translateExprCall((ExprCall) expr, variablesScope);
+        }        
 
         throw new UnsupportedOperationException();
     }
@@ -59,8 +64,8 @@ public class ExprTranslator
     {
         switch (expr.op)
         {
-
-            case NUMBER : return new IntConstant(expr.num); // alloy only  supports integers
+            // alloy only supports integers
+            case NUMBER : return new IntConstant(expr.num); 
             case IDEN   : return translator.atomIden.getConstantExpr();
             default: throw new UnsupportedOperationException();
         }
@@ -83,6 +88,102 @@ public class ExprTranslator
             default     : throw new UnsupportedOperationException();
         }
     }
+    
+    Expression translateExprCall(ExprCall exprCall, Map<String, ConstantExpression> variablesScope)
+    {
+        String funcName = exprCall.fun.label;
+        List<Expression> argExprs = new ArrayList<>();
+        
+        for(Expr e : exprCall.args)
+        {
+            argExprs.add(translateExpr(e, variablesScope));
+        }
+        
+        if(funcName.equals("integer/plus"))
+        {
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, variablesScope);
+        }
+        else if(funcName.equals("integer/minus"))
+        {
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, variablesScope);
+        }
+        else if(funcName.equals("integer/mul"))
+        {
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, variablesScope);
+        } 
+        else if(funcName.equals("integer/div"))
+        {
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, variablesScope);
+        }         
+
+        return null;
+    }    
+    
+    public Expression translateArithmetic(Expression leftExpr, Expression rightExpr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    {
+        if(!translator.arithOps.containsKey(op))
+        {
+            BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", translator.intSort);
+            BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", translator.intSort); 
+            BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", translator.intSort); 
+            Expression memUniv1 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, translator.intUniv);
+            Expression memUniv2 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, translator.intUniv);
+            Expression memUniv3 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, translator.intUniv);            
+            ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
+            ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
+            ConstantExpression bdIntVar3Expr = new ConstantExpression(bdIntVar3);
+                       
+            Expression lhsExpr = new BinaryExpression(memUniv1, BinaryExpression.Op.AND, memUniv2);
+            lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, memUniv3);   
+            Expression finalExpr = null;
+            Expression rhsExpr  = null;
+            ConstantDeclaration arithVarDecl = null;
+            
+            switch(op)
+            {
+                case PLUS:     
+                    arithVarDecl = new ConstantDeclaration("PLUS", translator.setOfTernaryIntSort);
+                    Expression plusExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.PLUS, bdIntVar2Expr);
+                    plusExpr = new BinaryExpression(plusExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, plusExpr); 
+                    rhsExpr = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);
+                    break;
+                case MINUS:
+                    arithVarDecl = new ConstantDeclaration("MINUS", translator.setOfTernaryIntSort);
+                    Expression minusExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MINUS, bdIntVar2Expr);
+                    minusExpr = new BinaryExpression(minusExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, minusExpr); 
+                    rhsExpr = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);             
+                    break;
+                case MULTIPLY:
+                    arithVarDecl = new ConstantDeclaration("MUL", translator.setOfTernaryIntSort);
+                    Expression mulExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MULTIPLY, bdIntVar2Expr);
+                    mulExpr = new BinaryExpression(mulExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, mulExpr); 
+                    rhsExpr = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);
+                  
+                    break;
+                case DIVIDE:
+                    arithVarDecl = new ConstantDeclaration("DIV", translator.setOfTernaryIntSort);
+                    Expression divExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);                    
+                    divExpr = new BinaryExpression(divExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, divExpr); 
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(bdIntVar2Expr, BinaryExpression.Op.EQ, new IntConstant(0))));
+                    rhsExpr = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);                 
+                    break;
+                default:
+                    break;                   
+            }
+            translator.smtProgram.addConstantDeclaration(arithVarDecl);
+            translator.smtProgram.addAssertion(new Assertion(finalExpr));     
+            translator.arithOps.put(op, arithVarDecl.getConstantExpr());
+        }
+        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
+    }    
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, ConstantExpression> variablesScope)
     {

@@ -39,12 +39,24 @@ public class ExprUnaryTranslator
             case CLOSURE    : return translateClosure(exprUnary, variablesScope);
             case RCLOSURE   : return translateReflexiveClosure(exprUnary, variablesScope);
             case NOT        : return translateNot(exprUnary, variablesScope);
+            case CAST2INT   : return translateCAST2INT(exprUnary, variablesScope);
+            case CAST2SIGINT : return translateCAST2SIGINT(exprUnary, variablesScope);
             default:
             {
-                throw new UnsupportedOperationException("Not supported yet");
+                throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
             }
         }
     }
+    
+    private Expression translateCAST2INT(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    {
+        return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+    }
+    
+    private Expression translateCAST2SIGINT(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    {
+        return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+    }    
 
     private Expression translateNot(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
@@ -84,7 +96,7 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {
-                    case "univ": return exprTranslator.translator.atomUniv;
+                    case "univ": return exprTranslator.translator.atomUniv.getConstantExpr();
                     case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
                     case "none": return exprTranslator.translator.atomNone;
                     default:
@@ -221,4 +233,19 @@ public class ExprUnaryTranslator
 
         return or;
     }
+    
+    public MultiArityExpression mkTupleExpr(BoundVariableDeclaration bdVarDecl)
+    {
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getConstantExpr());
+    }
+    
+    public MultiArityExpression mkTupleExpr(BoundVariableDeclaration ... bdVarDecls)
+    {
+        List<Expression> constExprs = new ArrayList<>();
+        for(BoundVariableDeclaration varDecl : bdVarDecls)
+        {
+            constExprs.add(varDecl.getConstantExpr());
+        }
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
+    }    
 }

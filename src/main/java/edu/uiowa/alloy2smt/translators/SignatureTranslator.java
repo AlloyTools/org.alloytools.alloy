@@ -74,7 +74,7 @@ public class SignatureTranslator
             {
                 unionTopSigExprs = new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.UNION, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getConstantExpr());
             }
-            translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniv)));
+            translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniv.getConstantExpr())));
         }
     }
 
@@ -111,7 +111,7 @@ public class SignatureTranslator
         }
     }
 
-    private Sig getAncestorSig(Sig sig)
+    public Sig getAncestorSig(Sig sig)
     {
         List <Sig> ancestorSigs = new ArrayList<>();
         
