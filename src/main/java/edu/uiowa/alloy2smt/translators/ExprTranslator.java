@@ -116,7 +116,7 @@ public class ExprTranslator
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, variablesScope);
         }         
 
-        return null;
+        throw new UnsupportedOperationException(funcName);
     }    
     
     public Expression translateArithmetic(Expression leftExpr, Expression rightExpr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)

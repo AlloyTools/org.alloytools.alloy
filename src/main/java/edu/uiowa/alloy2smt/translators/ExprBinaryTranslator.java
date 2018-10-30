@@ -4,7 +4,6 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.smtAst.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.util.Map;
@@ -70,11 +69,11 @@ public class ExprBinaryTranslator
             case IMPLIES            : return translateImplies(expr, variablesScope);            
             case AND                : return translateAnd(expr, variablesScope);
             case OR                 : return translateOr(expr, variablesScope);
-            case IFF                : throw new UnsupportedOperationException();
-            case NOT_LT             : throw new UnsupportedOperationException();
-            case NOT_LTE            : throw new UnsupportedOperationException();
-            case NOT_GT             : throw new UnsupportedOperationException();
-            case NOT_GTE            : throw new UnsupportedOperationException();
+            case IFF                : return translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope);
+            case NOT_LT             : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
+            case NOT_LTE            : return translateComparison(expr, BinaryExpression.Op.GT, variablesScope);
+            case NOT_GT             : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
+            case NOT_GTE            : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
             case SHL                : throw new UnsupportedOperationException();
             case SHA                : throw new UnsupportedOperationException();
             case SHR                : throw new UnsupportedOperationException();            
