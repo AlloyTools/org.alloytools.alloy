@@ -180,7 +180,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * This stores the currently recognized set of reserved keywords.
      */
     private static final String[]     keywords = new String[] {
-                                                               "abstract", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ"
+                                                               "abstract", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ","include","moreover","inst","sparse"
     };
 
     /**
