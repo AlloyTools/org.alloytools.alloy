@@ -58,6 +58,7 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.alloy4compiler.ast.Bounds;
 
 //===========================================================================//
 
@@ -213,6 +214,7 @@ parser code {:
     ch.put(CompSym.SLASH, "/");
     ch.put(CompSym.SOME2, "some");
     ch.put(CompSym.SOME, "some");
+    ch.put(CompSym.SPARSE, "sparse");    
     ch.put(CompSym.STAR, "*");
     ch.put(CompSym.STRING, "String");
     ch.put(CompSym.SUM2, "sum");
@@ -223,6 +225,9 @@ parser code {:
     ch.put(CompSym.ID, "NAME");
     ch.put(CompSym.NUMBER, "NUMBER");
     ch.put(CompSym.STR, "STRING");
+    ch.put(CompSym.BOUND, "inst");
+    ch.put(CompSym.MORE, "moreover");
+
     TreeSet<String> list = new TreeSet<String>();
     Pos p=Pos.UNKNOWN;
     if (x!=null && x.value instanceof Pos) p=(Pos)(x.value);
@@ -333,12 +338,21 @@ action code {:
     private void c(boolean follow, ExprVar o, ExprVar x, ExprVar n, Expr e, List<CommandScope> s, ExprConstant c) throws Err {
         if (n!=null) nod(n);
         int bitwidth=(-1), maxseq=(-1), overall=(-1), expects=(c==null ? -1 : c.num);
+        //The integers inside the inst-block are grouped and added into the int scope.
+        boolean isSparse=(false);        
         Pos p = o.pos.merge(n!=null ? n.span() : e.span());
         for(int i=s.size()-1; i>=0; i--) {
           Sig j=s.get(i).sig;  int k=s.get(i).startingScope;
           p=p.merge(j.pos);
           if (j.label.equals("univ")) { overall=k; s.remove(i); continue; }
-          if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
+          if (j.label.equals("int"))  {
+              if (bitwidth>=0)
+                  throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once.");
+              bitwidth=k;
+              isSparse = s.get(i).isSparse;
+              s.remove(i);
+              continue;
+          }
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
         }
         if (n!=null)
@@ -423,6 +437,7 @@ terminal Pos IDEN;             //  iden
 terminal Pos IFF;              //  <=> iff
 terminal Pos IMPLIES;          //  => implies
 terminal Pos IN;               //  in
+terminal Pos INCLUDE;          //include
 terminal Pos INT;              //  int
 terminal Pos LBRACE;           //  {
 terminal Pos LBRACKET;         //  [
@@ -434,6 +449,7 @@ terminal Pos LT;               //  <
 terminal Pos LTE;              //  <=     =<
 terminal Pos MINUS;            //  -
 terminal Pos MODULE;           //  module
+terminal Pos MORE;             //  moreover
 terminal Pos NO2;              //  no        // The filter enables us to disambiguate
 terminal Pos NO;               //  no        // The filter enables us to disambiguate
 terminal Pos NONE;             //  none
@@ -468,6 +484,7 @@ terminal Pos SIGINT;           //  Int
 terminal Pos SLASH;            //  /
 terminal Pos SOME2;            //  some      // The filter enables us to disambiguate
 terminal Pos SOME;             //  some      // The filter enables us to disambiguate
+terminal Pos SPARSE;           //  sparse      // The sparse interger values inside the inst-block
 terminal Pos STAR;             //  *
 terminal Pos STRING;           //  String
 terminal Pos SUM2;             //  sum       // The filter enables us to disambiguate
@@ -564,6 +581,13 @@ nonterminal Expr                       UnionDiffExprB;
 nonterminal Expr                       UnopExprA;
 nonterminal Expr                       UnopExprB;
 nonterminal Pos                        Vis;
+nonterminal Bounds                     Bounds;
+nonterminal ExprVar                    ExprBb;
+nonterminal ExprConstant               ExprBbN;
+nonterminal List                       ExprB;
+nonterminal CommandScope               DeclsBb;
+nonterminal CommandScope               TypescopeB;
+nonterminal List<CommandScope>         DeclsB;
 
 //===========================================================================//
 
@@ -601,6 +625,15 @@ Command ::=                 CommandPrefix:o Name:x Name:n   Scope:s  Expects:c {
 Command ::=                 CommandPrefix:o        Name:n   Scope:s  Expects:c {: c(false,o,null,n   ,null,s,c); :};
 Command ::= Command IMPLIES CommandPrefix:o Name:x Name:n   Scope:s  Expects:c {: c(true ,o,x   ,n   ,null,s,c); :};
 Command ::= Command IMPLIES CommandPrefix:o        Name:n   Scope:s  Expects:c {: c(true ,o,null,n   ,null,s,c); :};
+
+Command ::=                 CommandPrefix:o        Name:n   FOR  Name:nb {: 
+    for(Bounds b: parser.alloymodule.getAllBounds()){
+       if(b.label.compareTo(nb.label) == 0){
+           parser.alloymodule.attachBound(b);
+           c(false ,o,null,n   ,null,b.scope,null); 
+        }
+    }
+:};
 
 Expects    ::=                 {: RESULT=null; :};
 Expects    ::= EXPECT NUMBER:a {: RESULT=a;    :};
@@ -682,6 +715,10 @@ Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n                           Super:v
 
 Vis ::=           {: RESULT=null; :};
 Vis ::= PRIVATE:p {: RESULT=p;    :};
+
+Bounds ::= BOUND:o Name:a LBRACE DeclsB:b RBRACE SuperOpt:e {: 
+    parser.alloymodule.addBounds(a.pos.merge(o),a.label,b,e);
+:};
 
 Sig ::= SigQuals:a Names:b SigIn:c LBRACE Decls:d RBRACE:o SuperOpt:e
  {:
@@ -783,6 +820,76 @@ Decls ::=                        {: RESULT=new ArrayList<Decl>();               
 Decls ::= Declb:x                {: RESULT=new ArrayList<Decl>(); RESULT.add(x);  :};
 Decls ::= Declb:x COMMA Decls:y  {: RESULT=y; RESULT.add(0,x);                    :};
 Decls ::=         COMMA Decls:y  {: RESULT=y;                                     :};
+
+ExprBb ::= Name:a                {:RESULT = a;:};
+
+ExprBbN ::= NUMBER:a             {:RESULT =a;:};
+
+
+ExprB ::= ExprBb:a                     {:RESULT = new ArrayList(); RESULT.add(a);:};
+ExprB ::= ExprBbN:a                    {:RESULT = new ArrayLists(); RESULT.add(a);:};
+ExprB ::= ExprB:a PLUS:o ExprBb:b      {:a.add(b); RESULT=a;:};
+ExprB ::= ExprB:a PLUS:o ExprBbN:b     {:a.add(b); RESULT=a;:};
+ExprB ::= ExprB:a ARROW:o ExprBb:b     {:
+    ArrayList tmp = new ArrayList();
+    if(a.size() > 0)
+        tmp.add( a.get(a.size()-1)  );
+    a.add(new Pair<ArrayList<ExprVar>,ExprVar>(tmp,b)); 
+    RESULT = a;
+:};
+ExprB ::= ExprB:a ARROW:o ExprBbN:b    {:
+    ArrayList tmp = new ArrayList();
+    if(a.size() > 0)
+        tmp.add( a.get(a.size()-1)  );
+    a.add(new Pair<ArrayList<ExprVar>,ExprConstant>(tmp,b));
+    RESULT = a;
+:};
+ExprB ::= LPAREN ExprB:a RPAREN        {:RESULT = a; :};
+
+// The following three rules are copied to set the Int,int, and seq size in Inst block
+TypescopeB ::= TypeNumber:a SIGINT:b  {: 
+    Pos p = a.pos.merge(b);
+    if (a.endingScope>a.startingScope) throw new ErrorSyntax(p, "Cannot specify a growing scope for \"Int\"");
+    if (a.isExact) throw new ErrorSyntax(p, "The exactly keyword is redundant here since the integer bitwidth must be exact.");
+    RESULT = new CommandScope(p, new PrimSig("int", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.startingScope, 1);
+:};
+
+// Supporting the sparse integers.
+TypescopeB ::= TypeNumber:a SPARSE:s SIGINT:b  {: 
+    Pos p = a.pos.merge(b);
+    if (a.endingScope>a.startingScope) throw new ErrorSyntax(p, "Cannot specify a growing scope for \"Int\"");
+    if (a.isExact) throw new ErrorSyntax(p, "The exactly keyword is redundant here since the integer bitwidth must be exact.");
+    // If the exact=true, it means that the integers are sparse.
+    RESULT = new CommandScope(p, new PrimSig("int", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.startingScope, 1, true);
+:};
+
+DeclsBb ::= TypescopeB:b               {: RESULT=b; :};
+DeclsBb ::= NUMBER:a                   {: 
+    RESULT = new CommandScope(a.pos, new PrimSig("univ", AttrType.WHERE.make(a.pos)), false, a.num, a.num, 1);
+:};
+DeclsBb ::= TypeNumber:a Name:b {:
+    nod(b);
+    RESULT = new CommandScope(a.pos.merge(b.pos), new PrimSig(b.label, AttrType.WHERE.make(a.pos.merge(b.pos))), a.isExact, a.startingScope, a.endingScope, a.increment);
+:};
+DeclsBb ::= Name:a EQUALS:o ExprB:b    {:  
+    RESULT = new CommandScope(a.pos, new PrimSig(a.label, AttrType.WHERE.make(a.pos)), true, b.size(), b.size(), 1, b, b.size()); 
+:};
+DeclsBb ::= NO:o Name:a                {: 
+    RESULT = new CommandScope(a.pos, new PrimSig(a.label, AttrType.WHERE.make(a.pos)), true, 0, 0, 1, new ArrayList() , 0); 
+:};
+DeclsBb ::= Name:a IN:o ExprB:b        {:
+    RESULT = new CommandScope(a.pos, new PrimSig(a.label, AttrType.WHERE.make(a.pos)), false, b.size(), b.size(), 1, b,0); 
+:};
+DeclsBb ::= Name:a INCLUDE:o ExprB:b   {:
+    RESULT = new CommandScope(a.pos, new PrimSig(a.label, AttrType.WHERE.make(a.pos)), false, b.size(), b.size(), 1, b, b.size()); 
+:};
+DeclsBb ::= Name:a INCLUDE:o ExprB:b MORE:p ExprB:c {:  
+    b.addAll(c);
+    RESULT = new CommandScope(a.pos, new PrimSig(a.label, AttrType.WHERE.make(a.pos)), false, b.size(), b.size(), 1, b,b.size() - c.size()); 
+:};
+
+DeclsB ::= DeclsBb:a                   {: RESULT=new ArrayList<CommandScope>(); RESULT.add(a); :};
+DeclsB ::= DeclsB:a COMMA DeclsBb:b    {: RESULT=a; a.add(b); :};
 
 Let ::= Name:a EQUALS:o Expr:b SuperOrBar:x {:
   nod(a);
