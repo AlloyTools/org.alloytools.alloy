@@ -259,6 +259,11 @@ public final class ExprCall extends Expr {
         }
 
         @Override
+        public Type visit(Bounds x) {
+            return x.type;
+        }
+
+        @Override
         public Type visit(Field x) {
             return x.type;
         }
