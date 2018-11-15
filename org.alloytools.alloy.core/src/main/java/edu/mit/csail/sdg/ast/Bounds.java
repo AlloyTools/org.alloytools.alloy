@@ -19,7 +19,7 @@ public class Bounds extends Expr {
     public final ArrayList<ExprVar> funcs;
     
     public final Expr fact;
-	
+    
     public Bounds(String label){
         super(Pos.UNKNOWN, null);
         this.label = label;
@@ -31,7 +31,7 @@ public class Bounds extends Expr {
     }
 
     public Bounds(Pos pos, String label, List<CommandScope> list){
-    	super( Pos.UNKNOWN,Type.FORMULA);
+        super( Pos.UNKNOWN,Type.FORMULA);
         this.label = label;
         this.scope = new ArrayList<CommandScope>(list);
         funcs = new ArrayList<ExprVar>();
@@ -39,7 +39,7 @@ public class Bounds extends Expr {
     }
 
     public Bounds(Pos pos, String label, List<CommandScope> list, Expr fact){
-    	super( Pos.UNKNOWN,Type.FORMULA);
+        super( Pos.UNKNOWN,Type.FORMULA);
         this.label = label;
         this.scope = new ArrayList<CommandScope>(list);
         funcs = new ArrayList<ExprVar>();
@@ -48,7 +48,7 @@ public class Bounds extends Expr {
 
     
     public Bounds(Pos pos, String label, List<CommandScope> list, List<ExprVar> funcs){
-    	super( Pos.UNKNOWN,Type.FORMULA);
+        super( Pos.UNKNOWN,Type.FORMULA);
         this.label = label;
         this.scope = new ArrayList<CommandScope>(list);
         this.funcs = new ArrayList<ExprVar>(funcs);
@@ -56,44 +56,44 @@ public class Bounds extends Expr {
     }
 
     
-	@Override
-	public void toString(StringBuilder out, int indent) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void toString(StringBuilder out, int indent) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	<T> T accept(VisitReturn<T> visitor) throws Err {
-		return visitor.visit(this);
-	}
+    @Override
+    <T> T accept(VisitReturn<T> visitor) throws Err {
+        return visitor.visit(this);
+    }
 
-	@Override
-	public Expr resolve(Type t, Collection<ErrorWarning> warnings) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Expr resolve(Type t, Collection<ErrorWarning> warnings) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public int getDepth() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public int getDepth() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
-	@Override
-	public String getHTML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public String getHTML() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<? extends Browsable> getSubnodes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<? extends Browsable> getSubnodes() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public String toString() {
-		return "Bounds [label=" + label + ", scope=" + scope + ", funcs="
-				+ funcs + ", fact=" + fact + "]";
-	}
+    @Override
+    public String toString() {
+        return "Bounds [label=" + label + ", scope=" + scope + ", funcs="
+                + funcs + ", fact=" + fact + "]";
+    }
   
 }
