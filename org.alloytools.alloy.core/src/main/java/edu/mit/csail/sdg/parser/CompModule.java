@@ -40,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -57,6 +58,7 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr;
+import edu.mit.csail.sdg.alloy4compiler.ast.Bounds;
 import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Command;
@@ -87,6 +89,7 @@ import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.alloy4compiler.ast.Attr.AttrType;
 
 /**
  * Mutable; this class represents an Alloy module; equals() uses object
@@ -187,7 +190,7 @@ public final class CompModule extends Browsable implements Module {
      * Each param is mapped to its corresponding Sig (or null if we have not
      * resolved it).
      */
-    private final Map<String,Sig> params     = new LinkedHashMap<String,Sig>();				// Must
+    private final Map<String,Sig> params     = new LinkedHashMap<String,Sig>();                // Must
     // be
     // LinkedHashMap
     // since
@@ -202,6 +205,15 @@ public final class CompModule extends Browsable implements Module {
 
     /** Each sig name is mapped to its corresponding SigAST. */
     private final Map<String,Sig>             sigs        = new LinkedHashMap<String,Sig>();
+
+    /** Each bound has a set of atoms. */
+    private final Map<Bounds,Map<String,Sig>> bnd2atoms = new LinkedHashMap<Bounds,Map<String,Sig>>();
+
+    /** Each bound maps to a set of functions that have access to inside atoms. */
+    private final Map<Bounds,Set<String>> bnd2blocks = new LinkedHashMap<Bounds,Set<String>>();
+
+    /** Each Bounds name is mapped to its corresponding BoundsAST. */
+    private final Map<String,Bounds> bounds = new LinkedHashMap<String,Bounds>();   
 
     /**
      * The list of params in this module whose scope shall be deemed "exact"
@@ -657,6 +669,143 @@ public final class CompModule extends Browsable implements Module {
         @Override
         public Expr visit(Field x) {
             return x;
+        }
+
+        /** {@inheritDoc} */
+        @Override public Expr visit(Bounds x) {
+            return x;
+        }
+    }
+
+    //============================================================================================================================//
+
+    /** Mutable; this class represents the atom name replacement in the expression. */
+    static final class BoundFactMangler extends VisitReturn<Expr> {
+
+        final CompModule rootmodule;
+        /**Atoms name and the desired sig name*/
+        final Map<String, String> newNames;
+        final Expr expr;
+        
+        /**The atoms that are got accessed from appended fact*/
+        List<String> accessed = new ArrayList<String>();
+        /**The defined names by let or quantifiers*/
+        Set<String> defined = new TreeSet<String>(); 
+
+        public BoundFactMangler(CompModule rootmodule,Map<String, String> newNames, Expr expr){
+            this.rootmodule = rootmodule;
+            this.newNames = newNames;
+            this.expr = expr;
+        }
+
+        public Expr replace() throws Err{
+            return visitThis(expr);
+        }
+
+        public List<String> getAccessedAtoms(){
+            return accessed;
+        }
+
+        @Override public Expr visit(ExprBadJoin x) throws Err {
+            return x;
+        }
+        
+        @Override
+        public Expr visit(ExprBinary x) throws Err {
+            if (x.op==ExprBinary.Op.JOIN) {
+                return x;
+            }else{
+                Expr left = visitThis(x.left);
+                Expr right = visitThis(x.right);
+
+                return x.op.make(x.pos, x.closingBracket, left, right);
+            }
+        }
+
+        @Override
+        public Expr visit(ExprList x) throws Err {
+            TempList<Expr> temp = new TempList<Expr>(x.args.size());
+            for(int i=0; i<x.args.size(); i++) {
+                temp.add(visitThis(x.args.get(i)));
+            }
+            return ExprList.make(x.pos, x.closingBracket, x.op, temp.makeConst());
+        }
+
+        @Override
+        public Expr visit(ExprCall x) throws Err {
+            //System.out.println("In call->"+x);
+            return x;
+        }
+
+        @Override
+        public Expr visit(ExprConstant x) throws Err {
+            return x;
+        }
+
+        @Override
+        public Expr visit(ExprITE x) throws Err {
+            Expr f = visitThis(x.cond);
+            Expr a = visitThis(x.left);
+            Expr b = visitThis(x.right);
+            return ExprITE.make(x.pos, f, a, b);
+        }
+
+        @Override
+        public Expr visit(ExprLet x) throws Err {
+            Expr right = visitThis(x.expr);
+            
+            ExprVar left = ExprVar.make(x.var.pos, x.var.label, right.type());
+            //Put the defined name in the expression in the defined list.
+            defined.add(left.label);
+            Expr sub = visitThis(x.sub);
+            return ExprLet.make(x.pos, left, right, sub);
+        }
+
+        @Override
+        public Expr visit(ExprQt x) throws Err {
+            //Put the defined name in the expression in the defined list.
+            for(Decl decl:x.decls)
+                for(ExprHasName name:decl.names)
+                    defined.add(name.label);
+            //System.out.println("x.sub is->"+x.sub);
+            Expr sub = visitThis(x.sub);
+            //System.out.println("Here is the expression->"+x.op.make(x.pos, x.closingBracket, x.decls, sub));
+            return x.op.make(x.pos, x.closingBracket, x.decls, sub);
+        }
+
+        @Override
+        public Expr visit(ExprUnary x) throws Err {
+            return x.op.make(x.pos, visitThis(x.sub));
+        }
+
+        @Override
+        public Expr visit(ExprVar x) throws Err {
+            
+            String name = x.label;
+            if(newNames.containsKey(name) && !name.contains("@") && !defined.contains(name)){
+                name = newNames.get(name);
+                accessed.add(x.label);
+            }
+            return ExprVar.make(x.pos, name, x.type());
+
+        }
+
+        @Override
+        public Expr visit(Sig x) throws Err {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Expr visit(Field x) throws Err {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Expr visit(Bounds bounds) throws Err {
+            // TODO Auto-generated method stub
+            return null;
         }
 
     }
@@ -1426,6 +1575,85 @@ public final class CompModule extends Browsable implements Module {
         sigs.put(Sig.GHOST.label, Sig.GHOST);
     }
 
+    /**
+     * It takes a list of names that should accessible from outside of the inst-block. 
+     * It is going to be deprecated after appended facts works. 
+     * @param pos
+     * @param name
+     * @param commandScopes
+     * @param names
+     * @return
+     * @throws Err
+     */
+    @Deprecated 
+    Bounds addBounds(Pos pos, String name, List<CommandScope> commandScopes, List<ExprVar> names)throws Err{
+        Bounds obj = new Bounds(pos, name, new ArrayList<CommandScope>(commandScopes) );
+        Map<String, Sig> atoms = new LinkedHashMap<String, Sig>();
+        for(CommandScope cs: commandScopes){
+
+            for(ExprVar atom: cs.pAtoms){
+
+                Sig sig = new PrimSig(atom.label+"~",(PrimSig)cs.sig,
+                        AttrType.ABSTRACT.make(atom.pos),
+                        SUBSIG.makenull(this.sigs.get(cs.sig.label).pos));
+
+                atoms.put(atom.label, sig);
+                //if the atom is in the appended name list, so it will be added to the sig list and treated as sig
+                for(ExprVar acName:names){
+                    if(acName.label.equals(atom.label)){
+                        this.sigs.put(sig.label, sig);
+                    }
+                }
+
+            }
+        }
+        bnd2atoms.put(obj, atoms);
+        bounds.put(name, obj);
+        return obj;
+    }
+
+    /**
+     *  It takes the bound and the appended fact
+     * @param pos
+     * @param name
+     * @param commandScopes
+     * @param names
+     * @return
+     * @throws Err
+     */
+    Bounds addBounds(Pos pos, String name, List<CommandScope> commandScopes, Expr fact)throws Err{
+        Bounds obj = new Bounds(pos, name, new ArrayList<CommandScope>(commandScopes) ,fact);
+        Map<String, Sig> atoms = new LinkedHashMap<String, Sig>();
+        for(CommandScope cs: commandScopes){
+            List<Sig> parent = new ArrayList<Sig>();
+            parent.add(cs.sig);
+            for(ExprVar atom: cs.pAtoms){
+                Sig sig = new PrimSig("this/"+atom.label+"~",(PrimSig)cs.sig, AttrType.ONE.make(atom.pos),
+                        SUBSIG.makenull(this.sigs.get(cs.sig.label).pos));
+                atoms.put(atom.label, sig);
+            }
+
+        }
+        bnd2atoms.put(obj, atoms);
+        bounds.put(name, obj);
+
+        return obj;
+    }
+
+    public void attachBound(Bounds bounds) throws Err{
+        if(bounds.fact != null){
+            Map<String, String> names = new HashMap<String, String>();
+            for(String atom:bnd2atoms.get(bounds).keySet()){
+                names.put(atom, atom+"~");
+            }
+            BoundFactMangler bfm = new  BoundFactMangler(this, names, bounds.fact);
+            this.addFact(bounds.fact.pos, "fact~"+bounds.label, bfm.replace());
+            for(String nm:bfm.getAccessedAtoms()){
+                this.sigs.put(nm+"~", bnd2atoms.get(bounds).get(nm));
+            }
+        }
+    }
+
     Sig addSig(String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
         Sig obj;
         Pos pos = Pos.UNKNOWN.merge(WHERE.find(attributes));
@@ -1536,6 +1764,36 @@ public final class CompModule extends Browsable implements Module {
         return new SafeList<Sig>(sigs.values());
         // SafeList<Sig> x = new SafeList<Sig>(sigs.values());
         // return x.dup();
+    }
+
+
+    public SafeList<Bounds> getAllBounds() {
+        SafeList<Bounds> x = new SafeList<Bounds>(bounds.values());
+        return x.dup();
+    }
+
+    public SafeList<Sig> getBoundsAtoms(Bounds bound) {
+        SafeList<Sig> x;
+        Bounds b = this.bounds.get(bound);
+        if(b != null) {
+            Map<String, Sig> m = bnd2atoms.get(this.bounds.get(bound));
+            if(m!=null){
+                x = new SafeList<Sig>(m.values());
+            } else{
+                x = new SafeList<Sig>();
+            }
+        }else{
+            x = new SafeList<Sig>();
+        }
+        return x.dup();
+    }
+
+    public SafeList<Sig> getAllAtoms(){
+        SafeList<Sig> x = new SafeList<Sig>();
+        for(Bounds b: getAllBounds()){
+            x.addAll(bnd2atoms.get(b).values());
+        }
+        return x;
     }
 
     // ============================================================================================================================//
@@ -1820,53 +2078,38 @@ public final class CompModule extends Browsable implements Module {
 
     /** Add a COMMAND declaration. */
 
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
-        if (followUp && !Version.experimental)
-            throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
-        if (label != null)
-            pos = Pos.UNKNOWN.merge(pos).merge(label.pos);
-        status = 3;
-        if (name.label.length() == 0)
-            throw new ErrorSyntax(pos, "Predicate/assertion name cannot be empty.");
-        if (name.label.indexOf('@') >= 0)
-            throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
-        String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
-        Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
-        if (parent != null)
-            commands.set(commands.size() - 1, newcommand);
-        else
-            commands.add(newcommand);
+    /** Add a COMMAND declaration. */
+    void addCommand(boolean followUp, Pos p, String n, boolean c, int o, int b, int seq, int exp, List<CommandScope> s, ExprVar label, boolean isSprse) throws Err {
+        if (followUp && !Version.experimental) throw new ErrorSyntax(p, "Syntax error encountering => symbol.");
+        if (label!=null) p=Pos.UNKNOWN.merge(p).merge(label.pos);
+        status=3;
+        if (n.length()==0) throw new ErrorSyntax(p, "Predicate/assertion name cannot be empty.");
+        if (n.indexOf('@')>=0) throw new ErrorSyntax(p, "Predicate/assertion name cannot contain \'@\'");
+        String labelName = (label==null || label.label.length()==0) ? n : label.label;
+        Command parent = followUp ? commands.get(commands.size()-1) : null;
+        Command newcommand = new Command(p, labelName, c, o, b, seq, exp, s, null, ExprVar.make(null, n), parent,isSprse);
+        if (parent!=null) commands.set(commands.size()-1, newcommand); else commands.add(newcommand);
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
-
-        if (followUp && !Version.experimental)
-            throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
-
-        if (label != null)
-            pos = Pos.UNKNOWN.merge(pos).merge(label.pos);
-
-        status = 3;
+    void addCommand(boolean followUp, Pos p, Expr e, boolean c, int o, int b, int seq, int exp, List<CommandScope> s, ExprVar label, boolean isSparse) throws Err {
+        if (followUp && !Version.experimental) throw new ErrorSyntax(p, "Syntax error encountering => symbol.");
+        if (label!=null) p=Pos.UNKNOWN.merge(p).merge(label.pos);
+        status=3;
         String n;
-        if (check)
-            n = addAssertion(pos, "check$" + (1 + commands.size()), e);
-        else
-            addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(), null, e);
-        String labelName = (label == null || label.label.length() == 0) ? n : label.label;
-        Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, expects, scopes, null, ExprVar.make(null, n), parent);
-        if (parent != null)
-            commands.set(commands.size() - 1, newcommand);
-        else
-            commands.add(newcommand);
+        if (c) n=addAssertion(p,"check$"+(1+commands.size()),e);
+        else addFunc(e.span().merge(p), Pos.UNKNOWN, n="run$"+(1+commands.size()), null, new ArrayList<Decl>(), null, e);
+        String labelName = (label==null || label.label.length()==0) ? n : label.label;
+        Command parent = followUp ? commands.get(commands.size()-1) : null;
+        Command newcommand = new Command(e.span().merge(p), labelName, c, o, b, seq, exp, s, null, ExprVar.make(null, n), parent, isSparse);
+        if (parent!=null) commands.set(commands.size()-1, newcommand); else commands.add(newcommand);
     }
+
 
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, 0, null, null, ExprVar.make(null, "$$Default"), null));
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, 0, null, null, ExprVar.make(null, "$$Default"), null, false));
         }
     }
 
@@ -1910,15 +2153,30 @@ public final class CompModule extends Browsable implements Module {
         TempList<CommandScope> sc = new TempList<CommandScope>(cmd.scope.size());
         for (CommandScope et : cmd.scope) {
             Sig s = getRawSIG(et.sig.pos, et.sig.label);
-            if (s == null)
-                throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
-            sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
+            if ((s==null) && !(isField(et.sig.label) && et.isPartial) ) 
+                throw new ErrorSyntax(et.sig.pos, "The sig \""+et.sig.label+"\" cannot be found.");
+            if(et.isPartial)
+                if(isField(et.sig.label)){
+                    sc.add( new CommandScope(null, new PrimSig(et.sig.label), et.isExact, et.startingScope,
+                            et.endingScope, et.increment, new ArrayList<ExprVar>() ,
+                            et.pAtomsLowerLastIndex, et.pFields,
+                            et.isPartial, et.hasLower, et. hasUpper,
+                            et. isSparse));
+                }else{
+                    sc.add( new CommandScope(null, s, et.isExact, et.startingScope,
+                            et.endingScope, et.increment, et.pAtoms ,
+                            et.pAtomsLowerLastIndex, new ArrayList<List<Expr>>(),
+                            et.isPartial, et.hasLower, et. hasUpper,
+                            et. isSparse));
+                }
+            else            
+                sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
         }
 
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent, cmd.isSparse);
 
     }
 
