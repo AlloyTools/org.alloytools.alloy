@@ -354,9 +354,21 @@ public final class A4SolutionReader {
         final int maxseq = Integer.parseInt(inst.getAttribute("maxseq"));
         final int max = Util.max(bitwidth), min = Util.min(bitwidth);
         if (bitwidth >= 1 && bitwidth <= 30)
-            for (int i = min; i <= max; i++) {
-                atoms.add(Integer.toString(i));
+            for(int i=min; i<=max; i++) { 
+                atoms.add(Integer.toString(i)); 
             }
+        // Inserting the exceeded integers into the atoms list
+        for (XMLNode i : inst){
+            if (i.getAttribute("label").equals("Int")) {
+                for (XMLNode y: i) {
+                    try{
+                        atoms.add(String.valueOf(Integer.valueOf(y.getAttribute("value"))));
+                    }catch (NumberFormatException e) {
+                        throw new ErrorSyntax("The XML file must containt integer type instead of:" + y.getAttribute("value"));
+                    }
+                }
+            }
+        }
         for (XMLNode x : inst) {
             String id = x.getAttribute("ID");
             if (id.length() > 0 && (x.is("field") || x.is("skolem") || x.is("sig"))) {
