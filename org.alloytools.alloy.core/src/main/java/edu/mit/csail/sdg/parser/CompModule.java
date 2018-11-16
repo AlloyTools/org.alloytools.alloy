@@ -58,7 +58,7 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr;
-import edu.mit.csail.sdg.alloy4compiler.ast.Bounds;
+import edu.mit.csail.sdg.ast.Bounds;
 import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Command;

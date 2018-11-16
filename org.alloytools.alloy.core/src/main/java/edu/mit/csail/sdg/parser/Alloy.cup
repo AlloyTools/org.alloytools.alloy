@@ -58,7 +58,7 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.alloy4compiler.ast.Bounds;
+import edu.mit.csail.sdg.ast.Bounds;
 
 //===========================================================================//
 
