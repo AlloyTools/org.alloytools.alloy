@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 
 import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.util.table.Table;
@@ -185,6 +187,9 @@ public final class A4Solution {
     /** The Kodkod Solver object. */
     private final Solver            solver;
 
+    /** The default bitwidth to set the kodkod bidwidth in case of having out-of-bound numbers */
+    final int exceedBitWidth = 31;
+
     // ====== mutable fields (immutable after solve() has been called)
     // ===================================//
 
@@ -262,6 +267,11 @@ public final class A4Solution {
      */
     private Map<Variable,Pair<Type,Pos>>      decl2type;
 
+    /** The flag would be on if the integers in the inst block exceed the bitwidth range*/
+    boolean exceededInt = false;
+    
+    List<Integer> exceededInts = new ArrayList<Integer>();
+
     // ===================================================================================================//
 
     /**
@@ -313,24 +323,31 @@ public final class A4Solution {
         TupleSet stringBounds = factory.noneOf(1);
         final TupleSet next = factory.noneOf(2);
         int min = min(), max = max();
-        if (max >= min)
-            for (int i = min; i <= max; i++) { // Safe since we know 1 <=
-                                              // bitwidth <= 30
-                Tuple ii = factory.tuple("" + i);
+        if (max >= min){
+            ConcurrentSkipListSet<Integer> ints = new ConcurrentSkipListSet<Integer>();
+            for(String a: atoms){
+                try{
+                    ints.add(Integer.valueOf(a));
+                }catch(NumberFormatException e){}
+            }
+            if(ints.last() > max() || ints.first() < min){
+                exceededInt = true;
+                exceededInts.addAll(ints.subSet(ints.first(), min));
+                exceededInts.addAll(ints.subSet(max+1, ints.last()+1 ));
+            }
+
+            for(Integer i: ints) { // Safe since we know 1 <= bitwidth <= 30
+                Tuple ii = factory.tuple(""+i);
                 TupleSet is = factory.range(ii, ii);
                 bounds.boundExactly(i, is);
                 sigintBounds.add(ii);
-                if (i >= 0 && i < maxseq)
-                    seqidxBounds.add(ii);
-                if (i + 1 <= max)
-                    next.add(factory.tuple("" + i, "" + (i + 1)));
-                if (i == min)
-                    bounds.boundExactly(KK_MIN, is);
-                if (i == max)
-                    bounds.boundExactly(KK_MAX, is);
-                if (i == 0)
-                    bounds.boundExactly(KK_ZERO, is);
+                if (i>=0 && i<maxseq) seqidxBounds.add(ii);
+                if (i < ints.last()) next.add(factory.tuple(""+i, ""+(ints.ceiling(i+1))));
+                if (i==ints.first()) bounds.boundExactly(KK_MIN,  is);
+                if (i==ints.last()) bounds.boundExactly(KK_MAX,  is);
+                if (i==0)   bounds.boundExactly(KK_ZERO, is);
             }
+        }
         this.sigintBounds = sigintBounds.unmodifiableView();
         this.seqidxBounds = seqidxBounds.unmodifiableView();
         bounds.boundExactly(KK_NEXT, next);
@@ -398,7 +415,11 @@ public final class A4Solution {
         }
         solver.options().setSymmetryBreaking(sym);
         solver.options().setSkolemDepth(opt.skolemDepth);
-        solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
+        if(exceededInt){
+            solver.options().setBitwidth(exceedBitWidth);
+        }else{
+            solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
+        }
         solver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
     }
 
@@ -424,6 +445,8 @@ public final class A4Solution {
         sigintBounds = old.sigintBounds;
         seqidxBounds = old.seqidxBounds;
         stringBounds = old.stringBounds;
+        exceededInts = old.exceededInts;
+        exceededInt = old.exceededInt;
         solver = old.solver;
         bounds = old.bounds;
         formulas = old.formulas;
@@ -539,6 +562,13 @@ public final class A4Solution {
             return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null);
     }
 
+    public List<Integer> getExceededInts(){
+        return this.exceededInts;
+    }
+
+    public boolean isExceededInt(){
+        return this.exceededInt;
+    }
     // ===================================================================================================//
 
     /** Returns the Kodkod TupleFactory object. */
@@ -1288,7 +1318,7 @@ public final class A4Solution {
             if (frame.atom2sig.containsKey(t.atom(0)))
                 continue; // This means one of the subsig has already claimed
                          // this atom.
-            String x = signame + "$" + i;
+            String x = t.atom(0).toString();
             i++;
             frame.atom2sig.put(t.atom(0), s);
             frame.atom2name.put(t.atom(0), x);
@@ -1317,6 +1347,11 @@ public final class A4Solution {
             Instance inst = new Instance(bounds.universe());
             for (int max = max(), i = min(); i <= max; i++) {
                 Tuple it = factory.tuple("" + i);
+                inst.add(i, factory.range(it, it));
+            }
+            // Include the extra integers into the visulizer
+            for(Integer i: exceededInts){
+                Tuple it = factory.tuple(String.valueOf(i));
                 inst.add(i, factory.range(it, it));
             }
             for (Relation r : bounds.relations())
