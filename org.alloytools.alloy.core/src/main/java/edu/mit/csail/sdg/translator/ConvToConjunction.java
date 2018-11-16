@@ -17,6 +17,7 @@ package edu.mit.csail.sdg.translator;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.ast.Bounds;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
@@ -119,6 +120,11 @@ final class ConvToConjunction extends VisitReturn<Expr> {
     /** {@inheritDoc} */
     @Override
     public Expr visit(Sig x) {
+        return x;
+    }
+
+    /** {@inheritDoc} */
+    @Override public Expr visit(Bounds x) {
         return x;
     }
 
