@@ -74,18 +74,22 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
                 // index==MIN_VALUE)
                 return "seq/Int";
             }
-            if (index == Integer.MAX_VALUE || !numberAtoms)
+            if (index==Integer.MAX_VALUE-1)
+                return this.originalName;
+            else if (index==Integer.MAX_VALUE || !numberAtoms) 
                 return theme.label.get(type);
-            else
+            else 
                 return theme.label.get(type) + index;
         }
         if (type.getName().equals("Int"))
             return "" + index; // Special override to display integers better
         if (type.getName().equals("seq/Int"))
             return "" + index; // Special override to display integers better
-        if (index == Integer.MAX_VALUE || !numberAtoms)
+        if (index==Integer.MAX_VALUE-1 )
+            return this.originalName;
+        else if (index==Integer.MAX_VALUE || !numberAtoms) 
             return type.getName();
-        else
+        else  
             return type.getName() + index;
     }
 
