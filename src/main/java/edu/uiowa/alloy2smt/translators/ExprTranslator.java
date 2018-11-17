@@ -11,7 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,22 +84,40 @@ public class ExprTranslator
         switch (exprList.op)
         {
             case AND    : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
-            case OR    : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
+            case OR     : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
             default     : throw new UnsupportedOperationException();
         }
     }
     
     Expression translateExprCall(ExprCall exprCall, Map<String, ConstantExpression> variablesScope)
     {
-        String funcName = exprCall.fun.label;
-        List<Expression> argExprs = new ArrayList<>();
+        String              funcName = exprCall.fun.label;
+        List<Expression>    argExprs = new ArrayList<>();
         
         for(Expr e : exprCall.args)
         {
             argExprs.add(translateExpr(e, variablesScope));
         }
         
-        if(funcName.equals("integer/plus"))
+        if(this.translator.funcNamesMap.containsKey(funcName))
+        {
+            List<Expression>    argSingletonExprs = new ArrayList<>();
+            for(Expression arg : argExprs)
+            {
+                
+                if(arg instanceof ConstantExpression &&
+                    ((ConstantExpression)arg).getDeclaration() instanceof BoundVariableDeclaration)
+                {
+                    argSingletonExprs.add(getSingleton((ConstantExpression)arg));
+                }
+                else
+                {
+                    argSingletonExprs.add(arg);
+                }
+            }
+            return new FunctionCallExpression(this.translator.funcNamesMap.get(funcName), argSingletonExprs);
+        }
+        else if(funcName.equals("integer/plus"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, variablesScope);
         }
@@ -114,8 +132,7 @@ public class ExprTranslator
         else if(funcName.equals("integer/div"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, variablesScope);
-        }         
-
+        }
         throw new UnsupportedOperationException(funcName);
     }    
     
@@ -205,7 +222,7 @@ public class ExprTranslator
 
     Expression translateExprQt(ExprQt exprQt, Map<String, ConstantExpression> variablesScope)
     {
-        Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables = new HashMap<>();
+        LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables = new LinkedHashMap<>();
         for (Decl decl: exprQt.decls)
         {
             FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
@@ -223,11 +240,194 @@ public class ExprTranslator
         {
             case ALL    : return  translateAllQuantifier(boundVariables, expression);
             case SOME   : return  translateSomeQuantifier(boundVariables, expression);
+            case NO     : return  translateNoQuantifier(boundVariables, expression);
+            case LONE   : {
+                LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables = new LinkedHashMap<>();
+                
+                for (Decl decl: exprQt.decls)
+                {
+                    FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
+                    for (ExprHasName name: decl.names)
+                    {
+                        BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
+                        variablesScope.put(name.label, boundVariable.getConstantExpr());
+                        sndBoundVariables.put(boundVariable, functionDeclaration);
+                    }
+                }   
+                Expression expression2 = translateExpr(exprQt.sub, variablesScope);
+                return  translateLoneQuantifier(boundVariables, sndBoundVariables, expression, expression2);            
+            }
+            case ONE    : {
+                LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables = new LinkedHashMap<>();
+                
+                for (Decl decl: exprQt.decls)
+                {
+                    FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
+                    for (ExprHasName name: decl.names)
+                    {
+                        BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
+                        variablesScope.put(name.label, boundVariable.getConstantExpr());
+                        sndBoundVariables.put(boundVariable, functionDeclaration);
+                    }
+                }   
+                Expression expression2 = translateExpr(exprQt.sub, variablesScope);                
+                return  translateOneQuantifier(boundVariables, sndBoundVariables, expression, expression2);
+            }
             default: throw new UnsupportedOperationException();
         }
     }
+    
+    // (all e: R|not P) or (some e : R | P and all e2 : R | not(e = e2) => not P)
+    private Expression translateLoneQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Map<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables, Expression expression, Expression expression2)
+    {
+        Expression fstPartBodyExpr = expression;
+        Expression sndPartBodyExpr = expression;
+        Expression thdPartBodyExpr = expression2;
 
-    private QuantifiedExpression translateAllQuantifier(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+
+        BinaryExpression forallMember = getMemberExpression(boundVariables, 0);
+
+        for(int i = 1; i < boundVariables.size(); ++i)
+        {
+            forallMember = new BinaryExpression(forallMember, BinaryExpression.Op.AND, getMemberExpression(boundVariables, i));
+        }
+        
+        fstPartBodyExpr = new BinaryExpression(forallMember, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, fstPartBodyExpr));                
+        
+        // (all e: R|not P) 
+        QuantifiedExpression fstPartQtExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), fstPartBodyExpr);                
+        
+        // some e : R | P
+        sndPartBodyExpr = new BinaryExpression(forallMember, BinaryExpression.Op.AND, sndPartBodyExpr);
+        
+        // Membership constraints of the universal constraints all e2 : R | not(e1 = e2) => not P)              
+        // all e2 : R
+        BinaryExpression sndForallMemberExpr = getMemberExpression(sndBoundVariables, 0);
+        
+        for(int i = 1; i < sndBoundVariables.size(); ++i)
+        {
+            sndForallMemberExpr = new BinaryExpression(sndForallMemberExpr, BinaryExpression.Op.AND, getMemberExpression(sndBoundVariables, i));
+        }        
+        
+        // not(e1 = e2)
+        List<BoundVariableDeclaration> fstBdVarDecls = new ArrayList<>();
+        List<BoundVariableDeclaration> sndBdVarDecls = new ArrayList<>();        
+        
+        for(BoundVariableDeclaration bdVarDecl : boundVariables.keySet())
+        {
+            fstBdVarDecls.add(bdVarDecl);
+        }               
+        for(BoundVariableDeclaration bdVarDecl : sndBoundVariables.keySet())
+        {
+            sndBdVarDecls.add(bdVarDecl);
+        }        
+        
+        Expression sndPartDistExpr = TranslatorUtils.mkDistinctExpr(fstBdVarDecls.get(0).getConstantExpr(), sndBdVarDecls.get(0).getConstantExpr());
+        
+        for(int i = 1; i < fstBdVarDecls.size(); ++i)
+        {            
+            sndPartDistExpr = new BinaryExpression(sndPartDistExpr, BinaryExpression.Op.AND, 
+                                                    TranslatorUtils.mkDistinctExpr(fstBdVarDecls.get(i).getConstantExpr(), sndBdVarDecls.get(i).getConstantExpr()));
+        }
+        
+        // all e2 : R | not(e1 = e2) => not P
+        Expression lastPartExpr = new BinaryExpression(sndForallMemberExpr, BinaryExpression.Op.IMPLIES, 
+                                                        new BinaryExpression(sndPartDistExpr, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, thdPartBodyExpr)));                
+        QuantifiedExpression sndPartQtForallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(sndBoundVariables.keySet()), lastPartExpr);                
+        
+        sndPartBodyExpr = new BinaryExpression(sndPartBodyExpr, BinaryExpression.Op.AND, sndPartQtForallExpr);
+        
+        // (some e : R | P and all e2 : R | not(e = e2) => not P)
+        QuantifiedExpression sndPartQtExistsExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new ArrayList<>(boundVariables.keySet()), sndPartBodyExpr);                
+        
+        return new BinaryExpression(fstPartQtExpr, BinaryExpression.Op.OR, sndPartQtExistsExpr);      
+    }   
+    
+    private Expression translateOneQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Map<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables, Expression expression, Expression expression2)
+    {
+        Expression sndPartBodyExpr = expression;
+        Expression thdPartBodyExpr = expression2;
+
+
+        BinaryExpression existsMember = getMemberExpression(boundVariables, 0);
+
+        for(int i = 1; i < boundVariables.size(); ++i)
+        {
+            existsMember = new BinaryExpression(existsMember, BinaryExpression.Op.AND, getMemberExpression(boundVariables, i));
+        }
+        
+        // some e : R | P
+        sndPartBodyExpr = new BinaryExpression(existsMember, BinaryExpression.Op.AND, sndPartBodyExpr);
+        
+        // Membership constraints of the universal constraints all e2 : R | not(e = e2) => not P)              
+        // all e2 : R
+        BinaryExpression sndForallMemberExpr = getMemberExpression(sndBoundVariables, 0);
+        
+        for(int i = 1; i < sndBoundVariables.size(); ++i)
+        {
+            sndForallMemberExpr = new BinaryExpression(sndForallMemberExpr, BinaryExpression.Op.AND, getMemberExpression(sndBoundVariables, i));
+        }        
+        
+        // not(e1 = e2)
+        List<BoundVariableDeclaration> fstBdVarDecls = new ArrayList<>();
+        List<BoundVariableDeclaration> sndBdVarDecls = new ArrayList<>();        
+        
+        for(BoundVariableDeclaration bdVarDecl : boundVariables.keySet())
+        {
+            fstBdVarDecls.add(bdVarDecl);
+        }               
+        for(BoundVariableDeclaration bdVarDecl : sndBoundVariables.keySet())
+        {
+            sndBdVarDecls.add(bdVarDecl);
+        }        
+        
+        Expression sndPartDistExpr = TranslatorUtils.mkDistinctExpr(fstBdVarDecls.get(0).getConstantExpr(), sndBdVarDecls.get(0).getConstantExpr());
+        
+        for(int i = 1; i < fstBdVarDecls.size(); ++i)
+        {            
+            sndPartDistExpr = new BinaryExpression(sndPartDistExpr, BinaryExpression.Op.AND, 
+                                                    TranslatorUtils.mkDistinctExpr(fstBdVarDecls.get(i).getConstantExpr(), sndBdVarDecls.get(i).getConstantExpr()));
+        }
+        
+        // all e2 : R | not(e1 = e2) => not P
+        Expression lastPartExpr = new BinaryExpression(sndForallMemberExpr, BinaryExpression.Op.IMPLIES, 
+                                                        new BinaryExpression(sndPartDistExpr, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, thdPartBodyExpr)));                
+        QuantifiedExpression sndPartQtForallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(sndBoundVariables.keySet()), lastPartExpr);                
+        
+        sndPartBodyExpr = new BinaryExpression(sndPartBodyExpr, BinaryExpression.Op.AND, sndPartQtForallExpr);
+        
+        // (some e : R | P and all e2 : R | not(e = e2) => not P)        
+        return new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new ArrayList<>(boundVariables.keySet()), sndPartBodyExpr);
+    }       
+    
+    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+    {
+        if(boundVariables.size() == 1)
+        {
+            BinaryExpression member = getMemberExpression(boundVariables, 0);
+            expression              = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, expression);
+        }
+        else if (boundVariables.size() > 1)
+        {
+            Expression member1 = getMemberExpression(boundVariables, 0);
+            Expression member2 = getMemberExpression(boundVariables, 1);
+
+            BinaryExpression and = new BinaryExpression(member1, BinaryExpression.Op.AND, member2);
+
+            for(int i = 2; i < boundVariables.size(); i++)
+            {
+                Expression member   = getMemberExpression(boundVariables, i);
+                and                 = new BinaryExpression(and, BinaryExpression.Op.AND, member);
+            }
+
+            expression              = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, expression);
+        }
+
+        QuantifiedExpression quantifiedExpression = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), new UnaryExpression(UnaryExpression.Op.NOT, expression));
+        return quantifiedExpression;        
+    }
+
+    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
     {
         if(boundVariables.size() == 1)
         {
@@ -254,7 +454,7 @@ public class ExprTranslator
         return quantifiedExpression;
     }
 
-    private QuantifiedExpression translateSomeQuantifier(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
     {
         if(boundVariables.size() == 1)
         {
@@ -302,6 +502,11 @@ public class ExprTranslator
                     Sig sig = (Sig) ((ExprUnary) expr).sub;
                     return translator.signaturesMap.get(sig);
                 }
+//                else if(((ExprUnary) expr).sub instanceof Sig.Field)
+//                {
+//                    Sig.Field field = (Sig.Field) ((ExprUnary) expr).sub;
+//                    return translator.fieldsMap.get(field);
+//                }
                 else
                 {
                     throw new UnsupportedOperationException();

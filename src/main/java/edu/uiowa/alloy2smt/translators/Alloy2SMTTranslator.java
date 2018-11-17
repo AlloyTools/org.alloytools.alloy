@@ -12,11 +12,9 @@ import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.uiowa.alloy2smt.Alloy2SMTLogger;
-import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +48,8 @@ public class Alloy2SMTTranslator
     final UnaryExpression           intNone;
     final FunctionDeclaration       intIden;    
 
-    
+    Map<String, String>                             funcNamesMap;
+    Map<String, FunctionDefinition>                 funcDefsMap;    
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
     Map<BinaryExpression.Op, ConstantExpression>    arithOps;
     Map<Sig,FunctionDeclaration>        signaturesMap   = new HashMap<>();
@@ -86,13 +85,17 @@ public class Alloy2SMTTranslator
         this.comparisonOps          = new HashMap<>();  
         this.arithOps               = new HashMap<>();
         this.signaturesMap.put(Sig.UNIV, this.atomUnivExpr);
+        this.funcNamesMap           = new HashMap<>();
+        this.funcDefsMap            = new HashMap<>();
     }
 
     public SMTProgram execute()
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
+        translateFuncsAndPreds();
         translateFacts();
+        translateAssertions();
         translateSpecialAssertions();
         return this.smtProgram;
     }
@@ -105,6 +108,7 @@ public class Alloy2SMTTranslator
 
     private void translateSpecialAssertions()
     {
+        // Axiom for identity relation
         BoundVariableDeclaration    a       = new BoundVariableDeclaration("_x1", atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
         BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUnivExpr.getConstantExpr());
@@ -138,11 +142,110 @@ public class Alloy2SMTTranslator
             translateFact(pair.a, pair.b);
         }
     }
+    
+    private void translateAssertions()
+    {
+        for (Pair<String, Expr> pair :this.alloyModel.getAllAssertions())
+        {
+            translateAssertion(pair.a, pair.b);
+        }
+    }    
+    
+    private void translateFuncsAndPreds()
+    {
+        for (Func f :this.alloyModel.getAllFunc() )
+        {
+            if(f.label.equalsIgnoreCase("this/$$Default"))
+            {
+                continue;
+            }
+            translateFunc(f);
+        }
+    }    
+    
+    private void translateFunc(Func f)
+    {        
+        Sort    returnSort  = new BoolSort();        
+        String  funcName    = TranslatorUtils.sanitizeName(f.label);                
+        List<BoundVariableDeclaration>      bdVars          = new ArrayList<>();
+        Map<String, ConstantExpression>     variablesScope  = new HashMap<>();
+                
+        // Save function name
+        this.funcNamesMap.put(f.label, funcName);        
+        // Declare input variables
+        for(int i = 0; i < f.decls.size(); ++i)
+        {
+            String  varName = f.params().get(i).label;
+            Sort    varSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr, 0));
+            bdVars.add(new BoundVariableDeclaration(varName, varSort));
+            variablesScope.put(varName, new ConstantExpression(new ConstantDeclaration(varName, varSort)));
+        }
+        // If the function is not predicate, we change its returned type.
+        if(!f.isPred)
+        {
+            returnSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.returnDecl, 0));
+        }
+        
+        FunctionDefinition funcDef = new FunctionDefinition(funcName, bdVars, returnSort, 
+                                                            this.exprTranslator.translateExpr(f.getBody(), variablesScope));
+        this.funcDefsMap.put(funcName, funcDef);
+        this.smtProgram.addFcnDef(funcDef);
+    }    
+    
+    private int getArityofExpr(Expr expr, int arity)
+    {
+        if(expr instanceof ExprUnary)
+        {
+            if(((ExprUnary) expr).op == ExprUnary.Op.NOOP)
+            {
+                if(((ExprUnary) expr).sub instanceof Sig)
+                {
+                    if(((Sig) ((ExprUnary) expr).sub ).builtin)
+                    {
+                        switch (((Sig) ((ExprUnary) expr).sub ).label)
+                        {
+                            case "univ": return 1;
+                            case "iden": return 2;
+                            case "none": return 1;
+                            default:
+                                throw new UnsupportedOperationException();
+                        }
+                    }
+                    else
+                    {
+                        return 1;
+                    }                    
+                }
+            }
+            else if(((ExprUnary) expr).op == ExprUnary.Op.SOME || ((ExprUnary) expr).op == ExprUnary.Op.ONE
+                    || ((ExprUnary) expr).op == ExprUnary.Op.SETOF)
+            {             
+                return 1;
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        } 
+        else if(expr instanceof ExprBinary)
+        {
+            switch(((ExprBinary)expr).op)
+            {
+                case ARROW : return getArityofExpr(((ExprBinary)expr).left, arity) + getArityofExpr(((ExprBinary)expr).right, arity);
+                default:throw new UnsupportedOperationException();  
+            }
+        }
+        throw new UnsupportedOperationException();        
+    }
 
     private void translateFact(String factName, Expr factExpr)
     {
-        Map<String, ConstantExpression> variablesScope = new HashMap<>();
-        Expression expression = this.exprTranslator.translateExpr(factExpr, variablesScope);
-        this.smtProgram.addAssertion(new Assertion(factName, expression));
+        this.smtProgram.addAssertion(new Assertion(factName, this.exprTranslator.translateExpr(factExpr, new HashMap<>())));
     }
+    
+    private void translateAssertion(String assertionName, Expr assertionExpr)
+    {
+        Expression expression = this.exprTranslator.translateExpr(assertionExpr, new HashMap<>());
+        this.smtProgram.addAssertion(new Assertion(assertionName, new UnaryExpression(UnaryExpression.Op.NOT, expression)));
+    }    
 }

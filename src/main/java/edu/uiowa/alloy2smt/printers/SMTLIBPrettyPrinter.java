@@ -123,7 +123,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     public void visit(UnaryExpression unaryExpression)
     {
         this.stringBuilder.append("(" + unaryExpression.getOP() + " ");
-        this.visit(unaryExpression.getExpression());
+        this.visit(unaryExpression.getExpression());       
         this.stringBuilder.append(")");
     }
 

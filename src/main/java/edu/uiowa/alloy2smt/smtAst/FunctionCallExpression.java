@@ -21,8 +21,14 @@ public class FunctionCallExpression extends Expression
     public FunctionCallExpression(String functionName, Expression ... arguments)
     {
         this.functionName   = functionName;
-        this.arguments    = Arrays.asList(arguments);
+        this.arguments      = Arrays.asList(arguments);
     }
+    
+    public FunctionCallExpression(String functionName, List<Expression> arguments)
+    {
+        this.functionName   = functionName;
+        this.arguments      = arguments;
+    }    
 
     public String getFunctionName()
     {

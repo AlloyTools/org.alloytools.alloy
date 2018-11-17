@@ -15,10 +15,10 @@ import java.util.List;
 
 public class FunctionDefinition extends SMTAst
 {
-    public final String funcName;
-    public final List<BoundVariableDeclaration>   inputVarDecls;
-    public final Sort         outputSort;
-    public final Expression   expression;
+    public final String                             funcName;
+    public final Sort                               outputSort;
+    public final Expression                         expression;
+    public final List<BoundVariableDeclaration>     inputVarDecls;    
     
     public FunctionDefinition(String funcName, List<BoundVariableDeclaration> inputSort, Sort outputSort, Expression expression) 
     {

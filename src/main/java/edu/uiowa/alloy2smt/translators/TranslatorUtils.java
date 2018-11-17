@@ -11,7 +11,6 @@ package edu.uiowa.alloy2smt.translators;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -118,4 +117,47 @@ public class TranslatorUtils
         atomIndex = 0;
         setIndex  = 0;
     }
+    
+    public static Sort getSetSortOfAtomWithArity(int n)
+    {
+        List<Sort> elementSorts = new ArrayList<>();
+        UninterpretedSort atomSort = new UninterpretedSort("Atom");
+        for(int i = 0; i < n; ++i)
+        {
+            elementSorts.add(atomSort);
+        }
+        return new SetSort(new TupleSort(elementSorts));
+    }
+    
+    public static Expression mkDistinctExpr(Expression ... exprs)
+    {
+        if(exprs == null)
+        {
+            throw new RuntimeException();
+        }        
+        else if(exprs.length == 1)
+        {
+            return exprs[0];
+        }
+        else 
+        {
+            return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
+        }
+    }
+    
+    public static Expression mkDistinctExpr(List<Expression> exprs)
+    {
+        if(exprs == null)
+        {
+            throw new RuntimeException();
+        }
+        else if(exprs.size() == 1)
+        {
+            return exprs.get(0);
+        }
+        else
+        {
+            return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
+        }
+    }    
 }

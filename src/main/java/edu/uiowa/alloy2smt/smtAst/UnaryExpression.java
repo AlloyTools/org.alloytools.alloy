@@ -9,6 +9,8 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+import java.util.Arrays;
+import java.util.List;
 
 public class UnaryExpression extends Expression
 {    
@@ -20,7 +22,7 @@ public class UnaryExpression extends Expression
         this.op     = op;
         this.expr   = expr;
     }
-    
+
     public Op getOP() 
     {
         return this.op;
@@ -30,7 +32,7 @@ public class UnaryExpression extends Expression
     {
         return this.expr;
     }
-
+    
     @Override
     public void accept(SMTAstVisitor visitor) {
         visitor.visit(this);
@@ -39,6 +41,7 @@ public class UnaryExpression extends Expression
     public enum Op 
     {	        
         NOT ("not"),
+        DISTINCT ("distinct"),
         COMPLEMENT ("complement"),
         TRANSPOSE ("transpose"),
         TCLOSURE("tclosure"),

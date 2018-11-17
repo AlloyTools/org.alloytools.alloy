@@ -105,18 +105,26 @@ public class ExprUnaryTranslator
             }
             else
             {
-                return exprTranslator.translator.signaturesMap.get(exprUnary.sub).getConstantExpr();
+                return exprTranslator.translator.signaturesMap.get(((Sig) exprUnary.sub)).getConstantExpr();
             }
         }
 
         if(exprUnary.sub instanceof Sig.Field)
         {
-            return exprTranslator.translator.fieldsMap.get(exprUnary.sub).getConstantExpr();
+            return exprTranslator.translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getConstantExpr();
         }
 
         if(exprUnary.sub instanceof ExprVar)
         {
-            return variablesScope.get(((ExprVar)exprUnary.sub).label);
+            if(variablesScope.containsKey(((ExprVar)exprUnary.sub).label))
+            {
+                return variablesScope.get(((ExprVar)exprUnary.sub).label);
+            }
+            else
+            {
+                System.out.println("Something is wrong here, we do not have variable declarations in scope!");
+                throw new RuntimeException();
+            }            
         }
 
         if(exprUnary.sub instanceof ExprQt)
