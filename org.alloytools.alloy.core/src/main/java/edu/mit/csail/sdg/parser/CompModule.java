@@ -89,7 +89,7 @@ import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
-import edu.mit.csail.sdg.alloy4compiler.ast.Attr.AttrType;
+import edu.mit.csail.sdg.ast.Attr.AttrType;
 
 /**
  * Mutable; this class represents an Alloy module; equals() uses object

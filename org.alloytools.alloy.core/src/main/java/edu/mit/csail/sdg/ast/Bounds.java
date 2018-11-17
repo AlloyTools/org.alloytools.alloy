@@ -1,4 +1,4 @@
-package edu.mit.csail.sdg.alloy4compiler.ast;
+package edu.mit.csail.sdg.ast;
 
 import java.util.ArrayList;
 import java.util.Collection;
