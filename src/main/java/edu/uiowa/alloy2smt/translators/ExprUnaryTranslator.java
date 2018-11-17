@@ -96,9 +96,9 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {
-                    case "univ": return exprTranslator.translator.atomUnivExpr.getConstantExpr();
+                    case "univ": return exprTranslator.translator.atomUniv.getConstantExpr();
                     case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
-                    case "none": return exprTranslator.translator.atomNone;
+                    case "none": return exprTranslator.translator.atomNone.getConstantExpr();
                     default:
                         throw new UnsupportedOperationException();
                 }
@@ -153,7 +153,7 @@ public class ExprUnaryTranslator
     private Expression translateNo(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
     {
         Expression set = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        return new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone);
+        return new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone.getConstantExpr());
     }
 
     private Expression translateSome(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)

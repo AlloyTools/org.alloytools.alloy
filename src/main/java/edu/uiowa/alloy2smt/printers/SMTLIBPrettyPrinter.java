@@ -223,15 +223,23 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(FunctionCallExpression functionCallExpression)
     {
-        this.stringBuilder.append("(");
-        this.stringBuilder.append(functionCallExpression.getFunctionName()).append(" ");
-        for(int i = 0; i < functionCallExpression.getArguments().size()-1; ++i)
+        if(functionCallExpression.getArguments().size() > 0)
         {
-            this.visit(functionCallExpression.getArguments().get(i));
+            this.stringBuilder.append("(");
+            this.stringBuilder.append(functionCallExpression.getFunctionName());            
             this.stringBuilder.append(" ");
+            for(int i = 0; i < functionCallExpression.getArguments().size()-1; ++i)
+            {
+                this.visit(functionCallExpression.getArguments().get(i));
+                this.stringBuilder.append(" ");
+            }
+            this.visit(functionCallExpression.getArguments().get(functionCallExpression.getArguments().size()-1));            
+            this.stringBuilder.append(")");
         }
-        this.visit(functionCallExpression.getArguments().get(functionCallExpression.getArguments().size()-1));
-        this.stringBuilder.append(")");
+        else
+        {
+            this.stringBuilder.append(functionCallExpression.getFunctionName());
+        }     
     }
 
     @Override

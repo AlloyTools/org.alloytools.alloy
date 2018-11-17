@@ -40,9 +40,9 @@ public class Alloy2SMTTranslator
     final TupleSort                 ternaryIntSort;
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
-    final FunctionDeclaration       atomUnivExpr;
+    final FunctionDeclaration       atomUniv;
     final UnaryExpression           intUniv;
-    final UnaryExpression           atomNone;
+    final FunctionDeclaration       atomNone;
     final FunctionDeclaration       atomIden;
     final FunctionDeclaration       intUnivExpr;
     final UnaryExpression           intNone;
@@ -50,10 +50,10 @@ public class Alloy2SMTTranslator
 
     Map<String, String>                             funcNamesMap;
     Map<String, FunctionDefinition>                 funcDefsMap;    
+    Map<Sig,FunctionDeclaration>                    signaturesMap;
+    Map<Sig.Field,FunctionDeclaration>              fieldsMap;    
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
     Map<BinaryExpression.Op, ConstantExpression>    arithOps;
-    Map<Sig,FunctionDeclaration>        signaturesMap   = new HashMap<>();
-    Map<Sig.Field,FunctionDeclaration>  fieldsMap       = new HashMap<>();
 
 
     public Alloy2SMTTranslator(CompModule alloyModel)
@@ -75,8 +75,8 @@ public class Alloy2SMTTranslator
         this.setOfTernaryIntSort    = new SetSort(this.ternaryIntSort);
         this.signatureTranslator    = new SignatureTranslator(this);
         this.exprTranslator         = new ExprTranslator(this);
-        this.atomUnivExpr           = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
-        this.atomNone               = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort);
+        this.atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
+        this.atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);        
         this.atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );        
         this.intUniv                = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);        
         this.intUnivExpr            = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
@@ -84,9 +84,12 @@ public class Alloy2SMTTranslator
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
         this.comparisonOps          = new HashMap<>();  
         this.arithOps               = new HashMap<>();
-        this.signaturesMap.put(Sig.UNIV, this.atomUnivExpr);
+        this.signaturesMap          = new HashMap<>();
         this.funcNamesMap           = new HashMap<>();
         this.funcDefsMap            = new HashMap<>();
+        this.fieldsMap              = new HashMap<>();
+
+        this.signaturesMap.put(Sig.UNIV, this.atomUniv);        
     }
 
     public SMTProgram execute()
@@ -102,7 +105,8 @@ public class Alloy2SMTTranslator
 
     private void translateSpecialFunctions()
     {
-        this.smtProgram.addFunctionDeclaration(this.atomUnivExpr);
+        this.smtProgram.addFunctionDeclaration(this.atomNone);
+        this.smtProgram.addFunctionDeclaration(this.atomUniv);
         this.smtProgram.addFunctionDeclaration(this.atomIden);
     }
 
@@ -111,11 +115,11 @@ public class Alloy2SMTTranslator
         // Axiom for identity relation
         BoundVariableDeclaration    a       = new BoundVariableDeclaration("_x1", atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
-        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUnivExpr.getConstantExpr());
+        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
 
         BoundVariableDeclaration    b       = new BoundVariableDeclaration("_x2", atomSort);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getConstantExpr());
-        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUnivExpr.getConstantExpr());
+        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
 
         BinaryExpression            and     = new BinaryExpression(memberA, BinaryExpression.Op.AND, memberB);
 
@@ -129,10 +133,11 @@ public class Alloy2SMTTranslator
 
         BinaryExpression            implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES , equiv);
         
-        QuantifiedExpression        forall  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
+        QuantifiedExpression        idenSemantics  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion(new BinaryExpression(this.atomUnivExpr.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion(forall));
+        this.smtProgram.addAssertion(new Assertion(new BinaryExpression(this.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion(new BinaryExpression(this.atomUniv.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion(idenSemantics));
     }
 
     private void translateFacts()

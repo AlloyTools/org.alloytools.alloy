@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -229,10 +230,10 @@ public class ExprTranslator
 
     Expression translateExprQt(ExprQt exprQt, Map<String, ConstantExpression> variablesScope)
     {
-        LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables = new LinkedHashMap<>();
+        LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables = new LinkedHashMap<>();
         for (Decl decl: exprQt.decls)
         {
-            FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
+            Expression functionDeclaration = getFunctionDeclaration(decl);
             for (ExprHasName name: decl.names)
             {
                 BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label, translator.atomSort);
@@ -249,11 +250,11 @@ public class ExprTranslator
             case SOME   : return  translateSomeQuantifier(boundVariables, expression);
             case NO     : return  translateNoQuantifier(boundVariables, expression);
             case LONE   : {
-                LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables = new LinkedHashMap<>();
+                LinkedHashMap<BoundVariableDeclaration, Expression> sndBoundVariables = new LinkedHashMap<>();
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
+                    Expression functionDeclaration = getFunctionDeclaration(decl);
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
@@ -265,11 +266,11 @@ public class ExprTranslator
                 return  translateLoneQuantifier(boundVariables, sndBoundVariables, expression, expression2);            
             }
             case ONE    : {
-                LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables = new LinkedHashMap<>();
+                LinkedHashMap<BoundVariableDeclaration, Expression> sndBoundVariables = new LinkedHashMap<>();
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    FunctionDeclaration functionDeclaration = getFunctionDeclaration(decl);
+                    Expression functionDeclaration = getFunctionDeclaration(decl);
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
@@ -285,7 +286,7 @@ public class ExprTranslator
     }
     
     // (all e: R|not P) or (some e : R | P and all e2 : R | not(e = e2) => not P)
-    private Expression translateLoneQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Map<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables, Expression expression, Expression expression2)
+    private Expression translateLoneQuantifier(LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables, Map<BoundVariableDeclaration, Expression> sndBoundVariables, Expression expression, Expression expression2)
     {
         Expression fstPartBodyExpr = expression;
         Expression sndPartBodyExpr = expression;
@@ -350,7 +351,7 @@ public class ExprTranslator
         return new BinaryExpression(fstPartQtExpr, BinaryExpression.Op.OR, sndPartQtExistsExpr);      
     }   
     
-    private Expression translateOneQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Map<BoundVariableDeclaration, FunctionDeclaration> sndBoundVariables, Expression expression, Expression expression2)
+    private Expression translateOneQuantifier(LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables, Map<BoundVariableDeclaration, Expression> sndBoundVariables, Expression expression, Expression expression2)
     {
         Expression sndPartBodyExpr = expression;
         Expression thdPartBodyExpr = expression2;
@@ -407,7 +408,7 @@ public class ExprTranslator
         return new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new ArrayList<>(boundVariables.keySet()), sndPartBodyExpr);
     }       
     
-    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables, Expression expression)
     {
         if(boundVariables.size() == 1)
         {
@@ -434,7 +435,7 @@ public class ExprTranslator
         return quantifiedExpression;        
     }
 
-    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables, Expression expression)
     {
         if(boundVariables.size() == 1)
         {
@@ -461,7 +462,7 @@ public class ExprTranslator
         return quantifiedExpression;
     }
 
-    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<BoundVariableDeclaration, FunctionDeclaration> boundVariables, Expression expression)
+    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables, Expression expression)
     {
         if(boundVariables.size() == 1)
         {
@@ -489,35 +490,26 @@ public class ExprTranslator
     }
 
 
-    private BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, FunctionDeclaration> boundVariables, int index)
+    private BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, Expression> boundVariables, int index)
     {
         BoundVariableDeclaration    boundVariable       = (new ArrayList<>(boundVariables.keySet())).get(index);
-        FunctionDeclaration         functionDeclaration = boundVariables.get(boundVariable);
+        Expression         functionDeclaration = boundVariables.get(boundVariable);
         MultiArityExpression        tuple               = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, boundVariable.getConstantExpr());
-        return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, functionDeclaration.getConstantExpr());
+        return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, functionDeclaration);
     }
 
-    private FunctionDeclaration getFunctionDeclaration(Decl decl)
+    private Expression getFunctionDeclaration(Decl decl)
     {
         if(decl.expr instanceof ExprUnary)
         {
             Expr expr = (((ExprUnary) decl.expr).sub);
             if(expr instanceof ExprUnary)
             {
-                if(((ExprUnary) expr).sub instanceof Sig)
-                {
-                    Sig sig = (Sig) ((ExprUnary) expr).sub;
-                    return translator.signaturesMap.get(sig);
-                }
-//                else if(((ExprUnary) expr).sub instanceof Sig.Field)
-//                {
-//                    Sig.Field field = (Sig.Field) ((ExprUnary) expr).sub;
-//                    return translator.fieldsMap.get(field);
-//                }
-                else
-                {
-                    throw new UnsupportedOperationException();
-                }
+                return exprUnaryTranslator.translateExprUnary((ExprUnary)expr, new HashMap<>());
+            } 
+            else if(expr instanceof ExprBinary)
+            {
+                return exprBinaryTranslator.translateExprBinary((ExprBinary)expr, new HashMap<>());
             }
             else
             {

@@ -33,6 +33,44 @@ public class FieldTranslator
             translate(f);
         }
     }
+    
+    void collectFieldSigs(Expr expr, List<Sig> fieldComponentTypes)
+    {
+        if(expr instanceof ExprUnary)
+        {
+            
+            if(((ExprUnary) expr).sub instanceof Sig)
+            {
+                fieldComponentTypes.add((Sig)((ExprUnary) expr).sub);
+            }
+            else if(((ExprUnary) expr).sub instanceof Sig.Field)
+            {
+                collectFieldSigs(((Sig.Field)((ExprUnary) expr).sub).decl().expr, fieldComponentTypes);
+            }
+            else if(((ExprUnary) expr).sub instanceof ExprUnary)
+            {
+                collectFieldSigs((ExprUnary)(((ExprUnary) expr).sub), fieldComponentTypes);
+            }
+            else if(((ExprUnary) expr).sub instanceof ExprVar)
+            {
+                //skip
+            }            
+            else
+            {
+                throw new UnsupportedOperationException("Something we have not supported yet: " + ((ExprUnary) expr).sub);
+            }
+        }
+        else if(expr instanceof ExprBinary)
+        {
+            collectFieldSigs(((ExprBinary)expr).left, fieldComponentTypes);
+            collectFieldSigs(((ExprBinary)expr).right, fieldComponentTypes);
+        }
+        else 
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
     void translate(Sig.Field field)
     {
 
@@ -40,8 +78,11 @@ public class FieldTranslator
         List<Sort>          fieldSorts  = new ArrayList<>();
 
         // a field relation is a subset of the product of its signatures
-        List<Sig> fieldSignatures     =  field.type().fold().stream().flatMap(List::stream).collect(Collectors.toList());
-
+        
+        List<Sig> fieldSignatures     =  new ArrayList<>();
+        fieldSignatures.add(field.sig);
+        collectFieldSigs(field.decl().expr, fieldSignatures);
+        
         /* alloy: sig Book{addr: Name -> lone Addr}
          *  smt  : (assert (subset addr (product (product Book Name) Addr)))
          */
