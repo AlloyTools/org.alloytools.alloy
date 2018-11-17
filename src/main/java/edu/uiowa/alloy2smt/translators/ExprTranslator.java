@@ -78,6 +78,13 @@ public class ExprTranslator
         UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
         return singleton;
     }
+    
+    Expression getSingletonOutOfAtoms(List<Expression> atomExprs)
+    {
+        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
+        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return singleton;
+    }    
 
     Expression translateExprList(ExprList exprList, Map<String, ConstantExpression> variablesScope)
     {

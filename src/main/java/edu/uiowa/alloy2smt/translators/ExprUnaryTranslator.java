@@ -152,13 +152,8 @@ public class ExprUnaryTranslator
 
     private Expression translateNo(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    variable    = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
-        MultiArityExpression        tuple       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable.getConstantExpr());
-        Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression            member      = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
-        Expression                  not         = new UnaryExpression(UnaryExpression.Op.NOT, member);
-        QuantifiedExpression        forall      = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, not, variable);
-        return forall;
+        Expression set = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        return new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone);
     }
 
     private Expression translateSome(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
@@ -186,60 +181,24 @@ public class ExprUnaryTranslator
 
     private Expression translateOne(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    existsVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
-        MultiArityExpression        tuple1      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, existsVar.getConstantExpr());
-        Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression            member1     = new BinaryExpression(tuple1, BinaryExpression.Op.MEMBER, set);
-
-        BoundVariableDeclaration    forallVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
-        BinaryExpression            equal       = new BinaryExpression(existsVar.getConstantExpr(), BinaryExpression.Op.EQ, forallVar.getConstantExpr());
-        UnaryExpression             notEqual    = new UnaryExpression(UnaryExpression.Op.NOT, equal);
-
-        MultiArityExpression        tuple2      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, forallVar.getConstantExpr());
-        BinaryExpression            member2     = new BinaryExpression(tuple2, BinaryExpression.Op.MEMBER, set);
-        UnaryExpression             notMember   = new UnaryExpression(UnaryExpression.Op.NOT, member2);
-
-        BinaryExpression            implies1    = new BinaryExpression(notEqual, BinaryExpression.Op.IMPLIES, notMember);
-        QuantifiedExpression        forall      = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1, forallVar);
-
-        BinaryExpression            and         = new BinaryExpression(member1, BinaryExpression.Op.AND, forall);
-        QuantifiedExpression        exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and, existsVar);
-
+        List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
+        List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
+        Expression                      singleton   = exprTranslator.getSingletonOutOfAtoms(expressions);
+        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        BinaryExpression                eq          = new BinaryExpression(singleton, BinaryExpression.Op.EQ, set);
+        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, eq);
         return exists;
     }
 
     private Expression translateLone(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
     {
-        BoundVariableDeclaration    existsVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
-        MultiArityExpression        tuple1      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, existsVar.getConstantExpr());
-        Expression                  set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression            member1     = new BinaryExpression(tuple1, BinaryExpression.Op.MEMBER, set);
-
-        BoundVariableDeclaration    forallVar   = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
-        BinaryExpression            equal       = new BinaryExpression(existsVar.getConstantExpr(), BinaryExpression.Op.EQ, forallVar.getConstantExpr());
-        UnaryExpression             notEqual    = new UnaryExpression(UnaryExpression.Op.NOT, equal);
-
-        MultiArityExpression        tuple2      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, forallVar.getConstantExpr());
-        BinaryExpression            member2     = new BinaryExpression(tuple2, BinaryExpression.Op.MEMBER, set);
-        UnaryExpression             notMember   = new UnaryExpression(UnaryExpression.Op.NOT, member2);
-
-        BinaryExpression            implies1    = new BinaryExpression(notEqual, BinaryExpression.Op.IMPLIES, notMember);
-        QuantifiedExpression        forall      = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1, forallVar);
-
-        BinaryExpression            and         = new BinaryExpression(member1, BinaryExpression.Op.AND, forall);
-        QuantifiedExpression        exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and, existsVar);
-
-
-        BoundVariableDeclaration    emptyVar    = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
-        MultiArityExpression        emptyTuple  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, emptyVar.getConstantExpr());
-        BinaryExpression            emptyMember = new BinaryExpression(emptyTuple, BinaryExpression.Op.MEMBER, set);
-        UnaryExpression             not         = new UnaryExpression(UnaryExpression.Op.NOT, emptyMember);
-
-        QuantifiedExpression        emptyForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, not, emptyVar);
-
-        BinaryExpression            or          = new BinaryExpression(exists, BinaryExpression.Op.OR, emptyForall);
-
-        return or;
+        List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
+        List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
+        Expression                      singleton   = exprTranslator.getSingletonOutOfAtoms(expressions);
+        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        BinaryExpression                subset      = new BinaryExpression(set, BinaryExpression.Op.SUBSET, singleton);
+        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, subset);
+        return exists;
     }
     
     public MultiArityExpression mkTupleExpr(BoundVariableDeclaration bdVarDecl)

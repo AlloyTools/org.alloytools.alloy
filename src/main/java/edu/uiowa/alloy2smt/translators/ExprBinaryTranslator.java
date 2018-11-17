@@ -119,28 +119,34 @@ public class ExprBinaryTranslator
 
     private Expression translatePlusPlus(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
     {
-        int arity  =  expr.right.type().arity();
-        if( arity == 1)
+        int rightExprArity  =  expr.right.type().arity();
+        if( rightExprArity == 1)
         {
             // ++ is like a single + with arity 1 (i.e. is like a union)
             return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
         }
-
-        if(arity == 2)
+        else 
         {
-            Expression left                 = exprTranslator.translateExpr(expr.left, variablesScope);
-            Expression right                = exprTranslator.translateExpr(expr.right, variablesScope);
-            Expression join                 = new BinaryExpression(right, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUnivExpr.getConstantExpr());
-            Expression product              = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
-            Expression intersection         = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, left);
+            Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+            Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression join     = right;            
+            
+            for(int i = 0; i < rightExprArity-1; ++i)
+            {
+                join = new BinaryExpression(join, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUnivExpr.getConstantExpr());
+            }
+            for(int i = 0; i < rightExprArity-1; ++i)
+            {
+                join = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
+            }            
+            
+            Expression intersection         = new BinaryExpression(join, BinaryExpression.Op.INTERSECTION, left);
             Expression difference           = new BinaryExpression(left, BinaryExpression.Op.SETMINUS, intersection);
             Expression union                = new BinaryExpression(difference, BinaryExpression.Op.UNION, right);
 
             return union;
 
         }
-
-        throw new UnsupportedOperationException();
     }
 
     private Expression translateDomainRestriction(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
@@ -152,16 +158,18 @@ public class ExprBinaryTranslator
             // arity should be greater than one
             throw new UnsupportedOperationException();
         }
-        else if(arity == 2)
+        else
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
-            BinaryExpression    intersection    = new BinaryExpression(product, BinaryExpression.Op.INTERSECTION, right);
+
+            for(int i = 0; i < arity - 1; ++i)
+            {
+                left = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
+            }
+            BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
             return intersection;
         }
-
-        throw new UnsupportedOperationException();
     }
 
     private Expression translateRangeRestriction(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
@@ -173,18 +181,20 @@ public class ExprBinaryTranslator
             // arity should be greater than one
             throw new UnsupportedOperationException();
         }
-        else if(arity == 2)
+        else
         {
             Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
-            BinaryExpression    product         = new BinaryExpression(right, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUnivExpr.getConstantExpr());
+            
+            for(int i = 0; i < arity - 1; ++i)
+            {
+                right = new BinaryExpression(exprTranslator.translator.atomUnivExpr.getConstantExpr(), BinaryExpression.Op.PRODUCT, right);
+            }            
 
-            BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, product);
+            BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
 
             return intersection;
         }
-
-        throw new UnsupportedOperationException();
     }
 
     public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
