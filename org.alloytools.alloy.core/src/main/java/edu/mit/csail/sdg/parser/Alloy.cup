@@ -413,6 +413,7 @@ terminal Pos ASSERT;           //  assert
 terminal Pos AT;               //  @
 terminal Pos BAR;              //  |
 terminal Pos BUT;              //  but
+terminal Pos BOUND;            //  inst
 terminal Pos CARET;            //  ^
 terminal Pos CHECK;            //  check
 terminal Pos COLON;            //  :
@@ -437,7 +438,7 @@ terminal Pos IDEN;             //  iden
 terminal Pos IFF;              //  <=> iff
 terminal Pos IMPLIES;          //  => implies
 terminal Pos IN;               //  in
-terminal Pos INCLUDE;          //include
+terminal Pos INCLUDE;          //  include
 terminal Pos INT;              //  int
 terminal Pos LBRACE;           //  {
 terminal Pos LBRACKET;         //  [
@@ -612,6 +613,7 @@ Spec ::= Spec Function        ;
 Spec ::= Spec Predicate       ;
 Spec ::= Spec Macro           ;
 Spec ::= Spec Command         ;
+Spec ::= Spec Bounds          ;
 Spec ::= ;
 
 CommandPrefix ::= CHECK:c  {: RESULT = ExprVar.make(c, "c"); :};
