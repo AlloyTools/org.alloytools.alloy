@@ -36,6 +36,7 @@ import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.Bounds;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Decl;
@@ -197,6 +198,14 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
      */
     private Expression a2k(Sig x) throws Err {
         if (a2k != null)
+            return a2k.get(x);
+        else
+            return frame.a2k(x);
+    }
+
+    /** Returns the expression corresponding to the given Bounds. */
+    private Expression a2k(Bounds x)     throws Err {
+        if (a2k!=null)
             return a2k.get(x);
         else
             return frame.a2k(x);
@@ -906,6 +915,18 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         Expression ans = a2k(x);
         if (ans == null)
             throw new ErrorFatal(x.pos, "Sig \"" + x + "\" is not bound to a legal value during translation.\n");
+        return ans;
+    }
+
+    /*=======================*/
+    /* Evaluates a Bounds node. */
+    /*=======================*/
+    
+    /** {@inheritDoc} */
+    @Override public Object visit(Bounds x) throws Err {
+        Expression ans = a2k(x);
+        if (ans==null)
+            throw new ErrorFatal(x.pos, "Bounds \""+x+"\" is not bound to a legal value during translation.\n");
         return ans;
     }
 
