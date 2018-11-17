@@ -236,13 +236,19 @@ public final class StaticInstanceReader {
                                                               // specific sig
         for (A4Tuple z : ts) {
             String atom = z.atom(0);
-            int i, dollar = atom.lastIndexOf('$');
+            int i, dollar = atom.lastIndexOf('$'), partial = atom.lastIndexOf('%');
             try {
                 i = Integer.parseInt(dollar >= 0 ? atom.substring(dollar + 1) : atom);
             } catch (NumberFormatException ex) {
                 i = Integer.MAX_VALUE;
             }
-            AlloyAtom at = new AlloyAtom(sig(s), ts.size() == 1 ? Integer.MAX_VALUE : i, atom);
+            //[VM] I don't know why they changes the name?!!!
+            AlloyAtom at ;
+            if(partial >= 0) {
+                at = new AlloyAtom(sig(s), Integer.MAX_VALUE - 1, atom.substring(0, partial));
+            } else {
+                at = new AlloyAtom(sig(s), ts.size()==1 ? Integer.MAX_VALUE : i, atom);
+            }
             atom2sets.put(at, new LinkedHashSet<AlloySet>());
             string2atom.put(atom, at);
         }
@@ -311,6 +317,20 @@ public final class StaticInstanceReader {
                 AlloyAtom at = new AlloyAtom(i >= 0 && i < maxseq ? AlloyType.SEQINT : AlloyType.INT, i, "" + i);
                 atom2sets.put(at, new LinkedHashSet<AlloySet>());
                 string2atom.put("" + i, at);
+            }
+            // retrieve the exceeded integers.
+            for (XMLNode i : inst) {
+                if (i.getAttribute("label").equals("Int")) {
+                    for (XMLNode y : i) {
+                        try {
+                            AlloyAtom at = new AlloyAtom(AlloyType.SEQINT , Integer.valueOf(y.getAttribute("value")), String.valueOf(Integer.valueOf(y.getAttribute("value"))));
+                            atom2sets.put(at, new LinkedHashSet<AlloySet>());
+                            string2atom.put(String.valueOf(Integer.valueOf(y.getAttribute("value"))), at);
+                        } catch (NumberFormatException e) {
+                            throw new ErrorSyntax("The XML file must containt integer type instead of:"+y.getAttribute("value"));
+                        }
+                    }
+                }
             }
             for (Sig s : sol.getAllReachableSigs())
                 if (!s.builtin && s instanceof PrimSig)
