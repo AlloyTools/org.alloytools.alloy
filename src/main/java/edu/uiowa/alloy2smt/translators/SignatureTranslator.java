@@ -337,7 +337,7 @@ public class SignatureTranslator
             variablesScope.put(bdVarName, new ConstantExpression(new FunctionDeclaration(bdVarName, translator.atomSort)));
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), variablesScope);
 
-            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), bodyExpr)));
+            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), new BinaryExpression(member, BinaryExpression.Op.IMPLIES, bodyExpr))));
         }        
     }
 }

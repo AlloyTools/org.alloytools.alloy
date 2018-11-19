@@ -68,7 +68,7 @@ public class ExprTranslator
             // alloy only supports integers
             case NUMBER : return new IntConstant(expr.num); 
             case IDEN   : return translator.atomIden.getConstantExpr();
-            default: throw new UnsupportedOperationException();
+            default: throw new UnsupportedOperationException(expr.op.name());
         }
     }
 
