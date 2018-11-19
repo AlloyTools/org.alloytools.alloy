@@ -9,11 +9,14 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.alloy4.SafeList;
+import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SignatureTranslator
@@ -193,8 +196,11 @@ public class SignatureTranslator
             {
                 this.fieldTranslator.fields.add(field);
             }
-        });
-
+            for(Expr expr : sig.getFacts())
+            {
+                translator.sigFacts.put(sig, expr);
+            }
+        });        
         //ToDo: important review the logic for cardinality in the case of
         // top level signatures and the case of subset signatures.
         //translateDisjointSignatures(translator.topLevelSigs);
@@ -313,5 +319,25 @@ public class SignatureTranslator
         translateSignatures();
         translateSignatureHierarchies();
         this.fieldTranslator.translateFields();
+        translateSigFacts();
+    }
+    
+    private void translateSigFacts()
+    {
+        // Translate facts about signatures
+        for(Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
+        {
+            String bdVarName = "this";
+            Map<BoundVariableDeclaration, Expression> boundVariables = new HashMap<>();
+            BoundVariableDeclaration bdVar = new BoundVariableDeclaration(bdVarName, translator.atomSort);                
+            boundVariables.put(bdVar, translator.signaturesMap.get(sigFact.getKey()).getConstantExpr());
+            Expression member = translator.exprTranslator.getMemberExpression(boundVariables, 0);
+            Map<String, ConstantExpression> variablesScope = new HashMap<>();
+
+            variablesScope.put(bdVarName, new ConstantExpression(new FunctionDeclaration(bdVarName, translator.atomSort)));
+            Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), variablesScope);
+
+            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), bodyExpr)));
+        }        
     }
 }

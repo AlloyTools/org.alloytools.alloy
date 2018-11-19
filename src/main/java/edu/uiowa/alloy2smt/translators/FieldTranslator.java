@@ -37,8 +37,7 @@ public class FieldTranslator
     void collectFieldSigs(Expr expr, List<Sig> fieldComponentTypes)
     {
         if(expr instanceof ExprUnary)
-        {
-            
+        {            
             if(((ExprUnary) expr).sub instanceof Sig)
             {
                 fieldComponentTypes.add((Sig)((ExprUnary) expr).sub);
@@ -53,7 +52,7 @@ public class FieldTranslator
             }
             else if(((ExprUnary) expr).sub instanceof ExprVar)
             {
-                //skip
+                //skip, ((ExprUnary) expr).sub = this
             }            
             else
             {
@@ -74,12 +73,11 @@ public class FieldTranslator
     void translate(Sig.Field field)
     {
 
-        String              fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
-        List<Sort>          fieldSorts  = new ArrayList<>();
+        String      fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
+        List<Sort>  fieldSorts  = new ArrayList<>();
 
-        // a field relation is a subset of the product of its signatures
-        
-        List<Sig> fieldSignatures     =  new ArrayList<>();
+        // a field relation is a subset of the product of its signatures        
+        List<Sig> fieldSignatures = new ArrayList<>();
         fieldSignatures.add(field.sig);
         collectFieldSigs(field.decl().expr, fieldSignatures);
         

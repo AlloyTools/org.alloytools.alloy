@@ -118,11 +118,17 @@ public class ExprUnaryTranslator
         {
             if(variablesScope.containsKey(((ExprVar)exprUnary.sub).label))
             {
-                return variablesScope.get(((ExprVar)exprUnary.sub).label);
+                ConstantExpression constExpr = variablesScope.get(((ExprVar)exprUnary.sub).label);
+                
+                if(constExpr.getDeclaration().getSort() == exprTranslator.translator.atomSort)
+                {
+                    return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
+                }
+                return constExpr;
             }
             else
             {
-                System.out.println("Something is wrong here, we do not have variable declarations in scope!");
+                System.out.println("Something is wrong here, we do not have variable declarations in scope: " + ((ExprVar)exprUnary.sub).label);
                 throw new RuntimeException();
             }            
         }
@@ -205,6 +211,21 @@ public class ExprUnaryTranslator
     {
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getConstantExpr());
     }
+    
+    public UnaryExpression mkSingleton(BoundVariableDeclaration bdVarDecl)
+    {
+        return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(bdVarDecl));
+    }    
+    
+    public UnaryExpression mkSingleton(BoundVariableDeclaration ... bdVarDecls)
+    {
+        return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(bdVarDecls));
+    } 
+    
+    public UnaryExpression mkSingleton(MultiArityExpression tuple)
+    {
+        return new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+    }     
     
     public MultiArityExpression mkTupleExpr(BoundVariableDeclaration ... bdVarDecls)
     {

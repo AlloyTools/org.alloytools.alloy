@@ -233,7 +233,7 @@ public class ExprTranslator
         LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables = new LinkedHashMap<>();
         for (Decl decl: exprQt.decls)
         {
-            Expression functionDeclaration = getFunctionDeclaration(decl);
+            Expression functionDeclaration = getFunctionDeclaration(decl, variablesScope);
             for (ExprHasName name: decl.names)
             {
                 BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label, translator.atomSort);
@@ -254,7 +254,7 @@ public class ExprTranslator
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    Expression functionDeclaration = getFunctionDeclaration(decl);
+                    Expression functionDeclaration = getFunctionDeclaration(decl, variablesScope);
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
@@ -270,7 +270,7 @@ public class ExprTranslator
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    Expression functionDeclaration = getFunctionDeclaration(decl);
+                    Expression functionDeclaration = getFunctionDeclaration(decl, variablesScope);
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
@@ -490,26 +490,26 @@ public class ExprTranslator
     }
 
 
-    private BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, Expression> boundVariables, int index)
+    public BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, Expression> boundVariables, int index)
     {
         BoundVariableDeclaration    boundVariable       = (new ArrayList<>(boundVariables.keySet())).get(index);
-        Expression         functionDeclaration = boundVariables.get(boundVariable);
+        Expression                  functionDeclaration = boundVariables.get(boundVariable);
         MultiArityExpression        tuple               = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, boundVariable.getConstantExpr());
         return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, functionDeclaration);
     }
 
-    private Expression getFunctionDeclaration(Decl decl)
+    private Expression getFunctionDeclaration(Decl decl, Map<String, ConstantExpression> variablesScope)
     {
         if(decl.expr instanceof ExprUnary)
         {
             Expr expr = (((ExprUnary) decl.expr).sub);
             if(expr instanceof ExprUnary)
             {
-                return exprUnaryTranslator.translateExprUnary((ExprUnary)expr, new HashMap<>());
+                return exprUnaryTranslator.translateExprUnary((ExprUnary)expr, variablesScope);
             } 
             else if(expr instanceof ExprBinary)
             {
-                return exprBinaryTranslator.translateExprBinary((ExprBinary)expr, new HashMap<>());
+                return exprBinaryTranslator.translateExprBinary((ExprBinary)expr, variablesScope);
             }
             else
             {

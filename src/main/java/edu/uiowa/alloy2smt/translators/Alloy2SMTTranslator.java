@@ -54,6 +54,7 @@ public class Alloy2SMTTranslator
     Map<Sig.Field,FunctionDeclaration>              fieldsMap;    
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
     Map<BinaryExpression.Op, ConstantExpression>    arithOps;
+    Map<Sig, Expr>                                  sigFacts;
 
 
     public Alloy2SMTTranslator(CompModule alloyModel)
@@ -88,6 +89,7 @@ public class Alloy2SMTTranslator
         this.funcNamesMap           = new HashMap<>();
         this.funcDefsMap            = new HashMap<>();
         this.fieldsMap              = new HashMap<>();
+        this.sigFacts               = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, this.atomUniv);        
     }
