@@ -183,14 +183,14 @@ public class Alloy2SMTTranslator
         for(int i = 0; i < f.decls.size(); ++i)
         {
             String  varName = f.params().get(i).label;
-            Sort    varSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr, 0));
+            Sort    varSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
             bdVars.add(new BoundVariableDeclaration(varName, varSort));
             variablesScope.put(varName, new ConstantExpression(new ConstantDeclaration(varName, varSort)));
         }
         // If the function is not predicate, we change its returned type.
         if(!f.isPred)
         {
-            returnSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.returnDecl, 0));
+            returnSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.returnDecl));
         }
         
         FunctionDefinition funcDef = new FunctionDefinition(funcName, bdVars, returnSort, 
@@ -199,50 +199,9 @@ public class Alloy2SMTTranslator
         this.smtProgram.addFcnDef(funcDef);
     }    
     
-    private int getArityofExpr(Expr expr, int arity)
+    private int getArityofExpr(Expr expr)
     {
-        if(expr instanceof ExprUnary)
-        {
-            if(((ExprUnary) expr).op == ExprUnary.Op.NOOP)
-            {
-                if(((ExprUnary) expr).sub instanceof Sig)
-                {
-                    if(((Sig) ((ExprUnary) expr).sub ).builtin)
-                    {
-                        switch (((Sig) ((ExprUnary) expr).sub ).label)
-                        {
-                            case "univ": return 1;
-                            case "iden": return 2;
-                            case "none": return 1;
-                            default:
-                                throw new UnsupportedOperationException();
-                        }
-                    }
-                    else
-                    {
-                        return 1;
-                    }                    
-                }
-            }
-            else if(((ExprUnary) expr).op == ExprUnary.Op.SOME || ((ExprUnary) expr).op == ExprUnary.Op.ONE
-                    || ((ExprUnary) expr).op == ExprUnary.Op.SETOF)
-            {             
-                return 1;
-            }
-            else
-            {
-                throw new UnsupportedOperationException();
-            }
-        } 
-        else if(expr instanceof ExprBinary)
-        {
-            switch(((ExprBinary)expr).op)
-            {
-                case ARROW : return getArityofExpr(((ExprBinary)expr).left, arity) + getArityofExpr(((ExprBinary)expr).right, arity);
-                default:throw new UnsupportedOperationException();  
-            }
-        }
-        throw new UnsupportedOperationException();        
+        return expr.type().arity();    
     }
 
     private void translateFact(String factName, Expr factExpr)
