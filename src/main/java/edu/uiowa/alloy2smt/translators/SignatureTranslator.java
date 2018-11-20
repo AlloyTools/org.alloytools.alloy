@@ -67,10 +67,10 @@ public class SignatureTranslator
                 }
             }
         }
-        
-        // The union of all top-level sigs equals to the universe
+                
         if(translator.topLevelSigs.size() > 0)
         {
+            // The union of all top-level sigs equals to the universe
             Expression unionTopSigExprs = translator.signaturesMap.get(translator.topLevelSigs.get(0)).getConstantExpr();
             
             for(int i = 1; i < translator.topLevelSigs.size(); ++i)
@@ -78,6 +78,22 @@ public class SignatureTranslator
                 unionTopSigExprs = new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.UNION, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getConstantExpr());
             }
             translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniv.getConstantExpr())));
+            
+            // Top-level sigs are mutually disjoin
+            if(translator.topLevelSigs.size() > 1)
+            {
+                for(int i = 0; i < translator.topLevelSigs.size()-1; ++i)
+                {
+                    Expression fstSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(i)).getConstantExpr();
+                    
+                    for(int j = i+1; j < translator.topLevelSigs.size();++j)
+                    {
+                        Expression sndSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(j)).getConstantExpr();
+                        translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(new BinaryExpression(fstSigExpr, BinaryExpression.Op.INTERSECTION, sndSigExpr), BinaryExpression.Op.EQ, translator.atomNone.getConstantExpr())));
+                    }
+                }
+            }
+            
         }
     }
 
@@ -324,7 +340,7 @@ public class SignatureTranslator
     
     private void translateSigFacts()
     {
-        // Translate facts about signatures
+        // Translate facts on signatures
         for(Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
         {
             String bdVarName = "this";

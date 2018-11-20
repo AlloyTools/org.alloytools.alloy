@@ -42,6 +42,7 @@ public class Main
                         try (Formatter formatter = new Formatter(outputFile)) {
                             formatter.format("%s", output);
                         }
+                        System.out.println(output);
                     }
                     else
                     {

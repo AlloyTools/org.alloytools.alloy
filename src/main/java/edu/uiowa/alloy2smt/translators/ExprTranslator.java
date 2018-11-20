@@ -11,7 +11,6 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +83,29 @@ public class ExprTranslator
     {
         MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
         UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return singleton;
+    }
+
+    Expression getSetOutOfAtoms(List<Expression> atomExprs)
+    {
+        List<Expression> atomTupleExprs = new ArrayList<>();
+        
+        for(Expression e : atomExprs)
+        {
+            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
+            atomTupleExprs.add(tuple);
+        }
+        
+        
+        UnaryExpression singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, atomTupleExprs.get(0));
+        
+        if(atomTupleExprs.size() > 1)
+        {
+            atomTupleExprs.remove(0);
+            atomTupleExprs.add(singleton);
+            MultiArityExpression set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atomTupleExprs);            
+            return set;
+        }
         return singleton;
     }    
 
@@ -413,7 +435,7 @@ public class ExprTranslator
         if(boundVariables.size() == 1)
         {
             BinaryExpression member = getMemberExpression(boundVariables, 0);
-            expression              = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, expression);
+            expression              = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, expression));
         }
         else if (boundVariables.size() > 1)
         {
@@ -428,10 +450,10 @@ public class ExprTranslator
                 and                 = new BinaryExpression(and, BinaryExpression.Op.AND, member);
             }
 
-            expression              = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, expression);
+            expression              = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, expression));
         }
 
-        QuantifiedExpression quantifiedExpression = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), new UnaryExpression(UnaryExpression.Op.NOT, expression));
+        QuantifiedExpression quantifiedExpression = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), expression);
         return quantifiedExpression;        
     }
 

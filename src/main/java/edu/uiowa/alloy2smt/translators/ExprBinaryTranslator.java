@@ -4,7 +4,9 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.smtAst.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import java.util.Map;
 
@@ -268,6 +270,160 @@ public class ExprBinaryTranslator
     
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
     {
+
+        if(((expr.left instanceof ExprUnary) && ((ExprUnary)expr.left).op == ExprUnary.Op.CARDINALITY && 
+                (expr.right instanceof ExprConstant)))
+        {
+            Expression rightExpr            = null;
+            Expression comparisonExpr       = null;            
+            List<BoundVariableDeclaration>  bdVars = new ArrayList<>();
+            List<Expression>                bdVarExprs = new ArrayList<>();
+            int arity                       = ((ExprUnary)expr.left).sub.type().arity();
+            Expression leftExpr             = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, variablesScope);
+            int num = ((ExprConstant)expr.right).num;                          
+            
+            switch(op)
+            {
+                case GT:{
+                    Expression distExpr = null;
+                    if(arity == 1)
+                    {
+                        for(int i = 0; i < num+1; ++i)
+                        {
+                            BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
+                            bdVars.add(bdVar);
+                            bdVarExprs.add(bdVar.getConstantExpr());                            
+                        }
+                    }
+                    else
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
+                    if(bdVarExprs.size() > 1)
+                    {
+                        distExpr = TranslatorUtils.mkDistinctExpr(bdVarExprs);
+                        comparisonExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, comparisonExpr);                                          
+                    }                    
+                    comparisonExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, comparisonExpr);
+                    break;
+                }
+                case LT:{
+                    Expression distExpr = null;
+                    if(arity == 1)
+                    {
+                        for(int i = 0; i < num-1; ++i)
+                        {
+                            BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
+                            bdVars.add(bdVar);
+                            bdVarExprs.add(bdVar.getConstantExpr());                            
+                        }                                                   
+                    }
+                    else
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
+                    if(bdVarExprs.size() > 1)
+                    {
+                        distExpr = TranslatorUtils.mkDistinctExpr(bdVarExprs);
+                        comparisonExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, comparisonExpr);                                          
+                    } 
+                    comparisonExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, comparisonExpr);
+                    break;
+                }
+                case GTE:{
+                    Expression distExpr = null;
+                    if(arity == 1)
+                    {
+                        for(int i = 0; i < num; ++i)
+                        {
+                            BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
+                            bdVars.add(bdVar);
+                            bdVarExprs.add(bdVar.getConstantExpr());                            
+                        }
+                    }
+                    else
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
+                    if(bdVarExprs.size() > 1)
+                    {
+                        distExpr = TranslatorUtils.mkDistinctExpr(bdVarExprs);
+                        comparisonExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, comparisonExpr);                                          
+                    } 
+                    comparisonExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, comparisonExpr);
+                    break;
+                }
+                case LTE:{
+                    Expression distExpr = null;
+                    if(arity == 1)
+                    {
+                        for(int i = 0; i < num; ++i)
+                        {
+                            BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
+                            bdVars.add(bdVar);
+                            bdVarExprs.add(bdVar.getConstantExpr());                            
+                        }
+                    }
+                    else
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
+                    if(bdVarExprs.size() > 1)
+                    {
+                        distExpr = TranslatorUtils.mkDistinctExpr(bdVarExprs);
+                        comparisonExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, comparisonExpr);                                          
+                    } 
+                    comparisonExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, comparisonExpr);
+                    break;
+                }                
+                default:break;
+            }  
+            return comparisonExpr;
+        }
+        else if((expr.right instanceof ExprUnary) && ((ExprUnary)expr.right).op == ExprUnary.Op.CARDINALITY && 
+                (expr.left instanceof ExprConstant)) 
+        {
+            Expression leftExpr             = null;
+            Expression comparisonExpr       = null;            
+            int arity                       = ((ExprUnary)expr.right).sub.type().arity();
+            Expression rightExpr            = exprTranslator.translateExpr(((ExprUnary)expr.right).sub, variablesScope);
+            int num = ((ExprConstant)expr.left).num;                          
+            
+            switch(op)
+            {
+                case GT:{
+                    leftExpr = TranslatorUtils.generateAuxiliarySetNAtoms(arity, num+1, exprTranslator.translator).getConstantExpr();                  
+                    comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
+                    break;
+                }
+                case LT:{
+                    leftExpr = TranslatorUtils.generateAuxiliarySetNAtoms(arity, num-1, exprTranslator.translator).getConstantExpr();                  
+                    comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
+                    break;
+                }
+                case GTE:{
+                    leftExpr = TranslatorUtils.generateAuxiliarySetNAtoms(arity, num, exprTranslator.translator).getConstantExpr();                                    
+                    comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
+                    break;
+                }
+                case LTE:{
+                    leftExpr = TranslatorUtils.generateAuxiliarySetNAtoms(arity, num, exprTranslator.translator).getConstantExpr();                                    
+                    comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
+                    break;
+                }                
+                default:break;
+            }  
+            return comparisonExpr;            
+        }
+
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);
         

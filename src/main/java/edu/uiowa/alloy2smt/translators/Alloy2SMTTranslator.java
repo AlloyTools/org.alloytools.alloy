@@ -182,10 +182,14 @@ public class Alloy2SMTTranslator
         // Declare input variables
         for(int i = 0; i < f.decls.size(); ++i)
         {
-            String  varName = f.params().get(i).label;
-            Sort    varSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-            bdVars.add(new BoundVariableDeclaration(varName, varSort));
-            variablesScope.put(varName, new ConstantExpression(new ConstantDeclaration(varName, varSort)));
+            for(ExprHasName n : f.decls.get(i).names)
+            {
+                String  bdVarName = n.label;
+                Sort    bdVarSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
+                bdVars.add(new BoundVariableDeclaration(bdVarName, bdVarSort));
+                variablesScope.put(bdVarName, new ConstantExpression(new ConstantDeclaration(bdVarName, bdVarSort)));
+            }
+
         }
         // If the function is not predicate, we change its returned type.
         if(!f.isPred)
