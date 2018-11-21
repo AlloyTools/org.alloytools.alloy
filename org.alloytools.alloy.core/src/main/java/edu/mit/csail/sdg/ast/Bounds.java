@@ -62,7 +62,7 @@ public class Bounds extends Expr {
     }
 
     @Override
-    <T> T accept(VisitReturn<T> visitor) throws Err {
+    public <T> T accept(VisitReturn<T> visitor) throws Err {
         return visitor.visit(this);
     }
 

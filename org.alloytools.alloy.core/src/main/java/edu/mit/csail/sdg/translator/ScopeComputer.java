@@ -30,9 +30,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
  
 import kodkod.ast.ConstantExpression;
- 
-import com.sun.org.apache.bcel.internal.generic.SIPUSH;
-
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -139,6 +136,9 @@ final class ScopeComputer {
 
     /** The list of atoms. */
     private final List<String>                     atoms     = new ArrayList<String>();
+
+    // store the extra integer values
+    private final ConcurrentSkipListSet<Integer> exInt = new ConcurrentSkipListSet<Integer>();
 
     /**
      * This UniqueNameGenerator allows each sig's atoms to be distinct strings.
@@ -364,7 +364,7 @@ final class ScopeComputer {
                 return true;
             }
         }
-        return false;    
+        return false;
     }
 
     /** Make the given sig "exact". */
@@ -626,7 +626,7 @@ final class ScopeComputer {
         boolean changed = false;
         Sig trouble = null;
         for (Sig s : sigs)
-            if (!s.builtin && !s.isTopLevel() && sig2scope(s) < 0 && (s instanceof PrimSig)) {
+            if (!s.builtin && !s.isTopLevel() && sig2scope(s) < 0 && sig2PScopeL(s) < 0 && (s instanceof PrimSig)) {
                 PrimSig p = ((PrimSig) s).parent;
                 int pb = sig2scope(p);
                 if (pb >= 0) {

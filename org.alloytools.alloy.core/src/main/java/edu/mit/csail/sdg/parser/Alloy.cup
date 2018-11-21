@@ -356,9 +356,9 @@ action code {:
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
         }
         if (n!=null)
-          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x, isSparse);
         else
-          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x, isSparse);
     }
     private Expr t(Pos pos, Pos oldClosing, Expr left, Expr right, Pos close) throws Err {
       if (right instanceof ExprVar) {
@@ -829,7 +829,7 @@ ExprBbN ::= NUMBER:a             {:RESULT =a;:};
 
 
 ExprB ::= ExprBb:a                     {:RESULT = new ArrayList(); RESULT.add(a);:};
-ExprB ::= ExprBbN:a                    {:RESULT = new ArrayLists(); RESULT.add(a);:};
+ExprB ::= ExprBbN:a                    {:RESULT = new ArrayList(); RESULT.add(a);:};
 ExprB ::= ExprB:a PLUS:o ExprBb:b      {:a.add(b); RESULT=a;:};
 ExprB ::= ExprB:a PLUS:o ExprBbN:b     {:a.add(b); RESULT=a;:};
 ExprB ::= ExprB:a ARROW:o ExprBb:b     {:

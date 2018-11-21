@@ -128,14 +128,6 @@ public class CommandScope {
     }
 
     /** Construct a new CommandScope object.
-     * @param sig - the sig for this scope
-     * @param isExact - true iff the scope is intended to be exact
-     * @param scope - the scope
-     * @throws ErrorSyntax if scope is less than zero
-     */
-    public CommandScope(Sig sig, boolean isExact, int scope) throws ErrorSyntax { this(null, sig, isExact, scope, scope, 1); }
-
-    /** Construct a new CommandScope object.
      * @param pos - the position where this scope is given
      * @param sig - the sig for this scope
      * @param isExact - true iff the scope is intended to be exact
@@ -163,25 +155,6 @@ public class CommandScope {
      * @throws ErrorSyntax
      */
     public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment, boolean isSparse) throws ErrorSyntax {
-        /*if (pos == null) pos = Pos.UNKNOWN;
-        if (sig == null) throw new NullPointerException();
-        if (startingScope < 0) throw new ErrorSyntax(pos, "Sig "+sig+" cannot have a negative starting scope ("+startingScope+")");
-        if (endingScope < 0) throw new ErrorSyntax(pos, "Sig "+sig+" cannot have a negative ending scope ("+endingScope+")");
-        if (endingScope < startingScope) throw new ErrorSyntax(pos, "Sig "+sig+" cannot have an ending scope ("+endingScope+") smaller than its starting scope ("+startingScope+")");
-        if (startingScope == endingScope) increment = 1;
-        if (increment < 1) throw new ErrorSyntax(pos, "Sig "+sig+"'s increment value cannot be "+increment+".\nThe increment must be 1 or greater.");
-        this.pos = pos;
-        this.sig = sig;
-        this.isExact = isExact;
-        this.startingScope = startingScope;
-        this.endingScope = endingScope;
-        this.increment = increment;
-        this.isPartial = false;
-        this.pAtoms = new ArrayList<ExprVar>();
-        this.pFields = new ArrayList<List<Expr>>();
-        this.hasLower = false;
-        this.hasUpper = false;
-        */
         this(pos,sig,isExact,startingScope,endingScope,increment,new ArrayList(),0,isSparse);
     }
     
