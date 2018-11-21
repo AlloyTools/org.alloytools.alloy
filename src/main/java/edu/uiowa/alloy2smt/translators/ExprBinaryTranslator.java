@@ -66,8 +66,8 @@ public class ExprBinaryTranslator
             case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
             case GT                 : return translateComparison(expr, BinaryExpression.Op.GT, variablesScope);
             case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
-            case IN                 : return translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
-            case NOT_IN             : return new UnaryExpression(UnaryExpression.Op.NOT, translateSetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope));
+            case IN                 : return translateSubsetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
+            case NOT_IN             : return translateSubsetOperation(expr, null, variablesScope);
             case IMPLIES            : return translateImplies(expr, variablesScope);            
             case AND                : return translateAnd(expr, variablesScope);
             case OR                 : return translateOr(expr, variablesScope);
@@ -486,24 +486,39 @@ public class ExprBinaryTranslator
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
+                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
             left = exprTranslator.getSingleton((ConstantExpression) left);
         }
         if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
+                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
             right = exprTranslator.getSingleton((ConstantExpression) right);
         }
 
+        Expression finalExpr;
+        
         if(op == BinaryExpression.Op.NEQ)
         {
-            return new UnaryExpression(UnaryExpression.Op.NOT,new BinaryExpression(left, BinaryExpression.Op.EQ, right));
+            finalExpr = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
         }
         else
         { 
-            return new BinaryExpression(left, op, right);
-        }
+            finalExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+        }        
+
+        if(!exprTranslator.translator.existentialBdVars.isEmpty())
+        {
+            if(exprTranslator.translator.auxExpr != null)
+            {
+                finalExpr = new BinaryExpression(finalExpr, BinaryExpression.Op.AND, exprTranslator.translator.auxExpr);
+                exprTranslator.translator.auxExpr = null;
+            }
+            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, finalExpr);
+        }                
+        return finalExpr;        
     }
 
     private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, ConstantExpression> variablesScope)
@@ -594,18 +609,58 @@ public class ExprBinaryTranslator
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
+                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
             left = exprTranslator.getSingleton((ConstantExpression) left);
         }
-        else if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
+        
+        if(right instanceof ConstantExpression &&
+                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
             right = exprTranslator.getSingleton((ConstantExpression) right);
         }
 
         BinaryExpression operation = new BinaryExpression(left, op, right);
         return operation;
+    }
+    
+    private Expression translateSubsetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, ConstantExpression> variablesScope)
+    {
+        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        if(left instanceof ConstantExpression &&
+                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
+        {
+            left = exprTranslator.getSingleton((ConstantExpression) left);
+        }
+        
+        if(right instanceof ConstantExpression &&
+                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
+        {
+            right = exprTranslator.getSingleton((ConstantExpression) right);
+        }
+                
+        Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
+        
+        if(op == null)
+        {
+            finalExpr = new UnaryExpression(UnaryExpression.Op.NOT, finalExpr);
+        }
+        if(!exprTranslator.translator.existentialBdVars.isEmpty())
+        {
+            if(exprTranslator.translator.auxExpr != null)
+            {
+                finalExpr = new BinaryExpression(finalExpr, BinaryExpression.Op.AND, exprTranslator.translator.auxExpr);
+                exprTranslator.translator.auxExpr = null;
+            }
+            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, finalExpr);
+        }                
+        return finalExpr;                 
     }
 
     private Expression translateJoin(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
@@ -614,12 +669,14 @@ public class ExprBinaryTranslator
         Expression          right   = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration)
+                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
+                (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
             left = exprTranslator.getSingleton((ConstantExpression) left);
         }
         if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration)
+                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration  &&
+                (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
             right = exprTranslator.getSingleton((ConstantExpression) right);
         }

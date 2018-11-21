@@ -255,7 +255,7 @@ public class ExprTranslator
         LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables = new LinkedHashMap<>();
         for (Decl decl: exprQt.decls)
         {
-            Expression functionDeclaration = getFunctionDeclaration(decl, variablesScope);
+            Expression functionDeclaration = getDeclarationExpr(decl, variablesScope);
             for (ExprHasName name: decl.names)
             {
                 BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label, translator.atomSort);
@@ -276,7 +276,7 @@ public class ExprTranslator
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    Expression functionDeclaration = getFunctionDeclaration(decl, variablesScope);
+                    Expression functionDeclaration = getDeclarationExpr(decl, variablesScope);
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
@@ -292,7 +292,7 @@ public class ExprTranslator
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    Expression functionDeclaration = getFunctionDeclaration(decl, variablesScope);
+                    Expression functionDeclaration = getDeclarationExpr(decl, variablesScope);
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(name.label+"_2", translator.atomSort);
@@ -302,6 +302,58 @@ public class ExprTranslator
                 }   
                 Expression expression2 = translateExpr(exprQt.sub, variablesScope);                
                 return  translateOneQuantifier(boundVariables, sndBoundVariables, expression, expression2);
+            }
+            case COMPREHENSION :
+            {
+                //Todo: consider int sort
+                List<Sort> elementSorts     = new ArrayList<>();
+                
+                for(int i = 0; i < exprQt.decls.size(); ++i)
+                {                    
+                    elementSorts.add(translator.atomSort);
+                }
+                
+                String              setBdVarName    = TranslatorUtils.getNewSetName();
+                SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
+                List<Expression>    declExprs       = new ArrayList<>();                               
+                BoundVariableDeclaration setBdVar   = new BoundVariableDeclaration(setBdVarName, setSort);
+                LinkedHashMap<BoundVariableDeclaration, Expression> bdVars = new LinkedHashMap<>();
+                
+                for(Decl decl : exprQt.decls)
+                {
+                    
+                    Expression funcDecl = getDeclarationExpr(decl, variablesScope);
+                    declExprs.add(funcDecl);
+                    for (ExprHasName name: decl.names)
+                    {
+                        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(name.label, translator.atomSort);
+                        variablesScope.put(name.label, bdVar.getConstantExpr());
+                        bdVars.put(bdVar, funcDecl);
+                    }                    
+                }
+                Expression setCompBodyExpr  = translateExpr(exprQt.sub, variablesScope);
+                Expression membership       = getMemberExpression(bdVars, 0);
+                
+                for(int i = 1; i < bdVars.size(); ++i)
+                {
+                    membership = new BinaryExpression(membership, BinaryExpression.Op.AND, getMemberExpression(boundVariables, i));
+                }
+                membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
+                Expression setMembership = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(new ArrayList<>(bdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getConstantExpr());
+                membership = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, setMembership);
+                Expression forallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(bdVars.keySet()), membership);
+                
+                if(translator.auxExpr != null)
+                {                    
+                    translator.auxExpr = new BinaryExpression(translator.auxExpr, BinaryExpression.Op.AND, forallExpr);
+                }
+                else
+                {
+                    translator.auxExpr = forallExpr;
+                }
+                
+                translator.existentialBdVars.add(setBdVar);
+                return setBdVar.getConstantExpr();
             }
             default: throw new UnsupportedOperationException();
         }
@@ -520,7 +572,7 @@ public class ExprTranslator
         return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, functionDeclaration);
     }
 
-    private Expression getFunctionDeclaration(Decl decl, Map<String, ConstantExpression> variablesScope)
+    private Expression getDeclarationExpr(Decl decl, Map<String, ConstantExpression> variablesScope)
     {
         if(decl.expr instanceof ExprUnary)
         {

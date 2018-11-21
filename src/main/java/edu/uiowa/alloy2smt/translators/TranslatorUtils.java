@@ -41,7 +41,7 @@ public class TranslatorUtils
         //ToDo: handle the case when n = 0
         List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
 
-        FunctionDeclaration declaration = new FunctionDeclaration(getNewSet(), setSort);
+        FunctionDeclaration declaration = new FunctionDeclaration(getNewSetName(), setSort);
 
         translator.smtProgram.addFunctionDeclaration(declaration);
 
@@ -75,7 +75,7 @@ public class TranslatorUtils
         {
             for (int i = 0; i < n; i++)
             {
-                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getNewAtom(), sort);
+                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getNewAtomName(), sort);
                 expressions.add(constantDeclaration.getConstantExpr());
                 smtProgram.addConstantDeclaration(constantDeclaration);
             }
@@ -99,13 +99,13 @@ public class TranslatorUtils
         return "_x" + nameIndex;
     }
 
-    public static String getNewAtom()
+    public static String getNewAtomName()
     {
         atomIndex ++;
         return "_a" + atomIndex;
     }
 
-    public static String getNewSet()
+    public static String getNewSetName()
     {
         setIndex ++;
         return "_S" + setIndex;

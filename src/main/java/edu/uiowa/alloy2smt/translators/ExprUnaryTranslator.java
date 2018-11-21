@@ -235,5 +235,15 @@ public class ExprUnaryTranslator
             constExprs.add(varDecl.getConstantExpr());
         }
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
-    }    
+    } 
+    
+    public MultiArityExpression mkTupleExpr(List<BoundVariableDeclaration> bdVarDecls)
+    {
+        List<Expression> constExprs = new ArrayList<>();
+        for(BoundVariableDeclaration varDecl : bdVarDecls)
+        {
+            constExprs.add(varDecl.getConstantExpr());
+        }
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
+    }     
 }
