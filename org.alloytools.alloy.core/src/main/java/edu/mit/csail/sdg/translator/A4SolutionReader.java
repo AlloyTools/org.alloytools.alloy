@@ -362,9 +362,10 @@ public final class A4SolutionReader {
             if (i.getAttribute("label").equals("Int")) {
                 for (XMLNode y: i) {
                     try{
-                        atoms.add(String.valueOf(Integer.valueOf(y.getAttribute("value"))));
+                        int value = Integer.valueOf(y.getAttribute("value"));
+                        atoms.add(String.valueOf(value));
                     }catch (NumberFormatException e) {
-                        throw new ErrorSyntax("The XML file must containt integer type instead of:" + y.getAttribute("value"));
+                        // throw new ErrorSyntax("The XML file must containt integer type instead of:" + y.getAttribute("value"));
                     }
                 }
             }
