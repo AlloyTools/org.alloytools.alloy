@@ -315,20 +315,18 @@ public class ExprTranslator
                 
                 String              setBdVarName    = TranslatorUtils.getNewSetName();
                 SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
-                List<Expression>    declExprs       = new ArrayList<>();                               
                 BoundVariableDeclaration setBdVar   = new BoundVariableDeclaration(setBdVarName, setSort);
                 LinkedHashMap<BoundVariableDeclaration, Expression> bdVars = new LinkedHashMap<>();
                 
                 for(Decl decl : exprQt.decls)
-                {
-                    
-                    Expression funcDecl = getDeclarationExpr(decl, variablesScope);
-                    declExprs.add(funcDecl);
+                {                    
+                    Expression declExpr = getDeclarationExpr(decl, variablesScope);
+
                     for (ExprHasName name: decl.names)
                     {
                         BoundVariableDeclaration bdVar = new BoundVariableDeclaration(name.label, translator.atomSort);
                         variablesScope.put(name.label, bdVar.getConstantExpr());
-                        bdVars.put(bdVar, funcDecl);
+                        bdVars.put(bdVar, declExpr);
                     }                    
                 }
                 Expression setCompBodyExpr  = translateExpr(exprQt.sub, variablesScope);
@@ -340,7 +338,7 @@ public class ExprTranslator
                 }
                 membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
                 Expression setMembership = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(new ArrayList<>(bdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getConstantExpr());
-                membership = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, setMembership);
+                membership = new BinaryExpression(membership, BinaryExpression.Op.EQ, setMembership);
                 Expression forallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(bdVars.keySet()), membership);
                 
                 if(translator.auxExpr != null)
