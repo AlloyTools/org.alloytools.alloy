@@ -628,11 +628,20 @@ Command ::=                 CommandPrefix:o        Name:n   Scope:s  Expects:c {
 Command ::= Command IMPLIES CommandPrefix:o Name:x Name:n   Scope:s  Expects:c {: c(true ,o,x   ,n   ,null,s,c); :};
 Command ::= Command IMPLIES CommandPrefix:o        Name:n   Scope:s  Expects:c {: c(true ,o,null,n   ,null,s,c); :};
 
+Command ::=                 CommandPrefix:o        Super:e  FOR  Name:nb {:
+    for(Bounds b: parser.alloymodule.getAllBounds()){
+       if(b.label.compareTo(nb.label) == 0){
+           parser.alloymodule.attachBound(b);
+           c(false ,o,null,null   ,e,b.scope,null); 
+        }
+    }
+:};
+
 Command ::=                 CommandPrefix:o        Name:n   FOR  Name:nb {: 
     for(Bounds b: parser.alloymodule.getAllBounds()){
        if(b.label.compareTo(nb.label) == 0){
            parser.alloymodule.attachBound(b);
-           c(false ,o,null,n   ,null,b.scope,null); 
+           c(false,o,null,n   ,null,b.scope,null); 
         }
     }
 :};
