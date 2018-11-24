@@ -2183,8 +2183,6 @@ public final class CompModule extends Browsable implements Module {
         TempList<CommandScope> sc = new TempList<CommandScope>(cmd.scope.size());
         for (CommandScope et : cmd.scope) {
             Sig s = getRawSIG(et.sig.pos, et.sig.label);
-            if (s == null)
-                throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
             if ((s==null) && !(isField(et.sig.label) && et.isPartial) ) 
                 throw new ErrorSyntax(et.sig.pos, "The sig \""+et.sig.label+"\" cannot be found.");
             if(et.isPartial)

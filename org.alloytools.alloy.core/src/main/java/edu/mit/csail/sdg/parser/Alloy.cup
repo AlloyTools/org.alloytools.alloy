@@ -727,6 +727,7 @@ Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n                           Super:v
 Vis ::=           {: RESULT=null; :};
 Vis ::= PRIVATE:p {: RESULT=p;    :};
 
+Bounds ::= BOUND:o Name:a LBRACE RBRACE {: :};
 Bounds ::= BOUND:o Name:a LBRACE DeclsB:b RBRACE SuperOpt:e {: 
     parser.alloymodule.addBounds(a.pos.merge(o),a.label,b,e);
 :};
