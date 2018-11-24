@@ -22,12 +22,11 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
 public class AlloyModelsPartialInstancesTest {
 
-    final String TEST_FILE       = "/Users/vajih/Documents/workspace-git/org.alloytools.alloy/org.alloytools.alloy.core/src/test/resources/test-partial-instances.als";
+    final String TEST_FILE       = "src/test/resources/test-partial-instances.als";
     final String DEFAULT_COMMAND = "for default_bound";
 
     protected Module loadTestFile(final String commandName) throws FileNotFoundException, IOException {
         String content = Util.readAll(TEST_FILE).replace(DEFAULT_COMMAND, "for " + commandName);
-        System.out.println(content);
         return CompUtil.parseEverything_fromString(A4Reporter.NOP, content);
     }
 
