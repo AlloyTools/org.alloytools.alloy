@@ -159,5 +159,5 @@ public class TranslatorUtils
         {
             return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
         }
-    }    
+    }          
 }

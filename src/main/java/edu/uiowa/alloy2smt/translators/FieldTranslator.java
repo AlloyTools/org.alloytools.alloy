@@ -53,6 +53,11 @@ public class FieldTranslator
             else if(((ExprUnary) expr).sub instanceof ExprVar)
             {
                 //skip, ((ExprUnary) expr).sub = this
+            }   
+            else if(((ExprUnary) expr).sub instanceof ExprBinary)
+            {
+                collectFieldSigs(((ExprBinary)((ExprUnary) expr).sub).left, fieldComponentTypes);
+                collectFieldSigs(((ExprBinary)((ExprUnary) expr).sub).right, fieldComponentTypes);
             }            
             else
             {
@@ -123,11 +128,20 @@ public class FieldTranslator
         if(expr instanceof ExprUnary)
         {
             ExprUnary exprUnary = (ExprUnary) expr;
+            
+            List<Sig> fieldSignatures = new ArrayList<>();        
+
+            collectFieldSigs(exprUnary, fieldSignatures);
+
+            if(fieldSignatures.size() > 1)
+            {
+                throw new UnsupportedOperationException("We currenty do not support multiplicity constraints on nested relations!");
+            }             
             switch (exprUnary.op)
             {
-                case SOMEOF     : translateRelationSomeMultiplicity(field, declaration, exprUnary);break;
-                case LONEOF     : translateRelationLoneMultiplicity(field, declaration, exprUnary);break;
-                case ONEOF      : translateRelationOneMultiplicity(field, declaration, exprUnary);break;
+                case SOMEOF     : translateRelationSomeMultiplicity(field, declaration, fieldSignatures);break;
+                case LONEOF     : translateRelationLoneMultiplicity(field, declaration, fieldSignatures);break;
+                case ONEOF      : translateRelationOneMultiplicity(field, declaration, fieldSignatures);break;
                 case SETOF      : break; // no assertion needed
                 case EXACTLYOF  : break; //ToDo: review translator case
                 default:
@@ -148,24 +162,68 @@ public class FieldTranslator
 
     private void translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
     {
+        List<Sig> fieldSignatures = new ArrayList<>();        
+        
+        collectFieldSigs(field.decl().expr, fieldSignatures);
+        
+        if(fieldSignatures.size() > 2)
+        {
+            throw new UnsupportedOperationException("Does not support multiplicity constraints on relations with arity GT 3!");
+        }        
         switch (exprBinary.op)
         {
             case ARROW              : break; // no assertion needed
-            case ANY_ARROW_SOME     : translateAnyArrowSome(exprBinary, field, declaration); break;
-            case ANY_ARROW_ONE      : translateAnyArrowOne(exprBinary, field, declaration); break;
-            case ANY_ARROW_LONE     : translateAnyArrowLone(exprBinary, field, declaration); break;
-            case SOME_ARROW_ANY     : throw new UnsupportedOperationException();
-            case SOME_ARROW_SOME    : throw new UnsupportedOperationException();
-            case SOME_ARROW_ONE     : throw new UnsupportedOperationException();
-            case SOME_ARROW_LONE    : throw new UnsupportedOperationException();
-            case ONE_ARROW_ANY      : throw new UnsupportedOperationException();
-            case ONE_ARROW_SOME     : throw new UnsupportedOperationException();
-            case ONE_ARROW_ONE      : throw new UnsupportedOperationException();
-            case ONE_ARROW_LONE     : throw new UnsupportedOperationException();
-            case LONE_ARROW_ANY     : throw new UnsupportedOperationException();
-            case LONE_ARROW_SOME    : throw new UnsupportedOperationException();
-            case LONE_ARROW_ONE     : throw new UnsupportedOperationException();
-            case LONE_ARROW_LONE    : throw new UnsupportedOperationException();
+            case ANY_ARROW_SOME     : translateAnyArrowSome(fieldSignatures, field, declaration); break;
+            case ANY_ARROW_ONE      : translateAnyArrowOne(fieldSignatures, field, declaration); break;
+            case ANY_ARROW_LONE     : translateAnyArrowLone(fieldSignatures, field, declaration); break;
+            case SOME_ARROW_ANY     : translateSomeArrowAny(fieldSignatures, field, declaration); break;
+            case SOME_ARROW_SOME    : 
+            {
+                translateAnyArrowSome(fieldSignatures, field, declaration);
+                translateSomeArrowAny(fieldSignatures, field, declaration); break;
+            }
+            case SOME_ARROW_ONE     : 
+            {
+                translateAnyArrowOne(fieldSignatures, field, declaration); 
+                translateSomeArrowAny(fieldSignatures, field, declaration); break;
+            }
+            case SOME_ARROW_LONE    : 
+            {
+                translateAnyArrowLone(fieldSignatures, field, declaration);
+                translateSomeArrowAny(fieldSignatures, field, declaration); break;
+            }
+            case ONE_ARROW_ANY      : translateOneArrowAny(fieldSignatures, field, declaration); break;
+            case ONE_ARROW_SOME     : 
+            {
+                translateAnyArrowSome(fieldSignatures, field, declaration);
+                translateOneArrowAny(fieldSignatures, field, declaration); break;
+            }
+            case ONE_ARROW_ONE      : 
+            {
+                translateOneArrowAny(fieldSignatures, field, declaration); 
+                translateAnyArrowOne(fieldSignatures, field, declaration); break;
+            }
+            case ONE_ARROW_LONE     : 
+            {
+                translateOneArrowAny(fieldSignatures, field, declaration); 
+                translateAnyArrowLone(fieldSignatures, field, declaration); break;
+            }
+            case LONE_ARROW_ANY     : translateLoneArrowAny(fieldSignatures, field, declaration); break;
+            case LONE_ARROW_SOME    : 
+            {
+                translateAnyArrowSome(fieldSignatures, field, declaration);
+                translateLoneArrowAny(fieldSignatures, field, declaration); break;
+            }
+            case LONE_ARROW_ONE     : 
+            {
+                translateLoneArrowAny(fieldSignatures, field, declaration); 
+                translateAnyArrowOne(fieldSignatures, field, declaration); break;
+            }
+            case LONE_ARROW_LONE    : 
+            {
+                translateAnyArrowLone(fieldSignatures, field, declaration); 
+                translateLoneArrowAny(fieldSignatures, field, declaration); break;
+            }
             case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
             default:
             {
@@ -174,208 +232,280 @@ public class FieldTranslator
         }
     }
 
-    private void translateAnyArrowSome(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
-    {
-        TupleSort tupleSort = new TupleSort(translator.atomSort);
-
-        BoundVariableDeclaration sigVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort);
-
-        List<Sig.PrimSig> leftSignatures = exprBinary.left.type().fold().get(0);
-
-        List<BoundVariableDeclaration> leftVariables = IntStream
-                .range(1, leftSignatures.size() + 1).boxed()
-                .map(x -> new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort))
-                .collect(Collectors.toList());
-
-        Expression leftMembers = new BinaryExpression(leftVariables.get(0).getConstantExpr(),
-                BinaryExpression.Op.MEMBER,
-                translator.signaturesMap.get(leftSignatures.get(0)).getConstantExpr());
-
-        for (int i = 1; i < leftSignatures.size(); i++)
-        {
-            Expression member = new BinaryExpression(leftVariables.get(i).getConstantExpr(),
-                    BinaryExpression.Op.MEMBER,
-                    translator.signaturesMap.get(leftSignatures.get(i)).getConstantExpr());
-            leftMembers = new BinaryExpression(leftMembers, BinaryExpression.Op.AND, member);
-        }
-
-        UnaryExpression  singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, sigVariable.getConstantExpr());
+    // ANY_ARROW_SOME
+    private void translateAnyArrowSome(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
+    {   
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String sndSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
-        int rightArity = exprBinary.right.type().arity();
+        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndSigVar  = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
+        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr(); 
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr);  
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);        
+        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
 
-        Sort rightSort = new TupleSort(IntStream.range(1, rightArity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList()));
+        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, sndSigVarMembership, sndSigVar);
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
 
-        BoundVariableDeclaration rightVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), rightSort);
-
-        Expression join = new BinaryExpression(singleton, BinaryExpression.Op.JOIN,  declaration.getConstantExpr());
-
-        UnaryExpression unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(0).getConstantExpr());
-
-        join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
-
-        for(int i = 1; i < leftVariables.size(); i++)
-        {
-            unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(i).getConstantExpr());
-
-            join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
-        }
-
-        BinaryExpression rightMember = new BinaryExpression(rightVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, join);
-
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rightMember, rightVariable);
-
-        BinaryExpression innerImplies = new BinaryExpression(leftMembers, BinaryExpression.Op.IMPLIES, exists);
-
-        QuantifiedExpression innerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, leftVariables, innerImplies);
-
-        Expression    sigExpression = translator.signaturesMap.get(field.sig).getConstantExpr();
-
-        BinaryExpression member = new BinaryExpression(sigVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, sigExpression);
-
-        BinaryExpression outerImplies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, innerForAll);
-
-        QuantifiedExpression outerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, outerImplies, sigVariable);
-
-        translator.smtProgram.addAssertion(new Assertion(outerForAll));
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
 
         //ToDo: handle nested multiplicities
     }
     
-    private void translateAnyArrowOne(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
-    {
-        TupleSort tupleSort = new TupleSort(translator.atomSort);
-
-        BoundVariableDeclaration sigVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort);
-
-        List<Sig.PrimSig> leftSignatures = exprBinary.left.type().fold().get(0);
-
-        List<BoundVariableDeclaration> leftVariables = IntStream
-                .range(1, leftSignatures.size() + 1).boxed()
-                .map(x -> new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort))
-                .collect(Collectors.toList());
-
-        Expression leftMembers = new BinaryExpression(leftVariables.get(0).getConstantExpr(),
-                BinaryExpression.Op.MEMBER,
-                translator.signaturesMap.get(leftSignatures.get(0)).getConstantExpr());
-
-        for (int i = 1; i < leftSignatures.size(); i++)
-        {
-            Expression member = new BinaryExpression(leftVariables.get(i).getConstantExpr(),
-                    BinaryExpression.Op.MEMBER,
-                    translator.signaturesMap.get(leftSignatures.get(i)).getConstantExpr());
-            leftMembers = new BinaryExpression(leftMembers, BinaryExpression.Op.AND, member);
-        }
-
-        UnaryExpression  singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, sigVariable.getConstantExpr());
+    // SOME_ARROW_ANY
+    private void translateSomeArrowAny(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
+    {   
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String sndSigVarName    = TranslatorUtils.getNewName();
         
-        int rightArity = exprBinary.right.type().arity();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration sndSigVar  = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();    
+        // Change the order of fst and snd sig expressions
+        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr(); 
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr); 
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr);  
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);        
+        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
 
-        Sort rightSort = new TupleSort(IntStream.range(1, rightArity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList()));
+        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, sndSigVarMembership, fstSigVar);
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), sndSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
 
-        BoundVariableDeclaration rightVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), rightSort);
-
-        Expression join = new BinaryExpression(singleton, BinaryExpression.Op.JOIN,  declaration.getConstantExpr());
-
-        UnaryExpression unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(0).getConstantExpr());
-
-        join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
-
-        for(int i = 1; i < leftVariables.size(); i++)
-        {
-            unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(i).getConstantExpr());
-
-            join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
-        }
-
-        BinaryExpression rightMember = new BinaryExpression(rightVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, join);
-
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rightMember, rightVariable);
-
-        BinaryExpression innerImplies = new BinaryExpression(leftMembers, BinaryExpression.Op.IMPLIES, exists);
-
-        QuantifiedExpression innerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, leftVariables, innerImplies);
-
-        Expression    sigExpression = translator.signaturesMap.get(field.sig).getConstantExpr();
-
-        BinaryExpression member = new BinaryExpression(sigVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, sigExpression);
-
-        BinaryExpression outerImplies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, innerForAll);
-
-        QuantifiedExpression outerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, outerImplies, sigVariable);
-
-        translator.smtProgram.addAssertion(new Assertion(outerForAll));
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
 
         //ToDo: handle nested multiplicities
     }    
     
-    private void translateAnyArrowLone(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
+    // ONE_ARROW_ANY
+    private void translateOneArrowAny(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
     {
-        TupleSort tupleSort = new TupleSort(translator.atomSort);
-
-        BoundVariableDeclaration sigVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort);
-
-        List<Sig.PrimSig> leftSignatures = exprBinary.left.type().fold().get(0);
-
-        List<BoundVariableDeclaration> leftVariables = IntStream
-                .range(1, leftSignatures.size() + 1).boxed()
-                .map(x -> new BoundVariableDeclaration(TranslatorUtils.getNewName(), tupleSort))
-                .collect(Collectors.toList());
-
-        Expression leftMembers = new BinaryExpression(leftVariables.get(0).getConstantExpr(),
-                BinaryExpression.Op.MEMBER,
-                translator.signaturesMap.get(leftSignatures.get(0)).getConstantExpr());
-
-        for (int i = 1; i < leftSignatures.size(); i++)
-        {
-            Expression member = new BinaryExpression(leftVariables.get(i).getConstantExpr(),
-                    BinaryExpression.Op.MEMBER,
-                    translator.signaturesMap.get(leftSignatures.get(i)).getConstantExpr());
-            leftMembers = new BinaryExpression(leftMembers, BinaryExpression.Op.AND, member);
-        }
-
-        UnaryExpression  singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, sigVariable.getConstantExpr());
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String sndSigVarName    = TranslatorUtils.getNewName();
+        String sndPrimeSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
-        int rightArity = exprBinary.right.type().arity();
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();        
+        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr(); 
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr); 
+        Expression sndPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr);         
+        
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), sndSigVar.getConstantExpr(), fstSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);        
+        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(sndPrimeSigVar.getConstantExpr(), sndSigVar.getConstantExpr()));
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
+                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), sndPrimeSigVar.getConstantExpr(), fstSigVar.getConstantExpr()),  
+                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
+        
+        QuantifiedExpression innerInnerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndPrimeSigVarMembership, sndPrimeSigVar);
 
-        Sort rightSort = new TupleSort(IntStream.range(1, rightArity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList()));
+        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, innerInnerForall), sndSigVar);
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
 
-        BoundVariableDeclaration rightVariable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), rightSort);
-
-        Expression join = new BinaryExpression(singleton, BinaryExpression.Op.JOIN,  declaration.getConstantExpr());
-
-        UnaryExpression unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(0).getConstantExpr());
-
-        join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
-
-        for(int i = 1; i < leftVariables.size(); i++)
-        {
-            unary = new UnaryExpression(UnaryExpression.Op.SINGLETON, leftVariables.get(i).getConstantExpr());
-
-            join = new BinaryExpression(unary, BinaryExpression.Op.JOIN, join);
-        }
-
-        BinaryExpression rightMember = new BinaryExpression(rightVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, join);
-
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rightMember, rightVariable);
-
-        BinaryExpression innerImplies = new BinaryExpression(leftMembers, BinaryExpression.Op.IMPLIES, exists);
-
-        QuantifiedExpression innerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, leftVariables, innerImplies);
-
-        Expression    sigExpression = translator.signaturesMap.get(field.sig).getConstantExpr();
-
-        BinaryExpression member = new BinaryExpression(sigVariable.getConstantExpr(), BinaryExpression.Op.MEMBER, sigExpression);
-
-        BinaryExpression outerImplies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, innerForAll);
-
-        QuantifiedExpression outerForAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, outerImplies, sigVariable);
-
-        translator.smtProgram.addAssertion(new Assertion(outerForAll));
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
 
         //ToDo: handle nested multiplicities
     }    
+    
+    // ANY_ARROW_ONE
+    private void translateAnyArrowOne(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
+    {
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String sndSigVarName    = TranslatorUtils.getNewName();
+        String sndPrimeSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
+        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr(); 
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr); 
+        Expression sndPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr);         
+        
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);        
+        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(sndPrimeSigVar.getConstantExpr(), sndSigVar.getConstantExpr()));
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
+                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndPrimeSigVar.getConstantExpr()),  
+                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
+        
+        QuantifiedExpression innerInnerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndPrimeSigVarMembership, sndPrimeSigVar);
 
-    private void translateRelationSomeMultiplicity(Sig.Field field, FunctionDeclaration declaration, ExprUnary exprUnary)
+        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, innerInnerForall), sndSigVar);
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
+
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
+
+        //ToDo: handle nested multiplicities
+    }       
+    
+    private void translateAnyArrowLone(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
+    {
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String sndSigVarName    = TranslatorUtils.getNewName();
+        String sndPrimeSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
+        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr(); 
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr); 
+        Expression sndPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr);         
+        
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);       
+        
+        QuantifiedExpression innerInnerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, 
+                                                                        new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, fieldMembership)), sndSigVar);        
+        
+        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(sndPrimeSigVar.getConstantExpr(), sndSigVar.getConstantExpr()));
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
+                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndPrimeSigVar.getConstantExpr()),  
+                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
+
+        QuantifiedExpression innerInnerExistsForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndPrimeSigVarMembership, sndPrimeSigVar);
+        QuantifiedExpression innerInnerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, innerInnerExistsForall), sndSigVar);
+        
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, new BinaryExpression(innerInnerExists, BinaryExpression.Op.OR, innerInnerForall)), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
+
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
+
+        //ToDo: handle nested multiplicities
+    } 
+    
+   private void translateLoneArrowAny(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
+    {
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String sndSigVarName    = TranslatorUtils.getNewName();
+        String sndPrimeSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();        
+        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr(); 
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr); 
+        Expression sndPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, sndSigExpr);         
+        
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), sndSigVar.getConstantExpr(), fstSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);       
+        
+        QuantifiedExpression innerInnerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, 
+                                                                        new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, fieldMembership)), sndSigVar);        
+        
+        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(sndPrimeSigVar.getConstantExpr(), sndSigVar.getConstantExpr()));
+        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
+                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), sndPrimeSigVar.getConstantExpr(), fstSigVar.getConstantExpr()),  
+                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
+
+        QuantifiedExpression innerInnerExistsForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndPrimeSigVarMembership, sndPrimeSigVar);
+        QuantifiedExpression innerInnerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, innerInnerExistsForall), sndSigVar);
+        
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, new BinaryExpression(innerInnerExists, BinaryExpression.Op.OR, innerInnerForall)), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
+
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
+
+        //ToDo: handle nested multiplicities
+    }     
+    
+
+    private void translateRelationSomeMultiplicity(Sig.Field field, FunctionDeclaration declaration, List<Sig> fieldSignatures)
     {
         //(assert
         //	(forall ((x Atom))
@@ -389,47 +519,34 @@ public class FieldTranslator
         //		)
         //	)
         //)
-        if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
-        {
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr);  
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);        
 
-            FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
-            FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            Sort fstSigSort = translator.signatureTranslator.getAncestorSig(field.sig) == Sig.SIGINT?translator.intSort:translator.atomSort;
-            Sort sndSigSort = translator.signatureTranslator.getAncestorSig((Sig) ((ExprUnary) exprUnary.sub).sub) == Sig.SIGINT?translator.intSort:translator.atomSort;
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), fstSigSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
+        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, fieldMembership), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), sigVar);
 
-            // (mkTuple x)
-            MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
 
-            // (mkTuple y)
-            MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getConstantExpr());
+        //ToDo: handle nested multiplicities
 
-            // (mkTuple x y)
-            MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr() ,y.getConstantExpr());
-
-            // (member (mkTuple x) Book)
-            BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getConstantExpr());
-
-            // (member (mkTuple y) Addr)
-            BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
-
-            // (member (mkTuple x y) addr)
-            BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getConstantExpr());
-
-            BinaryExpression        and             = new BinaryExpression(yMember, BinaryExpression.Op.AND, xyMember);
-            QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and , y);
-            BinaryExpression        implies         = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
-            QuantifiedExpression    forall          = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies , x);
-            translator.smtProgram.addAssertion(new Assertion(forall));
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
     }
 
-    private void translateRelationOneMultiplicity(Sig.Field field, FunctionDeclaration declaration, ExprUnary exprUnary)
+    private void translateRelationOneMultiplicity(Sig.Field field, FunctionDeclaration declaration, List<Sig> fieldSignatures)
     {
         //(assert
         //	(forall ((x Atom))
@@ -449,84 +566,49 @@ public class FieldTranslator
         //		)
         //	)
         //)
-        if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
-        {
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String fstPrimeSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration fstPrimeSigVar     = new BoundVariableDeclaration(fstPrimeSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression fstPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstPrimeSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr);         
+        
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);       
+        
+        // forall a: Atom | a in fieldSigExpr => forall b : Atom | b in fstSigExpr => not (a, b) in fieldExpr
+        
+        fstSigVarMembership = new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        
+        fstPrimeSigVarMembership = new BinaryExpression(fstPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(fstPrimeSigVar.getConstantExpr(), fstSigVar.getConstantExpr()));
+        fstPrimeSigVarMembership = new BinaryExpression(fstPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
+                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstPrimeSigVar.getConstantExpr()),  
+                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
 
-            FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
-            FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            Sort fstSigSort = translator.signatureTranslator.getAncestorSig(field.sig) == Sig.SIGINT?translator.intSort:translator.atomSort;
-            Sort sndSigSort = translator.signatureTranslator.getAncestorSig((Sig) ((ExprUnary) exprUnary.sub).sub) == Sig.SIGINT?translator.intSort:translator.atomSort;            
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), fstSigSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
+        QuantifiedExpression innerInnerExistsForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, fstPrimeSigVarMembership, fstPrimeSigVar);
+        QuantifiedExpression innerInnerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, innerInnerExistsForall), fstSigVar);
+        
+//        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(innerInnerExists, BinaryExpression.Op.OR, innerInnerForall), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerInnerExists), sigVar);
 
-            // (mkTuple x)
-            MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
+        translator.smtProgram.addAssertion(new Assertion(outerForall));        
 
-            // (mkTuple y)
-            MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getConstantExpr());
-
-            // (mkTuple z)
-            MultiArityExpression    zTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getConstantExpr());
-
-            // (mkTuple x y)
-            MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr() ,y.getConstantExpr());
-
-            // (mkTuple x z)
-            MultiArityExpression    xzTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr() ,z.getConstantExpr());
-
-            // (member (mkTuple x) Book)
-            BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getConstantExpr());
-
-            // (member (mkTuple y) Addr)
-            BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
-
-            // (member (mkTuple z) Addr)
-            BinaryExpression        zMember         = new BinaryExpression(zTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
-
-            // (= z y)
-            BinaryExpression        zEqualsY        = new BinaryExpression(z.getConstantExpr(), BinaryExpression.Op.EQ, y.getConstantExpr());
-
-            // (not (= z y))
-            UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
-
-            //(and 	(member (mkTuple z) Addr) (not (= z y)))
-            BinaryExpression        and1            = new BinaryExpression(zMember, BinaryExpression.Op.AND, notZEqualsY);
-
-            // (member (mkTuple x y) addr)
-            BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getConstantExpr());
-
-            // (member (mkTuple x z) addr)
-            BinaryExpression        xzMember        = new BinaryExpression(xzTuple,BinaryExpression.Op.MEMBER, declaration.getConstantExpr());
-
-            // (not (member (mkTuple x z) addr))
-            UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
-
-            // (=>  (and (member (mkTuple z) Addr) (not (= z y)))
-            //      (not (member (mkTuple x z) addr)))
-            BinaryExpression        implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
-            //(forall ((z Atom))
-            //	(=> (and 	(member (mkTuple y) Addr)
-            //				(not (= z y)))
-            //		(not (member (mkTuple x z) addr))
-            //	)
-            QuantifiedExpression    forall1         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1 , z);
-            BinaryExpression        and2            = new BinaryExpression(xyMember, BinaryExpression.Op.AND, forall1);
-
-            BinaryExpression        and3            = new BinaryExpression(yMember, BinaryExpression.Op.AND, and2);
-
-            QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3 , y);
-            BinaryExpression        implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, exists);
-            QuantifiedExpression    forall2         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
-            translator.smtProgram.addAssertion(new Assertion(forall2));
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
     }
 
-    private void translateRelationLoneMultiplicity(Sig.Field field, FunctionDeclaration declaration, ExprUnary exprUnary)
+    private void translateRelationLoneMultiplicity(Sig.Field field, FunctionDeclaration declaration, List<Sig> fieldSignatures)
     {
         //(assert
         //	(forall ((x Atom))
@@ -549,102 +631,71 @@ public class FieldTranslator
         //		)
         //	)
         //)
-        if(exprUnary.sub instanceof ExprUnary && ((ExprUnary) exprUnary.sub).sub instanceof Sig)
-        {
+        String sigVarName       = TranslatorUtils.getNewName();
+        String fstSigVarName    = TranslatorUtils.getNewName();
+        String fstPrimeSigVarName    = TranslatorUtils.getNewName();
+        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration fstPrimeSigVar     = new BoundVariableDeclaration(fstPrimeSigVarName, translator.atomSort);
+        
+        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
+        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
+        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
+                
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, sigExpr);
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
+        Expression fstPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstPrimeSigVar.getConstantExpr()),
+                                                            BinaryExpression.Op.MEMBER, fstSigExpr);         
+        
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr()), 
+                                                            BinaryExpression.Op.MEMBER, fieldExpr);       
+        
+        // forall a: Atom | a in fieldSigExpr => forall b : Atom | b in fstSigExpr => not (a, b) in fieldExpr
+        QuantifiedExpression innerInnerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, 
+                                                                        new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, fieldMembership)), fstSigVar);        
+        
+        fstSigVarMembership = new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        
+        fstPrimeSigVarMembership = new BinaryExpression(fstPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(fstPrimeSigVar.getConstantExpr(), fstSigVar.getConstantExpr()));
+        fstPrimeSigVarMembership = new BinaryExpression(fstPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
+                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstPrimeSigVar.getConstantExpr()),  
+                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
 
-            FunctionDeclaration set1            = translator.signaturesMap.get(field.sig);
-            FunctionDeclaration set2            = translator.signaturesMap.get((Sig) ((ExprUnary) exprUnary.sub).sub);
-            Sort fstSigSort = translator.signatureTranslator.getAncestorSig(field.sig) == Sig.SIGINT?translator.intSort:translator.atomSort;
-            Sort sndSigSort = translator.signatureTranslator.getAncestorSig((Sig) ((ExprUnary) exprUnary.sub).sub) == Sig.SIGINT?translator.intSort:translator.atomSort;                        
-            BoundVariableDeclaration x          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), fstSigSort);
-            BoundVariableDeclaration u          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
-            BoundVariableDeclaration y          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
-            BoundVariableDeclaration z          = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sndSigSort);
+        QuantifiedExpression innerInnerExistsForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, fstPrimeSigVarMembership, fstPrimeSigVar);
+        QuantifiedExpression innerInnerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, innerInnerExistsForall), fstSigVar);
+        
+//        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(innerInnerExists, BinaryExpression.Op.OR, innerInnerForall), fstSigVar);
+        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, new BinaryExpression(innerInnerExists, BinaryExpression.Op.OR, innerInnerForall)), sigVar);
 
-            // (mkTuple x)
-            MultiArityExpression    xTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
-
-            // (mkTuple x)
-            MultiArityExpression    uTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, u.getConstantExpr());
-
-            // (mkTuple y)
-            MultiArityExpression    yTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getConstantExpr());
-
-            // (mkTuple z)
-            MultiArityExpression    zTuple          = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getConstantExpr());
-
-            // (mkTuple x u)
-            MultiArityExpression    xuTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr() ,u.getConstantExpr());
-
-            // (mkTuple x y)
-            MultiArityExpression    xyTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr() ,y.getConstantExpr());
-
-            // (mkTuple x z)
-            MultiArityExpression    xzTuple         = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr() ,z.getConstantExpr());
-
-            // (member (mkTuple x) Book)
-            BinaryExpression        xMember         = new BinaryExpression(xTuple,BinaryExpression.Op.MEMBER, set1.getConstantExpr());
-
-            // (member (mkTuple u) Addr)
-            BinaryExpression        uMember         = new BinaryExpression(uTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
-
-            // (member (mkTuple x u) addr)
-            BinaryExpression        xuMember        = new BinaryExpression(xuTuple,BinaryExpression.Op.MEMBER, declaration.getConstantExpr());
-
-            // (not (member (mkTuple x u) addr))
-            UnaryExpression        notXUMember      = new UnaryExpression(UnaryExpression.Op.NOT, xuMember);
-            // (=> (member (mkTuple u) Addr) (not (member (mkTuple x u) addr)))
-            BinaryExpression        implies0        = new BinaryExpression(uMember, BinaryExpression.Op.IMPLIES, notXUMember);
-
-            // (forall ((u Atom)) (=> (member (mkTuple u) Addr) (not (member (mkTuple x u) addr))))
-            QuantifiedExpression        forall0         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,  implies0, u);
-
-            // (member (mkTuple y) Addr)
-            BinaryExpression        yMember         = new BinaryExpression(yTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
-
-            // (member (mkTuple z) Addr)
-            BinaryExpression        zMember         = new BinaryExpression(zTuple,BinaryExpression.Op.MEMBER, set2.getConstantExpr());
-
-            // (= z y)
-            BinaryExpression        zEqualsY        = new BinaryExpression(z.getConstantExpr(), BinaryExpression.Op.EQ, y.getConstantExpr());
-
-            // (not (= z y))
-            UnaryExpression         notZEqualsY     = new UnaryExpression(UnaryExpression.Op.NOT, zEqualsY);
-
-            //(and 	(member (mkTuple z) Addr) (not (= z y)))
-            BinaryExpression        and1            = new BinaryExpression(zMember, BinaryExpression.Op.AND, notZEqualsY);
-
-            // (member (mkTuple x y) addr)
-            BinaryExpression        xyMember        = new BinaryExpression(xyTuple,BinaryExpression.Op.MEMBER, declaration.getConstantExpr());
-
-            // (member (mkTuple x z) addr)
-            BinaryExpression        xzMember        = new BinaryExpression(xzTuple,BinaryExpression.Op.MEMBER, declaration.getConstantExpr());
-
-            // (not (member (mkTuple x z) addr))
-            UnaryExpression         notXZMember     = new UnaryExpression(UnaryExpression.Op.NOT, xzMember);
-
-            // (=>  (and (member (mkTuple z) Addr) (not (= z y)))
-            //      (not (member (mkTuple x z) addr)))
-            BinaryExpression        implies1        = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, notXZMember);
-            //(forall ((z Atom))
-            //	(=> (and 	(member (mkTuple z) Addr)
-            //				(not (= z y)))
-            //		(not (member (mkTuple x z) addr))
-            //	)
-            QuantifiedExpression    forall1         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1 , z);
-            BinaryExpression        and2            = new BinaryExpression(xyMember, BinaryExpression.Op.AND, forall1);
-
-            BinaryExpression        and3            = new BinaryExpression(yMember, BinaryExpression.Op.AND, and2);
-
-            QuantifiedExpression    exists          = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3 , y);
-            BinaryExpression        or              = new BinaryExpression(forall0, BinaryExpression.Op.OR, exists);
-            BinaryExpression        implies2        = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, or);
-            QuantifiedExpression    forall2         = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2 , x);
-            translator.smtProgram.addAssertion(new Assertion(forall2));
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
+        translator.smtProgram.addAssertion(new Assertion(outerForall));
     }
+    
+    public Expression mkTupleOutofAtoms(List<Expression> atomExprs)
+    {
+        if(atomExprs == null)
+        {
+            throw new RuntimeException();
+        }
+        else 
+        {            
+            return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
+        }        
+    } 
+    
+    
+    public Expression mkTupleOutofAtoms(Expression ... atomExprs)
+    {
+        if(atomExprs == null)
+        {
+            throw new RuntimeException();
+        }
+        else 
+        {            
+            return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
+        }        
+    }     
 }
