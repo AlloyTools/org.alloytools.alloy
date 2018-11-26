@@ -37,7 +37,7 @@ inst range_bound {
   no C
 }
 
-inst continues_int_bound {
+inst continued_int_bound {
   2 Int,
   no A,
   no B,
