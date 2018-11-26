@@ -30,7 +30,7 @@ public class ExprTranslator
         this.exprBinaryTranslator   = new ExprBinaryTranslator(this);
     }
 
-    Expression translateExpr(Expr expr, Map<String, ConstantExpression> variablesScope)
+    Expression translateExpr(Expr expr, Map<String, Expression> variablesScope)
     {
         if(expr instanceof ExprUnary)
         {
@@ -60,7 +60,7 @@ public class ExprTranslator
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateExprConstant(ExprConstant expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateExprConstant(ExprConstant expr, Map<String,Expression> variablesScope)
     {
         switch (expr.op)
         {
@@ -109,7 +109,7 @@ public class ExprTranslator
         return singleton;
     }    
 
-    Expression translateExprList(ExprList exprList, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprList(ExprList exprList, Map<String, Expression> variablesScope)
     {
         switch (exprList.op)
         {
@@ -119,7 +119,18 @@ public class ExprTranslator
         }
     }
     
-    Expression translateExprCall(ExprCall exprCall, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprLet(ExprLet exprLet, Map<String, Expression> variablesScope)
+    {
+        System.out.println("exprLet.expr = " + exprLet.expr);
+        System.out.println("exprLet.sub = " + exprLet.sub);
+        System.out.println("exprLet.var = " + exprLet.var);
+        Expression varExpr = translateExpr(exprLet.expr, variablesScope);
+        variablesScope.put(exprLet.var.label, varExpr);
+        Expression letBodyExpr = translateExpr(exprLet.sub, variablesScope);
+        return letBodyExpr;
+    }    
+    
+    Expression translateExprCall(ExprCall exprCall, Map<String, Expression> variablesScope)
     {
         String              funcName = exprCall.fun.label;
         List<Expression>    argExprs = new ArrayList<>();
@@ -166,7 +177,7 @@ public class ExprTranslator
         throw new UnsupportedOperationException(funcName);
     }    
     
-    public Expression translateArithmetic(Expression leftExpr, Expression rightExpr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    public Expression translateArithmetic(Expression leftExpr, Expression rightExpr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
         if(!translator.arithOps.containsKey(op))
         {
@@ -232,7 +243,7 @@ public class ExprTranslator
         return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
     }    
 
-    private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, ConstantExpression> variablesScope)
+    private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
     {
         //ToDo: review the case of nested variable scopes
         Expression left         = translateExpr(exprList.args.get(0), variablesScope);
@@ -250,7 +261,7 @@ public class ExprTranslator
         return result;
     }
 
-    Expression translateExprQt(ExprQt exprQt, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprQt(ExprQt exprQt, Map<String, Expression> variablesScope)
     {
         LinkedHashMap<BoundVariableDeclaration, Expression> boundVariables = new LinkedHashMap<>();
         for (Decl decl: exprQt.decls)
@@ -570,7 +581,7 @@ public class ExprTranslator
         return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, functionDeclaration);
     }
 
-    private Expression getDeclarationExpr(Decl decl, Map<String, ConstantExpression> variablesScope)
+    private Expression getDeclarationExpr(Decl decl, Map<String, Expression> variablesScope)
     {
         if(decl.expr instanceof ExprUnary)
         {

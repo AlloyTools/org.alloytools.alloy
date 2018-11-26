@@ -177,8 +177,8 @@ public class Alloy2SMTTranslator
     {        
         Sort    returnSort  = new BoolSort();        
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
-        List<BoundVariableDeclaration>      bdVars          = new ArrayList<>();
-        Map<String, ConstantExpression>     variablesScope  = new HashMap<>();
+        List<BoundVariableDeclaration>      bdVars  = new ArrayList<>();
+        Map<String, Expression>     variablesScope  = new HashMap<>();
                 
         // Save function name
         this.funcNamesMap.put(f.label, funcName);        

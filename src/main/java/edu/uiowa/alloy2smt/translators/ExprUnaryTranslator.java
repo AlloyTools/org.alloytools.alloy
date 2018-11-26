@@ -25,7 +25,7 @@ public class ExprUnaryTranslator
         this.exprTranslator = exprTranslator;
     }
 
-    Expression translateExprUnary(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprUnary(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         switch (exprUnary.op)
         {
@@ -48,38 +48,38 @@ public class ExprUnaryTranslator
         }
     }
     
-    private Expression translateCAST2INT(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateCAST2INT(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
     }
     
-    private Expression translateCAST2SIGINT(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateCAST2SIGINT(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
     }    
 
-    private Expression translateNot(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateNot(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         Expression expression   = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         Expression not          = new UnaryExpression(UnaryExpression.Op.NOT, expression);
         return not;
     }
 
-    private Expression translateClosure(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateClosure(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         UnaryExpression closure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, expression);
         return closure;
     }
 
-    private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
         BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, exprTranslator.translator.atomIden.getConstantExpr());
         return reflexiveClosure;
     }
 
-    private Expression translateTranspose(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateTranspose(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         UnaryExpression transpose   = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, expression);
@@ -87,7 +87,7 @@ public class ExprUnaryTranslator
     }
 
 
-    private Expression translateNoop(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
+    private Expression translateNoop(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         if(exprUnary.sub instanceof Sig)
         {
@@ -118,12 +118,15 @@ public class ExprUnaryTranslator
         {
             if(variablesScope.containsKey(((ExprVar)exprUnary.sub).label))
             {
-                ConstantExpression constExpr = variablesScope.get(((ExprVar)exprUnary.sub).label);
+                Expression constExpr = variablesScope.get(((ExprVar)exprUnary.sub).label);
                 
-                if(constExpr.getDeclaration().getSort() == exprTranslator.translator.atomSort)
+                if(constExpr instanceof ConstantExpression)
                 {
-                    return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
-                }
+                    if(((ConstantExpression)constExpr).getDeclaration().getSort() == exprTranslator.translator.atomSort)
+                    {
+                        return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
+                    }                    
+                }                
                 return constExpr;
             }
             else
@@ -152,17 +155,22 @@ public class ExprUnaryTranslator
         {
             return exprTranslator.exprBinaryTranslator.translateExprBinary((ExprBinary) exprUnary.sub, variablesScope);
         }
+        
+        if(exprUnary.sub instanceof ExprLet)
+        {
+            return exprTranslator.translateExprLet((ExprLet) exprUnary.sub, variablesScope);
+        }        
 
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateNo(ExprUnary exprUnary, Map<String, ConstantExpression> variablesScope)
+    private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         Expression set = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         return new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone.getConstantExpr());
     }
 
-    private Expression translateSome(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateSome(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
         List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
@@ -185,7 +193,7 @@ public class ExprUnaryTranslator
         return variables;
     }
 
-    private Expression translateOne(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
         List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
@@ -196,7 +204,7 @@ public class ExprUnaryTranslator
         return exists;
     }
 
-    private Expression translateLone(ExprUnary exprUnary, Map<String,ConstantExpression> variablesScope)
+    private Expression translateLone(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
         List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());

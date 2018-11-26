@@ -348,7 +348,7 @@ public class SignatureTranslator
             BoundVariableDeclaration bdVar = new BoundVariableDeclaration(bdVarName, translator.atomSort);                
             boundVariables.put(bdVar, translator.signaturesMap.get(sigFact.getKey()).getConstantExpr());
             Expression member = translator.exprTranslator.getMemberExpression(boundVariables, 0);
-            Map<String, ConstantExpression> variablesScope = new HashMap<>();
+            Map<String, Expression> variablesScope = new HashMap<>();
 
             variablesScope.put(bdVarName, new ConstantExpression(new FunctionDeclaration(bdVarName, translator.atomSort)));
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), variablesScope);

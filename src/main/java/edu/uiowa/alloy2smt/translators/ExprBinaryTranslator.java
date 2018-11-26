@@ -19,7 +19,7 @@ public class ExprBinaryTranslator
         this.exprTranslator = exprTranslator;
     }
 
-    Expression translateExprBinary(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
+    Expression translateExprBinary(ExprBinary expr, Map<String, Expression> variablesScope)
     {
         switch (expr.op)
         {
@@ -83,7 +83,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateImplies(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateImplies(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -92,7 +92,7 @@ public class ExprBinaryTranslator
         return implExpr;
     }
     
-    private Expression translateAnd(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateAnd(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -101,7 +101,7 @@ public class ExprBinaryTranslator
         return andExpr;
     }
 
-    private Expression translateOr(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateOr(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -110,7 +110,7 @@ public class ExprBinaryTranslator
         return orExpr;
     }    
     
-    private Expression translateArrow(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateArrow(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -119,7 +119,7 @@ public class ExprBinaryTranslator
         return product;
     }
 
-    private Expression translatePlusPlus(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translatePlusPlus(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         int rightExprArity  =  expr.right.type().arity();
         if( rightExprArity == 1)
@@ -151,7 +151,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateDomainRestriction(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateDomainRestriction(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         int arity = expr.right.type().arity();
 
@@ -174,7 +174,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateRangeRestriction(ExprBinary expr, Map<String,ConstantExpression> variablesScope)
+    private Expression translateRangeRestriction(ExprBinary expr, Map<String,Expression> variablesScope)
     {
         int arity = expr.left.type().arity();
 
@@ -199,7 +199,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);    
@@ -268,7 +268,7 @@ public class ExprBinaryTranslator
         return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithOps.get(op)));
     }
     
-    private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
 
         if(((expr.left instanceof ExprUnary) && ((ExprUnary)expr.left).op == ExprUnary.Op.CARDINALITY && 
@@ -469,7 +469,7 @@ public class ExprBinaryTranslator
         return new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op).getFuncName(), leftExpr, rightExpr);     
     }
     
-    private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,ConstantExpression> variablesScope)
+    private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
 
         if(   (expr.left instanceof ExprUnary &&
@@ -521,7 +521,7 @@ public class ExprBinaryTranslator
         return finalExpr;        
     }
 
-    private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, ConstantExpression> variablesScope)
+    private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, Expression> variablesScope)
     {
         // CVC4 doesn't support comparison  between 2 cardinality expressions
         if
@@ -574,7 +574,7 @@ public class ExprBinaryTranslator
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, ConstantExpression> variablesScope)
+    private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, Expression> variablesScope)
     {
         Expression          left        = exprTranslator.translateExpr(expr.sub, variablesScope);
         FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(expr.sub.type().arity(), n, exprTranslator.translator);
@@ -603,7 +603,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, ConstantExpression> variablesScope)
+    private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, Expression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -626,7 +626,7 @@ public class ExprBinaryTranslator
         return operation;
     }
     
-    private Expression translateSubsetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, ConstantExpression> variablesScope)
+    private Expression translateSubsetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, Expression> variablesScope)
     {
         Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
@@ -663,7 +663,7 @@ public class ExprBinaryTranslator
         return finalExpr;                 
     }
 
-    private Expression translateJoin(ExprBinary expr, Map<String, ConstantExpression> variablesScope)
+    private Expression translateJoin(ExprBinary expr, Map<String, Expression> variablesScope)
     {
         Expression          left    = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression          right   = exprTranslator.translateExpr(expr.right, variablesScope);
