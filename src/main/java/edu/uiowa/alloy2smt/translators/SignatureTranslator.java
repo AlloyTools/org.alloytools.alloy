@@ -118,8 +118,6 @@ public class SignatureTranslator
 
     private void collectReachableSigs()
     {
-        translator.LOGGER.printInfo("********************** COLLECT REACHABLE SIGNATURES **********************");
-
         for(Sig sig : translator.alloyModel.getAllSigs())
         {
             if(sig.isTopLevel())
