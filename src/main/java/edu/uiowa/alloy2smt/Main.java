@@ -103,8 +103,8 @@ public class Main
     
     private static String output(InputStream inputStream) throws IOException 
     {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
+        StringBuilder   sb = new StringBuilder();
+        BufferedReader  br = null;
         try {
             br = new BufferedReader(new InputStreamReader(inputStream));
             String line = null;
