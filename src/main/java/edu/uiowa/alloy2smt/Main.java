@@ -26,11 +26,7 @@ public class Main
     {
         File inputFile = new File(path);
         
-        if(inputFile.exists() && inputFile.canRead() && path.endsWith(".als"))
-        {
-            return true;
-        }
-        return false;
+        return inputFile.exists() && inputFile.canRead() && path.endsWith(".als");
     }
     
     public static boolean isValidOutputFilePath(String path) throws IOException
@@ -101,8 +97,7 @@ public class Main
             int errCode = process.waitFor();                 
             System.out.println("Any errors? " + (errCode == 0 ? "No" : "Yes"));
             System.out.println("CVC4 Output:\n" + output(process.getInputStream()));    
-            System.out.println("********************************************************************************************************\n");
-                          
+            System.out.println("********************************************************************************************************\n");                          
         } catch (IOException ex) {            
         }         
     }    

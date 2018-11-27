@@ -16,7 +16,6 @@ import edu.uiowa.alloy2smt.translators.Alloy2SMTTranslator;
 
 public class Utils
 {
-
     public static String translateFromFile(String filePath, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
