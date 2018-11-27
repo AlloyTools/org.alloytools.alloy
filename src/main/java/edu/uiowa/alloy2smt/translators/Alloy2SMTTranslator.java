@@ -48,7 +48,6 @@ public class Alloy2SMTTranslator
     final UnaryExpression           intNone;
     final FunctionDeclaration       intIden;    
     
-    Map<Sig, Sort>                                  sigSortMap;
     Map<String, String>                             funcNamesMap;
     Map<String, FunctionDefinition>                 funcDefsMap;    
     Map<Sig, FunctionDeclaration>                   signaturesMap;
@@ -94,7 +93,6 @@ public class Alloy2SMTTranslator
         this.fieldsMap              = new HashMap<>();
         this.sigFacts               = new HashMap<>();
         this.existentialBdVars      = new ArrayList<>();
-        this.sigSortMap             = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, this.atomUniv);        
     }

@@ -137,7 +137,6 @@ public class Main
             
             if (command.hasOption("i"))
             {
-                String  cvc4        = null;
                 String  inputFile   = command.getOptionValue("i").trim();                             
 
                 if(isValidInputFilePath(inputFile))
