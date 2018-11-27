@@ -12,8 +12,6 @@ import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class FieldTranslator
 {
