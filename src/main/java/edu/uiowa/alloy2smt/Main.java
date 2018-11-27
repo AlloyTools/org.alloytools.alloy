@@ -89,11 +89,10 @@ public class Main
                 
         try {
             pb.command(commands);
-            Process process = pb.start();
 //            System.out.println(output(process.getInputStream()));    
             System.out.println("**************************************** Checking with CVC4 ****************************************");            
             System.out.println("\nCommand executed: " + pb.command());
-            process = pb.start();
+            Process process = pb.start();
             int errCode = process.waitFor();                 
             System.out.println("Any errors? " + (errCode == 0 ? "No" : "Yes"));
             System.out.println("CVC4 Output:\n" + output(process.getInputStream()));    
