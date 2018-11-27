@@ -127,47 +127,6 @@ public class SignatureTranslator
             translator.reachableSigs.add(sig);
         }
     }
-
-    public Sig getAncestorSig(Sig sig)
-    {
-        List <Sig> ancestorSigs = new ArrayList<>();
-        
-        if(sig.isTopLevel())
-        {
-            return sig;
-        }
-        else
-        {            
-            if(sig instanceof Sig.PrimSig)
-            {
-                Sig parentSig = ((Sig.PrimSig) sig).parent;
-                ancestorSigs.add(getAncestorSig(parentSig));
-            }
-            else
-            {
-                List<Sig> parentSigs   = ((Sig.SubsetSig) sig).parents;
-                
-                for(Sig pSig : parentSigs)
-                {
-                    ancestorSigs.add(getAncestorSig(pSig));
-                }
-            }
-        }
-        Sig ancestorSig = null;
-        for(Sig s : ancestorSigs)
-        {
-            if(s == Sig.SIGINT)
-            {
-                ancestorSig = Sig.SIGINT;
-                break;
-            }
-            else
-            {
-                ancestorSig = Sig.UNIV;
-            }
-        }
-        return ancestorSig;
-    }
     
     private void translateSignatures()
     {
@@ -175,7 +134,7 @@ public class SignatureTranslator
         {
             FunctionDeclaration functionDeclaration;
             
-            if(getAncestorSig(sig) == Sig.SIGINT)
+            if(sig.type().is_int())
             {
                 functionDeclaration = declareUnaryIntFunction(TranslatorUtils.sanitizeName(sig.toString()));
                 translator.signaturesMap.put(sig, functionDeclaration);                

@@ -99,7 +99,7 @@ public class FieldTranslator
         // Collect field's type information
         for(int i = 0; i < fieldSignatures.size(); i++)
         {
-            if(translator.signatureTranslator.getAncestorSig(fieldSignatures.get(i)) == Sig.SIGINT)
+            if(fieldSignatures.get(i).type().is_int())
             {
                 fieldSorts.add(translator.intSort);
             }
@@ -110,14 +110,14 @@ public class FieldTranslator
         }        
         
       
-        FunctionDeclaration declaration = new FunctionDeclaration(fieldName, new SetSort(new TupleSort(fieldSorts)));
+        FunctionDeclaration fieldDecl = new FunctionDeclaration(fieldName, new SetSort(new TupleSort(fieldSorts)));
         // declare a variable for the field
-        translator.smtProgram.addFunctionDeclaration(declaration);
-        translator.fieldsMap.put(field, declaration);   
+        translator.smtProgram.addFunctionDeclaration(fieldDecl);
+        translator.fieldsMap.put(field, fieldDecl);   
         // make a subset assertion
-        translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, product)));
+        translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(fieldDecl.getConstantExpr(), BinaryExpression.Op.SUBSET, product)));
         // translateExpr multiplicities
-        translateMultiplicities(field, declaration);
+        translateMultiplicities(field, fieldDecl);
     }
 
     private void translateMultiplicities(Sig.Field field, FunctionDeclaration declaration)
@@ -238,9 +238,13 @@ public class FieldTranslator
         String sndSigVarName    = TranslatorUtils.getNewName();
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
-        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndSigVar  = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
+        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
+        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
+        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;          
+        
+        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, sigVarSort);
+        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
+        BoundVariableDeclaration sndSigVar  = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
@@ -273,11 +277,13 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         String sndSigVarName    = TranslatorUtils.getNewName();
         
-        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
+        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
+        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;  
         
-        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration sndSigVar  = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, sigVarSort);
+        BoundVariableDeclaration sndSigVar  = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
+        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();    
         // Change the order of fst and snd sig expressions
@@ -287,16 +293,16 @@ public class FieldTranslator
                 
         Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
                                                             BinaryExpression.Op.MEMBER, sigExpr);
-        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
+        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
                                                             BinaryExpression.Op.MEMBER, sndSigExpr); 
-        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
                                                             BinaryExpression.Op.MEMBER, fstSigExpr);  
         Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndSigVar.getConstantExpr()), 
                                                             BinaryExpression.Op.MEMBER, fieldExpr);        
-        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
+        fstSigVarMembership = new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
 
-        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, sndSigVarMembership, fstSigVar);
-        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), sndSigVar);
+        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, fstSigVarMembership, fstSigVar);
+        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), sndSigVar);
         QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
 
         translator.smtProgram.addAssertion(new Assertion(outerForall));
@@ -311,12 +317,15 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         String sndSigVarName    = TranslatorUtils.getNewName();
         String sndPrimeSigVarName    = TranslatorUtils.getNewName();
-        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+
+        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
+        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
+        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;            
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, sigVarSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();        
@@ -359,12 +368,15 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         String sndSigVarName    = TranslatorUtils.getNewName();
         String sndPrimeSigVarName    = TranslatorUtils.getNewName();
-        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+
+        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
+        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
+        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;          
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, sigVarSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
@@ -406,12 +418,15 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         String sndSigVarName    = TranslatorUtils.getNewName();
         String sndPrimeSigVarName    = TranslatorUtils.getNewName();
-        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+
+        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
+        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
+        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;        
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, sigVarSort);
+        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
+        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
+        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
@@ -453,16 +468,18 @@ public class FieldTranslator
     
    private void translateLoneArrowAny(List<Sig> fieldSignatures, Sig.Field field, FunctionDeclaration declaration)
     {
-        String sigVarName       = TranslatorUtils.getNewName();
-        String fstSigVarName    = TranslatorUtils.getNewName();
-        String sndSigVarName    = TranslatorUtils.getNewName();
-        String sndPrimeSigVarName    = TranslatorUtils.getNewName();
-        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
+        String sigVarName           = TranslatorUtils.getNewName();
+        String fstSigVarName        = TranslatorUtils.getNewName();
+        String sndSigVarName        = TranslatorUtils.getNewName();
+        String sndPrimeSigVarName   = TranslatorUtils.getNewName();
+        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
+        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
+        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, translator.atomSort);
-        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar      = new BoundVariableDeclaration(sigVarName, sigVarSort);
+        BoundVariableDeclaration fstSigVar      = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
+        BoundVariableDeclaration sndSigVar      = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
+        BoundVariableDeclaration sndPrimeSigVar = new BoundVariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr();        
@@ -521,8 +538,10 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
-        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, 
+                                                    field.sig.type().is_int()? translator.intSort:translator.atomSort);
+        BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, 
+                                                    fieldSignatures.get(0).type().is_int()? translator.intSort:translator.atomSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
@@ -569,9 +588,12 @@ public class FieldTranslator
         String fstPrimeSigVarName    = TranslatorUtils.getNewName();
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration fstPrimeSigVar     = new BoundVariableDeclaration(fstPrimeSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar      = new BoundVariableDeclaration(sigVarName, 
+                                                            field.sig.type().is_int()? translator.intSort:translator.atomSort);
+        BoundVariableDeclaration fstSigVar      = new BoundVariableDeclaration(fstSigVarName, 
+                                                            fieldSignatures.get(0).type().is_int()? translator.intSort:translator.atomSort);
+        BoundVariableDeclaration fstPrimeSigVar = new BoundVariableDeclaration(fstPrimeSigVarName, 
+                                                            fieldSignatures.get(0).type().is_int()? translator.intSort:translator.atomSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
@@ -634,9 +656,12 @@ public class FieldTranslator
         String fstPrimeSigVarName    = TranslatorUtils.getNewName();
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, translator.atomSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, translator.atomSort);
-        BoundVariableDeclaration fstPrimeSigVar     = new BoundVariableDeclaration(fstPrimeSigVarName, translator.atomSort);
+        BoundVariableDeclaration    sigVar      = new BoundVariableDeclaration(sigVarName, 
+                                                            field.sig.type().is_int()? translator.intSort:translator.atomSort);
+        BoundVariableDeclaration fstSigVar      = new BoundVariableDeclaration(fstSigVarName, 
+                                                            fieldSignatures.get(0).type().is_int()? translator.intSort:translator.atomSort);
+        BoundVariableDeclaration fstPrimeSigVar = new BoundVariableDeclaration(fstPrimeSigVarName, 
+                                                            fieldSignatures.get(0).type().is_int()? translator.intSort:translator.atomSort);
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        

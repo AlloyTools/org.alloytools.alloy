@@ -32,12 +32,12 @@ public class Alloy2SMTTranslator
     final SetSort                   setOfBinaryAtomSort;
     final SetSort                   setOfUnaryIntSort;
     final SetSort                   setOfTernaryIntSort;    
-    final UninterpretedSort         atomSort;
     final IntSort                   intSort;
     final TupleSort                 unaryAtomSort;
     final TupleSort                 unaryIntSort;
     final TupleSort                 binaryAtomSort;      
     final TupleSort                 ternaryIntSort;
+    final UninterpretedSort         atomSort;    
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
     final FunctionDeclaration       atomUniv;
@@ -47,11 +47,12 @@ public class Alloy2SMTTranslator
     final FunctionDeclaration       intUnivExpr;
     final UnaryExpression           intNone;
     final FunctionDeclaration       intIden;    
-
+    
+    Map<Sig, Sort>                                  sigSortMap;
     Map<String, String>                             funcNamesMap;
     Map<String, FunctionDefinition>                 funcDefsMap;    
-    Map<Sig,FunctionDeclaration>                    signaturesMap;
-    Map<Sig.Field,FunctionDeclaration>              fieldsMap;    
+    Map<Sig, FunctionDeclaration>                   signaturesMap;
+    Map<Sig.Field, FunctionDeclaration>             fieldsMap;    
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
     Map<BinaryExpression.Op, ConstantExpression>    arithOps;
     Map<Sig, Expr>                                  sigFacts;
@@ -93,17 +94,18 @@ public class Alloy2SMTTranslator
         this.fieldsMap              = new HashMap<>();
         this.sigFacts               = new HashMap<>();
         this.existentialBdVars      = new ArrayList<>();
+        this.sigSortMap             = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, this.atomUniv);        
     }
 
-    public SMTProgram execute()
+    public SMTProgram execute(String assertion)
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
         translateFuncsAndPreds();
         translateFacts();
-        translateAssertions();
+        translateAssertions(assertion);
         translateSpecialAssertions();
         return this.smtProgram;
     }
@@ -153,11 +155,29 @@ public class Alloy2SMTTranslator
         }
     }
     
-    private void translateAssertions()
+    private void translateAssertions(String assertion)
     {
+        if(assertion == null)
+        {
+            System.out.println("Translate the input Alloy model for checking its consistency!");
+            return;
+        }
+        
+        boolean hasAssertion = false;
+        
         for (Pair<String, Expr> pair :this.alloyModel.getAllAssertions())
         {
-            translateAssertion(pair.a, pair.b);
+            if(assertion.equals(pair.a))
+            {
+                System.out.println("Translate the input Alloy model for checking the assertion: " + pair.a);                
+                translateAssertion(pair.a, pair.b);
+                hasAssertion = true;
+                break;
+            }            
+        }
+        if(!hasAssertion)
+        {
+            System.out.println("The input Alloy model does not have an assertion with name: " + assertion);
         }
     }    
     

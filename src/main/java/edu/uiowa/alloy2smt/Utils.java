@@ -17,39 +17,39 @@ import edu.uiowa.alloy2smt.translators.Alloy2SMTTranslator;
 public class Utils
 {
 
-    public static String translateFromFile(String filePath)
+    public static String translateFromFile(String filePath, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
-        Alloy2SMTTranslator translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute();
+        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
+        SMTProgram              program     = translator.execute(assertion);
         SMTLIBPrettyPrinter     printer     = new SMTLIBPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
 
-    public static String translateFromString(String alloyProgram)
+    public static String translateFromString(String alloyProgram, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute();
+        SMTProgram              program     = translator.execute(assertion);
         SMTLIBPrettyPrinter     printer     = new SMTLIBPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
 
-    public static SMTProgram getSMTAstFromFile(String filePath)
+    public static SMTProgram getSMTAstFromFile(String filePath, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute();
+        SMTProgram              program     = translator.execute(assertion);
         return program;
     }
 
-    public static SMTProgram getSMTAstFromString(String alloyProgram)
+    public static SMTProgram getSMTAstFromString(String alloyProgram, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
         Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute();
+        SMTProgram              program     = translator.execute(assertion);
         return program;
     }
 }

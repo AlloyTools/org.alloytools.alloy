@@ -166,8 +166,22 @@ public class ExprUnaryTranslator
 
     private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
-        Expression set = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        return new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone.getConstantExpr());
+        int arity           = exprUnary.sub.type().arity();
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression eqExpr   = new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone.getConstantExpr());        
+        
+        if(arity > 1)
+        {
+            List<Sort> elementSorts = new ArrayList<>();
+            
+            for(int i = 0; i < arity; i++)
+            {
+                elementSorts.add(exprTranslator.translator.atomSort);
+            }
+            eqExpr = new BinaryExpression(set, BinaryExpression.Op.EQ, 
+                                        new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(elementSorts))));        
+        }        
+        return eqExpr;
     }
 
     private Expression translateSome(ExprUnary exprUnary, Map<String,Expression> variablesScope)
