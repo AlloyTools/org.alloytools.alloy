@@ -159,9 +159,14 @@ public class ExprUnaryTranslator
         if(exprUnary.sub instanceof ExprLet)
         {
             return exprTranslator.translateExprLet((ExprLet) exprUnary.sub, variablesScope);
-        }        
+        }  
+        
+        if(exprUnary.sub instanceof ExprConstant)
+        {
+            return exprTranslator.translateExprConstant((ExprConstant) exprUnary.sub, variablesScope);
+        }          
 
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(((ExprLet) exprUnary.sub).toString());
     }
 
     private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)

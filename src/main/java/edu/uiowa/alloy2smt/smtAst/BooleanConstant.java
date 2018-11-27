@@ -10,7 +10,7 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
-public class BooleanConstant extends SMTAst
+public class BooleanConstant extends Expression
 {
     private final boolean value;
     

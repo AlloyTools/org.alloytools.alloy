@@ -60,13 +60,14 @@ public class ExprTranslator
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateExprConstant(ExprConstant expr, Map<String,Expression> variablesScope)
+    public Expression translateExprConstant(ExprConstant expr, Map<String,Expression> variablesScope)
     {
         switch (expr.op)
         {
             // alloy only supports integers
             case NUMBER : return new IntConstant(expr.num); 
             case IDEN   : return translator.atomIden.getConstantExpr();
+            case TRUE   : return new BooleanConstant(true);
             default: throw new UnsupportedOperationException(expr.op.name());
         }
     }

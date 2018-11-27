@@ -190,7 +190,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
 
     @Override
     public void visit(BooleanConstant aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.stringBuilder.append(aThis.getValue());
     }
 
     @Override
@@ -284,6 +284,10 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         {
             this.visit((FunctionCallExpression) expression);
         }      
+        else if (expression instanceof  BooleanConstant)
+        {
+            this.visit((BooleanConstant) expression);
+        }
         else
         {
             throw new UnsupportedOperationException();
