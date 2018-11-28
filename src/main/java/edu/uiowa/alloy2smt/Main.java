@@ -96,7 +96,7 @@ public class Main
             Process process = pb.start();
             if(process.waitFor(300, TimeUnit.SECONDS))
             {
-                System.out.println("CVC4 Output:\n" + output(process.getInputStream()));
+                System.out.println("CVC4 Output: " + output(process.getInputStream()));
             }
             System.out.println("********************************************************************************************************\n");                          
             process.destroy();
