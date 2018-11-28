@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Main
 {
@@ -87,17 +88,20 @@ public class Main
             commands.addAll(Arrays.asList(cvc4Flags));               
         } 
                 
-        try {
-            pb.command(commands);
-//            System.out.println(output(process.getInputStream()));    
+        try 
+        {
+            pb.command(commands); 
             System.out.println("**************************************** Checking with CVC4 ****************************************");            
             System.out.println("\nCommand executed: " + pb.command());
             Process process = pb.start();
-            int errCode = process.waitFor();                 
-            System.out.println("Any errors? " + (errCode == 0 ? "No" : "Yes"));
-            System.out.println("CVC4 Output:\n" + output(process.getInputStream()));    
+            if(process.waitFor(300, TimeUnit.SECONDS))
+            {
+                System.out.println("CVC4 Output:\n" + output(process.getInputStream()));
+            }
             System.out.println("********************************************************************************************************\n");                          
-        } catch (IOException ex) {            
+            process.destroy();
+        } 
+        catch (IOException ex) {            
         }         
     }    
     
@@ -130,6 +134,7 @@ public class Main
         options.addOption(Option.builder("b").longOpt("cvc4-binary").desc("CVC4 binary path").hasArg().build());
         options.addOption(Option.builder("f").longOpt("cvc4-flags").desc("CVC4 flags").hasArgs().build());
         options.addOption(Option.builder("a").longOpt("assertion").desc("The assertion to be checked").hasArg().build());
+        options.addOption(Option.builder("t").longOpt("timeout").desc("Timeout(s)").hasArg().build());
         
         try
         {

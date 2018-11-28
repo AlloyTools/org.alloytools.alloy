@@ -179,7 +179,7 @@ public class Alloy2SMTTranslator
         }
         if(!hasAssertion)
         {
-            System.out.println("The input Alloy model does not have an assertion with name: " + assertion);
+            System.out.println("The input Alloy model does not have the assertion: " + assertion);
         }
     }    
     
