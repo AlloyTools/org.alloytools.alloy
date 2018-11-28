@@ -140,21 +140,7 @@ public class ExprTranslator
         
         if(this.translator.funcNamesMap.containsKey(funcName))
         {
-            List<Expression>    argSingletonExprs = new ArrayList<>();
-            for(Expression arg : argExprs)
-            {
-                
-                if(arg instanceof ConstantExpression &&
-                    ((ConstantExpression)arg).getDeclaration() instanceof BoundVariableDeclaration)
-                {
-                    argSingletonExprs.add(getSingleton((ConstantExpression)arg));
-                }
-                else
-                {
-                    argSingletonExprs.add(arg);
-                }
-            }
-            return new FunctionCallExpression(this.translator.funcNamesMap.get(funcName), argSingletonExprs);
+            return new FunctionCallExpression(this.translator.funcNamesMap.get(funcName), argExprs);
         }
         else if(funcName.equals("integer/plus"))
         {
@@ -171,6 +157,10 @@ public class ExprTranslator
         else if(funcName.equals("integer/div"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, variablesScope);
+        }
+        else if(!this.translator.funcNamesMap.containsKey(funcName))
+        {
+            return new FunctionCallExpression(TranslatorUtils.sanitizeName(funcName), argExprs);            
         }
         throw new UnsupportedOperationException(funcName);
     }    
@@ -270,8 +260,9 @@ public class ExprTranslator
             
             for (ExprHasName name: decl.names)
             {
-                int arity = decl.expr.type().arity();
-                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(name.label, translator.atomSort);                
+                int     arity           = decl.expr.type().arity();
+                String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
+                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(sanBdVarName, translator.atomSort);                
                 
                 if(arity > 1)
                 {
@@ -281,7 +272,7 @@ public class ExprTranslator
                    {
                        elementSorts.add(translator.atomSort);
                    }
-                   bdVarDecl = new BoundVariableDeclaration(name.label, new TupleSort(elementSorts));
+                   bdVarDecl = new BoundVariableDeclaration(sanBdVarName, new TupleSort(elementSorts));
                 }
 
                 variablesScope.put(name.label, bdVarDecl.getConstantExpr());
@@ -305,7 +296,8 @@ public class ExprTranslator
                     Expression functionDeclaration = getDeclarationExpr(decl, variablesScope);
                     for (ExprHasName name: decl.names)
                     {
-                        String name2 = name.label+"_2";
+                        String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
+                        String  name2           = sanBdVarName + "_2";
                         int arity = decl.expr.type().arity();
                         BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(name2, translator.atomSort);                
 

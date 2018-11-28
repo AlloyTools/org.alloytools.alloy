@@ -16,8 +16,10 @@ import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Alloy2SMTTranslator
 {
@@ -57,6 +59,7 @@ public class Alloy2SMTTranslator
     Map<Sig, Expr>                                  sigFacts;
     List<BoundVariableDeclaration>                  existentialBdVars;
     Expression                                      auxExpr = null;
+    Set<String>                                     funcNames;
 
 
     public Alloy2SMTTranslator(CompModule alloyModel)
@@ -93,6 +96,7 @@ public class Alloy2SMTTranslator
         this.fieldsMap              = new HashMap<>();
         this.sigFacts               = new HashMap<>();
         this.existentialBdVars      = new ArrayList<>();
+        this.funcNames              = new HashSet<>();    
 
         this.signaturesMap.put(Sig.UNIV, this.atomUniv);        
     }
@@ -180,8 +184,12 @@ public class Alloy2SMTTranslator
     }    
     
     private void translateFuncsAndPreds()
-    {
-        for (Func f :this.alloyModel.getAllFunc() )
+    {        
+        for(Func func : this.alloyModel.getAllFunc()) 
+        {
+            funcNames.add(func.label);
+        }       
+        for(Func f : this.alloyModel.getAllFunc())
         {
             if(f.label.equalsIgnoreCase("this/$$Default"))
             {
@@ -189,14 +197,59 @@ public class Alloy2SMTTranslator
             }
             translateFunc(f);
         }
+        
+        List<String> funcOrder = new ArrayList<>();
+        orderFunctions(funcOrder);
+        
+        for(int i = 0; i < funcOrder.size(); ++i)
+        {            
+            this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+        }
+    }    
+    
+    private void orderFunctions(List<String> funcOrder)
+    {
+        for(Func f :this.alloyModel.getAllFunc())
+        {
+            for(String name : funcNames)
+            {
+                if(f.getBody().toString().contains(name+"["))
+                {
+                    orderFunctions(name, funcOrder);
+                }
+            }
+            if(!funcOrder.contains(f.label))
+            {
+                funcOrder.add(f.label);
+            }
+        }        
+    }
+    
+    private void orderFunctions(String func, List<String> funcOrder)
+    {
+        for(Func f : this.alloyModel.getAllFunc())
+        {
+            if(f.label.equals(func))
+            {
+                for(String name : funcNames)
+                {
+                    if(f.getBody().toString().contains(name+"["))
+                    {
+                        orderFunctions(name, funcOrder);
+                    }
+                }  
+                break;
+            }
+        } 
+        funcOrder.add(func);
     }    
     
     private void translateFunc(Func f)
     {        
         Sort    returnSort  = new BoolSort();        
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
-        List<BoundVariableDeclaration>      bdVars  = new ArrayList<>();
-        Map<String, Expression>     variablesScope  = new HashMap<>();
+        List<BoundVariableDeclaration>      bdVars          = new ArrayList<>();
+        Map<String, Expression>             variablesScope  = new HashMap<>();
                 
         // Save function name
         this.funcNamesMap.put(f.label, funcName);        
@@ -205,12 +258,14 @@ public class Alloy2SMTTranslator
         {
             for(ExprHasName n : f.decls.get(i).names)
             {
-                String  bdVarName = n.label;
-                Sort    bdVarSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                bdVars.add(new BoundVariableDeclaration(bdVarName, bdVarSort));
-                variablesScope.put(bdVarName, new ConstantExpression(new ConstantDeclaration(bdVarName, bdVarSort)));
+                String  bdVarName       = n.label;
+                String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
+                Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
+                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(sanBdVarName, bdVarSort);
+                
+                bdVars.add(bdVarDecl);
+                variablesScope.put(bdVarName, bdVarDecl.getConstantExpr());
             }
-
         }
         // If the function is not predicate, we change its returned type.
         if(!f.isPred)
@@ -221,7 +276,6 @@ public class Alloy2SMTTranslator
         FunctionDefinition funcDef = new FunctionDefinition(funcName, bdVars, returnSort, 
                                                             this.exprTranslator.translateExpr(f.getBody(), variablesScope));
         this.funcDefsMap.put(funcName, funcDef);
-        this.smtProgram.addFcnDef(funcDef);
     }    
     
     private int getArityofExpr(Expr expr)

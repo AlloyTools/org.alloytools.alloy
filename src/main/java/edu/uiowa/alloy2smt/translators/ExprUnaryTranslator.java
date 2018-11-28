@@ -164,7 +164,12 @@ public class ExprUnaryTranslator
         if(exprUnary.sub instanceof ExprConstant)
         {
             return exprTranslator.translateExprConstant((ExprConstant) exprUnary.sub, variablesScope);
-        }          
+        } 
+        
+        if(exprUnary.sub instanceof ExprCall)
+        {
+            return exprTranslator.translateExprCall((ExprCall) exprUnary.sub, variablesScope);
+        }         
 
         throw new UnsupportedOperationException(((ExprLet) exprUnary.sub).toString());
     }

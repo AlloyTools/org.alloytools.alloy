@@ -29,7 +29,7 @@ public class TranslatorUtils
      * @return
      */
     public static String sanitizeName(String s) {
-        return s.replaceAll("/", "_");
+        return s.replaceAll("/", "_").replaceAll("'", "_");
     }
 
     public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, Alloy2SMTTranslator translator)

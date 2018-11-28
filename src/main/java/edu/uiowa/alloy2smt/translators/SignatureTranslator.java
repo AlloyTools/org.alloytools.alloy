@@ -132,18 +132,20 @@ public class SignatureTranslator
     {
         translator.reachableSigs.forEach((sig) ->
         {
-            FunctionDeclaration functionDeclaration;
-            
             if(sig.type().is_int())
             {
-                functionDeclaration = declareUnaryIntFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                FunctionDeclaration functionDeclaration = declareUnaryIntFunction(TranslatorUtils.sanitizeName(sig.toString()));
                 translator.signaturesMap.put(sig, functionDeclaration);                
             }
             else
             {
-                functionDeclaration =  declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                FunctionDeclaration functionDeclaration =  declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
                 translator.signaturesMap.put(sig, functionDeclaration);
-            }            
+            }              
+        });
+        translator.reachableSigs.forEach((sig) ->
+        {
+            FunctionDeclaration functionDeclaration = translator.signaturesMap.get(sig);                       
 
             // if sig extends another signature
             if(!sig.isTopLevel())

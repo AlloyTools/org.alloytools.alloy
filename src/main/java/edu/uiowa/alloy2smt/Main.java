@@ -169,7 +169,7 @@ public class Main
                     executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null);
                     System.out.println("\n\n\n");
                     System.out.println(output);                    
-                    System.out.println("The SMT-LIB model is generated at: " + outputFile.getAbsolutePath());
+                    System.out.println("\n\n\nThe SMT-LIB model was generated at: " + outputFile.getAbsolutePath());
                 }
                 else
                 {
