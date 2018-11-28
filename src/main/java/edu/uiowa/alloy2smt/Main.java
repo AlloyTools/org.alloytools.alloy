@@ -51,7 +51,12 @@ public class Main
         return true;        
     } 
     
-    public static void executeCVC4(String cvc4, String fileName, String[] cvc4Flags) throws InterruptedException
+    public static boolean isNumeric(String str)
+    {
+      return str.matches("\\d+(\\.\\d+)?");  
+    }    
+    
+    public static void executeCVC4(String cvc4, String fileName, String[] cvc4Flags, String timeout) throws InterruptedException
     {
         if(cvc4 == null) 
         {
@@ -87,6 +92,13 @@ public class Main
         {
             commands.addAll(Arrays.asList(cvc4Flags));               
         } 
+        
+        double timeoutSecs = 300;
+        
+        if(timeout != null && isNumeric(timeout))
+        {
+            timeoutSecs = Double.parseDouble(timeout);
+        }
                 
         try 
         {
@@ -94,9 +106,13 @@ public class Main
             System.out.println("**************************************** Checking with CVC4 ****************************************");            
             System.out.println("\nCommand executed: " + pb.command());
             Process process = pb.start();
-            if(process.waitFor(300, TimeUnit.SECONDS))
+            if(process.waitFor((long) timeoutSecs, TimeUnit.SECONDS))
             {
                 System.out.println("CVC4 Output: " + output(process.getInputStream()));
+            }
+            else
+            {
+                System.out.println("Timeout: " + timeoutSecs + " seconds");
             }
             System.out.println("********************************************************************************************************\n");                          
             process.destroy();
@@ -111,10 +127,20 @@ public class Main
         BufferedReader  br = null;
         try {
             br = new BufferedReader(new InputStreamReader(inputStream));
-            String line = null;
-            while ((line = br.readLine()) != null) 
+            String line = br.readLine();
+            String fstLine = line;
+            while (line != null) 
             {
-                sb.append(line).append(System.getProperty("line.separator"));
+                if(fstLine.equalsIgnoreCase("sat") || fstLine.equalsIgnoreCase("unknown"))
+                {
+                    sb.append(line).append(System.getProperty("line.separator"));
+                }
+                else
+                {
+                    sb.append(line).append(System.getProperty("line.separator"));
+                    break;
+                }
+                line = br.readLine();
             }
         } 
         finally 
@@ -150,9 +176,10 @@ public class Main
                     File    alloyFile       = new File(inputFile);
                     String  cvc4Binary      = command.hasOption("b")?command.getOptionValue("b").trim():null;
                     String  assertion       = command.hasOption("a")?command.getOptionValue("a").trim():null;
+                    String  timeout         = command.hasOption("t")?command.getOptionValue("t").trim():null;
                     String  outputDir       = System.getProperty("java.io.tmpdir");                    
                     String  output          = Utils.translateFromFile(alloyFile.getAbsolutePath(), assertion);                    
-                    String  outputFilePath  = outputDir + File.separator + alloyFile.getName() + ".smt2";
+                    String  outputFilePath  = outputDir + File.separator + alloyFile.getName() + ".smt2";                    
                     
                     if(command.hasOption("o"))
                     {                        
@@ -171,7 +198,7 @@ public class Main
                     }
                     
                     // Execute CVC4 on the output file
-                    executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null);
+                    executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null, timeout);
                     System.out.println("\n\n\n");
                     System.out.println(output);                    
                     System.out.println("\n\n\nThe SMT-LIB model was generated at: " + outputFile.getAbsolutePath());

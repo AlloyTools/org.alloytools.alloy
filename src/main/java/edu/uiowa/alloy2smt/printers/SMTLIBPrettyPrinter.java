@@ -56,7 +56,8 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         {
             this.visit(assertion);
         }
-        stringBuilder.append("(check-sat)");
+        stringBuilder.append("(check-sat)\n");
+        stringBuilder.append("(get-model)");
         return this.stringBuilder.toString();
     }
 
