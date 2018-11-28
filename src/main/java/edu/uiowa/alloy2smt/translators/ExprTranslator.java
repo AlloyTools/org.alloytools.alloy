@@ -172,9 +172,9 @@ public class ExprTranslator
             BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", translator.intSort);
             BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", translator.intSort); 
             BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", translator.intSort); 
-            Expression memUniv1 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, translator.intUniv);
-            Expression memUniv2 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, translator.intUniv);
-            Expression memUniv3 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, translator.intUniv);            
+            Expression memUniv1 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, translator.intUnivExpr);
+            Expression memUniv2 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, translator.intUnivExpr);
+            Expression memUniv3 = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, translator.intUnivExpr);            
             ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
             ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
             ConstantExpression bdIntVar3Expr = new ConstantExpression(bdIntVar3);

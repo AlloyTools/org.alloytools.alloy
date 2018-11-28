@@ -43,10 +43,10 @@ public class Alloy2SMTTranslator
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
     final FunctionDeclaration       atomUniv;
-    final UnaryExpression           intUniv;
+    final UnaryExpression           intUnivExpr;
     final FunctionDeclaration       atomNone;
     final FunctionDeclaration       atomIden;
-    final FunctionDeclaration       intUnivExpr;
+    final FunctionDeclaration       intUniv;
     final UnaryExpression           intNone;
     final FunctionDeclaration       intIden;    
     
@@ -84,8 +84,8 @@ public class Alloy2SMTTranslator
         this.atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
         this.atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);        
         this.atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );        
-        this.intUniv                = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);        
-        this.intUnivExpr            = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
+        this.intUnivExpr                = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);        
+        this.intUniv            = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
         this.comparisonOps          = new HashMap<>();  

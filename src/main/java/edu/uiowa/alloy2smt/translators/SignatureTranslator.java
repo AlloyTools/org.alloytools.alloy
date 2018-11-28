@@ -259,9 +259,9 @@ public class SignatureTranslator
     
     private void declareIntSig()
     {
-        translator.signaturesMap.put(Sig.SIGINT, translator.intUnivExpr);
-        BinaryExpression    eqExpr  = new BinaryExpression(translator.intUniv, BinaryExpression.Op.EQ, translator.intUnivExpr.getConstantExpr());
-        translator.smtProgram.addFunctionDeclaration(translator.intUnivExpr);
+        translator.signaturesMap.put(Sig.SIGINT, translator.intUniv);
+        BinaryExpression    eqExpr  = new BinaryExpression(translator.intUnivExpr, BinaryExpression.Op.EQ, translator.intUniv.getConstantExpr());
+        translator.smtProgram.addFunctionDeclaration(translator.intUniv);
         translator.smtProgram.addAssertion(new Assertion(eqExpr));           
     }
 

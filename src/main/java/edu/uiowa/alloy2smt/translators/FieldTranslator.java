@@ -17,7 +17,7 @@ public class FieldTranslator
 {
 
     private final Alloy2SMTTranslator translator;
-    public List<Sig.Field> fields = new ArrayList<>();
+    public  List<Sig.Field> fields = new ArrayList<>();
 
     public FieldTranslator(Alloy2SMTTranslator translator)
     {

@@ -209,9 +209,9 @@ public class ExprBinaryTranslator
             BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", exprTranslator.translator.intSort);
             BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", exprTranslator.translator.intSort); 
             BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", exprTranslator.translator.intSort); 
-            Expression memUniv1 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv);
-            Expression memUniv2 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv);
-            Expression memUniv3 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv);            
+            Expression memUniv1 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
+            Expression memUniv2 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
+            Expression memUniv3 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());            
             ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
             ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
             ConstantExpression bdIntVar3Expr = new ConstantExpression(bdIntVar3);
@@ -250,7 +250,7 @@ public class ExprBinaryTranslator
                   
                     break;
                 case DIVIDE:
-                    arithVarDecl = new ConstantDeclaration("MUL", exprTranslator.translator.ternaryIntSort);
+                    arithVarDecl = new ConstantDeclaration("DIV", exprTranslator.translator.ternaryIntSort);
                     Expression divExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);                    
                     divExpr = new BinaryExpression(divExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
                     lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, divExpr); 
