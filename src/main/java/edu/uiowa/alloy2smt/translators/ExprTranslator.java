@@ -10,6 +10,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.smtAst.*;
+import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -73,6 +74,50 @@ public class ExprTranslator
         }
     }
 
+    BoundVariableDeclaration getABdAtomVar()
+    {
+        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
+        return bdVar;
+    }
+    
+    BoundVariableDeclaration getABdAtomTupleVar(int arity)
+    {
+        List<Sort> elementSorts = new ArrayList<>();
+        
+        for(int i = 0; i < arity; i++)
+        {
+            elementSorts.add(translator.atomSort);
+        }
+        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts));
+        return bdVar;
+    }
+    
+    List<BoundVariableDeclaration> getBdAtomVars(int num)
+    {
+        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        
+        for(int i = 0; i < num; i++)
+        {
+            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort));
+        }
+        return bdVars;
+    }    
+    
+    List<BoundVariableDeclaration> getBdAtomTupleVars(int arity, int num)
+    {
+        List<Sort> elementSorts = new ArrayList<>();
+        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        
+        for(int i = 0; i < arity; i++)
+        {
+            elementSorts.add(translator.atomSort);
+        }
+        for(int i = 0; i < num; i++)
+        {
+            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts)));
+        }
+        return bdVars;
+    }    
 
     Expression getSingleton(ConstantExpression constantExpression)
     {
@@ -88,14 +133,33 @@ public class ExprTranslator
         return singleton;
     }
 
-    Expression getUnaryRelationOutOfAtoms(List<Expression> atomExprs)
+    Expression getUnaryRelationOutOfAtomsOrTuples(List<Expression> atomExprs)
     {
         List<Expression> atomTupleExprs = new ArrayList<>();
         
         for(Expression e : atomExprs)
         {
-            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
-            atomTupleExprs.add(tuple);
+            if(e instanceof ConstantExpression)
+            {
+                if(((ConstantExpression)e).getDeclaration().getSort() == translator.atomSort || 
+                        ((ConstantExpression)e).getDeclaration().getSort() == translator.intSort)
+                {
+                    MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
+                    atomTupleExprs.add(tuple);                    
+                }
+                else if(((ConstantExpression)e).getDeclaration().getSort() instanceof TupleSort)
+                {
+                    atomTupleExprs.add(e);
+                }
+                else
+                {
+                    throw new UnsupportedOperationException("Something is wrong here!");
+                }
+            }
+            else
+            {
+                atomTupleExprs.add(e);
+            }
         }
         
         

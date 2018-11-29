@@ -276,8 +276,8 @@ public class ExprBinaryTranslator
         {
             Expression rightExpr            = null;
             Expression comparisonExpr       = null;            
-            List<BoundVariableDeclaration>  bdVars = new ArrayList<>();
-            List<Expression>                bdVarExprs = new ArrayList<>();
+            List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+            List<Expression>                bdVarExprs  = new ArrayList<>();
             int arity                       = ((ExprUnary)expr.left).sub.type().arity();
             Expression leftExpr             = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, variablesScope);
             int num = ((ExprConstant)expr.right).num;                          
@@ -299,7 +299,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -324,7 +324,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -349,7 +349,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -374,7 +374,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -557,7 +557,7 @@ public class ExprBinaryTranslator
             )
         {
             int         n           = ((ExprConstant)expr.right).num;
-            Expression  equality = translateCardinalityComparison((ExprUnary) expr.left, n, op, variablesScope);
+            Expression  equality = translateEqCardComparison((ExprUnary) expr.left, n, op, variablesScope);
             return equality;
         }
 
@@ -567,37 +567,72 @@ public class ExprBinaryTranslator
             )
         {
             int         n           = ((ExprConstant)expr.left).num;
-            Expression  equality = translateCardinalityComparison((ExprUnary) expr.right, n, op, variablesScope);
+            Expression  equality = translateEqCardComparison((ExprUnary) expr.right, n, op, variablesScope);
             return equality;
         }
 
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, Expression> variablesScope)
+    private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, Expression> variablesScope)
     {
-        Expression          left        = exprTranslator.translateExpr(expr.sub, variablesScope);
-        FunctionDeclaration declaration =  TranslatorUtils.generateAuxiliarySetNAtoms(expr.sub.type().arity(), n, exprTranslator.translator);
-        Expression          right       = declaration.getConstantExpr();
+        int arity = expr.type().arity();
+        List<BoundVariableDeclaration> existentialBdVars = new ArrayList<>();
+        
+        List<Expression> existentialBdVarExprs = new ArrayList<>();
+        
+        if(arity == 1)
+        {
+            existentialBdVars = exprTranslator.getBdAtomVars(n);
+        }
+        else
+        {
+            existentialBdVars = exprTranslator.getBdAtomTupleVars(arity, n);
+        }
+        
+        for(BoundVariableDeclaration bdVar : existentialBdVars)
+        {
+            existentialBdVarExprs.add(bdVar.getConstantExpr());
+        }        
+        
+        Expression distElementsExpr = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, existentialBdVarExprs);
+        
+        exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
+        if(exprTranslator.translator.auxExpr != null)
+        {
+            exprTranslator.translator.auxExpr = new BinaryExpression(exprTranslator.translator.auxExpr, BinaryExpression.Op.AND, distElementsExpr);
+        }
+        else
+        {
+            exprTranslator.translator.auxExpr = distElementsExpr;
+        }
+        
+        Expression  distElementSetExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);        
+        Expression  left    = exprTranslator.translateExpr(expr.sub, variablesScope);
+        Expression  right   = distElementSetExpr;
+        
         switch (op)
         {
-            case EQ : return new BinaryExpression(left, BinaryExpression.Op.EQ, right);
-            case NEQ: return new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
-            case LTE: return new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
-            case LT :
-            {
-                Expression lte      = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
-                Expression notEqual = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
-                return new BinaryExpression(lte, BinaryExpression.Op.AND, notEqual);
+            case NEQ:
+            case EQ : {
+                Expression eqExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+                
+                if(exprTranslator.translator.auxExpr != null)
+                {
+                    eqExpr = new BinaryExpression(eqExpr, BinaryExpression.Op.AND, exprTranslator.translator.auxExpr);
+                    exprTranslator.translator.auxExpr = null;
+                }
+                if(!exprTranslator.translator.existentialBdVars.isEmpty())
+                {
+                    eqExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existentialBdVars, eqExpr);
+                    exprTranslator.translator.existentialBdVars.clear();
+                }
+                if(op == BinaryExpression.Op.NEQ)
+                {
+                    eqExpr = new UnaryExpression(UnaryExpression.Op.NOT, eqExpr);
+                }
+                return eqExpr;
             }
-            case GTE: return new BinaryExpression(right, BinaryExpression.Op.SUBSET, left);
-            case GT :
-            {
-                Expression gte      = new BinaryExpression(right, BinaryExpression.Op.SUBSET, left);
-                Expression notEqual = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
-                return new BinaryExpression(gte, BinaryExpression.Op.AND, notEqual);
-            }
-
             default:
                 throw new UnsupportedOperationException();
         }
