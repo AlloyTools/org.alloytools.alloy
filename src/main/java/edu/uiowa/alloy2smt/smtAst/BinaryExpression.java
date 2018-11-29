@@ -64,7 +64,8 @@ public class BinaryExpression extends Expression
         MEMBER ("member"),
         SUBSET ("subset"),
         JOIN ("join"),
-        PRODUCT ("product");    
+        PRODUCT ("product"),
+        TUPSEL ("tupSel");    
 
         private final String opStr;
 

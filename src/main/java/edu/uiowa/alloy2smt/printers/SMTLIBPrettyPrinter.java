@@ -65,11 +65,22 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(BinaryExpression binaryExpression)
     {
-        this.stringBuilder.append("(" + binaryExpression.getOp() + " ");
-        this.visit(binaryExpression.getLhsExpr());
-        this.stringBuilder.append(" ");
-        this.visit(binaryExpression.getRhsExpr());
-        this.stringBuilder.append(")");
+        if(binaryExpression.getOp() != BinaryExpression.Op.TUPSEL)
+        {
+            this.stringBuilder.append("(" + binaryExpression.getOp() + " ");
+            this.visit(binaryExpression.getLhsExpr());
+            this.stringBuilder.append(" ");
+            this.visit(binaryExpression.getRhsExpr());
+            this.stringBuilder.append(")");            
+        }
+        else
+        {
+            this.stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
+            this.visit(binaryExpression.getLhsExpr());
+            this.stringBuilder.append(") ");
+            this.visit(binaryExpression.getRhsExpr());
+            this.stringBuilder.append(")");
+        }
     }
 
     @Override

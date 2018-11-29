@@ -138,7 +138,8 @@ public class FieldTranslator
         translator.fieldsMap.put(field, fieldDecl);   
         // make a subset assertion
         translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(fieldDecl.getConstantExpr(), BinaryExpression.Op.SUBSET, product)));
-        // translateExpr multiplicities
+        
+        // translateExpr multiplicities and remove the first field Sig in fieldComponentExprs
         fieldComponentExprs.remove(0);
         translateMultiplicities(field, fieldComponentExprs);
     }

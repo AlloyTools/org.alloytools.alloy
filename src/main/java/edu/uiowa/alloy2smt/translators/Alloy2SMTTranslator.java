@@ -122,11 +122,11 @@ public class Alloy2SMTTranslator
     private void translateSpecialAssertions()
     {
         // Axiom for identity relation
-        BoundVariableDeclaration    a       = new BoundVariableDeclaration("_x1", atomSort);
+        BoundVariableDeclaration    a       = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
         BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
 
-        BoundVariableDeclaration    b       = new BoundVariableDeclaration("_x2", atomSort);
+        BoundVariableDeclaration    b       = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getConstantExpr());
         BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
 
