@@ -265,7 +265,7 @@ public class ExprBinaryTranslator
             exprTranslator.translator.smtProgram.addAssertion(new Assertion(finalExpr));     
             exprTranslator.translator.arithOps.put(op, arithVarDecl.getConstantExpr());
         }
-        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithOps.get(op)));
+        return new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithOps.get(op)));
     }
     
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)

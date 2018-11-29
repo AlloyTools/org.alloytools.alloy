@@ -198,7 +198,10 @@ public class Main
                     }
                     
                     // Execute CVC4 on the output file
-                    executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null, timeout);
+                    if(cvc4Binary != null)
+                    {
+                        executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null, timeout);
+                    }                    
                     System.out.println("\n\n\n");
                     System.out.println(output);                    
                     System.out.println("\n\n\nThe SMT-LIB model was generated at: " + outputFile.getAbsolutePath());

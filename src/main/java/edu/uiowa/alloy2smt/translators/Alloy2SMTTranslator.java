@@ -235,13 +235,19 @@ public class Alloy2SMTTranslator
                 {
                     if(f.getBody().toString().contains(name+"["))
                     {
-                        orderFunctions(name, funcOrder);
+                        if(!funcOrder.contains(f.label))
+                        {
+                            funcOrder.add(f.label);
+                        }
                     }
                 }  
                 break;
             }
         } 
-        funcOrder.add(func);
+        if(!funcOrder.contains(func))
+        {
+            funcOrder.add(func);
+        }
     }    
     
     private void translateFunc(Func f)

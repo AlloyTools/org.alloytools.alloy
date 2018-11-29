@@ -228,7 +228,7 @@ public class ExprTranslator
             translator.smtProgram.addAssertion(new Assertion(finalExpr));     
             translator.arithOps.put(op, arithVarDecl.getConstantExpr());
         }
-        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
+        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
     }    
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
