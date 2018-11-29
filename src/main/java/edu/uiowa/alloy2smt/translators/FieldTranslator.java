@@ -132,10 +132,10 @@ public class FieldTranslator
         // make a subset assertion
         translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(fieldDecl.getConstantExpr(), BinaryExpression.Op.SUBSET, product)));
         // translateExpr multiplicities
-        translateMultiplicities(field, fieldDecl);
+        translateMultiplicities(field, fieldComponentExprs);
     }
 
-    private void translateMultiplicities(Sig.Field field, FunctionDeclaration declaration)
+    private void translateMultiplicities(Sig.Field field, List<Expr> fieldComponentExprs)
     {
         Expr expr = field.decl().expr;
         
@@ -143,19 +143,15 @@ public class FieldTranslator
         {
             ExprUnary exprUnary = (ExprUnary) expr;
             
-            List<Expr> fieldSignatures = new ArrayList<>();        
-
-            collectFieldComponentExprs(exprUnary, fieldSignatures);
-
-            if(fieldSignatures.size() > 1)
+            if(fieldComponentExprs.size() > 1)
             {
                 throw new UnsupportedOperationException("We currenty do not support multiplicity constraints on nested relations!");
             }             
             switch (exprUnary.op)
             {
-                case SOMEOF     : translateRelationSomeMultiplicity(field, declaration, fieldSignatures);break;
-                case LONEOF     : translateRelationLoneMultiplicity(field, declaration, fieldSignatures);break;
-                case ONEOF      : translateRelationOneMultiplicity(field, declaration, fieldSignatures);break;
+                case SOMEOF     : translateRelationSomeMultiplicity(field, fieldComponentExprs);break;
+                case LONEOF     : translateRelationLoneMultiplicity(field, fieldComponentExprs);break;
+                case ONEOF      : translateRelationOneMultiplicity(field, fieldComponentExprs);break;
                 case SETOF      : break; // no assertion needed
                 case EXACTLYOF  : break; //ToDo: review translator case
                 default:
@@ -166,7 +162,7 @@ public class FieldTranslator
         }
         else if (expr instanceof ExprBinary)
         {
-            translateBinaryMultiplicities((ExprBinary) expr, field, declaration);
+            translateBinaryMultiplicities((ExprBinary) expr, field, fieldComponentExprs);
         }
         else
         {
@@ -176,65 +172,9 @@ public class FieldTranslator
 
     private void translateNestedMultiplicities(ExprBinary exprBinary, Sig.Field field)
     {
-        List<Sig> fieldSignatures = new ArrayList<>();        
-        
-//        collectFieldSigs(field.decl().expr, fieldSignatures);
-
         switch (exprBinary.op)
         {
-            case ARROW              : break; // no assertion needed
-            case ANY_ARROW_SOME     : translateNestedAnyArrowSome(exprBinary, fieldSignatures, field); break;
-            case ANY_ARROW_ONE      : translateNestedAnyArrowOne(fieldSignatures, field); break;
-//            case ANY_ARROW_LONE     : translateNestedAnyArrowLone(fieldSignatures, field); break;
-            case SOME_ARROW_ANY     : translateNestedSomeArrowAny(fieldSignatures, field); break;
-            case SOME_ARROW_SOME    : 
-            {
-//                translateNestedAnyArrowSome(fieldSignatures, field, declaration);
-                translateNestedSomeArrowAny(fieldSignatures, field); break;
-            }
-//            case SOME_ARROW_ONE     : 
-//            {
-//                translateNestedAnyArrowOne(fieldSignatures, field); 
-//                translateNestedSomeArrowAny(fieldSignatures, field); break;
-//            }
-//            case SOME_ARROW_LONE    : 
-//            {
-//                translateNestedAnyArrowLone(fieldSignatures, field);
-//                translateNestedSomeArrowAny(fieldSignatures, field); break;
-//            }
-//            case ONE_ARROW_ANY      : translateNestedOneArrowAny(fieldSignatures, field); break;
-//            case ONE_ARROW_SOME     : 
-//            {
-////                translateNestedAnyArrowSome(fieldSignatures, field, declaration);
-//                translateNestedOneArrowAny(fieldSignatures, field); break;
-//            }
-//            case ONE_ARROW_ONE      : 
-//            {
-//                translateNestedOneArrowAny(fieldSignatures, field); 
-//                translateNestedAnyArrowOne(fieldSignatures, field); break;
-//            }
-//            case ONE_ARROW_LONE     : 
-//            {
-//                translateNestedOneArrowAny(fieldSignatures, field); 
-//                translateNestedAnyArrowLone(fieldSignatures, field); break;
-//            }
-//            case LONE_ARROW_ANY     : translateNestedLoneArrowAny(fieldSignatures, field); break;
-//            case LONE_ARROW_SOME    : 
-//            {
-////                translateNestedAnyArrowSome(fieldSignatures, field);
-//                translateNestedLoneArrowAny(fieldSignatures, field); break;
-//            }
-//            case LONE_ARROW_ONE     : 
-//            {
-//                translateNestedLoneArrowAny(fieldSignatures, field); 
-//                translateNestedAnyArrowOne(fieldSignatures, field); break;
-//            }
-//            case LONE_ARROW_LONE    : 
-//            {
-//                translateNestedAnyArrowLone(fieldSignatures, field); 
-//                translateNestedLoneArrowAny(fieldSignatures, field); break;
-//            }
-            case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
+            case ARROW : break;
             default:
             {
                 throw new UnsupportedOperationException();
@@ -243,70 +183,66 @@ public class FieldTranslator
     }    
     
     
-    private void translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, FunctionDeclaration declaration)
+    private void translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, List<Expr> fieldComponentExprs)
     {
-        List<Expr> fieldSignatures = new ArrayList<>();        
-        
-        collectFieldComponentExprs(field.decl().expr, fieldSignatures);
-        
-        if(fieldSignatures.size() > 2)
+        if(fieldComponentExprs.size() > 2)
         {
-            throw new UnsupportedOperationException("Does not support multiplicity constraints on relations with arity GT 3!");
+            throw new UnsupportedOperationException("Currently, we do not support multiplicity constraints on relations with arity GT 3!");
         }        
 
         switch (exprBinary.op)
         {
             case ARROW              : break;
-            case ANY_ARROW_SOME     : translateAnyArrowSome(exprBinary, fieldSignatures, field, declaration); break;
-            case ANY_ARROW_ONE      : translateAnyArrowOne(fieldSignatures, field, declaration); break;
-            case ANY_ARROW_LONE     : translateAnyArrowLone(fieldSignatures, field, declaration); break;
-            case SOME_ARROW_ANY     : translateSomeArrowAny(fieldSignatures, field, declaration); break;
+            case ANY_ARROW_SOME     : translateAnyArrowSome(fieldComponentExprs, field); break;
+            case ANY_ARROW_ONE      : translateAnyArrowOne(fieldComponentExprs, field); break;
+            case ANY_ARROW_LONE     : translateAnyArrowLone(fieldComponentExprs, field); break;
+            case SOME_ARROW_ANY     : translateSomeArrowAny(fieldComponentExprs, field); break;
             case SOME_ARROW_SOME    : 
             {
-//                translateAnyArrowSome(fieldSignatures, field, declaration);
-                translateSomeArrowAny(fieldSignatures, field, declaration); break;
+                translateAnyArrowSome(fieldComponentExprs, field);
+                translateSomeArrowAny(fieldComponentExprs, field); break;
             }
             case SOME_ARROW_ONE     : 
             {
-                translateAnyArrowOne(fieldSignatures, field, declaration); 
-                translateSomeArrowAny(fieldSignatures, field, declaration); break;
+                translateAnyArrowOne(fieldComponentExprs, field); 
+                translateSomeArrowAny(fieldComponentExprs, field); break;
             }
             case SOME_ARROW_LONE    : 
             {
-                translateAnyArrowLone(fieldSignatures, field, declaration);
-                translateSomeArrowAny(fieldSignatures, field, declaration); break;
+                translateAnyArrowLone(fieldComponentExprs, field);
+                translateSomeArrowAny(fieldComponentExprs, field); break;
             }
-            case ONE_ARROW_ANY      : translateOneArrowAny(fieldSignatures, field, declaration); break;
+            case ONE_ARROW_ANY      : translateOneArrowAny(fieldComponentExprs, field); break;
             case ONE_ARROW_SOME     : 
             {
-//                translateAnyArrowSome(fieldSignatures, field, declaration);
-                translateOneArrowAny(fieldSignatures, field, declaration); break;
+                translateAnyArrowSome(fieldComponentExprs, field);
+                translateOneArrowAny(fieldComponentExprs, field); break;
             }
             case ONE_ARROW_ONE      : 
             {
-                translateOneArrowAny(fieldSignatures, field, declaration); 
-                translateAnyArrowOne(fieldSignatures, field, declaration); break;
+                translateOneArrowAny(fieldComponentExprs, field); 
+                translateAnyArrowOne(fieldComponentExprs, field); break;
             }
             case ONE_ARROW_LONE     : 
             {
-                translateOneArrowAny(fieldSignatures, field, declaration); 
-                translateAnyArrowLone(fieldSignatures, field, declaration); break;
+                translateOneArrowAny(fieldComponentExprs, field); 
+                translateAnyArrowLone(fieldComponentExprs, field); break;
             }
-            case LONE_ARROW_ANY     : translateLoneArrowAny(fieldSignatures, field, declaration); break;
+            case LONE_ARROW_ANY     : translateLoneArrowAny(fieldComponentExprs, field); break;
             case LONE_ARROW_SOME    : 
             {
-//                translateAnyArrowSome(fieldSignatures, field, declaration);
-                translateLoneArrowAny(fieldSignatures, field, declaration); break;
+                translateAnyArrowSome(fieldComponentExprs, field);
+                translateLoneArrowAny(fieldComponentExprs, field); break;
             }
             case LONE_ARROW_ONE     : 
             {
-                translateLoneArrowAny(fieldSignatures, field, declaration); 
-                translateAnyArrowOne(fieldSignatures, field, declaration); break;
+                translateLoneArrowAny(fieldComponentExprs, field); 
+                translateAnyArrowOne(fieldComponentExprs, field); break;
             }
             case LONE_ARROW_LONE    : 
             {
-                translateAnyArrowLone(fieldSignatures, field, declaration); 
-                translateLoneArrowAny(fieldSignatures, field, declaration); break;
+                translateAnyArrowLone(fieldComponentExprs, field); 
+                translateLoneArrowAny(fieldComponentExprs, field); break;
             }
             case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
             default:
@@ -338,11 +274,11 @@ public class FieldTranslator
     }
 
     // ANY_ARROW_SOME
-    private void translateAnyArrowSome(ExprBinary exprBinary, List<Expr> fieldComponentExprs, Sig.Field field, FunctionDeclaration declaration)
+    private void translateAnyArrowSome(List<Expr> fieldComponentExprs, Sig.Field field)
     {   
         int numOfSigs   = fieldComponentExprs.size();
-        int leftArity   = exprBinary.left.type().arity();
-        int rightArity  = exprBinary.right.type().arity();
+//        int leftArity   = exprBinary.left.type().arity();
+//        int rightArity  = exprBinary.right.type().arity();
         
         if(numOfSigs == 2)
         {
@@ -499,7 +435,7 @@ public class FieldTranslator
     }
     
     // SOME_ARROW_ANY
-    private void translateSomeArrowAny(List<Expr> fieldComponentExprs, Sig.Field field, FunctionDeclaration declaration)
+    private void translateSomeArrowAny(List<Expr> fieldComponentExprs, Sig.Field field)
     {   
         String sigVarName       = TranslatorUtils.getNewName();
         String fstSigVarName    = TranslatorUtils.getNewName();
@@ -543,7 +479,7 @@ public class FieldTranslator
     }    
     
     // ONE_ARROW_ANY
-    private void translateOneArrowAny(List<Expr> fieldComponentExprs, Sig.Field field, FunctionDeclaration declaration)
+    private void translateOneArrowAny(List<Expr> fieldComponentExprs, Sig.Field field)
     {
         String sigVarName       = TranslatorUtils.getNewName();
         String fstSigVarName    = TranslatorUtils.getNewName();
@@ -599,7 +535,7 @@ public class FieldTranslator
     }    
     
     // ANY_ARROW_ONE
-    private void translateAnyArrowOne(List<Expr> fieldComponentExprs, Sig.Field field, FunctionDeclaration declaration)
+    private void translateAnyArrowOne(List<Expr> fieldComponentExprs, Sig.Field field)
     {
         String sigVarName       = TranslatorUtils.getNewName();
         String fstSigVarName    = TranslatorUtils.getNewName();
@@ -653,7 +589,7 @@ public class FieldTranslator
         //ToDo: handle nested multiplicities
     }       
     
-    private void translateAnyArrowLone(List<Expr> fieldComponentExprs, Sig.Field field, FunctionDeclaration declaration)
+    private void translateAnyArrowLone(List<Expr> fieldComponentExprs, Sig.Field field)
     {
         String sigVarName       = TranslatorUtils.getNewName();
         String fstSigVarName    = TranslatorUtils.getNewName();
@@ -711,7 +647,7 @@ public class FieldTranslator
         //ToDo: handle nested multiplicities
     } 
     
-   private void translateLoneArrowAny(List<Expr> fieldComponentExprs, Sig.Field field, FunctionDeclaration declaration)
+   private void translateLoneArrowAny(List<Expr> fieldComponentExprs, Sig.Field field)
     {
         String sigVarName           = TranslatorUtils.getNewName();
         String fstSigVarName        = TranslatorUtils.getNewName();
@@ -769,7 +705,7 @@ public class FieldTranslator
     }     
     
 
-    private void translateRelationSomeMultiplicity(Sig.Field field, FunctionDeclaration declaration, List<Expr> fieldComponentExprs)
+    private void translateRelationSomeMultiplicity(Sig.Field field, List<Expr> fieldComponentExprs)
     {
         //(assert
         //	(forall ((x Atom))
@@ -814,7 +750,7 @@ public class FieldTranslator
 
     }
 
-    private void translateRelationOneMultiplicity(Sig.Field field, FunctionDeclaration declaration, List<Expr> fieldComponentExprs)
+    private void translateRelationOneMultiplicity(Sig.Field field, List<Expr> fieldComponentExprs)
     {
         //(assert
         //	(forall ((x Atom))
@@ -881,7 +817,7 @@ public class FieldTranslator
 
     }
 
-    private void translateRelationLoneMultiplicity(Sig.Field field, FunctionDeclaration declaration, List<Expr> fieldComponentExprs)
+    private void translateRelationLoneMultiplicity(Sig.Field field, List<Expr> fieldComponentExprs)
     {
         //(assert
         //	(forall ((x Atom))
@@ -1213,60 +1149,8 @@ public class FieldTranslator
         translator.smtProgram.addAssertion(new Assertion(outerForall));
 
         //ToDo: handle nested multiplicities
-    }    
-    
-    // ANY_ARROW_ONE
-    private void translateAnyArrowOne(List<Sig> fieldSignatures, Sig.Field field)
-    {
-        String sigVarName       = TranslatorUtils.getNewName();
-        String fstSigVarName    = TranslatorUtils.getNewName();
-        String sndSigVarName    = TranslatorUtils.getNewName();
-        String sndPrimeSigVarName    = TranslatorUtils.getNewName();
-
-        Sort sigVarSort     = field.sig.type().is_int()?translator.intSort:translator.atomSort;
-        Sort fstSigVarSort  = fieldSignatures.get(0).type().is_int()?translator.intSort:translator.atomSort;
-        Sort sndSigVarSort  = fieldSignatures.get(1).type().is_int()?translator.intSort:translator.atomSort;          
+    }                   
         
-        BoundVariableDeclaration    sigVar          = new BoundVariableDeclaration(sigVarName, sigVarSort);
-        BoundVariableDeclaration fstSigVar          = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);
-        BoundVariableDeclaration sndSigVar          = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
-        BoundVariableDeclaration sndPrimeSigVar     = new BoundVariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
-        
-        Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
-        Expression fstSigExpr   = translator.signaturesMap.get(fieldSignatures.get(0)).getConstantExpr();        
-        Expression sndSigExpr   = translator.signaturesMap.get(fieldSignatures.get(1)).getConstantExpr(); 
-        Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
-                
-        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
-                                                            BinaryExpression.Op.MEMBER, sigExpr);
-        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
-                                                            BinaryExpression.Op.MEMBER, fstSigExpr); 
-        Expression sndSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndSigVar.getConstantExpr()),
-                                                            BinaryExpression.Op.MEMBER, sndSigExpr); 
-        Expression sndPrimeSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr()),
-                                                            BinaryExpression.Op.MEMBER, sndSigExpr);         
-        
-        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndSigVar.getConstantExpr()), 
-                                                            BinaryExpression.Op.MEMBER, fieldExpr);        
-        sndSigVarMembership = new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, fieldMembership);
-        
-        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.AND, TranslatorUtils.mkDistinctExpr(sndPrimeSigVar.getConstantExpr(), sndSigVar.getConstantExpr()));
-        sndPrimeSigVarMembership = new BinaryExpression(sndPrimeSigVarMembership, BinaryExpression.Op.IMPLIES, 
-                                                        new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr(), sndPrimeSigVar.getConstantExpr()),  
-                                                                                                                        BinaryExpression.Op.MEMBER, fieldExpr)));
-        
-        QuantifiedExpression innerInnerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndPrimeSigVarMembership, sndPrimeSigVar);
-
-        QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(sndSigVarMembership, BinaryExpression.Op.AND, innerInnerForall), sndSigVar);
-        QuantifiedExpression innerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.IMPLIES, innerExists), fstSigVar);
-        QuantifiedExpression outerForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(sigVarMembership, BinaryExpression.Op.IMPLIES, innerForall), sigVar);
-
-        translator.smtProgram.addAssertion(new Assertion(outerForall));
-
-        //ToDo: handle nested multiplicities
-    }            
-    
-    
     // ANY_ARROW_ONE
     private void translateNestedAnyArrowOne(List<Sig> fieldSignatures, Sig.Field field)
     {
