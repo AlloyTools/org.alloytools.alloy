@@ -117,20 +117,40 @@ public class ExprTranslator
         {
             case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
             case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
-            case DISJOINT   : return translateExprListToUnaryExpression(UnaryExpression.Op.DISTINCT, exprList, variablesScope);
+            case DISJOINT   : return translateExprListToDisjBinaryExpressions(UnaryExpression.Op.DISTINCT, exprList, variablesScope);
             default     : throw new UnsupportedOperationException();
         }
     }
     
-    Expression translateExprListToUnaryExpression(UnaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
-    {
+    Expression translateExprListToDisjBinaryExpressions(UnaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
+    {        
         List<Expression> exprs = new ArrayList<>();
         
         for(Expr e : exprList.args)
         {
             exprs.add(translateExpr(exprList.args.get(1), variablesScope));
         }
-        return new UnaryExpression(op, exprs);
+        Expression finalExpr;
+        List<Expression> finalExprs = new ArrayList<>();
+        
+        if(exprs.size() > 1)
+        {
+            for(int i = 0; i < exprs.size()-1; ++i)
+            {
+                Expression disjExpr = new BinaryExpression(translator.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new BinaryExpression(exprs.get(i), BinaryExpression.Op.INTERSECTION, exprs.get(i+1)));
+                finalExprs.add(disjExpr);
+            }
+            finalExpr = finalExprs.get(0);
+            for(int i = 1; i < finalExprs.size(); ++i)
+            {
+                finalExpr = new BinaryExpression(finalExpr, BinaryExpression.Op.AND, finalExprs.get(i));
+            }
+        }
+        else
+        {
+            finalExpr = exprs.get(0);
+        }
+        return finalExpr;
     }
     
     Expression translateExprLet(ExprLet exprLet, Map<String, Expression> variablesScope)

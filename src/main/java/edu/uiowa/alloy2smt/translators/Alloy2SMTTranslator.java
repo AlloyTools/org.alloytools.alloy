@@ -144,9 +144,9 @@ public class Alloy2SMTTranslator
         
         QuantifiedExpression        idenSemantics  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition", new BinaryExpression(this.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition", new BinaryExpression(this.atomUniv.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Identity relation definition", idenSemantics));
+        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniv.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
     }
 
     private void translateFacts()
