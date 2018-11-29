@@ -68,6 +68,7 @@ public class ExprTranslator
             case NUMBER : return new IntConstant(expr.num); 
             case IDEN   : return translator.atomIden.getConstantExpr();
             case TRUE   : return new BooleanConstant(true);
+            case FALSE  : return new BooleanConstant(false); 
             default: throw new UnsupportedOperationException(expr.op.name());
         }
     }
