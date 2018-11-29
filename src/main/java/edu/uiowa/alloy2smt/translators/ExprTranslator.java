@@ -88,7 +88,7 @@ public class ExprTranslator
         return singleton;
     }
 
-    Expression getSetOutOfAtoms(List<Expression> atomExprs)
+    Expression getUnaryRelationOutOfAtoms(List<Expression> atomExprs)
     {
         List<Expression> atomTupleExprs = new ArrayList<>();
         
@@ -115,10 +115,22 @@ public class ExprTranslator
     {
         switch (exprList.op)
         {
-            case AND    : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
-            case OR     : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
+            case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
+            case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
+            case DISJOINT   : return translateExprListToUnaryExpression(UnaryExpression.Op.DISTINCT, exprList, variablesScope);
             default     : throw new UnsupportedOperationException();
         }
+    }
+    
+    Expression translateExprListToUnaryExpression(UnaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
+    {
+        List<Expression> exprs = new ArrayList<>();
+        
+        for(Expr e : exprList.args)
+        {
+            exprs.add(translateExpr(exprList.args.get(1), variablesScope));
+        }
+        return new UnaryExpression(op, exprs);
     }
     
     Expression translateExprLet(ExprLet exprLet, Map<String, Expression> variablesScope)

@@ -103,13 +103,11 @@ public class SignatureTranslator
         {
             Expression      left    = translator.signaturesMap.get(signatures.get(i)).getConstantExpr();
 
-            UnaryExpression emptySet   = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.signaturesMap.get(signatures.get(i)).getSort());
-
             for (int j = i + 1 ; j < signatures.size(); j++)
             {
                 Expression          right       = translator.signaturesMap.get(signatures.get(j)).getConstantExpr();
                 BinaryExpression    disjoint    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
-                BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, emptySet);
+                BinaryExpression    equality    = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, translator.atomNone.getConstantExpr());
 
                 translator.smtProgram.addAssertion(new Assertion(equality));
             }

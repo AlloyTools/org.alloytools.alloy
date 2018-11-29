@@ -16,12 +16,21 @@ public class UnaryExpression extends Expression
 {    
     private final Op op;
     private final Expression expr;
+    private final List<Expression> exprs;
     
     public UnaryExpression(Op op, Expression expr)
     {
         this.op     = op;
         this.expr   = expr;
+        this.exprs  = null;
     }
+    
+    public UnaryExpression(Op op, List<Expression> exprs)
+    {
+        this.op     = op;
+        this.expr   = null;
+        this.exprs  = exprs;
+    }    
 
     public Op getOP() 
     {
@@ -32,6 +41,11 @@ public class UnaryExpression extends Expression
     {
         return this.expr;
     }
+    
+    public List<Expression> getExpressions() 
+    {
+        return this.exprs;
+    }    
     
     @Override
     public void accept(SMTAstVisitor visitor) {

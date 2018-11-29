@@ -299,7 +299,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -324,7 +324,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -349,7 +349,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(rightExpr, BinaryExpression.Op.SUBSET, leftExpr);
                     if(bdVarExprs.size() > 1)
                     {
@@ -374,7 +374,7 @@ public class ExprBinaryTranslator
                     {
                         throw new UnsupportedOperationException();
                     }
-                    rightExpr = exprTranslator.getSetOutOfAtoms(bdVarExprs);  
+                    rightExpr = exprTranslator.getUnaryRelationOutOfAtoms(bdVarExprs);  
                     comparisonExpr = new BinaryExpression(leftExpr, BinaryExpression.Op.SUBSET, rightExpr);
                     if(bdVarExprs.size() > 1)
                     {

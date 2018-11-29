@@ -72,8 +72,15 @@ public class FieldTranslator
         }
         else if(expr instanceof ExprBinary)
         {
-            collectFieldComponentExprs(((ExprBinary)expr).left, fieldComponentExprs);
-            collectFieldComponentExprs(((ExprBinary)expr).right, fieldComponentExprs);
+                if(isArrowRelated((ExprBinary)expr))
+                {
+                    collectFieldComponentExprs(((ExprBinary)expr).left, fieldComponentExprs);
+                    collectFieldComponentExprs(((ExprBinary)expr).right, fieldComponentExprs);             
+                }
+                else
+                {
+                   fieldComponentExprs.add((ExprBinary) expr);
+                }            
         }
         else 
         {
@@ -92,7 +99,7 @@ public class FieldTranslator
         
         fieldComponentExprs.add(field.sig);
         
-        // Collect signatures of the field
+        // Collect component of the field
         collectFieldComponentExprs(field.decl().expr, fieldComponentExprs);
         
         /* alloy: sig Book{addr: Name -> lone Addr}
@@ -132,6 +139,7 @@ public class FieldTranslator
         // make a subset assertion
         translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(fieldDecl.getConstantExpr(), BinaryExpression.Op.SUBSET, product)));
         // translateExpr multiplicities
+        fieldComponentExprs.remove(0);
         translateMultiplicities(field, fieldComponentExprs);
     }
 
@@ -1271,7 +1279,7 @@ public class FieldTranslator
                (bExpr.op == ExprBinary.Op.SOME_ARROW_ONE) || (bExpr.op == ExprBinary.Op.SOME_ARROW_SOME) ||
                (bExpr.op == ExprBinary.Op.LONE_ARROW_ANY) || (bExpr.op == ExprBinary.Op.LONE_ARROW_LONE) ||
                (bExpr.op == ExprBinary.Op.LONE_ARROW_ONE) || (bExpr.op == ExprBinary.Op.LONE_ARROW_SOME) ||
-               (bExpr.op == ExprBinary.Op.ONE_ARROW_ANY) || (bExpr.op == ExprBinary.Op.ONE_ARROW_SOME) ||
+               (bExpr.op == ExprBinary.Op.ONE_ARROW_ANY) || (bExpr.op == ExprBinary.Op.ONE_ARROW_LONE) ||
                (bExpr.op == ExprBinary.Op.ONE_ARROW_ONE) || (bExpr.op == ExprBinary.Op.ONE_ARROW_SOME);
     }
 }

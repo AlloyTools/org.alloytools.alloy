@@ -84,8 +84,8 @@ public class Alloy2SMTTranslator
         this.atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
         this.atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);        
         this.atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );        
-        this.intUnivExpr                = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);        
-        this.intUniv            = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
+        this.intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);        
+        this.intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
         this.comparisonOps          = new HashMap<>();  
@@ -144,9 +144,9 @@ public class Alloy2SMTTranslator
         
         QuantifiedExpression        idenSemantics  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion(new BinaryExpression(this.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion(new BinaryExpression(this.atomUniv.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion(idenSemantics));
+        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition", new BinaryExpression(this.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition", new BinaryExpression(this.atomUniv.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Identity relation definition", idenSemantics));
     }
 
     private void translateFacts()
