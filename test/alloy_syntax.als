@@ -32,6 +32,15 @@ sig D in A {
   f in A
 }
 
+sig H {
+  f1 : J
+}
+sig J {}
+
+fact {
+  {a : H, b : J | a.f1 = b} in f1
+}
+
 sig E in B + C {
   f19 : some D
 }
