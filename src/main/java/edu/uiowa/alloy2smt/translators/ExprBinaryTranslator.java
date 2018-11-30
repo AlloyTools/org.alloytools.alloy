@@ -206,12 +206,12 @@ public class ExprBinaryTranslator
         
         if(!exprTranslator.translator.arithOps.containsKey(op))
         {
-            BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", exprTranslator.translator.intSort);
-            BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", exprTranslator.translator.intSort); 
-            BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", exprTranslator.translator.intSort); 
-            Expression memUniv1 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
-            Expression memUniv2 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar2), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
-            Expression memUniv3 = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar3), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());            
+            BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", exprTranslator.translator.unaryIntSort);
+            BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", exprTranslator.translator.unaryIntSort); 
+            BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", exprTranslator.translator.unaryIntSort); 
+            Expression memUniv1 = new BinaryExpression(bdIntVar1.getConstantExpr(), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
+            Expression memUniv2 = new BinaryExpression(bdIntVar2.getConstantExpr(), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
+            Expression memUniv3 = new BinaryExpression(bdIntVar3.getConstantExpr(), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());            
             ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
             ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
             ConstantExpression bdIntVar3Expr = new ConstantExpression(bdIntVar3);

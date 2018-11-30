@@ -246,6 +246,22 @@ public class ExprUnaryTranslator
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getConstantExpr());
     }
     
+    public MultiArityExpression mkTupleExprOutofAtoms(Expression ... exprs)
+    {
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
+    } 
+    
+    public MultiArityExpression mkTupleExprOutofUnaryTuples(Expression ... exprs)
+    {
+        List<Expression> atomExprs = new ArrayList<>();
+        
+        for(Expression e : exprs)
+        {
+            atomExprs.add(new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, e));
+        }
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
+    }     
+    
     public UnaryExpression mkSingleton(BoundVariableDeclaration bdVarDecl)
     {
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(bdVarDecl));
