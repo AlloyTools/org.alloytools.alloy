@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,7 +30,12 @@ public class UnaryExpression extends Expression
     {
         this.op     = op;
         this.expr   = null;
-        this.exprs  = exprs;
+        this.exprs  = new ArrayList<>();
+        for(Expression e : exprs)
+        {
+            this.exprs.add(e);
+        }
+        
     }    
 
     public Op getOP() 
@@ -45,6 +51,26 @@ public class UnaryExpression extends Expression
     public List<Expression> getExpressions() 
     {
         return this.exprs;
+    }   
+    
+    @Override
+    public String toString()
+    {
+        String exprStr = "";
+        
+        if(this.expr != null)
+        {
+            exprStr = this.expr.toString();
+        }
+        if(this.exprs != null)
+        {
+            for(Expression e : this.exprs)
+            {
+                exprStr += e.toString() + " ";
+            }
+        }
+        
+        return this.op.toString() + " " + exprStr;
     }    
     
     @Override

@@ -11,7 +11,6 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.uiowa.alloy2smt.smtAst.*;
-import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -228,7 +227,7 @@ public class ExprTranslator
         
         for(Expr e : exprList.args)
         {
-            exprs.add(translateExpr(exprList.args.get(1), variablesScope));
+            exprs.add(translateExpr(e, variablesScope));
         }
         Expression finalExpr;
         List<Expression> finalExprs = new ArrayList<>();

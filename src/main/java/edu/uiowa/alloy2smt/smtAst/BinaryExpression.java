@@ -43,6 +43,14 @@ public class BinaryExpression extends Expression
         visitor.visit(this);
     }
     
+    @Override
+    public String toString()
+    {
+        String leftExprStr = this.lhsExpr.toString();
+        String rhsExprStr = this.rhsExpr.toString();
+        return leftExprStr + " " + this.op.toString() + " " + rhsExprStr;
+    }
+    
     public enum Op 
     {        
         OR ("or"),
