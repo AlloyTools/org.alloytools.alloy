@@ -215,10 +215,11 @@ public class ExprUnaryTranslator
     private List<BoundVariableDeclaration> getQuantifiedVariables(Expr expr)
     {
         List<BoundVariableDeclaration> variables = new ArrayList<>(expr.type().arity());
+        List<Sort> sorts = exprTranslator.getExprSorts(expr);
 
         for (int i = 0; i < expr.type().arity() ; i++)
         {
-               BoundVariableDeclaration variable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.atomSort);
+               BoundVariableDeclaration variable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sorts.get(i));
                variables.add(variable);
         }
         return variables;
@@ -237,12 +238,12 @@ public class ExprUnaryTranslator
 
     private Expression translateLone(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
-        List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
-        List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
+        List<BoundVariableDeclaration>  bdVars      = getQuantifiedVariables(exprUnary.sub);
+        List<Expression>                expressions = bdVars.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
         Expression                      singleton   = exprTranslator.mkSingletonOutOfAtoms(expressions);
         Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression                subset      = new BinaryExpression(set, BinaryExpression.Op.SUBSET, singleton);
-        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, subset);
+        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, subset);
         return exists;
     }
     

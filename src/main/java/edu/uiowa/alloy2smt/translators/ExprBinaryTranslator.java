@@ -702,43 +702,11 @@ public class ExprBinaryTranslator
 
             if(!exprTranslator.translator.comparisonOps.containsKey(op))
             {
-                BoundVariableDeclaration    bdIntRelVar1        = new BoundVariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);                
-                BoundVariableDeclaration    bdIntRelVar2        = new BoundVariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
-                BoundVariableDeclaration    bdIntVar1           = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
-                BoundVariableDeclaration    bdIntVar2           = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
-                Expression          bdIntVar1Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdIntVar1.getConstantExpr());
-                Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdIntVar2.getConstantExpr());
-                Expression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
-                Expression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
-                FunctionDefinition          compFunc            = null;
-
-                Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(bdIntVar1.getConstantExpr()), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(bdIntVar1.getConstantExpr()), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
-
-                switch(op)
-                {
-                    case GT:
-                        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GT, bdIntVar2Expr));
-                        compFunc = new FunctionDefinition("GT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
-                        break;
-                    case LT:
-                        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LT, bdIntVar2Expr));
-                        compFunc = new FunctionDefinition("LT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
-                        break;
-                    case GTE:
-                        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GTE, bdIntVar2Expr));
-                        compFunc = new FunctionDefinition("GTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
-                        break;
-                    case LTE:
-                        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LTE, bdIntVar2Expr));
-                        compFunc = new FunctionDefinition("LTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                                        
-                        break;
-                    default:break;
-                } 
-                exprTranslator.translator.smtProgram.addFcnDef(compFunc);
-                exprTranslator.translator.comparisonOps.put(op, compFunc);
+                declComparisonOps(op);
             }
             comparisonExpr = new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op).getFuncName(), leftExpr, rightExpr);             
+            
+            // Add auxiliary quantifiers and expressions
             if(!exprTranslator.translator.existentialBdVars.isEmpty())
             {
                 if(exprTranslator.translator.auxExpr != null)
@@ -752,6 +720,45 @@ public class ExprBinaryTranslator
         }    
 
         return comparisonExpr;     
+    }
+    
+    private void declComparisonOps(BinaryExpression.Op op)
+    {
+        BoundVariableDeclaration    bdIntRelVar1        = new BoundVariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);                
+        BoundVariableDeclaration    bdIntRelVar2        = new BoundVariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
+        BoundVariableDeclaration    bdIntVar1           = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
+        BoundVariableDeclaration    bdIntVar2           = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
+        Expression          bdIntVar1Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdIntVar1.getConstantExpr());
+        Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdIntVar2.getConstantExpr());
+        Expression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
+        Expression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
+        FunctionDefinition          compFunc            = null;
+
+        Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(bdIntVar1.getConstantExpr()), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
+        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(bdIntVar1.getConstantExpr()), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
+
+        switch(op)
+        {
+            case GT:
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GT, bdIntVar2Expr));
+                compFunc = new FunctionDefinition("_GT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                break;
+            case LT:
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LT, bdIntVar2Expr));
+                compFunc = new FunctionDefinition("_LT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                break;
+            case GTE:
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GTE, bdIntVar2Expr));
+                compFunc = new FunctionDefinition("_GTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                break;
+            case LTE:
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LTE, bdIntVar2Expr));
+                compFunc = new FunctionDefinition("_LTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntVar1, bdIntVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                                        
+                break;
+            default:break;
+        } 
+        exprTranslator.translator.smtProgram.addFcnDef(compFunc);
+        exprTranslator.translator.comparisonOps.put(op, compFunc);                
     }
     
     private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
