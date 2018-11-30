@@ -282,14 +282,14 @@ public class ExprBinaryTranslator
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
             List<BoundVariableDeclaration>  existentialBdVars       = new ArrayList<>();     
-            List<Sort> leftExprSorts = exprTranslator.getSorts(((ExprUnary)expr.left).sub);
+            List<Sort> leftExprSorts = exprTranslator.getExprSorts(((ExprUnary)expr.left).sub);
             
             switch(op)
             {
                 case GT:{  
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts, n+1);
+                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n+1);
                     }
                     else
                     {
@@ -337,7 +337,7 @@ public class ExprBinaryTranslator
                 case LT:{
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts, n-1);
+                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n-1);
                     }
                     else
                     {
@@ -386,7 +386,7 @@ public class ExprBinaryTranslator
                 case GTE:{
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts, n);
+                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n);
                     }
                     else
                     {
@@ -435,7 +435,7 @@ public class ExprBinaryTranslator
                 case LTE:{
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts, n);
+                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n);
                     }
                     else
                     {
@@ -493,14 +493,14 @@ public class ExprBinaryTranslator
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
             List<BoundVariableDeclaration>  existentialBdVars       = new ArrayList<>();     
-            List<Sort> rightExprSorts = exprTranslator.getSorts(((ExprUnary)expr.right).sub);
+            List<Sort> rightExprSorts = exprTranslator.getExprSorts(((ExprUnary)expr.right).sub);
             
             switch(op)
             {
                 case GT:{  
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts, n+1);
+                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n+1);
                     }
                     else
                     {
@@ -548,7 +548,7 @@ public class ExprBinaryTranslator
                 case LT:{
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts, n-1);
+                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n-1);
                     }
                     else
                     {
@@ -597,7 +597,7 @@ public class ExprBinaryTranslator
                 case GTE:{
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts, n);
+                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n);
                     }
                     else
                     {
@@ -646,7 +646,7 @@ public class ExprBinaryTranslator
                 case LTE:{
                     if(arity == 1)
                     {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts, n);
+                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n);
                     }
                     else
                     {
@@ -864,11 +864,11 @@ public class ExprBinaryTranslator
         int arity = expr.type().arity();        
         List<Expression> existentialBdVarExprs = new ArrayList<>();
         List<BoundVariableDeclaration> existentialBdVars = new ArrayList<>(); 
-        List<Sort> exprSorts = exprTranslator.getSorts(expr);
+        List<Sort> exprSorts = exprTranslator.getExprSorts(expr);
         
         if(arity == 1)
         {
-            existentialBdVars = exprTranslator.getBdVars(exprSorts, n);
+            existentialBdVars = exprTranslator.getBdVars(exprSorts.get(0), n);
         }
         else
         {

@@ -10,7 +10,6 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class UnaryExpression extends Expression

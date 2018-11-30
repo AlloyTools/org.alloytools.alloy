@@ -94,18 +94,23 @@ public class ExprTranslator
         return bdVar;
     }
     
-    List<BoundVariableDeclaration> getBdVars(List<Sort> sorts, int num)
+    List<BoundVariableDeclaration> getBdVars(Sort sort, int num)
     {
         List<BoundVariableDeclaration> bdVars = new ArrayList<>();
         
         for(int i = 0; i < num; i++)
         {
-            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), sorts.get(0)));
+            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), sort));
         }
         return bdVars;
     }
+    
+    BoundVariableDeclaration getBdVar(Sort sort, String name)
+    {
+        return new BoundVariableDeclaration(name, sort);
+    }    
 
-    List<Sort> getSorts(Expr expr)
+    List<Sort> getExprSorts(Expr expr)
     {
         List<Sort> sorts = new ArrayList<>();
         for(List<PrimSig> sigs : expr.type().fold())
@@ -387,23 +392,18 @@ public class ExprTranslator
         
         for (Decl decl: exprQt.decls)
         {
-            Expression declExpr = getDeclarationExpr(decl, variablesScope);
+            Expression declExpr     = getDeclarationExpr(decl, variablesScope);
+            List<Sort> declSorts    = getExprSorts(decl.expr);            
             
             for (ExprHasName name: decl.names)
             {
                 int     arity           = decl.expr.type().arity();
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
-                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(sanBdVarName, translator.atomSort);                
+                BoundVariableDeclaration bdVarDecl = getBdVar(declSorts.get(0), sanBdVarName);                
                 
                 if(arity > 1)
                 {
-                   List<Sort> elementSorts = new ArrayList<>();
-                   
-                   for(int i = 0; i < arity; i++)
-                   {
-                       elementSorts.add(translator.atomSort);
-                   }
-                   bdVarDecl = new BoundVariableDeclaration(sanBdVarName, new TupleSort(elementSorts));
+                   bdVarDecl = new BoundVariableDeclaration(sanBdVarName, new TupleSort(declSorts));
                 }
 
                 variablesScope.put(name.label, bdVarDecl.getConstantExpr());
@@ -420,74 +420,70 @@ public class ExprTranslator
             case SOME   : return  translateSomeQuantifier(bdVarToExprMap, bodyExpr);
             case NO     : return  translateNoQuantifier(bdVarToExprMap, bodyExpr);
             case LONE   : {
-                LinkedHashMap<BoundVariableDeclaration, Expression> sndBoundVariables = new LinkedHashMap<>();
+                LinkedHashMap<BoundVariableDeclaration, Expression> sndBdVarToDeclExprMap = new LinkedHashMap<>();
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    Expression functionDeclaration = getDeclarationExpr(decl, variablesScope);
+                    Expression declExpr = getDeclarationExpr(decl, variablesScope);
+                    
                     for (ExprHasName name: decl.names)
                     {
+                        int arity = decl.expr.type().arity();                        
                         String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
                         String  name2           = sanBdVarName + "_2";
-                        int arity = decl.expr.type().arity();
-                        BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(name2, translator.atomSort);                
+                        List<Sort> declSorts    = getExprSorts(decl.expr); 
+                        
+                        BoundVariableDeclaration bdVarDecl = getBdVar(declSorts.get(0), name2);                
 
                         if(arity > 1)
                         {
-                           List<Sort> elementSorts = new ArrayList<>();
-
-                           for(int i = 0; i < arity; i++)
-                           {
-                               elementSorts.add(translator.atomSort);
-                           }
-                           bdVarDecl = new BoundVariableDeclaration(name2, new TupleSort(elementSorts));
+                           bdVarDecl = getBdVar(new TupleSort(declSorts), name2);
                         }             
                         // Change the name.label's mapping to a new variable
                         variablesScope.put(name.label, bdVarDecl.getConstantExpr());
-                        sndBoundVariables.put(bdVarDecl, functionDeclaration);
+                        sndBdVarToDeclExprMap.put(bdVarDecl, declExpr);
                     }
                 }   
                 Expression expression2 = translateExpr(exprQt.sub, variablesScope);
-                return  translateLoneQuantifier(bdVarToExprMap, sndBoundVariables, bodyExpr, expression2);            
+                return  translateLoneQuantifier(bdVarToExprMap, sndBdVarToDeclExprMap, bodyExpr, expression2);            
             }
             case ONE    : {
-                LinkedHashMap<BoundVariableDeclaration, Expression> sndBoundVariables = new LinkedHashMap<>();
+                LinkedHashMap<BoundVariableDeclaration, Expression> sndBdVarToExprMap = new LinkedHashMap<>();
                 
                 for (Decl decl: exprQt.decls)
                 {
-                    Expression functionDeclaration = getDeclarationExpr(decl, variablesScope);
+                    Expression declExpr = getDeclarationExpr(decl, variablesScope);
+                    
                     for (ExprHasName name: decl.names)
                     {
-                        String name2 = name.label+"_2";
                         int arity = decl.expr.type().arity();
-                        BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(name2, translator.atomSort);                
+                        String sanBdVarName = TranslatorUtils.sanitizeName(name.label);
+                        String name2        = sanBdVarName + "_2";                        
+                        List<Sort> declSorts    = getExprSorts(decl.expr); 
+                        BoundVariableDeclaration bdVarDecl = getBdVar(declSorts.get(0), name2);                
 
                         if(arity > 1)
                         {
-                           List<Sort> elementSorts = new ArrayList<>();
-
-                           for(int i = 0; i < arity; i++)
-                           {
-                               elementSorts.add(translator.atomSort);
-                           }
-                           bdVarDecl = new BoundVariableDeclaration(name2, new TupleSort(elementSorts));
-                        }  
+                           bdVarDecl = getBdVar(new TupleSort(declSorts), name2);
+                        } 
                         // Change the name.label's mapping to a new variable
                         variablesScope.put(name.label, bdVarDecl.getConstantExpr());
-                        sndBoundVariables.put(bdVarDecl, functionDeclaration);
+                        sndBdVarToExprMap.put(bdVarDecl, declExpr);
                     }
                 }   
                 Expression expression2 = translateExpr(exprQt.sub, variablesScope);                
-                return  translateOneQuantifier(bdVarToExprMap, sndBoundVariables, bodyExpr, expression2);
+                return  translateOneQuantifier(bdVarToExprMap, sndBdVarToExprMap, bodyExpr, expression2);
             }
             case COMPREHENSION :
             {
-                //Todo: consider int sort
                 List<Sort> elementSorts     = new ArrayList<>();
                 
                 for(int i = 0; i < exprQt.decls.size(); ++i)
                 {                    
-                    elementSorts.add(translator.atomSort);
+                    for(int j = 0; j < exprQt.decls.get(i).names.size(); ++j)
+                    {
+                        elementSorts.addAll(getExprSorts(exprQt.decls.get(i).expr));
+                    }                    
                 }
                 
                 String              setBdVarName    = TranslatorUtils.getNewSetName();
@@ -497,11 +493,12 @@ public class ExprTranslator
                 
                 for(Decl decl : exprQt.decls)
                 {                    
-                    Expression declExpr = getDeclarationExpr(decl, variablesScope);
+                    Expression declExpr         = getDeclarationExpr(decl, variablesScope);
+                    List<Sort> declExprSorts    = getExprSorts(decl.expr);
 
                     for (ExprHasName name: decl.names)
                     {
-                        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(name.label, translator.atomSort);
+                        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(name.label, declExprSorts.get(0));
                         variablesScope.put(name.label, bdVar.getConstantExpr());
                         bdVars.put(bdVar, declExpr);
                     }                    
