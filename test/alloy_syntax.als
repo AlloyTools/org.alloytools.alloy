@@ -3,7 +3,8 @@ abstract sig A {
 } 
 
 sig B extends A {
-  f1 : C
+  f1 : C,
+  f21 : H
 }
 
 sig C extends A {
@@ -33,7 +34,7 @@ sig D in A {
 }
 
 sig H {
-  f1 : J
+  f20 : J
 }
 sig J {}
 
@@ -47,6 +48,11 @@ sig E in B + C {
 
 sig F {}
 
+sig K {}
+
+sig P {}
+sig Q {}
+
 sig G in Int {}
 
 fact fact1 {
@@ -58,24 +64,31 @@ fact fact1 {
 
 fact fact2 {
   all b : B, c : C | (b -> c) in (B -> C)
-  all b : B | b in A + B
+  all b : B | no f : F | f in b.f1
+  all b : B | lone h : H | h in b.f21
+  all b : B | some h : H | h !in b.f21  
 }
 
 fact fact3 {
-  all b : B | some c : C | (b -> c) in (B -> C)
-  no b : B | b.f1 in B
+  some c : C | all u : univ | univ & none = none
+  some c : C | some u : univ | univ - none = univ  
+  some c : C | lone k : K |  k in univ
+  some c : C | no k : K |  (c -> k) in f1  
 }
 
 fact fact4 {
-  f19.D in B
-  all e : E | e.^f19 in B
+  lone p : P | all q : Q | p & q = none
+  no p : P | some q : Q | p -> q in f1
 }
 
 fact fact5 {
-  all e1 : E | some e2 : D | disj[e1, e2]
+
 }
 
 fact fact6 {
+  f19.D in B
+  all e : E | e.^f19 in B
+  all e1 : E | some e2 : D | disj[e1, e2]
   B + C - E in A
   (D <: f1) in (A -> C)
 }

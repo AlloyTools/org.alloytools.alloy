@@ -128,6 +128,14 @@ public class ExprUnaryTranslator
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     }                    
+                    else if(((ConstantExpression)constExpr).getDeclaration().getSort() == exprTranslator.translator.intSort)
+                    {
+                        return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
+                    } 
+                    else if(((ConstantExpression)constExpr).getDeclaration().getSort() instanceof TupleSort)
+                    {
+                        return new UnaryExpression(UnaryExpression.Op.SINGLETON, constExpr);
+                    }                     
                 }                
                 return constExpr;
             }

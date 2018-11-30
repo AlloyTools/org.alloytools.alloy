@@ -173,11 +173,11 @@ public class ExprTranslator
         return new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(sorts)));
     }
 
-    Expression getUnaryRelationOutOfAtomsOrTuples(List<Expression> atomExprs)
+    Expression getUnaryRelationOutOfAtomsOrTuples(List<Expression> atomOrTupleExprs)
     {
         List<Expression> atomTupleExprs = new ArrayList<>();
         
-        for(Expression e : atomExprs)
+        for(Expression e : atomOrTupleExprs)
         {
             if(e instanceof ConstantExpression)
             {
@@ -742,10 +742,18 @@ public class ExprTranslator
         Expression                  bdVarExpr       = bdVarToExprMap.get(boundVariable);
         Expression                  tupleExpr       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, boundVariable.getConstantExpr());
         
-        if(boundVariable.getSort() instanceof TupleSort)
+        if((boundVariable.getSort() instanceof UninterpretedSort) || (boundVariable.getSort() instanceof IntSort))
+        {
+            tupleExpr = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, boundVariable.getConstantExpr());
+        }
+        else if(boundVariable.getSort() instanceof TupleSort)
         {
             tupleExpr = boundVariable.getConstantExpr();
-        }        
+        }
+        else if(boundVariable.getSort() instanceof SetSort)
+        {
+            return new BinaryExpression(boundVariable.getConstantExpr(), BinaryExpression.Op.SUBSET, bdVarExpr);
+        }
         return new BinaryExpression(tupleExpr, BinaryExpression.Op.MEMBER, bdVarExpr);
     }
 

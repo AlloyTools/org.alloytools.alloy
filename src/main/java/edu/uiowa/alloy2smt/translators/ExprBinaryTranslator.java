@@ -185,8 +185,8 @@ public class ExprBinaryTranslator
         }
         else
         {
-            Expression          left            = exprTranslator.translateExpr(expr.left, variablesScope);
-            Expression          right           = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression left  = exprTranslator.translateExpr(expr.left, variablesScope);
+            Expression right = exprTranslator.translateExpr(expr.right, variablesScope);
             
             for(int i = 0; i < arity - 1; ++i)
             {
@@ -990,13 +990,11 @@ public class ExprBinaryTranslator
         Expression          right   = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
             left = exprTranslator.getSingleton((ConstantExpression) left);
         }
         if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration  &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
             right = exprTranslator.getSingleton((ConstantExpression) right);
