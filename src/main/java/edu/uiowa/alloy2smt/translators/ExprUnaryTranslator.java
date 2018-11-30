@@ -100,7 +100,7 @@ public class ExprUnaryTranslator
                     case "univ": return exprTranslator.translator.atomUniv.getConstantExpr();
                     case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
                     case "none": return exprTranslator.translator.atomNone.getConstantExpr();
-                    case "Int": throw new UnsupportedOperationException("We do not support signature Int used in facts!");
+                    case "Int": throw new UnsupportedOperationException("We do not support the built-in signature Int used in facts!");
                     default:
                         throw new UnsupportedOperationException();
                 }
@@ -141,7 +141,7 @@ public class ExprUnaryTranslator
             }
             else
             {
-                System.out.println("Something is wrong here, we do not have variable declarations in scope: " + ((ExprVar)exprUnary.sub).label);
+                System.out.println("Something is wrong here, we do not have variable declarations in scope for: " + ((ExprVar)exprUnary.sub).label);
                 throw new RuntimeException();
             }            
         }
@@ -187,20 +187,17 @@ public class ExprUnaryTranslator
     private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         int arity           = exprUnary.sub.type().arity();
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        Expression eqExpr   = new BinaryExpression(set, BinaryExpression.Op.EQ, exprTranslator.translator.atomNone.getConstantExpr());        
+        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);        
         
-        if(arity > 1)
+        List<Sort> elementSorts = new ArrayList<>();
+
+        for(int i = 0; i < arity; i++)
         {
-            List<Sort> elementSorts = new ArrayList<>();
-            
-            for(int i = 0; i < arity; i++)
-            {
-                elementSorts.add(exprTranslator.translator.atomSort);
-            }
-            eqExpr = new BinaryExpression(set, BinaryExpression.Op.EQ, 
-                                        new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(elementSorts))));        
-        }        
+            elementSorts.add(sorts.get(i));
+        }
+        Expression eqExpr = new BinaryExpression(set, BinaryExpression.Op.EQ, 
+                                    new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(elementSorts))));         
         return eqExpr;
     }
 

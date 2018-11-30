@@ -724,10 +724,26 @@ public class ExprTranslator
 
     Expression mkSingletonOutOfOneAtom(ConstantExpression constantExpression)
     {
-        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantExpression);
-        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        UnaryExpression singleton = null;
+        
+        if((constantExpression.getDeclaration().getSort() instanceof UninterpretedSort) ||
+                constantExpression.getDeclaration().getSort() instanceof IntSort)
+        {
+            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantExpression);
+            singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);            
+        }
+        else if(constantExpression.getDeclaration().getSort() instanceof TupleSort)
+        {
+            singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, constantExpression);  
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Unexpected!");
+        }
         return singleton;
     }
+    
+    
     
     Expression mkSingletonOutOfAtoms(List<Expression> atomExprs)
     {
@@ -735,6 +751,12 @@ public class ExprTranslator
         UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
         return singleton;
     }
+    
+    Expression mkSingletonOutOfTuple(Expression tupleExpr)
+    {
+        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tupleExpr);
+        return singleton;
+    }    
     
     Expression mkEmptyRelationOfSort(List<Sort> sorts) 
     {

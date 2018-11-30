@@ -704,16 +704,16 @@ public class ExprBinaryTranslator
             {
                 BoundVariableDeclaration    bdIntRelVar1        = new BoundVariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);                
                 BoundVariableDeclaration    bdIntRelVar2        = new BoundVariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
-                BoundVariableDeclaration    bdIntVar1           = new BoundVariableDeclaration("_x_int", exprTranslator.translator.intSort);
-                BoundVariableDeclaration    bdIntVar2           = new BoundVariableDeclaration("_y_int", exprTranslator.translator.intSort);     
-                ConstantExpression          bdIntVar1Expr       = new ConstantExpression(bdIntVar1);
-                ConstantExpression          bdIntVar2Expr       = new ConstantExpression(bdIntVar2);
-                ConstantExpression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
-                ConstantExpression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
+                BoundVariableDeclaration    bdIntVar1           = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
+                BoundVariableDeclaration    bdIntVar2           = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
+                Expression          bdIntVar1Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdIntVar1.getConstantExpr());
+                Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdIntVar2.getConstantExpr());
+                Expression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
+                Expression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
                 FunctionDefinition          compFunc            = null;
 
-                Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfOneAtom(bdIntVar1Expr), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfOneAtom(bdIntVar2Expr), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
+                Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(bdIntVar1.getConstantExpr()), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(bdIntVar1.getConstantExpr()), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
 
                 switch(op)
                 {
