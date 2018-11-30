@@ -242,12 +242,12 @@ public final class StaticInstanceReader {
             } catch (NumberFormatException ex) {
                 i = Integer.MAX_VALUE;
             }
-            //[VM] I don't know why they changes the name?!!!
+            //[VM] Not sure why they changes the name?!!!
             AlloyAtom at ;
             if(partial >= 0) {
                 at = new AlloyAtom(sig(s), Integer.MAX_VALUE - 1, atom.substring(0, partial));
             } else {
-                at = new AlloyAtom(sig(s), ts.size()==1 ? Integer.MAX_VALUE : i, atom);
+                at = new AlloyAtom(sig(s), ts.size() == 1 ? Integer.MAX_VALUE : i, atom);
             }
             atom2sets.put(at, new LinkedHashSet<AlloySet>());
             string2atom.put(atom, at);
@@ -327,7 +327,7 @@ public final class StaticInstanceReader {
                             atom2sets.put(at, new LinkedHashSet<AlloySet>());
                             string2atom.put(String.valueOf(Integer.valueOf(y.getAttribute("value"))), at);
                         } catch (NumberFormatException e) {
-                            throw new ErrorSyntax("The XML file must containt integer type instead of:"+y.getAttribute("value"));
+                            throw new ErrorSyntax("The XML file must containt integer type instead of:" + y.getAttribute("value"));
                         }
                     }
                 }
