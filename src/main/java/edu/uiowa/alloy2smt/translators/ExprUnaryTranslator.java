@@ -231,7 +231,7 @@ public class ExprUnaryTranslator
     {
         List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
         List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
-        Expression                      singleton   = exprTranslator.getSingletonOutOfAtoms(expressions);
+        Expression                      singleton   = exprTranslator.mkSingletonOutOfAtoms(expressions);
         Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression                eq          = new BinaryExpression(singleton, BinaryExpression.Op.EQ, set);
         QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, eq);
@@ -242,7 +242,7 @@ public class ExprUnaryTranslator
     {
         List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
         List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
-        Expression                      singleton   = exprTranslator.getSingletonOutOfAtoms(expressions);
+        Expression                      singleton   = exprTranslator.mkSingletonOutOfAtoms(expressions);
         Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
         BinaryExpression                subset      = new BinaryExpression(set, BinaryExpression.Op.SUBSET, singleton);
         QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, subset);

@@ -317,11 +317,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        rightExpr = exprTranslator.getEmptyRelationOfSort(leftExprSorts);
+                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
                     }
                     
                     // rightExpr + 1 <= leftExpr
@@ -366,11 +366,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        rightExpr = exprTranslator.getEmptyRelationOfSort(leftExprSorts);
+                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
                     }
                     
                     // leftExpr <= rightExpr-1
@@ -415,11 +415,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        rightExpr = exprTranslator.getEmptyRelationOfSort(leftExprSorts);
+                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
                     }
                     
                     // rightExpr <= leftExpr
@@ -464,11 +464,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        rightExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        rightExpr = exprTranslator.getEmptyRelationOfSort(leftExprSorts);
+                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
                     }
                     
                     // rightExpr <= leftExpr
@@ -528,11 +528,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        leftExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        leftExpr = exprTranslator.getEmptyRelationOfSort(rightExprSorts);
+                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
                     }
                     
                     // rightExpr + 1 <= leftExpr
@@ -577,11 +577,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        leftExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        leftExpr = exprTranslator.getEmptyRelationOfSort(rightExprSorts);
+                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
                     }
                     
                     // leftExpr <= rightExpr-1
@@ -626,11 +626,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        leftExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        leftExpr = exprTranslator.getEmptyRelationOfSort(rightExprSorts);
+                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
                     }
                     
                     // rightExpr <= leftExpr
@@ -675,11 +675,11 @@ public class ExprBinaryTranslator
 
                     if(existentialBdVarExprs.size() > 0)
                     {
-                        leftExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
+                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
                     }
                     else
                     {
-                        leftExpr = exprTranslator.getEmptyRelationOfSort(rightExprSorts);
+                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
                     }
                     
                     // leftExpr <= rightExpr 
@@ -712,8 +712,8 @@ public class ExprBinaryTranslator
                 ConstantExpression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
                 FunctionDefinition          compFunc            = null;
 
-                Expression funcExpr = new BinaryExpression(exprTranslator.getSingleton(bdIntVar1Expr), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.getSingleton(bdIntVar2Expr), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
+                Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfOneAtom(bdIntVar1Expr), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfOneAtom(bdIntVar2Expr), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
 
                 switch(op)
                 {
@@ -774,13 +774,13 @@ public class ExprBinaryTranslator
                 ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.getSingleton((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
         }
         if(right instanceof ConstantExpression &&
                 ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.getSingleton((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
         }
 
         Expression finalExpr;
@@ -892,7 +892,7 @@ public class ExprBinaryTranslator
             exprTranslator.translator.auxExpr = distElementsExpr;
         }
         
-        Expression  distElementSetExpr = exprTranslator.getUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);        
+        Expression  distElementSetExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);        
         Expression  left    = exprTranslator.translateExpr(expr.sub, variablesScope);
         Expression  right   = distElementSetExpr;
         
@@ -932,14 +932,14 @@ public class ExprBinaryTranslator
                 ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.getSingleton((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
         }
         
         if(right instanceof ConstantExpression &&
                 ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.getSingleton((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
         }
 
         BinaryExpression operation = new BinaryExpression(left, op, right);
@@ -955,14 +955,14 @@ public class ExprBinaryTranslator
                 ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.getSingleton((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
         }
         
         if(right instanceof ConstantExpression &&
                 ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.getSingleton((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
         }
                 
         Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
@@ -992,12 +992,12 @@ public class ExprBinaryTranslator
         if(left instanceof ConstantExpression &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.getSingleton((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
         }
         if(right instanceof ConstantExpression &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.getSingleton((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
         }
         BinaryExpression    join    = new BinaryExpression(left, BinaryExpression.Op.JOIN, right);
         return join;

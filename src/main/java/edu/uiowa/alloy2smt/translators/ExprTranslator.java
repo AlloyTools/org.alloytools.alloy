@@ -92,127 +92,6 @@ public class ExprTranslator
         }
         BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts));
         return bdVar;
-    }
-    
-    List<BoundVariableDeclaration> getBdVars(Sort sort, int num)
-    {
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
-        
-        for(int i = 0; i < num; i++)
-        {
-            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), sort));
-        }
-        return bdVars;
-    }
-    
-    BoundVariableDeclaration getBdVar(Sort sort, String name)
-    {
-        return new BoundVariableDeclaration(name, sort);
-    }    
-
-    List<Sort> getExprSorts(Expr expr)
-    {
-        List<Sort> sorts = new ArrayList<>();
-        for(List<PrimSig> sigs : expr.type().fold())
-        {
-            for(PrimSig s : sigs)
-            {
-                if(s.type().is_int())
-                {
-                    sorts.add(translator.intSort);
-                }
-                else
-                {
-                    sorts.add(translator.atomSort);
-                }
-            }
-        }
-        return sorts;
-    }
-    
-    List<BoundVariableDeclaration> getBdTupleVars(List<Sort> sorts, int arity, int num)
-    {
-        List<Sort> elementSorts = new ArrayList<>();
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
-        
-        for(int i = 0; i < arity; i++)
-        {
-            elementSorts.add(sorts.get(i));
-        }
-        for(int i = 0; i < num; i++)
-        {
-            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts)));
-        }
-        return bdVars;
-    }    
-
-    Expression getSingleton(ConstantExpression constantExpression)
-    {
-        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantExpression);
-        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-        return singleton;
-    }
-    
-    Expression getSingletonOutOfAtoms(List<Expression> atomExprs)
-    {
-        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
-        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-        return singleton;
-    }
-    
-    Expression getEmptyRelationOfSort(List<Sort> sorts) 
-    {
-        if(sorts.isEmpty())
-        {
-            try {
-                throw new Exception("Unexpected: sorts is empty!");
-            } catch (Exception ex) {
-                Logger.getLogger(ExprTranslator.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(sorts)));
-    }
-
-    Expression getUnaryRelationOutOfAtomsOrTuples(List<Expression> atomOrTupleExprs)
-    {
-        List<Expression> atomTupleExprs = new ArrayList<>();
-        
-        for(Expression e : atomOrTupleExprs)
-        {
-            if(e instanceof ConstantExpression)
-            {
-                if(((ConstantExpression)e).getDeclaration().getSort() == translator.atomSort || 
-                        ((ConstantExpression)e).getDeclaration().getSort() == translator.intSort)
-                {
-                    MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
-                    atomTupleExprs.add(tuple);                    
-                }
-                else if(((ConstantExpression)e).getDeclaration().getSort() instanceof TupleSort)
-                {
-                    atomTupleExprs.add(e);
-                }
-                else
-                {
-                    throw new UnsupportedOperationException("Something is wrong here!");
-                }
-            }
-            else
-            {
-                atomTupleExprs.add(e);
-            }
-        }
-        
-        
-        UnaryExpression singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, atomTupleExprs.get(0));
-        
-        if(atomTupleExprs.size() > 1)
-        {
-            atomTupleExprs.remove(0);
-            atomTupleExprs.add(singleton);
-            MultiArityExpression set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atomTupleExprs);            
-            return set;
-        }
-        return singleton;
     }    
 
     Expression translateExprList(ExprList exprList, Map<String, Expression> variablesScope)
@@ -362,7 +241,7 @@ public class ExprTranslator
                     break;                   
             }
             translator.smtProgram.addConstantDeclaration(arithVarDecl);
-            translator.smtProgram.addAssertion(new Assertion(finalExpr));     
+            translator.smtProgram.addAssertion(new Assertion("Mathmetic operator definition", finalExpr));     
             translator.arithOps.put(op, arithVarDecl.getConstantExpr());
         }
         return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
@@ -780,4 +659,135 @@ public class ExprTranslator
             throw new UnsupportedOperationException();
         }
     }
+    
+    
+    /**
+     * Auxiliary functions
+     */
+    
+    
+    List<BoundVariableDeclaration> getBdVars(Sort sort, int num)
+    {
+        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        
+        for(int i = 0; i < num; i++)
+        {
+            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), sort));
+        }
+        return bdVars;
+    }
+    
+    BoundVariableDeclaration getBdVar(Sort sort, String name)
+    {
+        if(sort instanceof IntSort)
+        {
+            return new BoundVariableDeclaration(name, new TupleSort(sort));
+        }
+        return new BoundVariableDeclaration(name, sort);
+    }    
+
+    List<Sort> getExprSorts(Expr expr)
+    {
+        List<Sort> sorts = new ArrayList<>();
+        for(List<PrimSig> sigs : expr.type().fold())
+        {
+            for(PrimSig s : sigs)
+            {
+                if(s.type().is_int())
+                {
+                    sorts.add(translator.intSort);
+                }
+                else
+                {
+                    sorts.add(translator.atomSort);
+                }
+            }
+        }
+        return sorts;
+    }
+    
+    List<BoundVariableDeclaration> getBdTupleVars(List<Sort> sorts, int arity, int num)
+    {
+        List<Sort> elementSorts = new ArrayList<>();
+        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        
+        for(int i = 0; i < arity; i++)
+        {
+            elementSorts.add(sorts.get(i));
+        }
+        for(int i = 0; i < num; i++)
+        {
+            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts)));
+        }
+        return bdVars;
+    }    
+
+    Expression mkSingletonOutOfOneAtom(ConstantExpression constantExpression)
+    {
+        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantExpression);
+        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return singleton;
+    }
+    
+    Expression mkSingletonOutOfAtoms(List<Expression> atomExprs)
+    {
+        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
+        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return singleton;
+    }
+    
+    Expression mkEmptyRelationOfSort(List<Sort> sorts) 
+    {
+        if(sorts.isEmpty())
+        {
+            try {
+                throw new Exception("Unexpected: sorts is empty!");
+            } catch (Exception ex) {
+                Logger.getLogger(ExprTranslator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(sorts)));
+    }
+
+    Expression mkUnaryRelationOutOfAtomsOrTuples(List<Expression> atomOrTupleExprs)
+    {
+        List<Expression> atomTupleExprs = new ArrayList<>();
+        
+        for(Expression e : atomOrTupleExprs)
+        {
+            if(e instanceof ConstantExpression)
+            {
+                if(((ConstantExpression)e).getDeclaration().getSort() == translator.atomSort || 
+                        ((ConstantExpression)e).getDeclaration().getSort() == translator.intSort)
+                {
+                    MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
+                    atomTupleExprs.add(tuple);                    
+                }
+                else if(((ConstantExpression)e).getDeclaration().getSort() instanceof TupleSort)
+                {
+                    atomTupleExprs.add(e);
+                }
+                else
+                {
+                    throw new UnsupportedOperationException("Something is wrong here!");
+                }
+            }
+            else
+            {
+                atomTupleExprs.add(e);
+            }
+        }
+        
+        
+        UnaryExpression singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, atomTupleExprs.get(0));
+        
+        if(atomTupleExprs.size() > 1)
+        {
+            atomTupleExprs.remove(0);
+            atomTupleExprs.add(singleton);
+            MultiArityExpression set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atomTupleExprs);            
+            return set;
+        }
+        return singleton;
+    }       
 }
