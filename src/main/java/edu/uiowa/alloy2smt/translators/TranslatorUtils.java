@@ -151,9 +151,9 @@ public class TranslatorUtils
         {
             throw new RuntimeException();
         }
-        else if(exprs.size() == 1)
+        else if(exprs.isEmpty() || exprs.size() == 1)
         {
-            return exprs.get(0);
+            return new BooleanConstant(true);
         }
         else
         {

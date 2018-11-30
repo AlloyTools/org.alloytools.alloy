@@ -9,12 +9,15 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ExprTranslator
 {
@@ -92,25 +95,45 @@ public class ExprTranslator
         return bdVar;
     }
     
-    List<BoundVariableDeclaration> getBdAtomVars(int num)
+    List<BoundVariableDeclaration> getBdVars(List<Sort> sorts, int num)
     {
         List<BoundVariableDeclaration> bdVars = new ArrayList<>();
         
         for(int i = 0; i < num; i++)
         {
-            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort));
+            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), sorts.get(0)));
         }
         return bdVars;
-    }    
+    }
+
+    List<Sort> getSorts(Expr expr)
+    {
+        List<Sort> sorts = new ArrayList<>();
+        for(List<PrimSig> sigs : expr.type().fold())
+        {
+            for(PrimSig s : sigs)
+            {
+                if(s.type().is_int())
+                {
+                    sorts.add(translator.intSort);
+                }
+                else
+                {
+                    sorts.add(translator.atomSort);
+                }
+            }
+        }
+        return sorts;
+    }
     
-    List<BoundVariableDeclaration> getBdAtomTupleVars(int arity, int num)
+    List<BoundVariableDeclaration> getBdTupleVars(List<Sort> sorts, int arity, int num)
     {
         List<Sort> elementSorts = new ArrayList<>();
         List<BoundVariableDeclaration> bdVars = new ArrayList<>();
         
         for(int i = 0; i < arity; i++)
         {
-            elementSorts.add(translator.atomSort);
+            elementSorts.add(sorts.get(i));
         }
         for(int i = 0; i < num; i++)
         {
@@ -131,6 +154,19 @@ public class ExprTranslator
         MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
         UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
         return singleton;
+    }
+    
+    Expression getEmptyRelationOfSort(List<Sort> sorts) 
+    {
+        if(sorts.isEmpty())
+        {
+            try {
+                throw new Exception("Unexpected: sorts is empty!");
+            } catch (Exception ex) {
+                Logger.getLogger(ExprTranslator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(sorts)));
     }
 
     Expression getUnaryRelationOutOfAtomsOrTuples(List<Expression> atomExprs)

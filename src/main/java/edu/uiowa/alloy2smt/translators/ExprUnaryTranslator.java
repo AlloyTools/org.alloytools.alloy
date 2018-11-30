@@ -34,7 +34,7 @@ public class ExprUnaryTranslator
             case SOME       : return translateSome(exprUnary, variablesScope);
             case ONE        : return translateOne(exprUnary, variablesScope);
             case LONE       : return translateLone(exprUnary, variablesScope);
-            case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations");
+            case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
             case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);
             case CLOSURE    : return translateClosure(exprUnary, variablesScope);
             case RCLOSURE   : return translateReflexiveClosure(exprUnary, variablesScope);
@@ -91,14 +91,16 @@ public class ExprUnaryTranslator
     {
         if(exprUnary.sub instanceof Sig)
         {
+
             // alloy built in signatures include: univ, none, iden
             if(((Sig) exprUnary.sub).builtin)
             {
                 switch (((Sig) exprUnary.sub).label)
-                {
+                {                    
                     case "univ": return exprTranslator.translator.atomUniv.getConstantExpr();
                     case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
                     case "none": return exprTranslator.translator.atomNone.getConstantExpr();
+                    case "Int": throw new UnsupportedOperationException("We do not support signature Int used in facts!");
                     default:
                         throw new UnsupportedOperationException();
                 }

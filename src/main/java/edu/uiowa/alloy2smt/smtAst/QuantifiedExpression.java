@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,9 +21,13 @@ public class QuantifiedExpression extends Expression
     
     public QuantifiedExpression(Op op, List<BoundVariableDeclaration> boundVars, Expression expr)
     {
-        this.boundVars  = boundVars;
+        this.boundVars  = new ArrayList<>();        
         this.expr       = expr;
         this.op         = op;
+        for(BoundVariableDeclaration bdVar : boundVars)
+        {
+            this.boundVars.add(bdVar);
+        }
     }
     
     public QuantifiedExpression(Op op, Expression expr, BoundVariableDeclaration... boundVars)
