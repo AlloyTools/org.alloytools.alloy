@@ -33,14 +33,9 @@ fact Bible {
 no (Adam + Eve).parents
 
 -- Except Adam and Eve all others have a mother and a father
---    all p: Person - (Adam + Eve)| #p.parents = 2
+   all p: Person - (Adam + Eve)| #p.parents = 2
 } 
 
-
--- Without parenthesis the meaning of a => b and c => d is a => (b and c) => d
--- which can be understand as : if p is a men than if p is a woman and married to a woman then p.spouse is a man.
--- if p is a woman than the expression is true
--- if p is a man than, as p cannot be a woman, the expression is true
 assert HeteroSexError {
 all p : Person | p in Men => p.spouse in Women and p in Women => p.spouse in Men
 }
