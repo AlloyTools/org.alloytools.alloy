@@ -24,7 +24,8 @@ package edu.mit.csail.sdg.alloy4viz;
 public final class AlloyAtom implements Comparable<AlloyAtom> {
 
     /**
-     * The original name of this atom from the original Kodkod or other analysis.
+     * The original name of this atom from the original Kodkod or other
+     * analysis.
      */
     private final String    originalName;
 
@@ -34,8 +35,8 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
     private final AlloyType type;
 
     /**
-     * The index is a number that differentiates atoms of the same AlloyType; one
-     * special convention: (this atom is the only atom with this type) iff
+     * The index is a number that differentiates atoms of the same AlloyType;
+     * one special convention: (this atom is the only atom with this type) iff
      * (index==Integer.MAX_VALUE)
      */
     private final int       index;
@@ -57,8 +58,8 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
     }
 
     /**
-     * Return a label for this atom as recommended by a theme (theme can be null if
-     * there's no theme to consult).
+     * Return a label for this atom as recommended by a theme (theme can be null
+     * if there's no theme to consult).
      */
     public String getVizName(VizState theme, boolean numberAtoms) {
         if (theme != null) {
@@ -74,9 +75,9 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
                 // index==MIN_VALUE)
                 return "seq/Int";
             }
-            if (index == Integer.MAX_VALUE-1)
+            if (index == Integer.MAX_VALUE - 1)
                 return this.originalName;
-            else if (index == Integer.MAX_VALUE || !numberAtoms) 
+            else if (index == Integer.MAX_VALUE || !numberAtoms)
                 return theme.label.get(type);
             else
                 return theme.label.get(type) + index;
@@ -85,11 +86,11 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
             return "" + index; // Special override to display integers better
         if (type.getName().equals("seq/Int"))
             return "" + index; // Special override to display integers better
-        if (index == Integer.MAX_VALUE - 1 )
+        if (index == Integer.MAX_VALUE - 1)
             return this.originalName;
         else if (index == Integer.MAX_VALUE || !numberAtoms)
             return type.getName();
-        else  
+        else
             return type.getName() + index;
     }
 
@@ -110,8 +111,8 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
      * Compare first by type, then by index, then by the original names. <br>
      * We guarantee x.equals(y) iff x.compareTo(y)==0
      * <p>
-     * As a special cosmetic enhancement: if we're comparing integer atoms, we want
-     * to ignore the difference between seqInt and Int.
+     * As a special cosmetic enhancement: if we're comparing integer atoms, we
+     * want to ignore the difference between seqInt and Int.
      */
     @Override
     public int compareTo(AlloyAtom otherAtom) {
