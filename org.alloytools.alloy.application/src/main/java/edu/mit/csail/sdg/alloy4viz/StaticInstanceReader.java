@@ -83,19 +83,20 @@ public final class StaticInstanceReader {
     private final Set<AlloySet>                      sets        = new LinkedHashSet<AlloySet>();
 
     /**
-     * This maps each Visualizer AlloyRelation to its set of (possibly 0) tuples.
+     * This maps each Visualizer AlloyRelation to its set of (possibly 0)
+     * tuples.
      */
     private final Map<AlloyRelation,Set<AlloyTuple>> rels        = new LinkedHashMap<AlloyRelation,Set<AlloyTuple>>();
 
     /**
-     * For each sig A and B, if A extends B, and B is not univ, then (A,B) will be
-     * in this map.
+     * For each sig A and B, if A extends B, and B is not univ, then (A,B) will
+     * be in this map.
      */
     private final Map<AlloyType,AlloyType>           ts          = new LinkedHashMap<AlloyType,AlloyType>();
 
     /**
-     * This maps each Visualizer AlloyAtom to its set of (possibly 0) AlloySet that
-     * contains it.
+     * This maps each Visualizer AlloyAtom to its set of (possibly 0) AlloySet
+     * that contains it.
      */
     private final Map<AlloyAtom,Set<AlloySet>>       atom2sets   = new LinkedHashMap<AlloyAtom,Set<AlloySet>>();
 
@@ -133,7 +134,8 @@ public final class StaticInstanceReader {
     }
 
     /**
-     * Create a new AlloyRelation whose label is unambiguous with any existing one.
+     * Create a new AlloyRelation whose label is unambiguous with any existing
+     * one.
      */
     private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, List<AlloyType> types) {
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
@@ -147,8 +149,8 @@ public final class StaticInstanceReader {
     }
 
     /**
-     * Returns the AlloyType corresponding to the given sig; create an AlloyType for
-     * it if none existed before.
+     * Returns the AlloyType corresponding to the given sig; create an AlloyType
+     * for it if none existed before.
      */
     private AlloyType sig(PrimSig s) throws Err {
         if (s == Sig.NONE)
@@ -164,8 +166,8 @@ public final class StaticInstanceReader {
     }
 
     /**
-     * Returns the AlloyType corresponding to the given sig; create an AlloyType for
-     * it if none existed before.
+     * Returns the AlloyType corresponding to the given sig; create an AlloyType
+     * for it if none existed before.
      */
     private AlloyType sigMETA(PrimSig s) throws Err {
         if (s == Sig.NONE)
@@ -198,8 +200,8 @@ public final class StaticInstanceReader {
     }
 
     /**
-     * Returns the AlloyType corresponding to the given sig; create an AlloyType for
-     * it if none existed before.
+     * Returns the AlloyType corresponding to the given sig; create an AlloyType
+     * for it if none existed before.
      */
     private void sigMETA(SubsetSig s) throws Err {
         AlloyAtom atom;
@@ -229,11 +231,11 @@ public final class StaticInstanceReader {
             atoms(sol, c);
         }
         A4TupleSet ts = (A4TupleSet) (sol.eval(s.minus(sum))); // This ensures
-                                                              // that atoms
-                                                              // will be
-                                                              // associated
-                                                              // with the most
-                                                              // specific sig
+                                                               // that atoms
+                                                               // will be
+                                                               // associated
+                                                               // with the most
+                                                               // specific sig
         for (A4Tuple z : ts) {
             String atom = z.atom(0);
             int i, dollar = atom.lastIndexOf('$'), partial = atom.lastIndexOf('%');
@@ -243,8 +245,8 @@ public final class StaticInstanceReader {
                 i = Integer.MAX_VALUE;
             }
             //[VM] Not sure why they changes the name?!!!
-            AlloyAtom at ;
-            if(partial >= 0) {
+            AlloyAtom at;
+            if (partial >= 0) {
                 at = new AlloyAtom(sig(s), Integer.MAX_VALUE - 1, atom.substring(0, partial));
             } else {
                 at = new AlloyAtom(sig(s), ts.size() == 1 ? Integer.MAX_VALUE : i, atom);
@@ -255,7 +257,8 @@ public final class StaticInstanceReader {
     }
 
     /**
-     * Construct an AlloySet or AlloyRelation corresponding to the given expression.
+     * Construct an AlloySet or AlloyRelation corresponding to the given
+     * expression.
      */
     private void setOrRel(A4Solution sol, String label, Expr expr, boolean isPrivate, boolean isMeta) throws Err {
         for (List<PrimSig> ps : expr.type().fold()) {
@@ -323,7 +326,7 @@ public final class StaticInstanceReader {
                 if (i.getAttribute("label").equals("Int")) {
                     for (XMLNode y : i) {
                         try {
-                            AlloyAtom at = new AlloyAtom(AlloyType.SEQINT , Integer.valueOf(y.getAttribute("value")), String.valueOf(Integer.valueOf(y.getAttribute("value"))));
+                            AlloyAtom at = new AlloyAtom(AlloyType.SEQINT, Integer.valueOf(y.getAttribute("value")), String.valueOf(Integer.valueOf(y.getAttribute("value"))));
                             atom2sets.put(at, new LinkedHashSet<AlloySet>());
                             string2atom.put(String.valueOf(Integer.valueOf(y.getAttribute("value"))), at);
                         } catch (NumberFormatException e) {
