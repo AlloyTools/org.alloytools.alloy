@@ -106,6 +106,29 @@ public class CommandScope {
         this(null, sig, isExact, scope, scope, 1);
     }
 
+    /**
+     * Construct a new CommandScope object.
+     *
+     * @param pos - the position where this scope is given
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param startingScope - the starting scope
+     * @param endingScope - the ending scope (if this sig is not intended to be
+     *            growable, then startingScope should equal endingScope)
+     * @param increment - the scope increment (if this sig is not intended to be
+     *            growable, then this field is ignored)
+     * @param pAtoms - list of atoms for a sig in the partial instance block
+     * @param pAtomsLowerLastIndex - index of the last atom declared to be in
+     *            the sig lowerbound
+     * @param pFields - list of tuples for a field in the partial instance block
+     * @param isPartial - the scope is defined in a partial instance block
+     * @param hasLower - the scope is defined to have the lower-bound
+     * @param hasUpper - the scope is defined to have the upper-bound
+     * @param isSparse - the scope includes sparse integers
+     * @throws ErrorSyntax if startingScope is less than zero
+     * @throws ErrorSyntax if endingScope is less than startingScope
+     * @throws ErrorSyntax if increment is less than one
+     */
     public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope,
                         int endingScope, int increment, List<ExprVar> pAtoms,
                         int pAtomsLowerLastIndex, List<List<Expr>> pFields,
@@ -299,7 +322,7 @@ public class CommandScope {
     /**
      * Extract a list of atoms compounding a tuple from the input tuple encoded
      * as a pair of atom and list
-     * 
+     *
      * @param pair - a tuple represented of <atom, list<pair>>
      * @return
      */
