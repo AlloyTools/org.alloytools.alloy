@@ -25,6 +25,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import kodkod.ast.BinaryExpression;
+import kodkod.ast.Decls;
+import kodkod.ast.ExprToIntCast;
+import kodkod.ast.Expression;
+import kodkod.ast.Formula;
+import kodkod.ast.IntConstant;
+import kodkod.ast.IntExpression;
+import kodkod.ast.IntToExprCast;
+import kodkod.ast.QuantifiedFormula;
+import kodkod.ast.Relation;
+import kodkod.ast.Variable;
+import kodkod.ast.operator.ExprOperator;
+import kodkod.engine.CapacityExceededException;
+import kodkod.engine.fol2sat.HigherOrderDeclException;
+import kodkod.instance.Tuple;
+import kodkod.instance.TupleFactory;
+import kodkod.instance.TupleSet;
+import kodkod.util.ints.IntVector;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -56,24 +74,6 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitReturn;
-import kodkod.ast.BinaryExpression;
-import kodkod.ast.Decls;
-import kodkod.ast.ExprToIntCast;
-import kodkod.ast.Expression;
-import kodkod.ast.Formula;
-import kodkod.ast.IntConstant;
-import kodkod.ast.IntExpression;
-import kodkod.ast.IntToExprCast;
-import kodkod.ast.QuantifiedFormula;
-import kodkod.ast.Relation;
-import kodkod.ast.Variable;
-import kodkod.ast.operator.ExprOperator;
-import kodkod.engine.CapacityExceededException;
-import kodkod.engine.fol2sat.HigherOrderDeclException;
-import kodkod.instance.Tuple;
-import kodkod.instance.TupleFactory;
-import kodkod.instance.TupleSet;
-import kodkod.util.ints.IntVector;
 
 /**
  * Translate an Alloy AST into Kodkod AST then attempt to solve it using Kodkod.
@@ -97,14 +97,14 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     private Env<ExprVar,Object>               env              = new Env<ExprVar,Object>();
 
     /**
-     * If frame!=null, it stores the scope, bounds, and other settings necessary for
-     * performing a solve.
+     * If frame!=null, it stores the scope, bounds, and other settings necessary
+     * for performing a solve.
      */
     private final A4Solution                  frame;
 
     /**
-     * If frame==null, it stores the mapping from each Sig/Field/Skolem/Atom to its
-     * corresponding Kodkod expression.
+     * If frame==null, it stores the mapping from each Sig/Field/Skolem/Atom to
+     * its corresponding Kodkod expression.
      */
     private final ConstMap<Expr,Expression>   a2k;
 
@@ -133,10 +133,11 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     private final int                         unrolls;
 
     /**
-     * Construct a translator based on the given list of sigs and the given command.
+     * Construct a translator based on the given list of sigs and the given
+     * command.
      *
-     * @param rep - if nonnull, it's the reporter that will receive diagnostics and
-     *            progress reports
+     * @param rep - if nonnull, it's the reporter that will receive diagnostics
+     *            and progress reports
      * @param opt - the solving options (must not be null)
      * @param sigs - the list of sigs (must not be null, and must be a complete
      *            list)
@@ -157,10 +158,12 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     }
 
     /**
-     * Construct a translator based on a already-fully-constructed association map.
+     * Construct a translator based on a already-fully-constructed association
+     * map.
      *
      * @param bitwidth - the integer bitwidth to use
-     * @param unrolls - the maximum number of loop unrolling and recursion allowed
+     * @param unrolls - the maximum number of loop unrolling and recursion
+     *            allowed
      * @param a2k - the mapping from Alloy sig/field/skolem/atom to the
      *            corresponding Kodkod expression
      */
@@ -204,8 +207,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     }
 
     /** Returns the expression corresponding to the given Bounds. */
-    private Expression a2k(Bounds x)     throws Err {
-        if (a2k!=null)
+    private Expression a2k(Bounds x) throws Err {
+        if (a2k != null)
             return a2k.get(x);
         else
             return frame.a2k(x);
@@ -525,14 +528,14 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
      * @param sigs - the list of sigs; this list must be complete
      * @param cmd - the Command to execute
      * @param opt - the set of options guiding the execution of the command
-     * @return null if the user chose "save to FILE" as the SAT solver, and nonnull
-     *         if the solver finishes the entire solving and is either satisfiable
-     *         or unsatisfiable.
+     * @return null if the user chose "save to FILE" as the SAT solver, and
+     *         nonnull if the solver finishes the entire solving and is either
+     *         satisfiable or unsatisfiable.
      *         <p>
-     *         If the return value X is satisfiable, you can call X.next() to get
-     *         the next satisfying solution X2; and you can call X2.next() to get
-     *         the next satisfying solution X3... until you get an unsatisfying
-     *         solution.
+     *         If the return value X is satisfiable, you can call X.next() to
+     *         get the next satisfying solution X2; and you can call X2.next()
+     *         to get the next satisfying solution X3... until you get an
+     *         unsatisfying solution.
      */
     public static A4Solution execute_command(A4Reporter rep, Iterable<Sig> sigs, Command cmd, A4Options opt) throws Err {
         if (rep == null)
@@ -564,21 +567,21 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
      * resulting A4Solution object.
      * <p>
      * Note: it will first test whether the model fits one of the model from the
-     * "Software Abstractions" book; if so, it will use the exact instance that was
-     * in the book.
+     * "Software Abstractions" book; if so, it will use the exact instance that
+     * was in the book.
      *
      * @param rep - if nonnull, we'll send compilation diagnostic messages to it
      * @param sigs - the list of sigs; this list must be complete
      * @param cmd - the Command to execute
      * @param opt - the set of options guiding the execution of the command
-     * @return null if the user chose "save to FILE" as the SAT solver, and nonnull
-     *         if the solver finishes the entire solving and is either satisfiable
-     *         or unsatisfiable.
+     * @return null if the user chose "save to FILE" as the SAT solver, and
+     *         nonnull if the solver finishes the entire solving and is either
+     *         satisfiable or unsatisfiable.
      *         <p>
-     *         If the return value X is satisfiable, you can call X.next() to get
-     *         the next satisfying solution X2; and you can call X2.next() to get
-     *         the next satisfying solution X3... until you get an unsatisfying
-     *         solution.
+     *         If the return value X is satisfiable, you can call X.next() to
+     *         get the next satisfying solution X2; and you can call X2.next()
+     *         to get the next satisfying solution X3... until you get an
+     *         unsatisfying solution.
      */
     public static A4Solution execute_commandFromBook(A4Reporter rep, Iterable<Sig> sigs, Command cmd, A4Options opt) throws Err {
         if (rep == null)
@@ -867,8 +870,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     }
 
     /**
-     * Performs int[x]; contains an efficiency shortcut that simplifies int[Int[x]]
-     * to x.
+     * Performs int[x]; contains an efficiency shortcut that simplifies
+     * int[Int[x]] to x.
      */
     private IntExpression sum(Expression x) {
         if (x instanceof IntToExprCast)
@@ -918,15 +921,16 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         return ans;
     }
 
-    /*=======================*/
+    /* ======================= */
     /* Evaluates a Bounds node. */
-    /*=======================*/
-    
+    /* ======================= */
+
     /** {@inheritDoc} */
-    @Override public Object visit(Bounds x) throws Err {
+    @Override
+    public Object visit(Bounds x) throws Err {
         Expression ans = a2k(x);
-        if (ans==null)
-            throw new ErrorFatal(x.pos, "Bounds \""+x+"\" is not bound to a legal value during translation.\n");
+        if (ans == null)
+            throw new ErrorFatal(x.pos, "Bounds \"" + x + "\" is not bound to a legal value during translation.\n");
         return ans;
     }
 
@@ -935,8 +939,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     /* ============================= */
 
     /**
-     * Caches parameter-less functions to a Kodkod Expression, Kodkod IntExpression,
-     * or Kodkod Formula.
+     * Caches parameter-less functions to a Kodkod Expression, Kodkod
+     * IntExpression, or Kodkod Formula.
      */
     private final Map<Func,Object> cacheForConstants = new IdentityHashMap<Func,Object>();
 
@@ -994,8 +998,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     /* ================================ */
 
     /**
-     * Helper method that merge a list of conjuncts or disjoints while minimizing
-     * the AST depth (external caller should use i==1)
+     * Helper method that merge a list of conjuncts or disjoints while
+     * minimizing the AST depth (external caller should use i==1)
      */
     private Formula getSingleFormula(boolean isConjunct, int i, List<Expr> formulas) throws Err {
         // We actually build a "binary heap" where node X's two children are
@@ -1042,29 +1046,29 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 return k2pos(((Relation) next).totalOrder((Relation) elem, (Relation) first, lst), x);
             }
             Formula f1 = elem.in(first.join(next.reflexiveClosure())); // every
-                                                                      // element
-                                                                      // is in
-                                                                      // the
-                                                                      // total
-                                                                      // order
+                                                                       // element
+                                                                       // is in
+                                                                       // the
+                                                                       // total
+                                                                       // order
             Formula f2 = next.join(first).no(); // first element has no
-                                               // predecessor
+                                                // predecessor
             Variable e = Variable.unary("v" + Integer.toString(cnt++));
             Formula f3 = e.eq(first).or(next.join(e).one()); // each element
-                                                            // (except the
-                                                            // first) has
-                                                            // one
-                                                            // predecessor
+                                                             // (except the
+                                                             // first) has
+                                                             // one
+                                                             // predecessor
             Formula f4 = e.eq(elem.difference(next.join(elem))).or(e.join(next).one()); // each
-                                                                                       // element
-                                                                                       // (except
-                                                                                       // the
-                                                                                       // last)
-                                                                                       // has
-                                                                                       // one
-                                                                                       // successor
+                                                                                        // element
+                                                                                        // (except
+                                                                                        // the
+                                                                                        // last)
+                                                                                        // has
+                                                                                        // one
+                                                                                        // successor
             Formula f5 = e.in(e.join(next.closure())).not(); // there are no
-                                                            // cycles
+                                                             // cycles
             return k2pos(f3.and(f4).and(f5).forAll(e.oneOf(elem)).and(f1).and(f2), x);
         }
         // This says no(a&b) and no((a+b)&c) and no((a+b+c)&d)...
@@ -1177,11 +1181,11 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 return i.sha(cint(b));
             case PLUS :
                 return cset(a).union(cset(b));
-            // [AM]
-            // obj = visitThis(a);
-            // if (obj instanceof IntExpression) { i=(IntExpression)obj; return
-            // i.plus(cint(b)); }
-            // s = (Expression)obj; return s.union(cset(b));
+                // [AM]
+                // obj = visitThis(a);
+                // if (obj instanceof IntExpression) { i=(IntExpression)obj; return
+                // i.plus(cint(b)); }
+                // s = (Expression)obj; return s.union(cset(b));
             case IPLUS :
                 return cint(a).plus(cint(b));
             case MINUS :
@@ -1194,11 +1198,11 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                     if (b instanceof ExprConstant && ((ExprConstant) b).op == ExprConstant.Op.NUMBER && ((ExprConstant) b).num() == max + 1)
                         return IntConstant.constant(min);
                 return cset(a).difference(cset(b));
-            // [AM]
-            // obj=visitThis(a);
-            // if (obj instanceof IntExpression) { i=(IntExpression)obj; return
-            // i.minus(cint(b));}
-            // s=(Expression)obj; return s.difference(cset(b));
+                // [AM]
+                // obj=visitThis(a);
+                // if (obj instanceof IntExpression) { i=(IntExpression)obj; return
+                // i.minus(cint(b));}
+                // s=(Expression)obj; return s.difference(cset(b));
             case IMINUS :
                 return cint(a).minus(cint(b));
             case INTERSECT :
@@ -1457,7 +1461,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     }
 
     /**
-     * Helper method that translates the quantification expression "op vars | sub"
+     * Helper method that translates the quantification expression
+     * "op vars | sub"
      */
     private Object visit_qt(final ExprQt.Op op, final ConstList<Decl> xvars, final Expr sub) throws Err {
         if (op == ExprQt.Op.NO) {
@@ -1539,10 +1544,10 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 env.remove((ExprVar) v);
         if (op == ExprQt.Op.COMPREHENSION)
             return ans.comprehension(dd); // guards.size()==0, since each var
-                                         // has to be unary
+                                          // has to be unary
         if (op == ExprQt.Op.SUM)
             return ians.sum(dd); // guards.size()==0, since each var has to be
-                                // unary
+                                 // unary
         if (op == ExprQt.Op.SOME) {
             if (guards.size() == 0)
                 return ans.forSome(dd);

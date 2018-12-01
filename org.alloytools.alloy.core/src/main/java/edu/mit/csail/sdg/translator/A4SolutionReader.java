@@ -30,6 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import kodkod.ast.Relation;
+import kodkod.instance.Tuple;
+import kodkod.instance.TupleFactory;
+import kodkod.instance.TupleSet;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
@@ -43,10 +47,6 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
-import kodkod.ast.Relation;
-import kodkod.instance.Tuple;
-import kodkod.instance.TupleFactory;
-import kodkod.instance.TupleSet;
 
 /**
  * This helper class contains helper routines for reading an A4Solution object
@@ -83,8 +83,8 @@ public final class A4SolutionReader {
     private final TupleFactory        factory;
 
     /**
-     * Helper method that returns true if the given attribute value in the given XML
-     * node is equal to "yes"
+     * Helper method that returns true if the given attribute value in the given
+     * XML node is equal to "yes"
      */
     private static boolean yes(XMLNode node, String attr) {
         return node.getAttribute(attr).equals("yes");
@@ -296,7 +296,7 @@ public final class A4SolutionReader {
             }
         if (field == null)
             field = parent.addTrickyField(Pos.UNKNOWN, isPrivate, null, null, isMeta, new String[] {
-                                                                                                    label
+                                          label
             }, UNIV.join(type))[0];
         TupleSet ts = parseTuples(node, arity);
         expr2ts.put(field, ts);
@@ -354,18 +354,18 @@ public final class A4SolutionReader {
         final int maxseq = Integer.parseInt(inst.getAttribute("maxseq"));
         final int max = Util.max(bitwidth), min = Util.min(bitwidth);
         if (bitwidth >= 1 && bitwidth <= 30)
-            for(int i=min; i<=max; i++) { 
-                atoms.add(Integer.toString(i)); 
+            for (int i = min; i <= max; i++) {
+                atoms.add(Integer.toString(i));
             }
         // Inserting the exceeded integers into the atoms list
-        for (XMLNode i : inst){
+        for (XMLNode i : inst) {
             if (i.getAttribute("label").equals("Int")) {
-                for (XMLNode y: i) {
-                    try{
-                        int value = Integer.valueOf(y.getAttribute("value"));
+                for (XMLNode y : i) {
+                    try {
+                        int value = Integer.valueOf(y.getAttribute("label"));
                         atoms.add(String.valueOf(value));
-                    }catch (NumberFormatException e) {
-                        // throw new ErrorSyntax("The XML file must containt integer type instead of:" + y.getAttribute("value"));
+                    } catch (NumberFormatException e) {
+                        throw new ErrorSyntax("The XML file must contain integer type instead of:" + y.getAttribute("value"));
                     }
                 }
             }
@@ -407,17 +407,17 @@ public final class A4SolutionReader {
                 TupleSet ts = expr2ts.remove(s);
                 if (ts == null)
                     ts = factory.noneOf(1); // If the sig was NOT mentioned in
-                                           // the XML file...
+                                            // the XML file...
                 Relation r = sol.addRel(s.label, ts, ts);
                 sol.addSig(s, r);
                 for (Field f : s.getFields()) {
                     ts = expr2ts.remove(f);
                     if (ts == null)
                         ts = factory.noneOf(f.type().arity()); // If the field
-                                                              // was NOT
-                                                              // mentioned in
-                                                              // the XML
-                                                              // file...
+                                                               // was NOT
+                                                               // mentioned in
+                                                               // the XML
+                                                               // file...
                     r = sol.addRel(s.label + "." + f.label, ts, ts);
                     sol.addField(f, r);
                 }
@@ -435,12 +435,12 @@ public final class A4SolutionReader {
     /**
      * Parse the XML element into an AlloyInstance.
      * <p>
-     * The list of sigs, if not null, will be used as the sigs (and their fields)
-     * that we expect to exist; <br>
-     * if there's a sig or field X in the list but not in the XML, then X's tupleset
-     * will be regarded as empty; <br>
-     * if there's a sig or field X in the XML but not in the list, then X (and its
-     * value in XML file) is added to the solution.
+     * The list of sigs, if not null, will be used as the sigs (and their
+     * fields) that we expect to exist; <br>
+     * if there's a sig or field X in the list but not in the XML, then X's
+     * tupleset will be regarded as empty; <br>
+     * if there's a sig or field X in the XML but not in the list, then X (and
+     * its value in XML file) is added to the solution.
      */
     public static A4Solution read(Iterable<Sig> sigs, XMLNode xml) throws Err {
         try {

@@ -36,38 +36,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentSkipListSet;
 
-
-import org.alloytools.alloy.core.AlloyCore;
-import org.alloytools.util.table.Table;
-
-import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.alloy4.ConstMap;
-import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4.ErrorAPI;
-import edu.mit.csail.sdg.alloy4.ErrorFatal;
-import edu.mit.csail.sdg.alloy4.ErrorSyntax;
-import edu.mit.csail.sdg.alloy4.Pair;
-import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.SafeList;
-import edu.mit.csail.sdg.alloy4.TableView;
-import edu.mit.csail.sdg.alloy4.UniqueNameGenerator;
-import edu.mit.csail.sdg.alloy4.Util;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprBinary;
-import edu.mit.csail.sdg.ast.ExprConstant;
-import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Func;
-import edu.mit.csail.sdg.ast.Sig;
-import edu.mit.csail.sdg.ast.Sig.Field;
-import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.ast.Type;
-import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.Decl;
@@ -100,6 +71,35 @@ import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 import kodkod.util.ints.IndexedEntry;
 
+import org.alloytools.alloy.core.AlloyCore;
+import org.alloytools.util.table.Table;
+
+import edu.mit.csail.sdg.alloy4.A4Reporter;
+import edu.mit.csail.sdg.alloy4.ConstList;
+import edu.mit.csail.sdg.alloy4.ConstMap;
+import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorAPI;
+import edu.mit.csail.sdg.alloy4.ErrorFatal;
+import edu.mit.csail.sdg.alloy4.ErrorSyntax;
+import edu.mit.csail.sdg.alloy4.Pair;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.SafeList;
+import edu.mit.csail.sdg.alloy4.TableView;
+import edu.mit.csail.sdg.alloy4.UniqueNameGenerator;
+import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprConstant;
+import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Func;
+import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.translator.A4Options.SatSolver;
+
 /**
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
  * a staging area for the solver before generating the solution. Once solve()
@@ -114,33 +114,33 @@ public final class A4Solution {
     /**
      * The constant unary relation representing the smallest Int atom.
      */
-    static final Relation KK_MIN    = Relation.unary("Int/min");
+    static final Relation                     KK_MIN         = Relation.unary("Int/min");
 
     /**
      * The constant unary relation representing the Int atom "0".
      */
-    static final Relation KK_ZERO   = Relation.unary("Int/zero");
+    static final Relation                     KK_ZERO        = Relation.unary("Int/zero");
 
     /**
      * The constant unary relation representing the largest Int atom.
      */
-    static final Relation KK_MAX    = Relation.unary("Int/max");
+    static final Relation                     KK_MAX         = Relation.unary("Int/max");
 
     /**
-     * The constant binary relation representing the "next" relation from each Int
-     * atom to its successor.
+     * The constant binary relation representing the "next" relation from each
+     * Int atom to its successor.
      */
-    static final Relation KK_NEXT   = Relation.binary("Int/next");
+    static final Relation                     KK_NEXT        = Relation.binary("Int/next");
 
     /**
      * The constant unary relation representing the set of all seq/Int atoms.
      */
-    static final Relation KK_SEQIDX = Relation.unary("seq/Int");
+    static final Relation                     KK_SEQIDX      = Relation.unary("seq/Int");
 
     /**
      * The constant unary relation representing the set of all String atoms.
      */
-    static final Relation KK_STRING = Relation.unary("String");
+    static final Relation                     KK_STRING      = Relation.unary("String");
 
     // ====== immutable fields
     // ===========================================================================//
@@ -148,53 +148,57 @@ public final class A4Solution {
     /**
      * The original Alloy options that generated this solution.
      */
-    private final A4Options         originalOptions;
+    private final A4Options                   originalOptions;
 
     /**
      * The original Alloy command that generated this solution; can be "" if
      * unknown.
      */
-    private final String            originalCommand;
+    private final String                      originalCommand;
 
     /** The bitwidth; always between 1 and 30. */
-    private final int               bitwidth;
+    private final int                         bitwidth;
 
     /**
-     * The maximum allowed sequence length; always between 0 and 2^(bitwidth-1)-1.
+     * The maximum allowed sequence length; always between 0 and
+     * 2^(bitwidth-1)-1.
      */
-    private final int               maxseq;
+    private final int                         maxseq;
 
     /**
      * The maximum allowed number of loop unrolling and recursion level.
      */
-    private final int               unrolls;
+    private final int                         unrolls;
 
     /** The list of all atoms. */
-    private final ConstList<String> kAtoms;
+    private final ConstList<String>           kAtoms;
 
     /** The Kodkod TupleFactory object. */
-    private final TupleFactory      factory;
+    private final TupleFactory                factory;
 
     /** The set of all Int atoms; immutable. */
-    private final TupleSet          sigintBounds;
+    private final TupleSet                    sigintBounds;
 
     /** The set of all seq/Int atoms; immutable. */
-    private final TupleSet          seqidxBounds;
+    private final TupleSet                    seqidxBounds;
 
     /** The set of all String atoms; immutable. */
-    private final TupleSet          stringBounds;
+    private final TupleSet                    stringBounds;
 
     /** The Kodkod Solver object. */
-    private final Solver            solver;
+    private final Solver                      solver;
 
-    /** The default bitwidth to set the kodkod bidwidth in case of having out-of-bound numbers */
-    final int exceedBitWidth = 31;
+    /**
+     * The default bitwidth to set the kodkod bidwidth in case of having
+     * out-of-bound numbers
+     */
+    final int                                 exceedBitWidth = 31;
 
     // ====== mutable fields (immutable after solve() has been called)
     // ===================================//
 
     /** True iff the problem is solved. */
-    private boolean                           solved      = false;
+    private boolean                           solved         = false;
 
     /** The Kodkod Bounds object. */
     private Bounds                            bounds;
@@ -203,41 +207,42 @@ public final class A4Solution {
      * The list of Kodkod formulas; can be empty if unknown; once a solution is
      * solved we must not modify this anymore
      */
-    private ArrayList<Formula>                formulas    = new ArrayList<Formula>();
+    private ArrayList<Formula>                formulas       = new ArrayList<Formula>();
 
     /** The list of known Alloy4 sigs. */
     private SafeList<Sig>                     sigs;
 
     /**
-     * If solved==true and is satisfiable, then this is the list of known skolems.
+     * If solved==true and is satisfiable, then this is the list of known
+     * skolems.
      */
-    private SafeList<ExprVar>                 skolems     = new SafeList<ExprVar>();
+    private SafeList<ExprVar>                 skolems        = new SafeList<ExprVar>();
 
     /**
-     * If solved==true and is satisfiable, then this is the list of actually used
-     * atoms.
+     * If solved==true and is satisfiable, then this is the list of actually
+     * used atoms.
      */
-    private SafeList<ExprVar>                 atoms       = new SafeList<ExprVar>();
+    private SafeList<ExprVar>                 atoms          = new SafeList<ExprVar>();
 
     /**
      * If solved==true and is satisfiable, then this maps each Kodkod atom to a
      * short name.
      */
-    private Map<Object,String>                atom2name   = new LinkedHashMap<Object,String>();
+    private Map<Object,String>                atom2name      = new LinkedHashMap<Object,String>();
 
     /**
-     * If solved==true and is satisfiable, then this maps each Kodkod atom to its
-     * most specific sig.
+     * If solved==true and is satisfiable, then this maps each Kodkod atom to
+     * its most specific sig.
      */
-    private Map<Object,PrimSig>               atom2sig    = new LinkedHashMap<Object,PrimSig>();
+    private Map<Object,PrimSig>               atom2sig       = new LinkedHashMap<Object,PrimSig>();
 
     /**
      * If solved==true and is satisfiable, then this is the Kodkod evaluator.
      */
-    private Evaluator                         eval        = null;
+    private Evaluator                         eval           = null;
 
     /** If not null, you can ask it to get another solution. */
-    private Iterator<Solution>                kEnumerator = null;
+    private Iterator<Solution>                kEnumerator    = null;
 
     /**
      * The map from each Sig/Field/Skolem/Atom to its corresponding Kodkod
@@ -251,14 +256,14 @@ public final class A4Solution {
     private final ConstMap<String,Expression> s2k;
 
     /**
-     * The map from each kodkod Formula to Alloy Expr or Alloy Pos (can be empty if
-     * unknown)
+     * The map from each kodkod Formula to Alloy Expr or Alloy Pos (can be empty
+     * if unknown)
      */
     private Map<Formula,Object>               k2pos;
 
     /**
-     * The map from each Kodkod Relation to Alloy Type (can be empty or incomplete
-     * if unknown)
+     * The map from each Kodkod Relation to Alloy Type (can be empty or
+     * incomplete if unknown)
      */
     private Map<Relation,Type>                rel2type;
 
@@ -267,34 +272,44 @@ public final class A4Solution {
      */
     private Map<Variable,Pair<Type,Pos>>      decl2type;
 
-    /** The flag would be on if the integers in the inst block exceed the bitwidth range*/
-    boolean exceededInt = false;
-    
-    List<Integer> exceededInts = new ArrayList<Integer>();
+    /**
+     * The flag would be on if the integers in the inst block exceed the
+     * bitwidth range
+     */
+    boolean                                   exceededInt    = false;
+
+    /**
+     * list of integers referenced in the partial instance block but not int the
+     * bitwidth rage
+     */
+    List<Integer>                             exceededInts   = new ArrayList<Integer>();
 
     // ===================================================================================================//
 
     /**
-     * Construct a blank A4Solution containing just UNIV, SIGINT, SEQIDX, STRING,
-     * and NONE as its only known sigs.
+     * Construct a blank A4Solution containing just UNIV, SIGINT, SEQIDX,
+     * STRING, and NONE as its only known sigs.
      *
      * @param originalCommand - the original Alloy command that generated this
      *            solution; can be "" if unknown
      * @param bitwidth - the bitwidth; must be between 1 and 30
-     * @param maxseq - the maximum allowed sequence length; must be between 0 and
-     *            (2^(bitwidth-1))-1
+     * @param maxseq - the maximum allowed sequence length; must be between 0
+     *            and (2^(bitwidth-1))-1
      * @param atoms - the set of atoms
-     * @param rep - the reporter that will receive diagnostic and progress messages
-     * @param opt - the Alloy options that will affect the solution and the solver
-     * @param expected - whether the user expected an instance or not (1 means yes,
-     *            0 means no, -1 means the user did not express an expectation)
+     * @param rep - the reporter that will receive diagnostic and progress
+     *            messages
+     * @param opt - the Alloy options that will affect the solution and the
+     *            solver
+     * @param expected - whether the user expected an instance or not (1 means
+     *            yes, 0 means no, -1 means the user did not express an
+     *            expectation)
      */
     A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, int expected) throws Err {
         opt = opt.dup();
         this.unrolls = opt.unrolls;
         this.sigs = new SafeList<Sig>(Arrays.asList(UNIV, SIGINT, SEQIDX, STRING, NONE));
         this.a2k = Util.asMap(new Expr[] {
-                                          UNIV, SIGINT, SEQIDX, STRING, NONE
+                        UNIV, SIGINT, SEQIDX, STRING, NONE
         }, Expression.INTS.union(KK_STRING), Expression.INTS, KK_SEQIDX, KK_STRING, Expression.NONE);
         this.k2pos = new LinkedHashMap<Formula,Object>();
         this.rel2type = new LinkedHashMap<Relation,Type>();
@@ -323,29 +338,36 @@ public final class A4Solution {
         TupleSet stringBounds = factory.noneOf(1);
         final TupleSet next = factory.noneOf(2);
         int min = min(), max = max();
-        if (max >= min){
-            ConcurrentSkipListSet<Integer> ints = new ConcurrentSkipListSet<Integer>();
-            for(String a: atoms){
-                try{
-                    ints.add(Integer.valueOf(a));
-                }catch(NumberFormatException e){}
+        if (max >= min) {
+            TreeSet<Integer> ints = new TreeSet<Integer>();
+            for (String a : atoms) {
+                try {
+                    ints.add(Integer.parseInt(a));
+                } catch (NumberFormatException e) {
+                    // non-integer atoms are ignored
+                }
             }
-            if(ints.last() > max() || ints.first() < min){
+            if (ints.last() > max() || ints.first() < min) {
                 exceededInt = true;
                 exceededInts.addAll(ints.subSet(ints.first(), min));
-                exceededInts.addAll(ints.subSet(max+1, ints.last()+1 ));
+                exceededInts.addAll(ints.subSet(max + 1, ints.last() + 1));
             }
 
-            for(Integer i: ints) { // Safe since we know 1 <= bitwidth <= 30
-                Tuple ii = factory.tuple(""+i);
+            for (Integer i : ints) { // Safe since we know 1 <= bitwidth <= 30
+                Tuple ii = factory.tuple("" + i);
                 TupleSet is = factory.range(ii, ii);
                 bounds.boundExactly(i, is);
                 sigintBounds.add(ii);
-                if (i>=0 && i<maxseq) seqidxBounds.add(ii);
-                if (i < ints.last()) next.add(factory.tuple(""+i, ""+(ints.ceiling(i+1))));
-                if (i==ints.first()) bounds.boundExactly(KK_MIN,  is);
-                if (i==ints.last()) bounds.boundExactly(KK_MAX,  is);
-                if (i==0)   bounds.boundExactly(KK_ZERO, is);
+                if (i >= 0 && i < maxseq)
+                    seqidxBounds.add(ii);
+                if (i < ints.last())
+                    next.add(factory.tuple("" + i, "" + (ints.ceiling(i + 1))));
+                if (i == ints.first())
+                    bounds.boundExactly(KK_MIN, is);
+                if (i == ints.last())
+                    bounds.boundExactly(KK_MAX, is);
+                if (i == 0)
+                    bounds.boundExactly(KK_ZERO, is);
             }
         }
         this.sigintBounds = sigintBounds.unmodifiableView();
@@ -398,34 +420,34 @@ public final class A4Solution {
             solver.options().setCoreGranularity(opt.coreGranularity);
         } else {
             solver.options().setSolver(SATFactory.DefaultSAT4J); // Even for
-                                                                // "KK" and
-                                                                // "CNF", we
-                                                                // choose
-                                                                // SAT4J
-                                                                // here;
-                                                                // later,
-                                                                // just
-                                                                // before
-                                                                // solving,
-                                                                // we'll
-                                                                // change it
-                                                                // to a
-                                                                // Write2CNF
-                                                                // solver
+                                                                 // "KK" and
+                                                                 // "CNF", we
+                                                                 // choose
+                                                                 // SAT4J
+                                                                 // here;
+                                                                 // later,
+                                                                 // just
+                                                                 // before
+                                                                 // solving,
+                                                                 // we'll
+                                                                 // change it
+                                                                 // to a
+                                                                 // Write2CNF
+                                                                 // solver
         }
         solver.options().setSymmetryBreaking(sym);
         solver.options().setSkolemDepth(opt.skolemDepth);
-        if(exceededInt){
+        if (exceededInt) {
             solver.options().setBitwidth(exceedBitWidth);
-        }else{
+        } else {
             solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
         }
         solver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
     }
 
     /**
-     * Construct a new A4Solution that is the continuation of the old one, but with
-     * the "next" instance.
+     * Construct a new A4Solution that is the continuation of the old one, but
+     * with the "next" instance.
      */
     private A4Solution(A4Solution old) throws Err {
         if (!old.solved)
@@ -534,8 +556,8 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /**
-     * Returns the original Alloy file name that generated this solution; can be ""
-     * if unknown.
+     * Returns the original Alloy file name that generated this solution; can be
+     * "" if unknown.
      */
     public String getOriginalFilename() {
         return originalOptions.originalFilename;
@@ -562,13 +584,14 @@ public final class A4Solution {
             return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null);
     }
 
-    public List<Integer> getExceededInts(){
+    public List<Integer> getExceededInts() {
         return this.exceededInts;
     }
 
-    public boolean isExceededInt(){
+    public boolean isExceededInt() {
         return this.exceededInt;
     }
+
     // ===================================================================================================//
 
     /** Returns the Kodkod TupleFactory object. */
@@ -584,10 +607,12 @@ public final class A4Solution {
     }
 
     /**
-     * Add a new relation with the given label and the given lower and upper bound.
+     * Add a new relation with the given label and the given lower and upper
+     * bound.
      *
      * @param label - the label for the new relation; need not be unique
-     * @param lower - the lowerbound; can be null if you want it to be the empty set
+     * @param lower - the lowerbound; can be null if you want it to be the empty
+     *            set
      * @param upper - the upperbound; cannot be null; must contain everything in
      *            lowerbound
      */
@@ -612,8 +637,8 @@ public final class A4Solution {
      * (and if s.isTopLevel then add this expression into Sig.UNIV). <br>
      * The expression must contain only constant Relations or Relations that are
      * already bound in this solution. <br>
-     * (If the sig was already added by a previous call to addSig(), then this call
-     * will return immediately without altering what it is associated with)
+     * (If the sig was already added by a previous call to addSig(), then this
+     * call will return immediately without altering what it is associated with)
      */
     void addSig(Sig s, Expression expr) throws ErrorFatal {
         if (solved)
@@ -629,12 +654,13 @@ public final class A4Solution {
     }
 
     /**
-     * Add a new field to this solution and associate it with the given expression.
-     * <br>
+     * Add a new field to this solution and associate it with the given
+     * expression. <br>
      * The expression must contain only constant Relations or Relations that are
      * already bound in this solution. <br>
-     * (If the field was already added by a previous call to addField(), then this
-     * call will return immediately without altering what it is associated with)
+     * (If the field was already added by a previous call to addField(), then
+     * this call will return immediately without altering what it is associated
+     * with)
      */
     void addField(Field f, Expression expr) throws ErrorFatal {
         if (solved)
@@ -647,8 +673,8 @@ public final class A4Solution {
     }
 
     /**
-     * Add a new skolem to this solution and associate it with the given expression.
-     * <br>
+     * Add a new skolem to this solution and associate it with the given
+     * expression. <br>
      * The expression must contain only constant Relations or Relations that are
      * already bound in this solution.
      */
@@ -667,8 +693,8 @@ public final class A4Solution {
     }
 
     /**
-     * Returns an unmodifiable copy of the map from each Sig/Field/Skolem/Atom to
-     * its corresponding Kodkod expression.
+     * Returns an unmodifiable copy of the map from each Sig/Field/Skolem/Atom
+     * to its corresponding Kodkod expression.
      */
     ConstMap<Expr,Expression> a2k() {
         return ConstMap.make(a2k);
@@ -683,16 +709,16 @@ public final class A4Solution {
     }
 
     /**
-     * Returns the corresponding Kodkod expression for the given Sig, or null if it
-     * is not associated with anything.
+     * Returns the corresponding Kodkod expression for the given Sig, or null if
+     * it is not associated with anything.
      */
     Expression a2k(Sig sig) {
         return a2k.get(sig);
     }
 
     /**
-     * Returns the corresponding Kodkod expression for the given Field, or null if
-     * it is not associated with anything.
+     * Returns the corresponding Kodkod expression for the given Field, or null
+     * if it is not associated with anything.
      */
     Expression a2k(Field field) {
         return a2k.get(field);
@@ -707,16 +733,16 @@ public final class A4Solution {
     }
 
     /**
-     * Returns the corresponding Kodkod expression for the given String constant, or
-     * null if it is not associated with anything.
+     * Returns the corresponding Kodkod expression for the given String
+     * constant, or null if it is not associated with anything.
      */
     Expression a2k(String stringConstant) {
         return s2k.get(stringConstant);
     }
 
     /**
-     * Returns the corresponding Kodkod expression for the given expression, or null
-     * if it is not associated with anything.
+     * Returns the corresponding Kodkod expression for the given expression, or
+     * null if it is not associated with anything.
      */
     Expression a2k(Expr expr) throws ErrorFatal {
         while (expr instanceof ExprUnary) {
@@ -745,28 +771,28 @@ public final class A4Solution {
                     return a2k(a).union(a2k(b));
                 case MINUS :
                     return a2k(a).difference(a2k(b));
-                // TODO: IPLUS, IMINUS???
+                    // TODO: IPLUS, IMINUS???
                 default :
                     // TODO log?
                     break;
             }
         }
         return null; // Current only UNION, PRODUCT, and DIFFERENCE of Sigs and
-                    // Fields and ExprConstant.EMPTYNESS are allowed in a
-                    // defined field's definition.
+                     // Fields and ExprConstant.EMPTYNESS are allowed in a
+                     // defined field's definition.
     }
 
     /**
-     * Return a modifiable TupleSet representing a sound overapproximation of the
-     * given expression.
+     * Return a modifiable TupleSet representing a sound overapproximation of
+     * the given expression.
      */
     TupleSet approximate(Expression expression) {
         return factory.setOf(expression.arity(), Translator.approximate(expression, bounds, solver.options()).denseIndices());
     }
 
     /**
-     * Query the Bounds object to find the lower/upper bound; throws ErrorFatal if
-     * expr is not Relation, nor a {union, product} of Relations.
+     * Query the Bounds object to find the lower/upper bound; throws ErrorFatal
+     * if expr is not Relation, nor a {union, product} of Relations.
      */
     TupleSet query(boolean findUpper, Expression expr, boolean makeMutable) throws ErrorFatal {
         if (expr == Expression.NONE)
@@ -816,7 +842,8 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /**
-     * Returns true iff the problem has been solved and the result is satisfiable.
+     * Returns true iff the problem has been solved and the result is
+     * satisfiable.
      */
     public boolean satisfiable() {
         return eval != null;
@@ -824,7 +851,8 @@ public final class A4Solution {
 
     /**
      * Returns an unmodifiable copy of the list of all sigs in this solution's
-     * model; always contains UNIV+SIGINT+SEQIDX+STRING+NONE and has no duplicates.
+     * model; always contains UNIV+SIGINT+SEQIDX+STRING+NONE and has no
+     * duplicates.
      */
     public SafeList<Sig> getAllReachableSigs() {
         return sigs.dup();
@@ -847,8 +875,8 @@ public final class A4Solution {
     }
 
     /**
-     * Returns the short unique name corresponding to the given atom if the problem
-     * is solved and is satisfiable; else returns atom.toString().
+     * Returns the short unique name corresponding to the given atom if the
+     * problem is solved and is satisfiable; else returns atom.toString().
      */
     String atom2name(Object atom) {
         String ans = atom2name.get(atom);
@@ -856,8 +884,8 @@ public final class A4Solution {
     }
 
     /**
-     * Returns the most specific sig corresponding to the given atom if the problem
-     * is solved and is satisfiable; else returns UNIV.
+     * Returns the most specific sig corresponding to the given atom if the
+     * problem is solved and is satisfiable; else returns UNIV.
      */
     PrimSig atom2sig(Object atom) {
         PrimSig sig = atom2sig.get(atom);
@@ -908,8 +936,8 @@ public final class A4Solution {
     }
 
     /**
-     * If this solution is solved and satisfiable, evaluates the given expression
-     * and returns an A4TupleSet, a java Integer, or a java Boolean.
+     * If this solution is solved and satisfiable, evaluates the given
+     * expression and returns an A4TupleSet, a java Integer, or a java Boolean.
      */
     public Object eval(Expr expr) throws Err {
         try {
@@ -939,8 +967,8 @@ public final class A4Solution {
     }
 
     /**
-     * Returns the Kodkod instance represented by this solution; throws an exception
-     * if the problem is not yet solved or if it is unsatisfiable.
+     * Returns the Kodkod instance represented by this solution; throws an
+     * exception if the problem is not yet solved or if it is unsatisfiable.
      */
     public Instance debugExtractKInstance() throws Err {
         if (!solved)
@@ -1041,8 +1069,8 @@ public final class A4Solution {
     }
 
     /**
-     * Associates the Kodkod variable to a particular Alloy Type and Alloy Pos (if
-     * it is not already associated with something)
+     * Associates the Kodkod variable to a particular Alloy Type and Alloy Pos
+     * (if it is not already associated with something)
      */
     void kv2typepos(Variable var, Type type, Pos pos) throws Err {
         if (solved)
@@ -1058,8 +1086,8 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /**
-     * Add the given formula to the list of Kodkod formulas, and associate it with
-     * the given Pos object (pos can be null if unknown).
+     * Add the given formula to the list of Kodkod formulas, and associate it
+     * with the given Pos object (pos can be null if unknown).
      */
     void addFormula(Formula newFormula, Pos pos) throws Err {
         if (solved)
@@ -1068,15 +1096,15 @@ public final class A4Solution {
             return; // If one formula is false, we don't need the others
         if (newFormula == Formula.FALSE)
             formulas.clear(); // If one formula is false, we don't need the
-                             // others
+                              // others
         formulas.add(newFormula);
         if (pos != null && pos != Pos.UNKNOWN)
             k2pos(newFormula, pos);
     }
 
     /**
-     * Add the given formula to the list of Kodkod formulas, and associate it with
-     * the given Expr object (expr can be null if unknown)
+     * Add the given formula to the list of Kodkod formulas, and associate it
+     * with the given Expr object (expr can be null if unknown)
      */
     void addFormula(Formula newFormula, Expr expr) throws Err {
         if (solved)
@@ -1085,7 +1113,7 @@ public final class A4Solution {
             return; // If one formula is false, we don't need the others
         if (newFormula == Formula.FALSE)
             formulas.clear(); // If one formula is false, we don't need the
-                             // others
+                              // others
         formulas.add(newFormula);
         if (expr != null)
             k2pos(newFormula, expr);
@@ -1145,8 +1173,8 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /**
-     * Helper method to determine if a given binary relation is a total order over a
-     * given unary relation.
+     * Helper method to determine if a given binary relation is a total order
+     * over a given unary relation.
      */
     private static List<Tuple> isOrder(TupleSet b, TupleSet u) {
         // Size check
@@ -1192,8 +1220,9 @@ public final class A4Solution {
     }
 
     /**
-     * Helper method that chooses a name for each atom based on its most specific
-     * sig; (external caller should call this method with s==null and nexts==null)
+     * Helper method that chooses a name for each atom based on its most
+     * specific sig; (external caller should call this method with s==null and
+     * nexts==null)
      */
     private static void rename(A4Solution frame, PrimSig s, Map<Sig,List<Tuple>> nexts, UniqueNameGenerator un) throws Err {
         if (s == null) {
@@ -1317,7 +1346,7 @@ public final class A4Solution {
         for (Tuple t : list) {
             if (frame.atom2sig.containsKey(t.atom(0)))
                 continue; // This means one of the subsig has already claimed
-                         // this atom.
+                          // this atom.
             String x = t.atom(0).toString();
             i++;
             frame.atom2sig.put(t.atom(0), s);
@@ -1334,8 +1363,8 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /**
-     * Solve for the solution if not solved already; if cmd==null, we will simply
-     * use the lowerbound of each relation as its value.
+     * Solve for the solution if not solved already; if cmd==null, we will
+     * simply use the lowerbound of each relation as its value.
      */
     A4Solution solve(final A4Reporter rep, Command cmd, Simplifier simp, boolean tryBookExamples) throws Err, IOException {
         // If already solved, then return this object as is
@@ -1350,7 +1379,7 @@ public final class A4Solution {
                 inst.add(i, factory.range(it, it));
             }
             // Include the extra integers into the visulizer
-            for(Integer i: exceededInts){
+            for (Integer i : exceededInts) {
                 Tuple it = factory.tuple(String.valueOf(i));
                 inst.add(i, factory.range(it, it));
             }
@@ -1374,13 +1403,14 @@ public final class A4Solution {
         Solution sol = null;
         final Reporter oldReporter = solver.options().reporter();
         final boolean solved[] = new boolean[] {
-                                                true
+                        true
         };
         solver.options().setReporter(new AbstractReporter() { // Set up a
-                                                             // reporter to
-                                                             // catch the
-                                                             // type+pos of
-                                                             // skolems
+
+            // reporter to
+            // catch the
+            // type+pos of
+            // skolems
 
             @Override
             public void skolemizing(Decl decl, Relation skolem, List<Decl> predecl) {
@@ -1404,14 +1434,14 @@ public final class A4Solution {
                     return;
                 else
                     solved[0] = true; // initially solved[0] is true, so we
-                                     // won't report the # of vars/clauses
+                                      // won't report the # of vars/clauses
                 if (rep != null)
                     rep.solve(primaryVars, vars, clauses);
             }
         });
         if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
-                                                                                                       // book
-                                                                                                       // examples
+                                                                                                        // book
+                                                                                                        // examples
             A4Reporter r = AlloyCore.isDebug() ? rep : null;
             try {
                 sol = BookExamples.trial(r, this, fgoal, solver, cmd.check);
@@ -1420,7 +1450,7 @@ public final class A4Solution {
             }
         }
         solved[0] = false; // this allows the reporter to report the # of
-                          // vars/clauses
+                           // vars/clauses
         for (Relation r : bounds.relations()) {
             formulas.add(r.eq(r));
         } // Without this, kodkod refuses to grow unmentioned relations
@@ -1452,7 +1482,10 @@ public final class A4Solution {
             return null;
         }
         if (!solver.options().solver().incremental() /*
-                                                      * || solver.options().solver()==SATFactory. ZChaffMincost
+                                                      * ||
+                                                      * solver.options().solver
+                                                      * ()==SATFactory.
+                                                      * ZChaffMincost
                                                       */) {
             if (sol == null)
                 sol = solver.solve(fgoal, bounds);
