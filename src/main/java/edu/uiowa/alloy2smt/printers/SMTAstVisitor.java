@@ -51,4 +51,6 @@ public interface SMTAstVisitor
     public void visit(BoundVariableDeclaration boundVariableDeclaration);
 
     public void visit(BoolSort aThis);
+
+    public void visit(LetExpression aThis);
 }

@@ -185,6 +185,9 @@ public class Alloy2SMTTranslator
     
     private void translateFuncsAndPreds()
     {        
+        List<String> funcOrder = new ArrayList<>();
+        Map<String, List<String>> dependency = new HashMap<>();
+        
         for(Func func : this.alloyModel.getAllFunc()) 
         {
             funcNames.add(func.label);
@@ -196,59 +199,17 @@ public class Alloy2SMTTranslator
                 continue;
             }
             translateFunc(f);
+            sortFunctionDependency(f.label, f.getBody(), dependency);
         }
-        
-        List<String> funcOrder = new ArrayList<>();
-        orderFunctions(funcOrder);
+                
+        // Organize the order of dependency
+        organizeDependency(dependency, funcOrder);
         
         for(int i = 0; i < funcOrder.size(); ++i)
         {            
             this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
         }
-    }    
-    
-    private void orderFunctions(List<String> funcOrder)
-    {
-        for(Func f :this.alloyModel.getAllFunc())
-        {
-            for(String name : funcNames)
-            {
-                if(f.getBody().toString().contains(name+"["))
-                {
-                    orderFunctions(name, funcOrder);
-                }
-            }
-            if(!funcOrder.contains(f.label))
-            {
-                funcOrder.add(f.label);
-            }
-        }        
     }
-    
-    private void orderFunctions(String func, List<String> funcOrder)
-    {
-        for(Func f : this.alloyModel.getAllFunc())
-        {
-            if(f.label.equals(func))
-            {
-                for(String name : funcNames)
-                {
-                    if(f.getBody().toString().contains(name+"["))
-                    {
-                        if(!funcOrder.contains(f.label))
-                        {
-                            funcOrder.add(f.label);
-                        }
-                    }
-                }  
-                break;
-            }
-        } 
-        if(!funcOrder.contains(func))
-        {
-            funcOrder.add(func);
-        }
-    }    
     
     private void translateFunc(Func f)
     {        
@@ -299,4 +260,141 @@ public class Alloy2SMTTranslator
         Expression expression = this.exprTranslator.translateExpr(assertionExpr, new HashMap<>());
         this.smtProgram.addAssertion(new Assertion(assertionName, new UnaryExpression(UnaryExpression.Op.NOT, expression)));
     }    
+    
+    
+    
+    
+    
+
+    /**
+     * This is to sort out the function dependencies so that 
+     * we can print them in the right order
+     */
+    private void sortFunctionDependency(String callingFuncName, Expr expr, Map<String, List<String>> dependency)
+    {
+        if(expr instanceof ExprUnary)
+        {
+            sortFunctionsInExprUnary(callingFuncName, (ExprUnary)expr, dependency);
+        } 
+        else if(expr instanceof ExprBinary)
+        {
+            sortFunctionDependency(callingFuncName, ((ExprBinary)expr).left, dependency);
+            sortFunctionDependency(callingFuncName, ((ExprBinary)expr).right, dependency);
+        }
+        else if(expr instanceof ExprQt)
+        {
+            for (Decl decl: ((ExprQt)expr).decls)
+            {
+                sortFunctionDependency(callingFuncName, decl.expr, dependency);
+            }            
+            sortFunctionDependency(callingFuncName, ((ExprQt)expr).sub, dependency);
+        }
+        else if(expr instanceof ExprList)
+        {
+            for(Expr argExpr : ((ExprList)expr).args)
+            {
+                sortFunctionDependency(callingFuncName, argExpr, dependency);
+            }            
+        }
+        else if(expr instanceof ExprCall)
+        {
+            for(Expr e : ((ExprCall)expr).args)
+            {
+                sortFunctionDependency(callingFuncName, e, dependency);
+            }
+            addToDependency(callingFuncName, ((ExprCall)expr).fun.label, dependency);
+        }
+        else if((expr instanceof ExprConstant) || (expr instanceof Sig.Field) || (expr instanceof Sig)
+                || (expr instanceof ExprVar))
+        {
+            return;
+        }
+        else 
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
+
+    private void sortFunctionsInExprUnary(String callingFuncName, ExprUnary exprUnary, Map<String, List<String>> dependency)
+    {
+        switch (exprUnary.op)
+        {
+            case NOOP       :
+            case NO         : 
+            case SOME       : 
+            case ONE        : 
+            case LONE       : 
+            case TRANSPOSE  : 
+            case CLOSURE    :
+            case RCLOSURE   : 
+            case ONEOF      :
+            case LONEOF     :
+            case SOMEOF     : 
+            case SETOF      :                 
+            case NOT        : sortFunctionDependency(callingFuncName, exprUnary.sub, dependency); break;
+            case CAST2INT   : return;
+            case CAST2SIGINT : return;
+            default:
+            {
+                throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
+            }
+        }
+    }    
+    
+    private void addToDependency(String key, String value, Map<String, List<String>> dependency)
+    {
+        if(dependency.containsKey(key))        
+        {
+            dependency.get(key).add(value);
+        }
+        else
+        {
+            List<String> values = new ArrayList<>();
+            values.add(value);
+            dependency.put(key, values);
+        }
+    }
+    
+    private void organizeDependency(Map<String, List<String>> dependency, List<String> orderedFunctions)
+    {
+        for(Map.Entry<String, List<String>> entry : dependency.entrySet())
+        {
+            for(String dFuncName : entry.getValue())
+            {
+                if(dependency.containsKey(dFuncName))
+                {
+                    organizeDependency(dFuncName, dependency, orderedFunctions);
+                }
+                else
+                {
+                    orderedFunctions.add(dFuncName);
+                }
+            }
+            orderedFunctions.add(entry.getKey());
+        }
+        for(Func f : this.alloyModel.getAllFunc())
+        {
+            if(!orderedFunctions.contains(f.label) && !f.label.equalsIgnoreCase("this/$$Default"))
+            {
+                orderedFunctions.add(f.label);
+            }
+        }
+    }
+    
+    private void organizeDependency(String dFuncName, Map<String, List<String>> dependency, List<String> orderedFunctions)
+    {
+        for(String funcName : dependency.get(dFuncName))
+        {
+            if(dependency.containsKey(funcName))
+            {
+                organizeDependency(funcName, dependency, orderedFunctions);
+            }
+            else
+            {
+                orderedFunctions.add(funcName);
+            }
+        }
+    }
+     
 }

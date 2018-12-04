@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.printers;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.List;
+import java.util.Map;
 
 public class SMTLIBPrettyPrinter implements SMTAstVisitor
 {
@@ -368,5 +369,20 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(BoolSort aThis) {
         this.stringBuilder.append(aThis.getSortName());
+    }
+
+    @Override
+    public void visit(LetExpression aThis) {
+        this.stringBuilder.append("(" + aThis.getOp() + " (");
+        for(Map.Entry<String, Expression> letVar : aThis.getLetVars().entrySet())
+        {
+            this.stringBuilder.append("(");
+            this.stringBuilder.append(letVar.getKey()).append(" ");
+            this.visit(letVar.getValue());
+            this.stringBuilder.append(")");
+        }
+        this.stringBuilder.append(") ");
+        this.visit(aThis.getExpression());
+        this.stringBuilder.append(")");        
     }
 }

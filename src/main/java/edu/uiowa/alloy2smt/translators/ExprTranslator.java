@@ -12,6 +12,7 @@ import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,9 +140,10 @@ public class ExprTranslator
     Expression translateExprLet(ExprLet exprLet, Map<String, Expression> variablesScope)
     {
         Expression varExpr = translateExpr(exprLet.expr, variablesScope);
-        variablesScope.put(exprLet.var.label, varExpr);
+        Map<String, Expression> varToExprMap = new HashMap<>();
+        varToExprMap.put(exprLet.var.label, varExpr);
         Expression letBodyExpr = translateExpr(exprLet.sub, variablesScope);
-        return letBodyExpr;
+        return new LetExpression(LetExpression.Op.LET, varToExprMap, varExpr);
     }    
     
     Expression translateExprCall(ExprCall exprCall, Map<String, Expression> variablesScope)

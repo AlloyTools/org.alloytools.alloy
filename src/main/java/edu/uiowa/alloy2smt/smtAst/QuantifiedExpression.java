@@ -60,7 +60,8 @@ public class QuantifiedExpression extends Expression
     public enum Op 
     {        
         FORALL ("forall"),
-        EXISTS ("exists");    
+        EXISTS ("exists"),
+        LET ("let");    
 
         private final String opStr;
 
