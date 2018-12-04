@@ -304,6 +304,11 @@ public class Alloy2SMTTranslator
             }
             addToDependency(callingFuncName, ((ExprCall)expr).fun.label, dependency);
         }
+        else if(expr instanceof ExprLet)
+        {
+            sortFunctionDependency(callingFuncName, ((ExprLet)expr).expr, dependency);
+            sortFunctionDependency(callingFuncName, ((ExprLet)expr).sub, dependency);
+        }
         else if((expr instanceof ExprConstant) || (expr instanceof Sig.Field) || (expr instanceof Sig)
                 || (expr instanceof ExprVar))
         {

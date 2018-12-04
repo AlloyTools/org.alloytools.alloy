@@ -143,7 +143,7 @@ public class ExprTranslator
         Map<String, Expression> varToExprMap = new HashMap<>();
         varToExprMap.put(exprLet.var.label, varExpr);
         Expression letBodyExpr = translateExpr(exprLet.sub, variablesScope);
-        return new LetExpression(LetExpression.Op.LET, varToExprMap, varExpr);
+        return new LetExpression(LetExpression.Op.LET, varToExprMap, letBodyExpr);
     }    
     
     Expression translateExprCall(ExprCall exprCall, Map<String, Expression> variablesScope)

@@ -141,8 +141,9 @@ public class ExprUnaryTranslator
             }
             else
             {
-                System.out.println("Something is wrong here, we do not have variable declarations in scope for: " + ((ExprVar)exprUnary.sub).label);
-                throw new RuntimeException();
+                List<Sort> eS = new ArrayList<>();
+                eS.add(exprTranslator.translator.atomSort);
+                return new ConstantExpression(new ConstantDeclaration(((ExprVar)exprUnary.sub).label, new SetSort(new TupleSort(eS))));
             }            
         }
 

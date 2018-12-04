@@ -320,6 +320,10 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         {
             this.visit((BooleanConstant) expression);
         }
+        else if (expression instanceof  LetExpression)
+        {
+            this.visit((LetExpression) expression);
+        }        
         else
         {
             throw new UnsupportedOperationException();
