@@ -274,7 +274,29 @@ public class Alloy2SMTTranslator
     {
         if(expr instanceof ExprUnary)
         {
-            sortFunctionsInExprUnary(callingFuncName, (ExprUnary)expr, dependency);
+            ExprUnary exprUnary = (ExprUnary)expr;
+            switch (exprUnary.op)
+            {
+                case NOOP       :
+                case NO         : 
+                case SOME       : 
+                case ONE        : 
+                case LONE       : 
+                case TRANSPOSE  : 
+                case CLOSURE    :
+                case RCLOSURE   : 
+                case ONEOF      :
+                case LONEOF     :
+                case SOMEOF     : 
+                case SETOF      :                 
+                case NOT        : sortFunctionDependency(callingFuncName, exprUnary.sub, dependency); break;
+                case CAST2INT   : return;
+                case CAST2SIGINT : return;
+                default:
+                {
+                    throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
+                }
+            }            
         } 
         else if(expr instanceof ExprBinary)
         {
@@ -317,33 +339,6 @@ public class Alloy2SMTTranslator
         else 
         {
             throw new UnsupportedOperationException();
-        }
-    }
-    
-
-    private void sortFunctionsInExprUnary(String callingFuncName, ExprUnary exprUnary, Map<String, List<String>> dependency)
-    {
-        switch (exprUnary.op)
-        {
-            case NOOP       :
-            case NO         : 
-            case SOME       : 
-            case ONE        : 
-            case LONE       : 
-            case TRANSPOSE  : 
-            case CLOSURE    :
-            case RCLOSURE   : 
-            case ONEOF      :
-            case LONEOF     :
-            case SOMEOF     : 
-            case SETOF      :                 
-            case NOT        : sortFunctionDependency(callingFuncName, exprUnary.sub, dependency); break;
-            case CAST2INT   : return;
-            case CAST2SIGINT : return;
-            default:
-            {
-                throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
-            }
         }
     }    
     
