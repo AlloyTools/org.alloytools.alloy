@@ -19,9 +19,22 @@ fact {
 	}
 
 
+fun grandpas [p: Person] : set Person {
+	p.(mother+father).father
+	}
+
+pred ownGrandpa [p: Person] {
+	p in p.grandpas
+	}
+
 assert NoSelfFather {
 	no m: Man | m = m.father
 	}
 // This should not find any counterexample.
 check NoSelfFather
 
+assert NoSelfGrandpa {
+	no p: Person | p in p.grandpas
+	}
+// This should not find any counterexample
+check NoSelfGrandpa for 4 Person

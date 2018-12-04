@@ -243,7 +243,7 @@ public class ExprTranslator
                     break;                   
             }
             translator.smtProgram.addConstantDeclaration(arithVarDecl);
-            translator.smtProgram.addAssertion(new Assertion("Mathmetic operator definition", finalExpr));     
+            translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition", finalExpr));     
             translator.arithOps.put(op, arithVarDecl.getConstantExpr());
         }
         return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
