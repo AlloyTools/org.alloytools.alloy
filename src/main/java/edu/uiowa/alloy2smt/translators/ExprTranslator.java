@@ -187,18 +187,15 @@ public class ExprTranslator
     {
         if(!translator.arithOps.containsKey(op))
         {
-            BoundVariableDeclaration  bdUnaryIntVar1 = new BoundVariableDeclaration("x", translator.unaryIntSort);
-            BoundVariableDeclaration  bdUnaryIntVar2 = new BoundVariableDeclaration("y", translator.unaryIntSort); 
-            BoundVariableDeclaration  bdUnaryIntVar3 = new BoundVariableDeclaration("z", translator.unaryIntSort); 
-            Expression memUniv1 = new BinaryExpression(bdUnaryIntVar1.getConstantExpr(), BinaryExpression.Op.MEMBER, translator.intUniv.getConstantExpr());
-            Expression memUniv2 = new BinaryExpression(bdUnaryIntVar2.getConstantExpr(), BinaryExpression.Op.MEMBER, translator.intUniv.getConstantExpr());
-            Expression memUniv3 = new BinaryExpression(bdUnaryIntVar3.getConstantExpr(), BinaryExpression.Op.MEMBER, translator.intUniv.getConstantExpr());            
-            Expression bdIntVar1Expr = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdUnaryIntVar1.getConstantExpr());
-            Expression bdIntVar2Expr = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdUnaryIntVar2.getConstantExpr());
-            Expression bdIntVar3Expr = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, bdUnaryIntVar3.getConstantExpr());
+            BoundVariableDeclaration  bdUnaryIntVar1 = new BoundVariableDeclaration("x", translator.intAtomSort);
+            BoundVariableDeclaration  bdUnaryIntVar2 = new BoundVariableDeclaration("y", translator.intAtomSort); 
+            BoundVariableDeclaration  bdUnaryIntVar3 = new BoundVariableDeclaration("z", translator.intAtomSort); 
+            Expression bdIntVar1Expr = new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdUnaryIntVar1.getConstantExpr());
+            Expression bdIntVar2Expr = new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdUnaryIntVar2.getConstantExpr());
+            Expression bdIntVar3Expr = new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdUnaryIntVar3.getConstantExpr());
                        
-            Expression lhsExpr = new BinaryExpression(memUniv1, BinaryExpression.Op.AND, memUniv2);
-            lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, memUniv3);   
+            Expression lhsExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.PLUS, bdIntVar1Expr);
+            lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);   
             Expression finalExpr = null;
             Expression rhsExpr  = null;
             ConstantDeclaration arithVarDecl = null;

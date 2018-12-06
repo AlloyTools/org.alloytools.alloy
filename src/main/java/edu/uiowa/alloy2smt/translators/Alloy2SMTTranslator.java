@@ -27,6 +27,7 @@ public class Alloy2SMTTranslator
     
     final Alloy2SMTLogger LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
     final String                    atom;
+    final String                    intAtom;
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
@@ -36,10 +37,13 @@ public class Alloy2SMTTranslator
     final SetSort                   setOfTernaryIntSort;    
     final IntSort                   intSort;
     final TupleSort                 unaryAtomSort;
+    final TupleSort                 unaryIntAtomSort;    
     final TupleSort                 unaryIntSort;
     final TupleSort                 binaryAtomSort;      
+    final TupleSort                 binaryIntAtomSort;          
     final TupleSort                 ternaryIntSort;
     final UninterpretedSort         atomSort;    
+    final UninterpretedSort         intAtomSort;    
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
     final FunctionDeclaration       atomUniv;
@@ -48,7 +52,8 @@ public class Alloy2SMTTranslator
     final FunctionDeclaration       atomIden;
     final FunctionDeclaration       intUniv;
     final UnaryExpression           intNone;
-    final FunctionDeclaration       intIden;    
+    final FunctionDeclaration       intIden;
+    final FunctionDeclaration       valueOfIntAtom;    
     
     Map<String, String>                             funcNamesMap;
     Map<String, FunctionDefinition>                 funcDefsMap;    
@@ -64,15 +69,19 @@ public class Alloy2SMTTranslator
 
     public Alloy2SMTTranslator(CompModule alloyModel)
     {
-        this.smtProgram             = new SMTProgram();        
         this.atom                   = "Atom";
+        this.intAtom                = "IntAtom";
+        this.smtProgram             = new SMTProgram();        
         this.intSort                = new IntSort();
         this.alloyModel             = alloyModel;
         this.reachableSigs          = new ArrayList<>();
         this.topLevelSigs           = new ArrayList<>();
         this.atomSort               = new UninterpretedSort(this.atom);
+        this.intAtomSort            = new UninterpretedSort(this.intAtom);
         this.unaryAtomSort          = new TupleSort(this.atomSort);
         this.binaryAtomSort         = new TupleSort(this.atomSort, this.atomSort);
+        this.unaryIntAtomSort       = new TupleSort(this.intAtomSort);
+        this.binaryIntAtomSort      = new TupleSort(this.intAtomSort, this.intAtomSort);        
         this.unaryIntSort           = new TupleSort(this.intSort);
         this.ternaryIntSort         = new TupleSort(this.intSort, this.intSort, this.intSort);
         this.setOfUnaryAtomSort     = new SetSort(this.unaryAtomSort);
@@ -88,6 +97,9 @@ public class Alloy2SMTTranslator
         this.intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
+        this.valueOfIntAtom         = new FunctionDeclaration("value_of_intAtom", this.intAtomSort, this.intSort);
+        this.smtProgram.addFcnDecl(this.valueOfIntAtom);
+        
         this.comparisonOps          = new HashMap<>();  
         this.arithOps               = new HashMap<>();
         this.signaturesMap          = new HashMap<>();

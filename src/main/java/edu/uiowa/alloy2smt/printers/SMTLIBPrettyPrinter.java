@@ -34,7 +34,8 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
                 "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
                 "(set-option :sets-ext true)\n" +
-                "(declare-sort Atom 0)\n");
+                "(declare-sort Atom 0)\n" +
+                "(declare-sort IntAtom 0)\n");
     }
 
     public String print()
