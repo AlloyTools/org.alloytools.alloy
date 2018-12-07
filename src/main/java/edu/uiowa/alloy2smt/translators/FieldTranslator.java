@@ -728,14 +728,21 @@ public class FieldTranslator
         //		)
         //	)
         //)
+        
+        Boolean sigVarIsInt     = field.sig.type().is_int();
+        Boolean fstSigVarIsInt  = fieldComponentExprs.get(0).type().is_int();
+        
         String sigVarName       = TranslatorUtils.getNewName();
         String fstSigVarName    = TranslatorUtils.getNewName();
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
         
         BoundVariableDeclaration    sigVar  = new BoundVariableDeclaration(sigVarName, 
-                                                    field.sig.type().is_int()? translator.intSort:translator.atomSort);
+                                                    sigVarIsInt? translator.intAtomSort:translator.atomSort);
         BoundVariableDeclaration fstSigVar  = new BoundVariableDeclaration(fstSigVarName, 
-                                                    fieldComponentExprs.get(0).type().is_int()? translator.intSort:translator.atomSort);
+                                                    fstSigVarIsInt? translator.intAtomSort:translator.atomSort);
+
+        Expression sigVarIntExpr    = new FunctionCallExpression(translator.valueOfIntAtom.getName(), sigVar.getConstantExpr());
+        Expression fstSigVarIntExpr = new FunctionCallExpression(translator.valueOfIntAtom.getName(), fstSigVar.getConstantExpr());
         
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
@@ -743,11 +750,11 @@ public class FieldTranslator
                                     : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
-        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr()), 
+        Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVarIsInt?sigVarIntExpr:sigVar.getConstantExpr()), 
                                                             BinaryExpression.Op.MEMBER, sigExpr);
-        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVar.getConstantExpr()),
+        Expression fstSigVarMembership  = new BinaryExpression(mkTupleOutofAtoms(fstSigVarIsInt?fstSigVarIntExpr:fstSigVar.getConstantExpr()),
                                                             BinaryExpression.Op.MEMBER, fstSigExpr);  
-        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVar.getConstantExpr(), fstSigVar.getConstantExpr()), 
+        Expression fieldMembership      = new BinaryExpression(mkTupleOutofAtoms(sigVarIsInt?sigVarIntExpr:sigVar.getConstantExpr(), fstSigVarIsInt?fstSigVarIntExpr:fstSigVar.getConstantExpr()), 
                                                             BinaryExpression.Op.MEMBER, fieldExpr);        
 
         QuantifiedExpression innerExists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(fstSigVarMembership, BinaryExpression.Op.AND, fieldMembership), fstSigVar);

@@ -18,6 +18,7 @@ public class SMTProgram
     private final List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
     private final List<FunctionDefinition>     fcnDefs              = new ArrayList<>();
     private final List<Assertion>              assertions           = new ArrayList<>();
+    private final List<Sort>                   sorts                = new ArrayList<>();
 
     public void addFunctionDeclaration(FunctionDeclaration declaration)
     {
@@ -41,7 +42,15 @@ public class SMTProgram
         {
             this.functionDeclarations.add(fcn);
         }
-    } 
+    }
+    
+    public void addSort(Sort sort) 
+    {
+        if(sort != null) 
+        {
+            this.sorts.add(sort);
+        }
+    }    
     
     public void addFcnDef(FunctionDefinition fcnDef) 
     {
@@ -65,6 +74,11 @@ public class SMTProgram
         {
             this.assertions.add(assertion);
         }
+    }
+    
+    public List<Sort> getSorts()
+    {
+        return this.sorts;
     }
 
     public List<FunctionDeclaration> getFunctionDeclarations()

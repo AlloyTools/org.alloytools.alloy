@@ -229,13 +229,16 @@ public class SignatureTranslator
                 Sig parentSig = parents.get(0);
                 
                 // We consider parentSig as int
-                if(parentSig == Sig.SIGINT && !translator.signaturesMap.containsKey(parentSig))
+//                if(parentSig == Sig.SIGINT && !translator.signaturesMap.containsKey(parentSig))
+//                {
+//                    declareIntSig();
+//                }
+                if(parentSig != Sig.SIGINT)
                 {
-                    declareIntSig();
+                    FunctionDeclaration parentDeclaration   = translator.signaturesMap.get(parentSig);
+                    BinaryExpression    subset              = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
+                    translator.smtProgram.addAssertion(new Assertion(subset));                                         
                 }
-                FunctionDeclaration parentDeclaration   = translator.signaturesMap.get(parentSig);
-                BinaryExpression    subset              = new BinaryExpression(functionDeclaration.getConstantExpr(), BinaryExpression.Op.SUBSET, parentDeclaration.getConstantExpr());
-                translator.smtProgram.addAssertion(new Assertion(subset));                     
             }
             else
             {

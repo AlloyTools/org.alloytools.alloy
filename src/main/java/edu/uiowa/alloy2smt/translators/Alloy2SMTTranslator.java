@@ -26,8 +26,13 @@ public class Alloy2SMTTranslator
     public final SMTProgram smtProgram;
     
     final Alloy2SMTLogger LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
-    final String                    atom;
-    final String                    intAtom;
+
+    final String atom               = "Atom";
+    final String intAtom            = "IntAtom";
+    final String binaryIntAtom      = "BinaryIntAtom";        
+    final String ternaryIntAtom     = "TernaryIntAtom";     
+    
+    
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
@@ -37,13 +42,15 @@ public class Alloy2SMTTranslator
     final SetSort                   setOfTernaryIntSort;    
     final IntSort                   intSort;
     final TupleSort                 unaryAtomSort;
-    final TupleSort                 unaryIntAtomSort;    
+    final TupleSort                 unaryIntAtomSort; 
     final TupleSort                 unaryIntSort;
-    final TupleSort                 binaryAtomSort;      
-    final TupleSort                 binaryIntAtomSort;          
+    final TupleSort                 binaryAtomSort;              
     final TupleSort                 ternaryIntSort;
     final UninterpretedSort         atomSort;    
     final UninterpretedSort         intAtomSort;    
+    final UninterpretedSort         binaryIntAtomSort; 
+    final UninterpretedSort         ternaryIntAtomSort; 
+    
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
     final FunctionDeclaration       atomUniv;
@@ -54,6 +61,7 @@ public class Alloy2SMTTranslator
     final UnaryExpression           intNone;
     final FunctionDeclaration       intIden;
     final FunctionDeclaration       valueOfIntAtom;    
+    final FunctionDeclaration       valueOfTernaryIntAtom;
     
     Map<String, String>                             funcNamesMap;
     Map<String, FunctionDefinition>                 funcDefsMap;    
@@ -68,9 +76,7 @@ public class Alloy2SMTTranslator
 
 
     public Alloy2SMTTranslator(CompModule alloyModel)
-    {
-        this.atom                   = "Atom";
-        this.intAtom                = "IntAtom";
+    {               
         this.smtProgram             = new SMTProgram();        
         this.intSort                = new IntSort();
         this.alloyModel             = alloyModel;
@@ -78,10 +84,12 @@ public class Alloy2SMTTranslator
         this.topLevelSigs           = new ArrayList<>();
         this.atomSort               = new UninterpretedSort(this.atom);
         this.intAtomSort            = new UninterpretedSort(this.intAtom);
+        this.binaryIntAtomSort      = new UninterpretedSort(this.binaryIntAtom);
+        this.ternaryIntAtomSort     = new UninterpretedSort(this.ternaryIntAtom);        
+        
         this.unaryAtomSort          = new TupleSort(this.atomSort);
         this.binaryAtomSort         = new TupleSort(this.atomSort, this.atomSort);
         this.unaryIntAtomSort       = new TupleSort(this.intAtomSort);
-        this.binaryIntAtomSort      = new TupleSort(this.intAtomSort, this.intAtomSort);        
         this.unaryIntSort           = new TupleSort(this.intSort);
         this.ternaryIntSort         = new TupleSort(this.intSort, this.intSort, this.intSort);
         this.setOfUnaryAtomSort     = new SetSort(this.unaryAtomSort);
@@ -98,7 +106,8 @@ public class Alloy2SMTTranslator
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
         this.valueOfIntAtom         = new FunctionDeclaration("value_of_intAtom", this.intAtomSort, this.intSort);
-        this.smtProgram.addFcnDecl(this.valueOfIntAtom);
+        this.valueOfTernaryIntAtom  = new FunctionDeclaration("value_of_ternaryIntAtom", this.ternaryIntAtomSort, this.ternaryIntSort);
+
         
         this.comparisonOps          = new HashMap<>();  
         this.arithOps               = new HashMap<>();
@@ -110,7 +119,12 @@ public class Alloy2SMTTranslator
         this.existentialBdVars      = new ArrayList<>();
         this.funcNames              = new HashSet<>();    
 
-        this.signaturesMap.put(Sig.UNIV, this.atomUniv);        
+        this.signaturesMap.put(Sig.UNIV, this.atomUniv);  
+        this.smtProgram.addSort(this.atomSort);
+        this.smtProgram.addSort(this.intAtomSort);
+        this.smtProgram.addSort(this.ternaryIntAtomSort);
+        this.smtProgram.addFcnDecl(this.valueOfIntAtom);
+        this.smtProgram.addFcnDecl(this.valueOfTernaryIntAtom);        
     }
 
     public SMTProgram execute(String assertion)

@@ -272,7 +272,17 @@ public class ExprUnaryTranslator
     public UnaryExpression mkSingleton(BoundVariableDeclaration bdVarDecl)
     {
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(bdVarDecl));
-    }    
+    } 
+    
+    public UnaryExpression mkSingletonOutOfAtomExpr(Expression expr)
+    {
+        return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(expr));
+    }   
+    
+    public Expression mkTupleExpr(Expression expr)
+    {
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expr);
+    }
     
     public UnaryExpression mkSingleton(BoundVariableDeclaration ... bdVarDecls)
     {

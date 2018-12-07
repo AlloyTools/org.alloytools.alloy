@@ -205,58 +205,59 @@ public class ExprBinaryTranslator
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);    
         
         if(!exprTranslator.translator.arithOps.containsKey(op))
-        {
-            BoundVariableDeclaration  bdIntVar1 = new BoundVariableDeclaration("x", exprTranslator.translator.unaryIntSort);
-            BoundVariableDeclaration  bdIntVar2 = new BoundVariableDeclaration("y", exprTranslator.translator.unaryIntSort); 
-            BoundVariableDeclaration  bdIntVar3 = new BoundVariableDeclaration("z", exprTranslator.translator.unaryIntSort); 
-            Expression memUniv1 = new BinaryExpression(bdIntVar1.getConstantExpr(), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
-            Expression memUniv2 = new BinaryExpression(bdIntVar2.getConstantExpr(), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());
-            Expression memUniv3 = new BinaryExpression(bdIntVar3.getConstantExpr(), BinaryExpression.Op.MEMBER, exprTranslator.translator.intUniv.getConstantExpr());            
-            ConstantExpression bdIntVar1Expr = new ConstantExpression(bdIntVar1);
-            ConstantExpression bdIntVar2Expr = new ConstantExpression(bdIntVar2);
-            ConstantExpression bdIntVar3Expr = new ConstantExpression(bdIntVar3);
+        {                      
+            BoundVariableDeclaration  bdUnaryIntVar1 = new BoundVariableDeclaration("_x", exprTranslator.translator.intAtomSort);
+            BoundVariableDeclaration  bdUnaryIntVar2 = new BoundVariableDeclaration("_y", exprTranslator.translator.intAtomSort); 
+            BoundVariableDeclaration  bdUnaryIntVar3 = new BoundVariableDeclaration("_z", exprTranslator.translator.intAtomSort); 
+            Expression bdIntVar1Expr = new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdUnaryIntVar1.getConstantExpr());
+            Expression bdIntVar2Expr = new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdUnaryIntVar2.getConstantExpr());
+            Expression bdIntVar3Expr = new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdUnaryIntVar3.getConstantExpr());
                        
-            Expression lhsExpr = new BinaryExpression(memUniv1, BinaryExpression.Op.AND, memUniv2);
-            lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, memUniv3);   
+            
+            Expression memberOfOp = exprTranslator.exprUnaryTranslator.mkTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
+            
+            BoundVariableDeclaration existentialBdVar = new BoundVariableDeclaration("_w", exprTranslator.translator.ternaryIntAtomSort);          
+            Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(exprTranslator.translator.valueOfTernaryIntAtom.getName(), existentialBdVar.getConstantExpr()), 
+                                                        BinaryExpression.Op.EQ, memberOfOp), existentialBdVar);
+            Expression lhsExpr = null;
             Expression finalExpr = null;
-            Expression rhsExpr  = null;
             ConstantDeclaration arithVarDecl = null;
             
             switch(op)
             {
                 case PLUS:     
-                    arithVarDecl = new ConstantDeclaration("PLUS", exprTranslator.translator.ternaryIntSort);
-                    Expression plusExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.PLUS, bdIntVar2Expr);
-                    plusExpr = new BinaryExpression(plusExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
-                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, plusExpr); 
-                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);
+                    arithVarDecl = new ConstantDeclaration("PLUS", exprTranslator.translator.setOfTernaryIntSort);
+                    lhsExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.PLUS, bdIntVar2Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+
+                    rhsExpr = new BinaryExpression(rhsExpr, BinaryExpression.Op.AND, new BinaryExpression(memberOfOp, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdUnaryIntVar1, bdUnaryIntVar2, bdUnaryIntVar3);
                     break;
                 case MINUS:
-                    arithVarDecl = new ConstantDeclaration("MINUS", exprTranslator.translator.ternaryIntSort);
-                    Expression minusExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MINUS, bdIntVar2Expr);
-                    minusExpr = new BinaryExpression(minusExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
-                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, minusExpr); 
-                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);             
+                    arithVarDecl = new ConstantDeclaration("MINUS", exprTranslator.translator.setOfTernaryIntSort);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.MINUS, bdIntVar2Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                                        
+                    rhsExpr = new BinaryExpression(rhsExpr, BinaryExpression.Op.AND, new BinaryExpression(memberOfOp, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdUnaryIntVar1, bdUnaryIntVar2, bdUnaryIntVar3);             
                     break;
                 case MULTIPLY:
-                    arithVarDecl = new ConstantDeclaration("MUL", exprTranslator.translator.ternaryIntSort);
-                    Expression mulExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MULTIPLY, bdIntVar2Expr);
-                    mulExpr = new BinaryExpression(mulExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
-                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, mulExpr); 
-                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);
+                    arithVarDecl = new ConstantDeclaration("MUL", exprTranslator.translator.setOfTernaryIntSort);
+                    lhsExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.MULTIPLY, bdIntVar2Expr);
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+
+                    rhsExpr = new BinaryExpression(rhsExpr, BinaryExpression.Op.AND, new BinaryExpression(memberOfOp, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdUnaryIntVar1, bdUnaryIntVar2, bdUnaryIntVar3);
                   
                     break;
                 case DIVIDE:
-                    arithVarDecl = new ConstantDeclaration("DIV", exprTranslator.translator.ternaryIntSort);
-                    Expression divExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);                    
-                    divExpr = new BinaryExpression(divExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
-                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, divExpr); 
-                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(bdIntVar2Expr, BinaryExpression.Op.EQ, new IntConstant(0))));
-                    rhsExpr = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(bdIntVar1, bdIntVar2, bdIntVar3), BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdIntVar1, bdIntVar2, bdIntVar3);                 
+                    arithVarDecl = new ConstantDeclaration("DIV", exprTranslator.translator.setOfTernaryIntSort);
+                    lhsExpr = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);                    
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, bdIntVar3Expr);
+
+                    lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprTranslator.exprUnaryTranslator.mkSingletonOutOfAtomExpr(bdIntVar2Expr), BinaryExpression.Op.EQ, new IntConstant(0))));
+                    rhsExpr = new BinaryExpression(rhsExpr, BinaryExpression.Op.AND, new BinaryExpression(memberOfOp, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
+                    finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdUnaryIntVar1, bdUnaryIntVar2, bdUnaryIntVar3);                 
                     break;
                 default:
                     break;                   

@@ -33,13 +33,20 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
                 "(set-option :produce-models true)\n" +
                 "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
-                "(set-option :sets-ext true)\n" +
-                "(declare-sort Atom 0)\n" +
-                "(declare-sort IntAtom 0)\n");
+                "(set-option :sets-ext true)\n");
     }
 
     public String print()
     {
+        for(Sort sort : this.program.getSorts())
+        {
+            if(sort instanceof UninterpretedSort)
+            {
+                this.stringBuilder.append("(declare-sort ");
+                this.stringBuilder.append(((UninterpretedSort) sort).getSortName());
+                this.stringBuilder.append(" 0)\n");
+            }
+        }
         for (FunctionDeclaration declaration : this.program.getFunctionDeclarations())
         {
             this.visit(declaration);
