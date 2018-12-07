@@ -251,12 +251,23 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     public void visit(MultiArityExpression multiArityExpression)
     {
         this.stringBuilder.append("(" + multiArityExpression.getOp() + " ");
-        for (int i = 0; i < multiArityExpression.getExpressions().size()-1; ++i)
+        if(multiArityExpression.getExpressions().size() == 1)
         {
-            this.visit(multiArityExpression.getExpressions().get(i));
-            this.stringBuilder.append(" ");
+            this.visit(multiArityExpression.getExpressions().get(0));
         }
-        this.visit(multiArityExpression.getExpressions().get(multiArityExpression.getExpressions().size()-1));
+        else if(multiArityExpression.getExpressions().size() > 1)
+        {
+            for (int i = 0; i < multiArityExpression.getExpressions().size()-1; ++i)
+            {
+                this.visit(multiArityExpression.getExpressions().get(i));
+                this.stringBuilder.append(" ");
+            }
+            this.visit(multiArityExpression.getExpressions().get(multiArityExpression.getExpressions().size()-1));            
+        }
+        else
+        {
+            throw new RuntimeException("");
+        }
         this.stringBuilder.append(")");
     }
 
