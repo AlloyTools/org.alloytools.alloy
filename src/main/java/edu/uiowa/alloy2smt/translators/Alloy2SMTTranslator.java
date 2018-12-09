@@ -44,6 +44,7 @@ public class Alloy2SMTTranslator
     final TupleSort                 unaryAtomSort;
     final TupleSort                 unaryIntAtomSort; 
     final TupleSort                 unaryIntSort;
+    final TupleSort                 binaryIntSort;    
     final TupleSort                 binaryAtomSort;              
     final TupleSort                 ternaryIntSort;
     final UninterpretedSort         atomSort;    
@@ -60,7 +61,8 @@ public class Alloy2SMTTranslator
     final FunctionDeclaration       intUniv;
     final UnaryExpression           intNone;
     final FunctionDeclaration       intIden;
-    final FunctionDeclaration       valueOfIntAtom;    
+    final FunctionDeclaration       valueOfIntAtom;  
+    final FunctionDeclaration       valueOfBinaryIntAtom;      
     final FunctionDeclaration       valueOfTernaryIntAtom;
     
     Map<String, String>                             funcNamesMap;
@@ -91,6 +93,7 @@ public class Alloy2SMTTranslator
         this.binaryAtomSort         = new TupleSort(this.atomSort, this.atomSort);
         this.unaryIntAtomSort       = new TupleSort(this.intAtomSort);
         this.unaryIntSort           = new TupleSort(this.intSort);
+        this.binaryIntSort          = new TupleSort(this.intSort, this.intSort);        
         this.ternaryIntSort         = new TupleSort(this.intSort, this.intSort, this.intSort);
         this.setOfUnaryAtomSort     = new SetSort(this.unaryAtomSort);
         this.setOfUnaryIntSort      = new SetSort(this.unaryIntSort);
@@ -105,7 +108,8 @@ public class Alloy2SMTTranslator
         this.intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
-        this.valueOfIntAtom         = new FunctionDeclaration("value_of_intAtom", this.intAtomSort, this.intSort);
+        this.valueOfIntAtom         = new FunctionDeclaration("value_of_intAtom", this.intAtomSort, this.unaryIntSort);
+        this.valueOfBinaryIntAtom   = new FunctionDeclaration("value_of_binaryIntAtom", this.intAtomSort, this.binaryIntSort);        
         this.valueOfTernaryIntAtom  = new FunctionDeclaration("value_of_ternaryIntAtom", this.ternaryIntAtomSort, this.ternaryIntSort);
 
         
@@ -122,8 +126,10 @@ public class Alloy2SMTTranslator
         this.signaturesMap.put(Sig.UNIV, this.atomUniv);  
         this.smtProgram.addSort(this.atomSort);
         this.smtProgram.addSort(this.intAtomSort);
+        this.smtProgram.addSort(this.binaryIntAtomSort);
         this.smtProgram.addSort(this.ternaryIntAtomSort);
         this.smtProgram.addFcnDecl(this.valueOfIntAtom);
+        this.smtProgram.addFcnDecl(this.valueOfBinaryIntAtom);
         this.smtProgram.addFcnDecl(this.valueOfTernaryIntAtom);        
     }
 

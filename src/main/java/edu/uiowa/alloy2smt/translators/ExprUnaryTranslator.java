@@ -258,6 +258,11 @@ public class ExprUnaryTranslator
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
     } 
     
+    public MultiArityExpression mkTupleExprOutofAtoms(List<Expression> exprs)
+    {
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
+    }     
+    
     public MultiArityExpression mkTupleExprOutofUnaryTuples(Expression ... exprs)
     {
         List<Expression> atomExprs = new ArrayList<>();
@@ -312,5 +317,6 @@ public class ExprUnaryTranslator
             constExprs.add(varDecl.getConstantExpr());
         }
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
-    }     
+    }  
+   
 }
