@@ -344,7 +344,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
             this.visit((LetExpression) expression);
         }        
         else
-        {
+        {   
             throw new UnsupportedOperationException();
         }
     }

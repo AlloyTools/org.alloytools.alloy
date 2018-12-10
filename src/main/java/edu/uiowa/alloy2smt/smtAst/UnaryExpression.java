@@ -35,7 +35,19 @@ public class UnaryExpression extends Expression
             this.exprs.add(e);
         }
         
-    }    
+    }  
+    
+    public UnaryExpression(Op op, Expression ... exprs)
+    {
+        this.op     = op;
+        this.expr   = null;
+        this.exprs  = new ArrayList<>();
+        for(Expression e : exprs)
+        {
+            this.exprs.add(e);
+        }
+        
+    }      
 
     public Op getOP() 
     {

@@ -779,17 +779,25 @@ public class ExprBinaryTranslator
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) left);
+        }
+        else if(left instanceof MultiArityExpression &&
+                ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
         }
         if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) right);
         }
+        else if(right instanceof MultiArityExpression &&
+                ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+        } 
 
         Expression finalExpr;
         
@@ -937,18 +945,25 @@ public class ExprBinaryTranslator
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) left);
         }
-        
+        else if(left instanceof MultiArityExpression &&
+                ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
+        }
         if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) right);
         }
+        else if(right instanceof MultiArityExpression &&
+                ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+        } 
 
         BinaryExpression operation = new BinaryExpression(left, op, right);
         return operation;
@@ -960,18 +975,25 @@ public class ExprBinaryTranslator
         Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
 
         if(left instanceof ConstantExpression &&
-                ((ConstantExpression)left).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) left);
         }
-        
+        else if(left instanceof MultiArityExpression &&
+                ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
+        }
         if(right instanceof ConstantExpression &&
-                ((ConstantExpression)right).getDeclaration() instanceof BoundVariableDeclaration &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) right);
         }
+        else if(right instanceof MultiArityExpression &&
+                ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+        } 
                 
         Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
         
@@ -1000,13 +1022,23 @@ public class ExprBinaryTranslator
         if(left instanceof ConstantExpression &&
                 (!(((ConstantExpression)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) left);
+            left = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) left);
+        }
+        else if(left instanceof MultiArityExpression &&
+                ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
         }
         if(right instanceof ConstantExpression &&
                 (!(((ConstantExpression)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfOneAtom((ConstantExpression) right);
+            right = exprTranslator.mkSingletonOutOfTupleOrAtom((ConstantExpression) right);
         }
+        else if(right instanceof MultiArityExpression &&
+                ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
+        {
+            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+        }        
         BinaryExpression    join    = new BinaryExpression(left, BinaryExpression.Op.JOIN, right);
         return join;
     }

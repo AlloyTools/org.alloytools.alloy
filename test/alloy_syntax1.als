@@ -55,35 +55,7 @@ sig Q {}
 
 sig G in Int {}
 
-fact fact1 {
-  all b : B | b.f1 in C
-  lone b : B | b.f1 in C
-  no c : C | c.f2 in D
-  some b : B | b.f1 in C
-}
 
-fact fact2 {
-  all b : B, c : C | (b -> c) in (B -> C)
-  all b : B | no f : F | f in b.f1
-  all b : B | lone h : H | h in b.f21
-  all b : B | some h : H | h !in b.f21  
-}
-
-fact fact3 {
-  some c : C | all u : univ | univ & none = none
-  some c : C | some u : univ | univ - none = univ  
-  some c : C | lone k : K |  k in univ
-  some c : C | no k : K |  (c -> k) in f1  
-}
-
-fact fact4 {
-  lone p : P | all q : Q | p & q = none
-  no p : P | some q : Q | p -> q in f1
-}
-
-fact fact5 {
-
-}
 
 fact fact6 {
   f19.D in B
