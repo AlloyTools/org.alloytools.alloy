@@ -205,12 +205,34 @@ public class ExprUnaryTranslator
 
     private Expression translateSome(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
-        List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
-        List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
-        MultiArityExpression            tuple       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
-        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression                member      = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, set);
-        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, member);
+        int arity           = exprUnary.sub.type().arity();
+        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+        List<Expression>                bdVarExprs  = new ArrayList<>();
+        
+        for(Sort sort : sorts)
+        {
+            String name = TranslatorUtils.getNewName();
+            BoundVariableDeclaration bdVar;
+            Expression bdVarExpr;
+            
+            if(sort instanceof IntSort)
+            {
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
+                bdVarExpr = mkTupleSelExpr(new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdVar.getConstantExpr()), 0);
+            }
+            else
+            {
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVarExpr = bdVar.getConstantExpr();
+            }
+            bdVars.add(bdVar);
+            bdVarExprs.add(bdVarExpr);
+        }
+        Expression bdVarSetExpr = mkSingleton(ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs));
+        
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.SUBSET, set));
         return exists;
     }
 
@@ -229,31 +251,74 @@ public class ExprUnaryTranslator
 
     private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
-        List<BoundVariableDeclaration>  variables   = getQuantifiedVariables(exprUnary.sub);
-        List<Expression>                expressions = variables.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
-        Expression                      singleton   = exprTranslator.mkSingletonOutOfAtoms(expressions);
-        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression                eq          = new BinaryExpression(singleton, BinaryExpression.Op.EQ, set);
-        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, eq);
+        int arity           = exprUnary.sub.type().arity();
+        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+        List<Expression>                bdVarExprs  = new ArrayList<>();
+        
+        for(Sort sort : sorts)
+        {
+            String name = TranslatorUtils.getNewName();
+            BoundVariableDeclaration bdVar;
+            Expression bdVarExpr;
+            
+            if(sort instanceof IntSort)
+            {
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
+                bdVarExpr = mkTupleSelExpr(new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdVar.getConstantExpr()), 0);
+            }
+            else
+            {
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVarExpr = bdVar.getConstantExpr();
+            }
+            bdVars.add(bdVar);
+            bdVarExprs.add(bdVarExpr);
+        }
+        Expression bdVarSetExpr = mkSingleton(ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs));
+        
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.EQ, set));
         return exists;
     }
     
     private Expression translateOneOf(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
-
-        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression set = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
 
         return set;
     }    
 
     private Expression translateLone(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
-        List<BoundVariableDeclaration>  bdVars      = getQuantifiedVariables(exprUnary.sub);
-        List<Expression>                expressions = bdVars.stream().map(v -> v.getConstantExpr()).collect(Collectors.toList());
-        Expression                      singleton   = exprTranslator.mkSingletonOutOfAtoms(expressions);
-        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-        BinaryExpression                subset      = new BinaryExpression(set, BinaryExpression.Op.SUBSET, singleton);
-        QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, subset);
+        int arity           = exprUnary.sub.type().arity();
+        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+        List<Expression>                bdVarExprs  = new ArrayList<>();
+        
+        for(Sort sort : sorts)
+        {
+            String name = TranslatorUtils.getNewName();
+            BoundVariableDeclaration bdVar;
+            Expression bdVarExpr;
+            
+            if(sort instanceof IntSort)
+            {
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
+                bdVarExpr = mkTupleSelExpr(new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdVar.getConstantExpr()), 0);
+            }
+            else
+            {
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVarExpr = bdVar.getConstantExpr();
+            }
+            bdVars.add(bdVar);
+            bdVarExprs.add(bdVarExpr);
+        }
+        Expression bdVarSetExpr = mkSingleton(ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs));
+        
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(set, BinaryExpression.Op.SUBSET, bdVarSetExpr));
         return exists;
     }
     
@@ -262,12 +327,12 @@ public class ExprUnaryTranslator
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getConstantExpr());
     }
     
-    public MultiArityExpression mkTupleExprOutofAtoms(Expression ... exprs)
+    public MultiArityExpression mkOneTupleExprOutofAtoms(Expression ... exprs)
     {
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
     } 
     
-    public MultiArityExpression mkTupleExprOutofAtoms(List<Expression> exprs)
+    public MultiArityExpression mkOneTupleExprOutofAtoms(List<Expression> exprs)
     {
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
     }     
@@ -327,5 +392,10 @@ public class ExprUnaryTranslator
         }
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
     }  
+    
+    public Expression mkTupleSelExpr(Expression expr, int index)
+    {
+        return new BinaryExpression(new IntConstant(index), BinaryExpression.Op.TUPSEL, expr);
+    }
    
 }

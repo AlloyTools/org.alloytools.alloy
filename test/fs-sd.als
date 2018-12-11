@@ -15,5 +15,5 @@ fact {
 assert SomeDir {
 	all o: Object - Root | some contents.o
 	}
-check SomeDir // This assertion is valid
+check SomeDir 
 

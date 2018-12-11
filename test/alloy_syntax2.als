@@ -38,7 +38,7 @@ sig H {
 }
 sig J {}
 
-fact {
+fact setcomp{
   {a : H, b : J | a.f1 = b} in f1
 }
 

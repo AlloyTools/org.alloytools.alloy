@@ -87,25 +87,7 @@ public class ExprTranslator
             case FALSE  : return new BooleanConstant(false); 
             default: throw new UnsupportedOperationException(expr.op.name());
         }
-    }
-
-    BoundVariableDeclaration getABdAtomVar()
-    {
-        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
-        return bdVar;
-    }
-    
-    BoundVariableDeclaration getABdAtomTupleVar(int arity)
-    {
-        List<Sort> elementSorts = new ArrayList<>();
-        
-        for(int i = 0; i < arity; i++)
-        {
-            elementSorts.add(translator.atomSort);
-        }
-        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts));
-        return bdVar;
-    }    
+    }   
 
     Expression translateExprList(ExprList exprList, Map<String, Expression> variablesScope)
     {
@@ -213,7 +195,7 @@ public class ExprTranslator
         Expression bdIntVar2Expr = exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdUnaryIntVar2.getConstantExpr()), 0);
         Expression bdIntVar3Expr = exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdUnaryIntVar3.getConstantExpr()), 0);                
 
-        Expression memberOfOp = exprUnaryTranslator.mkTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
+        Expression memberOfOp = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
 
         BoundVariableDeclaration existentialBdVar = new BoundVariableDeclaration("_w", translator.ternaryIntAtomSort);          
         Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(translator.valueOfTernaryIntAtom.getName(), existentialBdVar.getConstantExpr()), 
@@ -224,8 +206,8 @@ public class ExprTranslator
         Expression ternaryIntTupExpr = new FunctionCallExpression(translator.valueOfTernaryIntAtom.getName(), bdTernaryIntVar.getConstantExpr());
 
         Expression lhsExpr               = null;  
-        Expression lhsExprII              = null; 
-        Expression rhsExprII              = null; 
+        Expression lhsExprII             = null; 
+        Expression rhsExprII             = null; 
         Expression finalExprI            = null;
         Expression finalExprII           = null;
         ConstantDeclaration arithVarDecl = null;
@@ -283,8 +265,9 @@ public class ExprTranslator
                 finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, rhsExpr), bdUnaryIntVar1, bdUnaryIntVar2, bdUnaryIntVar3);                 
 
                 lhsExprII = new BinaryExpression(ternaryIntTupExpr, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                rhsExprII = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);
+                rhsExprII = new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.DIVIDE, bdIntVar2Expr);                
                 rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, bdIntVar3Expr);
+                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(bdIntVar2Expr), BinaryExpression.Op.EQ, new IntConstant(0)));                
                 rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(ternaryIntTupExpr, BinaryExpression.Op.EQ, memberOfOp));
                 rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, bdUnaryIntVar1, bdUnaryIntVar2, bdUnaryIntVar3);
                 finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.EQ, rhsExprII), bdTernaryIntVar);                
@@ -360,7 +343,7 @@ public class ExprTranslator
                         bdAtomVars.add(bdAtomVar);
                         bdAtomExprs.add(bdAtomVarExpr);
                     }
-                    bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdAtomExprs);
+                    bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdAtomExprs);
                     bdVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
                     bdVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);
                 }
@@ -373,7 +356,7 @@ public class ExprTranslator
                     }
                     else
                     {
-                        bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdVarTupleExpr);
+                        bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdVarTupleExpr);
                     }                    
                     bdVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
                     bdVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);                    
@@ -469,8 +452,10 @@ public class ExprTranslator
         }
     }
     
-    private Expression createSndSetBdvarsAndExpr(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<BoundVariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, 
-                                           Map<String, Expression> variablesScope, ExprQt exprQt)
+    private Expression createSndSetBdvarsAndExpr(LinkedHashMap<String, Expression> bdVarToExprMap, 
+                                                 Map<String, List<BoundVariableDeclaration>> bdTupVarNameTobdAtomVars, 
+                                                 Map<String, Expression> bdTupVarNameToTupleExpr, 
+                                                 Map<String, Expression> variablesScope, ExprQt exprQt)
     {        
         for (Decl decl: exprQt.decls)
         {
@@ -510,7 +495,7 @@ public class ExprTranslator
                         bdAtomVars.add(bdAtomVar);
                         bdAtomExprs.add(bdAtomVarExpr);
                     }
-                    bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdAtomExprs);
+                    bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdAtomExprs);
                     bdTupVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
                     bdTupVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);
                 }
@@ -523,7 +508,7 @@ public class ExprTranslator
                     }
                     else
                     {
-                        bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdVarTupleExpr);
+                        bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdVarTupleExpr);
                     }  
                     bdTupVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
                     bdTupVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);                    
@@ -737,7 +722,6 @@ public class ExprTranslator
         if(sort instanceof IntSort)
         {
             return new BoundVariableDeclaration(name, translator.intAtomSort);
-//            return new BoundVariableDeclaration(name, new TupleSort(sort));
         }
         return new BoundVariableDeclaration(name, sort);
     }    
