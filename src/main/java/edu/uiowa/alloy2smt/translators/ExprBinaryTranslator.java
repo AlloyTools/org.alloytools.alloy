@@ -675,7 +675,7 @@ public class ExprBinaryTranslator
         FunctionCallExpression      unaryIntTup2        = new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdIntAtomVar2.getConstantExpr());
         
         Expression          bdIntVar1Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup1);
-        Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup1);
+        Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup2);
         Expression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
         Expression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
         FunctionDefinition  compFunc            = null;
