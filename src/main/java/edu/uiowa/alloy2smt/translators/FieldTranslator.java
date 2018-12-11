@@ -65,15 +65,8 @@ public class FieldTranslator
         }
         else if(expr instanceof ExprBinary)
         {
-                if(isArrowRelated((ExprBinary)expr))
-                {
-                    collectFieldComponentExprs(((ExprBinary)expr).left, fieldComponentExprs);
-                    collectFieldComponentExprs(((ExprBinary)expr).right, fieldComponentExprs);             
-                }
-                else
-                {
-                   fieldComponentExprs.add((ExprBinary) expr);
-                }            
+            collectFieldComponentExprs(((ExprBinary)expr).left, fieldComponentExprs);
+            collectFieldComponentExprs(((ExprBinary)expr).right, fieldComponentExprs);           
         }
         else 
         {
