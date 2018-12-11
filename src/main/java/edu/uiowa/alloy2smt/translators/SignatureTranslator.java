@@ -180,32 +180,74 @@ public class SignatureTranslator
     }
 
     private void translateSignatureOneMultiplicity(Sig sig)
-    {
-        FunctionDeclaration signature = translator.signaturesMap.get(sig);
-
-        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(1, 1, translator);
-
-        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, declaration.getConstantExpr());
+    {        
+        Expression expr;
+        ConstantDeclaration constDecl;
+        Boolean isInt = sig.type().is_int();
+        String name = TranslatorUtils.getNewName();        
+        FunctionDeclaration signature = translator.signaturesMap.get(sig);                        
+        
+        if(isInt)
+        {
+            constDecl = new ConstantDeclaration(name, translator.intAtomSort);            
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfIntAtom.getName(), constDecl.getConstantExpr()));
+        }
+        else
+        {
+            constDecl = new ConstantDeclaration(name, translator.atomSort);       
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getConstantExpr()));
+        }
+        translator.smtProgram.addConstantDeclaration(constDecl);
+        
+        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.EQ, expr);
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
     private void translateSignatureLoneMultiplicity(Sig sig)
     {
-        FunctionDeclaration signature = translator.signaturesMap.get(sig);
+        Expression expr;
+        ConstantDeclaration constDecl;
+        Boolean isInt = sig.type().is_int();
+        String name = TranslatorUtils.getNewName();        
+        FunctionDeclaration signature = translator.signaturesMap.get(sig);          
+        
+        if(isInt)
+        {
+            constDecl = new ConstantDeclaration(name, translator.intAtomSort);            
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfIntAtom.getName(), constDecl.getConstantExpr()));
+        }
+        else
+        {
+            constDecl = new ConstantDeclaration(name, translator.atomSort);       
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getConstantExpr()));
+        }
+        translator.smtProgram.addConstantDeclaration(constDecl);
 
-        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(1, 1, translator);
-
-        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.SUBSET, declaration.getConstantExpr());
+        BinaryExpression subset   = new BinaryExpression(signature.getConstantExpr(), BinaryExpression.Op.SUBSET, expr);
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
     private void translateSignatureSomeMultiplicity(Sig sig)
     {
-        FunctionDeclaration signature = translator.signaturesMap.get(sig);
+        Expression expr;
+        ConstantDeclaration constDecl;
+        Boolean isInt = sig.type().is_int();
+        String name = TranslatorUtils.getNewName();        
+        FunctionDeclaration signature = translator.signaturesMap.get(sig);  
+        
+        if(isInt)
+        {
+            constDecl = new ConstantDeclaration(name, translator.intAtomSort);            
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfIntAtom.getName(), constDecl.getConstantExpr()));
+        }
+        else
+        {
+            constDecl = new ConstantDeclaration(name, translator.atomSort);       
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getConstantExpr()));
+        }
+        translator.smtProgram.addConstantDeclaration(constDecl);
 
-        FunctionDeclaration declaration = TranslatorUtils.generateAuxiliarySetNAtoms(1, 1, translator);
-
-        BinaryExpression subset   = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.SUBSET, signature.getConstantExpr());
+        BinaryExpression subset   = new BinaryExpression(expr, BinaryExpression.Op.SUBSET, signature.getConstantExpr());
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 

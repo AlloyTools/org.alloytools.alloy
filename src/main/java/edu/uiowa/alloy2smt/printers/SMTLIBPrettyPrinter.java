@@ -342,7 +342,11 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         else if (expression instanceof  LetExpression)
         {
             this.visit((LetExpression) expression);
-        }        
+        }  
+        else if (expression instanceof  ITEExpression)
+        {
+            this.visit((ITEExpression) expression);
+        }          
         else
         {   
             throw new UnsupportedOperationException();
@@ -407,5 +411,18 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         this.stringBuilder.append(") ");
         this.visit(aThis.getExpression());
         this.stringBuilder.append(")");        
+    }
+
+    @Override
+    public void visit(ITEExpression aThis) 
+    {
+        this.stringBuilder.append("(" + aThis.getOp() + " ");
+        this.visit(aThis.getCondExpression());
+        this.stringBuilder.append(" ");
+        this.visit(aThis.getThenExpression());
+        this.stringBuilder.append(" ");
+        this.visit(aThis.getElseExpression());
+        this.stringBuilder.append(")");
+        
     }
 }

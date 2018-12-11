@@ -53,4 +53,6 @@ public interface SMTAstVisitor
     public void visit(BoolSort aThis);
 
     public void visit(LetExpression aThis);
+
+    public void visit(ITEExpression aThis);
 }

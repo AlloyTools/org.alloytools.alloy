@@ -55,15 +55,8 @@ public class FieldTranslator
             }   
             else if(((ExprUnary) expr).sub instanceof ExprBinary)
             {
-                if(isArrowRelated(((ExprBinary)((ExprUnary) expr).sub)))
-                {
-                    collectFieldComponentExprs(((ExprBinary)((ExprUnary) expr).sub).left, fieldComponentExprs);
-                    collectFieldComponentExprs(((ExprBinary)((ExprUnary) expr).sub).right, fieldComponentExprs);                    
-                }
-                else
-                {
-                   fieldComponentExprs.add(((ExprUnary) expr).sub);
-                }
+                collectFieldComponentExprs(((ExprBinary)((ExprUnary) expr).sub).left, fieldComponentExprs);
+                collectFieldComponentExprs(((ExprBinary)((ExprUnary) expr).sub).right, fieldComponentExprs);     
             }            
             else
             {
@@ -162,7 +155,7 @@ public class FieldTranslator
                 case SOMEOF     : multExpr = translateRelationSomeMultiplicity(field, fieldComponentExprs);break;
                 case LONEOF     : multExpr = translateRelationLoneMultiplicity(field, fieldComponentExprs);break;
                 case ONEOF      : multExpr = translateRelationOneMultiplicity(field, fieldComponentExprs);break;
-                case SETOF      : break; // no assertion needed
+                case SETOF      : multExpr = new BooleanConstant(true);break; // no assertion needed
                 case EXACTLYOF  : break; //ToDo: review translator case
                 default:
                 {

@@ -33,6 +33,7 @@ public class ExprUnaryTranslator
             case NO         : return translateNo(exprUnary, variablesScope);
             case SOME       : return translateSome(exprUnary, variablesScope);
             case ONE        : return translateOne(exprUnary, variablesScope);
+            case ONEOF      : return translateOneOf(exprUnary, variablesScope);
             case LONE       : return translateLone(exprUnary, variablesScope);
             case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
             case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);
@@ -236,6 +237,14 @@ public class ExprUnaryTranslator
         QuantifiedExpression            exists      = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, variables, eq);
         return exists;
     }
+    
+    private Expression translateOneOf(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    {
+
+        Expression                      set         = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+
+        return set;
+    }    
 
     private Expression translateLone(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {

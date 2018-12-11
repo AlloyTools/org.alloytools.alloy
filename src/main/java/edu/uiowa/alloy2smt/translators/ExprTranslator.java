@@ -59,9 +59,21 @@ public class ExprTranslator
         else if(expr instanceof ExprCall)
         {
             return translateExprCall((ExprCall) expr, variablesScope);
-        }        
+        }
+        else if(expr instanceof ExprITE)
+        {
+            return translateExprITE((ExprITE) expr, variablesScope);
+        }
 
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(((ExprCall) expr).toString());
+    }
+    
+    public Expression translateExprITE(ExprITE expr, Map<String,Expression> variablesScope)
+    {
+        Expression condExpr = translateExpr(expr.cond, variablesScope);
+        Expression thenExpr = translateExpr(expr.left, variablesScope);
+        Expression elseExpr = translateExpr(expr.right, variablesScope);
+        return new ITEExpression(condExpr, thenExpr, elseExpr);
     }
 
     public Expression translateExprConstant(ExprConstant expr, Map<String,Expression> variablesScope)
@@ -319,7 +331,14 @@ public class ExprTranslator
                 else
                 {
                     bdAtomVars.add(bdVarDecl);
-                    bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdVarTupleExpr);
+                    if((declExprSort instanceof IntSort))
+                    {
+                        bdVarTupleExpr = new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdVarDecl.getConstantExpr());
+                    }
+                    else
+                    {
+                        bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdVarTupleExpr);
+                    }                    
                     bdVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
                     bdVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);                    
                 }
@@ -462,7 +481,14 @@ public class ExprTranslator
                 else
                 {
                     bdAtomVars.add(bdVarDecl);
-                    bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdVarTupleExpr);
+                    if((declExprSort instanceof IntSort))
+                    {
+                        bdVarTupleExpr = new FunctionCallExpression(translator.valueOfIntAtom.getName(), bdVarDecl.getConstantExpr());
+                    }
+                    else
+                    {
+                        bdVarTupleExpr = exprUnaryTranslator.mkTupleExprOutofAtoms(bdVarTupleExpr);
+                    }  
                     bdTupVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
                     bdTupVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);                    
                 }                
@@ -651,31 +677,7 @@ public class ExprTranslator
 
     private Expression getDeclarationExpr(Decl decl, Map<String, Expression> variablesScope)
     {
-        if(decl.expr instanceof ExprUnary)
-        {
-            Expr expr = (((ExprUnary) decl.expr).sub);
-            
-            if(expr instanceof ExprUnary)
-            {
-                return exprUnaryTranslator.translateExprUnary((ExprUnary)expr, variablesScope);
-            } 
-            else if(expr instanceof ExprBinary)
-            {
-                return exprBinaryTranslator.translateExprBinary((ExprBinary)expr, variablesScope);
-            }
-            else if(expr instanceof Sig.Field)
-            {
-                return translator.fieldsMap.get((Sig.Field)expr).getConstantExpr();
-            }
-            else
-            {
-                throw new UnsupportedOperationException(((ExprBinary)expr).toString());
-            }
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
+        return translateExpr(decl.expr, variablesScope);
     }
     
     

@@ -363,6 +363,12 @@ public class Alloy2SMTTranslator
             sortFunctionDependency(callingFuncName, ((ExprLet)expr).expr, dependency);
             sortFunctionDependency(callingFuncName, ((ExprLet)expr).sub, dependency);
         }
+        else if(expr instanceof ExprITE)
+        {
+            sortFunctionDependency(callingFuncName, ((ExprITE)expr).cond, dependency);
+            sortFunctionDependency(callingFuncName, ((ExprITE)expr).left, dependency);
+            sortFunctionDependency(callingFuncName, ((ExprITE)expr).right, dependency);
+        }        
         else if((expr instanceof ExprConstant) || (expr instanceof Sig.Field) || (expr instanceof Sig)
                 || (expr instanceof ExprVar))
         {
@@ -396,14 +402,17 @@ public class Alloy2SMTTranslator
             {
                 if(dependency.containsKey(dFuncName))
                 {
-                    organizeDependency(dFuncName, dependency, orderedFunctions);
+                    organizeDependency(dFuncName, dependency, orderedFunctions);                   
                 }
-                else
+                else if(!orderedFunctions.contains(dFuncName))
                 {
                     orderedFunctions.add(dFuncName);
                 }
             }
-            orderedFunctions.add(entry.getKey());
+            if(!orderedFunctions.contains(entry.getKey()))
+            {
+                orderedFunctions.add(entry.getKey());
+            }            
         }
         for(Func f : this.alloyModel.getAllFunc())
         {
@@ -422,11 +431,15 @@ public class Alloy2SMTTranslator
             {
                 organizeDependency(funcName, dependency, orderedFunctions);
             }
-            else
+            else if(!orderedFunctions.contains(funcName))             
             {
                 orderedFunctions.add(funcName);
             }
         }
+        if(!orderedFunctions.contains(dFuncName))
+        {
+            orderedFunctions.add(dFuncName);
+        }         
     }
      
 }
