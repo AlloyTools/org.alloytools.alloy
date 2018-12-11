@@ -28,9 +28,9 @@ public class Alloy2SMTTranslator
     final Alloy2SMTLogger LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
 
     final String atom               = "Atom";
-    final String intAtom            = "IntAtom";
-    final String binaryIntAtom      = "BinaryIntAtom";        
-    final String ternaryIntAtom     = "TernaryIntAtom";     
+    final String intAtom            = "UnaryIntTup";
+    final String binaryIntAtom      = "BinaryIntTup";        
+    final String ternaryIntAtom     = "TernaryIntTup";     
     
     
     final CompModule                alloyModel;
@@ -108,9 +108,9 @@ public class Alloy2SMTTranslator
         this.intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
-        this.valueOfIntAtom         = new FunctionDeclaration("value_of_intAtom", this.intAtomSort, this.unaryIntSort);
-        this.valueOfBinaryIntAtom   = new FunctionDeclaration("value_of_binaryIntAtom", this.binaryIntAtomSort, this.binaryIntSort);        
-        this.valueOfTernaryIntAtom  = new FunctionDeclaration("value_of_ternaryIntAtom", this.ternaryIntAtomSort, this.ternaryIntSort);
+        this.valueOfIntAtom         = new FunctionDeclaration("value_of_unaryIntTup", this.intAtomSort, this.unaryIntSort);
+        this.valueOfBinaryIntAtom   = new FunctionDeclaration("value_of_binaryIntTup", this.binaryIntAtomSort, this.binaryIntSort);        
+        this.valueOfTernaryIntAtom  = new FunctionDeclaration("value_of_ternaryIntTup", this.ternaryIntAtomSort, this.ternaryIntSort);
 
         
         this.comparisonOps          = new HashMap<>();  
