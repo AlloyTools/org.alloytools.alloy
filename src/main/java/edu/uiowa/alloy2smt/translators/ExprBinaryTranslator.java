@@ -678,7 +678,7 @@ public class ExprBinaryTranslator
         Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup1);
         Expression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
         Expression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
-        FunctionDefinition          compFunc            = null;
+        FunctionDefinition  compFunc            = null;
 
         Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(unaryIntTup1), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
         funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(unaryIntTup2), BinaryExpression.Op.EQ, bdIntRelVar2Expr));

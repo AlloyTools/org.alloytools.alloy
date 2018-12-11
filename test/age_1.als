@@ -5,10 +5,12 @@ sig Person {
 }
 sig Age in Int {}
 
-fact{
+fact
+{
    all p : Person | p.age > 0   
 }
 
-fact GTChildrenAge{
+fact GTChildrenAge
+{
    all p : Person | all c : p.children| p.age > c.age
 }

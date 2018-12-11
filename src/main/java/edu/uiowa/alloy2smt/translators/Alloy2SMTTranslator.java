@@ -109,7 +109,7 @@ public class Alloy2SMTTranslator
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
         this.valueOfIntAtom         = new FunctionDeclaration("value_of_intAtom", this.intAtomSort, this.unaryIntSort);
-        this.valueOfBinaryIntAtom   = new FunctionDeclaration("value_of_binaryIntAtom", this.intAtomSort, this.binaryIntSort);        
+        this.valueOfBinaryIntAtom   = new FunctionDeclaration("value_of_binaryIntAtom", this.binaryIntAtomSort, this.binaryIntSort);        
         this.valueOfTernaryIntAtom  = new FunctionDeclaration("value_of_ternaryIntAtom", this.ternaryIntAtomSort, this.ternaryIntSort);
 
         
