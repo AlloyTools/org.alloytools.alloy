@@ -14,7 +14,6 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ExprUnaryTranslator
 {
@@ -220,7 +219,7 @@ public class ExprUnaryTranslator
             if(sort instanceof IntSort)
             {
                 bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
-                bdVarExpr = mkTupleSelExpr(new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdVar.getConstantExpr()), 0);
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
@@ -234,19 +233,6 @@ public class ExprUnaryTranslator
         
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.SUBSET, set));
         return exists;
-    }
-
-    private List<BoundVariableDeclaration> getQuantifiedVariables(Expr expr)
-    {
-        List<BoundVariableDeclaration> variables = new ArrayList<>(expr.type().arity());
-        List<Sort> sorts = exprTranslator.getExprSorts(expr);
-
-        for (int i = 0; i < expr.type().arity() ; i++)
-        {
-               BoundVariableDeclaration variable = new BoundVariableDeclaration(TranslatorUtils.getNewName(), sorts.get(i));
-               variables.add(variable);
-        }
-        return variables;
     }
 
     private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
@@ -266,7 +252,7 @@ public class ExprUnaryTranslator
             if(sort instanceof IntSort)
             {
                 bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
-                bdVarExpr = mkTupleSelExpr(new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdVar.getConstantExpr()), 0);
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
@@ -306,7 +292,7 @@ public class ExprUnaryTranslator
             if(sort instanceof IntSort)
             {
                 bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
-                bdVarExpr = mkTupleSelExpr(new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdVar.getConstantExpr()), 0);
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
@@ -397,5 +383,20 @@ public class ExprUnaryTranslator
     {
         return new BinaryExpression(new IntConstant(index), BinaryExpression.Op.TUPSEL, expr);
     }
+    
+    public Expression mkUnaryIntValue(Expression expr)
+    {
+        return new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), expr);
+    }
+    
+    public Expression mkBinaryIntValue(Expression expr)
+    {
+        return new FunctionCallExpression(exprTranslator.translator.valueOfBinaryIntAtom.getName(), expr);
+    }
+
+    public Expression mkTernaryIntValue(Expression expr)
+    {
+        return new FunctionCallExpression(exprTranslator.translator.valueOfTernaryIntAtom.getName(), expr);
+    }    
    
 }
