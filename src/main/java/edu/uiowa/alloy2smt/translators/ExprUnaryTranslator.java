@@ -18,10 +18,16 @@ import java.util.Map;
 public class ExprUnaryTranslator
 {
     final ExprTranslator exprTranslator;
+    final String valueOfUnaryIntTup;
+    final String valueOfBinaryIntTup;
+    final String valueOfTernaryIntTup;
 
     public ExprUnaryTranslator(ExprTranslator exprTranslator)
     {
-        this.exprTranslator = exprTranslator;
+        this.exprTranslator         = exprTranslator;
+        this.valueOfUnaryIntTup     = exprTranslator.translator.valueOfUnaryIntTup.getName();
+        this.valueOfBinaryIntTup    = exprTranslator.translator.valueOfBinaryIntTup.getName();
+        this.valueOfTernaryIntTup   = exprTranslator.translator.valueOfTernaryIntTup.getName();
     }
 
     Expression translateExprUnary(ExprUnary exprUnary, Map<String, Expression> variablesScope)
@@ -185,6 +191,7 @@ public class ExprUnaryTranslator
         throw new UnsupportedOperationException(((ExprLet) exprUnary.sub).toString());
     }
 
+
     private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         int arity           = exprUnary.sub.type().arity();
@@ -206,9 +213,9 @@ public class ExprUnaryTranslator
     {
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        Expression someRel  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
         List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
-        List<Expression>                bdVarExprs  = new ArrayList<>();
+        List<Expression>                bdVarExprs  = new ArrayList<>();        
         
         for(Sort sort : sorts)
         {
@@ -218,8 +225,8 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntValue(bdVar.getConstantExpr()), 0);
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.unaryIntTup);                
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
@@ -229,11 +236,17 @@ public class ExprUnaryTranslator
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
         }
-        Expression bdVarSetExpr = mkSingleton(ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs));
+        Expression bdVarTupExpr     = ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs);
+        Expression bodyExpr         = new BinaryExpression(bdVarTupExpr, BinaryExpression.Op.MEMBER, someRel);
         
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.SUBSET, set));
+        // If the expression is a binary or ternary field, we need to make sure 
+        // there exists a var of type binaryIntTup such that the integer tuple equals to the bdVarTupExpr.
+        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
+        
+
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
         return exists;
-    }
+    }    
 
     private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
@@ -251,8 +264,8 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntValue(bdVar.getConstantExpr()), 0);
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.unaryIntTup);                
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
@@ -262,9 +275,12 @@ public class ExprUnaryTranslator
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
         }
-        Expression bdVarSetExpr = mkSingleton(ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs));
+        Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
+        Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
+        Expression bodyExpr     = new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.EQ, set);
+        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.EQ, set));
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
         return exists;
     }
     
@@ -291,8 +307,8 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.intAtomSort);                
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntValue(bdVar.getConstantExpr()), 0);
+                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.unaryIntTup);                
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
@@ -302,9 +318,12 @@ public class ExprUnaryTranslator
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
         }
-        Expression bdVarSetExpr = mkSingleton(ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs));
+        Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
+        Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
+        Expression bodyExpr     = new BinaryExpression(set, BinaryExpression.Op.SUBSET, bdVarSetExpr);
+        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, new BinaryExpression(set, BinaryExpression.Op.SUBSET, bdVarSetExpr));
+        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
         return exists;
     }
     
@@ -357,7 +376,12 @@ public class ExprUnaryTranslator
     public UnaryExpression mkSingleton(MultiArityExpression tuple)
     {
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-    }     
+    }  
+    
+    public UnaryExpression mkSingleton(Expression tuple)
+    {
+        return new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+    }      
     
     public MultiArityExpression mkTupleExpr(BoundVariableDeclaration ... bdVarDecls)
     {
@@ -384,19 +408,73 @@ public class ExprUnaryTranslator
         return new BinaryExpression(new IntConstant(index), BinaryExpression.Op.TUPSEL, expr);
     }
     
-    public Expression mkUnaryIntValue(Expression expr)
+    public Expression mkUnaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), expr);
+        return new FunctionCallExpression(this.valueOfUnaryIntTup, expr);
     }
     
-    public Expression mkBinaryIntValue(Expression expr)
+    public Expression mkBinaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(exprTranslator.translator.valueOfBinaryIntAtom.getName(), expr);
+        return new FunctionCallExpression(this.valueOfBinaryIntTup, expr);
     }
 
-    public Expression mkTernaryIntValue(Expression expr)
+    public Expression mkTernaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(exprTranslator.translator.valueOfTernaryIntAtom.getName(), expr);
+        return new FunctionCallExpression(this.valueOfTernaryIntTup, expr);
     }    
    
+    
+    
+    private boolean isBinaryIntField(Expr exprUnary)
+    {
+        if((exprUnary instanceof ExprUnary))
+        {
+            if(((ExprUnary)exprUnary).op == ExprUnary.Op.NOOP)
+            {
+                if((((ExprUnary)exprUnary).sub instanceof Sig.Field))
+                {
+                    List<Sort> sorts = exprTranslator.getExprSorts(exprUnary);
+                    if(sorts.size() == 2)
+                    {
+                        return (sorts.get(0) instanceof IntSort) && (sorts.get(1) instanceof IntSort);
+                    }                    
+                }
+            }
+        }
+        return false;
+    }  
+    
+    private boolean isTernaryIntField(Expr exprUnary)
+    {
+        if((exprUnary instanceof ExprUnary) && ((ExprUnary)exprUnary).op == ExprUnary.Op.NOOP && (((ExprUnary)exprUnary).sub instanceof Sig.Field))
+        {
+            List<Sort> sorts = exprTranslator.getExprSorts(exprUnary);
+            if(sorts.size() == 3)
+            {
+                return (sorts.get(0) instanceof IntSort) && (sorts.get(1) instanceof IntSort)
+                        && (sorts.get(2) instanceof IntSort);
+            }
+        }
+        return false;
+    }  
+
+    private Expression addConstraintForBinAndTerIntRel(Expression bdVarTupExpr, Expr exprUnary, Expression bodyExpr)
+    {
+        Expression finalExpr = bodyExpr;
+        if(isBinaryIntField(exprUnary))
+        {            
+            BoundVariableDeclaration bdBinIntTup = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.binaryIntTup);
+            Expression eq = new BinaryExpression(mkBinaryIntTupValue(bdBinIntTup.getConstantExpr()), BinaryExpression.Op.EQ, bdVarTupExpr);
+            QuantifiedExpression quantEq = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, eq, bdBinIntTup);            
+            finalExpr = new BinaryExpression(bodyExpr, BinaryExpression.Op.AND, quantEq);
+        }
+        else if(isTernaryIntField(exprUnary))
+        {            
+            BoundVariableDeclaration bdTernaryIntTup = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.ternaryIntTup);
+            Expression eq = new BinaryExpression(mkTernaryIntTupValue(bdTernaryIntTup.getConstantExpr()), BinaryExpression.Op.EQ, bdVarTupExpr);
+            QuantifiedExpression quantEq = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, eq, bdTernaryIntTup);
+            finalExpr = new BinaryExpression(bodyExpr, BinaryExpression.Op.AND, quantEq);
+        }    
+        return finalExpr;
+    }    
 }

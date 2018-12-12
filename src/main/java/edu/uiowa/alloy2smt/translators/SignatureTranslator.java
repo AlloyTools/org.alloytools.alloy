@@ -189,8 +189,8 @@ public class SignatureTranslator
         
         if(isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.intAtomSort);            
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfIntAtom.getName(), constDecl.getConstantExpr()));
+            constDecl = new ConstantDeclaration(name, translator.unaryIntTup);            
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), constDecl.getConstantExpr()));
         }
         else
         {
@@ -213,8 +213,8 @@ public class SignatureTranslator
         
         if(isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.intAtomSort);            
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfIntAtom.getName(), constDecl.getConstantExpr()));
+            constDecl = new ConstantDeclaration(name, translator.unaryIntTup);            
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), constDecl.getConstantExpr()));
         }
         else
         {
@@ -237,8 +237,8 @@ public class SignatureTranslator
         
         if(isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.intAtomSort);            
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfIntAtom.getName(), constDecl.getConstantExpr()));
+            constDecl = new ConstantDeclaration(name, translator.unaryIntTup);            
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), constDecl.getConstantExpr()));
         }
         else
         {

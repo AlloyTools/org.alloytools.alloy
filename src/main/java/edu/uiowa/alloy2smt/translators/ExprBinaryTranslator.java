@@ -671,8 +671,8 @@ public class ExprBinaryTranslator
         BoundVariableDeclaration    bdIntRelVar2        = new BoundVariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
         BoundVariableDeclaration    bdIntAtomVar1       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
         BoundVariableDeclaration    bdIntAtomVar2       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
-        FunctionCallExpression      unaryIntTup1        = new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdIntAtomVar1.getConstantExpr());
-        FunctionCallExpression      unaryIntTup2        = new FunctionCallExpression(exprTranslator.translator.valueOfIntAtom.getName(), bdIntAtomVar2.getConstantExpr());
+        FunctionCallExpression      unaryIntTup1        = new FunctionCallExpression(exprTranslator.translator.valueOfUnaryIntTup.getName(), bdIntAtomVar1.getConstantExpr());
+        FunctionCallExpression      unaryIntTup2        = new FunctionCallExpression(exprTranslator.translator.valueOfUnaryIntTup.getName(), bdIntAtomVar2.getConstantExpr());
         
         Expression          bdIntVar1Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup1);
         Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup2);
