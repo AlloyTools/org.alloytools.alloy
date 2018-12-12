@@ -671,11 +671,11 @@ public class ExprBinaryTranslator
         BoundVariableDeclaration    bdIntRelVar2        = new BoundVariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
         BoundVariableDeclaration    bdIntAtomVar1       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
         BoundVariableDeclaration    bdIntAtomVar2       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
-        FunctionCallExpression      unaryIntTup1        = new FunctionCallExpression(exprTranslator.translator.valueOfUnaryIntTup.getName(), bdIntAtomVar1.getConstantExpr());
-        FunctionCallExpression      unaryIntTup2        = new FunctionCallExpression(exprTranslator.translator.valueOfUnaryIntTup.getName(), bdIntAtomVar2.getConstantExpr());
+        Expression                  unaryIntTup1        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar1.getConstantExpr());
+        Expression                  unaryIntTup2        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar2.getConstantExpr());
         
-        Expression          bdIntVar1Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup1);
-        Expression          bdIntVar2Expr       = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, unaryIntTup2);
+        Expression          bdIntVar1Expr       = mkTupleSelectExpr(unaryIntTup1, 0);
+        Expression          bdIntVar2Expr       = mkTupleSelectExpr(unaryIntTup2, 0);
         Expression          bdIntRelVar1Expr    = new ConstantExpression(bdIntRelVar1);
         Expression          bdIntRelVar2Expr    = new ConstantExpression(bdIntRelVar2);     
         FunctionDefinition  compFunc            = null;

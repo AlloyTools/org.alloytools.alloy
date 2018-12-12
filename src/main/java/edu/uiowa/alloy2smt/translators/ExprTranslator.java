@@ -191,9 +191,9 @@ public class ExprTranslator
         BoundVariableDeclaration  bdUnaryIntVar1 = new BoundVariableDeclaration("_x", translator.unaryIntTup);
         BoundVariableDeclaration  bdUnaryIntVar2 = new BoundVariableDeclaration("_y", translator.unaryIntTup); 
         BoundVariableDeclaration  bdUnaryIntVar3 = new BoundVariableDeclaration("_z", translator.unaryIntTup); 
-        Expression bdIntVar1Expr = exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdUnaryIntVar1.getConstantExpr()), 0);
-        Expression bdIntVar2Expr = exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdUnaryIntVar2.getConstantExpr()), 0);
-        Expression bdIntVar3Expr = exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdUnaryIntVar3.getConstantExpr()), 0);                
+        Expression bdIntVar1Expr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdUnaryIntVar1.getConstantExpr()), 0);
+        Expression bdIntVar2Expr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdUnaryIntVar2.getConstantExpr()), 0);
+        Expression bdIntVar3Expr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdUnaryIntVar3.getConstantExpr()), 0);                
 
         Expression memberOfOp = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
 
@@ -332,8 +332,7 @@ public class ExprTranslator
                         if(declSorts.get(i) instanceof IntSort)
                         {
                             bdAtomVar = new BoundVariableDeclaration(varName, translator.unaryIntTup);        
-                            bdAtomVarExpr = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, 
-                                                    new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdAtomVar.getConstantExpr()));
+                            bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
                         }
                         else
                         {
@@ -352,7 +351,7 @@ public class ExprTranslator
                     bdAtomVars.add(bdVarDecl);
                     if((declExprSort instanceof IntSort))
                     {
-                        bdVarTupleExpr = new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdVarDecl.getConstantExpr());
+                        bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getConstantExpr());
                     }
                     else
                     {
@@ -484,8 +483,7 @@ public class ExprTranslator
                         if(declSorts.get(i) instanceof IntSort)
                         {
                             bdAtomVar = new BoundVariableDeclaration(varName, translator.unaryIntTup);        
-                            bdAtomVarExpr = new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, 
-                                                    new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdAtomVar.getConstantExpr()));
+                            bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
                         }
                         else
                         {
@@ -504,7 +502,7 @@ public class ExprTranslator
                     bdAtomVars.add(bdVarDecl);
                     if((declExprSort instanceof IntSort))
                     {
-                        bdVarTupleExpr = new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), bdVarDecl.getConstantExpr());
+                        bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getConstantExpr());
                     }
                     else
                     {
