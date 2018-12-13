@@ -124,9 +124,11 @@ public class ExprUnaryTranslator
 
         if(exprUnary.sub instanceof ExprVar)
         {
-            if(variablesScope.containsKey(((ExprVar)exprUnary.sub).label))
+            String varName = ((ExprVar)exprUnary.sub).label;
+            
+            if(variablesScope.containsKey(varName))
             {
-                Expression constExpr = variablesScope.get(((ExprVar)exprUnary.sub).label);
+                Expression constExpr = variablesScope.get(varName);
                 
                 if(constExpr instanceof ConstantExpression)
                 {
@@ -147,48 +149,11 @@ public class ExprUnaryTranslator
             }
             else
             {
-                List<Sort> eS = new ArrayList<>();
-                eS.add(exprTranslator.translator.atomSort);
-                return new ConstantExpression(new ConstantDeclaration(((ExprVar)exprUnary.sub).label, new SetSort(new TupleSort(eS))));
+                throw new RuntimeException("Something is wrong: we do not have variable in scope - " + varName);
             }            
         }
-
-        if(exprUnary.sub instanceof ExprQt)
-        {
-            return exprTranslator.translateExprQt((ExprQt) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprUnary)
-        {
-            return translateExprUnary((ExprUnary) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprList)
-        {
-            return exprTranslator.translateExprList((ExprList) exprUnary.sub, variablesScope);
-        }
-
-        if(exprUnary.sub instanceof ExprBinary)
-        {
-            return exprTranslator.exprBinaryTranslator.translateExprBinary((ExprBinary) exprUnary.sub, variablesScope);
-        }
         
-        if(exprUnary.sub instanceof ExprLet)
-        {
-            return exprTranslator.translateExprLet((ExprLet) exprUnary.sub, variablesScope);
-        }  
-        
-        if(exprUnary.sub instanceof ExprConstant)
-        {
-            return exprTranslator.translateExprConstant((ExprConstant) exprUnary.sub, variablesScope);
-        } 
-        
-        if(exprUnary.sub instanceof ExprCall)
-        {
-            return exprTranslator.translateExprCall((ExprCall) exprUnary.sub, variablesScope);
-        }         
-
-        throw new UnsupportedOperationException(((ExprLet) exprUnary.sub).toString());
+        return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
     }
 
 

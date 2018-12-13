@@ -64,6 +64,10 @@ public class ExprTranslator
         {
             return translateExprITE((ExprITE) expr, variablesScope);
         }
+        else if(expr instanceof ExprLet)
+        {
+            return translateExprLet((ExprLet) expr, variablesScope);
+        }  
 
         throw new UnsupportedOperationException(((ExprCall) expr).toString());
     }
@@ -133,9 +137,15 @@ public class ExprTranslator
     
     Expression translateExprLet(ExprLet exprLet, Map<String, Expression> variablesScope)
     {
-        Expression varExpr = translateExpr(exprLet.expr, variablesScope);
-        Map<String, Expression> varToExprMap = new HashMap<>();
-        varToExprMap.put(exprLet.var.label, varExpr);
+        Expression              varExpr         = translateExpr(exprLet.expr, variablesScope);
+        Map<String, Expression> varToExprMap    = new HashMap<>();
+        String                  sanitizeName    = TranslatorUtils.sanitizeName(exprLet.var.label);
+        List<Sort>              exprSorts       = getExprSorts(exprLet.expr);
+        ConstantExpression      varDeclExpr     = new ConstantExpression(new ConstantDeclaration(sanitizeName, new SetSort(new TupleSort(exprSorts))));
+        
+        varToExprMap.put(sanitizeName, varExpr);        
+        variablesScope.put(exprLet.var.label, varDeclExpr);
+        
         Expression letBodyExpr = translateExpr(exprLet.sub, variablesScope);
         return new LetExpression(LetExpression.Op.LET, varToExprMap, letBodyExpr);
     }    
