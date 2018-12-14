@@ -155,6 +155,21 @@ public class ExprUnaryTranslator
         
         return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
     }
+    
+    private Expression tryAddingExistentialConstraint(Expression expr)
+    {
+        Expression finalExpr = expr;
+        
+        if(exprTranslator.translator.auxExpr != null)
+        {
+            finalExpr = new BinaryExpression(exprTranslator.translator.auxExpr, BinaryExpression.Op.AND, finalExpr);            
+            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, finalExpr);
+            exprTranslator.translator.auxExpr = null;
+            exprTranslator.translator.existentialBdVars.clear();            
+            
+        }
+        return finalExpr;
+    }
 
 
     private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
@@ -171,7 +186,7 @@ public class ExprUnaryTranslator
         }
         Expression eqExpr = new BinaryExpression(set, BinaryExpression.Op.EQ, 
                                     new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(elementSorts))));         
-        return eqExpr;
+        return tryAddingExistentialConstraint(eqExpr);
     }
 
     private Expression translateSome(ExprUnary exprUnary, Map<String,Expression> variablesScope)
@@ -210,7 +225,7 @@ public class ExprUnaryTranslator
         
 
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
-        return exists;
+        return tryAddingExistentialConstraint(exists);
     }    
 
     private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
@@ -246,7 +261,7 @@ public class ExprUnaryTranslator
         bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
-        return exists;
+        return tryAddingExistentialConstraint(exists);
     }
     
     private Expression translateOneOf(ExprUnary exprUnary, Map<String,Expression> variablesScope)
@@ -289,7 +304,7 @@ public class ExprUnaryTranslator
         bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
-        return exists;
+        return tryAddingExistentialConstraint(exists);
     }
     
     public MultiArityExpression mkTupleExpr(BoundVariableDeclaration bdVarDecl)
