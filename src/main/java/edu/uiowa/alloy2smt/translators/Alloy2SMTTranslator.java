@@ -250,8 +250,11 @@ public class Alloy2SMTTranslator
         organizeDependency(dependency, funcOrder);
         
         for(int i = 0; i < funcOrder.size(); ++i)
-        {            
-            this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+        {
+            if(!this.setCompFuncNameToDefMap.containsKey(funcOrder.get(i)))
+            {
+                this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+            }            
         }
     }
 
