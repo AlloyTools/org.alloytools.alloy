@@ -66,7 +66,7 @@ public class Main
         {
             if(OS.startsWith("Windows"))
             {
-                cvc4 = BINPATH + "cvc4_win64";
+                cvc4 = BINPATH + "cvc4_win64.exe";
             }
             else if(OS.startsWith("Linux"))
             {
