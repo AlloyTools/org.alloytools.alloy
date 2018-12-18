@@ -9,25 +9,24 @@
 package edu.uiowa.alloy2smt;
 import java.io.BufferedReader;
 import org.apache.commons.cli.*;
-import java.util.Formatter;
+
+import java.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Main
 {
-    public static final String OS           = System.getProperty("os.name");
-    public static final String SEP          = File.separator;
-    public static final String OUTPUTDIR    = System.getProperty("java.io.tmpdir");     
-    public static final String BINPATH      = System.getProperty("user.dir")+SEP+"bin"+SEP;
-    
+    public static final String OS                  = System.getProperty("os.name");
+    public static final String SEP                 = File.separator;
+    public static final String OUTPUTDIR           = System.getProperty("java.io.tmpdir");
+    public static final String BINPATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
+    public static final String DEFAULT_OUTPUT_FILE = "output.smt2";
+
     public static boolean isValidInputFilePath(String path)
     {
         File inputFile = new File(path);
@@ -100,7 +99,7 @@ public class Main
         }
         
         ProcessBuilder  pb          = new ProcessBuilder();
-        List<String>    commands    = new ArrayList();
+        List<String>    commands    = new ArrayList<>();
         
         commands.add(cvc4);
         commands.add(fileName);
@@ -142,7 +141,8 @@ public class Main
     {
         StringBuilder   sb = new StringBuilder();
         BufferedReader  br = null;
-        try {
+        try
+        {
             br = new BufferedReader(new InputStreamReader(inputStream));
             String line = br.readLine();
             String fstLine = line;
@@ -172,7 +172,7 @@ public class Main
         Options             options             = new Options();
         CommandLineParser   commandLineParser   = new DefaultParser();        
         
-        options.addOption(Option.builder("i").longOpt("input").desc("Input Alloy model").hasArg().required().build());
+        options.addOption(Option.builder("i").longOpt("input").desc("Input Alloy model").hasArg().build());
         options.addOption(Option.builder("o").longOpt("output").desc("SMT-LIB model output").hasArg().build());
         options.addOption(Option.builder("b").longOpt("cvc4-binary").desc("CVC4 binary path").hasArg().build());
         options.addOption(Option.builder("f").longOpt("cvc4-flags").desc("Additional CVC4 flags").hasArgs().build());
@@ -182,53 +182,65 @@ public class Main
         try
         {
             CommandLine command = commandLineParser.parse(options, args);
-            
+
+            String  cvc4Binary      = command.hasOption("b")?command.getOptionValue("b").trim():null;
+            String  assertion       = command.hasOption("a")?command.getOptionValue("a").trim():null;
+            String  timeout         = command.hasOption("t")?command.getOptionValue("t").trim():null;
+
+            String output;
+            String defaultOutputFile;
+
             if (command.hasOption("i"))
             {
-                String  inputFile   = command.getOptionValue("i").trim();                             
+                String inputFile = command.getOptionValue("i").trim();
 
-                if(isValidInputFilePath(inputFile))
+                if (isValidInputFilePath(inputFile))
                 {
-                    File    outputFile      = null;   
-                    File    alloyFile       = new File(inputFile);
-                    String  cvc4Binary      = command.hasOption("b")?command.getOptionValue("b").trim():null;
-                    String  assertion       = command.hasOption("a")?command.getOptionValue("a").trim():null;
-                    String  timeout         = command.hasOption("t")?command.getOptionValue("t").trim():null;
-                   
-                    String  output          = Utils.translateFromFile(alloyFile.getAbsolutePath(), assertion);                    
-                    String  outputFilePath  = OUTPUTDIR + SEP + alloyFile.getName() + ".smt2";                    
-                    
-                    if(command.hasOption("o"))
-                    {                        
-                        if(isValidOutputFilePath(command.getOptionValue("o"))) 
-                        {
-                            outputFile = new File(command.getOptionValue("o").trim());                      
-                        }                          
-                    }
-                    if(outputFile == null)
-                    {
-                        outputFile = new File(outputFilePath);                      
-                    }
-                    try (Formatter formatter = new Formatter(outputFile)) 
-                    {
-                        formatter.format("%s", output);
-                    }
-                    
-                    // Execute CVC4 on the output file
-                    executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null, timeout);                 
-                    System.out.println("\n\n\n");
-                    System.out.println(output);                    
-                    System.out.println("\n\n\nThe SMT-LIB model was generated at: " + outputFile.getAbsolutePath());
-                }
-                else
+                    File alloyFile    = new File(inputFile);
+                    output            = Utils.translateFromFile(alloyFile.getAbsolutePath(), assertion);
+                    defaultOutputFile = OUTPUTDIR + SEP + alloyFile.getName() + ".smt2";
+                } else
                 {
                     throw new Exception("Can not open file " + inputFile);
                 }
             }
             else
             {
-                throw new ParseException("");
+                StringBuilder stringBuilder = new StringBuilder();
+                Scanner scanner             = new Scanner(System.in);
+
+                while(scanner.hasNextLine())
+                {
+                    stringBuilder.append(scanner.nextLine()).append("\n");
+                }
+
+                output              = Utils.translateFromString(stringBuilder.toString(), assertion);
+                defaultOutputFile   = DEFAULT_OUTPUT_FILE + ".smt2";
             }
+
+            File outputFile = null;
+                    
+            if(command.hasOption("o"))
+            {
+                if(isValidOutputFilePath(command.getOptionValue("o")))
+                {
+                    outputFile = new File(command.getOptionValue("o").trim());
+                }
+            }
+            if(outputFile == null)
+            {
+                outputFile = new File(defaultOutputFile);
+            }
+            try (Formatter formatter = new Formatter(outputFile))
+            {
+                formatter.format("%s", output);
+            }
+
+            // Execute CVC4 on the output file
+            executeCVC4(cvc4Binary, outputFile.getAbsolutePath(), command.hasOption("f")?command.getOptionValues('f'):null, timeout);
+            System.out.println("\n");
+            System.out.println(output);
+            System.out.println("\nThe SMT-LIB model was generated at: " + outputFile.getAbsolutePath());
         }
         catch (ParseException exception)
         {
