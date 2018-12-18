@@ -164,6 +164,10 @@ public class ExprTranslator
         {
             return new FunctionCallExpression(this.translator.funcNamesMap.get(funcName), argExprs);
         }
+        else if(this.translator.setCompFuncNameToInputsMap.containsKey(funcName))
+        {
+            return translateSetCompFuncCallExpr(funcName, argExprs);
+        }
         else if(funcName.equals("integer/plus"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, variablesScope);
@@ -186,6 +190,34 @@ public class ExprTranslator
         }
         throw new UnsupportedOperationException(funcName);
     }    
+    
+    public Expression translateSetCompFuncCallExpr(String funcName, List<Expression> argExprs)
+    {
+        Map<String, Expression> letVars = new HashMap<>();
+        List<String> inputs = translator.setCompFuncNameToInputsMap.get(funcName);
+        Expression setCompDef = translator.setCompFuncNameToDefMap.get(funcName);
+        BoundVariableDeclaration setBdVar = translator.setCompFuncNameToBdVarExprMap.get(funcName);
+        
+        for(int i = 0; i < argExprs.size(); ++i)
+        {
+            letVars.put(inputs.get(i), argExprs.get(i));
+        }
+        
+        if(!letVars.isEmpty())
+        {
+            setCompDef = new LetExpression(LetExpression.Op.LET, letVars, setCompDef);
+        }
+        if(translator.auxExpr != null)
+        {
+            translator.auxExpr = new BinaryExpression(translator.auxExpr, BinaryExpression.Op.AND, setCompDef);
+        }
+        else
+        {
+            translator.auxExpr = setCompDef;
+        }
+        translator.existentialBdVars.add(setBdVar);
+        return setBdVar.getConstantExpr();
+    }
     
     public Expression translateArithmetic(Expression leftExpr, Expression rightExpr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
@@ -428,7 +460,8 @@ public class ExprTranslator
 
                     for (ExprHasName name: decl.names)
                     {
-                        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(name.label, declExprSorts.get(0));
+                        String sanitizedName = TranslatorUtils.sanitizeName(name.label);
+                        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(sanitizedName, declExprSorts.get(0));
                         variablesScope.put(name.label, bdVar.getConstantExpr());
                         bdVars.put(bdVar, declExpr);
                     }                    
@@ -704,7 +737,7 @@ public class ExprTranslator
         return new BinaryExpression(tupleExpr, BinaryExpression.Op.MEMBER, bdVarParExpr);
     }
 
-    private Expression getDeclarationExpr(Decl decl, Map<String, Expression> variablesScope)
+    public Expression getDeclarationExpr(Decl decl, Map<String, Expression> variablesScope)
     {
         return translateExpr(decl.expr, variablesScope);
     }

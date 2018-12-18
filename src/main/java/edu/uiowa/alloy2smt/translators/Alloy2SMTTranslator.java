@@ -17,6 +17,7 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,10 +37,13 @@ public class Alloy2SMTTranslator
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
+    
+    
     final SetSort                   setOfUnaryAtomSort;
     final SetSort                   setOfBinaryAtomSort;
     final SetSort                   setOfUnaryIntSort;
-    final SetSort                   setOfTernaryIntSort;    
+    final SetSort                   setOfTernaryIntSort;  
+    
     final IntSort                   intSort;
     final TupleSort                 unaryAtomSort;
     final TupleSort                 unaryIntAtomSort; 
@@ -65,16 +69,21 @@ public class Alloy2SMTTranslator
     final FunctionDeclaration       valueOfBinaryIntTup;      
     final FunctionDeclaration       valueOfTernaryIntTup;
     
-    Map<String, String>                             funcNamesMap;
-    Map<String, FunctionDefinition>                 funcDefsMap;    
-    Map<Sig, FunctionDeclaration>                   signaturesMap;
-    Map<Sig.Field, FunctionDeclaration>             fieldsMap;    
-    Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
-    Map<BinaryExpression.Op, ConstantExpression>    arithOps;
-    Map<Sig, Expr>                                  sigFacts;
-    List<BoundVariableDeclaration>                  existentialBdVars;
-    Expression                                      auxExpr = null;
+    Expression                                      auxExpr;
     Set<String>                                     funcNames;
+    Map<Sig, Expr>                                  sigFacts;    
+    
+    Map<String, String>                             funcNamesMap;
+    Map<String, List<String>>                       setCompFuncNameToInputsMap;
+    Map<String, Expression>                         setCompFuncNameToDefMap;
+    Map<String, BoundVariableDeclaration>           setCompFuncNameToBdVarExprMap;
+    Map<Sig, FunctionDeclaration>                   signaturesMap;   
+    List<BoundVariableDeclaration>                  existentialBdVars;      
+    Map<String, FunctionDefinition>                 funcDefsMap;        
+    Map<Sig.Field, FunctionDeclaration>             fieldsMap;     
+    Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
+    Map<BinaryExpression.Op, ConstantExpression>    arithOps;  
+    
 
 
     public Alloy2SMTTranslator(CompModule alloyModel)
@@ -103,14 +112,13 @@ public class Alloy2SMTTranslator
         this.atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
         this.atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);        
         this.atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );        
-        this.intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);        
         this.intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
         this.intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
         this.intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
+        this.intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);                
         this.valueOfUnaryIntTup     = new FunctionDeclaration("value_of_unaryIntTup", this.unaryIntTup, this.unaryIntSort);
         this.valueOfBinaryIntTup    = new FunctionDeclaration("value_of_binaryIntTup", this.binaryIntTup, this.binaryIntSort);        
         this.valueOfTernaryIntTup   = new FunctionDeclaration("value_of_ternaryIntTup", this.ternaryIntTup, this.ternaryIntSort);
-
         
         this.comparisonOps          = new HashMap<>();  
         this.arithOps               = new HashMap<>();
@@ -129,8 +137,12 @@ public class Alloy2SMTTranslator
         this.smtProgram.addSort(this.ternaryIntTup);
         this.smtProgram.addFcnDecl(this.valueOfUnaryIntTup);
         this.smtProgram.addFcnDecl(this.valueOfBinaryIntTup);
-        this.smtProgram.addFcnDecl(this.valueOfTernaryIntTup);    
-        this.exprTranslator         = new ExprTranslator(this);        
+        this.smtProgram.addFcnDecl(this.valueOfTernaryIntTup);  
+        
+        this.setCompFuncNameToInputsMap     = new HashMap<>();
+        this.setCompFuncNameToDefMap        = new HashMap<>(); 
+        this.setCompFuncNameToBdVarExprMap  = new HashMap<>();
+        this.exprTranslator                 = new ExprTranslator(this);        
     }
 
     public SMTProgram execute(String assertion)
@@ -238,13 +250,92 @@ public class Alloy2SMTTranslator
         organizeDependency(dependency, funcOrder);
         
         for(int i = 0; i < funcOrder.size(); ++i)
-        {            
-            this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+        {
+            if(!this.setCompFuncNameToDefMap.containsKey(funcOrder.get(i)))
+            {
+                this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+            }            
         }
     }
+
+    private void translateSetCompFunc(Func f)
+    {
+        String funcName = f.label;
+        Map<String, Expression> variablesScope = new HashMap<>();
+
+        ExprQt exprQtBody = (ExprQt)(((ExprUnary)f.getBody()).sub);
+
+        List<Sort> elementSorts = new ArrayList<>();
+
+        for(int i = 0; i < exprQtBody.decls.size(); ++i)
+        {                    
+            for(int j = 0; j < exprQtBody.decls.get(i).names.size(); ++j)
+            {
+                elementSorts.addAll(exprTranslator.getExprSorts(exprQtBody.decls.get(i).expr));
+            }                    
+        }
+
+        String              setBdVarName    = TranslatorUtils.getNewSetName();
+        SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
+        BoundVariableDeclaration setBdVar   = new BoundVariableDeclaration(setBdVarName, setSort);
+        LinkedHashMap<BoundVariableDeclaration, Expression> inputBdVars = new LinkedHashMap<>();
+        List<String> inputVarNames = new ArrayList<>();
+        
+        // Declare input variables
+        for(int i = 0; i < f.decls.size(); ++i)
+        {
+            for(ExprHasName n : f.decls.get(i).names)
+            {
+                String  bdVarName       = n.label;
+                String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
+                Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
+                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(sanBdVarName, bdVarSort);
+                
+                inputVarNames.add(sanBdVarName);
+                variablesScope.put(bdVarName, bdVarDecl.getConstantExpr());
+            }
+        }        
+
+        for(Decl decl : exprQtBody.decls)
+        {                    
+            Expression declExpr         = exprTranslator.getDeclarationExpr(decl, variablesScope);
+            List<Sort> declExprSorts    = exprTranslator.getExprSorts(decl.expr);
+
+            for (ExprHasName name: decl.names)
+            {
+                String sanitizedName = TranslatorUtils.sanitizeName(name.label);
+                BoundVariableDeclaration bdVar = new BoundVariableDeclaration(sanitizedName, declExprSorts.get(0));
+                variablesScope.put(name.label, bdVar.getConstantExpr());
+                inputBdVars.put(bdVar, declExpr);                
+            }                    
+        }
+        
+        Expression setCompBodyExpr  = exprTranslator.translateExpr(exprQtBody.sub, variablesScope);
+        Expression membership       = exprTranslator.getMemberExpression(inputBdVars, 0);
+
+        for(int i = 1; i < inputBdVars.size(); ++i)
+        {
+            membership = new BinaryExpression(membership, BinaryExpression.Op.AND, exprTranslator.getMemberExpression(inputBdVars, i));
+        }
+        membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
+        Expression setMembership = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getConstantExpr());
+        membership = new BinaryExpression(membership, BinaryExpression.Op.EQ, setMembership);
+        Expression forallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(inputBdVars.keySet()), membership);
+
+        this.setCompFuncNameToBdVarExprMap.put(funcName, setBdVar);
+        this.setCompFuncNameToDefMap.put(funcName, forallExpr); 
+        this.setCompFuncNameToInputsMap.put(funcName, inputVarNames);                       
+    }    
+         
     
     private void translateFunc(Func f)
-    {        
+    { 
+        if(isSetComp(f.getBody()))
+        {
+           translateSetCompFunc(f);
+           return; 
+        }
+        
         Sort    returnSort  = new BoolSort();        
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
         List<BoundVariableDeclaration>      bdVars          = new ArrayList<>();
@@ -441,5 +532,18 @@ public class Alloy2SMTTranslator
             orderedFunctions.add(dFuncName);
         }         
     }
-     
+    
+    
+    private boolean isSetComp(Expr expr)
+    {
+        if(expr instanceof ExprUnary)
+        {
+            if(((ExprUnary)expr).op == ExprUnary.Op.NOOP) 
+            {
+                return (((ExprUnary)expr).sub instanceof ExprQt) && ((ExprQt)((ExprUnary)expr).sub).op == ExprQt.Op.COMPREHENSION;
+            }
+        }
+        return false;
+    }
+    
 }
