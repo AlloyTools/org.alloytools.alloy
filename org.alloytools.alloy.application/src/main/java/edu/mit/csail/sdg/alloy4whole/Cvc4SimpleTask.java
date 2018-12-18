@@ -23,25 +23,19 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         // translate alloy file to smt2 file
         try
         {
-            for(Map.Entry<String,String> entry : alloyFiles.entrySet())
-            {
-                try (PrintWriter printWriter = new PrintWriter(entry.getKey())) {
-                    printWriter.print(entry.getValue());
-                }
-            }
-
             //ToDo: implement the case when there are multiple files
             Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
 
-            String fileName = iterator.next().getKey();
+            Map.Entry<String, String> entry = iterator.next();
+            String fileName                 = entry.getKey();
 
             ProcessBuilder  processBuilder  = new ProcessBuilder();
             String [] command        = new String[]{
                     "java",
                     "-jar",
                     "alloy2smt.jar",
-                    "-i",
-                    fileName, // input file
+//                    "-i",
+//                    fileName, // input file
                     "-o",
                     fileName + ".smt2"
             };
@@ -50,18 +44,24 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
             workerCallback.callback("Executing command: " + String.join(" ", command));
 
+
             Process process = processBuilder.start();
+
+            OutputStream processInput = process.getOutputStream();
+
+            processInput.write(entry.getValue().getBytes());
+            processInput.close();
 
             if(process.waitFor((long) TIMEOUT, TimeUnit.SECONDS))
             {
-                workerCallback.callback("Finished translating from alloy to smt2: " + fileName + ".smt2");
-
                 String error = getProcessOutput(process.getErrorStream());
 
                 if(!error.isEmpty())
                 {
                     throw new Exception(error);
                 }
+
+                workerCallback.callback("Finished translating from alloy to smt2: " + fileName + ".smt2");
 
                 String output = getProcessOutput(process.getInputStream());
 
@@ -75,7 +75,6 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         catch (Exception exception)
         {
             exception.printStackTrace();
-            workerCallback.callback(exception.getMessage());
             throw exception;
         }
     }
