@@ -655,6 +655,10 @@ public class A4Preferences {
     /** Automatically infer partial instance from model */
     public static final BooleanPref                  InferPartialInstance   = new BooleanPref("InferPartialInstance", "Infer partial instance");
 
+    public static final String KODKOD = "Kodkod";
+    public static final String CVC4 = "CVC4";
+    public static final StringChoicePref RelationalSolver                   = new StringChoicePref("Relational Solver", Arrays.asList(KODKOD, CVC4), KODKOD);
+
     public static final DelayedChoicePref<SatSolver> Solver                 = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
 
                                                                                 @Override
