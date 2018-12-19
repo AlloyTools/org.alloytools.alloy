@@ -9,10 +9,11 @@ import java.util.concurrent.TimeUnit;
 
 public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 {
-    public static final String OS                  = System.getProperty("os.name");
-    public static final String SEP                 = File.separator;
-    public static final String BIN_PATH = System.getProperty("user.dir")+SEP+"bin"+SEP;
-    public static final int TIMEOUT = 300;
+    public static final String OS                   = System.getProperty("os.name");
+    public static final String SEP                  = File.separator;
+    public static final String BIN_PATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
+    public static final int TRANSLATION_TIMEOUT     = 1;
+    public static final int SOLVING_TIMEOUT         = 300;
 
     private final Map<String, String> alloyFiles;
 
@@ -22,6 +23,48 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     }
     @Override
     public void run(WorkerEngine.WorkerCallback workerCallback) throws Exception
+    {
+        final long startTranslate   = System.currentTimeMillis();
+
+        String smtFileName          = translateToSMT(workerCallback);
+
+        final long endTranslate     = System.currentTimeMillis();
+
+        workerCallback.callback("\n");
+        workerCallback.callback("Translation time: " + (endTranslate - startTranslate) + " ms");
+        workerCallback.callback("\n");
+
+        if(smtFileName != null)
+        {
+            final long startSolve   = System.currentTimeMillis();
+            String smtResult        = solve(smtFileName, workerCallback);
+            final long endSolve     = System.currentTimeMillis();
+            workerCallback.callback("\n");
+            workerCallback.callback("Solving time: " + (endSolve - startSolve) + " ms");
+            workerCallback.callback("\n");
+
+            if(smtResult != null)
+            {
+                Scanner scanner = new Scanner(smtResult);
+                String  result  = scanner.next();
+                if(result.equals("sat"))
+                {
+                    workerCallback.callback("A model has been found");
+                    //construct A4Solution from smt result
+                }
+                else if(result.equals("unsat"))
+                {
+                    workerCallback.callback("No model found");
+                }
+                else
+                {
+                    workerCallback.callback("No result found");
+                }
+            }
+        }
+    }
+
+    private String translateToSMT(WorkerEngine.WorkerCallback workerCallback) throws Exception
     {
         //ToDo: implement the case when there are multiple files
         Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
@@ -43,15 +86,15 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         workerCallback.callback("Executing command: " + String.join(" ", command));
 
-
         Process process           = processBuilder.start();
 
         OutputStream processInput = process.getOutputStream();
 
         processInput.write(entry.getValue().getBytes());
+
         processInput.close();
 
-        if(process.waitFor((long) TIMEOUT, TimeUnit.SECONDS))
+        if(process.waitFor((long) TRANSLATION_TIMEOUT, TimeUnit.SECONDS))
         {
             String error = getProcessOutput(process.getErrorStream());
 
@@ -64,11 +107,13 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
             workerCallback.callback("Translation output:" + output + "\n");
 
-            executeCVC4(smtFileName, workerCallback);
+            return smtFileName;
         }
         else
         {
-            workerCallback.callback("Timeout: Translation from ally to smt2 did not finish after " + TIMEOUT  + " seconds");
+            workerCallback.callback("CVC4 Timeout: " + TRANSLATION_TIMEOUT + " seconds");
+            process.destroy();
+            return null;
         }
     }
 
@@ -86,11 +131,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         return stringBuilder.toString();
     }
 
-    private static boolean isNumeric(String str)
-    {
-        return str.matches("\\d+(\\.\\d+)?");
-    }
-    private void executeCVC4(String fileName, WorkerEngine.WorkerCallback workerCallback) throws Exception
+    private String solve(String fileName, WorkerEngine.WorkerCallback workerCallback) throws Exception
     {
         String cvc4;
 
@@ -134,7 +175,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         Process process = processBuilder.start();
 
-        if(process.waitFor(TIMEOUT, TimeUnit.SECONDS))
+        if(process.waitFor(SOLVING_TIMEOUT, TimeUnit.SECONDS))
         {
             String error = getProcessOutput(process.getErrorStream());
 
@@ -145,11 +186,14 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
             String cvc4Output = getProcessOutput(process.getInputStream());
             workerCallback.callback("\nCVC4 Output:\n" + cvc4Output);
+
+            return cvc4Output;
         }
         else
         {
-            workerCallback.callback("CVC4 Timeout: " + TIMEOUT + " seconds");
+            workerCallback.callback("CVC4 Timeout: " + SOLVING_TIMEOUT + " seconds");
+            process.destroy();
+            return null;
         }
-        process.destroy();
     }
 }
