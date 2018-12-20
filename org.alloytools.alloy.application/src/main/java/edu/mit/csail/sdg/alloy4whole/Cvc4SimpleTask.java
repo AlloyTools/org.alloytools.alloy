@@ -33,19 +33,20 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         final long endTranslate     = System.currentTimeMillis();
 
-        workerCallback.callback("\n");
-        workerCallback.callback("Translation time: " + (endTranslate - startTranslate) + " ms");
-        workerCallback.callback("\n");
+        workerCallback.callback(new Object[]{"S2","\n"});
+        workerCallback.callback(new Object[]{"S2", "Translation time: " + (endTranslate - startTranslate) + " ms\n"});
+        workerCallback.callback(new Object[]{"S2","\n"});
 
         if(smtFormula != null)
         {
             final long startSolve   = System.currentTimeMillis();
             String smtResult        = solve(smtFormula, workerCallback);
             final long endSolve     = System.currentTimeMillis();
+            long duration		        = (endSolve - startSolve);
 
-            workerCallback.callback("\n");
-            workerCallback.callback("Solving time: " + (endSolve - startSolve) + " ms");
-            workerCallback.callback("\n");
+            workerCallback.callback(new Object[]{"S2","\n"});
+            workerCallback.callback(new Object[]{"S2","Solving time: " + duration + " ms\n"});
+            workerCallback.callback(new Object[]{"S2","\n"});
 
             if(smtResult != null)
             {
@@ -54,26 +55,27 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
                 switch (result)
                 {
                     case "sat":
-                        workerCallback.callback("A model has been found");
+                        workerCallback.callback(new Object[]{"S2","A model has been found\n"});
                         //construct A4Solution from smt result
 
-                        String solutionFile = "0.smt.xml";
 
-                        if (viz == null)
-                        {
-                            viz = new VizGUI(false, solutionFile, null);
-                        }
-                        else
-                        {
-                            viz.loadXML(solutionFile, true);
-                        }
+
+                        String  satResult           = "sat";
+                        boolean isCounterExample    = false;
+                        int expected                = -1;
+                        String solutionXMLFile      = "0.smt.xml";
+                        String formula              = "";
+
+                        Object[]message = new Object []{satResult, isCounterExample, expected,
+                                solutionXMLFile, formula, duration};
+                        workerCallback.callback(message);
 
                         break;
                     case "unsat":
-                        workerCallback.callback("No model found");
+                        workerCallback.callback(new Object[]{"S2", "No model found\n"});
                         break;
                     default:
-                        workerCallback.callback("No result found");
+                        workerCallback.callback(new Object[]{"S2","No result found\n"});
                         break;
                 }
             }
@@ -90,7 +92,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         String smtFormula = Utils.translateFromString(entry.getValue(), null);
 
-        workerCallback.callback("Translation output:" + smtFormula + "\n");
+        workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + smtFormula + "\n"});
 
         return smtFormula;
     }
@@ -152,7 +154,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         processBuilder.command(command);
 
-        workerCallback.callback("Executing command: " + String.join(" ", command));
+        workerCallback.callback(new Object[]{"S2","Executing command: " + String.join(" ", command) + "\n\n"});
 
         Process process = processBuilder.start();
 
@@ -172,13 +174,13 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
             }
 
             String cvc4Output = getProcessOutput(process.getInputStream());
-            workerCallback.callback("CVC4 Output:\n" + cvc4Output);
+            workerCallback.callback(new Object[]{"S2","CVC4 Output:\n\n" + cvc4Output + "\n"});
 
             return cvc4Output;
         }
         else
         {
-            workerCallback.callback("CVC4 Timeout: " + SOLVING_TIMEOUT + " seconds");
+            workerCallback.callback(new Object[]{"S2","CVC4 Timeout: " + SOLVING_TIMEOUT + " seconds\n"});
             process.destroy();
             return null;
         }
