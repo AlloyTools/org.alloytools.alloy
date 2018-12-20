@@ -24,8 +24,8 @@
             <artifactId>Alloy</artifactId>
             <version>5.0.0.1</version>
             <!--ToDo: review the best way to distribute alloy2smt and its dependencies-->
-            <scope>compile</scope>
-            <!--<systemPath>${project.basedir}/lib/Alloy-5.0.0.1.jar</systemPath>-->
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Alloy-5.0.0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
