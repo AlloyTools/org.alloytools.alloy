@@ -1,6 +1,7 @@
 package edu.mit.csail.sdg.alloy4whole;
 
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
+import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.uiowa.alloy2smt.Utils;
 
 
@@ -14,8 +15,10 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     public static final String SEP                  = File.separator;
     public static final String BIN_PATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
     public static final int SOLVING_TIMEOUT         = 300;
-
     private final Map<String, String> alloyFiles;
+
+    // for gui
+    private static VizGUI viz;
 
     Cvc4SimpleTask(Map<String, String> alloyFiles)
     {
@@ -53,6 +56,18 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
                     case "sat":
                         workerCallback.callback("A model has been found");
                         //construct A4Solution from smt result
+
+                        String solutionFile = "0.smt.xml";
+
+                        if (viz == null)
+                        {
+                            viz = new VizGUI(false, solutionFile, null);
+                        }
+                        else
+                        {
+                            viz.loadXML(solutionFile, true);
+                        }
+
                         break;
                     case "unsat":
                         workerCallback.callback("No model found");
