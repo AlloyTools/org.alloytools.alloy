@@ -74,7 +74,7 @@ public class Main
             }
             else 
             {
-                System.out.println("No CVC4 binary availble for the OS: " + OS);
+                System.out.println("No CVC4 binary available for the OS: " + OS);
                 return;
             }
             
