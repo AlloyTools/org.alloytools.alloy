@@ -1,0 +1,20 @@
+(model
+; cardinality of Atom is 3
+(declare-sort Atom 0)
+; rep: @uc_Atom_0
+; rep: @uc_Atom_1
+; rep: @uc_Atom_2
+(declare-sort UnaryIntTup 0)
+(declare-sort BinaryIntTup 0)
+(declare-sort TernaryIntTup 0)
+(define-fun value_of_unaryIntTup ((BOUND_VARIABLE_940 UnaryIntTup)) (Tuple Int) (mkTuple 0))
+(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_949 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))
+(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_958 TernaryIntTup)) (Tuple Int Int Int) (mkTuple 0 0 0))
+(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))
+(define-fun atomUniv () (Set (Tuple Atom)) (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_1))) (singleton (mkTuple @uc_Atom_2))))
+(define-fun atomIden () (Set (Tuple Atom Atom)) (union (union (singleton (mkTuple @uc_Atom_0 @uc_Atom_0)) (singleton (mkTuple @uc_Atom_1 @uc_Atom_1))) (singleton (mkTuple @uc_Atom_2 @uc_Atom_2))))
+(define-fun this_A () (Set (Tuple Atom)) (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_1))) (singleton (mkTuple @uc_Atom_2))))
+(define-fun this_B () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_1)))
+(define-fun this_C () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_2)))
+(define-fun this_D () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_0)))
+)

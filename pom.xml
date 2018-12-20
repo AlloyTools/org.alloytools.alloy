@@ -27,6 +27,11 @@
             <scope>compile</scope>
             <!--<systemPath>${project.basedir}/lib/Alloy-5.0.0.1.jar</systemPath>-->
         </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <version>4.7.2</version>
+        </dependency>
     </dependencies>
 
     <properties>
