@@ -10,6 +10,7 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
+//ToDo: review whether the name VariableDeclaration is better
 public class ConstantDeclaration extends Declaration
 {
     public ConstantDeclaration(String name, Sort sort)
