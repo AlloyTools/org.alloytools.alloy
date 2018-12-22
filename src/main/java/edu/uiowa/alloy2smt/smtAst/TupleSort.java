@@ -18,14 +18,15 @@ public class TupleSort extends Sort
 
     public TupleSort(List<Sort> elementSorts)
     {
+        super("Tuple", 0);
         this.elementSorts = elementSorts;
     }
 
     public TupleSort(Sort ... elementSorts)
     {
-        this.elementSorts = Arrays.asList(elementSorts);
+        this(Arrays.asList(elementSorts));
     }
-    
+
     @Override
     public String toString() 
     {

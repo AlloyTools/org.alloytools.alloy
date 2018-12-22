@@ -17,29 +17,47 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitModel(SmtParser.ModelContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#declarations}.
+	 * Visit a parse tree produced by {@link SmtParser#sortDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDeclarations(SmtParser.DeclarationsContext ctx);
+	T visitSortDeclaration(SmtParser.SortDeclarationContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#definitions}.
+	 * Visit a parse tree produced by {@link SmtParser#definition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDefinitions(SmtParser.DefinitionsContext ctx);
+	T visitDefinition(SmtParser.DefinitionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#arguments}.
+	 * Visit a parse tree produced by {@link SmtParser#argument}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArguments(SmtParser.ArgumentsContext ctx);
+	T visitArgument(SmtParser.ArgumentContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#sort}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSort(SmtParser.SortContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#setSort}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSetSort(SmtParser.SetSortContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#tupleSort}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTupleSort(SmtParser.TupleSortContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#sortName}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSortName(SmtParser.SortNameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#arity}.
 	 * @param ctx the parse tree

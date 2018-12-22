@@ -12,18 +12,10 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class UninterpretedSort extends Sort
 {
-    private final String sortName;
-    
     public UninterpretedSort(String sortName) 
     {
-        this.sortName = sortName;
+        super(sortName, 0);
     }
-    
-    public String getSortName() 
-    {
-        return this.sortName;
-    }
-    
     @Override
     public void accept(SMTAstVisitor visitor) {
         visitor.visit(this);

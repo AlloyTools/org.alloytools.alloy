@@ -24,21 +24,21 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDeclarations(SmtParser.DeclarationsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSortDeclaration(SmtParser.SortDeclarationContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDefinitions(SmtParser.DefinitionsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDefinition(SmtParser.DefinitionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArguments(SmtParser.ArgumentsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArgument(SmtParser.ArgumentContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -46,6 +46,27 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitSort(SmtParser.SortContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitSetSort(SmtParser.SetSortContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitTupleSort(SmtParser.TupleSortContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitSortName(SmtParser.SortNameContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

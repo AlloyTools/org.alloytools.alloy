@@ -2,21 +2,27 @@ grammar Smt;
 
 // parser rules
 
-model : '(' 'model' declarations* definitions* ')' ;
+model: '(' 'model' sortDeclaration* definition* ')' ;
 
-declarations :  '(' 'declare-sort' sort arity ')';
+sortDeclaration:  '(' 'declare-sort' sortName arity ')';
 
-definitions : '(' 'define-fun' functionName '(' arguments* ')' '(' sort ')' '(' term ')' ')';
+definition: '(' 'define-fun' functionName '(' argument* ')' '(' sort ')' '(' term ')' ')';
 
-arguments : '(' argumentName sort ')';
+argument: '(' argumentName sort ')';
 
-sort :  Identifier | 'Tuple' sort+ | 'Set' '(' sort ')' ;
+sort:  sortName | tupleSort | setSort ;
+
+setSort: 'Set' '(' sort ')';
+
+tupleSort: 'Tuple' sort+ ;
+
+sortName: Identifier;
 
 arity: Integer;
 
-functionName : Identifier;
+functionName: Identifier;
 
-argumentName : Identifier;
+argumentName: Identifier;
 
 term:   Integer
         | '-' Integer
@@ -27,14 +33,14 @@ term:   Integer
         | 'as' 'emptyset' '(' 'Set' '(' sort ')' ')';
 
 // lexer rules
-Identifier : IdentifierLetter (IdentifierLetter | Digit)* ;
+Identifier: IdentifierLetter (IdentifierLetter | Digit)* ;
 
-IdentifierLetter : 'a'..'z'|'A'..'Z'|'_' ;
+IdentifierLetter: 'a'..'z'|'A'..'Z'|'_' ;
 
-Integer : Digit+ ;
+Integer: Digit+ ;
 
-Digit : '0'..'9' ;
+Digit: '0'..'9' ;
 
-Comment   :  ';' ~( '\r' | '\n' )* -> skip ;
+Comment  :  ';' ~( '\r' | '\n' )* -> skip ;
 
-Whitespace :  [ \t\r\n]+ -> skip ;
+Whitespace:  [\t\r\n]+ -> skip ;

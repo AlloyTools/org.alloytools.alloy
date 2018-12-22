@@ -28,37 +28,37 @@ public class SmtBaseListener implements SmtListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDeclarations(SmtParser.DeclarationsContext ctx) { }
+	@Override public void enterSortDeclaration(SmtParser.SortDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDeclarations(SmtParser.DeclarationsContext ctx) { }
+	@Override public void exitSortDeclaration(SmtParser.SortDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDefinitions(SmtParser.DefinitionsContext ctx) { }
+	@Override public void enterDefinition(SmtParser.DefinitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDefinitions(SmtParser.DefinitionsContext ctx) { }
+	@Override public void exitDefinition(SmtParser.DefinitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArguments(SmtParser.ArgumentsContext ctx) { }
+	@Override public void enterArgument(SmtParser.ArgumentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArguments(SmtParser.ArgumentsContext ctx) { }
+	@Override public void exitArgument(SmtParser.ArgumentContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -71,6 +71,42 @@ public class SmtBaseListener implements SmtListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSort(SmtParser.SortContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSetSort(SmtParser.SetSortContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSetSort(SmtParser.SetSortContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTupleSort(SmtParser.TupleSortContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTupleSort(SmtParser.TupleSortContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSortName(SmtParser.SortNameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSortName(SmtParser.SortNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

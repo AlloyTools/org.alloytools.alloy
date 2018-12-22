@@ -12,17 +12,9 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class IntSort extends Sort
 {
-    private final String intSort = "Int";
-    
-    public String getSortName()
+    public IntSort()
     {
-        return this.intSort;
-    }
-    
-    @Override
-    public String toString() 
-    {
-        return this.intSort;
+        super("Int", 0);
     }
 
     @Override

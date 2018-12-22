@@ -11,22 +11,16 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
  *
  * @author Paul Meng
  */
-public class BoolSort extends Sort {
-    private final String boolSort = "Bool";
-    
-    public String getSortName()
+public class BoolSort extends Sort
+{
+    public BoolSort()
     {
-        return this.boolSort;
-    }
-    
-    @Override
-    public String toString() 
-    {
-        return this.boolSort;
+        super("Bool", 0);
     }
 
     @Override
-    public void accept(SMTAstVisitor visitor) {
+    public void accept(SMTAstVisitor visitor)
+    {
         visitor.visit(this);
     }    
 }

@@ -43,7 +43,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
             if(sort instanceof UninterpretedSort)
             {
                 this.stringBuilder.append("(declare-sort ");
-                this.stringBuilder.append(((UninterpretedSort) sort).getSortName());
+                this.stringBuilder.append(((UninterpretedSort) sort).getName());
                 this.stringBuilder.append(" 0)\n");
             }
         }
@@ -93,8 +93,9 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     }
 
     @Override
-    public void visit(IntSort intSort) {
-        this.stringBuilder.append(intSort.getSortName());
+    public void visit(IntSort intSort)
+    {
+        this.stringBuilder.append(intSort.getName());
     }
 
     @Override
@@ -170,7 +171,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
     @Override
     public void visit(UninterpretedSort uninterpretedSort)
     {
-        this.stringBuilder.append(uninterpretedSort.getSortName());
+        this.stringBuilder.append(uninterpretedSort.getName());
     }
 
     @Override
@@ -353,7 +354,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         }
     }
 
-    private void visit(Sort sort)
+    public void visit(Sort sort)
     {
         if (sort instanceof  UninterpretedSort)
         {
@@ -395,7 +396,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
 
     @Override
     public void visit(BoolSort aThis) {
-        this.stringBuilder.append(aThis.getSortName());
+        this.stringBuilder.append(aThis.getName());
     }
 
     @Override

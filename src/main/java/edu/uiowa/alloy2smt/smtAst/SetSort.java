@@ -14,8 +14,9 @@ public class SetSort extends Sort
 {
     public Sort elementSort;
     
-    public SetSort(Sort elementSort) 
+    public SetSort(Sort elementSort)
     {
+        super("Set", 0);
         this.elementSort = elementSort;
     }
 

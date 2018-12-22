@@ -12,19 +12,10 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class RealSort extends Sort
 {
-    private final String realSort = "real";
-    
-    public String getSortName()
+    public RealSort()
     {
-        return this.realSort;
+        super("Real", 0);
     }
-    
-    @Override
-    public String toString() 
-    {
-        return this.realSort;
-    }    
-
     @Override
     public void accept(SMTAstVisitor visitor) {
         visitor.visit(this);

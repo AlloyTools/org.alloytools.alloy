@@ -8,6 +8,33 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public abstract class Sort extends Expression
+import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+
+public class Sort extends Expression
 {
+    private final String name;
+    private final int    arity;
+
+    public Sort(String name, int arity)
+    {
+        this.name   = name;
+        this.arity  = arity;
+    }
+
+    public String getName()
+    {
+        return this.name;
+    }
+
+    @Override
+    public String toString()
+    {
+        return this.name;
+    }
+
+    @Override
+    public void accept(SMTAstVisitor visitor)
+    {
+        visitor.visit(this);
+    }
 }

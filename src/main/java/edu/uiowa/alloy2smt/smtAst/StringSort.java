@@ -12,19 +12,10 @@ import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
 
 public class StringSort extends Sort
 {
-    private final String stringSort = "string";
-    
-    public String getSortName()
+    public StringSort()
     {
-        return this.stringSort;
+        super("String", 0);
     }
-    
-    @Override
-    public String toString() 
-    {
-        return this.stringSort;
-    }      
-
     @Override
     public void accept(SMTAstVisitor visitor) {
         visitor.visit(this);

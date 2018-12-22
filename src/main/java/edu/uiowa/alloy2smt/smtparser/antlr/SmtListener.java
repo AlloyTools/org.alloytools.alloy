@@ -18,35 +18,35 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitModel(SmtParser.ModelContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#declarations}.
+	 * Enter a parse tree produced by {@link SmtParser#sortDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterDeclarations(SmtParser.DeclarationsContext ctx);
+	void enterSortDeclaration(SmtParser.SortDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#declarations}.
+	 * Exit a parse tree produced by {@link SmtParser#sortDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitDeclarations(SmtParser.DeclarationsContext ctx);
+	void exitSortDeclaration(SmtParser.SortDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#definitions}.
+	 * Enter a parse tree produced by {@link SmtParser#definition}.
 	 * @param ctx the parse tree
 	 */
-	void enterDefinitions(SmtParser.DefinitionsContext ctx);
+	void enterDefinition(SmtParser.DefinitionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#definitions}.
+	 * Exit a parse tree produced by {@link SmtParser#definition}.
 	 * @param ctx the parse tree
 	 */
-	void exitDefinitions(SmtParser.DefinitionsContext ctx);
+	void exitDefinition(SmtParser.DefinitionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#arguments}.
+	 * Enter a parse tree produced by {@link SmtParser#argument}.
 	 * @param ctx the parse tree
 	 */
-	void enterArguments(SmtParser.ArgumentsContext ctx);
+	void enterArgument(SmtParser.ArgumentContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#arguments}.
+	 * Exit a parse tree produced by {@link SmtParser#argument}.
 	 * @param ctx the parse tree
 	 */
-	void exitArguments(SmtParser.ArgumentsContext ctx);
+	void exitArgument(SmtParser.ArgumentContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#sort}.
 	 * @param ctx the parse tree
@@ -57,6 +57,36 @@ public interface SmtListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSort(SmtParser.SortContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#setSort}.
+	 * @param ctx the parse tree
+	 */
+	void enterSetSort(SmtParser.SetSortContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#setSort}.
+	 * @param ctx the parse tree
+	 */
+	void exitSetSort(SmtParser.SetSortContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#tupleSort}.
+	 * @param ctx the parse tree
+	 */
+	void enterTupleSort(SmtParser.TupleSortContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#tupleSort}.
+	 * @param ctx the parse tree
+	 */
+	void exitTupleSort(SmtParser.TupleSortContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#sortName}.
+	 * @param ctx the parse tree
+	 */
+	void enterSortName(SmtParser.SortNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#sortName}.
+	 * @param ctx the parse tree
+	 */
+	void exitSortName(SmtParser.SortNameContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#arity}.
 	 * @param ctx the parse tree
