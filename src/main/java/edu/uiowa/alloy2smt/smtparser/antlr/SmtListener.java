@@ -28,15 +28,15 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitSortDeclaration(SmtParser.SortDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#definition}.
+	 * Enter a parse tree produced by {@link SmtParser#functionDefinition}.
 	 * @param ctx the parse tree
 	 */
-	void enterDefinition(SmtParser.DefinitionContext ctx);
+	void enterFunctionDefinition(SmtParser.FunctionDefinitionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#definition}.
+	 * Exit a parse tree produced by {@link SmtParser#functionDefinition}.
 	 * @param ctx the parse tree
 	 */
-	void exitDefinition(SmtParser.DefinitionContext ctx);
+	void exitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#argument}.
 	 * @param ctx the parse tree
@@ -127,4 +127,64 @@ public interface SmtListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTerm(SmtParser.TermContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#integerConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterIntegerConstant(SmtParser.IntegerConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#integerConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitIntegerConstant(SmtParser.IntegerConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#tupleConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterTupleConstant(SmtParser.TupleConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#tupleConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitTupleConstant(SmtParser.TupleConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#singletonConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterSingletonConstant(SmtParser.SingletonConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#singletonConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitSingletonConstant(SmtParser.SingletonConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#unionConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnionConstant(SmtParser.UnionConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#unionConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnionConstant(SmtParser.UnionConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#atomConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterAtomConstant(SmtParser.AtomConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#atomConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitAtomConstant(SmtParser.AtomConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#emptySet}.
+	 * @param ctx the parse tree
+	 */
+	void enterEmptySet(SmtParser.EmptySetContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#emptySet}.
+	 * @param ctx the parse tree
+	 */
+	void exitEmptySet(SmtParser.EmptySetContext ctx);
 }

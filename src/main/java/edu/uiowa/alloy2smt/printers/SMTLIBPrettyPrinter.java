@@ -426,4 +426,10 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
         this.stringBuilder.append(")");
         
     }
+
+    @Override
+    public void visit(AtomConstant atomConstant)
+    {
+        this.stringBuilder.append(atomConstant.getName());
+    }
 }

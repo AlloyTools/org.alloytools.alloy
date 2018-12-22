@@ -23,11 +23,11 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSortDeclaration(SmtParser.SortDeclarationContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#definition}.
+	 * Visit a parse tree produced by {@link SmtParser#functionDefinition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDefinition(SmtParser.DefinitionContext ctx);
+	T visitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#argument}.
 	 * @param ctx the parse tree
@@ -82,4 +82,40 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitTerm(SmtParser.TermContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#integerConstant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIntegerConstant(SmtParser.IntegerConstantContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#tupleConstant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTupleConstant(SmtParser.TupleConstantContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#singletonConstant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSingletonConstant(SmtParser.SingletonConstantContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#unionConstant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnionConstant(SmtParser.UnionConstantContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#atomConstant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAtomConstant(SmtParser.AtomConstantContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#emptySet}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEmptySet(SmtParser.EmptySetContext ctx);
 }

@@ -2,45 +2,56 @@ grammar Smt;
 
 // parser rules
 
-model: '(' 'model' sortDeclaration* definition* ')' ;
+model : '(' 'model' sortDeclaration* functionDefinition* ')' ;
 
-sortDeclaration:  '(' 'declare-sort' sortName arity ')';
+sortDeclaration :  '(' 'declare-sort' sortName arity ')' ;
 
-definition: '(' 'define-fun' functionName '(' argument* ')' '(' sort ')' '(' term ')' ')';
+functionDefinition : '(' 'define-fun' functionName '(' argument* ')' '(' sort ')' '(' term ')' ')' ;
 
-argument: '(' argumentName sort ')';
+argument : '(' argumentName sort ')' ;
 
-sort:  sortName | tupleSort | setSort ;
+sort :  sortName | tupleSort | setSort ;
 
-setSort: 'Set' '(' sort ')';
+setSort : 'Set' '(' sort ')' ;
 
-tupleSort: 'Tuple' sort+ ;
+tupleSort : 'Tuple' sort+ ;
 
-sortName: Identifier;
+sortName : Identifier ;
 
-arity: Integer;
+arity : Integer ;
 
-functionName: Identifier;
+functionName : Identifier ;
 
-argumentName: Identifier;
+argumentName : Identifier ;
 
-term:   Integer
-        | '-' Integer
-        | 'mkTuple' term+
-        | 'singleton' '(' term ')'
-        | 'union' ( '(' term ')' )+
-        | '@uc_Atom_' Integer
-        | 'as' 'emptyset' '(' 'Set' '(' sort ')' ')';
+term :  integerConstant
+        | tupleConstant
+        | singletonConstant
+        | unionConstant
+        | atomConstant
+        | emptySet ;
+
+integerConstant : '-' Integer | Integer ;
+
+tupleConstant : 'mkTuple' term+ ;
+
+singletonConstant : 'singleton' '(' term ')' ;
+
+unionConstant : 'union' ( '(' term ')' ) ( '(' term ')' ) ;
+
+atomConstant : '@uc_Atom_' Integer;
+
+emptySet : 'as' 'emptyset' '(' 'Set' '(' sort ')' ')' ;
 
 // lexer rules
-Identifier: IdentifierLetter (IdentifierLetter | Digit)* ;
+Identifier : IdentifierLetter (IdentifierLetter | Digit)* ;
 
-IdentifierLetter: 'a'..'z'|'A'..'Z'|'_' ;
+IdentifierLetter : 'a'..'z'|'A'..'Z'|'_' ;
 
-Integer: Digit+ ;
+Integer : Digit+ ;
 
-Digit: '0'..'9' ;
+Digit : '0'..'9' ;
 
-Comment  :  ';' ~( '\r' | '\n' )* -> skip ;
+Comment :  ';' ~( '\r' | '\n' )* -> skip ;
 
-Whitespace:  [\t\r\n]+ -> skip ;
+Whitespace :  [\t\r\n]+ -> skip ;

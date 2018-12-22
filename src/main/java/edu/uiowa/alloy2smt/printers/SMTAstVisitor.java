@@ -57,4 +57,6 @@ public interface SMTAstVisitor
     public void visit(LetExpression aThis);
 
     public void visit(ITEExpression aThis);
+
+    public void visit(AtomConstant atomConstant);
 }
