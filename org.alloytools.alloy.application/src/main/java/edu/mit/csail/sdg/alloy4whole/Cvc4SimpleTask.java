@@ -1,9 +1,16 @@
 package edu.mit.csail.sdg.alloy4whole;
 
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
-import edu.mit.csail.sdg.alloy4viz.VizGUI;
-import edu.uiowa.alloy2smt.Utils;
 
+import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.alloy2smt.smtAst.SmtModel;
+import edu.uiowa.alloy2smt.smtparser.SmtModelVisitor;
+import edu.uiowa.alloy2smt.smtparser.antlr.SmtLexer;
+import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.*;
 import java.util.*;
@@ -16,9 +23,6 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     public static final String BIN_PATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
     public static final int SOLVING_TIMEOUT         = 300;
     private final Map<String, String> alloyFiles;
-
-    // for gui
-    private static VizGUI viz;
 
     Cvc4SimpleTask(Map<String, String> alloyFiles)
     {
@@ -52,13 +56,19 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
             {
                 Scanner scanner = new Scanner(smtResult);
                 String  result  = scanner.next();
+
                 switch (result)
                 {
                     case "sat":
                         workerCallback.callback(new Object[]{"S2","A model has been found\n"});
                         //construct A4Solution from smt result
+                        StringBuilder SmtModel = new StringBuilder();
+                        while(scanner.hasNext())
+                        {
+                            SmtModel.append(scanner.nextLine() + "\n");
+                        }
 
-
+                        SmtModel model = parseModel(SmtModel.toString());
 
                         String  satResult           = "sat";
                         boolean isCounterExample    = false;
@@ -184,5 +194,21 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
             process.destroy();
             return null;
         }
+    }
+
+    private SmtModel parseModel(String model)
+    {
+        CharStream charStream = CharStreams.fromString(model);
+
+        SmtLexer lexer = new SmtLexer(charStream);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        SmtParser parser = new SmtParser(tokenStream);
+
+        ParseTree tree =  parser.model();
+        SmtModelVisitor visitor = new SmtModelVisitor();
+
+        SmtModel smtModel = (SmtModel) visitor.visit(tree);
+
+        return  smtModel;
     }
 }
