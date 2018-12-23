@@ -703,7 +703,7 @@ public class ExprBinaryTranslator
                 break;
             default:break;
         } 
-        exprTranslator.translator.smtProgram.addFcnDef(compFunc);
+        exprTranslator.translator.smtProgram.addFunctionDefinition(compFunc);
         exprTranslator.translator.comparisonOps.put(op, compFunc);                
     }
     

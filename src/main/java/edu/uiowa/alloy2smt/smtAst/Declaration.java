@@ -8,7 +8,7 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-abstract public class Declaration extends SMTAst
+abstract public class Declaration extends SmtAst
 {
     private final String                name;
     private final Sort                  sort;

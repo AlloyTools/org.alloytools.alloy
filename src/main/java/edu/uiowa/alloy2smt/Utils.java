@@ -10,18 +10,18 @@ package edu.uiowa.alloy2smt;
 
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
-import edu.uiowa.alloy2smt.printers.SMTLIBPrettyPrinter;
+import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.*;
-import edu.uiowa.alloy2smt.translators.Alloy2SMTTranslator;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 public class Utils
 {
     public static String translateFromFile(String filePath, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
-        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute(assertion);
-        SMTLIBPrettyPrinter     printer     = new SMTLIBPrettyPrinter(program);
+        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel);
+        SmtProgram program     = translator.execute(assertion);
+        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
@@ -29,26 +29,26 @@ public class Utils
     public static String translateFromString(String alloyProgram, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
-        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute(assertion);
-        SMTLIBPrettyPrinter     printer     = new SMTLIBPrettyPrinter(program);
+        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel);
+        SmtProgram program     = translator.execute(assertion);
+        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter(program);
         String                  output      = printer.print();
         return output;
     }
 
-    public static SMTProgram getSMTAstFromFile(String filePath, String assertion)
+    public static SmtProgram getSmtAstFromFile(String filePath, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
-        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute(assertion);
+        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel);
+        SmtProgram program     = translator.execute(assertion);
         return program;
     }
 
-    public static SMTProgram getSMTAstFromString(String alloyProgram, String assertion)
+    public static SmtProgram getSmtAstFromString(String alloyProgram, String assertion)
     {
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
-        Alloy2SMTTranslator     translator  = new Alloy2SMTTranslator(alloyModel);
-        SMTProgram              program     = translator.execute(assertion);
+        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel);
+        SmtProgram program     = translator.execute(assertion);
         return program;
     }
 }

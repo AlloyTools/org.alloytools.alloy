@@ -13,13 +13,13 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.List;
 import java.util.Map;
 
-public class SMTLIBPrettyPrinter implements SMTAstVisitor
+public class SmtLibPrettyPrinter implements SmtAstVisitor
 {
-    private final SMTProgram program;
+    private final SmtProgram program;
 
     private StringBuilder stringBuilder;
 
-    public SMTLIBPrettyPrinter(SMTProgram program)
+    public SmtLibPrettyPrinter(SmtProgram program)
     {
         this.program = program;
         initializeStringBuilder();
@@ -57,7 +57,7 @@ public class SMTLIBPrettyPrinter implements SMTAstVisitor
             this.visit(declaration);
         }
 
-        for (FunctionDefinition funcDef : this.program.getFunctionDefinition())
+        for (FunctionDefinition funcDef : this.program.getFunctionDefinitions())
         {
             this.visit(funcDef);
         }        

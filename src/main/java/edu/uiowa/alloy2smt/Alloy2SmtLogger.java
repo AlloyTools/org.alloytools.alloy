@@ -12,11 +12,11 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-public class Alloy2SMTLogger implements Filter
+public class Alloy2SmtLogger implements Filter
 {
     private final Logger LOGGER;
     
-    public Alloy2SMTLogger(String className) 
+    public Alloy2SmtLogger(String className)
     {
         LOGGER = Logger.getLogger(className);                 
     }

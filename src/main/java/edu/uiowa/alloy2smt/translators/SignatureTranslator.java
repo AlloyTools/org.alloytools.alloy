@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 public class SignatureTranslator
 {
 
-    private final Alloy2SMTTranslator translator;
+    private final Alloy2SmtTranslator translator;
     private final FieldTranslator fieldTranslator;
 
-    public SignatureTranslator(Alloy2SMTTranslator translator)
+    public SignatureTranslator(Alloy2SmtTranslator translator)
     {
         this.translator         = translator;
         this.fieldTranslator    = new FieldTranslator(translator);

@@ -11,7 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
-import edu.uiowa.alloy2smt.Alloy2SMTLogger;
+import edu.uiowa.alloy2smt.Alloy2SmtLogger;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Alloy2SMTTranslator
+public class Alloy2SmtTranslator
 {
-    public final SMTProgram smtProgram;
+    public final SmtProgram smtProgram;
     
-    final Alloy2SMTLogger LOGGER = new Alloy2SMTLogger("Alloy2SMTTranslator");
+    final Alloy2SmtLogger LOGGER = new Alloy2SmtLogger("Alloy2SmtTranslator");
 
     final String atom               = "Atom";
     final String unaryIntAtom       = "UnaryIntTup";
@@ -86,9 +86,9 @@ public class Alloy2SMTTranslator
     
 
 
-    public Alloy2SMTTranslator(CompModule alloyModel)
+    public Alloy2SmtTranslator(CompModule alloyModel)
     {               
-        this.smtProgram             = new SMTProgram();        
+        this.smtProgram             = new SmtProgram();
         this.intSort                = new IntSort();
         this.alloyModel             = alloyModel;
         this.reachableSigs          = new ArrayList<>();
@@ -135,9 +135,9 @@ public class Alloy2SMTTranslator
         this.smtProgram.addSort(this.unaryIntTup);
         this.smtProgram.addSort(this.binaryIntTup);
         this.smtProgram.addSort(this.ternaryIntTup);
-        this.smtProgram.addFcnDecl(this.valueOfUnaryIntTup);
-        this.smtProgram.addFcnDecl(this.valueOfBinaryIntTup);
-        this.smtProgram.addFcnDecl(this.valueOfTernaryIntTup);  
+        this.smtProgram.addFunctionDeclaration(this.valueOfUnaryIntTup);
+        this.smtProgram.addFunctionDeclaration(this.valueOfBinaryIntTup);
+        this.smtProgram.addFunctionDeclaration(this.valueOfTernaryIntTup);
         
         this.setCompFuncNameToInputsMap     = new HashMap<>();
         this.setCompFuncNameToDefMap        = new HashMap<>(); 
@@ -145,7 +145,7 @@ public class Alloy2SMTTranslator
         this.exprTranslator                 = new ExprTranslator(this);        
     }
 
-    public SMTProgram execute(String assertion)
+    public SmtProgram execute(String assertion)
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
@@ -253,7 +253,7 @@ public class Alloy2SMTTranslator
         {
             if(!this.setCompFuncNameToDefMap.containsKey(funcOrder.get(i)))
             {
-                this.smtProgram.addFcnDef(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+                this.smtProgram.addFunctionDefinition(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
             }            
         }
     }

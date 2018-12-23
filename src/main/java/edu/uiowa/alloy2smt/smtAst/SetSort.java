@@ -8,7 +8,7 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
 public class SetSort extends Sort
 {
@@ -21,7 +21,7 @@ public class SetSort extends Sort
     }
 
     @Override
-    public void accept(SMTAstVisitor visitor) {
+    public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
 }

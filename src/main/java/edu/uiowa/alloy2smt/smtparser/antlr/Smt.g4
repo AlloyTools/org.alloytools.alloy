@@ -54,4 +54,4 @@ Digit : '0'..'9' ;
 
 Comment :  ';' ~( '\r' | '\n' )* -> skip ;
 
-Whitespace :  [\t\r\n]+ -> skip ;
+Whitespace :  [ \t\r\n]+ -> skip ;

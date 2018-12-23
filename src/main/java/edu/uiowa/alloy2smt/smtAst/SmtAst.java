@@ -8,9 +8,9 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-import edu.uiowa.alloy2smt.printers.SMTAstVisitor;
+import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
-public abstract class SMTAst
+public abstract class SmtAst
 {
-    public abstract void accept(SMTAstVisitor visitor);
+    public abstract void accept(SmtAstVisitor visitor);
 }

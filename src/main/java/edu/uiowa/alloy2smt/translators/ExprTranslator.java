@@ -21,13 +21,13 @@ import java.util.logging.Logger;
 
 public class ExprTranslator
 {
-    final Alloy2SMTTranslator translator;
+    final Alloy2SmtTranslator translator;
 
     final ExprUnaryTranslator exprUnaryTranslator;
 
     final ExprBinaryTranslator exprBinaryTranslator;
 
-    public ExprTranslator(Alloy2SMTTranslator translator)
+    public ExprTranslator(Alloy2SmtTranslator translator)
     {
         this.translator             = translator;
         this.exprUnaryTranslator    = new ExprUnaryTranslator(this);

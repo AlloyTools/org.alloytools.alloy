@@ -10,7 +10,7 @@ package edu.uiowa.alloy2smt.printers;
 
 import edu.uiowa.alloy2smt.smtAst.*;
 
-public interface SMTAstVisitor 
+public interface SmtAstVisitor
 {
     public void visit(BinaryExpression bExpr);
 

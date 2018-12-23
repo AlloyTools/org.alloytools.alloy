@@ -17,10 +17,10 @@ import java.util.List;
 public class FieldTranslator
 {
 
-    private final Alloy2SMTTranslator translator;
+    private final Alloy2SmtTranslator translator;
     public  List<Sig.Field> fields = new ArrayList<>();
 
-    public FieldTranslator(Alloy2SMTTranslator translator)
+    public FieldTranslator(Alloy2SmtTranslator translator)
     {
         this.translator = translator;
     }
@@ -956,7 +956,7 @@ public class FieldTranslator
                 fstSigVarSort = new TupleSort(elementSorts);
                 FunctionDeclaration varDecl = new FunctionDeclaration(leftSetName, new SetSort(fstSigVarSort));                                
                 leftSigExpr = varDecl.getConstantExpr();
-                translator.smtProgram.addFcnDecl(varDecl);
+                translator.smtProgram.addFunctionDeclaration(varDecl);
                 fstSigVar           = new BoundVariableDeclaration(fstSigVarName, fstSigVarSort);                
                 fstSigVarMembership = new BinaryExpression(fstSigVar.getConstantExpr(),
                                                                 BinaryExpression.Op.MEMBER, leftSigExpr);  
@@ -990,7 +990,7 @@ public class FieldTranslator
                 sndSigVar      = new BoundVariableDeclaration(sndSigVarName, sndSigVarSort);
                 sndSigVarMembership = new BinaryExpression(sndSigVar.getConstantExpr(),
                                                                 BinaryExpression.Op.MEMBER, rightSigExpr);
-                translator.smtProgram.addFcnDecl(varDecl);
+                translator.smtProgram.addFunctionDeclaration(varDecl);
                 sigVarSet = new BinaryExpression(sigVarSet, BinaryExpression.Op.PRODUCT, mkSinletonOutofTuple(sndSigVar.getConstantExpr()));
                 // Translate right expression
 //                translateNestedMultiplicities();                                

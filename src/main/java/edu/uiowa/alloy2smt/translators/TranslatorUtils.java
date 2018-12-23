@@ -32,7 +32,7 @@ public class TranslatorUtils
         return s.replaceAll("/", "_").replaceAll("'", "_");
     }
 
-    public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, Alloy2SMTTranslator translator)
+    public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, Alloy2SmtTranslator translator)
     {
         List<Sort>  sorts       = IntStream.range(1, arity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList());
         Sort        tupleSort   = new TupleSort(sorts);
@@ -68,7 +68,7 @@ public class TranslatorUtils
         return declaration;
     }
 
-    public static List<Expression> declareNDistinctConstants(Sort sort, int n, SMTProgram smtProgram)
+    public static List<Expression> declareNDistinctConstants(Sort sort, int n, SmtProgram smtProgram)
     {
         List<Expression> expressions = new ArrayList<>();
         if(n > 0)

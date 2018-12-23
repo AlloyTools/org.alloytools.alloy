@@ -4,68 +4,82 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtBaseVisitor;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SmtModelVisitor extends SmtBaseVisitor<SMTAst>
+public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 {
-    private SMTProgram model = new SMTProgram();
-
-    public SMTProgram getModel()
+    @Override
+    public SmtAst visitModel(SmtParser.ModelContext ctx)
     {
-        return  model;
+        SmtModel model = new SmtModel();
+
+        for (SmtParser.SortDeclarationContext context: ctx.sortDeclaration())
+        {
+            model.addSort((Sort) this.visitSortDeclaration(context));
+        }
+
+        for (SmtParser.FunctionDefinitionContext context: ctx.functionDefinition())
+        {
+            model.addFunctionDefinition((FunctionDefinition) this.visitFunctionDefinition(context));
+        }
+
+        return model;
     }
 
     @Override
-    public SMTAst visitSortDeclaration(SmtParser.SortDeclarationContext ctx)
+    public SmtAst visitSortDeclaration(SmtParser.SortDeclarationContext ctx)
     {
         String  sortName    = ctx.sortName().getText();
         int     arity       = Integer.parseInt(ctx.arity().getText());
         Sort    sort        = new Sort(sortName, arity);
-
-        model.addSort(sort);
         return sort;
     }
 
     @Override
-    public SMTAst visitSortName(SmtParser.SortNameContext ctx)
+    public SmtAst visitSort(SmtParser.SortContext ctx)
     {
-        String  sortName    = ctx.getText();
-        Sort    sort        = model.getSorts().stream()
-                .filter(s -> sortName.equals(s.getName()))
-                .findFirst()
-                .orElse(null);
-        if(sort == null)
+        if(ctx.sortName() != null)
         {
-            sort = new Sort(sortName, 0);
-            this.model.addSort(sort);
+            return new Sort(ctx.sortName().getText(), 0);
         }
-        return sort;
+
+        if(ctx.tupleSort() != null)
+        {
+            return this.visitTupleSort(ctx.tupleSort());
+        }
+
+        if(ctx.setSort() != null)
+        {
+            return this.visitSetSort(ctx.setSort());
+        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public SMTAst visitTupleSort(SmtParser.TupleSortContext ctx)
+    public SmtAst visitTupleSort(SmtParser.TupleSortContext ctx)
     {
-        TupleSort tupleSort = new TupleSort();
+        List<Sort> sorts    = new ArrayList<>(ctx.sort().size());
 
         for (SmtParser.SortContext sortContext: ctx.sort())
         {
             Sort sort = (Sort) this.visitSort(sortContext);
-            tupleSort.elementSorts.add(sort);
+            sorts.add(sort);
         }
 
-        return tupleSort;
+        return new TupleSort(sorts);
     }
 
     @Override
-    public SMTAst visitSetSort(SmtParser.SetSortContext ctx)
+    public SmtAst visitSetSort(SmtParser.SetSortContext ctx)
     {
         Sort elementSort = (Sort) this.visitSort(ctx.sort());
         return new SetSort(elementSort);
     }
 
     @Override
-    public SMTAst  visitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx)
+    public SmtAst visitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx)
     {
         String name = ctx.functionName().getText();
 
@@ -79,13 +93,11 @@ public class SmtModelVisitor extends SmtBaseVisitor<SMTAst>
 
         FunctionDefinition definition   = new FunctionDefinition(name, arguments, returnSort,  expression);
 
-        this.model.addFcnDef(definition);
-
         return definition;
     }
 
     @Override
-    public SMTAst visitArgument(SmtParser.ArgumentContext ctx)
+    public SmtAst visitArgument(SmtParser.ArgumentContext ctx)
     {
         String argumentName = ctx.argumentName().getText();
         Sort   argumentSort = (Sort) this.visit(ctx.sort());
@@ -93,14 +105,14 @@ public class SmtModelVisitor extends SmtBaseVisitor<SMTAst>
     }
 
     @Override
-    public SMTAst visitIntegerConstant(SmtParser.IntegerConstantContext ctx)
+    public SmtAst visitIntegerConstant(SmtParser.IntegerConstantContext ctx)
     {
         int constant = Integer.parseInt(ctx.getText());
         return new IntConstant(constant);
     }
 
     @Override
-    public SMTAst visitTupleConstant(SmtParser.TupleConstantContext ctx)
+    public SmtAst visitTupleConstant(SmtParser.TupleConstantContext ctx)
     {
         List<Expression> expressions = ctx.term().stream()
                 .map(term -> (Expression) this.visitTerm(term))
@@ -110,14 +122,14 @@ public class SmtModelVisitor extends SmtBaseVisitor<SMTAst>
     }
 
     @Override
-    public SMTAst visitSingletonConstant(SmtParser.SingletonConstantContext ctx)
+    public SmtAst visitSingletonConstant(SmtParser.SingletonConstantContext ctx)
     {
         Expression expression = (Expression) this.visitTerm(ctx.term());
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, expression);
     }
 
     @Override
-    public SMTAst visitUnionConstant(SmtParser.UnionConstantContext ctx)
+    public SmtAst visitUnionConstant(SmtParser.UnionConstantContext ctx)
     {
         Expression left  = (Expression) this.visitTerm(ctx.term(0));
         Expression right = (Expression) this.visitTerm(ctx.term(1));
@@ -126,13 +138,13 @@ public class SmtModelVisitor extends SmtBaseVisitor<SMTAst>
     }
 
     @Override
-    public SMTAst visitAtomConstant(SmtParser.AtomConstantContext ctx)
+    public SmtAst visitAtomConstant(SmtParser.AtomConstantContext ctx)
     {
         return new AtomConstant(ctx.getText());
     }
 
     @Override
-    public SMTAst visitEmptySet(SmtParser.EmptySetContext ctx)
+    public SmtAst visitEmptySet(SmtParser.EmptySetContext ctx)
     {
         Sort sort = (Sort) this.visitSort(ctx.sort());
         return new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
