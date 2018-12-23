@@ -1,6 +1,6 @@
 package edu.mit.csail.sdg.alloy4whole;
 
-import edu.mit.csail.sdg.alloy4.WorkerEngine;
+import edu.mit.csail.sdg.alloy4.*;
 
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.SmtModel;
@@ -12,9 +12,14 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import edu.mit.csail.sdg.alloy4whole.solution.*;
 
 public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 {
@@ -70,10 +75,12 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
                         SmtModel model = parseModel(SmtModel.toString());
 
+                        writeModelToAlloyXmlFile(model, "1.smt.xml");
+
                         String  satResult           = "sat";
                         boolean isCounterExample    = false;
                         int expected                = -1;
-                        String solutionXMLFile      = "0.smt.xml";
+                        String solutionXMLFile      = "1.smt.xml";
                         String formula              = "";
 
                         Object[]message = new Object []{satResult, isCounterExample, expected,
@@ -90,6 +97,75 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
                 }
             }
         }
+    }
+
+    private void writeModelToAlloyXmlFile(SmtModel model, String xmlFile) throws JAXBException
+    {
+        List<Signature> signatures = new ArrayList<>();
+
+        Signature signature0 = new Signature();
+        signature0.label = "seq/Int";
+        signature0.id = 0;
+        signature0.parentId = 1;
+        signature0.builtIn = "yes";
+        signatures.add(signature0);
+
+        Signature signature1 = new Signature();
+        signature1.label = "Int";
+        signature1.id = 1;
+        signature1.parentId = 2;
+        signature1.builtIn = "yes";
+        signatures.add(signature1);
+
+        Signature signature2 = new Signature();
+        signature2.label = "univ";
+        signature2.id = 2;
+        signature2.builtIn = "yes";
+        signatures.add(signature2);
+
+        Signature signature3  = new Signature();
+        signature3.label = "String";
+        signature3.id = 3;
+        signature3.parentId = 2;
+        signature3.builtIn = "yes";
+        signatures.add(signature3);
+
+        Atom atom0 = new Atom();
+        atom0.label = "@uc_Atom_0";
+        Atom atom1 = new Atom();
+        atom1.label = "@uc_Atom_1";
+        Atom atom2 = new Atom();
+        atom2.label = "@uc_Atom_2";
+
+
+        Signature signature4  = new Signature();
+        signature4.atoms = new ArrayList<>();
+        signature4.atoms.addAll(Arrays.asList(atom0, atom1, atom2));
+
+        signature4.label = "this/A";
+        signature4.id = 4;
+        signature4.parentId = 2;
+        signature4.builtIn = "no";
+
+        signatures.add(signature4);
+
+        Instance instance = new Instance();
+        instance.signatures = signatures;
+        instance.bitWidth = 4;
+        instance.maxSeq = 4;
+        instance.command = "Run Default for 4 but 4 int, 4 seq expect 0";
+
+        instance.fileName = "C:\\temp\\smt\\alloy\\org.alloytools.alloy\\Untitled 1.als";
+
+        Alloy alloy = new Alloy();
+        alloy.instances = new ArrayList<>();
+        alloy.instances.add(instance);
+
+        JAXBContext context = JAXBContext.newInstance(Alloy.class);
+        Marshaller m = context.createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        m.marshal(alloy, new File(xmlFile));
+
     }
 
     private String translateToSMT(WorkerEngine.WorkerCallback workerCallback)
