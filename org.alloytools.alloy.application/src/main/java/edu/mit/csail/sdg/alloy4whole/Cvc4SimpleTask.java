@@ -12,7 +12,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-
 import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.util.*;
@@ -82,18 +81,23 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
                         Map.Entry<String, String> entry = iterator.next();
 
-                        File xmlFile = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
+                        File xmlFile        = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
 
-                        writeModelToAlloyXmlFile(model, xmlFile.getAbsolutePath(), entry.getKey());
+                        String xmlFilePath  = xmlFile.getAbsolutePath();
+
+                        writeModelToAlloyXmlFile(model, xmlFilePath, entry.getKey());
+
+                        workerCallback.callback(new Object[]{"S2","\n"});
+                        workerCallback.callback(new Object[]{"S2","Generated alloy instance file: " + xmlFilePath +"\n"});
+                        workerCallback.callback(new Object[]{"S2","\n"});
 
                         String  satResult           = "sat";
                         boolean isCounterExample    = false;
                         int expected                = -1;
-                        String solutionXMLFile      = xmlFile.getAbsolutePath();
+                        String solutionXMLFile      = xmlFilePath;
                         String formula              = "";
 
-                        Object[]message = new Object []{satResult, isCounterExample, expected,
-                                solutionXMLFile, formula, duration};
+                        Object[] message            = new Object []{satResult, isCounterExample, expected, solutionXMLFile, formula, duration};
                         workerCallback.callback(message);
 
                         break;
@@ -163,7 +167,8 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
             {
                 Signature signature  = new Signature();
                 signature.atoms = getAtoms(definition.expression);
-                signature.label = definition.funcName.replace("this_","");
+                //ToDo: use the mapping here for signature names
+                signature.label = definition.funcName.replace("this_","this/");
                 signature.id = signatureId;
                 signature.parentId = 2; // ToDo: fix the parent Id
                 signature.builtIn = "no";
