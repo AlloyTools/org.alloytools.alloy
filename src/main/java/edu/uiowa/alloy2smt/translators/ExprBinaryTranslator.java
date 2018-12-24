@@ -824,8 +824,8 @@ public class ExprBinaryTranslator
     {
         int arity = expr.type().arity();        
         List<Expression> existentialBdVarExprs = new ArrayList<>();
-        List<BoundVariableDeclaration> existentialBdVars = new ArrayList<>(); 
-        List<Sort> exprSorts = exprTranslator.getExprSorts(expr);
+        List<BoundVariableDeclaration> existentialBdVars = new ArrayList<>();
+        List<Sort> exprSorts = exprTranslator.getExprSorts(expr.sub);
         
         if(arity == 1)
         {
