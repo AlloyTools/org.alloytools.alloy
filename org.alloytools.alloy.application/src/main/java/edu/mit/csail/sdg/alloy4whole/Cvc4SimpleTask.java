@@ -12,9 +12,8 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import javax.xml.bind.JAXBContext;
+
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +26,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     public static final String OS                   = System.getProperty("os.name");
     public static final String SEP                  = File.separator;
     public static final String BIN_PATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
+    public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
     public static final int SOLVING_TIMEOUT         = 300;
     private final Map<String, String> alloyFiles;
 
@@ -82,12 +82,14 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
                         Map.Entry<String, String> entry = iterator.next();
 
-                        writeModelToAlloyXmlFile(model, "1.smt.xml", entry.getKey());
+                        File xmlFile = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
+
+                        writeModelToAlloyXmlFile(model, xmlFile.getAbsolutePath(), entry.getKey());
 
                         String  satResult           = "sat";
                         boolean isCounterExample    = false;
                         int expected                = -1;
-                        String solutionXMLFile      = "1.smt.xml";
+                        String solutionXMLFile      = xmlFile.getAbsolutePath();
                         String formula              = "";
 
                         Object[]message = new Object []{satResult, isCounterExample, expected,
