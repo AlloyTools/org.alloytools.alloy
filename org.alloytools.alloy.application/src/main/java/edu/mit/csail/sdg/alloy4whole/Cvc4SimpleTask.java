@@ -39,7 +39,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     {
         final long startTranslate   = System.currentTimeMillis();
 
-        String smtFormula          = translateToSMT(workerCallback);
+        String smtFormula           = translateToSMT(workerCallback);
 
         final long endTranslate     = System.currentTimeMillis();
 
@@ -76,7 +76,13 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
                         SmtModel model = parseModel(SmtModel.toString());
 
-                        writeModelToAlloyXmlFile(model, "1.smt.xml");
+                        //ToDo: implement the case when there are multiple files
+
+                        Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
+
+                        Map.Entry<String, String> entry = iterator.next();
+
+                        writeModelToAlloyXmlFile(model, "1.smt.xml", entry.getKey());
 
                         String  satResult           = "sat";
                         boolean isCounterExample    = false;
@@ -100,7 +106,8 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         }
     }
 
-    private void writeModelToAlloyXmlFile(SmtModel model, String xmlFile) throws JAXBException
+    private void writeModelToAlloyXmlFile(SmtModel model, String xmlFile,
+                                          String alloyFileName) throws JAXBException
     {
         List<Signature> signatures = new ArrayList<>();
 
@@ -175,17 +182,13 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         instance.maxSeq = 4; //ToDo: review the maxSeq meaning
         instance.command = "Run Default for 4 but 4 int, 4 seq expect 0";
 
-        instance.fileName = "C:\\temp\\smt\\alloy\\org.alloytools.alloy\\Untitled 1.als";
+        instance.fileName = alloyFileName;
 
         Alloy alloy = new Alloy();
         alloy.instances = new ArrayList<>();
         alloy.instances.add(instance);
 
-        JAXBContext context = JAXBContext.newInstance(Alloy.class);
-        Marshaller m = context.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        m.marshal(alloy, new File(xmlFile));
-
+        alloy.writeToXml(xmlFile);
     }
 
     private List<Atom> getAtoms(Expression expression)
