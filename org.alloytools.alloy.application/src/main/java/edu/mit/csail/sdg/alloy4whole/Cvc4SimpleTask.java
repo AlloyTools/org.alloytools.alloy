@@ -3,7 +3,7 @@ package edu.mit.csail.sdg.alloy4whole;
 import edu.mit.csail.sdg.alloy4.*;
 
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smtAst.SmtModel;
+import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.smtparser.SmtModelVisitor;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtLexer;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
@@ -18,6 +18,7 @@ import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4whole.solution.*;
 
@@ -138,21 +139,40 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         atom2.label = "@uc_Atom_2";
 
 
-        Signature signature4  = new Signature();
-        signature4.atoms = new ArrayList<>();
-        signature4.atoms.addAll(Arrays.asList(atom0, atom1, atom2));
 
-        signature4.label = "this/A";
-        signature4.id = 4;
-        signature4.parentId = 2;
-        signature4.builtIn = "no";
+        List<FunctionDefinition> functions =  model.getFunctionDefinitions().stream().filter(f -> f.funcName.startsWith("this_")).collect(Collectors.toList());
 
-        signatures.add(signature4);
+        int signatureId = 4;
+
+        for (FunctionDefinition definition: functions)
+        {
+            SetSort     setSort     = (SetSort) definition.outputSort;
+            TupleSort   tupleSort   = (TupleSort) setSort.elementSort;
+
+            // sig sort
+            if(tupleSort.elementSorts.size() == 1)
+            {
+                Signature signature  = new Signature();
+                signature.atoms = getAtoms(definition.expression);
+                signature.label = definition.funcName.replace("this_","");
+                signature.id = signatureId;
+                signature.parentId = 2; // ToDo: fix the parent Id
+                signature.builtIn = "no";
+
+                signatures.add(signature);
+
+                signatureId ++;
+            }
+            else // field sort
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
 
         Instance instance = new Instance();
         instance.signatures = signatures;
         instance.bitWidth = 4;
-        instance.maxSeq = 4;
+        instance.maxSeq = 4; //ToDo: review the maxSeq meaning
         instance.command = "Run Default for 4 but 4 int, 4 seq expect 0";
 
         instance.fileName = "C:\\temp\\smt\\alloy\\org.alloytools.alloy\\Untitled 1.als";
@@ -166,6 +186,73 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         m.marshal(alloy, new File(xmlFile));
 
+    }
+
+    private List<Atom> getAtoms(Expression expression)
+    {
+        List<Atom> atoms = new ArrayList<>();
+
+
+        if(expression instanceof  AtomConstant)
+        {
+            AtomConstant atomConstant = (AtomConstant) expression;
+            atoms.add(new Atom(atomConstant.getName()));
+            return  atoms;
+        }
+
+        if(expression instanceof  UnaryExpression)
+        {
+            UnaryExpression unary = (UnaryExpression) expression;
+            switch (unary.getOP())
+            {
+                case EMPTYSET: return new ArrayList<>();
+                case SINGLETON:
+                    {
+                        return getAtoms(unary.getExpression());
+                    }
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+
+        if(expression instanceof  BinaryExpression)
+        {
+            BinaryExpression binary = (BinaryExpression) expression;
+
+            switch (binary.getOp())
+            {
+                case UNION:
+                {
+                    atoms.addAll(getAtoms(binary.getLhsExpr()));
+                    atoms.addAll(getAtoms(binary.getRhsExpr()));
+                    return atoms;
+                }
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+
+        if(expression instanceof MultiArityExpression)
+        {
+            MultiArityExpression multiArity = (MultiArityExpression) expression;
+            switch (multiArity.getOp())
+            {
+                case MKTUPLE:
+                {
+                    if(multiArity.getExpressions().size() == 1)
+                    {
+                        atoms.addAll(getAtoms(multiArity.getExpressions().get(0)));
+                        return atoms;
+                    }
+                    throw new UnsupportedOperationException();
+                }
+
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+
+        throw new UnsupportedOperationException();
     }
 
     private String translateToSMT(WorkerEngine.WorkerCallback workerCallback)

@@ -8,4 +8,13 @@ public class Atom
 {
     @XmlAttribute(name = "label")
     public String label;
+
+    public Atom()
+    {
+    }
+
+    public Atom(String label)
+    {
+        this.label = label;
+    }
 }
