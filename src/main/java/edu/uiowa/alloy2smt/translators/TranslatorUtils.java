@@ -23,8 +23,12 @@ public class TranslatorUtils
 
     private static int setIndex = 0;
 
+    public static final int UNIV_SIGNATURE_ID = 2;
+
     // Sig.univ usually has id = 2 (1 ++)
-    private static int mappingSignatureId = 1;
+    private static int mappingSignatureId =  UNIV_SIGNATURE_ID - 1;
+
+
 
     public static int getUniqueMappingSignatureId()
     {

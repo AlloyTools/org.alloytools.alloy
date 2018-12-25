@@ -2,10 +2,9 @@ package edu.uiowa.alloy2smt.mapping;
 
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
+import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.stream.Collectors;
 
 class MapperTests
 {
@@ -23,8 +22,8 @@ class MapperTests
 
         Assertions.assertFalse(signature.builtIn);
         Assertions.assertFalse(signature.isAbstract);
-        Assertions.assertFalse(signature.id < 2);
-        Assertions.assertEquals(2, signature.parentId);
+        Assertions.assertFalse(signature.id < TranslatorUtils.UNIV_SIGNATURE_ID);
+        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signature.parentId);
         Assertions.assertEquals("this_A", signature.functionName);
     }
 }
