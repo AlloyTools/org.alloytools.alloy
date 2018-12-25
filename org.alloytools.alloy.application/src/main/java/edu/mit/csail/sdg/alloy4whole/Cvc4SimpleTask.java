@@ -3,10 +3,13 @@ package edu.mit.csail.sdg.alloy4whole;
 import edu.mit.csail.sdg.alloy4.*;
 
 import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.smtparser.SmtModelVisitor;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtLexer;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
+import edu.uiowa.alloy2smt.translators.Translation;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -38,7 +41,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     {
         final long startTranslate   = System.currentTimeMillis();
 
-        String smtFormula           = translateToSMT(workerCallback);
+        Translation translation     = translateToSMT(workerCallback);
 
         final long endTranslate     = System.currentTimeMillis();
 
@@ -46,10 +49,10 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         workerCallback.callback(new Object[]{"S2", "Translation time: " + (endTranslate - startTranslate) + " ms\n"});
         workerCallback.callback(new Object[]{"S2","\n"});
 
-        if(smtFormula != null)
+        if(translation.smtScript != null)
         {
             final long startSolve   = System.currentTimeMillis();
-            String smtResult        = solve(smtFormula, workerCallback);
+            String smtResult        = solve(translation.smtScript, workerCallback);
             final long endSolve     = System.currentTimeMillis();
             long duration		        = (endSolve - startSolve);
 
@@ -85,7 +88,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
                         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-                        writeModelToAlloyXmlFile(model, xmlFilePath, entry.getKey());
+                        writeModelToAlloyXmlFile(translation.mapper, model, xmlFilePath, entry.getKey());
 
                         workerCallback.callback(new Object[]{"S2","\n"});
                         workerCallback.callback(new Object[]{"S2","Generated alloy instance file: " + xmlFilePath +"\n"});
@@ -112,76 +115,51 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         }
     }
 
-    private void writeModelToAlloyXmlFile(SmtModel model, String xmlFile,
-                                          String alloyFileName) throws JAXBException
+    private void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFile,
+                                          String alloyFileName) throws Exception
     {
+
+        Map<String, FunctionDefinition> functionsMap = new HashMap<>();
+
+        for(FunctionDefinition function: model.getFunctionDefinitions())
+        {
+            functionsMap.put(function.funcName, function);
+        }
+
         List<Signature> signatures = new ArrayList<>();
 
-        Signature signature0 = new Signature();
-        signature0.label = "seq/Int";
-        signature0.id = 0;
-        signature0.parentId = 1;
-        signature0.builtIn = "yes";
-        signatures.add(signature0);
-
-        Signature signature1 = new Signature();
-        signature1.label = "Int";
-        signature1.id = 1;
-        signature1.parentId = 2;
-        signature1.builtIn = "yes";
-        signatures.add(signature1);
-
-        Signature signature2 = new Signature();
-        signature2.label = "univ";
-        signature2.id = 2;
-        signature2.builtIn = "yes";
-        signatures.add(signature2);
-
-        Signature signature3  = new Signature();
-        signature3.label = "String";
-        signature3.id = 3;
-        signature3.parentId = 2;
-        signature3.builtIn = "yes";
-        signatures.add(signature3);
-
-        Atom atom0 = new Atom();
-        atom0.label = "@uc_Atom_0";
-        Atom atom1 = new Atom();
-        atom1.label = "@uc_Atom_1";
-        Atom atom2 = new Atom();
-        atom2.label = "@uc_Atom_2";
-
-
-
-        List<FunctionDefinition> functions =  model.getFunctionDefinitions().stream().filter(f -> f.funcName.startsWith("this_")).collect(Collectors.toList());
-
-        int signatureId = 4;
-
-        for (FunctionDefinition definition: functions)
+        for (MappingSignature mappingSignature : mapper.signatures )
         {
-            SetSort     setSort     = (SetSort) definition.outputSort;
-            TupleSort   tupleSort   = (TupleSort) setSort.elementSort;
+            Signature signature  = new Signature();
 
-            // sig sort
-            if(tupleSort.elementSorts.size() == 1)
+            // get signatures from the mapper
+            signature.label         = mappingSignature.label;
+            signature.id            = mappingSignature.id;
+            signature.parentId  	= mappingSignature.parentId;
+
+            signature.builtIn       = mappingSignature.builtIn ? "yes" : "no";
+            signature.isAbstract    = mappingSignature.isAbstract? "yes" : "no";
+            signature.isOne         = mappingSignature.isOne? "yes" : "no";
+            signature.isLone        = mappingSignature.isLone? "yes" : "no";
+            signature.isSome        = mappingSignature.isSome? "yes" : "no";
+            signature.isPrivate     = mappingSignature.isPrivate? "yes" : "no";
+            signature.isMeta        = mappingSignature.isMeta? "yes" : "no";
+            signature.isExact   	= mappingSignature.isExact ? "yes" : "no";
+            signature.isEnum        = mappingSignature.isEnum? "yes" : "no";
+
+            // get the corresponding function from the model
+            FunctionDefinition function = functionsMap.get(mappingSignature.functionName);
+            if(function == null)
             {
-                Signature signature  = new Signature();
-                signature.atoms = getAtoms(definition.expression);
-                //ToDo: use the mapping here for signature names
-                signature.label = definition.funcName.replace("this_","this/");
-                signature.id = signatureId;
-                signature.parentId = 2; // ToDo: fix the parent Id
-                signature.builtIn = "no";
-
-                signatures.add(signature);
-
-                signatureId ++;
+                throw new Exception("Can not find the function "+ mappingSignature.functionName
+                        + " for signature "+ signature.label + "in the model.") ;
             }
-            else // field sort
-            {
-                throw new UnsupportedOperationException();
-            }
+
+            signature.atoms = getAtoms(function.expression);
+            signatures.add(signature);
         }
+
+        //ToDo: add fields
 
         Instance instance = new Instance();
         instance.signatures = signatures;
@@ -265,19 +243,19 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private String translateToSMT(WorkerEngine.WorkerCallback workerCallback)
+    private Translation translateToSMT(WorkerEngine.WorkerCallback workerCallback)
     {
         //ToDo: implement the case when there are multiple files
 
-        Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> iterator    = alloyFiles.entrySet().iterator();
 
-        Map.Entry<String, String> entry = iterator.next();
+        Map.Entry<String, String> entry                 = iterator.next();
 
-        String smtFormula = Utils.translateFromString(entry.getValue(), null);
+        Translation translation                         = Utils.translate(entry.getValue());
 
-        workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + smtFormula + "\n"});
+        workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + translation.smtScript + "\n"});
 
-        return smtFormula;
+        return translation;
     }
 
     private String getProcessOutput(InputStream inputStream)
