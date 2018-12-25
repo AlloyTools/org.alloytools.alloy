@@ -1,5 +1,7 @@
 package edu.mit.csail.sdg.alloy4whole.solution;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -9,18 +11,22 @@ import java.util.List;
 public class Signature
 {
     @XmlElement(name = "atom")
+    @JsonProperty("atoms")
     public List<Atom> atoms;
 
     @XmlAttribute(name = "label")
     public String label;
 
     @XmlAttribute(name = "ID")
+    @JsonProperty("id")
     public int id;
 
     @XmlAttribute(name = "parentID")
+    @JsonProperty("parentId")
     public int parentId;
 
     @XmlAttribute(name = "builtin")
+    @JsonProperty("builtIn")
     public String builtIn; // yes/no
 
     @XmlAttribute(name = "abstract")

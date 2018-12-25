@@ -4,6 +4,7 @@ import edu.mit.csail.sdg.alloy4.*;
 
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.smtparser.SmtModelVisitor;
@@ -130,39 +131,21 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         for (MappingSignature mappingSignature : mapper.signatures )
         {
-            Signature signature  = new Signature();
-
-            // get signatures from the mapper
-            signature.label         = mappingSignature.label;
-            signature.id            = mappingSignature.id;
-            signature.parentId  	= mappingSignature.parentId;
-
-            signature.builtIn       = mappingSignature.builtIn ? "yes" : "no";
-            signature.isAbstract    = mappingSignature.isAbstract? "yes" : "no";
-            signature.isOne         = mappingSignature.isOne? "yes" : "no";
-            signature.isLone        = mappingSignature.isLone? "yes" : "no";
-            signature.isSome        = mappingSignature.isSome? "yes" : "no";
-            signature.isPrivate     = mappingSignature.isPrivate? "yes" : "no";
-            signature.isMeta        = mappingSignature.isMeta? "yes" : "no";
-            signature.isExact   	= mappingSignature.isExact ? "yes" : "no";
-            signature.isEnum        = mappingSignature.isEnum? "yes" : "no";
-
-            // get the corresponding function from the model
-            FunctionDefinition function = functionsMap.get(mappingSignature.functionName);
-            if(function == null)
-            {
-                throw new Exception("Can not find the function "+ mappingSignature.functionName
-                        + " for signature "+ signature.label + "in the model.") ;
-            }
-
-            signature.atoms = getAtoms(function.expression);
+            Signature signature = getSignature(functionsMap, mappingSignature);
             signatures.add(signature);
         }
 
-        //ToDo: add fields
+        List<Field> fields = new ArrayList<>();
 
-        Instance instance = new Instance();
+        for (MappingField mappingField : mapper.fields )
+        {
+            Field field = getField(functionsMap, mappingField);
+            fields.add(field);
+        }
+
+        Instance instance   = new Instance();
         instance.signatures = signatures;
+        instance.fields     = fields;
         instance.bitWidth = 4;
         instance.maxSeq = 4; //ToDo: review the maxSeq meaning
         instance.command = "Run Default for 4 but 4 int, 4 seq expect 0";
@@ -174,6 +157,126 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         alloy.instances.add(instance);
 
         alloy.writeToXml(xmlFile);
+    }
+
+    private Signature getSignature(Map<String, FunctionDefinition> functionsMap, MappingSignature mappingSignature) throws Exception
+    {
+        Signature signature  = new Signature();
+
+        // get signature info from the mapping
+        signature.label         = mappingSignature.label;
+        signature.id            = mappingSignature.id;
+        signature.parentId  	= mappingSignature.parentId;
+
+        signature.builtIn       = mappingSignature.builtIn ? "yes" : "no";
+        signature.isAbstract    = mappingSignature.isAbstract? "yes" : "no";
+        signature.isOne         = mappingSignature.isOne? "yes" : "no";
+        signature.isLone        = mappingSignature.isLone? "yes" : "no";
+        signature.isSome        = mappingSignature.isSome? "yes" : "no";
+        signature.isPrivate     = mappingSignature.isPrivate? "yes" : "no";
+        signature.isMeta        = mappingSignature.isMeta? "yes" : "no";
+        signature.isExact   	= mappingSignature.isExact ? "yes" : "no";
+        signature.isEnum        = mappingSignature.isEnum? "yes" : "no";
+
+        // get the corresponding function from the model
+        FunctionDefinition function = functionsMap.get(mappingSignature.functionName);
+        if(function == null)
+        {
+            throw new Exception("Can not find the function "+ mappingSignature.functionName
+                    + " for signature "+ signature.label + "in the model.") ;
+        }
+
+        signature.atoms = getAtoms(function.expression);
+        return signature;
+    }
+
+    private Field getField(Map<String,FunctionDefinition> functionsMap, MappingField mappingField) throws Exception
+    {
+        Field field  = new Field();
+
+        // get field info from the mapping
+        field.label         = mappingField.label;
+        field.id            = mappingField.id;
+        field.parentId  	= mappingField.parentId;
+
+        field.isPrivate     = mappingField.isPrivate? "yes" : "no";
+        field.isMeta        = mappingField.isMeta? "yes" : "no";
+
+        // get the corresponding function from the model
+        FunctionDefinition function = functionsMap.get(mappingField.functionName);
+        if(function == null)
+        {
+            throw new Exception("Can not find the function "+ mappingField.functionName
+                    + " for field "+ field.label + "in the model.") ;
+        }
+
+        field.tuples = getTuples(function.expression);
+        field.types  = getTypes(mappingField);
+
+        return field;
+    }
+
+    private Types getTypes(MappingField mappingField)
+    {
+        Types types = new Types();
+
+        types.types = mappingField.types.stream()
+                .map(t -> new Type(t.id)).collect(Collectors.toList());
+        return types;
+    }
+
+    private List<Tuple> getTuples(Expression expression)
+    {
+        List<Tuple> tuples = new ArrayList<>();
+
+        if(expression instanceof  UnaryExpression)
+        {
+            UnaryExpression unary = (UnaryExpression) expression;
+            switch (unary.getOP())
+            {
+                case EMPTYSET: return new ArrayList<>();
+                case SINGLETON:
+                {
+                    Expression unaryExpression = unary.getExpression();
+                    if(unaryExpression instanceof MultiArityExpression)
+                    {
+                        MultiArityExpression multiArity = (MultiArityExpression) unaryExpression;
+
+                        if(multiArity.getOp() == MultiArityExpression.Op.MKTUPLE)
+                        {
+                            List<Atom> atoms    = getAtoms(multiArity);
+                            Tuple tuple         = new Tuple();
+                            tuple.atoms         = atoms;
+                            return Collections.singletonList(tuple);
+                        }
+
+                        throw new UnsupportedOperationException();
+                    }
+                    throw new UnsupportedOperationException();
+                }
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+
+        if(expression instanceof  BinaryExpression)
+        {
+            BinaryExpression binary = (BinaryExpression) expression;
+
+            switch (binary.getOp())
+            {
+                case UNION:
+                {
+                    tuples.addAll(getTuples(binary.getLhsExpr()));
+                    tuples.addAll(getTuples(binary.getRhsExpr()));
+                    return tuples;
+                }
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+
+        throw new UnsupportedOperationException();
     }
 
     private List<Atom> getAtoms(Expression expression)
@@ -227,12 +330,12 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
             {
                 case MKTUPLE:
                 {
-                    if(multiArity.getExpressions().size() == 1)
+                    for (Expression expr: multiArity.getExpressions())
                     {
-                        atoms.addAll(getAtoms(multiArity.getExpressions().get(0)));
-                        return atoms;
+                        atoms.addAll(getAtoms(expr));
                     }
-                    throw new UnsupportedOperationException();
+
+                    return atoms;
                 }
 
                 default:

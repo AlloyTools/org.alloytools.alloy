@@ -1,5 +1,7 @@
 package edu.mit.csail.sdg.alloy4whole.solution;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.File;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Alloy
 {
     @XmlElement(name = "instance")
+    @JsonProperty("instances")
     public List<Instance> instances;
 
     public void writeToXml(String xmlFile) throws JAXBException
