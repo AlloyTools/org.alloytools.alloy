@@ -52,7 +52,7 @@ public class Mapper
     public void writeToJson(String jsonFile) throws IOException
     {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(new File(jsonFile), this);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(jsonFile), this);
     }
 
     public static Mapper readFromJson(String jsonFile) throws IOException
