@@ -12,7 +12,9 @@ import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
+import edu.uiowa.alloy2smt.mapping.MappingType;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Alloy2SmtTranslator
 {
@@ -567,6 +570,11 @@ public class Alloy2SmtTranslator
             mapper.signatures.addAll(getSignatures(idMap, sig));
         }
 
+        for (Sig sig : reachableSigs)
+        {
+            mapper.fields.addAll(getFields(idMap, sig));
+        }
+
         return mapper;
     }
 
@@ -587,6 +595,18 @@ public class Alloy2SmtTranslator
         }
 
         return signatures;
+    }
+
+    private List<MappingField> getFields(Map<Expr, Integer> idMap, Sig sig)
+    {
+        List<MappingField> fields = new ArrayList<>();
+
+        for (Sig.Field field : sig.getFields())
+        {
+            fields.add(getField(idMap, field));
+        }
+
+        return fields;
     }
 
     private List<Sig> children(Sig.PrimSig sig)
@@ -638,6 +658,38 @@ public class Alloy2SmtTranslator
         signature.isEnum        = sig.isEnum != null;
 
         return signature;
+    }
+
+    private MappingField getField(Map<Expr,Integer> idMap, Sig.Field field)
+    {
+        MappingField mappingField   = new MappingField();
+
+        mappingField.label          = field.label;
+        mappingField.functionName   = fieldsMap.get(field).getName();
+        mappingField.id             = getId(field, idMap);
+        mappingField.parentId       = getId(field.sig, idMap);
+        mappingField.isPrivate      = field.isPrivate != null;
+        mappingField.isMeta         = field.isMeta != null;
+        mappingField.types          = getFieldType(idMap, field);
+
+        return mappingField;
+    }
+
+    private List<MappingType> getFieldType(Map<Expr,Integer> idMap, Sig.Field field)
+    {
+        List<MappingType> types = new ArrayList<>(field.type().arity());
+
+        List<Sig> sigs          = field.type().fold().stream()
+                .flatMap(s -> s.stream()).collect(Collectors.toList());
+
+        for (Sig sig : sigs)
+        {
+            MappingType mappingType = new MappingType();
+            mappingType.id          = getId(sig, idMap);
+            types.add(mappingType);
+        }
+
+        return types;
     }
 
     // Sig.univ usually has id = 2 (1 ++)

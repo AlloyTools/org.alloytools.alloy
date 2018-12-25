@@ -11,7 +11,7 @@ package edu.uiowa.alloy2smt.mapping;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
+//ToDo: refactor this class with alloy Signature class
 @XmlRootElement(name = "Signature")
 public class MappingSignature
 {
