@@ -16,7 +16,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -69,41 +68,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
                 switch (result)
                 {
                     case "sat":
-                        workerCallback.callback(new Object[]{"S2","A model has been found\n"});
-                        //construct A4Solution from smt result
-                        StringBuilder SmtModel = new StringBuilder();
-                        while(scanner.hasNext())
-                        {
-                            SmtModel.append(scanner.nextLine() + "\n");
-                        }
-
-                        SmtModel model = parseModel(SmtModel.toString());
-
-                        //ToDo: implement the case when there are multiple files
-
-                        Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
-
-                        Map.Entry<String, String> entry = iterator.next();
-
-                        File xmlFile        = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
-
-                        String xmlFilePath  = xmlFile.getAbsolutePath();
-
-                        writeModelToAlloyXmlFile(translation.mapper, model, xmlFilePath, entry.getKey());
-
-                        workerCallback.callback(new Object[]{"S2","\n"});
-                        workerCallback.callback(new Object[]{"S2","Generated alloy instance file: " + xmlFilePath +"\n"});
-                        workerCallback.callback(new Object[]{"S2","\n"});
-
-                        String  satResult           = "sat";
-                        boolean isCounterExample    = false;
-                        int expected                = -1;
-                        String solutionXMLFile      = xmlFilePath;
-                        String formula              = "";
-
-                        Object[] message            = new Object []{satResult, isCounterExample, expected, solutionXMLFile, formula, duration};
-                        workerCallback.callback(message);
-
+                            prepareInstance(workerCallback, translation, duration, scanner);
                         break;
                     case "unsat":
                         workerCallback.callback(new Object[]{"S2", "No model found\n"});
@@ -114,6 +79,45 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
                 }
             }
         }
+    }
+
+    private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, long duration, Scanner scanner) throws Exception
+    {
+        workerCallback.callback(new Object[]{"S2","A model has been found\n"});
+
+        //construct A4Solution from smt result
+        StringBuilder SmtModel = new StringBuilder();
+        while(scanner.hasNext())
+        {
+            SmtModel.append(scanner.nextLine() + "\n");
+        }
+
+        edu.uiowa.alloy2smt.smtAst.SmtModel model = parseModel(SmtModel.toString());
+
+        //ToDo: implement the case when there are multiple files
+
+        Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
+
+        Map.Entry<String, String> entry = iterator.next();
+
+        File xmlFile        = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
+
+        String xmlFilePath  = xmlFile.getAbsolutePath();
+
+        writeModelToAlloyXmlFile(translation.mapper, model, xmlFilePath, entry.getKey());
+
+        workerCallback.callback(new Object[]{"S2","\n"});
+        workerCallback.callback(new Object[]{"S2","Generated alloy instance file: " + xmlFilePath +"\n"});
+        workerCallback.callback(new Object[]{"S2","\n"});
+
+        String  satResult           = "sat";
+        boolean isCounterExample    = false;
+        int expected                = -1;
+        String solutionXMLFile      = xmlFilePath;
+        String formula              = "";
+
+        Object[] message            = new Object []{satResult, isCounterExample, expected, solutionXMLFile, formula, duration};
+        workerCallback.callback(message);
     }
 
     private void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFile,
@@ -346,7 +350,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private Translation translateToSMT(WorkerEngine.WorkerCallback workerCallback)
+    private Translation translateToSMT(WorkerEngine.WorkerCallback workerCallback) throws IOException
     {
         //ToDo: implement the case when there are multiple files
 
@@ -357,6 +361,15 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         Translation translation                         = Utils.translate(entry.getValue());
 
         workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + translation.smtScript + "\n"});
+
+        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
+        // output the mapping
+
+        translation.mapper.writeToJson(jsonFile.getPath());
+
+        workerCallback.callback(new Object[]{"S2","\n"});
+        workerCallback.callback(new Object[]{"S2","Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n"});
+        workerCallback.callback(new Object[]{"S2","\n"});
 
         return translation;
     }
