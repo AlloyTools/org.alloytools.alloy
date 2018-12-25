@@ -25,17 +25,6 @@ public class TranslatorUtils
 
     public static final int UNIV_SIGNATURE_ID = 2;
 
-    // Sig.univ usually has id = 2 (1 ++)
-    private static int mappingSignatureId =  UNIV_SIGNATURE_ID - 1;
-
-
-
-    public static int getUniqueMappingSignatureId()
-    {
-        mappingSignatureId ++;
-        return mappingSignatureId;
-    }
-
     /**
      * Sanitize string s by replacing "\" with "_".
      * @param s

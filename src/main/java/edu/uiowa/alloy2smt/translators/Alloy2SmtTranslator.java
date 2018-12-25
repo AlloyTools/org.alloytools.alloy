@@ -615,11 +615,11 @@ public class Alloy2SmtTranslator
         signature.label         = sig.label;
         signature.functionName  = signaturesMap.get(sig).getName();
 
-        signature.id            = getUniqueId(sig, idMap);
+        signature.id            = getId(sig, idMap);
 
         if (sig instanceof Sig.PrimSig && sig != Sig.UNIV)
         {
-            signature.parentId  = getUniqueId(((Sig.PrimSig) sig).parent, idMap);
+            signature.parentId  = getId(((Sig.PrimSig) sig).parent, idMap);
         }
 
         signature.builtIn       = sig.builtin;
@@ -640,19 +640,28 @@ public class Alloy2SmtTranslator
         return signature;
     }
 
+    // Sig.univ usually has id = 2 (1 ++)
+    private int mappingSignatureId =  TranslatorUtils.UNIV_SIGNATURE_ID - 1;
+
+    private int getUniqueId()
+    {
+        mappingSignatureId ++;
+        return mappingSignatureId;
+    }
+
     /**
      *
      * @param expr can be Sig, Field, or Skolem
      * @param idMap a store for unqiue ids
      * @return the unique id of the expr it exists in the idMap, or generate  a new id
      */
-    private int getUniqueId(Expr expr, Map<Expr, Integer>  idMap)
+    private int getId(Expr expr, Map<Expr, Integer>  idMap)
     {
         Integer id = idMap.get(expr);
 
         if(id == null)
         {
-            id = TranslatorUtils.getUniqueMappingSignatureId();
+            id = getUniqueId();
             idMap.put(expr, id);
         }
         return id;
