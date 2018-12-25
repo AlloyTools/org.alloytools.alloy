@@ -80,7 +80,7 @@ public class FieldTranslator
         String      fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
         List<Sort>  fieldSorts  = new ArrayList<>();
 
-        // a field relation is a subset of the product of some signatures        
+        // a field relation is a subset of the product of some signatures
         List<Expr> fieldComponentExprs = new ArrayList<>();
         
         fieldComponentExprs.add(field.sig);

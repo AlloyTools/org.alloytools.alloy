@@ -23,6 +23,15 @@ public class TranslatorUtils
 
     private static int setIndex = 0;
 
+    // Sig.univ usually has id = 2 (1 ++)
+    private static int mappingSignatureId = 1;
+
+    public static int getUniqueMappingSignatureId()
+    {
+        mappingSignatureId ++;
+        return mappingSignatureId;
+    }
+
     /**
      * Sanitize string s by replacing "\" with "_".
      * @param s

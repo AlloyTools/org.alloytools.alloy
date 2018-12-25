@@ -11,7 +11,8 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
-import edu.uiowa.alloy2smt.Alloy2SmtLogger;
+import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -25,8 +26,6 @@ import java.util.Set;
 public class Alloy2SmtTranslator
 {
     public final SmtProgram smtProgram;
-    
-    final Alloy2SmtLogger LOGGER = new Alloy2SmtLogger("Alloy2SmtTranslator");
 
     final String atom               = "Atom";
     final String unaryIntAtom       = "UnaryIntTup";
@@ -145,7 +144,7 @@ public class Alloy2SmtTranslator
         this.exprTranslator                 = new ExprTranslator(this);        
     }
 
-    public SmtProgram execute(String assertion)
+    public SmtProgram translate(String assertion)
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
@@ -545,5 +544,117 @@ public class Alloy2SmtTranslator
         }
         return false;
     }
-    
+
+    /**
+     *
+     * @return a mapper that maps signatures's names to the corresponding names
+     * in the generated smt script
+     */
+    public Mapper generateMapper()
+    {
+        Mapper              mapper  = new Mapper();
+        Map<Expr, Integer>  idMap   = new HashMap<>();
+
+        // add special signatures
+
+        MappingSignature univSignature = getSignature(idMap, Sig.UNIV);
+        mapper.signatures.add(univSignature);
+
+        //ToDo: add other special signatures: none, iden, string, int
+
+        for (Sig sig : topLevelSigs)
+        {
+            mapper.signatures.addAll(getSignatures(idMap, sig));
+        }
+
+        return mapper;
+    }
+
+    private List<MappingSignature> getSignatures(Map<Expr, Integer> idMap,Sig sig) {
+
+        List<MappingSignature> signatures = new ArrayList<>();
+
+        MappingSignature signature = getSignature(idMap, sig);
+
+        signatures.add(signature);
+
+        if(sig instanceof Sig.PrimSig)
+        {
+            for (Sig childSig : children((Sig.PrimSig) sig))
+            {
+                signatures.addAll(getSignatures(idMap, childSig));
+            }
+        }
+
+        return signatures;
+    }
+
+    private List<Sig> children(Sig.PrimSig sig)
+    {
+        if (sig == Sig.NONE)
+        {
+            return new ArrayList<>();
+        }
+        if (sig != Sig.UNIV)
+        {
+            List<Sig> sigs = new ArrayList<>();
+            sig.children().forEach(sigs::add);
+            return sigs;
+        }
+        else
+        {
+            return this.topLevelSigs;
+        }
+    }
+
+
+    private MappingSignature getSignature(Map<Expr, Integer> idMap, Sig sig)
+    {
+        MappingSignature signature = new MappingSignature();
+
+        signature.label         = sig.label;
+        signature.functionName  = signaturesMap.get(sig).getName();
+
+        signature.id            = getUniqueId(sig, idMap);
+
+        if (sig instanceof Sig.PrimSig && sig != Sig.UNIV)
+        {
+            signature.parentId  = getUniqueId(((Sig.PrimSig) sig).parent, idMap);
+        }
+
+        signature.builtIn       = sig.builtin;
+        signature.isAbstract    = sig.isAbstract != null;
+        signature.isOne         = sig.isOne != null;
+        signature.isLone        = sig.isLone != null;
+        signature.isSome        = sig.isSome != null;
+        signature.isPrivate     = sig.isPrivate != null;
+        signature.isMeta        = sig.isMeta != null;
+
+        if(sig instanceof Sig.SubsetSig)
+        {
+            signature.isExact   = ((Sig.SubsetSig) sig).exact;
+        }
+
+        signature.isEnum        = sig.isEnum != null;
+
+        return signature;
+    }
+
+    /**
+     *
+     * @param expr can be Sig, Field, or Skolem
+     * @param idMap a store for unqiue ids
+     * @return the unique id of the expr it exists in the idMap, or generate  a new id
+     */
+    private int getUniqueId(Expr expr, Map<Expr, Integer>  idMap)
+    {
+        Integer id = idMap.get(expr);
+
+        if(id == null)
+        {
+            id = TranslatorUtils.getUniqueMappingSignatureId();
+            idMap.put(expr, id);
+        }
+        return id;
+    }
 }

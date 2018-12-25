@@ -128,25 +128,26 @@ public class SignatureTranslator
     
     private void translateSignatures()
     {
-        translator.reachableSigs.forEach((sig) ->
+        for (Sig sig : translator.reachableSigs)
         {
-            if(sig.type().is_int())
+            if (sig.type().is_int())
             {
                 FunctionDeclaration functionDeclaration = declareUnaryIntFunction(TranslatorUtils.sanitizeName(sig.toString()));
-                translator.signaturesMap.put(sig, functionDeclaration);                
+                translator.signaturesMap.put(sig, functionDeclaration);
             }
             else
             {
-                FunctionDeclaration functionDeclaration =  declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                FunctionDeclaration functionDeclaration = declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
                 translator.signaturesMap.put(sig, functionDeclaration);
-            }              
-        });
-        translator.reachableSigs.forEach((sig) ->
+            }
+        }
+
+        for (Sig sig : translator.reachableSigs)
         {
-            FunctionDeclaration functionDeclaration = translator.signaturesMap.get(sig);                       
+            FunctionDeclaration functionDeclaration = translator.signaturesMap.get(sig);
 
             // if sig extends another signature
-            if(!sig.isTopLevel())
+            if (!sig.isTopLevel())
             {
                 translateSigSubsetParent(sig, functionDeclaration);
             }
@@ -165,15 +166,15 @@ public class SignatureTranslator
             }
 
             // translateExpr signature fields
-            for(Sig.Field field : sig.getFields())
+            for (Sig.Field field : sig.getFields())
             {
                 this.fieldTranslator.fields.add(field);
             }
-            for(Expr expr : sig.getFacts())
+            for (Expr expr : sig.getFacts())
             {
                 translator.sigFacts.put(sig, expr);
             }
-        });        
+        }
         //ToDo: important review the logic for cardinality in the case of
         // top level signatures and the case of subset signatures.
         //translateDisjointSignatures(translator.topLevelSigs);
