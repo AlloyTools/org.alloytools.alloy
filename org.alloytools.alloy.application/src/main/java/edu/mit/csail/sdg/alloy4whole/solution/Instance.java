@@ -27,6 +27,7 @@ public class Instance
     public int maxSeq = 4;
 
     @XmlAttribute(name = "command")
+    @JsonProperty("command")
     public String command;
 
     @XmlAttribute(name = "filename")

@@ -1,5 +1,7 @@
 package edu.mit.csail.sdg.alloy4whole.solution;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -7,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Atom
 {
     @XmlAttribute(name = "label")
+    @JsonProperty("label")
     public String label;
 
     public Atom()

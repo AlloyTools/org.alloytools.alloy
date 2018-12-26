@@ -15,6 +15,7 @@ public class Signature
     public List<Atom> atoms;
 
     @XmlAttribute(name = "label")
+    @JsonProperty("label")
     public String label;
 
     @XmlAttribute(name = "ID")
@@ -33,23 +34,29 @@ public class Signature
     public String isAbstract; // yes/no
 
     @XmlAttribute(name = "one")
+    @JsonProperty("isOne")
     public String isOne; // yes/no
 
     @XmlAttribute(name = "lone")
+    @JsonProperty("isLone")
     public String isLone; // yes/no
 
     @XmlAttribute(name = "some")
+    @JsonProperty("isSome")
     public String isSome; // yes/no
 
     @XmlAttribute(name = "private")
     public String isPrivate; // yes/no
 
     @XmlAttribute(name = "meta")
+    @JsonProperty("isMeta")
     public String isMeta; // yes/no
 
     @XmlAttribute(name = "exact")
+    @JsonProperty("isExact")
     public String isExact; // yes/no
 
     @XmlAttribute(name = "enum")
+    @JsonProperty("isEnum")
     public String isEnum; // yes/no
 }

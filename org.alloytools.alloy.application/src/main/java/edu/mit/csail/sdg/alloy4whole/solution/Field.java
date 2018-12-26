@@ -1,22 +1,19 @@
 package edu.mit.csail.sdg.alloy4whole.solution;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.uiowa.alloy2smt.mapping.MappingType;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
+
 import java.util.List;
 
 @XmlRootElement(name = "field")
 public class Field
 {
     @XmlAttribute(name = "label")
+    @JsonProperty("label")
     public String label;
-
-    @XmlAttribute(name = "functionName")
-    public String functionName; // function name in SMT model
 
     @XmlAttribute(name = "ID")
     @JsonProperty("id")
@@ -27,9 +24,11 @@ public class Field
     public int parentId;
 
     @XmlAttribute(name = "private")
+    @JsonProperty("isPrivate")
     public String isPrivate;
 
     @XmlAttribute(name = "meta")
+    @JsonProperty("isMeta")
     public String isMeta;
 
     @XmlElement(name = "tuple")
@@ -37,5 +36,6 @@ public class Field
     public List<Tuple> tuples;
 
     @XmlElement(name = "types")
+    @JsonProperty("types")
     public Types types;
 }
