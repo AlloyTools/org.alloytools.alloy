@@ -8,6 +8,8 @@
 
 package edu.uiowa.alloy2smt.mapping;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -15,5 +17,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MappingType
 {
     @XmlAttribute(name = "id")
+    @JsonProperty("id")
     public int id;
 }
