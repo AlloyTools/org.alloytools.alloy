@@ -1,11 +1,1 @@
-buildscript {
-	repositories { mavenCentral() }
-	dependencies { 
-		classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:${bnd_version}" 
-		classpath 'org.sat4j:org.sat4j.core:2.3.1'
-		classpath 'de.jflex:jflex:1.6.1'
-	}
-}
-
-apply plugin: 'biz.aQute.bnd.workspace'
-
+include ':org.alloytools.kodkod.nativesat', ':org.alloytools.kodkod.core', ':org.alloytools.alloy.core', ':org.alloytools.alloy.application'

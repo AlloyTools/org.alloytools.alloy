@@ -1,0 +1,18 @@
+dependencies {
+    compile project(':org.alloytools.alloy.core'), fileTree(dir: 'lib', include: ['*.jar'])
+
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
+    // https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-core
+    compile group: 'org.glassfish.jaxb', name: 'jaxb-core', version: '2.3.0.1'
+}
+
+task alloyCVC4(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'edu.mit.csail.sdg.alloy4whole.SimpleGUI'
+    }
+    baseName = 'alloy_cvc4'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

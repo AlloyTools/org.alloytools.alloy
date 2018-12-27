@@ -1,14 +1,17 @@
-// Available to customize the build
+subprojects {
 
-if (System.env.TRAVIS == 'true') {
-  allprojects {
-    tasks.withType(GroovyCompile) {
-      groovyOptions.fork = false
+    apply plugin: "java"
+
+    compileJava {
+        options.encoding = "UTF-8"
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
     }
-    tasks.withType(Test) {
-      // containers (currently) have 2 dedicated cores and 4GB of memory
-      maxParallelForks = 1
-      minHeapSize = '128m'
+
+    repositories {
+        mavenCentral()
     }
-  }
+    dependencies {
+        compile "junit:junit:4+"
+    }
 }
