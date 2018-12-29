@@ -1677,4 +1677,15 @@ public final class A4Solution {
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
+    public Map<String, String> getAtomToName()
+    {
+        Map<String, String> atomToName = new HashMap<>();
+
+        for (Map.Entry<Object, String> entry: atom2name.entrySet())
+        {
+            atomToName.put(entry.getKey().toString(), entry.getValue());
+        }
+
+        return atomToName;
+    }
 }
