@@ -2,6 +2,7 @@ package edu.mit.csail.sdg.alloy4whole;
 
 import edu.mit.csail.sdg.alloy4.*;
 
+import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
@@ -73,21 +74,23 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
                 switch (result)
                 {
                     case "sat":
-                            prepareInstance(workerCallback, translation, duration, scanner);
+                            prepareInstance(workerCallback, translation, 0, duration, scanner);
                         break;
                     case "unsat":
-                        workerCallback.callback(new Object[]{"S2", "No model found\n"});
+                        workerCallback.callback(new Object[]{"S2", "The result is unsat\n"});
                         break;
                     default:
-                        workerCallback.callback(new Object[]{"S2","No result found\n"});
+                        workerCallback.callback(new Object[]{"S2","The result is unknown\n"});
                         break;
                 }
             }
         }
     }
 
-    private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, long duration, Scanner scanner) throws Exception
+    private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, int commandIndex, long duration, Scanner scanner) throws Exception
     {
+        Command command = translation.getCommands().get(commandIndex);
+
         workerCallback.callback(new Object[]{"S2","A model has been found\n"});
 
         //construct A4Solution from smt result
@@ -116,12 +119,9 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         workerCallback.callback(new Object[]{"S2","\n"});
 
         String  satResult           = "sat";
-        boolean isCounterExample    = false;
-        int expected                = -1;
         String solutionXMLFile      = xmlFilePath;
-        String formula              = "";
 
-        Object[] message            = new Object []{satResult, isCounterExample, expected, solutionXMLFile, formula, duration};
+        Object[] message            = new Object []{satResult, command.check, command.expects, solutionXMLFile, command.toString(), duration};
         workerCallback.callback(message);
     }
 
