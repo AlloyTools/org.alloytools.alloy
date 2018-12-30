@@ -8,13 +8,6 @@ import org.junit.jupiter.api.Test;
 
 class CommandTranslationTests
 {
-
-    @BeforeEach
-    void setUp()
-    {
-        TranslatorUtils.reset();
-    }
-
     @Test
     void runCommand1()
     {

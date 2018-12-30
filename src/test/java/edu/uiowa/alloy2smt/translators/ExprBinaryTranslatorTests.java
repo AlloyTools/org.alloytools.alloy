@@ -7,13 +7,6 @@ import org.junit.jupiter.api.Test;
 
 class ExprBinaryTranslatorTests
 {
-
-    @BeforeEach
-    void setUp()
-    {
-        TranslatorUtils.reset();
-    }
-
     @Test
     void cardinalityEquality()
     {

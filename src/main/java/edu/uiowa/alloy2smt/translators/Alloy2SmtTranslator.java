@@ -90,7 +90,9 @@ public class Alloy2SmtTranslator
 
 
     public Alloy2SmtTranslator(CompModule alloyModel)
-    {               
+    {
+        TranslatorUtils.reset();
+
         this.smtProgram             = new SmtProgram();
         this.intSort                = new IntSort();
         this.alloyModel             = alloyModel;
