@@ -49,10 +49,15 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         workerCallback.callback(new Object[]{"S2", "Translation time: " + (endTranslate - startTranslate) + " ms\n"});
         workerCallback.callback(new Object[]{"S2","\n"});
 
-        if(translation.smtScript != null)
+        String smtScript            = translation.getSmtScript();
+        String command              = translation.translateCommand(0);
+
+        smtScript += command + Translation.CHECK_SAT + "\n" + Translation.GET_MODEL;
+
+        if(smtScript != null)
         {
             final long startSolve   = System.currentTimeMillis();
-            String smtResult        = solve(translation.smtScript, workerCallback);
+            String smtResult        = solve(smtScript, workerCallback);
             final long endSolve     = System.currentTimeMillis();
             long duration		        = (endSolve - startSolve);
 
@@ -104,7 +109,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        writeModelToAlloyXmlFile(translation.mapper, model, xmlFilePath, entry.getKey());
+        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, entry.getKey());
 
         workerCallback.callback(new Object[]{"S2","\n"});
         workerCallback.callback(new Object[]{"S2","Generated alloy instance file: " + xmlFilePath +"\n"});
@@ -360,12 +365,12 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         Translation translation                         = Utils.translate(entry.getValue());
 
-        workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + translation.smtScript + "\n"});
+        workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + translation.getSmtScript() + "\n"});
 
         File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
         // output the mapping
 
-        translation.mapper.writeToJson(jsonFile.getPath());
+        translation.getMapper().writeToJson(jsonFile.getPath());
 
         workerCallback.callback(new Object[]{"S2","\n"});
         workerCallback.callback(new Object[]{"S2","Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n"});
