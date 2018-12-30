@@ -13,9 +13,10 @@ class MapperTests
     {
         String alloy = "sig A {} \n fact f {#A = 3}";
         Translation translation = Utils.translate(alloy);
-        Assertions.assertNotNull(translation.mapper);
+        Mapper mapper = translation.getMapper();
+        Assertions.assertNotNull(mapper);
 
-        MappingSignature signature = translation.mapper.signatures
+        MappingSignature signature = mapper.signatures
                 .stream().filter(s -> s.label.equals("this/A"))
                 .findFirst().get();
 
@@ -36,13 +37,14 @@ class MapperTests
                 "sig B {f: A, g: B -> A}" +
                 " fact f {#A = 3 and #B = 4}";
         Translation translation = Utils.translate(alloy);
-        Assertions.assertNotNull(translation.mapper);
+        Mapper mapper = translation.getMapper();
+        Assertions.assertNotNull(mapper);
 
-        MappingSignature signatureA = translation.mapper.signatures
+        MappingSignature signatureA = mapper.signatures
                 .stream().filter(s -> s.label.equals("this/A"))
                 .findFirst().get();
 
-        MappingSignature signatureB = translation.mapper.signatures
+        MappingSignature signatureB = mapper.signatures
                 .stream().filter(s -> s.label.equals("this/B"))
                 .findFirst().get();
 
@@ -52,19 +54,19 @@ class MapperTests
         Assertions.assertEquals("this_A", signatureA.functionName);
         Assertions.assertEquals("this_B", signatureB.functionName);
 
-        MappingField fieldA_f = translation.mapper.fields.stream()
+        MappingField fieldA_f = mapper.fields.stream()
                 .filter(f -> f.parentId == signatureA.id && f.functionName.equals("this_A_f"))
                 .findFirst().get();
 
-        MappingField fieldA_g = translation.mapper.fields.stream()
+        MappingField fieldA_g = mapper.fields.stream()
                 .filter(f -> f.parentId == signatureA.id && f.functionName.equals("this_A_g"))
                 .findFirst().get();
 
-        MappingField fieldB_f = translation.mapper.fields.stream()
+        MappingField fieldB_f = mapper.fields.stream()
                 .filter(f -> f.parentId == signatureB.id && f.functionName.equals("this_B_f"))
                 .findFirst().get();
 
-        MappingField fieldB_g = translation.mapper.fields.stream()
+        MappingField fieldB_g = mapper.fields.stream()
                 .filter(f -> f.parentId == signatureB.id && f.functionName.equals("this_B_g"))
                 .findFirst().get();
 

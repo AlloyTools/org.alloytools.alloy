@@ -23,8 +23,11 @@ public class Utils
         CompModule              alloyModel  = CompUtil.parseEverything_fromFile(null, null, filePath);
         Alloy2SmtTranslator     translator  = new Alloy2SmtTranslator(alloyModel);
         SmtProgram              program     = translator.translate(assertion);
-        SmtLibPrettyPrinter     printer     = new SmtLibPrettyPrinter(program);
-        String                  output      = printer.print();
+        SmtLibPrettyPrinter     printer     = new SmtLibPrettyPrinter();
+
+        printer.visit(program);
+
+        String                  output      = printer.getSmtLib();
         return output;
     }
 
@@ -33,8 +36,11 @@ public class Utils
         CompModule              alloyModel  = CompUtil.parseEverything_fromString(null, alloyProgram);
         Alloy2SmtTranslator     translator  = new Alloy2SmtTranslator(alloyModel);
         SmtProgram              program     = translator.translate(assertion);
-        SmtLibPrettyPrinter     printer     = new SmtLibPrettyPrinter(program);
-        String                  output      = printer.print();
+        SmtLibPrettyPrinter     printer     = new SmtLibPrettyPrinter();
+
+        printer.visit(program);
+
+        String                  output      = printer.getSmtLib();
         return output;
     }
 
@@ -44,13 +50,13 @@ public class Utils
         Alloy2SmtTranslator     translator  = new Alloy2SmtTranslator(alloyModel);
         SmtProgram              program     = translator.translate(null);
         Mapper                  mapper      = translator.generateMapper();
-        SmtLibPrettyPrinter     printer     = new SmtLibPrettyPrinter(program);
-        String                  output      = printer.print();
+        SmtLibPrettyPrinter     printer     = new SmtLibPrettyPrinter();
 
-        Translation             translation = new Translation();
-        translation.smtAst                  = program;
-        translation.mapper                  = mapper;
-        translation.smtScript               = output;
+        printer.visit(program);
+
+        String                  output      = printer.getSmtLib();
+
+        Translation             translation = new Translation(translator, program, mapper, output);
 
         return translation;
     }

@@ -39,6 +39,7 @@ public class Alloy2SmtTranslator
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
+    final List<Command>             commands;
     
     
     final SetSort                   setOfUnaryAtomSort;
@@ -95,6 +96,7 @@ public class Alloy2SmtTranslator
         this.alloyModel             = alloyModel;
         this.reachableSigs          = new ArrayList<>();
         this.topLevelSigs           = new ArrayList<>();
+        this.commands               = alloyModel.getAllCommands();
         this.atomSort               = new UninterpretedSort(this.atom);
         this.unaryIntTup            = new UninterpretedSort(this.unaryIntAtom);
         this.binaryIntTup           = new UninterpretedSort(this.binaryIntAtom);
@@ -240,7 +242,9 @@ public class Alloy2SmtTranslator
         }       
         for(Func f : this.alloyModel.getAllFunc())
         {
-            if(f.label.equalsIgnoreCase("this/$$Default"))
+            //ignore  private functions like $$Default and run$1 etc
+            // run functions are handled in commands translation
+            if(f.isPrivate != null)
             {
                 continue;
             }
@@ -377,12 +381,12 @@ public class Alloy2SmtTranslator
 
     private void translateFact(String factName, Expr factExpr)
     {
-        this.smtProgram.addAssertion(new Assertion(factName, this.exprTranslator.translateExpr(factExpr, new HashMap<>())));
+        this.smtProgram.addAssertion(new Assertion(factName, this.exprTranslator.translateExpr(factExpr)));
     }
     
     private void translateAssertion(String assertionName, Expr assertionExpr)
     {
-        Expression expression = this.exprTranslator.translateExpr(assertionExpr, new HashMap<>());
+        Expression expression = this.exprTranslator.translateExpr(assertionExpr);
         this.smtProgram.addAssertion(new Assertion(assertionName, new UnaryExpression(UnaryExpression.Op.NOT, expression)));
     }    
     
@@ -717,5 +721,27 @@ public class Alloy2SmtTranslator
             idMap.put(expr, id);
         }
         return id;
+    }
+
+    /**
+     * @param commandIndex the index of the run command
+     * @return an assertion that represents the translation
+     * of the command
+     */
+    public Assertion translateCommand(int commandIndex)
+    {
+        Command command = this.commands.get(commandIndex);
+
+        Expression expression = this.exprTranslator.translateExpr(command.formula);
+
+        // if command is a check command
+        if(command.check)
+        {
+            expression = new UnaryExpression(UnaryExpression.Op.NOT, expression);
+        }
+
+        Assertion assertion = new Assertion(command.label, expression);
+
+        return assertion;
     }
 }

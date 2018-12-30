@@ -12,6 +12,8 @@ import edu.uiowa.alloy2smt.smtAst.*;
 
 public interface SmtAstVisitor
 {
+    public void visit(SmtProgram program);
+
     public void visit(BinaryExpression bExpr);
 
     public void visit(Sort intSort);

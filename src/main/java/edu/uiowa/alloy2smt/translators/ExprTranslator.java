@@ -34,6 +34,11 @@ public class ExprTranslator
         this.exprBinaryTranslator   = new ExprBinaryTranslator(this);
     }
 
+    Expression translateExpr(Expr expr)
+    {
+        return translateExpr(expr, new HashMap<>());
+    }
+
     Expression translateExpr(Expr expr, Map<String, Expression> variablesScope)
     {
         if(expr instanceof ExprUnary)
@@ -327,6 +332,12 @@ public class ExprTranslator
     {
         //ToDo: review the case of nested variable scopes
         Expression left         = translateExpr(exprList.args.get(0), variablesScope);
+
+        if(exprList.args.size() == 1)
+        {
+            return left;
+        }
+
         Expression right        = translateExpr(exprList.args.get(1), variablesScope);
         BinaryExpression result = new BinaryExpression(left, op, right);
 

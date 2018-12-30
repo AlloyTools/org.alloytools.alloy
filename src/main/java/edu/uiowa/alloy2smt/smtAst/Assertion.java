@@ -8,7 +8,9 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public class Assertion
+import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+
+public class Assertion extends SmtAst
 {
     private final Expression  expression;
 
@@ -34,5 +36,11 @@ public class Assertion
     public Expression getExpression()
     {
         return this.expression;
+    }
+
+    @Override
+    public void accept(SmtAstVisitor visitor)
+    {
+        visitor.visit(this);
     }
 }

@@ -94,14 +94,14 @@ public class FieldTranslator
         Expression  first   = translator.signaturesMap.get(field.sig).getConstantExpr();
         Expression  second  = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                     translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>());
+                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         BinaryExpression    product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
 
         for(int i = 2; i < fieldComponentExprs.size(); i++)
         {       
             Expression  expr  = (fieldComponentExprs.get(i) instanceof Sig) ? 
                                     translator.signaturesMap.get((Sig)fieldComponentExprs.get(i)).getConstantExpr()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(i), new HashMap<>());            
+                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(i));
             product = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);            
         }
         // Collect field's type information
@@ -274,10 +274,10 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression sndSigExpr   = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>()); 
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
 
         Expression sigVarMembership     = new BinaryExpression(sigVarExpr, BinaryExpression.Op.MEMBER, sigExpr);
@@ -329,10 +329,10 @@ public class FieldTranslator
         // Change the order of fst and snd sig expressions        
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression sndSigExpr   = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>());         
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
         Expression sigVarMembership     = new BinaryExpression(sigVarExpr, 
@@ -392,10 +392,10 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();                
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression sndSigExpr   = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>());   
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
@@ -463,10 +463,10 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();                
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression sndSigExpr   = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>());   
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
@@ -532,10 +532,10 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();                
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression sndSigExpr   = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>());   
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
@@ -601,10 +601,10 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();                
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression sndSigExpr   = (fieldComponentExprs.get(1) instanceof Sig) ? 
                                 translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getConstantExpr()
-                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1), new HashMap<>());   
+                                : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
         
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
@@ -670,7 +670,7 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                     translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());        
+                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
                 
         Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVarIsInt?sigVarIntExpr:sigVar.getConstantExpr()), 
@@ -734,7 +734,7 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                     translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());         
+                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
         
         Expression sigVarMember = sigVarIsInt?sigVarIntExpr:sigVar.getConstantExpr();
@@ -815,7 +815,7 @@ public class FieldTranslator
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();        
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ? 
                                     translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getConstantExpr()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0), new HashMap<>());         
+                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression fieldExpr    = translator.fieldsMap.get(field).getConstantExpr(); 
         
         Expression sigVarMember = sigVarIsInt?sigVarIntExpr:sigVar.getConstantExpr();

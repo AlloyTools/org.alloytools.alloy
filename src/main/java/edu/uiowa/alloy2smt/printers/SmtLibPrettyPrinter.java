@@ -15,30 +15,30 @@ import java.util.Map;
 
 public class SmtLibPrettyPrinter implements SmtAstVisitor
 {
-    private final SmtProgram program;
+    private StringBuilder stringBuilder = new StringBuilder();
 
-    private StringBuilder stringBuilder;
-
-    public SmtLibPrettyPrinter(SmtProgram program)
+    public String getSmtLib()
     {
-        this.program = program;
-        initializeStringBuilder();
+        return stringBuilder.toString();
     }
 
-    private void initializeStringBuilder()
+
+    private void initializeProgram()
     {
-        stringBuilder = new StringBuilder();
         stringBuilder.append(
                 "(set-logic ALL)\n" +
                 "(set-option :produce-models true)\n" +
+                "(set-option :incremental true)\n" +
 //                "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
                 "(set-option :sets-ext true)\n");
     }
 
-    public String print()
+    public void visit(SmtProgram program)
     {
-        for(Sort sort : this.program.getSorts())
+        initializeProgram();
+
+        for(Sort sort : program.getSorts())
         {
             if(sort instanceof UninterpretedSort)
             {
@@ -47,28 +47,25 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 this.stringBuilder.append(" 0)\n");
             }
         }
-        for (FunctionDeclaration declaration : this.program.getFunctionDeclarations())
+        for (FunctionDeclaration declaration : program.getFunctionDeclarations())
         {
             this.visit(declaration);
         }
 
-        for (ConstantDeclaration declaration : this.program.getConstantDeclarations())
+        for (ConstantDeclaration declaration : program.getConstantDeclarations())
         {
             this.visit(declaration);
         }
 
-        for (FunctionDefinition funcDef : this.program.getFunctionDefinitions())
+        for (FunctionDefinition funcDef : program.getFunctionDefinitions())
         {
             this.visit(funcDef);
         }        
 
-        for (Assertion assertion: this.program.getAssertions())
+        for (Assertion assertion: program.getAssertions())
         {
             this.visit(assertion);
         }
-        stringBuilder.append("(check-sat)\n");
-        stringBuilder.append("(get-model)");
-        return this.stringBuilder.toString();
     }
 
     @Override
