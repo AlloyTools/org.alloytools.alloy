@@ -55,7 +55,8 @@ public class Translation
 
     /**
      * @param commandIndex the index of the command
-     * @return the result of translating the given command into smt
+     * @return the result of translating the given command (ignoring
+     * scope constraints) into smt
      */
     public String translateCommand(int commandIndex)
     {

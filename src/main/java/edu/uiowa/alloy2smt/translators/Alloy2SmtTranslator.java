@@ -734,12 +734,6 @@ public class Alloy2SmtTranslator
 
         Expression expression = this.exprTranslator.translateExpr(command.formula);
 
-        // if command is a check command
-        if(command.check)
-        {
-            expression = new UnaryExpression(UnaryExpression.Op.NOT, expression);
-        }
-
         Assertion assertion = new Assertion(command.label, expression);
 
         return assertion;
