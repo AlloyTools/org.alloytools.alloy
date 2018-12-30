@@ -1,9 +1,12 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.Assertion;
 import edu.uiowa.alloy2smt.smtAst.SmtProgram;
+
+import java.util.List;
 
 public class Translation
 {
@@ -51,6 +54,11 @@ public class Translation
     public SmtProgram getSmtAst()
     {
         return smtAst;
+    }
+
+    public List<Command> getCommands()
+    {
+        return translator.commands;
     }
 
     /**
