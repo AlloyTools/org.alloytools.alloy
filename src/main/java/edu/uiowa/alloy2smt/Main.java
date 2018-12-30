@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit;
 
 public class Main
 {
-    public static final String OS                  = System.getProperty("os.name");
-    public static final String SEP                 = File.separator;
-    public static final String OUTPUTDIR           = System.getProperty("java.io.tmpdir");
-    public static final String BINPATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
-    public static final String DEFAULT_OUTPUT_FILE = "output.smt2";
+    public static final String OS                   = System.getProperty("os.name");
+    public static final String SEP                  = File.separator;
+    public static final String OUTPUT_DIR           = System.getProperty("java.io.tmpdir");
+    public static final String BIN_PATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
+    public static final String DEFAULT_OUTPUT_FILE  = "output.smt2";
 
     public static boolean isValidInputFilePath(String path)
     {
@@ -66,11 +66,11 @@ public class Main
         {
             if(OS.startsWith("Windows"))
             {
-                cvc4 = BINPATH + "cvc4_win64.exe";
+                cvc4 = BIN_PATH + "cvc4_win64.exe";
             }
             else if(OS.startsWith("Linux"))
             {
-                cvc4 = BINPATH + "cvc4_linux";
+                cvc4 = BIN_PATH + "cvc4_linux";
             }
             else 
             {
@@ -176,7 +176,7 @@ public class Main
         options.addOption(Option.builder("o").longOpt("output").desc("SMT-LIB model output").hasArg().build());
         options.addOption(Option.builder("b").longOpt("cvc4-binary").desc("CVC4 binary path").hasArg().build());
         options.addOption(Option.builder("f").longOpt("cvc4-flags").desc("Additional CVC4 flags").hasArgs().build());
-        options.addOption(Option.builder("a").longOpt("assertion").desc("The assertion to be checked").hasArg().build());
+        options.addOption(Option.builder("c").longOpt("command").desc("An integer that specifies the index of the command to be translated").hasArg().build());
         options.addOption(Option.builder("t").longOpt("timeout").desc("Timeout(s)").hasArg().build());
         
         try
@@ -184,7 +184,7 @@ public class Main
             CommandLine command = commandLineParser.parse(options, args);
 
             String  cvc4Binary      = command.hasOption("b")?command.getOptionValue("b").trim():null;
-            String  assertion       = command.hasOption("a")?command.getOptionValue("a").trim():null;
+            int     assertion       = command.hasOption("c")?Integer.parseInt(command.getOptionValue("c").trim()):0;
             String  timeout         = command.hasOption("t")?command.getOptionValue("t").trim():null;
 
             String output;
@@ -198,7 +198,7 @@ public class Main
                 {
                     File alloyFile    = new File(inputFile);
                     output            = Utils.translateFromFile(alloyFile.getAbsolutePath(), assertion);
-                    defaultOutputFile = OUTPUTDIR + SEP + alloyFile.getName() + ".smt2";
+                    defaultOutputFile = OUTPUT_DIR + SEP + alloyFile.getName() + ".smt2";
                 } else
                 {
                     throw new Exception("Can not open file " + inputFile);

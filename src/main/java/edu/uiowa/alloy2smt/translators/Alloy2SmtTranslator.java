@@ -149,13 +149,12 @@ public class Alloy2SmtTranslator
         this.exprTranslator                 = new ExprTranslator(this);        
     }
 
-    public SmtProgram translate(String assertion)
+    public SmtProgram translate()
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
-        translateFuncsAndPreds();
+        translateFunctionsAndPredicates();
         translateFacts();
-        translateAssertions(assertion);
         translateSpecialAssertions();
         return this.smtProgram;
     }
@@ -204,34 +203,8 @@ public class Alloy2SmtTranslator
             translateFact(pair.a, pair.b);
         }
     }
-    
-    private void translateAssertions(String assertion)
-    {
-        if(assertion == null)
-        {
-            System.out.println("Translate the input Alloy model for checking its consistency!");
-            return;
-        }
-        
-        boolean hasAssertion = false;
-        
-        for (Pair<String, Expr> pair :this.alloyModel.getAllAssertions())
-        {
-            if(assertion.equals(pair.a))
-            {
-                System.out.println("Translate the input Alloy model for checking the assertion: " + pair.a);                
-                translateAssertion(pair.a, pair.b);
-                hasAssertion = true;
-                break;
-            }            
-        }
-        if(!hasAssertion)
-        {
-            System.out.println("The input Alloy model does not have the assertion: " + assertion);
-        }
-    }    
-    
-    private void translateFuncsAndPreds()
+
+    private void translateFunctionsAndPredicates()
     {        
         List<String> funcOrder = new ArrayList<>();
         Map<String, List<String>> dependency = new HashMap<>();
