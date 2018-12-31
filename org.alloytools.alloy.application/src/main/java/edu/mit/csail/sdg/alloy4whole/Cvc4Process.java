@@ -74,7 +74,7 @@ public class Cvc4Process
 
         processBuilder.command(command);
 
-        workerCallback.callback(new Object[]{"S2","Executing command: " + String.join(" ", command) + "\n\n"});
+        workerCallback.callback(new Object[]{"","Executing command: " + String.join(" ", command) + "\n\n"});
 
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();

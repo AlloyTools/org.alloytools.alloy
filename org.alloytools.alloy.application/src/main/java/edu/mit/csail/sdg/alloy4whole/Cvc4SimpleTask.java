@@ -23,12 +23,13 @@ import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4whole.solution.*;
 
-import javax.swing.*;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
 public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 {
     public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
-    public static final int SOLVING_TIMEOUT         = 300;
+    public static final String TIMEOUT_OPTION       = "tlimit" ;
+
     private final Map<String, String> alloyFiles;
 
     Cvc4SimpleTask(Map<String, String> alloyFiles)
@@ -44,7 +45,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         final long endTranslate     = System.currentTimeMillis();
 
-        callback(workerCallback, "Translation time: " + (endTranslate - startTranslate) + " ms\n");
+        callbackBold(workerCallback, "Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
         String smtScript            = translation.getSmtScript();
 
@@ -54,67 +55,94 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
             cvc4Process.sendCommand(smtScript);
 
+            setSolverOptions(translation, cvc4Process, workerCallback);
+
             for (int index = 0; index < translation.getCommands().size(); index++)
             {
-                String commandTranslation = translation.translateCommand(index);
-
-                final long startSolve   = System.currentTimeMillis();
-
-                callback(workerCallback, "Executing " + translation.getCommands().get(index).label + "\n");
-
-                // (push)
-                // (check-sat)
-                cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
-
-                // read the result
-                String result = cvc4Process.receiveOutput();
-
-                final long endSolve     = System.currentTimeMillis();
-                long duration		    = (endSolve - startSolve);
-                callback(workerCallback, "Solving time: " + duration + " ms\n");
-
-                callback(workerCallback, "Satisfiability: " + result);
-
-                if(result != null)
-                {
-                    switch (result)
-                    {
-                        case "sat":
-                            prepareInstance(workerCallback, translation, index, duration, cvc4Process);
-                            break;
-                        case "unsat":
-                            if(translation.getCommands().get(index).check)
-                            {
-                                callback(workerCallback, "The assert is valid\n");
-                            }
-                            else
-                            {
-                                callback(workerCallback, "The result is unsat\n");
-                            }
-                            break;
-                        default:
-                            callback(workerCallback,"The result is unknown\n");
-                            break;
-                    }
-                }
-                else
-                {
-                    callback(workerCallback,"No result returned from cvc4\n");
-                }
-
-                // (pop)
-                cvc4Process.sendCommand(Translation.POP);
+                solveCommand(translation, index, cvc4Process, workerCallback);
             }
 
             cvc4Process.destroy();
         }
         else
         {
-            callback(workerCallback, "No translation found from alloy model to SMT");
+            callbackPlain(workerCallback, "No translation found from alloy model to SMT");
         }
     }
 
-    private void callback(WorkerEngine.WorkerCallback workerCallback, String log)
+    private void setSolverOptions(Translation translation, Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws IOException
+    {
+        Map<String, String> options = new HashMap<>();
+
+        // (set-option :tlimit 30000)
+        options.put(TIMEOUT_OPTION, Cvc4Timeout.get().toString());
+
+        String script = translation.translateOptions(options);
+        cvc4Process.sendCommand(script);
+        callbackPlain(workerCallback, script);
+    }
+
+    private void solveCommand(Translation translation, int index, Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws Exception
+    {
+        String commandTranslation = translation.translateCommand(index);
+
+        final long startSolve   = System.currentTimeMillis();
+
+        callbackBold(workerCallback, "Executing " + translation.getCommands().get(index).label + "\n");
+
+        // (push)
+        // (check-sat)
+        cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
+        callbackPlain(workerCallback, Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
+
+        // read the result
+        String result = cvc4Process.receiveOutput();
+
+        final long endSolve     = System.currentTimeMillis();
+        long duration		    = (endSolve - startSolve);
+        callbackBold(workerCallback, "Solving time: " + duration + " ms\n");
+
+        callbackBold(workerCallback, "Satisfiability: " + result + "\n");
+
+        if(result != null)
+        {
+            switch (result)
+            {
+                case "sat":
+                    prepareInstance(workerCallback, translation, index, duration, cvc4Process);
+                    break;
+                case "unsat":
+                    if(translation.getCommands().get(index).check)
+                    {
+                        callbackPlain(workerCallback, "The assertion is valid\n");
+                    }
+                    else
+                    {
+                        callbackPlain(workerCallback, "The result is unsat\n");
+                    }
+                    break;
+                default:
+                    callbackPlain(workerCallback,"The result is unknown\n");
+                    break;
+            }
+        }
+        else
+        {
+            callbackPlain(workerCallback,"No result returned from cvc4\n");
+        }
+
+        // (pop)
+        cvc4Process.sendCommand(Translation.POP);
+        callbackPlain(workerCallback, Translation.POP);
+    }
+
+    private void callbackPlain(WorkerEngine.WorkerCallback workerCallback, String log)
+    {
+        workerCallback.callback(new Object[]{"", log});
+        workerCallback.callback(new Object[]{"", ""});
+    }
+
+    private void callbackBold(WorkerEngine.WorkerCallback workerCallback, String log)
     {
         workerCallback.callback(new Object[]{"S2", "\n"});
         workerCallback.callback(new Object[]{"S2", log});
@@ -127,8 +155,8 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         String smtModel = cvc4Process.receiveOutput();
 
-        callback(workerCallback,"A model has been found\n");
-        callback(workerCallback, smtModel);
+        callbackPlain(workerCallback,"A model has been found\n");
+        callbackPlain(workerCallback, smtModel);
 
         Command command = translation.getCommands().get(commandIndex);
         SmtModel model = parseModel(smtModel);
@@ -145,7 +173,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, entry.getKey(), command);
 
-        callback(workerCallback, "Generated alloy instance file: " + xmlFilePath +"\n");
+        callbackPlain(workerCallback, "Generated alloy instance file: " + xmlFilePath +"\n");
 
         String  satResult           = "sat";
         String solutionXMLFile      = xmlFilePath;
@@ -394,14 +422,15 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         Translation translation                         = Utils.translate(entry.getValue());
 
-        workerCallback.callback(new Object[]{"S2","Translation output:\n\n" + translation.getSmtScript() + "\n"});
+        callbackBold(workerCallback,"Translation output");
+        callbackPlain(workerCallback, translation.getSmtScript());
 
         File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
         // output the mapping
 
         translation.getMapper().writeToJson(jsonFile.getPath());
 
-        callback(workerCallback, "Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
+        callbackPlain(workerCallback, "Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
 
         return translation;
     }
