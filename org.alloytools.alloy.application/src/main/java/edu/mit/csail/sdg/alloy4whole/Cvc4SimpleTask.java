@@ -19,16 +19,14 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4whole.solution.*;
 
+import javax.swing.*;
+
 public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 {
-    public static final String OS                   = System.getProperty("os.name");
-    public static final String SEP                  = File.separator;
-    public static final String BIN_PATH             = System.getProperty("user.dir")+SEP+"bin"+SEP;
     public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
     public static final int SOLVING_TIMEOUT         = 300;
     private final Map<String, String> alloyFiles;
@@ -46,61 +44,94 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         final long endTranslate     = System.currentTimeMillis();
 
-        workerCallback.callback(new Object[]{"S2","\n"});
-        workerCallback.callback(new Object[]{"S2", "Translation time: " + (endTranslate - startTranslate) + " ms\n"});
-        workerCallback.callback(new Object[]{"S2","\n"});
+        callback(workerCallback, "Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
         String smtScript            = translation.getSmtScript();
-        String command              = translation.translateCommand(0);
-
-        smtScript += command + Translation.CHECK_SAT + "\n" + Translation.GET_MODEL;
 
         if(smtScript != null)
         {
-            final long startSolve   = System.currentTimeMillis();
-            String smtResult        = solve(smtScript, workerCallback);
-            final long endSolve     = System.currentTimeMillis();
-            long duration		        = (endSolve - startSolve);
+            Cvc4Process cvc4Process     = Cvc4Process.start(workerCallback);
 
-            workerCallback.callback(new Object[]{"S2","\n"});
-            workerCallback.callback(new Object[]{"S2","Solving time: " + duration + " ms\n"});
-            workerCallback.callback(new Object[]{"S2","\n"});
+            cvc4Process.sendCommand(smtScript);
 
-            if(smtResult != null)
+            for (int index = 0; index < translation.getCommands().size(); index++)
             {
-                Scanner scanner = new Scanner(smtResult);
-                String  result  = scanner.next();
+                String commandTranslation = translation.translateCommand(index);
 
-                switch (result)
+                final long startSolve   = System.currentTimeMillis();
+
+                callback(workerCallback, "Executing " + translation.getCommands().get(index).label + "\n");
+
+                // (push)
+                // (check-sat)
+                cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
+
+                // read the result
+                String result = cvc4Process.receiveOutput();
+
+                final long endSolve     = System.currentTimeMillis();
+                long duration		    = (endSolve - startSolve);
+                callback(workerCallback, "Solving time: " + duration + " ms\n");
+
+                callback(workerCallback, "Satisfiability: " + result);
+
+                if(result != null)
                 {
-                    case "sat":
-                            prepareInstance(workerCallback, translation, 0, duration, scanner);
-                        break;
-                    case "unsat":
-                        workerCallback.callback(new Object[]{"S2", "The result is unsat\n"});
-                        break;
-                    default:
-                        workerCallback.callback(new Object[]{"S2","The result is unknown\n"});
-                        break;
+                    switch (result)
+                    {
+                        case "sat":
+                            prepareInstance(workerCallback, translation, index, duration, cvc4Process);
+                            break;
+                        case "unsat":
+                            if(translation.getCommands().get(index).check)
+                            {
+                                callback(workerCallback, "The assert is valid\n");
+                            }
+                            else
+                            {
+                                callback(workerCallback, "The result is unsat\n");
+                            }
+                            break;
+                        default:
+                            callback(workerCallback,"The result is unknown\n");
+                            break;
+                    }
                 }
+                else
+                {
+                    callback(workerCallback,"No result returned from cvc4\n");
+                }
+
+                // (pop)
+                cvc4Process.sendCommand(Translation.POP);
             }
+
+            cvc4Process.destroy();
+        }
+        else
+        {
+            callback(workerCallback, "No translation found from alloy model to SMT");
         }
     }
 
-    private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, int commandIndex, long duration, Scanner scanner) throws Exception
+    private void callback(WorkerEngine.WorkerCallback workerCallback, String log)
     {
+        workerCallback.callback(new Object[]{"S2", "\n"});
+        workerCallback.callback(new Object[]{"S2", log});
+        workerCallback.callback(new Object[]{"S2", "\n"});
+    }
+
+    private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, int commandIndex, long duration, Cvc4Process cvc4Process) throws Exception
+    {
+        cvc4Process.sendCommand(Translation.GET_MODEL);
+
+        String smtModel = cvc4Process.receiveOutput();
+
+        callback(workerCallback,"A model has been found\n");
+        callback(workerCallback, smtModel);
+
         Command command = translation.getCommands().get(commandIndex);
-
-        workerCallback.callback(new Object[]{"S2","A model has been found\n"});
-
-        //construct A4Solution from smt result
-        StringBuilder SmtModel = new StringBuilder();
-        while(scanner.hasNext())
-        {
-            SmtModel.append(scanner.nextLine() + "\n");
-        }
-
-        edu.uiowa.alloy2smt.smtAst.SmtModel model = parseModel(SmtModel.toString());
+        SmtModel model = parseModel(smtModel);
 
         //ToDo: implement the case when there are multiple files
 
@@ -112,11 +143,9 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, entry.getKey());
+        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, entry.getKey(), command);
 
-        workerCallback.callback(new Object[]{"S2","\n"});
-        workerCallback.callback(new Object[]{"S2","Generated alloy instance file: " + xmlFilePath +"\n"});
-        workerCallback.callback(new Object[]{"S2","\n"});
+        callback(workerCallback, "Generated alloy instance file: " + xmlFilePath +"\n");
 
         String  satResult           = "sat";
         String solutionXMLFile      = xmlFilePath;
@@ -126,7 +155,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     }
 
     private void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFile,
-                                          String alloyFileName) throws Exception
+                                          String alloyFileName, Command command) throws Exception
     {
 
         Map<String, FunctionDefinition> functionsMap = new HashMap<>();
@@ -155,9 +184,9 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         Instance instance   = new Instance();
         instance.signatures = signatures;
         instance.fields     = fields;
-        instance.bitWidth = 4;
-        instance.maxSeq = 4; //ToDo: review the maxSeq meaning
-        instance.command = "Run Default for 4 but 4 int, 4 seq expect 0";
+        instance.bitWidth   = 4;
+        instance.maxSeq     = 4; //ToDo: review the maxSeq meaning
+        instance.command    = command.toString();
 
         instance.fileName = alloyFileName;
 
@@ -372,9 +401,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         translation.getMapper().writeToJson(jsonFile.getPath());
 
-        workerCallback.callback(new Object[]{"S2","\n"});
-        workerCallback.callback(new Object[]{"S2","Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n"});
-        workerCallback.callback(new Object[]{"S2","\n"});
+        callback(workerCallback, "Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
 
         return translation;
     }
@@ -391,81 +418,6 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         }
 
         return stringBuilder.toString();
-    }
-
-    private String solve(String smtFormula, WorkerEngine.WorkerCallback workerCallback) throws Exception
-    {
-        String cvc4;
-
-        if(OS.startsWith("Windows"))
-        {
-            cvc4 = BIN_PATH + "cvc4_win64.exe";
-        }
-        else if(OS.startsWith("Linux"))
-        {
-            cvc4 = BIN_PATH + "cvc4_linux";
-        }
-        else
-        {
-            throw new Exception("No CVC4 binary available for the OS: " + OS);
-        }
-        if(smtFormula == null)
-        {
-            throw new Exception("No input file for CVC4!");
-        }
-
-        File cvc4Binary = new File(cvc4);
-
-        if(!cvc4Binary.exists())
-        {
-            throw new Exception("CVC4 binary does not exist at: " + cvc4);
-        }
-        if(!cvc4Binary.canExecute())
-        {
-            throw new Exception("CVC4 binary cannot be executed at: " + cvc4);
-        }
-
-        ProcessBuilder  processBuilder = new ProcessBuilder();
-        List<String>    command       = new ArrayList<>();
-
-        command.add(cvc4);
-
-        // tell cvc4 the input language is smt2
-        command.add("--lang");
-        command.add("smtlib2.6");
-
-        processBuilder.command(command);
-
-        workerCallback.callback(new Object[]{"S2","Executing command: " + String.join(" ", command) + "\n\n"});
-
-        Process process = processBuilder.start();
-
-        OutputStream processInput = process.getOutputStream();
-
-        processInput.write(smtFormula.getBytes());
-
-        processInput.close();
-
-        if(process.waitFor(SOLVING_TIMEOUT, TimeUnit.SECONDS))
-        {
-            String error = getProcessOutput(process.getErrorStream());
-
-            if(!error.isEmpty())
-            {
-                throw new Exception(error);
-            }
-
-            String cvc4Output = getProcessOutput(process.getInputStream());
-            workerCallback.callback(new Object[]{"S2","CVC4 Output:\n\n" + cvc4Output + "\n"});
-
-            return cvc4Output;
-        }
-        else
-        {
-            workerCallback.callback(new Object[]{"S2","CVC4 Timeout: " + SOLVING_TIMEOUT + " seconds\n"});
-            process.destroy();
-            return null;
-        }
     }
 
     private SmtModel parseModel(String model)
