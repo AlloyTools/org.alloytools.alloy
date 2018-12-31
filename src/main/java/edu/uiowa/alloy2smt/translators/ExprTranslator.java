@@ -330,6 +330,21 @@ public class ExprTranslator
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
     {
+
+        if(exprList.args.size() == 0 )
+        {
+            if (op == BinaryExpression.Op.AND)
+            {
+                return new BooleanConstant(true);
+            }
+
+            if (op == BinaryExpression.Op.OR)
+            {
+                return new BooleanConstant(false);
+            }
+            throw new UnsupportedOperationException();
+        }
+
         //ToDo: review the case of nested variable scopes
         Expression left         = translateExpr(exprList.args.get(0), variablesScope);
 

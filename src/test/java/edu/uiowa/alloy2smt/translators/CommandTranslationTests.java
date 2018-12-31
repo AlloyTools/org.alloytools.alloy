@@ -8,6 +8,18 @@ import org.junit.jupiter.api.Test;
 
 class CommandTranslationTests
 {
+
+    @Test
+    void noCommand()
+    {
+        String alloy = "sig A {}\n";
+
+        Translation translation = Utils.translate(alloy);
+        String command = translation.translateCommand(0);
+
+        Assertions.assertEquals(1, translation.getCommands().size());
+    }
+
     @Test
     void runCommand1()
     {
