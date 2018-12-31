@@ -133,7 +133,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         // (pop)
         cvc4Process.sendCommand(Translation.POP);
-        callbackPlain(workerCallback, Translation.POP);
+        callbackPlain(workerCallback, Translation.POP + "\n");
     }
 
     private void callbackPlain(WorkerEngine.WorkerCallback workerCallback, String log)
