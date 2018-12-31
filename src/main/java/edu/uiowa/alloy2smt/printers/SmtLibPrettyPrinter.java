@@ -429,4 +429,12 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     {
         this.stringBuilder.append(atomConstant.getName());
     }
+
+    @Override
+    public void visit(SolverOption solverOption)
+    {
+        this.stringBuilder.append("(set-option ");
+        this.stringBuilder.append(":" + solverOption.name + " ");
+        this.stringBuilder.append(solverOption.value + ")\n");
+    }
 }

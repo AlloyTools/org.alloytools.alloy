@@ -5,8 +5,10 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.Assertion;
 import edu.uiowa.alloy2smt.smtAst.SmtProgram;
+import edu.uiowa.alloy2smt.smtAst.SolverOption;
 
 import java.util.List;
+import java.util.Map;
 
 public class Translation
 {
@@ -71,6 +73,18 @@ public class Translation
         Assertion           assertion   =  translator.translateCommand(commandIndex);
         SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
         printer.visit(assertion);
+        return printer.getSmtLib();
+    }
+
+    public String translateOptions(Map<String, String> options)
+    {
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+
+        for (Map.Entry<String, String> entry: options.entrySet())
+        {
+            SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
+            printer.visit(option);
+        }
         return printer.getSmtLib();
     }
 }

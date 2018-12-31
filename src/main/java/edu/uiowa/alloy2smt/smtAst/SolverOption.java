@@ -8,6 +8,22 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
-public class SolverOption
+import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+
+public class SolverOption extends SmtAst
 {
+    public String name;
+    public String value;
+
+    public SolverOption(String name, String value)
+    {
+        this.name   = name;
+        this.value  = value;
+    }
+
+    @Override
+    public void accept(SmtAstVisitor visitor)
+    {
+        visitor.visit(this);
+    }
 }

@@ -20,31 +20,31 @@ public interface SmtAstVisitor
     
     public void visit(IntSort intSort);   
 
-    public void visit(QuantifiedExpression aThis);
+    public void visit(QuantifiedExpression quantifiedExpression);
 
-    public void visit(RealSort aThis);
+    public void visit(RealSort realSort);
 
-    public void visit(SetSort aThis);
+    public void visit(SetSort setSort);
 
-    public void visit(StringSort aThis);
+    public void visit(StringSort stringSort);
 
-    public void visit(TupleSort aThis);
+    public void visit(TupleSort tupleSort);
 
-    public void visit(UnaryExpression aThis);
+    public void visit(UnaryExpression unaryExpression);
 
-    public void visit(UninterpretedSort aThis);
+    public void visit(UninterpretedSort uninterpretedSort);
 
-    public void visit(IntConstant aThis);
+    public void visit(IntConstant intConstant);
 
-    public void visit(ConstantExpression aThis);
+    public void visit(ConstantExpression constantExpression);
 
-    public void visit(FunctionDeclaration aThis);
+    public void visit(FunctionDeclaration functionDeclaration);
 
-    public void visit(FunctionDefinition aThis);
+    public void visit(FunctionDefinition functionDefinition);
 
-    public void visit(ConstantDeclaration aThis);
+    public void visit(ConstantDeclaration constantDeclaration);
 
-    public void visit(BooleanConstant aThis);
+    public void visit(BooleanConstant booleanConstant);
 
     public void visit(Assertion assertion);
 
@@ -54,11 +54,13 @@ public interface SmtAstVisitor
 
     public void visit(BoundVariableDeclaration boundVariableDeclaration);
 
-    public void visit(BoolSort aThis);
+    public void visit(BoolSort boolSort);
 
-    public void visit(LetExpression aThis);
+    public void visit(LetExpression letExpression);
 
-    public void visit(ITEExpression aThis);
+    public void visit(ITEExpression iteExpression);
 
     public void visit(AtomConstant atomConstant);
+
+    public void visit(SolverOption solverOption);
 }
