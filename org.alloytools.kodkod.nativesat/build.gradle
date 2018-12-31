@@ -1,3 +1,7 @@
-dependencies {
-
+sourceSets {
+    main {
+        resources {
+            srcDirs "jni"
+        }
+    }
 }
