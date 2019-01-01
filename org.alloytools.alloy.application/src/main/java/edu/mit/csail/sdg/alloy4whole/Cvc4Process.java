@@ -15,7 +15,7 @@ public class Cvc4Process
 
     public static final String OS       = System.getProperty("os.name");
     public static final String SEP      = File.separator;
-    public static final String BIN_PATH = System.getProperty("user.dir")+SEP+"bin"+SEP;
+    public static final String BIN_PATH = System.getProperty("user.dir")+SEP;
 
     private Process process;
     private Scanner scanner;

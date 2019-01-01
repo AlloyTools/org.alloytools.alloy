@@ -1,11 +1,7 @@
 dependencies {
     compile project(':org.alloytools.alloy.core'), fileTree(dir: 'lib', include: ['*.jar'])
 
-    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-
-    // https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-core
-    compile group: 'org.glassfish.jaxb', name: 'jaxb-core', version: '2.3.0.1'
+    compile project(':alloy2smt')
 }
 
 task alloyCVC4(type: Jar) {
@@ -18,3 +14,17 @@ task alloyCVC4(type: Jar) {
 }
 
 compileJava.finalizedBy alloyCVC4
+
+// copy the application jar to bin
+task copyAlloyCVC4(type: Copy) {
+    from "${buildDir}/libs/alloy_cvc4.jar"
+    into "${rootProject.projectDir}/bin"
+}
+
+alloyCVC4.finalizedBy copyAlloyCVC4
+
+task removeAlloyCVC4(type: Delete) {
+    delete "${rootProject.projectDir}/bin/alloy_cvc4.jar"
+}
+
+clean.finalizedBy removeAlloyCVC4
