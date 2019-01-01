@@ -59,6 +59,8 @@ The workspace is divided into a number of projects:
 * [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
 * [alloy2smt](alloy2smt) – The translator from alloy model to [CVC4](http://cvc4.cs.stanford.edu/downloads/)) smt-lib 
 
+### Projects dependency graph
+![Dependency graph](dependency-graph.png)
 ### Gradle 
 
 In the root of this workspace type `./gradlew build`. This is a script that will download the correct version of gradle and run the build scripts. For settings look at [settings.gradle].
