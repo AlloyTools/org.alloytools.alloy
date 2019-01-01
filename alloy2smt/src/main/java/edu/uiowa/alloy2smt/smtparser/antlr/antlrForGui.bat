@@ -1,0 +1,1 @@
+java -jar antlr-4.7.2-complete.jar Smt.g4 -visitor
