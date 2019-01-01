@@ -43,57 +43,41 @@ Note: if you are behind a proxy, the call to `gradlew` is likely to fail, unless
 
 ## Building Alloy
 
-The Alloy build is using a _bnd workspace_ setup using a maven layout. This means it can be build  with Gradle and  the Eclipse IDE for interactive development. Projects are setup to continuously deliver the executable.
+The Alloy build is using a gradle wrapper `./gradlew build` which will install gradle or `./gradle build` if it is already installed. 
+
+To build alloy without running the tests use the command `./gradlew alloyCVC4` in Linux and `gradlew.bat alloyCVC4` in Windows. When the build finishes, a jar file `bin/alloy_cvcr.jar` will be generated. 
+
+To get a clean build run `./gradlew clean build` or `./gradlew clean alloyCVC4`
 
 ### Projects
 
 The workspace is divided into a number of projects:
 
-* [cnf](cnf) – Setup directory. Dependencies are specified in [cnf/central.xml] using the maven POM layout
 * [org.alloytools.alloy.application](org.alloytools.alloy.application) – Main application code includes the parser, ast, visualiser, and application code
-* [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
 * [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
 * [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
+* [alloy2smt](alloy2smt) – The translator from alloy model to [CVC4](http://cvc4.cs.stanford.edu/downloads/)) smt-lib 
 
-### Relevant Project files
+### Gradle 
 
-This workspace uses bnd. This means that the following have special meaning:
+In the root of this workspace type `./gradlew build`. This is a script that will download the correct version of gradle and run the build scripts. For settings look at [settings.gradle].
 
-* [cnf/build.xml](cnf/build.xml) – Settings shared between projects
-* ./bnd.bnd – Settings for a project. This file will _drag_ in code in a JAR.
-* [cnf/central.xml](cnf/central.xml) – Dependencies from maven central
 
 ### Eclipse
 
-The workspace is setup for interactive development in Eclipse with the Bndtools plugin. Download [Eclipse](https://www.eclipse.org/downloads/) and install it. You can then `Import` existing projects from the Git workspace. You should be asked to install Bndtools from the market place. You can also install Bndtools directly from the [Eclipse Market](https://marketplace.eclipse.org/content/bndtools) place (see `Help/Marketplace` and search for `Bndtools`). 
-
-Bndtools will continuously create the final executable. The projects are setup to automatically update when a downstream project changes.
-
 ### IntelliJ IDEA (Ultimate Edition only)
-
-Ensure you have the [Osmorc] plugin is enabled, as this plugin is needed for
-Bndtools support. It should be enabled by default.
 
 1. Choose "Import Project"
 2. Select the `org.alloytools.alloy` directory.
-3. Choose "Import project from external model: Bnd/Bndtools" and click "Next"
-4. For "Select Bnd/Bndtools project to import", all projects should be checked
-   by default, click "Next"
-5. For project SDK, Choose "1.8", Click Finish
-
-Note: do *not* link the Gradle project, as this will prevent you from running
-Alloy within IDEA.
+3. Choose "Import project from external model: Gradle" and click "Next"
+4. For project SDK, Choose at least "1.8", Click Finish
 
 To run the Alloy GUI within IDEA, navigate to
 org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4whole/SimpleGUI and run the SimpleGUI class.
 
-[Osmorc]: https://plugins.jetbrains.com/plugin/1816-osmorc
+Alternatively you can use gradle to build the project and then run the jar file `bin/alloy_cvc4.jar`
 
-
-### Gradle 
-
-In the root of this workspace type `./gradlew`. This is a script that will download the correct version of gradle and run the build scripts. For settings look at [gradle.properties] and [settings.gradle].
 
 ### Continuous Integration
 
