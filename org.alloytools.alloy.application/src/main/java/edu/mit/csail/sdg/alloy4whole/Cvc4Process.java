@@ -21,18 +21,12 @@ public class Cvc4Process
     private Process process;
     private Scanner scanner;
     private OutputStream outputStream;
-    private WorkerEngine.WorkerCallback workerCallback;
-    private boolean firstRead = true;
 
-
-
-    private Cvc4Process(Process process, WorkerEngine.WorkerCallback workerCallback)
+    private Cvc4Process(Process process)
     {
         this.process        = process;
         this.scanner        = new Scanner(process.getInputStream());
         this.outputStream   = process.getOutputStream();
-        this.workerCallback = workerCallback;
-
     }
 
     public static Cvc4Process start(WorkerEngine.WorkerCallback workerCallback) throws Exception
@@ -84,8 +78,7 @@ public class Cvc4Process
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
-
-        return new Cvc4Process(process, workerCallback);
+        return new Cvc4Process(process);
     }
 
     public void sendCommand(String command) throws IOException
@@ -97,18 +90,18 @@ public class Cvc4Process
     public String receiveOutput() throws IOException
     {
         String line = "";
+        sendCommand("(echo success)\n");
 
-        this.sendCommand("(echo success)\n");
-        String output = "";
+        StringBuilder output = new StringBuilder();
         while(scanner.hasNextLine())
         {
             line = scanner.nextLine();
 
             if(line.equals("success"))
             {
-                return output.trim();
+                return output.toString().trim();
             }
-            output += line + "\n";
+            output.append(line).append("\n");
         }
         return line;
     }

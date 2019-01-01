@@ -27,8 +27,8 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
 public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 {
-    public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
-    public static final String TIMEOUT_OPTION       = "tlimit" ;
+    private static final String tempDirectory        = System.getProperty("java.io.tmpdir");
+    private static final String TIMEOUT_OPTION       = "tlimit" ;
 
     private final Map<String, String> alloyFiles;
 
@@ -176,9 +176,8 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         callbackPlain(workerCallback, "Generated alloy instance file: " + xmlFilePath +"\n");
 
         String  satResult           = "sat";
-        String solutionXMLFile      = xmlFilePath;
 
-        Object[] message            = new Object []{satResult, command.check, command.expects, solutionXMLFile, command.toString(), duration};
+        Object[] message            = new Object []{satResult, command.check, command.expects, xmlFilePath, command.toString(), duration};
         workerCallback.callback(message);
     }
 
@@ -433,20 +432,6 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         callbackPlain(workerCallback, "Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
 
         return translation;
-    }
-
-    private String getProcessOutput(InputStream inputStream)
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        Scanner scanner = new Scanner(inputStream);
-
-        while(scanner.hasNextLine())
-        {
-            stringBuilder.append(scanner.nextLine()).append("\n");
-        }
-
-        return stringBuilder.toString();
     }
 
     private SmtModel parseModel(String model)
