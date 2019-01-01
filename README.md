@@ -22,16 +22,19 @@ JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 # TL;DR
 
-Checkout the project and type ./gradlew. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
+Checkout the project and type ./gradlew. You find the executable JAR in bin/alloy_cvc4.jar after the build has finished.
 
-     $ java version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
-     java version "1.8.0_144"
-     Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
-     Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
-     $ git clone git@github.com:AlloyTools/org.alloytools.alloy.git
+     $ java version           # works with 1.8 - 1.11
+     java version "11.0.1" 2018-10-16 LTS
+     Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
+     Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
+     $ git clone https://github.com/CVC4/org.alloytools.alloy
      $ cd org.alloytools.alloy
+     # switch to cvc4 branch
+     $ git checkout cvc4 
      $ ./gradlew build
-     $ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
+     $ cd bin
+     $ java -jar alloy_cvc4.jar
      # opens GUI
 
 Note: if you are behind a proxy, the call to `gradlew` is likely to fail, unless you pass it further options about the http and https proxies (and possibly your login and password on this proxy). There are several ways to pass these options, a simple one is to type (replace the `XXXXX`'s by the adequate settings):
@@ -87,7 +90,6 @@ The workspace is setup to build after every commit using Travis. It releases sna
 
 ### Building the DMG file for OSX systems
 
-Currently only the executable jar in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar is build. In the `org.alloytools.alloy.dist` project, run `../gradlew macos`. This will leave the PKG file in `target/bundle`.
 
 ## CONTRIBUTIONS
 
