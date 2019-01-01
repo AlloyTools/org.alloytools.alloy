@@ -1,5 +1,6 @@
 package edu.mit.csail.sdg.alloy4whole;
 
+import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
 
 import java.io.File;
@@ -38,9 +39,13 @@ public class Cvc4Process
     {
         String cvc4;
 
-        if(OS.startsWith("Windows"))
+        if(Util.onWindows())
         {
             cvc4 = BIN_PATH + "cvc4_win64.exe";
+        }
+        else if(Util.onMac())
+        {
+            cvc4 = BIN_PATH + "cvc4_mac";
         }
         else if(OS.startsWith("Linux"))
         {
