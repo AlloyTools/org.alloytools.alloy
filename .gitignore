@@ -24,3 +24,6 @@ target/
 .idea/
 *.iml
 nbactions.xml
+.gradle/
+build/
+out/
