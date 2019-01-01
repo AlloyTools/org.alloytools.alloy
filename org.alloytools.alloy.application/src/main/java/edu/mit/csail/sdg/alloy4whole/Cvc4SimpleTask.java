@@ -39,34 +39,39 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     @Override
     public void run(WorkerEngine.WorkerCallback workerCallback) throws Exception
     {
-        final long startTranslate   = System.currentTimeMillis();
-
-        Translation translation     = translateToSMT(workerCallback);
-
-        final long endTranslate     = System.currentTimeMillis();
-
-        callbackBold(workerCallback, "Translation time: " + (endTranslate - startTranslate) + " ms\n");
-
-        String smtScript            = translation.getSmtScript();
-
-        if(smtScript != null)
+        try
         {
-            Cvc4Process cvc4Process     = Cvc4Process.start(workerCallback);
+            final long startTranslate = System.currentTimeMillis();
 
-            cvc4Process.sendCommand(smtScript);
+            Translation translation = translateToSMT(workerCallback);
 
-            setSolverOptions(translation, cvc4Process, workerCallback);
+            final long endTranslate = System.currentTimeMillis();
 
-            for (int index = 0; index < translation.getCommands().size(); index++)
-            {
-                solveCommand(translation, index, cvc4Process, workerCallback);
+            callbackBold(workerCallback, "Translation time: " + (endTranslate - startTranslate) + " ms\n");
+
+            String smtScript = translation.getSmtScript();
+
+            if (smtScript != null) {
+                Cvc4Process cvc4Process = Cvc4Process.start(workerCallback);
+
+                cvc4Process.sendCommand(smtScript);
+
+                setSolverOptions(translation, cvc4Process, workerCallback);
+
+                for (int index = 0; index < translation.getCommands().size(); index++) {
+                    solveCommand(translation, index, cvc4Process, workerCallback);
+                }
+
+                cvc4Process.destroy();
+            } else {
+                callbackPlain(workerCallback, "No translation found from alloy model to SMT");
             }
-
-            cvc4Process.destroy();
         }
-        else
+        catch (Exception exception)
         {
-            callbackPlain(workerCallback, "No translation found from alloy model to SMT");
+            StringWriter stringWriter = new StringWriter();
+            exception.printStackTrace(new PrintWriter(stringWriter));
+            throw new Exception(stringWriter.toString());
         }
     }
 
