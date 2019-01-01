@@ -78,6 +78,6 @@ class SmtModelVisitorTests
 
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(4, smtModel.getSorts().size());
-        Assertions.assertEquals(6, smtModel.getFunctionDefinitions().size());
+        Assertions.assertEquals(12, smtModel.getFunctionDefinitions().size());
     }
 }

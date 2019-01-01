@@ -312,19 +312,59 @@ public class SmtParser extends Parser {
 			}
 			setState(68);
 			match(T__2);
-			setState(69);
-			match(T__0);
-			setState(70);
-			sort();
-			setState(71);
-			match(T__2);
-			setState(72);
-			match(T__0);
-			setState(73);
-			term();
 			setState(74);
-			match(T__2);
-			setState(75);
+			_errHandler.sync(this);
+			switch (_input.LA(1)) {
+			case T__0:
+				{
+				setState(69);
+				match(T__0);
+				setState(70);
+				sort();
+				setState(71);
+				match(T__2);
+				}
+				break;
+			case T__5:
+			case T__6:
+			case Identifier:
+				{
+				setState(73);
+				sort();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+			setState(81);
+			_errHandler.sync(this);
+			switch (_input.LA(1)) {
+			case T__0:
+				{
+				setState(76);
+				match(T__0);
+				setState(77);
+				term();
+				setState(78);
+				match(T__2);
+				}
+				break;
+			case T__7:
+			case T__8:
+			case T__9:
+			case T__10:
+			case T__11:
+			case T__12:
+			case Integer:
+				{
+				setState(80);
+				term();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+			setState(83);
 			match(T__2);
 			}
 		}
@@ -371,13 +411,13 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(77);
+			setState(85);
 			match(T__0);
-			setState(78);
+			setState(86);
 			argumentName();
-			setState(79);
+			setState(87);
 			sort();
-			setState(80);
+			setState(88);
 			match(T__2);
 			}
 		}
@@ -425,27 +465,27 @@ public class SmtParser extends Parser {
 		SortContext _localctx = new SortContext(_ctx, getState());
 		enterRule(_localctx, 8, RULE_sort);
 		try {
-			setState(85);
+			setState(93);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case Identifier:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(82);
+				setState(90);
 				sortName();
 				}
 				break;
 			case T__6:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(83);
+				setState(91);
 				tupleSort();
 				}
 				break;
 			case T__5:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(84);
+				setState(92);
 				setSort();
 				}
 				break;
@@ -493,13 +533,13 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(87);
+			setState(95);
 			match(T__5);
-			setState(88);
+			setState(96);
 			match(T__0);
-			setState(89);
+			setState(97);
 			sort();
-			setState(90);
+			setState(98);
 			match(T__2);
 			}
 		}
@@ -547,9 +587,9 @@ public class SmtParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(92);
+			setState(100);
 			match(T__6);
-			setState(94); 
+			setState(102); 
 			_errHandler.sync(this);
 			_alt = 1;
 			do {
@@ -557,7 +597,7 @@ public class SmtParser extends Parser {
 				case 1:
 					{
 					{
-					setState(93);
+					setState(101);
 					sort();
 					}
 					}
@@ -565,9 +605,9 @@ public class SmtParser extends Parser {
 				default:
 					throw new NoViableAltException(this);
 				}
-				setState(96); 
+				setState(104); 
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,4,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,6,_ctx);
 			} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
 			}
 		}
@@ -609,7 +649,7 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(98);
+			setState(106);
 			match(Identifier);
 			}
 		}
@@ -651,7 +691,7 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(100);
+			setState(108);
 			match(Integer);
 			}
 		}
@@ -693,7 +733,7 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(102);
+			setState(110);
 			match(Identifier);
 			}
 		}
@@ -735,7 +775,7 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(104);
+			setState(112);
 			match(Identifier);
 			}
 		}
@@ -792,49 +832,49 @@ public class SmtParser extends Parser {
 		TermContext _localctx = new TermContext(_ctx, getState());
 		enterRule(_localctx, 22, RULE_term);
 		try {
-			setState(112);
+			setState(120);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case T__7:
 			case Integer:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(106);
+				setState(114);
 				integerConstant();
 				}
 				break;
 			case T__8:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(107);
+				setState(115);
 				tupleConstant();
 				}
 				break;
 			case T__9:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(108);
+				setState(116);
 				singletonConstant();
 				}
 				break;
 			case T__10:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(109);
+				setState(117);
 				unionConstant();
 				}
 				break;
 			case T__11:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(110);
+				setState(118);
 				atomConstant();
 				}
 				break;
 			case T__12:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(111);
+				setState(119);
 				emptySet();
 				}
 				break;
@@ -878,22 +918,22 @@ public class SmtParser extends Parser {
 		IntegerConstantContext _localctx = new IntegerConstantContext(_ctx, getState());
 		enterRule(_localctx, 24, RULE_integerConstant);
 		try {
-			setState(117);
+			setState(125);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case T__7:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(114);
+				setState(122);
 				match(T__7);
-				setState(115);
+				setState(123);
 				match(Integer);
 				}
 				break;
 			case Integer:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(116);
+				setState(124);
 				match(Integer);
 				}
 				break;
@@ -945,9 +985,9 @@ public class SmtParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(119);
+			setState(127);
 			match(T__8);
-			setState(121); 
+			setState(129); 
 			_errHandler.sync(this);
 			_alt = 1;
 			do {
@@ -955,7 +995,7 @@ public class SmtParser extends Parser {
 				case 1:
 					{
 					{
-					setState(120);
+					setState(128);
 					term();
 					}
 					}
@@ -963,9 +1003,9 @@ public class SmtParser extends Parser {
 				default:
 					throw new NoViableAltException(this);
 				}
-				setState(123); 
+				setState(131); 
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
 			}
 		}
@@ -1009,13 +1049,13 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(125);
+			setState(133);
 			match(T__9);
-			setState(126);
+			setState(134);
 			match(T__0);
-			setState(127);
+			setState(135);
 			term();
-			setState(128);
+			setState(136);
 			match(T__2);
 			}
 		}
@@ -1062,22 +1102,22 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(130);
+			setState(138);
 			match(T__10);
 			{
-			setState(131);
+			setState(139);
 			match(T__0);
-			setState(132);
+			setState(140);
 			term();
-			setState(133);
+			setState(141);
 			match(T__2);
 			}
 			{
-			setState(135);
+			setState(143);
 			match(T__0);
-			setState(136);
+			setState(144);
 			term();
-			setState(137);
+			setState(145);
 			match(T__2);
 			}
 			}
@@ -1120,9 +1160,9 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(139);
+			setState(147);
 			match(T__11);
-			setState(140);
+			setState(148);
 			match(Integer);
 			}
 		}
@@ -1166,21 +1206,21 @@ public class SmtParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(142);
+			setState(150);
 			match(T__12);
-			setState(143);
+			setState(151);
 			match(T__13);
-			setState(144);
+			setState(152);
 			match(T__0);
-			setState(145);
+			setState(153);
 			match(T__5);
-			setState(146);
+			setState(154);
 			match(T__0);
-			setState(147);
+			setState(155);
 			sort();
-			setState(148);
+			setState(156);
 			match(T__2);
-			setState(149);
+			setState(157);
 			match(T__2);
 			}
 		}
@@ -1196,45 +1236,48 @@ public class SmtParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\26\u009a\4\2\t\2"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\26\u00a2\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\3\2\3\2\3\2\7\2*\n\2\f\2\16\2-\13\2\3\2\7\2\60\n\2\f\2\16\2"+
 		"\63\13\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3\4\3\4\3\4\3\4\3\4\7\4B\n\4"+
-		"\f\4\16\4E\13\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3"+
-		"\5\3\6\3\6\3\6\5\6X\n\6\3\7\3\7\3\7\3\7\3\7\3\b\3\b\6\ba\n\b\r\b\16\b"+
-		"b\3\t\3\t\3\n\3\n\3\13\3\13\3\f\3\f\3\r\3\r\3\r\3\r\3\r\3\r\5\rs\n\r\3"+
-		"\16\3\16\3\16\5\16x\n\16\3\17\3\17\6\17|\n\17\r\17\16\17}\3\20\3\20\3"+
-		"\20\3\20\3\20\3\21\3\21\3\21\3\21\3\21\3\21\3\21\3\21\3\21\3\22\3\22\3"+
-		"\22\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\3\23\2\2\24\2\4\6\b\n"+
-		"\f\16\20\22\24\26\30\32\34\36 \"$\2\2\2\u0094\2&\3\2\2\2\4\66\3\2\2\2"+
-		"\6<\3\2\2\2\bO\3\2\2\2\nW\3\2\2\2\fY\3\2\2\2\16^\3\2\2\2\20d\3\2\2\2\22"+
-		"f\3\2\2\2\24h\3\2\2\2\26j\3\2\2\2\30r\3\2\2\2\32w\3\2\2\2\34y\3\2\2\2"+
-		"\36\177\3\2\2\2 \u0084\3\2\2\2\"\u008d\3\2\2\2$\u0090\3\2\2\2&\'\7\3\2"+
-		"\2\'+\7\4\2\2(*\5\4\3\2)(\3\2\2\2*-\3\2\2\2+)\3\2\2\2+,\3\2\2\2,\61\3"+
-		"\2\2\2-+\3\2\2\2.\60\5\6\4\2/.\3\2\2\2\60\63\3\2\2\2\61/\3\2\2\2\61\62"+
-		"\3\2\2\2\62\64\3\2\2\2\63\61\3\2\2\2\64\65\7\5\2\2\65\3\3\2\2\2\66\67"+
-		"\7\3\2\2\678\7\6\2\289\5\20\t\29:\5\22\n\2:;\7\5\2\2;\5\3\2\2\2<=\7\3"+
-		"\2\2=>\7\7\2\2>?\5\24\13\2?C\7\3\2\2@B\5\b\5\2A@\3\2\2\2BE\3\2\2\2CA\3"+
-		"\2\2\2CD\3\2\2\2DF\3\2\2\2EC\3\2\2\2FG\7\5\2\2GH\7\3\2\2HI\5\n\6\2IJ\7"+
-		"\5\2\2JK\7\3\2\2KL\5\30\r\2LM\7\5\2\2MN\7\5\2\2N\7\3\2\2\2OP\7\3\2\2P"+
-		"Q\5\26\f\2QR\5\n\6\2RS\7\5\2\2S\t\3\2\2\2TX\5\20\t\2UX\5\16\b\2VX\5\f"+
-		"\7\2WT\3\2\2\2WU\3\2\2\2WV\3\2\2\2X\13\3\2\2\2YZ\7\b\2\2Z[\7\3\2\2[\\"+
-		"\5\n\6\2\\]\7\5\2\2]\r\3\2\2\2^`\7\t\2\2_a\5\n\6\2`_\3\2\2\2ab\3\2\2\2"+
-		"b`\3\2\2\2bc\3\2\2\2c\17\3\2\2\2de\7\21\2\2e\21\3\2\2\2fg\7\23\2\2g\23"+
-		"\3\2\2\2hi\7\21\2\2i\25\3\2\2\2jk\7\21\2\2k\27\3\2\2\2ls\5\32\16\2ms\5"+
-		"\34\17\2ns\5\36\20\2os\5 \21\2ps\5\"\22\2qs\5$\23\2rl\3\2\2\2rm\3\2\2"+
-		"\2rn\3\2\2\2ro\3\2\2\2rp\3\2\2\2rq\3\2\2\2s\31\3\2\2\2tu\7\n\2\2ux\7\23"+
-		"\2\2vx\7\23\2\2wt\3\2\2\2wv\3\2\2\2x\33\3\2\2\2y{\7\13\2\2z|\5\30\r\2"+
-		"{z\3\2\2\2|}\3\2\2\2}{\3\2\2\2}~\3\2\2\2~\35\3\2\2\2\177\u0080\7\f\2\2"+
-		"\u0080\u0081\7\3\2\2\u0081\u0082\5\30\r\2\u0082\u0083\7\5\2\2\u0083\37"+
-		"\3\2\2\2\u0084\u0085\7\r\2\2\u0085\u0086\7\3\2\2\u0086\u0087\5\30\r\2"+
-		"\u0087\u0088\7\5\2\2\u0088\u0089\3\2\2\2\u0089\u008a\7\3\2\2\u008a\u008b"+
-		"\5\30\r\2\u008b\u008c\7\5\2\2\u008c!\3\2\2\2\u008d\u008e\7\16\2\2\u008e"+
-		"\u008f\7\23\2\2\u008f#\3\2\2\2\u0090\u0091\7\17\2\2\u0091\u0092\7\20\2"+
-		"\2\u0092\u0093\7\3\2\2\u0093\u0094\7\b\2\2\u0094\u0095\7\3\2\2\u0095\u0096"+
-		"\5\n\6\2\u0096\u0097\7\5\2\2\u0097\u0098\7\5\2\2\u0098%\3\2\2\2\n+\61"+
-		"CWbrw}";
+		"\f\4\16\4E\13\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4M\n\4\3\4\3\4\3\4\3\4\3\4\5"+
+		"\4T\n\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\6\5\6`\n\6\3\7\3\7\3\7\3"+
+		"\7\3\7\3\b\3\b\6\bi\n\b\r\b\16\bj\3\t\3\t\3\n\3\n\3\13\3\13\3\f\3\f\3"+
+		"\r\3\r\3\r\3\r\3\r\3\r\5\r{\n\r\3\16\3\16\3\16\5\16\u0080\n\16\3\17\3"+
+		"\17\6\17\u0084\n\17\r\17\16\17\u0085\3\20\3\20\3\20\3\20\3\20\3\21\3\21"+
+		"\3\21\3\21\3\21\3\21\3\21\3\21\3\21\3\22\3\22\3\22\3\23\3\23\3\23\3\23"+
+		"\3\23\3\23\3\23\3\23\3\23\3\23\2\2\24\2\4\6\b\n\f\16\20\22\24\26\30\32"+
+		"\34\36 \"$\2\2\2\u009e\2&\3\2\2\2\4\66\3\2\2\2\6<\3\2\2\2\bW\3\2\2\2\n"+
+		"_\3\2\2\2\fa\3\2\2\2\16f\3\2\2\2\20l\3\2\2\2\22n\3\2\2\2\24p\3\2\2\2\26"+
+		"r\3\2\2\2\30z\3\2\2\2\32\177\3\2\2\2\34\u0081\3\2\2\2\36\u0087\3\2\2\2"+
+		" \u008c\3\2\2\2\"\u0095\3\2\2\2$\u0098\3\2\2\2&\'\7\3\2\2\'+\7\4\2\2("+
+		"*\5\4\3\2)(\3\2\2\2*-\3\2\2\2+)\3\2\2\2+,\3\2\2\2,\61\3\2\2\2-+\3\2\2"+
+		"\2.\60\5\6\4\2/.\3\2\2\2\60\63\3\2\2\2\61/\3\2\2\2\61\62\3\2\2\2\62\64"+
+		"\3\2\2\2\63\61\3\2\2\2\64\65\7\5\2\2\65\3\3\2\2\2\66\67\7\3\2\2\678\7"+
+		"\6\2\289\5\20\t\29:\5\22\n\2:;\7\5\2\2;\5\3\2\2\2<=\7\3\2\2=>\7\7\2\2"+
+		">?\5\24\13\2?C\7\3\2\2@B\5\b\5\2A@\3\2\2\2BE\3\2\2\2CA\3\2\2\2CD\3\2\2"+
+		"\2DF\3\2\2\2EC\3\2\2\2FL\7\5\2\2GH\7\3\2\2HI\5\n\6\2IJ\7\5\2\2JM\3\2\2"+
+		"\2KM\5\n\6\2LG\3\2\2\2LK\3\2\2\2MS\3\2\2\2NO\7\3\2\2OP\5\30\r\2PQ\7\5"+
+		"\2\2QT\3\2\2\2RT\5\30\r\2SN\3\2\2\2SR\3\2\2\2TU\3\2\2\2UV\7\5\2\2V\7\3"+
+		"\2\2\2WX\7\3\2\2XY\5\26\f\2YZ\5\n\6\2Z[\7\5\2\2[\t\3\2\2\2\\`\5\20\t\2"+
+		"]`\5\16\b\2^`\5\f\7\2_\\\3\2\2\2_]\3\2\2\2_^\3\2\2\2`\13\3\2\2\2ab\7\b"+
+		"\2\2bc\7\3\2\2cd\5\n\6\2de\7\5\2\2e\r\3\2\2\2fh\7\t\2\2gi\5\n\6\2hg\3"+
+		"\2\2\2ij\3\2\2\2jh\3\2\2\2jk\3\2\2\2k\17\3\2\2\2lm\7\21\2\2m\21\3\2\2"+
+		"\2no\7\23\2\2o\23\3\2\2\2pq\7\21\2\2q\25\3\2\2\2rs\7\21\2\2s\27\3\2\2"+
+		"\2t{\5\32\16\2u{\5\34\17\2v{\5\36\20\2w{\5 \21\2x{\5\"\22\2y{\5$\23\2"+
+		"zt\3\2\2\2zu\3\2\2\2zv\3\2\2\2zw\3\2\2\2zx\3\2\2\2zy\3\2\2\2{\31\3\2\2"+
+		"\2|}\7\n\2\2}\u0080\7\23\2\2~\u0080\7\23\2\2\177|\3\2\2\2\177~\3\2\2\2"+
+		"\u0080\33\3\2\2\2\u0081\u0083\7\13\2\2\u0082\u0084\5\30\r\2\u0083\u0082"+
+		"\3\2\2\2\u0084\u0085\3\2\2\2\u0085\u0083\3\2\2\2\u0085\u0086\3\2\2\2\u0086"+
+		"\35\3\2\2\2\u0087\u0088\7\f\2\2\u0088\u0089\7\3\2\2\u0089\u008a\5\30\r"+
+		"\2\u008a\u008b\7\5\2\2\u008b\37\3\2\2\2\u008c\u008d\7\r\2\2\u008d\u008e"+
+		"\7\3\2\2\u008e\u008f\5\30\r\2\u008f\u0090\7\5\2\2\u0090\u0091\3\2\2\2"+
+		"\u0091\u0092\7\3\2\2\u0092\u0093\5\30\r\2\u0093\u0094\7\5\2\2\u0094!\3"+
+		"\2\2\2\u0095\u0096\7\16\2\2\u0096\u0097\7\23\2\2\u0097#\3\2\2\2\u0098"+
+		"\u0099\7\17\2\2\u0099\u009a\7\20\2\2\u009a\u009b\7\3\2\2\u009b\u009c\7"+
+		"\b\2\2\u009c\u009d\7\3\2\2\u009d\u009e\5\n\6\2\u009e\u009f\7\5\2\2\u009f"+
+		"\u00a0\7\5\2\2\u00a0%\3\2\2\2\f+\61CLS_jz\177\u0085";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

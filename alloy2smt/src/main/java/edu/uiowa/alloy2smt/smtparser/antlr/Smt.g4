@@ -6,7 +6,8 @@ model : '(' 'model' sortDeclaration* functionDefinition* ')' ;
 
 sortDeclaration :  '(' 'declare-sort' sortName arity ')' ;
 
-functionDefinition : '(' 'define-fun' functionName '(' argument* ')' '(' sort ')' '(' term ')' ')' ;
+functionDefinition : '(' 'define-fun' functionName '(' argument* ')' ('(' sort ')'| sort)
+                        ('(' term ')' | term) ')' ;
 
 argument : '(' argumentName sort ')' ;
 
