@@ -31,10 +31,14 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     private static final String TIMEOUT_OPTION       = "tlimit" ;
 
     private final Map<String, String> alloyFiles;
+    private final String              originalFileName;
+    private final int                 resolutionMode;
 
-    Cvc4SimpleTask(Map<String, String> alloyFiles)
+    Cvc4SimpleTask(Map<String, String> alloyFiles, String originalFilename, int resolutionMode)
     {
-        this.alloyFiles  = alloyFiles;
+        this.alloyFiles         = alloyFiles;
+        this.originalFileName   = originalFilename;
+        this.resolutionMode     = resolutionMode;
     }
     @Override
     public void run(WorkerEngine.WorkerCallback workerCallback) throws Exception
@@ -161,17 +165,11 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         Command command = translation.getCommands().get(commandIndex);
         SmtModel model = parseModel(smtModel);
 
-        //ToDo: implement the case when there are multiple files
-
-        Iterator<Map.Entry<String, String>> iterator = alloyFiles.entrySet().iterator();
-
-        Map.Entry<String, String> entry = iterator.next();
-
         File xmlFile        = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, entry.getKey(), command);
+        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, originalFileName, command);
 
         callbackPlain(workerCallback, "Generated alloy instance file: " + xmlFilePath +"\n");
 
@@ -413,13 +411,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
     private Translation translateToSMT(WorkerEngine.WorkerCallback workerCallback) throws IOException
     {
-        //ToDo: implement the case when there are multiple files
-
-        Iterator<Map.Entry<String, String>> iterator    = alloyFiles.entrySet().iterator();
-
-        Map.Entry<String, String> entry                 = iterator.next();
-
-        Translation translation                         = Utils.translate(entry.getValue());
+        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode);
 
         callbackBold(workerCallback,"Translation output");
         callbackPlain(workerCallback, translation.getSmtScript());

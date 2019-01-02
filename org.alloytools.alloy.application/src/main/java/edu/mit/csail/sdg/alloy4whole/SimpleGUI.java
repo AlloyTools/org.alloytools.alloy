@@ -1142,20 +1142,21 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         WorkerEngine.WorkerTask task;
 
+        Map<String, String > alloyFiles = text.takeSnapshot();
+        int resolutionMode              = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
         if(RelationalSolver.get().equals(KODKOD)) {
 
             SimpleTask1 kodkodTask = new SimpleTask1();
             kodkodTask.bundleIndex = i;
             kodkodTask.bundleWarningNonFatal = WarningNonfatal.get();
-            kodkodTask.map = text.takeSnapshot();
+            kodkodTask.map = alloyFiles;
             kodkodTask.options = opt.dup();
-            kodkodTask.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
+            kodkodTask.resolutionMode = resolutionMode;
             kodkodTask.tempdir = maketemp();
             task = kodkodTask;
         }
         else{
-            Map<String, String > alloyFiles = text.takeSnapshot();
-            task = new Cvc4SimpleTask(alloyFiles);
+            task = new Cvc4SimpleTask(alloyFiles, opt.originalFilename, resolutionMode);
         }
         try {
             runmenu.setEnabled(false);
