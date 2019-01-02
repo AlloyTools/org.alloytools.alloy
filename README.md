@@ -24,7 +24,7 @@ JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 Checkout the project and type ./gradlew. You find the executable JAR in bin/alloy_cvc4.jar after the build has finished.
 
-     $ java version           # works with 1.8 - 1.11
+     $ java -version           # works with 1.8 - 1.11
      java version "11.0.1" 2018-10-16 LTS
      Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
      Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
@@ -71,7 +71,7 @@ In the root of this workspace type `./gradlew build`. This is a script that will
 
 ### Eclipse
 
-### IntelliJ IDEA (Ultimate Edition only)
+### IntelliJ IDEA
 
 1. Choose "Import Project"
 2. Select the `org.alloytools.alloy` directory.
