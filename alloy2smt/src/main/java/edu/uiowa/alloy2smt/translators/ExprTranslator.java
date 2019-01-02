@@ -245,8 +245,9 @@ public class ExprTranslator
         Expression memberOfOp = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
 
         BoundVariableDeclaration existentialBdVar = new BoundVariableDeclaration("_w", translator.ternaryIntTup);          
-        Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(translator.valueOfTernaryIntTup.getName(), existentialBdVar.getConstantExpr()), 
-                                                    BinaryExpression.Op.EQ, memberOfOp), existentialBdVar);
+//        Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(translator.valueOfTernaryIntTup.getName(), existentialBdVar.getConstantExpr()),
+//                                                    BinaryExpression.Op.EQ, memberOfOp), existentialBdVar);
+        Expression rhsExpr = new BooleanConstant(true);
         
         BoundVariableDeclaration bdTernaryIntVar = new BoundVariableDeclaration("_w", translator.ternaryIntTup);
         
