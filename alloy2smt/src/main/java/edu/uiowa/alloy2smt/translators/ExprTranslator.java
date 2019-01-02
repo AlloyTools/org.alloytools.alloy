@@ -323,8 +323,8 @@ public class ExprTranslator
                 break;                   
         }
         translator.smtProgram.addConstantDeclaration(arithVarDecl);
-        translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition I", finalExprI));     
-        translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition II", finalExprII));     
+        translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition", finalExprI));
+//        translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition II", finalExprII));
         translator.arithOps.put(op, arithVarDecl.getConstantExpr());        
     }
 

@@ -221,7 +221,7 @@ public class ExprUnaryTranslator
         
         // If the expression is a binary or ternary field, we need to make sure 
         // there exists a var of type binaryIntTup such that the integer tuple equals to the bdVarTupExpr.
-        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
+//        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
 
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
@@ -258,7 +258,7 @@ public class ExprUnaryTranslator
         Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
         Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
         Expression bodyExpr     = new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.EQ, set);
-        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
+//        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
         return tryAddingExistentialConstraint(exists);
@@ -301,7 +301,7 @@ public class ExprUnaryTranslator
         Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
         Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
         Expression bodyExpr     = new BinaryExpression(set, BinaryExpression.Op.SUBSET, bdVarSetExpr);
-        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
+//        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
         QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
         return tryAddingExistentialConstraint(exists);
