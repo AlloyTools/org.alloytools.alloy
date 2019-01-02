@@ -81,18 +81,21 @@ public class Cvc4Process
         return new Cvc4Process(process);
     }
 
-    public void sendCommand(String command) throws IOException
+    public String sendCommand(String command) throws IOException
     {
         outputStream.write((command + "\n").getBytes());
         outputStream.flush();
+        return receiveOutput();
     }
 
-    public String receiveOutput() throws IOException
+    private String receiveOutput() throws IOException
     {
         String line = "";
-        sendCommand("(echo success)\n");
+        outputStream.write(("(echo success)\n").getBytes());
+        outputStream.flush();
 
         StringBuilder output = new StringBuilder();
+
         while(scanner.hasNextLine())
         {
             line = scanner.nextLine();

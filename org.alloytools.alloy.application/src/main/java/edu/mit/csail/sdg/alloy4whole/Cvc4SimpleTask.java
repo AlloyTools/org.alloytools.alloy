@@ -97,11 +97,8 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         // (push)
         // (check-sat)
-        cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
         callbackPlain(workerCallback, Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
-
-        // read the result
-        String result = cvc4Process.receiveOutput();
+        String result = cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
@@ -156,9 +153,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
     private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, int commandIndex, long duration, Cvc4Process cvc4Process) throws Exception
     {
-        cvc4Process.sendCommand(Translation.GET_MODEL);
-
-        String smtModel = cvc4Process.receiveOutput();
+        String smtModel = cvc4Process.sendCommand(Translation.GET_MODEL);
 
         callbackPlain(workerCallback,"A model has been found\n");
         callbackPlain(workerCallback, smtModel);
