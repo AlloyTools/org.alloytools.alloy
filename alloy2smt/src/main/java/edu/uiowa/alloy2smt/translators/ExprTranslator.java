@@ -105,10 +105,11 @@ public class ExprTranslator
             case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
             case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
             case DISJOINT   : return translateExprListToDisjBinaryExpressions(UnaryExpression.Op.DISTINCT, exprList, variablesScope);
-            default     : throw new UnsupportedOperationException();
+            case TOTALORDER : throw new UnsupportedOperationException();// total order should be handled before coming here
+            default         : throw new UnsupportedOperationException();
         }
     }
-    
+
     Expression translateExprListToDisjBinaryExpressions(UnaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
     {        
         List<Expression> exprs = new ArrayList<>();

@@ -61,7 +61,7 @@ public class BinaryExpression extends Expression
         MULTIPLY ("*"),
         DIVIDE ("/"),
         EQ ("="),
-        NEQ ("<>"),
+        NEQ ("<>"), //ToDo: clean this up
         GTE (">="),
         LTE ("<="),
         GT (">"),
