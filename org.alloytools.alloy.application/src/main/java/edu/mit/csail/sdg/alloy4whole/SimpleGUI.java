@@ -1145,7 +1145,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
         Map<String, String > alloyFiles = text.takeSnapshot();
         int resolutionMode              = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
         if(RelationalSolver.get().equals(KODKOD)) {
-
             SimpleTask1 kodkodTask = new SimpleTask1();
             kodkodTask.bundleIndex = i;
             kodkodTask.bundleWarningNonFatal = WarningNonfatal.get();
@@ -1677,8 +1676,17 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (WorkerEngine.isBusy())
                 throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
             SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
-            SimpleTask2 task = new SimpleTask2();
-            task.filename = arg;
+
+            WorkerEngine.WorkerTask task;
+            if(RelationalSolver.get().equals(KODKOD)) {
+                SimpleTask2 task2   = new SimpleTask2();
+                task2.filename      = arg;
+                task                = task2;
+            }
+            else{
+                task = new Cvc4EnumerationTask(arg);
+            }
+
             try {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);

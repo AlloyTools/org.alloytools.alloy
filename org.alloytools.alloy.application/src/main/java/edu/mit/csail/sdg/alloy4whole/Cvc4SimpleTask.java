@@ -34,6 +34,8 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
     private final String              originalFileName;
     private final int                 resolutionMode;
 
+    public static Translation translation;
+
     Cvc4SimpleTask(Map<String, String> alloyFiles, String originalFilename, int resolutionMode)
     {
         this.alloyFiles         = alloyFiles;
@@ -47,7 +49,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         {
             final long startTranslate = System.currentTimeMillis();
 
-            Translation translation = translateToSMT(workerCallback);
+            translation = translateToSMT(workerCallback);
 
             final long endTranslate = System.currentTimeMillis();
 
@@ -55,15 +57,17 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
             String smtScript = translation.getSmtScript();
 
-            if (smtScript != null) {
+            if (smtScript != null)
+            {
                 Cvc4Process cvc4Process = Cvc4Process.start(workerCallback);
 
                 cvc4Process.sendCommand(smtScript);
 
-                setSolverOptions(translation, cvc4Process, workerCallback);
+                setSolverOptions(cvc4Process, workerCallback);
 
-                for (int index = 0; index < translation.getCommands().size(); index++) {
-                    solveCommand(translation, index, cvc4Process, workerCallback);
+                for (int index = 0; index < translation.getCommands().size(); index++)
+                {
+                    solveCommand(index, cvc4Process, workerCallback);
                 }
 
                 cvc4Process.destroy();
@@ -79,7 +83,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         }
     }
 
-    private void setSolverOptions(Translation translation, Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws IOException
+    private void setSolverOptions(Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws IOException
     {
         Map<String, String> options = new HashMap<>();
 
@@ -91,7 +95,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         callbackPlain(workerCallback, script);
     }
 
-    private void solveCommand(Translation translation, int index, Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws Exception
+    private void solveCommand(int index, Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws Exception
     {
         String commandTranslation = translation.translateCommand(index);
 
