@@ -25,54 +25,69 @@ import edu.mit.csail.sdg.alloy4whole.solution.*;
 
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
-public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
+public class Cvc4Task implements WorkerEngine.WorkerTask
 {
     private static final String tempDirectory        = System.getProperty("java.io.tmpdir");
     private static final String TIMEOUT_OPTION       = "tlimit" ;
 
     private final Map<String, String> alloyFiles;
-    private final String              originalFileName;
+    public static String             originalFileName;
     private final int                 resolutionMode;
 
+    private static Cvc4Process cvc4Process;
+    private WorkerEngine.WorkerCallback workerCallback;
+
+    //ToDo: review the static access for these fields
     public static Translation translation;
 
-    Cvc4SimpleTask(Map<String, String> alloyFiles, String originalFilename, int resolutionMode)
+
+    private String fileName;
+
+    Cvc4Task(Map<String, String> alloyFiles, String fileName, int resolutionMode)
     {
-        this.alloyFiles         = alloyFiles;
-        this.originalFileName   = originalFilename;
-        this.resolutionMode     = resolutionMode;
+        this.alloyFiles     = alloyFiles;
+        this.fileName       = fileName;
+        this.resolutionMode = resolutionMode;
     }
     @Override
     public void run(WorkerEngine.WorkerCallback workerCallback) throws Exception
     {
         try
         {
+            this.workerCallback = workerCallback;
+            originalFileName    = fileName;
+
             final long startTranslate = System.currentTimeMillis();
 
-            translation = translateToSMT(workerCallback);
+            translation = translateToSMT();
 
             final long endTranslate = System.currentTimeMillis();
 
-            callbackBold(workerCallback, "Translation time: " + (endTranslate - startTranslate) + " ms\n");
+            callbackBold("Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
             String smtScript = translation.getSmtScript();
 
             if (smtScript != null)
             {
-                Cvc4Process cvc4Process = Cvc4Process.start(workerCallback);
+                cvc4Process = Cvc4Process.start(workerCallback);
 
                 cvc4Process.sendCommand(smtScript);
 
-                setSolverOptions(cvc4Process, workerCallback);
+                String options =  setSolverOptions(cvc4Process);
+
+                callbackPlain(options);
 
                 for (int index = 0; index < translation.getCommands().size(); index++)
                 {
-                    solveCommand(index, cvc4Process, workerCallback);
+                    solveCommand(index);
                 }
 
-                cvc4Process.destroy();
-            } else {
-                callbackPlain(workerCallback, "No translation found from alloy model to SMT");
+                //ToDo: review when to destroy the process
+                //cvc4Process.destroy();
+            }
+            else
+            {
+                callbackPlain("No translation found from alloy model to SMT");
             }
         }
         catch (Exception exception)
@@ -83,7 +98,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         }
     }
 
-    private void setSolverOptions(Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws IOException
+    public static String setSolverOptions(Cvc4Process cvc4Process) throws IOException
     {
         Map<String, String> options = new HashMap<>();
 
@@ -92,79 +107,80 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         String script = translation.translateOptions(options);
         cvc4Process.sendCommand(script);
-        callbackPlain(workerCallback, script);
+
+        return script;
     }
 
-    private void solveCommand(int index, Cvc4Process cvc4Process, WorkerEngine.WorkerCallback workerCallback) throws Exception
+    private void solveCommand(int index) throws Exception
     {
         String commandTranslation = translation.translateCommand(index);
 
         final long startSolve   = System.currentTimeMillis();
 
-        callbackBold(workerCallback, "Executing " + translation.getCommands().get(index).label + "\n");
+        callbackBold("Executing " + translation.getCommands().get(index).label + "\n");
 
         // (push)
         // (check-sat)
-        callbackPlain(workerCallback, Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
+        callbackPlain(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
         String result = cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
-        callbackBold(workerCallback, "Solving time: " + duration + " ms\n");
+        callbackBold("Solving time: " + duration + " ms\n");
 
-        callbackBold(workerCallback, "Satisfiability: " + result + "\n");
+        callbackBold("Satisfiability: " + result + "\n");
 
         if(result != null)
         {
             switch (result)
             {
                 case "sat":
-                    prepareInstance(workerCallback, translation, index, duration, cvc4Process);
+                    prepareInstance(index, duration);
                     break;
                 case "unsat":
                     if(translation.getCommands().get(index).check)
                     {
-                        callbackPlain(workerCallback, "The assertion is valid\n");
+                        callbackPlain("The assertion is valid\n");
                     }
                     else
                     {
-                        callbackPlain(workerCallback, "The result is unsat\n");
+                        callbackPlain("The result is unsat\n");
                     }
                     break;
                 default:
-                    callbackPlain(workerCallback,"The result is unknown\n");
+                    callbackPlain("The result is unknown\n");
                     break;
             }
         }
         else
         {
-            callbackPlain(workerCallback,"No result returned from cvc4\n");
+            callbackPlain("No result returned from cvc4\n");
         }
 
         // (pop)
         cvc4Process.sendCommand(Translation.POP);
-        callbackPlain(workerCallback, Translation.POP + "\n");
+        callbackPlain(Translation.POP + "\n");
     }
 
-    private void callbackPlain(WorkerEngine.WorkerCallback workerCallback, String log)
+    private void callbackPlain(String log)
     {
         workerCallback.callback(new Object[]{"", log});
         workerCallback.callback(new Object[]{"", ""});
     }
 
-    private void callbackBold(WorkerEngine.WorkerCallback workerCallback, String log)
+    private void callbackBold(String log)
     {
         workerCallback.callback(new Object[]{"S2", "\n"});
         workerCallback.callback(new Object[]{"S2", log});
         workerCallback.callback(new Object[]{"S2", "\n"});
     }
 
-    private void prepareInstance(WorkerEngine.WorkerCallback workerCallback, Translation translation, int commandIndex, long duration, Cvc4Process cvc4Process) throws Exception
+    private void prepareInstance(int commandIndex, long duration) throws Exception
     {
         String smtModel = cvc4Process.sendCommand(Translation.GET_MODEL);
 
-        callbackPlain(workerCallback,"A model has been found\n");
-        callbackPlain(workerCallback, smtModel);
+        callbackPlain("A model has been found\n");
+        callbackPlain(smtModel);
 
         Command command = translation.getCommands().get(commandIndex);
         SmtModel model = parseModel(smtModel);
@@ -175,7 +191,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
 
         writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, originalFileName, command);
 
-        callbackPlain(workerCallback, "Generated alloy instance file: " + xmlFilePath +"\n");
+        callbackBold("Generated alloy instance file: " + xmlFilePath +"\n");
 
         String  satResult           = "sat";
 
@@ -183,7 +199,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         workerCallback.callback(message);
     }
 
-    private void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFile,
+    public static void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFile,
                                           String alloyFileName, Command command) throws Exception
     {
 
@@ -222,11 +238,11 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         Alloy alloy = new Alloy();
         alloy.instances = new ArrayList<>();
         alloy.instances.add(instance);
-
+        alloy.buildDate = java.time.Instant.now().toString();
         alloy.writeToXml(xmlFile);
     }
 
-    private Signature getSignature(Map<String, FunctionDefinition> functionsMap, MappingSignature mappingSignature) throws Exception
+    private static Signature getSignature(Map<String, FunctionDefinition> functionsMap, MappingSignature mappingSignature) throws Exception
     {
         Signature signature  = new Signature();
 
@@ -257,7 +273,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         return signature;
     }
 
-    private Field getField(Map<String,FunctionDefinition> functionsMap, MappingField mappingField) throws Exception
+    private static Field getField(Map<String,FunctionDefinition> functionsMap, MappingField mappingField) throws Exception
     {
         Field field  = new Field();
 
@@ -283,7 +299,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         return field;
     }
 
-    private Types getTypes(MappingField mappingField)
+    private static Types getTypes(MappingField mappingField)
     {
         Types types = new Types();
 
@@ -292,7 +308,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         return types;
     }
 
-    private List<Tuple> getTuples(Expression expression)
+    private static List<Tuple> getTuples(Expression expression)
     {
         List<Tuple> tuples = new ArrayList<>();
 
@@ -346,7 +362,7 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private List<Atom> getAtoms(Expression expression)
+    private static List<Atom> getAtoms(Expression expression)
     {
         List<Atom> atoms = new ArrayList<>();
 
@@ -413,24 +429,24 @@ public class Cvc4SimpleTask implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private Translation translateToSMT(WorkerEngine.WorkerCallback workerCallback) throws IOException
+    private Translation translateToSMT() throws IOException
     {
         Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode);
 
-        callbackBold(workerCallback,"Translation output");
-        callbackPlain(workerCallback, translation.getSmtScript());
+        callbackBold("Translation output");
+        callbackPlain(translation.getSmtScript());
 
         File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
         // output the mapping
 
         translation.getMapper().writeToJson(jsonFile.getPath());
 
-        callbackPlain(workerCallback, "Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
+        callbackPlain("Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
 
         return translation;
     }
 
-    private SmtModel parseModel(String model)
+    public static SmtModel parseModel(String model)
     {
         CharStream charStream = CharStreams.fromString(model);
 

@@ -1155,7 +1155,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             task = kodkodTask;
         }
         else{
-            task = new Cvc4SimpleTask(alloyFiles, opt.originalFilename, resolutionMode);
+            task = new Cvc4Task(alloyFiles, opt.originalFilename, resolutionMode);
         }
         try {
             runmenu.setEnabled(false);
