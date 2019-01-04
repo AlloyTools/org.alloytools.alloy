@@ -21,33 +21,29 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import edu.mit.csail.sdg.alloy4whole.solution.*;
+import edu.mit.csail.sdg.alloy4whole.instances.*;
 
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
 public class Cvc4Task implements WorkerEngine.WorkerTask
 {
-    private static final String tempDirectory        = System.getProperty("java.io.tmpdir");
+    public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
     private static final String TIMEOUT_OPTION       = "tlimit" ;
 
     private final Map<String, String> alloyFiles;
-    public static String             originalFileName;
+    private final String             originalFileName;
     private final int                 resolutionMode;
 
+    // only one process for alloy editor
     private static Cvc4Process cvc4Process;
     private WorkerEngine.WorkerCallback workerCallback;
+    private Translation translation;
 
-    //ToDo: review the static access for these fields
-    public static Translation translation;
-
-
-    private String fileName;
-
-    Cvc4Task(Map<String, String> alloyFiles, String fileName, int resolutionMode)
+    Cvc4Task(Map<String, String> alloyFiles, String originalFileName, int resolutionMode)
     {
-        this.alloyFiles     = alloyFiles;
-        this.fileName       = fileName;
-        this.resolutionMode = resolutionMode;
+        this.alloyFiles         = alloyFiles;
+        this.originalFileName   = originalFileName;
+        this.resolutionMode     = resolutionMode;
     }
     @Override
     public void run(WorkerEngine.WorkerCallback workerCallback) throws Exception
@@ -55,7 +51,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         try
         {
             this.workerCallback = workerCallback;
-            originalFileName    = fileName;
 
             final long startTranslate = System.currentTimeMillis();
 
@@ -73,7 +68,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
                 cvc4Process.sendCommand(smtScript);
 
-                String options =  setSolverOptions(cvc4Process);
+                String options =  setSolverOptions(cvc4Process, translation);
 
                 callbackPlain(options);
 
@@ -98,7 +93,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
     }
 
-    public static String setSolverOptions(Cvc4Process cvc4Process) throws IOException
+    public static String setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
     {
         Map<String, String> options = new HashMap<>();
 
@@ -189,7 +184,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, originalFileName, command);
+        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, originalFileName, command, alloyFiles);
 
         callbackBold("Generated alloy instance file: " + xmlFilePath +"\n");
 
@@ -199,8 +194,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         workerCallback.callback(message);
     }
 
-    public static void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFile,
-                                          String alloyFileName, Command command) throws Exception
+    public static void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFileName,
+              String originalFileName, Command command, Map<String, String> alloyFiles) throws Exception
     {
 
         Map<String, FunctionDefinition> functionsMap = new HashMap<>();
@@ -230,16 +225,23 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         instance.signatures = signatures;
         instance.fields     = fields;
         instance.bitWidth   = 4;
-        instance.maxSeq     = 4; //ToDo: review the maxSeq meaning
+        instance.maxSeq     = 4; //ToDo: find an appropriate value for maxSeq and bitWidth
         instance.command    = command.toString();
 
-        instance.fileName = alloyFileName;
+        instance.fileName = originalFileName;
 
         Alloy alloy = new Alloy();
         alloy.instances = new ArrayList<>();
         alloy.instances.add(instance);
         alloy.buildDate = java.time.Instant.now().toString();
-        alloy.writeToXml(xmlFile);
+        alloy.alloyFiles = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : alloyFiles.entrySet())
+        {
+            alloy.alloyFiles.add(new AlloyFile(entry.getKey(), entry.getValue()));
+        }
+
+        alloy.writeToXml(xmlFileName);
     }
 
     private static Signature getSignature(Map<String, FunctionDefinition> functionsMap, MappingSignature mappingSignature) throws Exception

@@ -1,11 +1,14 @@
-package edu.mit.csail.sdg.alloy4whole.solution;
+package edu.mit.csail.sdg.alloy4whole.instances;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -25,6 +28,23 @@ public class Alloy
     @XmlAttribute(name = "builddate")
     @JsonProperty("buildDate")
     public String buildDate;
+
+    @XmlElement(name = "source")
+    @JsonProperty("alloyFiles")
+    public List<AlloyFile> alloyFiles;
+
+    public Map<String, String> getAlloyFiles()
+    {
+        Map<String, String> files = new HashMap<>();
+        if(alloyFiles != null)
+        {
+            for (AlloyFile file: alloyFiles)
+            {
+                files.put(file.fileName, file.content);
+            }
+        }
+        return files;
+    }
 
     public void writeToXml(String xmlFile) throws JAXBException
     {

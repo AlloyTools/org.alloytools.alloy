@@ -1,23 +1,35 @@
 package edu.mit.csail.sdg.alloy4whole;
 
+import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
-import edu.mit.csail.sdg.alloy4whole.solution.Alloy;
+import edu.mit.csail.sdg.alloy4whole.instances.Alloy;
 import edu.mit.csail.sdg.ast.Command;
+import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.SmtModel;
 import edu.uiowa.alloy2smt.translators.Translation;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
+
+import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
 
 public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
 {
     private final String xmlFileName;
-    private static boolean started = false;
-    private static Cvc4Process cvc4Process;
+    private Translation translation;
+    private boolean executedBefore = false;
+    // each enumeration task has its own process
+    private Cvc4Process cvc4Process;
+    private Alloy alloy;
+    private Map<String, String> alloyFiles;
+    private int commandIndex;
+    private String originalFileName;
 
-    Cvc4EnumerationTask(String xmlFileName)
+    Cvc4EnumerationTask(String xmlFileName) throws Exception
     {
         this.xmlFileName = xmlFileName;
     }
@@ -27,46 +39,42 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
     {
         try
         {
-            // read the solution from the xml file
-            Alloy alloy = Alloy.readFromXml(xmlFileName);
-
-            if (alloy.instances.size() == 0)
+            if(!executedBefore)
             {
-                throw new Exception("No instance found in the file " + xmlFileName);
-            }
-
-            // read the command from the only instance in the file
-            String command = alloy.instances.get(0).command;
-
-            // find the index of the matching command
-            List<Command> commands = Cvc4Task.translation.getCommands();
-            int index;
-            for (index = 0; index < commands.size() ; index++)
-            {
-                if(command.equals(commands.get(index).toString()))
+                // read the solution from the xml file
+                alloy = Alloy.readFromXml(xmlFileName);
+                alloyFiles = alloy.getAlloyFiles();
+                if (alloy.instances.size() == 0)
                 {
-                    break;
+                    throw new Exception("No instance found in the file " + xmlFileName);
                 }
-            }
+                // read the command from the only instance in the file
+                String command      = alloy.instances.get(0).command;
+                originalFileName    = alloy.instances.get(0).fileName;
 
-            // start cvc4 if it is not started already
-            //ToDo; handle the case of new execution
-            if(! started)
-            {
-                String smtScript = Cvc4Task.translation.getSmtScript();
+                translation = translateToSMT();
+
+                // find the index of the matching command
+                List<Command> commands = translation.getCommands();
+                for (commandIndex = 0; commandIndex < commands.size() ; commandIndex++)
+                {
+                    if(command.equals(commands.get(commandIndex).toString()))
+                    {
+                        break;
+                    }
+                }
+
+                String smtScript = translation.getSmtScript();
 
                 if (smtScript != null)
                 {
                     cvc4Process = Cvc4Process.start(workerCallback);
-
                     cvc4Process.sendCommand(smtScript);
-
-                    Cvc4Task.setSolverOptions(cvc4Process);
-
+                    Cvc4Task.setSolverOptions(cvc4Process, translation);
                     // solve the instance
-                    solveCommand(index);
+                    solveCommand(commandIndex);
 
-                    started = true;
+                    executedBefore = true;
                 }
                 else
                 {
@@ -75,7 +83,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
             }
 
             // get a new model and save it
-            prepareInstance(index);
+            prepareInstance(commandIndex);
 
             // tell alloy user interface that the last instance has changed
             workerCallback.callback(new Object[]{"declare", xmlFileName});
@@ -88,9 +96,23 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
         }
     }
 
+    private Translation translateToSMT() throws IOException
+    {
+        int resolutionMode      = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
+        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode);
+
+        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(Cvc4Task.tempDirectory));
+
+        // output the mapping
+        translation.getMapper().writeToJson(jsonFile.getPath());
+
+        return translation;
+    }
+
+
     private void solveCommand(int index) throws Exception
     {
-        String commandTranslation = Cvc4Task.translation.translateCommand(index);
+        String commandTranslation = translation.translateCommand(index);
 
         // (check-sat)
         String result = cvc4Process.sendCommand(commandTranslation + Translation.CHECK_SAT);
@@ -121,7 +143,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
     private void prepareInstance(int commandIndex) throws Exception
     {
         String smtModel = cvc4Process.sendCommand(Translation.GET_MODEL);
-        Command command = Cvc4Task.translation.getCommands().get(commandIndex);
+        Command command = translation.getCommands().get(commandIndex);
 
         SmtModel model = Cvc4Task.parseModel(smtModel);
 
@@ -129,7 +151,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        Cvc4Task.writeModelToAlloyXmlFile(Cvc4Task.translation.getMapper(), model, xmlFilePath,
-                Cvc4Task.originalFileName, command);
+        Cvc4Task.writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath,
+                originalFileName, command, alloy.getAlloyFiles());
     }
 }

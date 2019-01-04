@@ -1,4 +1,4 @@
-package edu.mit.csail.sdg.alloy4whole.solution;
+package edu.mit.csail.sdg.alloy4whole.instances;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

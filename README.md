@@ -13,7 +13,7 @@ More documentation can be found at: http://alloytools.org/documentation.html.
 
 # Requirements
 
-Alloy runs on all operating systems with a recent JVM (Java 6 or later). 
+Alloy runs on all operating systems with a recent JVM (Java 8 or later). 
 It is made available as a runnable jar file with both a cross-platform SAT solver
 ([Sat4j](http://www.sat4j.org/) and more efficient native SAT solvers ([minisat](http://minisat.se), [lingeling/plingeling](http://fmv.jku.at/lingeling/), [glucose](http://www.labri.fr/perso/lsimon/glucose/)).
 

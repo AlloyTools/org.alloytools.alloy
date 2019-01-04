@@ -35,11 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1684,7 +1680,16 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 task                = task2;
             }
             else{
-                task = new Cvc4EnumerationTask(arg);
+                try {
+                    task = new Cvc4EnumerationTask(arg);
+                } catch (Exception exception) {
+                    StringWriter stringWriter = new StringWriter();
+                    exception.printStackTrace(new PrintWriter(stringWriter));
+                    log.logBold(stringWriter.toString());
+                    log.logDivider();
+                    log.flush();
+                    return arg;
+                }
             }
 
             try {
