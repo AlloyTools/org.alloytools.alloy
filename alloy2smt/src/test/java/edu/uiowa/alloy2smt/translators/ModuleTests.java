@@ -57,8 +57,6 @@ public class ModuleTests
                 "run {} for 10 but 3 A";
         Translation translation = Utils.translate(alloy);
 
-        System.out.println(translation.getSmtScript());
-
         Assertions.assertTrue(translation.getSmtScript().contains("(define-fun ordA_lt"));
     }
 }

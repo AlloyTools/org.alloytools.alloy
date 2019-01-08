@@ -494,11 +494,14 @@ public class Alloy2SmtTranslator
                 orderedFunctions.add(entry.getKey());
             }            
         }
-        for(Func f : this.alloyModel.getAllFunc())
+        for (CompModule module: this.alloyModel.getAllReachableModules())
         {
-            if(!orderedFunctions.contains(f.label) && !f.label.equalsIgnoreCase("this/$$Default"))
+            for (Func f : module.getAllFunc())
             {
-                orderedFunctions.add(f.label);
+                if (!orderedFunctions.contains(f.label) && f.isPrivate == null)
+                {
+                    orderedFunctions.add(f.label);
+                }
             }
         }
     }
