@@ -46,4 +46,19 @@ public class ModuleTests
                         "(assert (forall ((_a7 Atom)) (=> (and (member (mkTuple _a7) this_A) (not (= _a6 _a7))) (exists ((_a8 Atom)) (= (singleton (mkTuple _a8)) (join (singleton (mkTuple _a7)) (join ordA_Ord ordA_Ord_Next)))))))"));
     }
 
+    @Test
+    void ordModuleLT()
+    {
+        String alloy =
+                "open util/ordering[A] as ordA\n" +
+                "abstract sig A {}\n" +
+                "sig A0 , A1, A2 extends A{}\n" +
+                "fact f {lt[A0, A2] and lt[A0, A1]}\n" +
+                "run {} for 10 but 3 A";
+        Translation translation = Utils.translate(alloy);
+
+        System.out.println(translation.getSmtScript());
+
+        Assertions.assertTrue(translation.getSmtScript().contains("(define-fun ordA_lt"));
+    }
 }

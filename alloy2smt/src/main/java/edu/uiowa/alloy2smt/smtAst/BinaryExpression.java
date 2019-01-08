@@ -60,6 +60,7 @@ public class BinaryExpression extends Expression
         MINUS ("-"),
         MULTIPLY ("*"),
         DIVIDE ("/"),
+        MOD ("mod"),
         EQ ("="),
         NEQ ("<>"), //ToDo: clean this up
         GTE (">="),
@@ -73,7 +74,7 @@ public class BinaryExpression extends Expression
         SUBSET ("subset"),
         JOIN ("join"),
         PRODUCT ("product"),
-        TUPSEL ("tupSel");    
+        TUPSEL ("tupSel");
 
         private final String opStr;
 

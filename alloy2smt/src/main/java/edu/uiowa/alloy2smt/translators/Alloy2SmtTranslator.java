@@ -210,21 +210,29 @@ public class Alloy2SmtTranslator
     {        
         List<String> funcOrder = new ArrayList<>();
         Map<String, List<String>> dependency = new HashMap<>();
-        
-        for(Func func : this.alloyModel.getAllFunc()) 
+
+        for (CompModule module: this.alloyModel.getAllReachableModules())
         {
-            funcNames.add(func.label);
-        }       
-        for(Func f : this.alloyModel.getAllFunc())
-        {
-            //ignore  private functions like $$Default and run$1 etc
-            // run functions are handled in commands translation
-            if(f.isPrivate != null)
+            //ToDo: review the case of integer and % (mod) operator
+            if(module.getModelName().equals("util/integer"))
             {
                 continue;
             }
-            translateFunc(f);
-            sortFunctionDependency(f.label, f.getBody(), dependency);
+            for (Func func : module.getAllFunc())
+            {
+                funcNames.add(func.label);
+            }
+            for (Func f : module.getAllFunc())
+            {
+                //ignore  private functions like $$Default and run$1 etc
+                // run functions are handled in commands translation
+                if (f.isPrivate != null)
+                {
+                    continue;
+                }
+                translateFunc(f);
+                sortFunctionDependency(f.label, f.getBody(), dependency);
+            }
         }
                 
         // Organize the order of dependency
