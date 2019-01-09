@@ -59,8 +59,7 @@ public class ExprBinaryTranslator
             case IMINUS             : return translateArithmetic(expr, BinaryExpression.Op.MINUS, variablesScope);
             case MUL                : return translateArithmetic(expr, BinaryExpression.Op.MULTIPLY, variablesScope);
             case DIV                : return translateArithmetic(expr, BinaryExpression.Op.DIVIDE, variablesScope);
-            case REM                : throw new UnsupportedOperationException();
-            
+            case REM                : return translateArithmetic(expr, BinaryExpression.Op.MOD, variablesScope);
             // Comparison operators
             case LT                 : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
             case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
