@@ -433,6 +433,7 @@ public class SignatureTranslator
 
 
         // No successor after the last element
+        // (join next lastSet) = emptySet
         Expression noSuccessorBeforeFirst = new BinaryExpression(emptySet, BinaryExpression.Op.EQ,
                 new BinaryExpression(lastSet, BinaryExpression.Op.JOIN, nextExpression));
 
@@ -492,5 +493,15 @@ public class SignatureTranslator
                         onlyOneSuccessor));
 
         translator.smtProgram.addAssertion(new Assertion("Each element except the last element has exactly one successor", forEachSuccessor));
+
+        // no element is successor to itself
+        // (= emptyRelation (intersect next ident))
+        Expression identity     = translator.atomIden.getConstantExpr();
+        Expression intersection = new BinaryExpression(nextExpression, BinaryExpression.Op.INTERSECTION, identity);
+        Expression emptyRelation= new UnaryExpression(UnaryExpression.Op.EMPTYSET,
+                new SetSort(new TupleSort(translator.atomSort, translator.atomSort)));
+        Expression equality     = new BinaryExpression(emptyRelation, BinaryExpression.Op.EQ, intersection);
+
+        translator.smtProgram.addAssertion(new Assertion("No element is successor to itself", equality));
     }
 }
