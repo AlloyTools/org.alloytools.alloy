@@ -838,9 +838,19 @@ public class ExprBinaryTranslator
         for(BoundVariableDeclaration bdVar : existentialBdVars)
         {
             existentialBdVarExprs.add(bdVar.getConstantExpr());
-        }        
-        
-        Expression distElementsExpr = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, existentialBdVarExprs);
+        }
+
+        Expression distElementsExpr;
+
+        if(existentialBdVarExprs.size() == 1)
+        {
+            // distinct operator needs at least 2 arguments
+            distElementsExpr = new BooleanConstant(true);
+        }
+        else
+        {
+            distElementsExpr = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, existentialBdVarExprs);
+        }
         
         exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
         if(exprTranslator.translator.auxExpr != null)
