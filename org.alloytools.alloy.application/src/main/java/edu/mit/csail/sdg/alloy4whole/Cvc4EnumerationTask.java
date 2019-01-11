@@ -36,6 +36,12 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
     {
         try
         {
+            if(! xmlFileName.equals(Cvc4Task.lastXmlFile))
+            {
+                workerCallback.callback(new Object[]{"pop", "You can only enumerate the solutions of the last executed command."});
+                return;
+            }
+
             // read the solution from the xml file
             alloy = Alloy.readFromXml(xmlFileName);
             alloyFiles = alloy.getAlloyFiles();
@@ -57,12 +63,6 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
                 {
                     break;
                 }
-            }
-
-            if(commandIndex != translation.getCommands().size() - 1)
-            {
-                workerCallback.callback(new Object[]{"pop", "You can only enumerate the solutions of the most-recently-solved command."});
-                return;
             }
 
             // get a new model and save it
