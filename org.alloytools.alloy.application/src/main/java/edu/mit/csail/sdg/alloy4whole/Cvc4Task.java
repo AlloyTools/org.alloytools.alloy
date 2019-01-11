@@ -35,7 +35,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     private final int                 resolutionMode;
 
     // only one process for alloy editor
-    private static Cvc4Process cvc4Process;
+    public static Cvc4Process cvc4Process;
     private WorkerEngine.WorkerCallback workerCallback;
     private Translation translation;
 
@@ -72,10 +72,18 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
                 callbackPlain(options);
 
-                for (int index = 0; index < translation.getCommands().size(); index++)
+                // surround each command except the last one with (push) and (pop)
+                for (int index = 0; index < translation.getCommands().size() - 1; index++)
                 {
+                    // (push)
+                    cvc4Process.sendCommand(Translation.PUSH);
                     solveCommand(index);
+                    // (pop)
+                    cvc4Process.sendCommand(Translation.POP);
                 }
+
+                // solve the last command without push and pop to view multiple models if sat
+                solveCommand(translation.getCommands().size() - 1);
 
                 //ToDo: review when to destroy the process
                 //cvc4Process.destroy();
@@ -121,10 +129,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         final long startSolve   = System.currentTimeMillis();
 
-        // (push)
         // (check-sat)
-        callbackPlain(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
-        String result = cvc4Process.sendCommand(Translation.PUSH + "\n" + commandTranslation + Translation.CHECK_SAT);
+        callbackPlain( commandTranslation + Translation.CHECK_SAT);
+        String result = cvc4Process.sendCommand(commandTranslation + Translation.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
@@ -158,10 +165,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         {
             callbackPlain("No result returned from cvc4\n");
         }
-
-        // (pop)
-        cvc4Process.sendCommand(Translation.POP);
-        callbackPlain(Translation.POP + "\n");
     }
 
     private void callbackPlain(String log)
