@@ -3,12 +3,14 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
-import edu.uiowa.alloy2smt.smtAst.Assertion;
-import edu.uiowa.alloy2smt.smtAst.SmtProgram;
-import edu.uiowa.alloy2smt.smtAst.SolverOption;
+import edu.uiowa.alloy2smt.smtAst.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class Translation
 {
@@ -70,10 +72,78 @@ public class Translation
      */
     public String translateCommand(int commandIndex)
     {
+        // store old declarations and definitions
+        List<Sort>                sorts                 = new ArrayList<>(translator.smtProgram.getSorts());
+        List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(translator.smtProgram.getConstantDeclarations());
+        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(translator.smtProgram.getFunctionDeclarations());
+        List<FunctionDefinition>  functionDefinitions   = new ArrayList<>(translator.smtProgram.getFunctionDefinitions());
+
         Assertion           assertion   =  translator.translateCommand(commandIndex);
+
+        // get new declarations and definitions
+        List<Sort> newSorts = translator.smtProgram
+                .getSorts().stream()
+                .filter(((Predicate<Sort>) new HashSet<>(sorts)::contains).negate())
+                .collect(Collectors.toList());
+
+        List<ConstantDeclaration> newConstantDeclarations = translator.smtProgram
+                .getConstantDeclarations().stream()
+                .filter(((Predicate<ConstantDeclaration>) new HashSet<>(constantDeclarations)::contains).negate())
+                .collect(Collectors.toList());
+
+        List<FunctionDeclaration> newFunctionDeclarations = translator.smtProgram
+                .getFunctionDeclarations().stream()
+                .filter(((Predicate<FunctionDeclaration>) new HashSet<>(functionDeclarations)::contains).negate())
+                .collect(Collectors.toList());
+
+        List<FunctionDefinition> newFunctionDefinitions = translator.smtProgram
+                .getFunctionDefinitions().stream()
+                .filter(((Predicate<FunctionDefinition>) new HashSet<>(functionDefinitions)::contains).negate())
+                .collect(Collectors.toList());
+
+        // get the translation for new declarations and definitions
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Sort sort : newSorts)
+        {
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            printer.visit(sort);
+            stringBuilder.append(printer.getSmtLib());
+        }
+
+        for (ConstantDeclaration declaration : newConstantDeclarations)
+        {
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            printer.visit(declaration);
+            stringBuilder.append(printer.getSmtLib());
+        }
+
+        for (FunctionDeclaration declaration : newFunctionDeclarations)
+        {
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            printer.visit(declaration);
+            stringBuilder.append(printer.getSmtLib());
+        }
+
+        for (FunctionDefinition definition : newFunctionDefinitions)
+        {
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            printer.visit(definition);
+            stringBuilder.append(printer.getSmtLib());
+        }
+
+        // get the translation for the command assertion
         SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
         printer.visit(assertion);
-        return printer.getSmtLib();
+        stringBuilder.append(printer.getSmtLib());
+
+        // remove new declarations and definitions from the program
+
+        translator.smtProgram.getSorts().removeAll(newSorts);
+        translator.smtProgram.getConstantDeclarations().removeAll(newConstantDeclarations);
+        translator.smtProgram.getFunctionDeclarations().removeAll(newFunctionDeclarations);
+        translator.smtProgram.getFunctionDefinitions().removeAll(newFunctionDefinitions);
+
+        return stringBuilder.toString();
     }
 
     public String translateOptions(Map<String, String> options)
