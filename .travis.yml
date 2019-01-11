@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 language: java
 jdk:
-- oraclejdk8
+- oraclejdk11
 install: "./gradlew --version"
 script: ./gradlew --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
 after_success:
