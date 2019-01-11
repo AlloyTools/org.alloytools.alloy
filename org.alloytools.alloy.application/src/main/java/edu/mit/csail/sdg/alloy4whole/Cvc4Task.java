@@ -110,9 +110,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     {
         String commandTranslation = translation.translateCommand(index);
 
-        final long startSolve   = System.currentTimeMillis();
+        Command command = translation.getCommands().get(index);
 
-        callbackBold("Executing " + translation.getCommands().get(index).label + "\n");
+        callbackBold("Executing " + command.label + "\n");
+
+        ErrorWarning warning = new ErrorWarning(command.pos, "The scope in " + command +
+                " is ignored by cvc4");
+
+        callbackWarning(warning);
+
+        final long startSolve   = System.currentTimeMillis();
 
         // (push)
         // (check-sat)
@@ -169,6 +176,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         workerCallback.callback(new Object[]{"S2", log});
         workerCallback.callback(new Object[]{"S2", "\n"});
     }
+
+    private void callbackWarning(ErrorWarning warning)
+    {
+        workerCallback.callback(new Object[]{"warning", warning});
+    }
+
 
     private void prepareInstance(int commandIndex, long duration) throws Exception
     {
