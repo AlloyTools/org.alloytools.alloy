@@ -136,6 +136,7 @@ public class Translation
         printer.visit(assertion);
         stringBuilder.append(printer.getSmtLib());
 
+        //ToDo: fix repeated definitions by making smtProgram immutable
         // remove new declarations and definitions from the program
 
         translator.smtProgram.getSorts().removeAll(newSorts);
