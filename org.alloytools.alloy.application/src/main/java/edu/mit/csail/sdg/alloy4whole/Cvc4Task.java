@@ -22,8 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import edu.mit.csail.sdg.alloy4whole.instances.*;
 
-import javax.swing.*;
-
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
 public class Cvc4Task implements WorkerEngine.WorkerTask
@@ -479,8 +477,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     throw new UnsupportedOperationException();
             }
         }
-
-        JOptionPane.showMessageDialog(null, expression);
+        
         throw new UnsupportedOperationException();
     }
 
