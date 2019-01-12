@@ -54,10 +54,23 @@ public class MultiArityExpression extends Expression
         //ToDo: add other operators like and, or, ...
         private final String opStr;
 
-        private Op(String op) 
+        Op(String op)
         {
             this.opStr = op;
         }
+
+       public static Op getOp(String operator)
+       {
+           switch (operator)
+           {
+               case "mkTuple"   : return MKTUPLE;
+               case "insert"    : return INSERT;
+               case "distinct"  : return DISTINCT;
+               default:
+                   throw new UnsupportedOperationException("Operator " + operator + " is not defined");
+           }
+       }
+
 
         @Override
         public String toString() 

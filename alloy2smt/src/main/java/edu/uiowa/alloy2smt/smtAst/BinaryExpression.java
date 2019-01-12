@@ -78,9 +78,39 @@ public class BinaryExpression extends Expression
 
         private final String opStr;
 
-        private Op(String op) 
+        Op(String op)
         {
             this.opStr = op;
+        }
+
+        public static Op getOp(String operator)
+        {
+            switch (operator)
+            {
+                case"or"            : return OR;
+                case "and"          : return AND;
+                case "=>"           : return IMPLIES;
+                case "+"            : return PLUS;
+                case "-"            : return MINUS;
+                case "*"            : return MULTIPLY;
+                case "/"            : return DIVIDE;
+                case "mod"          : return MOD;
+                case "="            : return EQ;
+                case ">="           : return GTE;
+                case "<="           : return LTE;
+                case ">"            : return GT;
+                case "<"            : return LT;
+                case "union"        : return UNION;
+                case "intersection" : return INTERSECTION;
+                case "setminus"     : return SETMINUS;
+                case "member"       : return MEMBER;
+                case "subset"       : return SUBSET;
+                case "join"         : return JOIN;
+                case "product"      : return PRODUCT;
+                case "tupSel"       : return TUPSEL;
+                default:
+                    throw new UnsupportedOperationException("Operator " + operator + " is not defined");
+            }
         }
 
         @Override

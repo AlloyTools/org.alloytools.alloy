@@ -92,7 +92,7 @@ public class UnaryExpression extends Expression
     public enum Op 
     {	        
         NOT ("not"),
-        DISTINCT ("distinct"),
+        DISTINCT ("distinct"), //ToDo: clean up this
         COMPLEMENT ("complement"),
         TRANSPOSE ("transpose"),
         TCLOSURE("tclosure"),
@@ -102,9 +102,26 @@ public class UnaryExpression extends Expression
 
         private final String opStr;
 
-        private Op(String str) 
+        Op(String str)
         {
             this.opStr = str;
+        }
+
+        public static Op getOp(String operator)
+        {
+            switch (operator)
+            {
+                case"not"           : return NOT;
+                case "distinct"     : return DISTINCT;
+                case "complement"   : return COMPLEMENT;
+                case "transpose"    : return TRANSPOSE;
+                case "tclosure"     : return TCLOSURE;
+                case "singleton"    : return SINGLETON;
+                case "as univset"   : return UNIVSET;
+                case "as emptyset"  : return EMPTYSET;
+                default:
+                    throw new UnsupportedOperationException("Operator " + operator + " is not defined");
+            }
         }
 
         @Override

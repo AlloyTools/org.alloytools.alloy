@@ -77,35 +77,53 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArgumentName(SmtParser.ArgumentNameContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#term}.
+	 * Visit a parse tree produced by {@link SmtParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTerm(SmtParser.TermContext ctx);
+	T visitExpression(SmtParser.ExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#unaryExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryExpression(SmtParser.UnaryExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#binaryExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinaryExpression(SmtParser.BinaryExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#ternaryExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTernaryExpression(SmtParser.TernaryExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#multiArityExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#variable}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariable(SmtParser.VariableContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConstant(SmtParser.ConstantContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#integerConstant}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIntegerConstant(SmtParser.IntegerConstantContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SmtParser#tupleConstant}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTupleConstant(SmtParser.TupleConstantContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SmtParser#singletonConstant}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSingletonConstant(SmtParser.SingletonConstantContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SmtParser#unionConstant}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUnionConstant(SmtParser.UnionConstantContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#atomConstant}.
 	 * @param ctx the parse tree

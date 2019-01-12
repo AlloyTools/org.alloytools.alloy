@@ -2,10 +2,18 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.Utils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ModuleTests
 {
+    @BeforeEach
+    void init()
+    {
+        TranslatorUtils.reset();
+    }
+
+
     @Test
     void ordModule1()
     {
@@ -32,6 +40,8 @@ public class ModuleTests
                         "(assert (forall ((_a3 Atom)) (=> (and (member (mkTuple _a3) this_B) (not (= _a1 _a3))) (exists ((_a4 Atom)) (= (singleton (mkTuple _a4)) (join (join ordB_Ord ordB_Ord_Next) (singleton (mkTuple _a3))))))))\n" +
                         "; Each element except the last element has exactly one successor\n" +
                         "(assert (forall ((_a3 Atom)) (=> (and (member (mkTuple _a3) this_B) (not (= _a2 _a3))) (exists ((_a4 Atom)) (= (singleton (mkTuple _a4)) (join (singleton (mkTuple _a3)) (join ordB_Ord ordB_Ord_Next)))))))\n" +
+                        "; No element is successor to itself\n" +
+                        "(assert (= (as emptyset (Set (Tuple Atom Atom))) (intersection (join ordB_Ord ordB_Ord_Next) atomIden)))\n" +
                         "; last element is a member of this/A\n" +
                         "(assert (member (mkTuple _a6) this_A))\n" +
                         "; ordA/Ord . (ordA/Ord <: First)\n" +
@@ -43,7 +53,9 @@ public class ModuleTests
                         "; Each element except the first element has exactly one predecessor\n" +
                         "(assert (forall ((_a7 Atom)) (=> (and (member (mkTuple _a7) this_A) (not (= _a5 _a7))) (exists ((_a8 Atom)) (= (singleton (mkTuple _a8)) (join (join ordA_Ord ordA_Ord_Next) (singleton (mkTuple _a7))))))))\n" +
                         "; Each element except the last element has exactly one successor\n" +
-                        "(assert (forall ((_a7 Atom)) (=> (and (member (mkTuple _a7) this_A) (not (= _a6 _a7))) (exists ((_a8 Atom)) (= (singleton (mkTuple _a8)) (join (singleton (mkTuple _a7)) (join ordA_Ord ordA_Ord_Next)))))))"));
+                        "(assert (forall ((_a7 Atom)) (=> (and (member (mkTuple _a7) this_A) (not (= _a6 _a7))) (exists ((_a8 Atom)) (= (singleton (mkTuple _a8)) (join (singleton (mkTuple _a7)) (join ordA_Ord ordA_Ord_Next)))))))\n" +
+                        "; No element is successor to itself\n" +
+                        "(assert (= (as emptyset (Set (Tuple Atom Atom))) (intersection (join ordA_Ord ordA_Ord_Next) atomIden)))\n"));
     }
 
     @Test

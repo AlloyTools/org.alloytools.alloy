@@ -118,15 +118,75 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitArgumentName(SmtParser.ArgumentNameContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#term}.
+	 * Enter a parse tree produced by {@link SmtParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void enterTerm(SmtParser.TermContext ctx);
+	void enterExpression(SmtParser.ExpressionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#term}.
+	 * Exit a parse tree produced by {@link SmtParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void exitTerm(SmtParser.TermContext ctx);
+	void exitExpression(SmtParser.ExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#unaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnaryExpression(SmtParser.UnaryExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#unaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnaryExpression(SmtParser.UnaryExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#binaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterBinaryExpression(SmtParser.BinaryExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#binaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitBinaryExpression(SmtParser.BinaryExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#ternaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterTernaryExpression(SmtParser.TernaryExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#ternaryExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitTernaryExpression(SmtParser.TernaryExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#multiArityExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterMultiArityExpression(SmtParser.MultiArityExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#multiArityExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#variable}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariable(SmtParser.VariableContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#variable}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariable(SmtParser.VariableContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#constant}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstant(SmtParser.ConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#constant}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstant(SmtParser.ConstantContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#integerConstant}.
 	 * @param ctx the parse tree
@@ -137,36 +197,6 @@ public interface SmtListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIntegerConstant(SmtParser.IntegerConstantContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SmtParser#tupleConstant}.
-	 * @param ctx the parse tree
-	 */
-	void enterTupleConstant(SmtParser.TupleConstantContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SmtParser#tupleConstant}.
-	 * @param ctx the parse tree
-	 */
-	void exitTupleConstant(SmtParser.TupleConstantContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SmtParser#singletonConstant}.
-	 * @param ctx the parse tree
-	 */
-	void enterSingletonConstant(SmtParser.SingletonConstantContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SmtParser#singletonConstant}.
-	 * @param ctx the parse tree
-	 */
-	void exitSingletonConstant(SmtParser.SingletonConstantContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SmtParser#unionConstant}.
-	 * @param ctx the parse tree
-	 */
-	void enterUnionConstant(SmtParser.UnionConstantContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SmtParser#unionConstant}.
-	 * @param ctx the parse tree
-	 */
-	void exitUnionConstant(SmtParser.UnionConstantContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#atomConstant}.
 	 * @param ctx the parse tree

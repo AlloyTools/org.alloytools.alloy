@@ -202,7 +202,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         String smtModel = cvc4Process.sendCommand(Translation.GET_MODEL);
 
         callbackPlain("A model has been found\n");
-        callbackPlain(smtModel);
+        callbackPlain(smtModel + "\n");
 
         Command command = translation.getCommands().get(commandIndex);
         SmtModel model = parseModel(smtModel);

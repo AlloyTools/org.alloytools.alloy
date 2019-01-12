@@ -137,6 +137,7 @@ public class Alloy2SmtTranslator
         this.funcNames              = new HashSet<>();    
 
         this.signaturesMap.put(Sig.UNIV, this.atomUniv);
+        this.signaturesMap.put(Sig.SIGINT, this.intUniv);
         this.smtProgram.addSort(this.atomSort);
         this.smtProgram.addSort(this.unaryIntTup);
         this.smtProgram.addSort(this.binaryIntTup);
@@ -553,10 +554,13 @@ public class Alloy2SmtTranslator
         MappingSignature univSignature = getSignature(idMap, Sig.UNIV);
         mapper.signatures.add(univSignature);
 
+        MappingSignature intSignature = getSignature(idMap, Sig.SIGINT);
+        mapper.signatures.add(intSignature);
+
 //        MappingSignature intSignature = getSignature(idMap, Sig.SIGINT);
 //        mapper.signatures.add(intSignature);
 
-        //ToDo: add other special signatures: none, iden, string, int
+        //ToDo: add other special signatures: none, iden, string
 
         for (Sig sig : topLevelSigs)
         {

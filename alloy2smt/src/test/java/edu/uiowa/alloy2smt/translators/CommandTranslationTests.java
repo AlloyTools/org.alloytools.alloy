@@ -36,7 +36,7 @@ class CommandTranslationTests
 
         Assertions.assertEquals(
                 "; command1\n" +
-                "(assert (or (exists ((_a3 Atom)) (and (= this_A (singleton (mkTuple _a3))) (distinct _a3))) (exists ((_a4 Atom)(_a5 Atom)) (and (= this_A (insert (mkTuple _a5) (singleton (mkTuple _a4)))) (distinct _a4 _a5)))))\n",
+                "(assert (or (exists ((_a3 Atom)) (and (= this_A (singleton (mkTuple _a3))) true)) (exists ((_a4 Atom)(_a5 Atom)) (and (= this_A (insert (mkTuple _a5) (singleton (mkTuple _a4)))) (distinct _a4 _a5)))))\n",
                 command);
     }
 
