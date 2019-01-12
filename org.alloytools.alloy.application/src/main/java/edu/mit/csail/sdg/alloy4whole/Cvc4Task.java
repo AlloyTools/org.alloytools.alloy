@@ -20,9 +20,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import edu.mit.csail.sdg.alloy4whole.instances.*;
-
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
 public class Cvc4Task implements WorkerEngine.WorkerTask
@@ -291,6 +289,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         signature.isMeta        = mappingSignature.isMeta? "yes" : "no";
         signature.isExact   	= mappingSignature.isExact ? "yes" : "no";
         signature.isEnum        = mappingSignature.isEnum? "yes" : "no";
+
+        // the signature Int is treated differently
+        if(signature.label.equals("Int"))
+        {
+            return signature;
+        }
 
         // get the corresponding function from the model
         FunctionDefinition function = functionsMap.get(mappingSignature.functionName);

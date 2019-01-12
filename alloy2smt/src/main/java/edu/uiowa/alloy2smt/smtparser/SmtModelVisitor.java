@@ -112,34 +112,39 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         return new BoundVariableDeclaration(argumentName, argumentSort);
     }
 
-//    @Override
-//    public SmtAst visitExpression(SmtParser.ExpressionContext ctx)
-//    {
-//        if(ctx.constant() != null)
-//        {
-//            return this.visitConstant(ctx.constant());
-//        }
-//        if(ctx.UnaryOperator() != null)
-//        {
-//            return this.visitUnaryOperator(ctx);
-//        }
-//
-//    }
-
-//    @Override
-//    public SmtAst visitConstant(SmtParser.ConstantContext ctx)
-//    {
-//        if(ctx.integerConstant() != null)
-//        {
-//            return this.
-//        }
-//    }
-
     @Override
-    public SmtAst visitIntegerConstant(SmtParser.IntegerConstantContext ctx)
+    public SmtAst visitExpression(SmtParser.ExpressionContext ctx)
     {
-        int constant = Integer.parseInt(ctx.getText());
-        return new IntConstant(constant);
+        if(ctx.constant() != null)
+        {
+            return this.visitConstant(ctx.constant());
+        }
+        if(ctx.variable() != null)
+        {
+            throw new UnsupportedOperationException();
+        }
+        if(ctx.unaryExpression() != null)
+        {
+            return this.visitUnaryExpression(ctx.unaryExpression());
+        }
+        if(ctx.binaryExpression() != null)
+        {
+            return this.visitBinaryExpression(ctx.binaryExpression());
+        }
+        if(ctx.ternaryExpression() != null)
+        {
+            return this.visitTernaryExpression(ctx.ternaryExpression());
+        }
+        if(ctx.multiArityExpression() != null)
+        {
+            return this.visitMultiArityExpression(ctx.multiArityExpression());
+        }
+        if(ctx.expression() != null)
+        {
+            return this.visitExpression(ctx.expression());
+        }
+
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -179,6 +184,31 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 
         MultiArityExpression.Op operator = MultiArityExpression.Op.getOp(ctx.MultiArityOperator().getText());
         return new MultiArityExpression(operator, expressions);
+    }
+
+    @Override
+    public SmtAst visitConstant(SmtParser.ConstantContext ctx)
+    {
+        if(ctx.integerConstant() != null)
+        {
+            return this.visitIntegerConstant(ctx.integerConstant());
+        }
+        if(ctx.atomConstant() != null)
+        {
+            return this.visitAtomConstant(ctx.atomConstant());
+        }
+        if(ctx.emptySet() != null)
+        {
+            return this.visitEmptySet(ctx.emptySet());
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public SmtAst visitIntegerConstant(SmtParser.IntegerConstantContext ctx)
+    {
+        int constant = Integer.parseInt(ctx.getText());
+        return new IntConstant(constant);
     }
 
     @Override

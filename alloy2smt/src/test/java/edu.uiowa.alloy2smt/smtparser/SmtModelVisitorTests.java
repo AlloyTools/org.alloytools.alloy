@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt.smtparser;
 
+import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.smtAst.SmtModel;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtLexer;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
@@ -49,6 +50,11 @@ class SmtModelVisitorTests
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(4, smtModel.getSorts().size());
         Assertions.assertEquals(6, smtModel.getFunctionDefinitions().size());
+
+        FunctionDefinition atomUniv = smtModel.getFunctionDefinitions().stream()
+                .filter(function -> function.funcName.equals("atomUniv")).findFirst().get();
+
+        Assertions.assertTrue(atomUniv.expression != null);
     }
 
     @Test
