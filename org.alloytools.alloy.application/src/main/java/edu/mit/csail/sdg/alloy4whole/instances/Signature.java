@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement(name = "sig")
@@ -13,6 +14,10 @@ public class Signature
     @XmlElement(name = "atom")
     @JsonProperty("atoms")
     public List<Atom> atoms;
+
+    @XmlElement(name = "type")
+    @JsonProperty("types")
+    public List<Type> types = new ArrayList<>();
 
     @XmlAttribute(name = "label")
     @JsonProperty("label")
@@ -23,7 +28,7 @@ public class Signature
     public int id;
 
     @XmlAttribute(name = "parentID")
-    @JsonProperty("parentId")
+    @JsonProperty("parents")
     public int parentId;
 
     @XmlAttribute(name = "builtin")

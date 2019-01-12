@@ -557,14 +557,20 @@ public class Alloy2SmtTranslator
         MappingSignature intSignature = getSignature(idMap, Sig.SIGINT);
         mapper.signatures.add(intSignature);
 
-//        MappingSignature intSignature = getSignature(idMap, Sig.SIGINT);
-//        mapper.signatures.add(intSignature);
-
         //ToDo: add other special signatures: none, iden, string
 
         for (Sig sig : topLevelSigs)
         {
             mapper.signatures.addAll(getSignatures(idMap, sig));
+        }
+
+        // add remaining signatures like int signatures
+        for (Sig sig : reachableSigs)
+        {
+            if(! idMap.keySet().contains(sig))
+            {
+                mapper.signatures.addAll(getSignatures(idMap, sig));
+            }
         }
 
         for (Sig sig : reachableSigs)
@@ -583,12 +589,9 @@ public class Alloy2SmtTranslator
 
         signatures.add(signature);
 
-        if(sig instanceof Sig.PrimSig)
+        for (Sig childSig : children(sig))
         {
-            for (Sig childSig : children((Sig.PrimSig) sig))
-            {
-                signatures.addAll(getSignatures(idMap, childSig));
-            }
+            signatures.addAll(getSignatures(idMap, childSig));
         }
 
         return signatures;
@@ -606,22 +609,19 @@ public class Alloy2SmtTranslator
         return fields;
     }
 
-    private List<Sig> children(Sig.PrimSig sig)
+    private List<Sig> children(Sig sig)
     {
         if (sig == Sig.NONE)
         {
             return new ArrayList<>();
         }
-        if (sig != Sig.UNIV)
+        if (sig instanceof Sig.PrimSig)
         {
             List<Sig> sigs = new ArrayList<>();
-            sig.children().forEach(sigs::add);
+            ((Sig.PrimSig) sig).children().forEach(sigs::add);
             return sigs;
         }
-        else
-        {
-            return this.topLevelSigs;
-        }
+        return new ArrayList<>();
     }
 
 
@@ -634,9 +634,17 @@ public class Alloy2SmtTranslator
 
         signature.id            = getId(sig, idMap);
 
+        // find the ids of the parents
         if (sig instanceof Sig.PrimSig && sig != Sig.UNIV)
         {
-            signature.parentId  = getId(((Sig.PrimSig) sig).parent, idMap);
+            signature.parents.add(getId(((Sig.PrimSig) sig).parent, idMap));
+        }
+        else if (sig instanceof Sig.SubsetSig)
+        {
+            for (Sig parent :  ((Sig.SubsetSig) sig).parents)
+            {
+                signature.parents.add(getId(parent, idMap));
+            }
         }
 
         signature.builtIn       = sig.builtin;

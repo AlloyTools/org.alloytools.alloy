@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.List;
 
 //ToDo: refactor this class with alloy Signature class
 @XmlRootElement(name = "Signature")
@@ -29,9 +31,9 @@ public class MappingSignature
     @JsonProperty("id")
     public int id;
 
-    @XmlAttribute(name = "parentId")
-    @JsonProperty("parentId")
-    public int parentId;
+    @XmlAttribute(name = "parents")
+    @JsonProperty("parents")
+    public List<Integer> parents = new ArrayList<>();
 
     @XmlAttribute(name = "builtIn")
     @JsonProperty("builtIn")

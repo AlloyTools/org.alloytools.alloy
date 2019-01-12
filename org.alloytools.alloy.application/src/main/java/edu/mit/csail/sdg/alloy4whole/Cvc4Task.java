@@ -21,6 +21,9 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import edu.mit.csail.sdg.alloy4whole.instances.*;
+
+import javax.swing.*;
+
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 
 public class Cvc4Task implements WorkerEngine.WorkerTask
@@ -278,7 +281,17 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         // get signature info from the mapping
         signature.label         = mappingSignature.label;
         signature.id            = mappingSignature.id;
-        signature.parentId  	= mappingSignature.parentId;
+
+        if(mappingSignature.parents.size() == 1)
+        {
+            signature.parentId = mappingSignature.parents.get(0);
+        }
+
+        // add types for subset signatures
+        for (Integer id : mappingSignature.parents)
+        {
+            signature.types.add(new Type(id));
+        }
 
         signature.builtIn       = mappingSignature.builtIn ? "yes" : "no";
         signature.isAbstract    = mappingSignature.isAbstract? "yes" : "no";
@@ -401,12 +414,18 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     {
         List<Atom> atoms = new ArrayList<>();
 
-
         if(expression instanceof  AtomConstant)
         {
             AtomConstant atomConstant = (AtomConstant) expression;
             atoms.add(new Atom(atomConstant.getName()));
             return  atoms;
+        }
+
+        if(expression instanceof IntConstant)
+        {
+            IntConstant intConstant  = (IntConstant) expression;
+            atoms.add(new Atom(intConstant.getValue()));
+            return atoms;
         }
 
         if(expression instanceof  UnaryExpression)
@@ -461,6 +480,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
+        JOptionPane.showMessageDialog(null, expression);
         throw new UnsupportedOperationException();
     }
 

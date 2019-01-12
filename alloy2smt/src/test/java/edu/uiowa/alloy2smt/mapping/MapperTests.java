@@ -24,7 +24,7 @@ class MapperTests
         Assertions.assertFalse(signature.builtIn);
         Assertions.assertFalse(signature.isAbstract);
         Assertions.assertFalse(signature.id < TranslatorUtils.UNIV_SIGNATURE_ID);
-        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signature.parentId);
+        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signature.parents.get(0));
         Assertions.assertEquals("this_A", signature.functionName);
     }
 
@@ -48,8 +48,8 @@ class MapperTests
                 .stream().filter(s -> s.label.equals("this/B"))
                 .findFirst().get();
 
-        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signatureA.parentId);
-        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signatureB.parentId);
+        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signatureA.parents.get(0));
+        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signatureB.parents.get(0));
 
         Assertions.assertEquals("this_A", signatureA.functionName);
         Assertions.assertEquals("this_B", signatureB.functionName);

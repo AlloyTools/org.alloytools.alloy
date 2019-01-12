@@ -20,7 +20,7 @@ public class Field
     public int id;
 
     @XmlAttribute(name = "parentID")
-    @JsonProperty("parentId")
+    @JsonProperty("parents")
     public int parentId;
 
     @XmlAttribute(name = "private")
