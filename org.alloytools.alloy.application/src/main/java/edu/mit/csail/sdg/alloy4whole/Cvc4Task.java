@@ -477,7 +477,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     throw new UnsupportedOperationException();
             }
         }
-        
+
         throw new UnsupportedOperationException();
     }
 

@@ -65,11 +65,25 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
                 }
             }
 
-            // get a new model and save it
-            prepareInstance(commandIndex);
-
-            // tell alloy user interface that the last instance has changed
-            workerCallback.callback(new Object[]{"declare", xmlFileName});
+            // (check-sat)
+            String result = Cvc4Task.cvc4Process.sendCommand(Translation.CHECK_SAT);
+            if(result != null)
+            {
+                switch (result)
+                {
+                    case "sat":
+                        // get a new model and save it
+                        prepareInstance(commandIndex);
+                        // tell alloy user interface that the last instance has changed
+                        workerCallback.callback(new Object[]{"declare", xmlFileName});
+                        break;
+                    case "unsat":
+                        workerCallback.callback(new Object[]{"pop", "There are no more satisfying instances.\n\n" + "Note: due to symmetry breaking and other optimizations,\n" + "some equivalent solutions may have been omitted."});
+                        break;
+                    default:
+                        workerCallback.callback(new Object[]{"pop", "CVC4 solver returned unknown."});
+                }
+            }
         }
         catch (Exception exception)
         {
