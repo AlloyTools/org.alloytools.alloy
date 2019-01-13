@@ -641,6 +641,7 @@ public class Alloy2SmtTranslator
         }
         else if (sig instanceof Sig.SubsetSig)
         {
+            signature.isSubset = true;
             for (Sig parent :  ((Sig.SubsetSig) sig).parents)
             {
                 signature.parents.add(getId(parent, idMap));

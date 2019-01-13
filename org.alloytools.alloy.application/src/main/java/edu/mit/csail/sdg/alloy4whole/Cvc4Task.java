@@ -285,10 +285,13 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             signature.parentId = mappingSignature.parents.get(0);
         }
 
-        // add types for subset signatures
-        for (Integer id : mappingSignature.parents)
+        // add types for subset
+        if(mappingSignature.isSubset)
         {
-            signature.types.add(new Type(id));
+            for (Integer id : mappingSignature.parents)
+            {
+                signature.types.add(new Type(id));
+            }
         }
 
         signature.builtIn       = mappingSignature.builtIn ? "yes" : "no";

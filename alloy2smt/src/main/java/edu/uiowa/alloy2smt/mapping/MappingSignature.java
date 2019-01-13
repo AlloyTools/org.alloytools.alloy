@@ -70,4 +70,8 @@ public class MappingSignature
     @XmlAttribute(name = "isEnum")
     @JsonProperty("isEnum")
     public boolean isEnum;
+
+    @XmlAttribute(name = "isSubset")
+    @JsonProperty("isSubset")
+    public boolean isSubset;
 }
