@@ -27,12 +27,14 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
 public class Cvc4Task implements WorkerEngine.WorkerTask
 {
     public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
-    private static final String TIMEOUT_OPTION       = "tlimit" ;
+    private static final String TIMEOUT_OPTION      = "tlimit" ;
 
     private final Map<String, String>   alloyFiles;
     private final String                originalFileName;
     private final int                   resolutionMode;
     private final int                   targetCommandIndex;
+    // store the results of "Execute All" command
+    private final List<CommandResult>   commandResults = new ArrayList<>();
 
     // only one process for alloy editor
     public static Cvc4Process cvc4Process;
@@ -74,25 +76,38 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
                 callbackPlain(options);
 
+                CommandResult commandResult;
+
                 // execute all commands if targetCommandIndex < 0
                 if(targetCommandIndex < 0)
                 {
                     // surround each command except the last one with (push) and (pop)
-                    for (int index = 0; index < translation.getCommands().size() - 1; index++) {
+                    for (int index = 0; index < translation.getCommands().size() - 1; index++)
+                    {
                         // (push)
                         cvc4Process.sendCommand(Translation.PUSH);
-                        solveCommand(index);
+                        commandResult = solveCommand(index);
                         // (pop)
                         cvc4Process.sendCommand(Translation.POP);
+                        this.commandResults.add(commandResult);
                     }
 
                     // solve the last command without push and pop to view multiple models if sat
-                    lastXmlFile = solveCommand(translation.getCommands().size() - 1);
+                    commandResult = solveCommand(translation.getCommands().size() - 1);
+                    this.commandResults.add(commandResult);
+
+                    // display a summary of the results
+                    displaySummary(workerCallback);
                 }
                 else// execute only the target command
                 {
                     // solve the target command without push and pop to view multiple models if sat
-                    lastXmlFile = solveCommand(translation.getCommands().size() - 1);
+                    commandResult = solveCommand(translation.getCommands().size() - 1);
+                }
+
+                if(commandResult != null && commandResult.xmlFileName != null)
+                {
+                    lastXmlFile = commandResult.xmlFileName;
                 }
 
                 //ToDo: review when to destroy the process
@@ -111,6 +126,42 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
     }
 
+
+    void displaySummary(WorkerEngine.WorkerCallback workerCallback)
+    {
+        if(this.commandResults.size() > 1)
+        {
+            callbackBold(commandResults.size() + " commands were executed. The results are:\n");
+            for(CommandResult commandResult : this.commandResults)
+            {
+                callbackPlain("#" + (commandResult.index + 1) + ": ");
+
+                switch(commandResult.result)
+                {
+                    case "sat":
+                        callbackLink(commandResult.command.check ?
+                                        "Counterexample found. " : "Instance found. ",
+                                "XML: " + commandResult.xmlFileName);
+
+                        callbackPlain(commandResult.command.label + " ");
+
+                        callbackPlain(commandResult.command.check ? "is invalid" : "is consistent");
+                        break;
+                    case "unsat":
+
+                        callbackPlain(commandResult.command.label + " ");
+
+                        callbackPlain(commandResult.command.check ? "is valid" : " is unsatisfiable");
+
+                        break;
+                    default:
+                        callbackPlain(commandResult.command.label + " is unknown");
+                }
+                callbackPlain("\n");
+            }
+        }
+    }
+
     public static String setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
     {
         Map<String, String> options = new HashMap<>();
@@ -124,7 +175,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return script;
     }
 
-    private String solveCommand(int index) throws Exception
+    private CommandResult solveCommand(int index) throws Exception
     {
         String commandTranslation = translation.translateCommand(index);
 
@@ -149,12 +200,18 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         callbackBold("Satisfiability: " + result + "\n");
 
+        CommandResult commandResult = new CommandResult();
+        commandResult.index         = index;
+        commandResult.command       = command;
+        commandResult.result        = result;
+
         if(result != null)
         {
             switch (result)
             {
                 case "sat":
-                    return prepareInstance(index, duration);
+                    commandResult.xmlFileName = prepareInstance(index, duration);
+                    break;
                 case "unsat":
                     if(translation.getCommands().get(index).check)
                     {
@@ -164,17 +221,23 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     {
                         callbackPlain("The result is unsat\n");
                     }
-                    return null;
+                    break;
                 default:
                     callbackPlain("The result is unknown\n");
-                    return null;
             }
         }
         else
         {
             callbackPlain("No result returned from cvc4\n");
-            return null;
+            commandResult.result = "";
         }
+
+        return commandResult;
+    }
+
+    private void callbackLink(String log, String link)
+    {
+        workerCallback.callback(new Object[]{"link", log, link});
     }
 
     private void callbackPlain(String log)
@@ -196,6 +259,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     }
 
 
+    /**
+     * gets a model from cvc4 if the result is sat and saves it into a new xml file
+     * and return its path
+     * @param commandIndex the index of the sat command
+     * @param duration the solving duration in milli seconds
+     * @return a path to the xml file where the model is saved
+     * @throws Exception
+     */
     private String prepareInstance(int commandIndex, long duration) throws Exception
     {
         String smtModel = cvc4Process.sendCommand(Translation.GET_MODEL);
@@ -515,5 +586,13 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         SmtModel smtModel = (SmtModel) visitor.visit(tree);
 
         return  smtModel;
+    }
+
+    private class CommandResult
+    {
+        public int index;
+        public Command command;
+        public String result;
+        public String xmlFileName;
     }
 }
