@@ -50,9 +50,10 @@ public class IntSigTranslationTests
         String alloy =
                 "sig A in Int {}\n" +
                 "sig B in Int {}\n" +
-                "fact {plus[A,B] = 5}";
+                "fact {plus[A,B] = 5 and add[A,B] = 5}";
 
         Translation translation = Utils.translate(alloy);
+        Assertions.assertFalse(translation.getSmtScript().contains("integer_add"));
     }
 
     @Test

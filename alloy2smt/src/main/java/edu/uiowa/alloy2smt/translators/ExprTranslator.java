@@ -174,11 +174,11 @@ public class ExprTranslator
         {
             return translateSetCompFuncCallExpr(funcName, argExprs);
         }
-        else if(funcName.equals("integer/plus"))
+        else if(funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, variablesScope);
         }
-        else if(funcName.equals("integer/minus"))
+        else if(funcName.equals("integer/minus")|| funcName.equals("integer/sub"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, variablesScope);
         }
