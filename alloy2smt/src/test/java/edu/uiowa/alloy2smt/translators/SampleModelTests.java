@@ -42,4 +42,11 @@ public class SampleModelTests
         // ToDo: fix the exception thrown by the next expression: by supporting setof operator
         //  "set c . (this/CacheSystem <: main) . this/Data - c . (this/CacheSystem <: cache) . this/Data"
     }
+
+    @Test
+    public void hotel1() throws IOException
+    {
+        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel1.als");
+        // ToDo: support multiplicity constraints on relations with arity GT 3!
+    }
 }
