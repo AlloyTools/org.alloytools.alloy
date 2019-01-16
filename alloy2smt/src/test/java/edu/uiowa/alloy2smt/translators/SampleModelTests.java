@@ -34,4 +34,12 @@ public class SampleModelTests
 
         Assertions.assertFalse(writeIdempotent.contains("m\""));
     }
+
+    @Test
+    public void cacheMemory() throws IOException
+    {
+        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/cacheMemory.als");
+        // ToDo: fix the exception thrown by the next expression: by supporting setof operator
+        //  "set c . (this/CacheSystem <: main) . this/Data - c . (this/CacheSystem <: cache) . this/Data"
+    }
 }
