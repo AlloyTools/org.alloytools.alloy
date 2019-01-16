@@ -49,4 +49,32 @@ public class SampleModelTests
         Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel1.als");
         // ToDo: support multiplicity constraints on relations with arity GT 3!
     }
+
+    @Test
+    public void messaging() throws IOException
+    {
+        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/examples/algorithms/messaging.als");
+        // ToDo: support ONE_ARROW_ONE
+    }
+
+    @Test
+    public void ringlead() throws IOException
+    {
+        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/examples/algorithms/ringlead.als");
+        // ToDo: support # needsToSend = # { m: reads | m.state.id in nodeOrd/nexts[self] }
+    }
+
+    @Test
+    public void stable_mutex_ring() throws IOException
+    {
+        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/examples/algorithms/stable_mutex_ring.als");
+        // ToDo: support ONE_ARROW_ONE
+    }
+
+    @Test
+    public void firewire() throws IOException
+    {
+        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/examples/case_studies/firewire.als");
+        // ToDo: support LONE_ARROW_ANY
+    }
 }
