@@ -23,6 +23,7 @@ public class TranslatorUtils
 
     private static int setIndex = 0;
 
+    //ToDo: review if 0 is acceptable
     public static final int UNIV_SIGNATURE_ID = 2;
 
     /**
@@ -31,7 +32,7 @@ public class TranslatorUtils
      * @return
      */
     public static String sanitizeName(String s) {
-        return s.replaceAll("/", "_").replaceAll("'", "_");
+        return s.replaceAll("/", "_").replaceAll("'", "_").replaceAll("\"", "_");
     }
 
     public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, Alloy2SmtTranslator translator)
