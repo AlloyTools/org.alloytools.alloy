@@ -389,8 +389,12 @@ public class SignatureTranslator
         Expr       next             = exprList.args.get(2);
 
         // define a new uninterpreted one-to-one mapping from the signature to integers
-        String              name    = TranslatorUtils.sanitizeName(((Sig) ((ExprUnary) set).sub).label) + "toIntMap";
+        String              label   = ((Sig) ((ExprUnary) set).sub).label;
+        String              name    = TranslatorUtils.sanitizeName(label + "ToIntMap");
         FunctionDeclaration mapping = new FunctionDeclaration(name, translator.atomSort, translator.intSort);
+
+        // convert this/A to ordA_
+        String              prefix  = label.replaceFirst("(.*/)?", "ord") + "_";
 
         translator.smtProgram.addFunctionDeclaration(mapping);
 
@@ -526,5 +530,82 @@ public class SignatureTranslator
         Expression equality     = new BinaryExpression(emptyRelation, BinaryExpression.Op.EQ, intersection);
 
         translator.smtProgram.addAssertion(new Assertion("No element is successor to itself", equality));
+
+        defineOrderingFunctions(prefix, firstSet, lastSet, name);
+    }
+
+    private void defineOrderingFunctions(String prefix, Expression firstSet, Expression lastSet, String mappingName)
+    {
+        // ordering/first
+        FunctionDefinition first = new FunctionDefinition(prefix + "first", translator.setOfUnaryAtomSort, firstSet);
+        translator.smtProgram.addFunctionDefinition(first);
+
+        // ordering/last
+        FunctionDefinition last = new FunctionDefinition(prefix + "last", translator.setOfUnaryAtomSort, lastSet);
+        translator.smtProgram.addFunctionDefinition(last);
+
+        BoundVariableDeclaration set1 = new BoundVariableDeclaration("s1", translator.setOfUnaryAtomSort);
+        BoundVariableDeclaration set2 = new BoundVariableDeclaration("s2", translator.setOfUnaryAtomSort);
+
+        BoundVariableDeclaration element1 = new BoundVariableDeclaration("e1", translator.atomSort);
+        BoundVariableDeclaration element2 = new BoundVariableDeclaration("e2", translator.atomSort);
+
+        // ordering/lt
+        FunctionDefinition lt = getComparisonDefinition(prefix, "lt", mappingName, set1, set2, element1, element2, BinaryExpression.Op.LT);
+        translator.smtProgram.addFunctionDefinition(lt);
+
+        // ordering/gt
+        FunctionDefinition gt = getComparisonDefinition(prefix, "gt", mappingName, set1, set2, element1, element2, BinaryExpression.Op.GT);
+        translator.smtProgram.addFunctionDefinition(gt);
+
+        // ordering/lte
+        FunctionDefinition lte = getComparisonDefinition(prefix, "lte", mappingName, set1, set2, element1, element2, BinaryExpression.Op.LTE);
+        translator.smtProgram.addFunctionDefinition(lte);
+
+        // ordering/gte
+        FunctionDefinition gte = getComparisonDefinition(prefix, "gte", mappingName, set1, set2, element1, element2, BinaryExpression.Op.GTE);
+        translator.smtProgram.addFunctionDefinition(gte);
+    }
+
+    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, BoundVariableDeclaration set1, BoundVariableDeclaration set2, BoundVariableDeclaration element1, BoundVariableDeclaration element2, BinaryExpression.Op operator)
+    {
+        QuantifiedExpression ltExpression =
+                new QuantifiedExpression
+                (
+                    QuantifiedExpression.Op.FORALL,
+                            new BinaryExpression
+                            (
+                                new BinaryExpression
+                                (
+                                    new BinaryExpression
+                                    (
+                                        TranslatorUtils.getTuple(element1),
+                                        BinaryExpression.Op.MEMBER,
+                                        set1.getConstantExpr()
+                                    ),
+                                    BinaryExpression.Op.AND,
+                                    new BinaryExpression
+                                    (
+                                        TranslatorUtils.getTuple(element2),
+                                        BinaryExpression.Op.MEMBER,
+                                        set2.getConstantExpr()
+                                    )
+                                ),
+                                BinaryExpression.Op.IMPLIES,
+                                new BinaryExpression
+                                (
+                                    new FunctionCallExpression(mappingName, element1.getConstantExpr()),
+                                    operator,
+                                    new FunctionCallExpression(mappingName, element1.getConstantExpr())
+                                )
+                            ),
+                    element1, element2
+                );
+
+        return new FunctionDefinition(prefix + suffix,
+                new BoolSort(),
+                ltExpression,
+                set1, set2
+        );
     }
 }

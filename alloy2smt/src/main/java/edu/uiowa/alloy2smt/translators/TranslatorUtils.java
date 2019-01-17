@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.uiowa.alloy2smt.smtAst.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -162,5 +163,12 @@ public class TranslatorUtils
         {
             return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
         }
-    }          
+    }
+
+    public static Expression getTuple(Declaration ... elements)
+    {
+        List<Expression> expressions = Arrays.stream(elements)
+                .map(Declaration::getConstantExpr).collect(Collectors.toList());
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
+    }
 }

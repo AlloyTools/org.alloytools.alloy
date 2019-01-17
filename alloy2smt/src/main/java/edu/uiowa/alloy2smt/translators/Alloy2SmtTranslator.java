@@ -223,6 +223,14 @@ public class Alloy2SmtTranslator
             {
                 funcNames.add(func.label);
             }
+
+            // translate functions in ordering module differently
+            // these functions are defined in SignatureTranslator.java
+            if(module.getModelName().equals("util/ordering"))
+            {
+                continue;
+            }
+
             for (Func f : module.getAllFunc())
             {
                 //ignore  private functions like $$Default and run$1 etc
@@ -231,6 +239,7 @@ public class Alloy2SmtTranslator
                 {
                     continue;
                 }
+
                 translateFunc(f);
                 sortFunctionDependency(f.label, f.getBody(), dependency);
             }

@@ -11,6 +11,7 @@ import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
  *
  * @author Paul Meng
  */
+//ToDo: add a static instance Alloy2SmtTranslator
 public class BoolSort extends Sort
 {
     public BoolSort()
