@@ -388,6 +388,12 @@ public class SignatureTranslator
         Expr       first            = exprList.args.get(1);
         Expr       next             = exprList.args.get(2);
 
+        // define a new uninterpreted one-to-one mapping from the signature to integers
+        String              name    = TranslatorUtils.sanitizeName(((Sig) ((ExprUnary) set).sub).label) + "toIntMap";
+        FunctionDeclaration mapping = new FunctionDeclaration(name, translator.atomSort, translator.intSort);
+
+        translator.smtProgram.addFunctionDeclaration(mapping);
+
         Expression setExpression    = translator.exprTranslator.translateExpr(set, variablesScope);
         Expression firstExpression  = translator.exprTranslator.translateExpr(first, variablesScope);
         Expression nextExpression   = translator.exprTranslator.translateExpr(next, variablesScope);
@@ -404,7 +410,6 @@ public class SignatureTranslator
         Expression          lastSet     = new UnaryExpression(UnaryExpression.Op.SINGLETON,
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastElement.getConstantExpr()));
 
-
         translator.smtProgram.addConstantDeclaration(firstElement);
         translator.smtProgram.addConstantDeclaration(lastElement);
 
@@ -415,6 +420,24 @@ public class SignatureTranslator
                         new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastElement.getConstantExpr()),
                 BinaryExpression.Op.MEMBER,
                 setExpression)));
+
+        // each element is greater than or equal to the first element
+        BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
+
+        Expression gte = new BinaryExpression(
+                new FunctionCallExpression(mapping.getName(), boundVariable.getConstantExpr()),
+                BinaryExpression.Op.GTE,
+                new FunctionCallExpression(mapping.getName(), firstElement.getConstantExpr())
+                );
+
+        Expression member     = new BinaryExpression(
+                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,  boundVariable.getConstantExpr()),
+                BinaryExpression.Op.MEMBER, setExpression);
+
+        Expression gteImplies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, gte);
+
+        QuantifiedExpression firstIsSmallest = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, gteImplies, boundVariable);
+        translator.smtProgram.addAssertion(new Assertion("Each element is >= " + firstElement.getName(), firstIsSmallest));
 
         // there is only one first element
         // first = (singleton (maketuple firstElement))
