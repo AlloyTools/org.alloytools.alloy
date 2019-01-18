@@ -451,13 +451,21 @@ public class SignatureTranslator
         ConstantDeclaration ordNext =  addOrdNext(prefix,setExpression, mappingName, ordSig);
 
         // prev relation
-        addOrdPrev(prefix,setExpression, mappingName, ordNext);
+        ConstantDeclaration ordPrev = addOrdPrev(prefix,setExpression, mappingName, ordNext);
 
         BoundVariableDeclaration set1 = new BoundVariableDeclaration("s1", translator.setOfUnaryAtomSort);
         BoundVariableDeclaration set2 = new BoundVariableDeclaration("s2", translator.setOfUnaryAtomSort);
 
         BoundVariableDeclaration element1 = new BoundVariableDeclaration("e1", translator.atomSort);
         BoundVariableDeclaration element2 = new BoundVariableDeclaration("e2", translator.atomSort);
+
+        // ordering/prevs
+        FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
+        translator.smtProgram.addFunctionDefinition(prevs);
+
+        // ordering/nexts
+        FunctionDefinition nexts = getPrevsNextsDefinition(prefix, set1, ordNext, "nexts");
+        translator.smtProgram.addFunctionDefinition(nexts);
 
         // ordering/lt
         FunctionDefinition lt = getComparisonDefinition(prefix, "lt", mappingName, set1, set2, element1, element2, BinaryExpression.Op.LT);
@@ -484,6 +492,15 @@ public class SignatureTranslator
         translator.smtProgram.addFunctionDefinition(smaller);
     }
 
+    private FunctionDefinition getPrevsNextsDefinition(String prefix, BoundVariableDeclaration set1, ConstantDeclaration ord, String suffix)
+    {
+        UnaryExpression tClosure = new UnaryExpression(UnaryExpression.Op.TCLOSURE, ord.getConstantExpr());
+        BinaryExpression join = new BinaryExpression(set1.getConstantExpr(), BinaryExpression.Op.JOIN, tClosure);
+        String name = prefix + suffix;
+        FunctionDefinition definition = new FunctionDefinition(name, translator.setOfUnaryAtomSort, join, set1);
+        return definition;
+    }
+
     private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, BoundVariableDeclaration set1, BoundVariableDeclaration set2, FunctionDefinition definition)
     {
         FunctionCallExpression call = new FunctionCallExpression(definition.funcName, set1.getConstantExpr(), set2.getConstantExpr());
@@ -498,7 +515,7 @@ public class SignatureTranslator
 
     private ConstantDeclaration addOrdNext(String prefix, Expression setExpression, String mappingName, Sig ordSig)
     {
-        ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "NextAuxiliary", translator.setOfBinaryAtomSort);
+        ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "next", translator.setOfBinaryAtomSort);
 
         BoundVariableDeclaration x = new BoundVariableDeclaration("_x", translator.atomSort);
         BoundVariableDeclaration y = new BoundVariableDeclaration("_y", translator.atomSort);
@@ -562,7 +579,7 @@ public class SignatureTranslator
 
         translator.smtProgram.addConstantDeclaration(ordNext);
 
-        translator.smtProgram.addAssertion(new Assertion(prefix + "NextAuxiliary", forAllXY));
+        translator.smtProgram.addAssertion(new Assertion(prefix + "next", forAllXY));
 
         Expression ordSigExpression = translator.signaturesMap.get(ordSig).getConstantExpr();
 
@@ -577,14 +594,14 @@ public class SignatureTranslator
 
         Expression equality = new BinaryExpression(ordNext.getConstantExpr(), BinaryExpression.Op.EQ, join);
 
-        // NextAuxiliary = ordSig.Next
+        // next = ordSig.Next
         translator.smtProgram.addAssertion(
                 new Assertion(ordNext.getName() + " = " + ordSig.label + "." + nextField.label, equality));
 
         return ordNext;
     }
 
-    private void addOrdPrev(String prefix, Expression setExpression, String mappingName, ConstantDeclaration ordNext)
+    private ConstantDeclaration addOrdPrev(String prefix, Expression setExpression, String mappingName, ConstantDeclaration ordNext)
     {
         ConstantDeclaration ordPrev = new ConstantDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
 
@@ -596,6 +613,8 @@ public class SignatureTranslator
         translator.smtProgram.addConstantDeclaration(ordPrev);
 
         translator.smtProgram.addAssertion(new Assertion(prefix + "PrevAuxiliary", equality));
+
+        return ordPrev;
     }
 
     private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, BoundVariableDeclaration set1, BoundVariableDeclaration set2, BoundVariableDeclaration element1, BoundVariableDeclaration element2, BinaryExpression.Op operator)
