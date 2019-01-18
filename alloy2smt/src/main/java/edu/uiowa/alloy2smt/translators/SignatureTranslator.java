@@ -426,24 +426,6 @@ public class SignatureTranslator
                 BinaryExpression.Op.MEMBER,
                 setExpression)));
 
-        // each element is greater than or equal to the first element
-        BoundVariableDeclaration boundVariable = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
-
-        Expression gte = new BinaryExpression(
-                new FunctionCallExpression(mapping.getName(), boundVariable.getConstantExpr()),
-                BinaryExpression.Op.GTE,
-                new FunctionCallExpression(mapping.getName(), firstElement.getConstantExpr())
-                );
-
-        Expression member     = new BinaryExpression(
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,  boundVariable.getConstantExpr()),
-                BinaryExpression.Op.MEMBER, setExpression);
-
-        Expression gteImplies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, gte);
-
-        QuantifiedExpression firstIsSmallest = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, gteImplies, boundVariable);
-        translator.smtProgram.addAssertion(new Assertion("Each element is >= " + firstElement.getName(), firstIsSmallest));
-
         // there is only one first element
         // first = (singleton (maketuple firstElement))
         Expression singletonFirst =
@@ -451,86 +433,6 @@ public class SignatureTranslator
                 firstExpression);
 
         translator.smtProgram.addAssertion(new Assertion(first.toString(), singletonFirst));
-
-        // No predecessor before the first element
-        // (join firstSet next) = emptySet
-        Expression noPredecessorBeforeFirst = new BinaryExpression(emptySet, BinaryExpression.Op.EQ,
-                new BinaryExpression(nextExpression, BinaryExpression.Op.JOIN, firstSet));
-
-        translator.smtProgram.addAssertion(new Assertion("No predecessor before " + firstElement.getName(), noPredecessorBeforeFirst));
-
-
-        // No successor after the last element
-        // (join next lastSet) = emptySet
-        Expression noSuccessorBeforeFirst = new BinaryExpression(emptySet, BinaryExpression.Op.EQ,
-                new BinaryExpression(lastSet, BinaryExpression.Op.JOIN, nextExpression));
-
-        translator.smtProgram.addAssertion(new Assertion("No successor after " + lastElement.getName(), noSuccessorBeforeFirst));
-
-        BoundVariableDeclaration forAllVariable = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
-
-        Expression forAllTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, forAllVariable.getConstantExpr());
-        Expression forAllSet = new UnaryExpression(UnaryExpression.Op.SINGLETON, forAllTuple);
-
-        BoundVariableDeclaration existsVariable = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
-
-        Expression existsTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, existsVariable.getConstantExpr());
-        Expression existsSet = new UnaryExpression(UnaryExpression.Op.SINGLETON, existsTuple);
-
-        Expression memberNotFirst = new BinaryExpression(
-                new BinaryExpression( forAllTuple, BinaryExpression.Op.MEMBER, setExpression),
-                BinaryExpression.Op.AND,
-                new UnaryExpression(UnaryExpression.Op.NOT,
-                new BinaryExpression(firstElement.getConstantExpr(), BinaryExpression.Op.EQ ,forAllVariable.getConstantExpr())));
-
-        // Each element except the first element has exactly one predecessor
-
-        translator.exprTranslator.translateExpr(next.join(first).no(), variablesScope);
-
-        QuantifiedExpression onlyOnePredecessor = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                Collections.singletonList(existsVariable),
-                new BinaryExpression(
-                        existsSet, BinaryExpression.Op.EQ,
-                        new BinaryExpression(nextExpression, BinaryExpression.Op.JOIN, forAllSet)));
-
-        Expression forEachPredecessor = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,
-                Collections.singletonList(forAllVariable),
-                new BinaryExpression(memberNotFirst, BinaryExpression.Op.IMPLIES,
-                        onlyOnePredecessor));
-
-        translator.smtProgram.addAssertion(new Assertion("Each element except the first element has exactly one predecessor", forEachPredecessor));
-
-        Expression memberNotLast = new BinaryExpression(
-                new BinaryExpression( forAllTuple, BinaryExpression.Op.MEMBER, setExpression),
-                BinaryExpression.Op.AND,
-                new UnaryExpression(UnaryExpression.Op.NOT,
-                new BinaryExpression(lastElement.getConstantExpr(), BinaryExpression.Op.EQ ,
-                        forAllVariable.getConstantExpr())));
-
-        // Each element except the last element has exactly one successor
-
-        QuantifiedExpression onlyOneSuccessor = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                Collections.singletonList(existsVariable),
-                new BinaryExpression(
-                        existsSet, BinaryExpression.Op.EQ,
-                        new BinaryExpression(forAllSet, BinaryExpression.Op.JOIN, nextExpression)));
-
-        Expression forEachSuccessor = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,
-                Collections.singletonList(forAllVariable),
-                new BinaryExpression(memberNotLast, BinaryExpression.Op.IMPLIES,
-                        onlyOneSuccessor));
-
-        translator.smtProgram.addAssertion(new Assertion("Each element except the last element has exactly one successor", forEachSuccessor));
-
-        // no element is successor to itself
-        // (= emptyRelation (intersect next ident))
-        Expression identity     = translator.atomIden.getConstantExpr();
-        Expression intersection = new BinaryExpression(nextExpression, BinaryExpression.Op.INTERSECTION, identity);
-        Expression emptyRelation= new UnaryExpression(UnaryExpression.Op.EMPTYSET,
-                new SetSort(new TupleSort(translator.atomSort, translator.atomSort)));
-        Expression equality     = new BinaryExpression(emptyRelation, BinaryExpression.Op.EQ, intersection);
-
-        translator.smtProgram.addAssertion(new Assertion("No element is successor to itself", equality));
 
         defineOrderingFunctions(prefix, firstSet, lastSet, name, setExpression, ordSig);
     }
@@ -546,12 +448,10 @@ public class SignatureTranslator
         translator.smtProgram.addFunctionDefinition(last);
 
         // Next relation
-        addOrdNext(prefix,setExpression, mappingName, ordSig);
+        ConstantDeclaration ordNext =  addOrdNext(prefix,setExpression, mappingName, ordSig);
 
-        // pre relation
-        addOrdPrev(prefix,setExpression, mappingName);
-
-
+        // prev relation
+        addOrdPrev(prefix,setExpression, mappingName, ordNext);
 
         BoundVariableDeclaration set1 = new BoundVariableDeclaration("s1", translator.setOfUnaryAtomSort);
         BoundVariableDeclaration set2 = new BoundVariableDeclaration("s2", translator.setOfUnaryAtomSort);
@@ -574,9 +474,29 @@ public class SignatureTranslator
         // ordering/gte
         FunctionDefinition gte = getComparisonDefinition(prefix, "gte", mappingName, set1, set2, element1, element2, BinaryExpression.Op.GTE);
         translator.smtProgram.addFunctionDefinition(gte);
+
+        //ordering/larger
+        FunctionDefinition larger = getLargerSmallerDefinition(prefix, "larger", set1, set2, gt);
+        translator.smtProgram.addFunctionDefinition(larger);
+
+        //ordering/smaller
+        FunctionDefinition smaller = getLargerSmallerDefinition(prefix, "smaller", set1, set2, lt);
+        translator.smtProgram.addFunctionDefinition(smaller);
     }
 
-    private void addOrdNext(String prefix, Expression setExpression, String mappingName, Sig ordSig)
+    private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, BoundVariableDeclaration set1, BoundVariableDeclaration set2, FunctionDefinition definition)
+    {
+        FunctionCallExpression call = new FunctionCallExpression(definition.funcName, set1.getConstantExpr(), set2.getConstantExpr());
+        ITEExpression ite = new ITEExpression(call, set1.getConstantExpr(),
+                set2.getConstantExpr());
+        return new FunctionDefinition(prefix + suffix,
+                translator.setOfUnaryAtomSort,
+                ite,
+                set1, set2
+        );
+    }
+
+    private ConstantDeclaration addOrdNext(String prefix, Expression setExpression, String mappingName, Sig ordSig)
     {
         ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "NextAuxiliary", translator.setOfBinaryAtomSort);
 
@@ -660,75 +580,22 @@ public class SignatureTranslator
         // NextAuxiliary = ordSig.Next
         translator.smtProgram.addAssertion(
                 new Assertion(ordNext.getName() + " = " + ordSig.label + "." + nextField.label, equality));
+
+        return ordNext;
     }
 
-    private void addOrdPrev(String prefix, Expression setExpression, String mappingName)
+    private void addOrdPrev(String prefix, Expression setExpression, String mappingName, ConstantDeclaration ordNext)
     {
         ConstantDeclaration ordPrev = new ConstantDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
 
-        BoundVariableDeclaration x = new BoundVariableDeclaration("_x", translator.atomSort);
-        BoundVariableDeclaration y = new BoundVariableDeclaration("_y", translator.atomSort);
-        BoundVariableDeclaration z = new BoundVariableDeclaration("_z", translator.atomSort);
+        UnaryExpression transpose = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, ordNext.getConstantExpr());
 
-        // x, y in setExpression implies
-        // ((x, y) in Ord_Prev) iff (x > y and for all z. (z in setExpression implies x > z and y >= z))
-
-        BinaryExpression xyMembers = new BinaryExpression(
-                new BinaryExpression(
-                        TranslatorUtils.getTuple(x),
-                        BinaryExpression.Op.MEMBER,
-                        setExpression
-                ),
-                BinaryExpression.Op.AND,
-                new BinaryExpression(
-                        TranslatorUtils.getTuple(y),
-                        BinaryExpression.Op.MEMBER,
-                        setExpression
-                ));
-
-        Expression xy = TranslatorUtils.getTuple(x, y);
-        BinaryExpression xyInPrev = new BinaryExpression(xy, BinaryExpression.Op.MEMBER, ordPrev.getConstantExpr());
-
-        BinaryExpression zMember = new BinaryExpression(TranslatorUtils.getTuple(z), BinaryExpression.Op.MEMBER, setExpression);
-
-        BinaryExpression xGreaterThanY = new BinaryExpression(
-                new FunctionCallExpression(mappingName, x.getConstantExpr()),
-                BinaryExpression.Op.GT,
-                new FunctionCallExpression(mappingName, y.getConstantExpr()));
-
-        BinaryExpression xGreaterThanZ = new BinaryExpression(
-                new FunctionCallExpression(mappingName, x.getConstantExpr()),
-                BinaryExpression.Op.GT,
-                new FunctionCallExpression(mappingName, z.getConstantExpr()));
-
-        BinaryExpression yGreaterEqualsZ = new BinaryExpression(
-                new FunctionCallExpression(mappingName, y.getConstantExpr()),
-                BinaryExpression.Op.GTE,
-                new FunctionCallExpression(mappingName, z.getConstantExpr()));
-
-        BinaryExpression zImplies = new BinaryExpression
-                (
-                        new BinaryExpression(
-                                zMember,
-                                BinaryExpression.Op.AND,
-                                xGreaterThanZ)
-                        ,BinaryExpression.Op.IMPLIES,
-                        yGreaterEqualsZ
-                );
-
-        QuantifiedExpression forAllZ = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, zImplies, z);
-
-        BinaryExpression xGreaterThanYAndForAllZ = new BinaryExpression(xGreaterThanY, BinaryExpression.Op.AND, forAllZ);
-
-        BinaryExpression iff = new BinaryExpression(xyInPrev, BinaryExpression.Op.EQ, xGreaterThanYAndForAllZ);
-
-        BinaryExpression xyImplies = new BinaryExpression(xyMembers, BinaryExpression.Op.IMPLIES, iff);
-
-        QuantifiedExpression forAllXY = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, xyImplies,x, y);
+        BinaryExpression equality = new BinaryExpression(ordPrev.getConstantExpr(),
+                BinaryExpression.Op.EQ, transpose);
 
         translator.smtProgram.addConstantDeclaration(ordPrev);
 
-        translator.smtProgram.addAssertion(new Assertion(prefix + "PrevAuxiliary", forAllXY));
+        translator.smtProgram.addAssertion(new Assertion(prefix + "PrevAuxiliary", equality));
     }
 
     private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, BoundVariableDeclaration set1, BoundVariableDeclaration set2, BoundVariableDeclaration element1, BoundVariableDeclaration element2, BinaryExpression.Op operator)
