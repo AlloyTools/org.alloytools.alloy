@@ -440,12 +440,10 @@ public class SignatureTranslator
     private void defineOrderingFunctions(String prefix, Expression firstSet, Expression lastSet, String mappingName, Expression setExpression, Sig ordSig)
     {
         // ordering/first
-        FunctionDefinition first = new FunctionDefinition(prefix + "first", translator.setOfUnaryAtomSort, firstSet);
-        translator.smtProgram.addFunctionDefinition(first);
+        addFirstLastConstant(prefix, firstSet, "first");
 
         // ordering/last
-        FunctionDefinition last = new FunctionDefinition(prefix + "last", translator.setOfUnaryAtomSort, lastSet);
-        translator.smtProgram.addFunctionDefinition(last);
+        addFirstLastConstant(prefix, lastSet, "last");
 
         // Next relation
         ConstantDeclaration ordNext =  addOrdNext(prefix,setExpression, mappingName, ordSig);
@@ -490,6 +488,17 @@ public class SignatureTranslator
         //ordering/smaller
         FunctionDefinition smaller = getLargerSmallerDefinition(prefix, "smaller", set1, set2, lt);
         translator.smtProgram.addFunctionDefinition(smaller);
+    }
+
+    private void addFirstLastConstant(String prefix, Expression set, String suffix)
+    {
+        ConstantDeclaration declaration = new ConstantDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+        translator.smtProgram.addConstantDeclaration(declaration);
+
+        BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(),
+                BinaryExpression.Op.EQ, set);
+
+        translator.smtProgram.addAssertion(new Assertion(prefix + suffix, equality));
     }
 
     private FunctionDefinition getPrevsNextsDefinition(String prefix, BoundVariableDeclaration set1, ConstantDeclaration ord, String suffix)
