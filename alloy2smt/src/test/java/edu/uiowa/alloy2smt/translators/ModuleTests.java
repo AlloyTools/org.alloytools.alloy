@@ -22,7 +22,7 @@ public class ModuleTests
                 "open util/ordering[B] as ordB\n" +
                 "sig A {}\n" +
                 "sig B {}\n" +
-                "fact f {#A = 3 and #B = 4}\n" +
+                "fact f {#A = 3 and #B = 4 and some ordB/prev}\n" +
                 "run {} for 10 but 3 A, 4 B\n";
 
         Translation translation = Utils.translate(alloy);

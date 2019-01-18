@@ -18,6 +18,7 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import java.util.*;
 
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class SignatureTranslator
 {
@@ -366,7 +367,7 @@ public class SignatureTranslator
                     ((ExprUnary) expr).sub instanceof ExprList &&
                     ((ExprList) ((ExprUnary) expr).sub).op == ExprList.Op.TOTALORDER)
             {
-                translateTotalOrder(((ExprList) ((ExprUnary) expr).sub), variablesScope);
+                translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), variablesScope);
                 continue;
             }
 
@@ -377,7 +378,7 @@ public class SignatureTranslator
     }
 
     //ToDo: refactor this method
-    private void translateTotalOrder(ExprList exprList, Map<String, Expression> variablesScope)
+    private void translateTotalOrder(Sig ordSig, ExprList exprList, Map<String, Expression> variablesScope)
     {
         if(exprList.args.size() != 3)
         {
@@ -531,10 +532,10 @@ public class SignatureTranslator
 
         translator.smtProgram.addAssertion(new Assertion("No element is successor to itself", equality));
 
-        defineOrderingFunctions(prefix, firstSet, lastSet, name);
+        defineOrderingFunctions(prefix, firstSet, lastSet, name, setExpression, ordSig);
     }
 
-    private void defineOrderingFunctions(String prefix, Expression firstSet, Expression lastSet, String mappingName)
+    private void defineOrderingFunctions(String prefix, Expression firstSet, Expression lastSet, String mappingName, Expression setExpression, Sig ordSig)
     {
         // ordering/first
         FunctionDefinition first = new FunctionDefinition(prefix + "first", translator.setOfUnaryAtomSort, firstSet);
@@ -545,10 +546,10 @@ public class SignatureTranslator
         translator.smtProgram.addFunctionDefinition(last);
 
         // Next relation
-        addOrdNext(prefix,null, mappingName);
+        addOrdNext(prefix,setExpression, mappingName, ordSig);
 
         // pre relation
-        addOrdPrev(prefix,null, mappingName);
+        addOrdPrev(prefix,setExpression, mappingName);
 
 
 
@@ -575,13 +576,13 @@ public class SignatureTranslator
         translator.smtProgram.addFunctionDefinition(gte);
     }
 
-    private void addOrdNext(String prefix, Expression setExpression, String mappingName)
+    private void addOrdNext(String prefix, Expression setExpression, String mappingName, Sig ordSig)
     {
-        ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "Ord_Next", translator.setOfBinaryAtomSort);
+        ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "NextAuxiliary", translator.setOfBinaryAtomSort);
 
         BoundVariableDeclaration x = new BoundVariableDeclaration("_x", translator.atomSort);
         BoundVariableDeclaration y = new BoundVariableDeclaration("_y", translator.atomSort);
-        BoundVariableDeclaration z = new BoundVariableDeclaration("_y", translator.atomSort);
+        BoundVariableDeclaration z = new BoundVariableDeclaration("_z", translator.atomSort);
 
         // x, y in setExpression implies
         // ((x, y) in Ord_Next) iff (x < y and for all z. (z in setExpression implies x < z and y <= z))
@@ -599,7 +600,7 @@ public class SignatureTranslator
                             setExpression
                     ));
 
-        MultiArityExpression xy = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, TranslatorUtils.getTuple(x, y));
+        Expression xy = TranslatorUtils.getTuple(x, y);
         BinaryExpression xyInNext = new BinaryExpression(xy, BinaryExpression.Op.MEMBER, ordNext.getConstantExpr());
 
         BinaryExpression zMember = new BinaryExpression(TranslatorUtils.getTuple(z), BinaryExpression.Op.MEMBER, setExpression);
@@ -641,16 +642,33 @@ public class SignatureTranslator
 
         translator.smtProgram.addConstantDeclaration(ordNext);
 
-        translator.smtProgram.addAssertion(new Assertion(prefix + "Ord_Next", forAllXY));
+        translator.smtProgram.addAssertion(new Assertion(prefix + "NextAuxiliary", forAllXY));
+
+        Expression ordSigExpression = translator.signaturesMap.get(ordSig).getConstantExpr();
+
+        Sig.Field nextField = StreamSupport
+                .stream(ordSig.getFields().spliterator(), false)
+                .filter(field -> field.label.contains("Next"))
+                .findFirst().get();
+
+        Expression nextFieldExpression = translator.fieldsMap.get(nextField).getConstantExpr();
+
+        Expression join = new BinaryExpression(ordSigExpression, BinaryExpression.Op.JOIN, nextFieldExpression);
+
+        Expression equality = new BinaryExpression(ordNext.getConstantExpr(), BinaryExpression.Op.EQ, join);
+
+        // NextAuxiliary = ordSig.Next
+        translator.smtProgram.addAssertion(
+                new Assertion(ordNext.getName() + " = " + ordSig.label + "." + nextField.label, equality));
     }
 
     private void addOrdPrev(String prefix, Expression setExpression, String mappingName)
     {
-        ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "Ord_Prev", translator.setOfBinaryAtomSort);
+        ConstantDeclaration ordPrev = new ConstantDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
 
         BoundVariableDeclaration x = new BoundVariableDeclaration("_x", translator.atomSort);
         BoundVariableDeclaration y = new BoundVariableDeclaration("_y", translator.atomSort);
-        BoundVariableDeclaration z = new BoundVariableDeclaration("_y", translator.atomSort);
+        BoundVariableDeclaration z = new BoundVariableDeclaration("_z", translator.atomSort);
 
         // x, y in setExpression implies
         // ((x, y) in Ord_Prev) iff (x > y and for all z. (z in setExpression implies x > z and y >= z))
@@ -668,8 +686,8 @@ public class SignatureTranslator
                         setExpression
                 ));
 
-        MultiArityExpression xy = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, TranslatorUtils.getTuple(x, y));
-        BinaryExpression xyInPrev = new BinaryExpression(xy, BinaryExpression.Op.MEMBER, ordNext.getConstantExpr());
+        Expression xy = TranslatorUtils.getTuple(x, y);
+        BinaryExpression xyInPrev = new BinaryExpression(xy, BinaryExpression.Op.MEMBER, ordPrev.getConstantExpr());
 
         BinaryExpression zMember = new BinaryExpression(TranslatorUtils.getTuple(z), BinaryExpression.Op.MEMBER, setExpression);
 
@@ -708,9 +726,9 @@ public class SignatureTranslator
 
         QuantifiedExpression forAllXY = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, xyImplies,x, y);
 
-        translator.smtProgram.addConstantDeclaration(ordNext);
+        translator.smtProgram.addConstantDeclaration(ordPrev);
 
-        translator.smtProgram.addAssertion(new Assertion(prefix + "Ord_Prev", forAllXY));
+        translator.smtProgram.addAssertion(new Assertion(prefix + "PrevAuxiliary", forAllXY));
     }
 
     private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, BoundVariableDeclaration set1, BoundVariableDeclaration set2, BoundVariableDeclaration element1, BoundVariableDeclaration element2, BinaryExpression.Op operator)
