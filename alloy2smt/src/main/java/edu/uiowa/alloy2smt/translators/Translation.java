@@ -158,4 +158,21 @@ public class Translation
         }
         return printer.getSmtLib();
     }
+
+    /**
+     * @return a translation for all commands in smt using (check-sat)
+     * without getting the models
+     */
+    public String translateAllCommandsWithCheckSat()
+    {
+        StringBuilder stringBuilder = new StringBuilder(getSmtScript());
+        for (int i = 0; i < translator.commands.size() ; i++)
+        {
+            stringBuilder.append(PUSH + "\n");
+            stringBuilder.append(translateCommand(i) + "\n");
+            stringBuilder.append(CHECK_SAT + "\n");
+            stringBuilder.append(POP + "\n");
+        }
+        return stringBuilder.toString();
+    }
 }

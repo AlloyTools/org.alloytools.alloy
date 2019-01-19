@@ -27,23 +27,44 @@ public class ModuleTests
 
         Translation translation = Utils.translate(alloy);
 
-        System.out.println(translation.getSmtScript());
+        String script = translation.getSmtScript();
 
-        Assertions.assertTrue(translation.getSmtScript().contains(
-                ""));
-    }
+        Assertions.assertTrue(script.contains("(declare-fun ordA_Ord"));
+        Assertions.assertTrue(script.contains("(declare-fun ordA_Ord_First"));
+        Assertions.assertTrue(script.contains("(declare-fun ordA_Ord_Next"));
+        Assertions.assertTrue(script.contains("(declare-fun ordA_IntMap"));
+        Assertions.assertTrue(script.contains("(declare-const ordA_first"));
+        Assertions.assertTrue(script.contains("(declare-const ordA_last"));
+        Assertions.assertTrue(script.contains("(declare-const ordA_next"));
+        Assertions.assertTrue(script.contains("(declare-const ordA_prev"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_prevs"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_nexts"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_lt"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_gt"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_lte"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_gte"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_larger"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_smaller"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_max"));
+        Assertions.assertTrue(script.contains("(define-fun ordA_min"));
 
-    @Test
-    void ordModuleLT()
-    {
-        String alloy =
-                "open util/ordering[A] as ordA\n" +
-                "abstract sig A {}\n" +
-                "sig A0 , A1, A2 extends A{}\n" +
-                "fact f {lt[A0, A2] and lt[A0, A1]}\n" +
-                "run {} for 10 but 3 A";
-        Translation translation = Utils.translate(alloy);
-
-        Assertions.assertTrue(translation.getSmtScript().contains("(define-fun ordA_lt"));
+        Assertions.assertTrue(script.contains("(declare-fun ordB_Ord"));
+        Assertions.assertTrue(script.contains("(declare-fun ordB_Ord_First"));
+        Assertions.assertTrue(script.contains("(declare-fun ordB_Ord_Next"));
+        Assertions.assertTrue(script.contains("(declare-fun ordB_IntMap"));
+        Assertions.assertTrue(script.contains("(declare-const ordB_first"));
+        Assertions.assertTrue(script.contains("(declare-const ordB_last"));
+        Assertions.assertTrue(script.contains("(declare-const ordB_next"));
+        Assertions.assertTrue(script.contains("(declare-const ordB_prev"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_prevs"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_nexts"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_lt"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_gt"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_lte"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_gte"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_larger"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_smaller"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_max"));
+        Assertions.assertTrue(script.contains("(define-fun ordB_min"));
     }
 }

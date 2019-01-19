@@ -22,7 +22,10 @@ public class SampleModelTests
     {
         Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/examples/tutorial/farmer.als");
 
-        Assertions.assertTrue(translation.getSmtScript().contains("(define-fun ord_next"));
+        String script = translation.translateAllCommandsWithCheckSat();
+
+        Assertions.assertTrue(script.contains("(declare-const ord_next"));
+        Assertions.assertTrue(script.contains("(declare-const ord_last"));
     }
 
     @Test

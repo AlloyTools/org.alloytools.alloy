@@ -390,12 +390,13 @@ public class SignatureTranslator
         Expr       next             = exprList.args.get(2);
 
         // define a new uninterpreted one-to-one mapping from the signature to integers
-        String              label   = ((Sig) ((ExprUnary) set).sub).label;
-        String              name    = TranslatorUtils.sanitizeName(label + "ToIntMap");
+        String              label   = ordSig.label;
+        // convert ordA/Ord to ordA_
+        String              prefix  = label.replaceFirst("/Ord", "_");
+        String              name    = TranslatorUtils.sanitizeName(prefix + "IntMap");
         FunctionDeclaration mapping = new FunctionDeclaration(name, translator.atomSort, translator.intSort);
 
-        // convert this/A to ordA_
-        String              prefix  = label.replaceFirst("(.*/)?", "ord") + "_";
+
 
         translator.smtProgram.addFunctionDeclaration(mapping);
 
@@ -488,6 +489,26 @@ public class SignatureTranslator
         //ordering/smaller
         FunctionDefinition smaller = getLargerSmallerDefinition(prefix, "smaller", set1, set2, lt);
         translator.smtProgram.addFunctionDefinition(smaller);
+
+        //ordering/max
+        FunctionDefinition max = getMaxMinDefinition(prefix, "max", set1, ordPrev);
+        translator.smtProgram.addFunctionDefinition(max);
+
+        //ordering/min
+        FunctionDefinition min = getMaxMinDefinition(prefix, "min", set1, ordNext);
+        translator.smtProgram.addFunctionDefinition(min);
+    }
+
+    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, BoundVariableDeclaration set, ConstantDeclaration declaration)
+    {
+        Expression tClosure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, declaration.getConstantExpr());
+
+        Expression join         = new BinaryExpression(set.getConstantExpr(), BinaryExpression.Op.JOIN, tClosure);
+
+        Expression difference   = new BinaryExpression(set.getConstantExpr(), BinaryExpression.Op.SETMINUS, join);
+
+        return new FunctionDefinition(prefix + suffix, translator.setOfUnaryAtomSort,
+                difference, set);
     }
 
     private void addFirstLastConstant(String prefix, Expression set, String suffix)
