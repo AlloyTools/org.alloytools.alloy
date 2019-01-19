@@ -387,67 +387,26 @@ public class SignatureTranslator
 
         Expr       set              = exprList.args.get(0);
         Expr       first            = exprList.args.get(1);
-        Expr       next             = exprList.args.get(2);
 
         // define a new uninterpreted one-to-one mapping from the signature to integers
-        String              label   = ordSig.label;
+        String              label       = ordSig.label;
         // convert ordA/Ord to ordA_
-        String              prefix  = label.replaceFirst("/Ord", "_");
-        String              name    = TranslatorUtils.sanitizeName(prefix + "IntMap");
-        FunctionDeclaration mapping = new FunctionDeclaration(name, translator.atomSort, translator.intSort);
-
-
-
+        String              prefix      = label.replaceFirst("/Ord", "_");
+        String              mappingName = TranslatorUtils.sanitizeName(prefix + "IntMap");
+        FunctionDeclaration mapping     = new FunctionDeclaration(mappingName, translator.atomSort, translator.intSort);
         translator.smtProgram.addFunctionDeclaration(mapping);
 
         Expression setExpression    = translator.exprTranslator.translateExpr(set, variablesScope);
         Expression firstExpression  = translator.exprTranslator.translateExpr(first, variablesScope);
-        Expression nextExpression   = translator.exprTranslator.translateExpr(next, variablesScope);
 
-        ConstantDeclaration firstElement = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
-
-        Expression          firstSet     = new UnaryExpression(UnaryExpression.Op.SINGLETON,
-            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstElement.getConstantExpr()));
-
-        Expression          emptySet     = new UnaryExpression(UnaryExpression.Op.EMPTYSET,
-                new SetSort(new TupleSort(translator.atomSort)));
-
-        ConstantDeclaration lastElement = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
-        Expression          lastSet     = new UnaryExpression(UnaryExpression.Op.SINGLETON,
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastElement.getConstantExpr()));
-
-        translator.smtProgram.addConstantDeclaration(firstElement);
-        translator.smtProgram.addConstantDeclaration(lastElement);
-
-        // last element is a member of the set
-
-        translator.smtProgram.addAssertion(new Assertion ("last element is a member of " + set.toString(),
-                new BinaryExpression(
-                        new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastElement.getConstantExpr()),
-                BinaryExpression.Op.MEMBER,
-                setExpression)));
-
-        // there is only one first element
-        // first = (singleton (maketuple firstElement))
-        Expression singletonFirst =
-                new BinaryExpression(firstSet, BinaryExpression.Op.EQ,
-                firstExpression);
-
-        translator.smtProgram.addAssertion(new Assertion(first.toString(), singletonFirst));
-
-        defineOrderingFunctions(prefix, firstSet, lastSet, name, setExpression, ordSig);
-    }
-
-    private void defineOrderingFunctions(String prefix, Expression firstSet, Expression lastSet, String mappingName, Expression setExpression, Sig ordSig)
-    {
         // ordering/first
-        addFirstLastConstant(prefix, firstSet, "first");
+        Expression firstSet         = defineFirstElement(prefix, firstExpression, mappingName);
 
         // ordering/last
-        addFirstLastConstant(prefix, lastSet, "last");
+        Expression lastSet          = defineLastElement(prefix, mappingName, setExpression);
 
         // Next relation
-        ConstantDeclaration ordNext =  addOrdNext(prefix,setExpression, mappingName, ordSig);
+        ConstantDeclaration ordNext =  addOrdNext(prefix,setExpression, mappingName, ordSig, firstSet);
 
         // prev relation
         ConstantDeclaration ordPrev = addOrdPrev(prefix,setExpression, mappingName, ordNext);
@@ -499,6 +458,78 @@ public class SignatureTranslator
         translator.smtProgram.addFunctionDefinition(min);
     }
 
+    private Expression defineFirstElement(String prefix, Expression firstExpression, String mappingName)
+    {
+        final String suffix = "first";
+        ConstantDeclaration firstAtom   = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
+        ConstantDeclaration first       = new ConstantDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+
+        Expression          firstSet    = new UnaryExpression(UnaryExpression.Op.SINGLETON,
+                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getConstantExpr()));
+
+        translator.smtProgram.addConstantDeclaration(firstAtom);
+        translator.smtProgram.addConstantDeclaration(first);
+
+        // there is only one first element
+        // ordering/first = (singleton (maketuple firstAtom))
+        Expression firstSingleton       = new BinaryExpression(first.getConstantExpr(), BinaryExpression.Op.EQ, firstSet);
+        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + "(singleton (maketuple firstAtom))", firstSingleton));
+
+        // ordering/first = ordering/Ord.First
+        Expression ordFirstSingleton    = new BinaryExpression(first.getConstantExpr(), BinaryExpression.Op.EQ, firstExpression);
+        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
+
+        // each element is greater than or equal to the first element
+        BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
+        Expression gte = new BinaryExpression(
+                new FunctionCallExpression(mappingName, x.getConstantExpr()),
+                BinaryExpression.Op.GTE,
+                new FunctionCallExpression(mappingName, firstAtom.getConstantExpr()));
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, gte, x);
+        translator.smtProgram.addAssertion(new Assertion(
+                "each element is greater than or equal to the first element", forAll));
+
+        return firstSet;
+    }
+
+    private Expression defineLastElement(String prefix, String mappingName, Expression setExpression)
+    {
+        final String suffix = "last";
+        ConstantDeclaration lastAtom   = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
+        ConstantDeclaration last       = new ConstantDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+
+        Expression          lastSet    = new UnaryExpression(UnaryExpression.Op.SINGLETON,
+                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getConstantExpr()));
+
+        translator.smtProgram.addConstantDeclaration(lastAtom);
+        translator.smtProgram.addConstantDeclaration(last);
+
+
+        // last element is a member of the set
+        Expression member = new BinaryExpression(
+                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getConstantExpr()),
+                BinaryExpression.Op.MEMBER,
+                setExpression);
+        translator.smtProgram.addAssertion(new Assertion ("last element is a member", member));
+
+        // there is only one last element
+        // ordering/last = (singleton (maketuple lastAtom))
+        Expression lastSingleton       = new BinaryExpression(last.getConstantExpr(), BinaryExpression.Op.EQ, lastSet);
+        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + "(singleton (maketuple lastAtom))", lastSingleton));
+
+        // each element is less than or equal to the last element
+        BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
+        Expression gte = new BinaryExpression(
+                new FunctionCallExpression(mappingName, x.getConstantExpr()),
+                BinaryExpression.Op.LTE,
+                new FunctionCallExpression(mappingName, lastAtom.getConstantExpr()));
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, gte, x);
+        translator.smtProgram.addAssertion(new Assertion(
+                "each element is less than or equal to the last element", forAll));
+
+        return lastSet;
+    }
+
     private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, BoundVariableDeclaration set, ConstantDeclaration declaration)
     {
         Expression tClosure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, declaration.getConstantExpr());
@@ -509,17 +540,6 @@ public class SignatureTranslator
 
         return new FunctionDefinition(prefix + suffix, translator.setOfUnaryAtomSort,
                 difference, set);
-    }
-
-    private void addFirstLastConstant(String prefix, Expression set, String suffix)
-    {
-        ConstantDeclaration declaration = new ConstantDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
-        translator.smtProgram.addConstantDeclaration(declaration);
-
-        BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(),
-                BinaryExpression.Op.EQ, set);
-
-        translator.smtProgram.addAssertion(new Assertion(prefix + suffix, equality));
     }
 
     private FunctionDefinition getPrevsNextsDefinition(String prefix, BoundVariableDeclaration set1, ConstantDeclaration ord, String suffix)
@@ -543,7 +563,7 @@ public class SignatureTranslator
         );
     }
 
-    private ConstantDeclaration addOrdNext(String prefix, Expression setExpression, String mappingName, Sig ordSig)
+    private ConstantDeclaration addOrdNext(String prefix, Expression setExpression, String mappingName, Sig ordSig, Expression firstSet)
     {
         ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "next", translator.setOfBinaryAtomSort);
 
@@ -628,6 +648,17 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(
                 new Assertion(ordNext.getName() + " = " + ordSig.label + "." + nextField.label, equality));
 
+        // either (next is an empty set and the ordered set is a singleton) or next is nonempty
+        Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.setOfBinaryAtomSort);
+        Expression nextIsEmpty = new BinaryExpression(ordNext.getConstantExpr(), BinaryExpression.Op.EQ, emptySet);
+        Expression setSingleton = new BinaryExpression(setExpression, BinaryExpression.Op.EQ, firstSet);
+        Expression and = new BinaryExpression(nextIsEmpty, BinaryExpression.Op.EQ, setSingleton);
+        Expression nextIsNonempty = new UnaryExpression(UnaryExpression.Op.NOT, nextIsEmpty);
+        Expression or = new BinaryExpression(and, BinaryExpression.Op.OR, nextIsNonempty);
+
+        // either (next is an empty set and the ordered set is a singleton) or next is nonempty
+        translator.smtProgram.addAssertion(
+                new Assertion("either (next is an empty set and the ordered set is a singleton) or next is nonempty", or));
         return ordNext;
     }
 
