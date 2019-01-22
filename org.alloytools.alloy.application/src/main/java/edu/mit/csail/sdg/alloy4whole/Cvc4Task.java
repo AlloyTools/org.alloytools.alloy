@@ -102,7 +102,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                 else// execute only the target command
                 {
                     // solve the target command without push and pop to view multiple models if sat
-                    commandResult = solveCommand(translation.getCommands().size() - 1);
+                    commandResult = solveCommand(targetCommandIndex);
                 }
 
                 if(commandResult != null && commandResult.xmlFileName != null)
