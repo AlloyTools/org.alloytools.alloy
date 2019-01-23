@@ -471,9 +471,9 @@ public class SignatureTranslator
         translator.smtProgram.addConstantDeclaration(first);
 
         // there is only one first element
-        // ordering/first = (singleton (maketuple firstAtom))
+        // ordering/first = (singleton (mktuple firstAtom))
         Expression firstSingleton       = new BinaryExpression(first.getConstantExpr(), BinaryExpression.Op.EQ, firstSet);
-        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + "(singleton (maketuple firstAtom))", firstSingleton));
+        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple firstAtom))", firstSingleton));
 
         // ordering/first = ordering/Ord.First
         Expression ordFirstSingleton    = new BinaryExpression(first.getConstantExpr(), BinaryExpression.Op.EQ, firstExpression);
@@ -513,9 +513,9 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion ("last element is a member", member));
 
         // there is only one last element
-        // ordering/last = (singleton (maketuple lastAtom))
+        // ordering/last = (singleton (mktuple lastAtom))
         Expression lastSingleton       = new BinaryExpression(last.getConstantExpr(), BinaryExpression.Op.EQ, lastSet);
-        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + "(singleton (maketuple lastAtom))", lastSingleton));
+        translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
         BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
@@ -652,7 +652,7 @@ public class SignatureTranslator
         Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.setOfBinaryAtomSort);
         Expression nextIsEmpty = new BinaryExpression(ordNext.getConstantExpr(), BinaryExpression.Op.EQ, emptySet);
         Expression setSingleton = new BinaryExpression(setExpression, BinaryExpression.Op.EQ, firstSet);
-        Expression and = new BinaryExpression(nextIsEmpty, BinaryExpression.Op.EQ, setSingleton);
+        Expression and = new BinaryExpression(nextIsEmpty, BinaryExpression.Op.AND, setSingleton);
         Expression nextIsNonempty = new UnaryExpression(UnaryExpression.Op.NOT, nextIsEmpty);
         Expression or = new BinaryExpression(and, BinaryExpression.Op.OR, nextIsNonempty);
 
