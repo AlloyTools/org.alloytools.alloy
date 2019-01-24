@@ -97,7 +97,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 
         Sort returnSort = (Sort) visitSort(ctx.sort());
 
-        Expression expression = (Expression) this.visitExpression(ctx.expression());
+        Expression expression = (Expression) this.visitExpression(ctx.expression(), arguments);
 
         FunctionDefinition definition   = new FunctionDefinition(name, arguments, returnSort,  expression);
 
@@ -112,8 +112,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         return new BoundVariableDeclaration(argumentName, argumentSort);
     }
 
-    @Override
-    public SmtAst visitExpression(SmtParser.ExpressionContext ctx)
+    public SmtAst visitExpression(SmtParser.ExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
     {
         if(ctx.constant() != null)
         {
@@ -121,7 +120,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         }
         if(ctx.variable() != null)
         {
-            throw new UnsupportedOperationException();
+            return this.visitVariable(ctx.variable(), arguments);
         }
         if(ctx.unaryExpression() != null)
         {
@@ -222,5 +221,13 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         Sort sort = (Sort) this.visitSort(ctx.sort());
         return new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
+    }
+
+    public SmtAst visitVariable(SmtParser.VariableContext ctx, List<BoundVariableDeclaration>  arguments)
+    {
+        Expression variable = arguments.stream()
+                .filter(argument -> argument.getName().equals(ctx.getText()))
+                .findFirst().get().getConstantExpr();
+        return variable;
     }
 }

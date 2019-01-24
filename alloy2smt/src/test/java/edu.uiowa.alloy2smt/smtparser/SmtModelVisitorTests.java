@@ -144,4 +144,17 @@ class SmtModelVisitorTests
         Assertions.assertEquals(4, smtModel.getSorts().size());
         Assertions.assertEquals(9, smtModel.getFunctionDefinitions().size());
     }
+
+    @Test
+    void model5()
+    {
+        String model =
+                "(model\n" +
+                        "(define-fun ord_IntMap ((BOUND_VARIABLE_6486 Atom)) Int (ite (= @uc_Atom_3 BOUND_VARIABLE_6486) 1 (ite (= @uc_Atom_0 BOUND_VARIABLE_6486) 2 0)))\n" +
+                ")";
+
+        SmtModel smtModel = parseModel(model);
+        Assertions.assertEquals(0, smtModel.getSorts().size());
+        Assertions.assertEquals(1, smtModel.getFunctionDefinitions().size());
+    }
 }
