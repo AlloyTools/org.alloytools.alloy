@@ -400,7 +400,7 @@ public class SignatureTranslator
         Expression firstExpression  = translator.exprTranslator.translateExpr(first, variablesScope);
 
         // ordering/first
-        Expression firstSet         = defineFirstElement(prefix, firstExpression, mappingName);
+        Expression firstSet         = defineFirstElement(prefix, firstExpression, mappingName, setExpression);
 
         // ordering/last
         Expression lastSet          = defineLastElement(prefix, mappingName, setExpression);
@@ -458,7 +458,7 @@ public class SignatureTranslator
         translator.smtProgram.addFunctionDefinition(min);
     }
 
-    private Expression defineFirstElement(String prefix, Expression firstExpression, String mappingName)
+    private Expression defineFirstElement(String prefix, Expression firstExpression, String mappingName, Expression setExpression)
     {
         final String suffix = "first";
         ConstantDeclaration firstAtom   = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), translator.atomSort);
@@ -481,11 +481,15 @@ public class SignatureTranslator
 
         // each element is greater than or equal to the first element
         BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
+        Expression member = new BinaryExpression(
+                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr()),
+                BinaryExpression.Op.MEMBER, setExpression);
         Expression gte = new BinaryExpression(
                 new FunctionCallExpression(mappingName, x.getConstantExpr()),
                 BinaryExpression.Op.GTE,
                 new FunctionCallExpression(mappingName, firstAtom.getConstantExpr()));
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, gte, x);
+        Expression implies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, gte);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x);
         translator.smtProgram.addAssertion(new Assertion(
                 "each element is greater than or equal to the first element", forAll));
 
@@ -506,11 +510,11 @@ public class SignatureTranslator
 
 
         // last element is a member of the set
-        Expression member = new BinaryExpression(
+        Expression lastMember = new BinaryExpression(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getConstantExpr()),
                 BinaryExpression.Op.MEMBER,
                 setExpression);
-        translator.smtProgram.addAssertion(new Assertion ("last element is a member", member));
+        translator.smtProgram.addAssertion(new Assertion ("last element is a member", lastMember));
 
         // there is only one last element
         // ordering/last = (singleton (mktuple lastAtom))
@@ -519,11 +523,15 @@ public class SignatureTranslator
 
         // each element is less than or equal to the last element
         BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
-        Expression gte = new BinaryExpression(
+        Expression xMember = new BinaryExpression(
+                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr()),
+                BinaryExpression.Op.MEMBER, setExpression);
+        Expression lte = new BinaryExpression(
                 new FunctionCallExpression(mappingName, x.getConstantExpr()),
                 BinaryExpression.Op.LTE,
                 new FunctionCallExpression(mappingName, lastAtom.getConstantExpr()));
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, gte, x);
+        Expression implies = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, lte);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x);
         translator.smtProgram.addAssertion(new Assertion(
                 "each element is less than or equal to the last element", forAll));
 
