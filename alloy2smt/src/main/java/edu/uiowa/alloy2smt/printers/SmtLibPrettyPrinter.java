@@ -346,7 +346,11 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         else if (expression instanceof  ITEExpression)
         {
             this.visit((ITEExpression) expression);
-        }          
+        }
+        else if (expression instanceof  AtomConstant)
+        {
+            this.visit((AtomConstant) expression);
+        }
         else
         {   
             throw new UnsupportedOperationException();

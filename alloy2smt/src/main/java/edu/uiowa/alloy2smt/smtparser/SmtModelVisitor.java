@@ -124,61 +124,58 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         }
         if(ctx.unaryExpression() != null)
         {
-            return this.visitUnaryExpression(ctx.unaryExpression());
+            return this.visitUnaryExpression(ctx.unaryExpression(), arguments);
         }
         if(ctx.binaryExpression() != null)
         {
-            return this.visitBinaryExpression(ctx.binaryExpression());
+            return this.visitBinaryExpression(ctx.binaryExpression(), arguments);
         }
         if(ctx.ternaryExpression() != null)
         {
-            return this.visitTernaryExpression(ctx.ternaryExpression());
+            return this.visitTernaryExpression(ctx.ternaryExpression(), arguments);
         }
         if(ctx.multiArityExpression() != null)
         {
-            return this.visitMultiArityExpression(ctx.multiArityExpression());
+            return this.visitMultiArityExpression(ctx.multiArityExpression(), arguments);
         }
         if(ctx.expression() != null)
         {
-            return this.visitExpression(ctx.expression());
+            return this.visitExpression(ctx.expression(), arguments);
         }
 
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public SmtAst visitUnaryExpression(SmtParser.UnaryExpressionContext ctx)
+    public SmtAst visitUnaryExpression(SmtParser.UnaryExpressionContext ctx,
+                                       List<BoundVariableDeclaration>  arguments)
     {
-        Expression expression       = (Expression) this.visitExpression(ctx.expression());
+        Expression expression       = (Expression) this.visitExpression(ctx.expression(), arguments);
         UnaryExpression.Op operator = UnaryExpression.Op.getOp(ctx.UnaryOperator().getText());
         return new UnaryExpression(operator, expression);
     }
 
-    @Override
-    public SmtAst visitBinaryExpression(SmtParser.BinaryExpressionContext ctx)
+    public SmtAst visitBinaryExpression(SmtParser.BinaryExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
     {
-        Expression left   = (Expression) this.visitExpression(ctx.expression(0));
-        Expression right  = (Expression) this.visitExpression(ctx.expression(1));
+        Expression left   = (Expression) this.visitExpression(ctx.expression(0), arguments);
+        Expression right  = (Expression) this.visitExpression(ctx.expression(1), arguments);
 
         BinaryExpression.Op operator = BinaryExpression.Op.getOp(ctx.BinaryOperator().getText());
         return new BinaryExpression(left, operator, right);
     }
 
-    @Override
-    public SmtAst visitTernaryExpression(SmtParser.TernaryExpressionContext ctx)
+    public SmtAst visitTernaryExpression(SmtParser.TernaryExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
     {
         List<Expression> expressions = ctx.expression().stream()
-                .map(expression -> (Expression) this.visitExpression(expression))
+                .map(expression -> (Expression) this.visitExpression(expression, arguments))
                 .collect(Collectors.toList());
 
         return new ITEExpression(expressions.get(0), expressions.get(1), expressions.get(2));
     }
 
-    @Override
-    public SmtAst visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx)
+    public SmtAst visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
     {
         List<Expression> expressions = ctx.expression().stream()
-                .map(expression -> (Expression) this.visitExpression(expression))
+                .map(expression -> (Expression) this.visitExpression(expression, arguments))
                 .collect(Collectors.toList());
 
         MultiArityExpression.Op operator = MultiArityExpression.Op.getOp(ctx.MultiArityOperator().getText());
