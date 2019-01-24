@@ -393,8 +393,8 @@ public class SignatureTranslator
         // convert ordA/Ord to ordA_
         String              prefix      = label.replaceFirst("/Ord", "_");
         String              mappingName = TranslatorUtils.sanitizeName(prefix + "IntMap");
-        FunctionDeclaration mapping     = new FunctionDeclaration(mappingName, translator.atomSort, translator.intSort);
-        translator.smtProgram.addFunctionDeclaration(mapping);
+
+        defineInjectiveMapping(mappingName);
 
         Expression setExpression    = translator.exprTranslator.translateExpr(set, variablesScope);
         Expression firstExpression  = translator.exprTranslator.translateExpr(first, variablesScope);
@@ -456,6 +456,34 @@ public class SignatureTranslator
         //ordering/min
         FunctionDefinition min = getMaxMinDefinition(prefix, "min", set1, ordNext);
         translator.smtProgram.addFunctionDefinition(min);
+    }
+
+    private void defineInjectiveMapping(String mappingName)
+    {
+        FunctionDeclaration mapping     = new FunctionDeclaration(mappingName, translator.atomSort, translator.intSort);
+        translator.smtProgram.addFunctionDeclaration(mapping);
+
+        // the mapping is one-to-one(injective)
+        // for all x, y (x != y implies f(x) != f(y))
+        BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
+        BoundVariableDeclaration y = new BoundVariableDeclaration("y", translator.atomSort);
+
+        Expression xEqualsY = new BinaryExpression(x.getConstantExpr(), BinaryExpression.Op.EQ, y.getConstantExpr());
+
+        Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, xEqualsY);
+
+        Expression mappingXEqualsMappingY = new BinaryExpression(
+                new FunctionCallExpression(mappingName, x.getConstantExpr()),
+                BinaryExpression.Op.EQ,
+                new FunctionCallExpression(mappingName, y.getConstantExpr()));
+
+        Expression not = new UnaryExpression(UnaryExpression.Op.NOT, mappingXEqualsMappingY);
+
+        Expression implies = new BinaryExpression(notXEqualsY, BinaryExpression.Op.IMPLIES, not);
+
+        QuantifiedExpression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x, y);
+
+        translator.smtProgram.addAssertion(new Assertion(mappingName + " is injective", forAll));
     }
 
     private Expression defineFirstElement(String prefix, Expression firstExpression, String mappingName, Expression setExpression)
