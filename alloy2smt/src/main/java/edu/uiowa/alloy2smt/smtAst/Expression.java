@@ -8,6 +8,15 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
+
 public abstract class Expression extends SmtAst
 {
+    @Override
+    public String toString()
+    {
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+        printer.visit(this);
+        return printer.getSmtLib();
+    }
 }

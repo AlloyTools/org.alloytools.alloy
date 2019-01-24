@@ -300,7 +300,8 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         this.stringBuilder.append(")");
     }
 
-    private void visit(Expression expression)
+    @Override
+    public void visit(Expression expression)
     {
         if (expression instanceof ConstantExpression)
         {

@@ -30,6 +30,8 @@ public interface SmtAstVisitor
 
     public void visit(TupleSort tupleSort);
 
+    public void visit(Expression expression);
+
     public void visit(UnaryExpression unaryExpression);
 
     public void visit(UninterpretedSort uninterpretedSort);
