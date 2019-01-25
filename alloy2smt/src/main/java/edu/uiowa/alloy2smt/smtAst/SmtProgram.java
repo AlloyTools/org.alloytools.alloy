@@ -17,6 +17,18 @@ public class SmtProgram extends SmtModel
     private final List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
     private final List<Assertion>              assertions           = new ArrayList<>();
 
+    public SmtProgram()
+    {
+    }
+
+    public SmtProgram(SmtProgram program)
+    {
+        super(program);
+        this.functionDeclarations.addAll(program.functionDeclarations);
+        this.constantDeclarations.addAll(program.constantDeclarations);
+        this.assertions.addAll(program.assertions);
+    }
+
     public void addFunctionDeclaration(FunctionDeclaration declaration)
     {
         if(declaration != null)

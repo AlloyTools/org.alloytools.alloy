@@ -18,6 +18,17 @@ public class SmtModel extends SmtAst
     protected final List<FunctionDefinition>     functionDefinitions  = new ArrayList<>();
     protected final List<Sort>                   sorts                = new ArrayList<>();
 
+    public SmtModel()
+    {
+    }
+
+    public SmtModel(SmtModel model)
+    {
+        this.functionDefinitions.addAll(model.functionDefinitions);
+        this.sorts.addAll(model.sorts);
+    }
+
+
     public void addSort(Sort sort)
     {
         if(sort != null)
@@ -25,6 +36,8 @@ public class SmtModel extends SmtAst
             this.sorts.add(sort);
         }
     }
+
+
 
     public void addFunctionDefinition(FunctionDefinition functionDefinition)
     {

@@ -127,6 +127,47 @@ public class Alloy2SmtTranslator
         this.exprTranslator                 = new ExprTranslator(this);        
     }
 
+    public Alloy2SmtTranslator(Alloy2SmtTranslator translator)
+    {
+        this.smtProgram             = new SmtProgram(translator.smtProgram);
+        this.alloyModel             = translator.alloyModel;
+        this.reachableSigs          = new ArrayList<>();
+        this.reachableSigs.addAll(translator.reachableSigs);
+        this.topLevelSigs           = new ArrayList<>();
+        this.topLevelSigs.addAll(translator.topLevelSigs);
+
+        this.commands               = this.alloyModel.getAllCommands();
+
+
+        this.signatureTranslator    = new SignatureTranslator(this);
+        this.comparisonOps          = new HashMap<>();
+        this.comparisonOps.putAll(translator.comparisonOps);
+        this.arithOps               = new HashMap<>();
+        this.arithOps.putAll(translator.arithOps);
+        this.signaturesMap          = new HashMap<>();
+        this.signaturesMap.putAll(translator.signaturesMap);
+        this.funcNamesMap           = new HashMap<>();
+        this.funcNamesMap.putAll(translator.funcNamesMap);
+        this.funcDefsMap            = new HashMap<>();
+        this.funcDefsMap.putAll(translator.funcDefsMap);
+        this.fieldsMap              = new HashMap<>();
+        this.fieldsMap.putAll(translator.fieldsMap);
+        this.sigFacts               = new HashMap<>();
+        this.sigFacts.putAll(translator.sigFacts);
+        this.existentialBdVars      = new ArrayList<>();
+        this.existentialBdVars.addAll(translator.existentialBdVars);
+        this.funcNames              = new HashSet<>();
+        this.funcNames.addAll(translator.funcNames);
+
+        this.setCompFuncNameToInputsMap     = new HashMap<>();
+        this.setCompFuncNameToInputsMap.putAll(translator.setCompFuncNameToInputsMap);
+        this.setCompFuncNameToDefMap        = new HashMap<>();
+        this.setCompFuncNameToDefMap.putAll(translator.setCompFuncNameToDefMap);
+        this.setCompFuncNameToBdVarExprMap  = new HashMap<>();
+        this.setCompFuncNameToBdVarExprMap.putAll(translator.setCompFuncNameToBdVarExprMap);
+        this.exprTranslator                 = new ExprTranslator(this);
+    }
+
     public SmtProgram translate()
     {
         translateSpecialFunctions();

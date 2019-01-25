@@ -72,31 +72,34 @@ public class Translation
      */
     public String translateCommand(int commandIndex)
     {
-        // store old declarations and definitions
-        List<Sort>                sorts                 = new ArrayList<>(translator.smtProgram.getSorts());
-        List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(translator.smtProgram.getConstantDeclarations());
-        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(translator.smtProgram.getFunctionDeclarations());
-        List<FunctionDefinition>  functionDefinitions   = new ArrayList<>(translator.smtProgram.getFunctionDefinitions());
 
-        Assertion           assertion   =  translator.translateCommand(commandIndex);
+        Alloy2SmtTranslator commandTranslator = new Alloy2SmtTranslator(translator);
+
+        // store old declarations and definitions
+        List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtProgram.getSorts());
+        List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getConstantDeclarations());
+        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctionDeclarations());
+        List<FunctionDefinition>  functionDefinitions   = new ArrayList<>(commandTranslator.smtProgram.getFunctionDefinitions());
+
+        Assertion           assertion   =  commandTranslator.translateCommand(commandIndex);
 
         // get new declarations and definitions
-        List<Sort> newSorts = translator.smtProgram
+        List<Sort> newSorts = commandTranslator.smtProgram
                 .getSorts().stream()
                 .filter(((Predicate<Sort>) new HashSet<>(sorts)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<ConstantDeclaration> newConstantDeclarations = translator.smtProgram
+        List<ConstantDeclaration> newConstantDeclarations = commandTranslator.smtProgram
                 .getConstantDeclarations().stream()
                 .filter(((Predicate<ConstantDeclaration>) new HashSet<>(constantDeclarations)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<FunctionDeclaration> newFunctionDeclarations = translator.smtProgram
+        List<FunctionDeclaration> newFunctionDeclarations = commandTranslator.smtProgram
                 .getFunctionDeclarations().stream()
                 .filter(((Predicate<FunctionDeclaration>) new HashSet<>(functionDeclarations)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<FunctionDefinition> newFunctionDefinitions = translator.smtProgram
+        List<FunctionDefinition> newFunctionDefinitions = commandTranslator.smtProgram
                 .getFunctionDefinitions().stream()
                 .filter(((Predicate<FunctionDefinition>) new HashSet<>(functionDefinitions)::contains).negate())
                 .collect(Collectors.toList());
@@ -135,15 +138,7 @@ public class Translation
         SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
         printer.visit(assertion);
         stringBuilder.append(printer.getSmtLib());
-
-        //ToDo: fix repeated definitions by making smtProgram immutable
-        // remove new declarations and definitions from the program
-
-        translator.smtProgram.getSorts().removeAll(newSorts);
-        translator.smtProgram.getConstantDeclarations().removeAll(newConstantDeclarations);
-        translator.smtProgram.getFunctionDeclarations().removeAll(newFunctionDeclarations);
-        translator.smtProgram.getFunctionDefinitions().removeAll(newFunctionDefinitions);
-
+        
         return stringBuilder.toString();
     }
 
