@@ -171,4 +171,9 @@ public class TranslatorUtils
                 .map(Declaration::getConstantExpr).collect(Collectors.toList());
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
     }
+
+    public static Expression getTuple(Expression ... expressions)
+    {
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
+    }
 }
