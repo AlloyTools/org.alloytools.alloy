@@ -40,6 +40,7 @@ public class IntSigTranslationTests
                 "sig A4 in Int + A0+A1 {}\n" +
                 "fact {A0 = 1 and A1 = 2 and A2 = 3}\n";
         Translation translation = Utils.translate(alloy);
+        // intUniv is used but not declared !!
         Assertions.assertTrue(translation.getSmtScript().contains(
                 "(declare-fun intUniv"));
     }
