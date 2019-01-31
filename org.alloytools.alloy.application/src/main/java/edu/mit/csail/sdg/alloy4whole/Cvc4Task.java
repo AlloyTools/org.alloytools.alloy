@@ -562,12 +562,21 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         callbackBold("Translation output");
         callbackPlain(translation.getSmtScript());
 
-        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
-        // output the mapping
+        // output the smt file
+        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
+        String allCommands  = translation.translateAllCommandsWithCheckSat();
+        Formatter formatter = new Formatter(smtFile);
+        formatter.format("%s", allCommands);
+        formatter.close();
 
+        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
+
+
+        // output the mapping
         translation.getMapper().writeToJson(jsonFile.getPath());
 
-        callbackPlain("Generated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
+        callbackPlain("\nGenerated a smt2 file: " + smtFile.getAbsolutePath() +"\n");
+        callbackPlain("\nGenerated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
 
         return translation;
     }
