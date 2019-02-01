@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 public class BinaryExpression extends Expression
 {
@@ -110,5 +111,52 @@ public class BinaryExpression extends Expression
         {
             return this.opStr;
         }        
-    }    
+    }
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        switch (op)
+        {
+            case OR: return Alloy2SmtTranslator.boolSort;
+            case AND: return Alloy2SmtTranslator.boolSort ;
+            case IMPLIES: return Alloy2SmtTranslator.boolSort;
+            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case MOD: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case EQ: return Alloy2SmtTranslator.boolSort;
+            case GTE: return Alloy2SmtTranslator.boolSort;
+            case LTE: return Alloy2SmtTranslator.boolSort;
+            case GT: return Alloy2SmtTranslator.boolSort;
+            case LT: return Alloy2SmtTranslator.boolSort;
+            case UNION: return lhsExpr.getSort();
+            case INTERSECTION: return lhsExpr.getSort();
+            case SETMINUS: return lhsExpr.getSort();
+            case MEMBER: return Alloy2SmtTranslator.boolSort;
+            case SUBSET: return Alloy2SmtTranslator.boolSort;
+            case JOIN:
+            {
+                if(! (lhsExpr.getSort() instanceof SetSort))
+                {
+                    throw new Exception("Incompatible sort: join operator expects a set, but the lhs expression has sort " + lhsExpr.getSort());
+                }
+
+                if(! (rhsExpr.getSort() instanceof SetSort))
+                {
+                    throw new Exception("Incompatible sort: join operator expects a set, but the rhs expression has sort " + rhsExpr.getSort());
+                }
+
+                SetSort leftSort  = (SetSort) lhsExpr.getSort();
+                SetSort rightSort = (SetSort) rhsExpr.getSort();
+
+
+            }
+            case PRODUCT: return ;
+            case TUPSEL: throw new UnsupportedOperationException("TUPSEL");
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
 }

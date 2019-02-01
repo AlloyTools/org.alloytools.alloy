@@ -30,10 +30,10 @@ public class Alloy2SmtTranslator
 {
     public final SmtProgram smtProgram;
 
-    final static String atom               = "Atom";
-    final static String unaryIntAtom       = "UnaryIntTup";
-    final static String binaryIntAtom      = "BinaryIntTup";
-    final static String ternaryIntAtom     = "TernaryIntTup";
+    public final static String atom               = "Atom";
+    public final static String unaryIntAtom       = "UnaryIntTup";
+    public final static String binaryIntAtom      = "BinaryIntTup";
+    public final static String ternaryIntAtom     = "TernaryIntTup";
     
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
@@ -43,34 +43,35 @@ public class Alloy2SmtTranslator
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
 
-    final static IntSort intSort        = new IntSort();
+    public final static IntSort intSort        = new IntSort();
 
-    final static UninterpretedSort atomSort               = new UninterpretedSort(atom);
-    final static UninterpretedSort unaryIntTup            = new UninterpretedSort(unaryIntAtom);
-    final static UninterpretedSort binaryIntTup           = new UninterpretedSort(binaryIntAtom);
-    final static UninterpretedSort ternaryIntTup          = new UninterpretedSort(ternaryIntAtom);
+    public final static BoolSort          boolSort               = new BoolSort();
+    public final static UninterpretedSort atomSort               = new UninterpretedSort(atom);
+    public final static UninterpretedSort unaryIntTup            = new UninterpretedSort(unaryIntAtom);
+    public final static UninterpretedSort binaryIntTup           = new UninterpretedSort(binaryIntAtom);
+    public final static UninterpretedSort ternaryIntTup          = new UninterpretedSort(ternaryIntAtom);
 
-    final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
-    final static TupleSort binaryAtomSort         = new TupleSort(atomSort,atomSort);
-    final static TupleSort unaryIntAtomSort       = new TupleSort(unaryIntTup);
-    final static TupleSort unaryIntSort           = new TupleSort(intSort);
-    final static TupleSort binaryIntSort          = new TupleSort(intSort,intSort);
-    final static TupleSort ternaryIntSort         = new TupleSort(intSort,intSort,intSort);
-    final static SetSort setOfUnaryAtomSort     = new SetSort(unaryAtomSort);
-    final static SetSort setOfUnaryIntSort      = new SetSort(unaryIntSort);
-    final static SetSort setOfBinaryAtomSort    = new SetSort(binaryAtomSort);
-    final static SetSort setOfTernaryIntSort    = new SetSort(ternaryIntSort);
+    public final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
+    public final static TupleSort binaryAtomSort         = new TupleSort(atomSort,atomSort);
+    public final static TupleSort unaryIntAtomSort       = new TupleSort(unaryIntTup);
+    public final static TupleSort unaryIntSort           = new TupleSort(intSort);
+    public final static TupleSort binaryIntSort          = new TupleSort(intSort,intSort);
+    public final static TupleSort ternaryIntSort         = new TupleSort(intSort,intSort,intSort);
+    public final static SetSort setOfUnaryAtomSort     = new SetSort(unaryAtomSort);
+    public final static SetSort setOfUnaryIntSort      = new SetSort(unaryIntSort);
+    public final static SetSort setOfBinaryAtomSort    = new SetSort(binaryAtomSort);
+    public final static SetSort setOfTernaryIntSort    = new SetSort(ternaryIntSort);
 
-    final static FunctionDeclaration atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
-    final static FunctionDeclaration atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
-    final static FunctionDeclaration atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );
-    final static FunctionDeclaration intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
-    final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
-    final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
-    final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);
-    final static FunctionDeclaration valueOfUnaryIntTup     = new FunctionDeclaration("value_of_unaryIntTup",unaryIntTup,unaryIntSort);
-    final static FunctionDeclaration valueOfBinaryIntTup    = new FunctionDeclaration("value_of_binaryIntTup",binaryIntTup,binaryIntSort);
-    final static FunctionDeclaration valueOfTernaryIntTup   = new FunctionDeclaration("value_of_ternaryIntTup",ternaryIntTup,ternaryIntSort);
+    public final static FunctionDeclaration atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
+    public final static FunctionDeclaration atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
+    public final static FunctionDeclaration atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );
+    public final static FunctionDeclaration intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
+    public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
+    public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
+    public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);
+    public final static FunctionDeclaration valueOfUnaryIntTup     = new FunctionDeclaration("value_of_unaryIntTup",unaryIntTup,unaryIntSort);
+    public final static FunctionDeclaration valueOfBinaryIntTup    = new FunctionDeclaration("value_of_binaryIntTup",binaryIntTup,binaryIntSort);
+    public final static FunctionDeclaration valueOfTernaryIntTup   = new FunctionDeclaration("value_of_ternaryIntTup",ternaryIntTup,ternaryIntSort);
 
 
     Expression                                      auxExpr;

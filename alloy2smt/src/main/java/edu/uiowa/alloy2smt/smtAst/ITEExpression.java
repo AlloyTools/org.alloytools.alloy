@@ -50,7 +50,7 @@ public class ITEExpression extends Expression
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
-    
+
     public enum Op 
     {        
         ITE ("ite");    
@@ -67,7 +67,11 @@ public class ITEExpression extends Expression
         {
             return this.opStr;
         }        
-    }     
+    }
 
-
+    @Override
+    public Sort getSort()
+    {
+        return this.thenExpr.getSort();
+    }
 }

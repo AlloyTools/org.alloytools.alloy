@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 public class BooleanConstant extends Expression
 {
@@ -28,5 +29,11 @@ public class BooleanConstant extends Expression
     public void accept(SmtAstVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    @Override
+    public Sort getSort()
+    {
+        return Alloy2SmtTranslator.boolSort;
     }
 }

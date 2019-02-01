@@ -37,4 +37,10 @@ public class Sort extends Expression
     {
         visitor.visit(this);
     }
+
+    @Override
+    public Sort getSort()
+    {
+        return this;
+    }
 }

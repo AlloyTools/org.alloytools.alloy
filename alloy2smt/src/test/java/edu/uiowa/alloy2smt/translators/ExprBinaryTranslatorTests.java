@@ -41,4 +41,16 @@ class ExprBinaryTranslatorTests
                 "; f\n" +
                         "(assert (exists ((_a1 Atom)) (and (= this_A (singleton (mkTuple _a1))) true)))"));
     }
+
+    @Test
+    void noMultiplicityExpr()
+    {
+        String alloy =
+                "sig A {}\n" +
+                        "fact {\n" +
+                        "some r: A -> A | no r\n" +
+                        "}";
+        Translation translation = Utils.translate(alloy);
+    }
+
 }

@@ -9,6 +9,8 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -75,5 +77,11 @@ public class QuantifiedExpression extends Expression
         {
             return this.opStr;
         }        
-    }    
+    }
+
+    @Override
+    public Sort getSort()
+    {
+        return Alloy2SmtTranslator.boolSort;
+    }
 }

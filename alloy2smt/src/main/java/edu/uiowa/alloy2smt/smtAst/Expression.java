@@ -19,4 +19,6 @@ public abstract class Expression extends SmtAst
         printer.visit(this);
         return printer.getSmtLib();
     }
+
+    public abstract Sort getSort() throws Exception;
 }
