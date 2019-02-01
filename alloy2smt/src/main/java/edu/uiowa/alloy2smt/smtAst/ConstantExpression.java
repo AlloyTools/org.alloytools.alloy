@@ -33,4 +33,10 @@ public class ConstantExpression extends Expression
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        return declaration.getSort();
+    }
 }

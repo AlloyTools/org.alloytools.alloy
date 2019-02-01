@@ -9,6 +9,8 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,5 +131,17 @@ public class UnaryExpression extends Expression
         {
             return this.opStr;
         }    
-    }     
+    }
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        switch (op)
+        {
+            case NOT: return Alloy2SmtTranslator.boolSort;
+            case DISTINCT: return Alloy2SmtTranslator.boolSort ;
+            case IMPLIES: return Alloy2SmtTranslator.boolSort;
+            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+    }
 }

@@ -11,6 +11,9 @@ package edu.uiowa.alloy2smt.smtAst;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BinaryExpression extends Expression
 {
     private final Op            op;
@@ -138,22 +141,44 @@ public class BinaryExpression extends Expression
             case SUBSET: return Alloy2SmtTranslator.boolSort;
             case JOIN:
             {
-                if(! (lhsExpr.getSort() instanceof SetSort))
+                // type checking is handled during construction
+
+                TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
+                TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
+
+                // the join sorts should match
+                assert(leftSort.elementSorts.get(leftSort.elementSorts.size() - 1) ==
+                        rightSort.elementSorts.get(0));
+
+                List<Sort> newSorts = new ArrayList<>();
+                for (int i = 0; i < leftSort.elementSorts.size() - 1; i++)
                 {
-                    throw new Exception("Incompatible sort: join operator expects a set, but the lhs expression has sort " + lhsExpr.getSort());
+                    newSorts.add(leftSort.elementSorts.get(i));
                 }
 
-                if(! (rhsExpr.getSort() instanceof SetSort))
+                for (int i = 1; i < rightSort.elementSorts.size(); i++)
                 {
-                    throw new Exception("Incompatible sort: join operator expects a set, but the rhs expression has sort " + rhsExpr.getSort());
+                    newSorts.add(rightSort.elementSorts.get(i));
                 }
 
-                SetSort leftSort  = (SetSort) lhsExpr.getSort();
-                SetSort rightSort = (SetSort) rhsExpr.getSort();
+                Sort sort = new TupleSort(newSorts);
 
-
+                return sort;
             }
-            case PRODUCT: return ;
+            case PRODUCT:
+            {
+                // type checking is handled during construction
+
+                TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
+                TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
+
+                List<Sort> newSorts = new ArrayList<>();
+                newSorts.addAll(leftSort.elementSorts);
+                newSorts.addAll(rightSort.elementSorts);
+
+                Sort sort = new TupleSort(newSorts);
+                return sort;
+            }
             case TUPSEL: throw new UnsupportedOperationException("TUPSEL");
             default:
                 throw new UnsupportedOperationException();
