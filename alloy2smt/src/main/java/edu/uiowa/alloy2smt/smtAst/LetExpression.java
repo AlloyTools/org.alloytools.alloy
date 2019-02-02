@@ -50,7 +50,7 @@ public class LetExpression extends Expression
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
-    
+
     public enum Op 
     {        
         LET ("let");    
@@ -67,5 +67,12 @@ public class LetExpression extends Expression
         {
             return this.opStr;
         }        
-    }    
+    }
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        //ToDo: review this case
+        return expr.getSort();
+    }
 }

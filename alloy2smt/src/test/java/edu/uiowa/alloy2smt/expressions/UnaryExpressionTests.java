@@ -1,20 +1,37 @@
 package edu.uiowa.alloy2smt.expressions;
 
-import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smtAst.BoolSort;
-import edu.uiowa.alloy2smt.smtAst.BooleanConstant;
-import edu.uiowa.alloy2smt.smtAst.Expression;
+import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
-import edu.uiowa.alloy2smt.translators.Translation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UnaryExpressionTests
 {
     @Test
-    void booleanConstant()
+    void booleanConstant() throws Exception
     {
         Expression expression = new BooleanConstant(true);
-        Assertions.assertTrue(expression.getSort() instanceof  BoolSort);
+        Assertions.assertEquals(Alloy2SmtTranslator.boolSort, expression.getSort());
+    }
+
+    @Test
+    void intConstant() throws Exception
+    {
+        Expression expression = new IntConstant(5);
+        Assertions.assertEquals(Alloy2SmtTranslator.intSort, expression.getSort());
+    }
+
+    @Test
+    void atomConstant() throws Exception
+    {
+        Expression expression = new AtomConstant("a");
+        Assertions.assertEquals(Alloy2SmtTranslator.atomSort, expression.getSort());
+    }
+
+    @Test
+    void or() throws Exception
+    {
+        Expression expression = new BinaryExpression(null, BinaryExpression.Op.AND, null);
+        Assertions.assertEquals(Alloy2SmtTranslator.boolSort, expression.getSort());
     }
 }

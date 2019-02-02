@@ -9,6 +9,8 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+
 import java.math.BigInteger;
 
 public class IntConstant extends Expression
@@ -39,5 +41,10 @@ public class IntConstant extends Expression
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
-    
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        return Alloy2SmtTranslator.intSort;
+    }
 }

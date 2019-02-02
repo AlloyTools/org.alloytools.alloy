@@ -9,9 +9,12 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MultiArityExpression extends Expression
 {
@@ -77,5 +80,31 @@ public class MultiArityExpression extends Expression
         {
             return this.opStr;
         }        
-    }     
+    }
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        switch (op)
+        {
+            case MKTUPLE:
+            {
+
+                List<Sort> sorts = new ArrayList<>();
+                for (Expression expr: exprs)
+                {
+                    sorts.add(expr.getSort());
+                }
+                return new TupleSort(sorts);
+            }
+            case INSERT:
+            {
+                // at least there should be one expression
+                return exprs.get(0).getSort();
+            }
+            case DISTINCT: return Alloy2SmtTranslator.boolSort;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
 }

@@ -70,7 +70,7 @@ public class ITEExpression extends Expression
     }
 
     @Override
-    public Sort getSort()
+    public Sort getSort() throws Exception
     {
         return this.thenExpr.getSort();
     }

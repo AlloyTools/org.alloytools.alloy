@@ -45,4 +45,10 @@ public class FunctionCallExpression extends Expression
     {
         visitor.visit(this);
     }
+
+    @Override
+    public Sort getSort() throws Exception
+    {
+        throw new UnsupportedOperationException("Function calls do not store yet function declarations");
+    }
 }

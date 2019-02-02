@@ -136,12 +136,33 @@ public class UnaryExpression extends Expression
     @Override
     public Sort getSort() throws Exception
     {
-        switch (op)
-        {
-            case NOT: return Alloy2SmtTranslator.boolSort;
-            case DISTINCT: return Alloy2SmtTranslator.boolSort ;
-            case IMPLIES: return Alloy2SmtTranslator.boolSort;
-            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
-            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+        switch (op) {
+            case NOT:
+                return Alloy2SmtTranslator.boolSort;
+            case DISTINCT:
+                return Alloy2SmtTranslator.boolSort;
+            case COMPLEMENT:
+                return expr.getSort();
+            case TRANSPOSE: {
+                // type checking is handled during construction
+                TupleSort oldSort = (TupleSort) ((SetSort) expr.getSort()).elementSort;
+                List<Sort> reverse = new ArrayList<>();
+                for (int i = oldSort.elementSorts.size() - 1; i >= 0; i--) {
+                    reverse.add(oldSort.elementSorts.get(i));
+                }
+                SetSort sort = new SetSort(new TupleSort(reverse));
+                return sort;
+            }
+            case TCLOSURE:
+                return expr.getSort();
+            case SINGLETON:
+                return new SetSort(expr.getSort());
+            case EMPTYSET:
+                return expr.getSort();
+            case UNIVSET:
+                return expr.getSort();
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 }
