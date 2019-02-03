@@ -11,65 +11,51 @@ package edu.uiowa.alloy2smt.smtAst;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class FunctionDefinition extends SmtAst
+public class FunctionDefinition extends FunctionDeclaration
 {
-    public final String                             funcName;
-    public final Sort                               outputSort;
-    public final Expression                         expression;
-    public final List<BoundVariableDeclaration>     inputVarDecls;    
+    public final Expression                 expression;
+    public final List<VariableDeclaration>  inputVariables;
     
-    public FunctionDefinition(String funcName, List<BoundVariableDeclaration> inputSort, Sort outputSort, Expression expression) 
+    public FunctionDefinition(String name, List<VariableDeclaration> inputVariables, Sort outputSort, Expression expression)
     {
-        this.funcName = funcName;
-        this.inputVarDecls = inputSort;
-        this.outputSort = outputSort;
+        super(name, inputVariables.stream().map(v -> v.getSort()).collect(Collectors.toList()), outputSort);
+        this.inputVariables = inputVariables;
         this.expression = expression;
     }
     
-    public FunctionDefinition(String funcName, BoundVariableDeclaration inputSort, Sort outputSort, Expression expression) 
+    public FunctionDefinition(String name, VariableDeclaration inputVariable, Sort outputSort, Expression expression)
     {
-        this.funcName = funcName;
-        this.inputVarDecls = Arrays.asList(inputSort);
-        this.outputSort = outputSort;
+        super(name, inputVariable.getSort(), outputSort);
+        this.inputVariables = Collections.singletonList(inputVariable);
         this.expression = expression;
     }
 
-    public FunctionDefinition(String funcName, Sort outputSort, Expression expression) 
+    public FunctionDefinition(String name, Sort outputSort, Expression expression)
     {
-        this.funcName = funcName;
-        this.inputVarDecls = new ArrayList<>();
-        this.outputSort = outputSort;
+        super(name, outputSort);
+        this.inputVariables = new ArrayList<>();
         this.expression = expression;
     }  
     
-    public FunctionDefinition(String funcName, Sort outputSort, Expression expression, BoundVariableDeclaration ... inputSorts) 
+    public FunctionDefinition(String name, Sort outputSort, Expression expression, VariableDeclaration... inputVariables)
     {
-        this.funcName = funcName;
-        this.inputVarDecls = Arrays.asList(inputSorts);
-        this.outputSort = outputSort;
+        super(name, Arrays.stream(inputVariables).map(v -> v.getSort()).collect(Collectors.toList()), outputSort);
+        this.inputVariables = Arrays.asList(inputVariables);
         this.expression = expression;
     }      
     
-    public List<BoundVariableDeclaration> getInputSorts()
+    public List<VariableDeclaration> getInputVariables()
     {
-        return this.inputVarDecls;
+        return this.inputVariables;
     }
-    
-    public Sort getOutputSort()
-    {
-        return this.outputSort;
-    }
-    
+
     public Expression getExpression()
     {
         return this.expression;
-    }
-    
-    public String getFuncName()
-    {
-        return this.funcName;
     }
 
     @Override

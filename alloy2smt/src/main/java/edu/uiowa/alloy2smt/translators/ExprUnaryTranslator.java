@@ -194,23 +194,23 @@ public class ExprUnaryTranslator
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
         Expression someRel  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
-        List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+        List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();        
         
         for(Sort sort : sorts)
         {
             String name = TranslatorUtils.getNewName();
-            BoundVariableDeclaration bdVar;
+            VariableDeclaration bdVar;
             Expression bdVarExpr;
             
             if(sort instanceof IntSort)
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.unaryIntTup);                
+                bdVar = new VariableDeclaration(name, exprTranslator.translator.unaryIntTup);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVar = new VariableDeclaration(name, exprTranslator.translator.atomSort);
                 bdVarExpr = bdVar.getConstantExpr();
             }
             bdVars.add(bdVar);
@@ -233,23 +233,23 @@ public class ExprUnaryTranslator
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
         Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
-        List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+        List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();
         
         for(Sort sort : sorts)
         {
             String name = TranslatorUtils.getNewName();
-            BoundVariableDeclaration bdVar;
+            VariableDeclaration bdVar;
             Expression bdVarExpr;
             
             if(sort instanceof IntSort)
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.unaryIntTup);                
+                bdVar = new VariableDeclaration(name, exprTranslator.translator.unaryIntTup);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVar = new VariableDeclaration(name, exprTranslator.translator.atomSort);
                 bdVarExpr = bdVar.getConstantExpr();
             }
             bdVars.add(bdVar);
@@ -276,23 +276,23 @@ public class ExprUnaryTranslator
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
         Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
-        List<BoundVariableDeclaration>  bdVars      = new ArrayList<>();
+        List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();
         
         for(Sort sort : sorts)
         {
             String name = TranslatorUtils.getNewName();
-            BoundVariableDeclaration bdVar;
+            VariableDeclaration bdVar;
             Expression bdVarExpr;
             
             if(sort instanceof IntSort)
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.unaryIntTup);                
+                bdVar = new VariableDeclaration(name, exprTranslator.translator.unaryIntTup);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
-                bdVar = new BoundVariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVar = new VariableDeclaration(name, exprTranslator.translator.atomSort);
                 bdVarExpr = bdVar.getConstantExpr();
             }
             bdVars.add(bdVar);
@@ -307,7 +307,7 @@ public class ExprUnaryTranslator
         return tryAddingExistentialConstraint(exists);
     }
     
-    public MultiArityExpression mkTupleExpr(BoundVariableDeclaration bdVarDecl)
+    public MultiArityExpression mkTupleExpr(VariableDeclaration bdVarDecl)
     {
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getConstantExpr());
     }
@@ -333,7 +333,7 @@ public class ExprUnaryTranslator
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
     }     
     
-    public UnaryExpression mkSingleton(BoundVariableDeclaration bdVarDecl)
+    public UnaryExpression mkSingleton(VariableDeclaration bdVarDecl)
     {
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(bdVarDecl));
     } 
@@ -348,7 +348,7 @@ public class ExprUnaryTranslator
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expr);
     }
     
-    public UnaryExpression mkSingleton(BoundVariableDeclaration ... bdVarDecls)
+    public UnaryExpression mkSingleton(VariableDeclaration... bdVarDecls)
     {
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleExpr(bdVarDecls));
     } 
@@ -363,20 +363,20 @@ public class ExprUnaryTranslator
         return new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
     }      
     
-    public MultiArityExpression mkTupleExpr(BoundVariableDeclaration ... bdVarDecls)
+    public MultiArityExpression mkTupleExpr(VariableDeclaration... bdVarDecls)
     {
         List<Expression> constExprs = new ArrayList<>();
-        for(BoundVariableDeclaration varDecl : bdVarDecls)
+        for(VariableDeclaration varDecl : bdVarDecls)
         {
             constExprs.add(varDecl.getConstantExpr());
         }
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
     } 
     
-    public MultiArityExpression mkTupleExpr(List<BoundVariableDeclaration> bdVarDecls)
+    public MultiArityExpression mkTupleExpr(List<VariableDeclaration> bdVarDecls)
     {
         List<Expression> constExprs = new ArrayList<>();
-        for(BoundVariableDeclaration varDecl : bdVarDecls)
+        for(VariableDeclaration varDecl : bdVarDecls)
         {
             constExprs.add(varDecl.getConstantExpr());
         }
@@ -443,14 +443,14 @@ public class ExprUnaryTranslator
         Expression finalExpr = bodyExpr;
         if(isBinaryIntField(exprUnary))
         {            
-            BoundVariableDeclaration bdBinIntTup = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.binaryIntTup);
+            VariableDeclaration bdBinIntTup = new VariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.binaryIntTup);
             Expression eq = new BinaryExpression(mkBinaryIntTupValue(bdBinIntTup.getConstantExpr()), BinaryExpression.Op.EQ, bdVarTupExpr);
             QuantifiedExpression quantEq = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, eq, bdBinIntTup);            
             finalExpr = new BinaryExpression(bodyExpr, BinaryExpression.Op.AND, quantEq);
         }
         else if(isTernaryIntField(exprUnary))
         {            
-            BoundVariableDeclaration bdTernaryIntTup = new BoundVariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.ternaryIntTup);
+            VariableDeclaration bdTernaryIntTup = new VariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.ternaryIntTup);
             Expression eq = new BinaryExpression(mkTernaryIntTupValue(bdTernaryIntTup.getConstantExpr()), BinaryExpression.Op.EQ, bdVarTupExpr);
             QuantifiedExpression quantEq = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, eq, bdTernaryIntTup);
             finalExpr = new BinaryExpression(bodyExpr, BinaryExpression.Op.AND, quantEq);

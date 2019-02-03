@@ -91,8 +91,8 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         String name = ctx.functionName().getText();
 
-        List<BoundVariableDeclaration>  arguments   = ctx.argument().stream()
-            .map(argument -> (BoundVariableDeclaration) this.visitArgument(argument))
+        List<VariableDeclaration>  arguments   = ctx.argument().stream()
+            .map(argument -> (VariableDeclaration) this.visitArgument(argument))
             .collect(Collectors.toList());
 
         Sort returnSort = (Sort) visitSort(ctx.sort());
@@ -109,10 +109,10 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         String argumentName = ctx.argumentName().getText();
         Sort   argumentSort = (Sort) this.visit(ctx.sort());
-        return new BoundVariableDeclaration(argumentName, argumentSort);
+        return new VariableDeclaration(argumentName, argumentSort);
     }
 
-    public SmtAst visitExpression(SmtParser.ExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
+    public SmtAst visitExpression(SmtParser.ExpressionContext ctx, List<VariableDeclaration>  arguments)
     {
         if(ctx.constant() != null)
         {
@@ -147,14 +147,14 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     }
 
     public SmtAst visitUnaryExpression(SmtParser.UnaryExpressionContext ctx,
-                                       List<BoundVariableDeclaration>  arguments)
+                                       List<VariableDeclaration>  arguments)
     {
         Expression expression       = (Expression) this.visitExpression(ctx.expression(), arguments);
         UnaryExpression.Op operator = UnaryExpression.Op.getOp(ctx.UnaryOperator().getText());
         return new UnaryExpression(operator, expression);
     }
 
-    public SmtAst visitBinaryExpression(SmtParser.BinaryExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
+    public SmtAst visitBinaryExpression(SmtParser.BinaryExpressionContext ctx, List<VariableDeclaration>  arguments)
     {
         Expression left   = (Expression) this.visitExpression(ctx.expression(0), arguments);
         Expression right  = (Expression) this.visitExpression(ctx.expression(1), arguments);
@@ -163,7 +163,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         return new BinaryExpression(left, operator, right);
     }
 
-    public SmtAst visitTernaryExpression(SmtParser.TernaryExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
+    public SmtAst visitTernaryExpression(SmtParser.TernaryExpressionContext ctx, List<VariableDeclaration>  arguments)
     {
         List<Expression> expressions = ctx.expression().stream()
                 .map(expression -> (Expression) this.visitExpression(expression, arguments))
@@ -172,7 +172,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         return new ITEExpression(expressions.get(0), expressions.get(1), expressions.get(2));
     }
 
-    public SmtAst visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx, List<BoundVariableDeclaration>  arguments)
+    public SmtAst visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx, List<VariableDeclaration>  arguments)
     {
         List<Expression> expressions = ctx.expression().stream()
                 .map(expression -> (Expression) this.visitExpression(expression, arguments))
@@ -220,7 +220,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         return new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
     }
 
-    public SmtAst visitVariable(SmtParser.VariableContext ctx, List<BoundVariableDeclaration>  arguments)
+    public SmtAst visitVariable(SmtParser.VariableContext ctx, List<VariableDeclaration>  arguments)
     {
         Expression variable = arguments.stream()
                 .filter(argument -> argument.getName().equals(ctx.getText()))

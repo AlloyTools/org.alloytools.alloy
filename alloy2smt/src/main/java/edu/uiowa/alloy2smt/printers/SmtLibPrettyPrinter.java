@@ -100,7 +100,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public void visit(QuantifiedExpression quantifiedExpression)
     {
         this.stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-        for (BoundVariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
+        for (VariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
         {
             this.visit(boundVariable);
         }
@@ -110,8 +110,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(RealSort aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(RealSort aThis)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -204,14 +205,15 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(FunctionDefinition funcDef) {
-        this.stringBuilder.append("(define-fun ").append(funcDef.getFuncName()).append(" (");
-        for(BoundVariableDeclaration bdVar : funcDef.inputVarDecls)
+    public void visit(FunctionDefinition funcDef)
+    {
+        this.stringBuilder.append("(define-fun ").append(funcDef.getName()).append(" (");
+        for(VariableDeclaration bdVar : funcDef.inputVariables)
         {
             this.visit(bdVar);
         }
         this.stringBuilder.append(") ");
-        this.visit(funcDef.outputSort);
+        this.visit(funcDef.getSort());
         this.stringBuilder.append(" ").append("\n");
         this.visit(funcDef.expression);
         this.stringBuilder.append(")");
@@ -293,7 +295,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(BoundVariableDeclaration boundVariable)
+    public void visit(VariableDeclaration boundVariable)
     {
         this.stringBuilder.append("(" + boundVariable.getName() + " ");
         this.visit(boundVariable.getSort());

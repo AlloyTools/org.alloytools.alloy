@@ -32,7 +32,7 @@ public class FunctionDeclaration extends Declaration
             constantExpression = null;
         }
     }
-    
+
     public FunctionDeclaration(String name, Sort inputSort, Sort outputSort)
     {
         super(name, outputSort);

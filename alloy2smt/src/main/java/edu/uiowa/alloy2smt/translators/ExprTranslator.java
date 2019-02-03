@@ -206,7 +206,7 @@ public class ExprTranslator
         Map<String, Expression> letVars = new HashMap<>();
         List<String> inputs = translator.setCompFuncNameToInputsMap.get(funcName);
         Expression setCompDef = translator.setCompFuncNameToDefMap.get(funcName);
-        BoundVariableDeclaration setBdVar = translator.setCompFuncNameToBdVarExprMap.get(funcName);
+        VariableDeclaration setBdVar = translator.setCompFuncNameToBdVarExprMap.get(funcName);
         
         for(int i = 0; i < argExprs.size(); ++i)
         {
@@ -240,21 +240,21 @@ public class ExprTranslator
 
     public void declArithmeticOp(BinaryExpression.Op op)
     {
-        BoundVariableDeclaration  bdUnaryIntVar1 = new BoundVariableDeclaration("_x", translator.unaryIntTup);
-        BoundVariableDeclaration  bdUnaryIntVar2 = new BoundVariableDeclaration("_y", translator.unaryIntTup); 
-        BoundVariableDeclaration  bdUnaryIntVar3 = new BoundVariableDeclaration("_z", translator.unaryIntTup); 
+        VariableDeclaration bdUnaryIntVar1 = new VariableDeclaration("_x", translator.unaryIntTup);
+        VariableDeclaration bdUnaryIntVar2 = new VariableDeclaration("_y", translator.unaryIntTup);
+        VariableDeclaration bdUnaryIntVar3 = new VariableDeclaration("_z", translator.unaryIntTup);
         Expression bdIntVar1Expr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdUnaryIntVar1.getConstantExpr()), 0);
         Expression bdIntVar2Expr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdUnaryIntVar2.getConstantExpr()), 0);
         Expression bdIntVar3Expr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdUnaryIntVar3.getConstantExpr()), 0);                
 
         Expression memberOfOp = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
 
-        BoundVariableDeclaration existentialBdVar = new BoundVariableDeclaration("_w", translator.ternaryIntTup);          
+        VariableDeclaration existentialBdVar = new VariableDeclaration("_w", translator.ternaryIntTup);
         Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(translator.valueOfTernaryIntTup.getName(), existentialBdVar.getConstantExpr()),
                                                     BinaryExpression.Op.EQ, memberOfOp), existentialBdVar);
 //        Expression rhsExpr = new BooleanConstant(true);
         
-        BoundVariableDeclaration bdTernaryIntVar = new BoundVariableDeclaration("_w", translator.ternaryIntTup);
+        VariableDeclaration bdTernaryIntVar = new VariableDeclaration("_w", translator.ternaryIntTup);
         
         Expression ternaryIntTupExpr = new FunctionCallExpression(translator.valueOfTernaryIntTup.getName(), bdTernaryIntVar.getConstantExpr());
 
@@ -391,7 +391,7 @@ public class ExprTranslator
 
     Expression translateExprQt(ExprQt exprQt, Map<String, Expression> variablesScope)
     {
-        Map<String, List<BoundVariableDeclaration>>         bdVarNameTobdAtomVars   = new HashMap<>();
+        Map<String, List<VariableDeclaration>>         bdVarNameTobdAtomVars   = new HashMap<>();
         Map<String, Expression>                             bdVarNameToTupleExpr    = new HashMap<>();
         LinkedHashMap<String, Expression>                   bdVarNameToExprMap      = new LinkedHashMap<>();        
         
@@ -406,9 +406,9 @@ public class ExprTranslator
                 int     arity           = decl.expr.type().arity();
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
                 
-                BoundVariableDeclaration bdVarDecl = getBdVar(declExprSort, sanBdVarName);                
+                VariableDeclaration bdVarDecl = getBdVar(declExprSort, sanBdVarName);
                 Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
-                List<BoundVariableDeclaration>  bdAtomVars    = new ArrayList<>();                
+                List<VariableDeclaration>  bdAtomVars    = new ArrayList<>();
                 
                 if(arity > 1)
                 {
@@ -418,16 +418,16 @@ public class ExprTranslator
                     {
                         Expression bdAtomVarExpr;
                         String varName = sanBdVarName+"_"+i;
-                        BoundVariableDeclaration bdAtomVar;
+                        VariableDeclaration bdAtomVar;
                                                 
                         if(declSorts.get(i) instanceof IntSort)
                         {
-                            bdAtomVar = new BoundVariableDeclaration(varName, translator.unaryIntTup);        
+                            bdAtomVar = new VariableDeclaration(varName, translator.unaryIntTup);
                             bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
                         }
                         else
                         {
-                            bdAtomVar = new BoundVariableDeclaration(varName, translator.atomSort);
+                            bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
                             bdAtomVarExpr = bdAtomVar.getConstantExpr();
                         } 
                         bdAtomVars.add(bdAtomVar);
@@ -466,7 +466,7 @@ public class ExprTranslator
             case SOME   : return  translateSomeQuantifier(bdVarNameToExprMap, bdVarNameTobdAtomVars, bdVarNameToTupleExpr, bodyExpr);
             case NO     : return  translateNoQuantifier(bdVarNameToExprMap, bdVarNameTobdAtomVars, bdVarNameToTupleExpr, bodyExpr);
             case LONE   : {
-                Map<String, List<BoundVariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
+                Map<String, List<VariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
                 Map<String, Expression>                             sndBdVarNameToTupleExpr     = new HashMap<>();
                 LinkedHashMap<String, Expression>                   sndBdVarNameToExprMap       = new LinkedHashMap<>(); 
                 
@@ -476,7 +476,7 @@ public class ExprTranslator
                                                 bdVarNameToTupleExpr, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
             }
             case ONE    : {
-                Map<String, List<BoundVariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
+                Map<String, List<VariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
                 Map<String, Expression>                             sndBdVarNameToTupleExpr     = new HashMap<>();
                 LinkedHashMap<String, Expression>                   sndBdVarNameToExprMap       = new LinkedHashMap<>(); 
                 
@@ -499,8 +499,8 @@ public class ExprTranslator
                 
                 String              setBdVarName    = TranslatorUtils.getNewSetName();
                 SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
-                BoundVariableDeclaration setBdVar   = new BoundVariableDeclaration(setBdVarName, setSort);
-                LinkedHashMap<BoundVariableDeclaration, Expression> bdVars = new LinkedHashMap<>();
+                VariableDeclaration setBdVar   = new VariableDeclaration(setBdVarName, setSort);
+                LinkedHashMap<VariableDeclaration, Expression> bdVars = new LinkedHashMap<>();
                 
                 for(Decl decl : exprQt.decls)
                 {                    
@@ -510,7 +510,7 @@ public class ExprTranslator
                     for (ExprHasName name: decl.names)
                     {
                         String sanitizedName = TranslatorUtils.sanitizeName(name.label);
-                        BoundVariableDeclaration bdVar = new BoundVariableDeclaration(sanitizedName, declExprSorts.get(0));
+                        VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0));
                         variablesScope.put(name.label, bdVar.getConstantExpr());
                         bdVars.put(bdVar, declExpr);
                     }                    
@@ -544,7 +544,7 @@ public class ExprTranslator
     }
     
     private Expression createSndSetBdvarsAndExpr(LinkedHashMap<String, Expression> bdVarToExprMap, 
-                                                 Map<String, List<BoundVariableDeclaration>> bdTupVarNameTobdAtomVars, 
+                                                 Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars,
                                                  Map<String, Expression> bdTupVarNameToTupleExpr, 
                                                  Map<String, Expression> variablesScope, ExprQt exprQt)
     {        
@@ -559,9 +559,9 @@ public class ExprTranslator
                 int     arity           = decl.expr.type().arity();
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
                 
-                BoundVariableDeclaration bdVarDecl = getBdVar(declExprSort, sanBdVarName);                
+                VariableDeclaration bdVarDecl = getBdVar(declExprSort, sanBdVarName);
                 Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
-                List<BoundVariableDeclaration>  bdAtomVars    = new ArrayList<>();
+                List<VariableDeclaration>  bdAtomVars    = new ArrayList<>();
                 
                 if(arity > 1)
                 {                                                       
@@ -570,16 +570,16 @@ public class ExprTranslator
                     {
                         Expression bdAtomVarExpr;
                         String varName = sanBdVarName+"_"+i+"_2";
-                        BoundVariableDeclaration bdAtomVar;
+                        VariableDeclaration bdAtomVar;
                                                 
                         if(declSorts.get(i) instanceof IntSort)
                         {
-                            bdAtomVar = new BoundVariableDeclaration(varName, translator.unaryIntTup);        
+                            bdAtomVar = new VariableDeclaration(varName, translator.unaryIntTup);
                             bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
                         }
                         else
                         {
-                            bdAtomVar = new BoundVariableDeclaration(varName, translator.atomSort);
+                            bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
                             bdAtomVarExpr = bdAtomVar.getConstantExpr();
                         } 
                         bdAtomVars.add(bdAtomVar);
@@ -613,9 +613,9 @@ public class ExprTranslator
     }
     
     // (all e: R|not P) or (some e : R | P and all e2 : R | not(e = e2) => not P)
-    private Expression translateLoneQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, LinkedHashMap<String, Expression> sndBdVarToExprMap, 
-                                               Map<String, List<BoundVariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<BoundVariableDeclaration>> sndBdVarNameTobdAtomVars, 
-                                               Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr, 
+    private Expression translateLoneQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
+                                               Map<String, List<VariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<VariableDeclaration>> sndBdVarNameTobdAtomVars,
+                                               Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr,
                                                Expression bodyExpr, Expression sndBodyExpr)
     {
         Expression fstPartBodyExpr = bodyExpr;
@@ -623,8 +623,8 @@ public class ExprTranslator
         Expression thdPartBodyExpr = sndBodyExpr;
 
         // (all e: R|not P) 
-        List<BoundVariableDeclaration> fstBdVars = new ArrayList<>();
-        for(List<BoundVariableDeclaration> bdVars : bdVarNameTobdAtomVars.values())
+        List<VariableDeclaration> fstBdVars = new ArrayList<>();
+        for(List<VariableDeclaration> bdVars : bdVarNameTobdAtomVars.values())
         {
             fstBdVars.addAll(bdVars);
         }
@@ -638,8 +638,8 @@ public class ExprTranslator
         // Membership constraints of the universal constraints all e2 : R | not(e1 = e2) => not P)              
         // all e2 : R
         
-        List<BoundVariableDeclaration> sndBdVars = new ArrayList<>();
-        for(List<BoundVariableDeclaration> bdVars : sndBdVarNameTobdAtomVars.values())
+        List<VariableDeclaration> sndBdVars = new ArrayList<>();
+        for(List<VariableDeclaration> bdVars : sndBdVarNameTobdAtomVars.values())
         {
             sndBdVars.addAll(bdVars);
         }
@@ -662,19 +662,19 @@ public class ExprTranslator
     }   
     
     // (some e : R | P and all e2 : R | not(e = e2) => not P)
-    private Expression translateOneQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, LinkedHashMap<String, Expression> sndBdVarToExprMap, 
-                                               Map<String, List<BoundVariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<BoundVariableDeclaration>> sndBdVarNameTobdAtomVars, 
-                                               Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr, 
-                                               Expression bodyExpr, Expression sndBodyExpr)
+    private Expression translateOneQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
+                                              Map<String, List<VariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<VariableDeclaration>> sndBdVarNameTobdAtomVars,
+                                              Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr,
+                                              Expression bodyExpr, Expression sndBodyExpr)
     {
         Expression fstPartBodyExpr = bodyExpr;
         Expression sndPartBodyExpr = bodyExpr;
         Expression thdPartBodyExpr = sndBodyExpr;
 
         // (all e: R|not P) 
-        List<BoundVariableDeclaration> fstBdVars = new ArrayList<>();
+        List<VariableDeclaration> fstBdVars = new ArrayList<>();
         
-        for(List<BoundVariableDeclaration> bdVars : bdVarNameTobdAtomVars.values())
+        for(List<VariableDeclaration> bdVars : bdVarNameTobdAtomVars.values())
         {
             fstBdVars.addAll(bdVars);
         }
@@ -686,8 +686,8 @@ public class ExprTranslator
         // Membership constraints of the universal constraints all e2 : R | not(e1 = e2) => not P)              
         // all e2 : R
         
-        List<BoundVariableDeclaration> sndBdVars = new ArrayList<>();
-        for(List<BoundVariableDeclaration> bdVars : sndBdVarNameTobdAtomVars.values())
+        List<VariableDeclaration> sndBdVars = new ArrayList<>();
+        for(List<VariableDeclaration> bdVars : sndBdVarNameTobdAtomVars.values())
         {
             sndBdVars.addAll(bdVars);
         }
@@ -709,12 +709,12 @@ public class ExprTranslator
         return existFormula;
     }       
     
-    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<BoundVariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
     {
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        List<VariableDeclaration> bdVars = new ArrayList<>();
         Expression membership = getMembershipConstraints(bdVarToExprMap, bdTupVarNameToTupleExpr);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, bodyExpr));
-        for(List<BoundVariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
+        for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
             bdVars.addAll(vars);
         }        
@@ -738,12 +738,12 @@ public class ExprTranslator
         return membership;
     }
 
-    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<BoundVariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
     {
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        List<VariableDeclaration> bdVars = new ArrayList<>();
         Expression membership = getMembershipConstraints(bdVarToExprMap, bdTupVarNameToTupleExpr);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, bodyExpr);
-        for(List<BoundVariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
+        for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
             bdVars.addAll(vars);
         }        
@@ -751,12 +751,12 @@ public class ExprTranslator
         return quantifiedExpression;
     }
 
-    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<BoundVariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
     {
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        List<VariableDeclaration> bdVars = new ArrayList<>();
         Expression membership = getMembershipConstraints(bdVarToExprMap, bdTupVarNameToTupleExpr);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.AND, bodyExpr);
-        for(List<BoundVariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
+        for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
             bdVars.addAll(vars);
         }        
@@ -765,9 +765,9 @@ public class ExprTranslator
     }
 
 
-    public BinaryExpression getMemberExpression(Map<BoundVariableDeclaration, Expression> bdVarToExprMap, int index)
+    public BinaryExpression getMemberExpression(Map<VariableDeclaration, Expression> bdVarToExprMap, int index)
     {
-        BoundVariableDeclaration    bdVar           = (new ArrayList<>(bdVarToExprMap.keySet())).get(index);
+        VariableDeclaration bdVar           = (new ArrayList<>(bdVarToExprMap.keySet())).get(index);
         Expression                  bdVarParExpr    = bdVarToExprMap.get(bdVar);
         Expression                  tupleExpr       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVar.getConstantExpr());
         
@@ -796,24 +796,24 @@ public class ExprTranslator
      * Auxiliary functions
      */
         
-    List<BoundVariableDeclaration> getBdVars(Sort sort, int num)
+    List<VariableDeclaration> getBdVars(Sort sort, int num)
     {
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        List<VariableDeclaration> bdVars = new ArrayList<>();
         
         for(int i = 0; i < num; i++)
         {
-            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), sort));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort));
         }
         return bdVars;
     }
     
-    BoundVariableDeclaration getBdVar(Sort sort, String name)
+    VariableDeclaration getBdVar(Sort sort, String name)
     {
         if(sort instanceof IntSort)
         {
-            return new BoundVariableDeclaration(name, translator.unaryIntTup);
+            return new VariableDeclaration(name, translator.unaryIntTup);
         }
-        return new BoundVariableDeclaration(name, sort);
+        return new VariableDeclaration(name, sort);
     }    
 
     List<Sort> getExprSorts(Expr expr)
@@ -836,10 +836,10 @@ public class ExprTranslator
         return sorts;
     }
     
-    List<BoundVariableDeclaration> getBdTupleVars(List<Sort> sorts, int arity, int num)
+    List<VariableDeclaration> getBdTupleVars(List<Sort> sorts, int arity, int num)
     {
         List<Sort> elementSorts = new ArrayList<>();
-        List<BoundVariableDeclaration> bdVars = new ArrayList<>();
+        List<VariableDeclaration> bdVars = new ArrayList<>();
         
         for(int i = 0; i < arity; i++)
         {
@@ -847,7 +847,7 @@ public class ExprTranslator
         }
         for(int i = 0; i < num; i++)
         {
-            bdVars.add(new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts)));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts)));
         }
         return bdVars;
     }    

@@ -223,7 +223,7 @@ public class ExprBinaryTranslator
             Expression leftExpr = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, variablesScope);    
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
-            List<BoundVariableDeclaration>  existentialBdVars       = new ArrayList<>();     
+            List<VariableDeclaration>  existentialBdVars       = new ArrayList<>();
             List<Sort> leftExprSorts = exprTranslator.getExprSorts(((ExprUnary)expr.left).sub);
             
             switch(op)
@@ -238,7 +238,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n+1);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -286,7 +286,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n-1);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -335,7 +335,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -384,7 +384,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -434,7 +434,7 @@ public class ExprBinaryTranslator
             Expression rightExpr = exprTranslator.translateExpr(((ExprUnary)expr.right).sub, variablesScope);    
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
-            List<BoundVariableDeclaration>  existentialBdVars       = new ArrayList<>();     
+            List<VariableDeclaration>  existentialBdVars       = new ArrayList<>();
             List<Sort> rightExprSorts = exprTranslator.getExprSorts(((ExprUnary)expr.right).sub);
             
             switch(op)
@@ -449,7 +449,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n+1);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -497,7 +497,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n-1);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -546,7 +546,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -595,7 +595,7 @@ public class ExprBinaryTranslator
                         existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n);
                     }
 
-                    for(BoundVariableDeclaration bdVar : existentialBdVars)
+                    for(VariableDeclaration bdVar : existentialBdVars)
                     {
                         existentialBdVarExprs.add(bdVar.getConstantExpr());
                     }        
@@ -646,7 +646,7 @@ public class ExprBinaryTranslator
             {
                 declComparisonOps(op);
             }
-            comparisonExpr = new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op).getFuncName(), leftExpr, rightExpr);             
+            comparisonExpr = new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op).getName(), leftExpr, rightExpr);
             
             // Add auxiliary quantifiers and expressions
             if(!exprTranslator.translator.existentialBdVars.isEmpty())
@@ -666,10 +666,10 @@ public class ExprBinaryTranslator
     
     private void declComparisonOps(BinaryExpression.Op op)
     {
-        BoundVariableDeclaration    bdIntRelVar1        = new BoundVariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);                
-        BoundVariableDeclaration    bdIntRelVar2        = new BoundVariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
-        BoundVariableDeclaration    bdIntAtomVar1       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
-        BoundVariableDeclaration    bdIntAtomVar2       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
+        VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);
+        VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
+        VariableDeclaration bdIntAtomVar1       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
+        VariableDeclaration bdIntAtomVar2       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
         Expression                  unaryIntTup1        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar1.getConstantExpr());
         Expression                  unaryIntTup2        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar2.getConstantExpr());
         
@@ -823,7 +823,7 @@ public class ExprBinaryTranslator
     {
         int arity = expr.type().arity();        
         List<Expression> existentialBdVarExprs = new ArrayList<>();
-        List<BoundVariableDeclaration> existentialBdVars = new ArrayList<>();
+        List<VariableDeclaration> existentialBdVars = new ArrayList<>();
         List<Sort> exprSorts = exprTranslator.getExprSorts(expr.sub);
         
         if(arity == 1)
@@ -835,7 +835,7 @@ public class ExprBinaryTranslator
             existentialBdVars = exprTranslator.getBdTupleVars(exprSorts, arity, n);
         }
         
-        for(BoundVariableDeclaration bdVar : existentialBdVars)
+        for(VariableDeclaration bdVar : existentialBdVars)
         {
             existentialBdVarExprs.add(bdVar.getConstantExpr());
         }

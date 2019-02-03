@@ -81,9 +81,9 @@ public class Alloy2SmtTranslator
     Map<String, String>                             funcNamesMap;
     Map<String, List<String>>                       setCompFuncNameToInputsMap;
     Map<String, Expression>                         setCompFuncNameToDefMap;
-    Map<String, BoundVariableDeclaration>           setCompFuncNameToBdVarExprMap;
+    Map<String, VariableDeclaration>           setCompFuncNameToBdVarExprMap;
     Map<Sig, FunctionDeclaration>                   signaturesMap;   
-    List<BoundVariableDeclaration>                  existentialBdVars;      
+    List<VariableDeclaration>                  existentialBdVars;
     Map<String, FunctionDefinition>                 funcDefsMap;        
     Map<Sig.Field, FunctionDeclaration>             fieldsMap;     
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
@@ -189,11 +189,11 @@ public class Alloy2SmtTranslator
     private void translateSpecialAssertions()
     {
         // Axiom for identity relation
-        BoundVariableDeclaration    a       = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
+        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
         BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
 
-        BoundVariableDeclaration    b       = new BoundVariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
+        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getConstantExpr());
         BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
 
@@ -293,8 +293,8 @@ public class Alloy2SmtTranslator
 
         String              setBdVarName    = TranslatorUtils.getNewSetName();
         SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
-        BoundVariableDeclaration setBdVar   = new BoundVariableDeclaration(setBdVarName, setSort);
-        LinkedHashMap<BoundVariableDeclaration, Expression> inputBdVars = new LinkedHashMap<>();
+        VariableDeclaration setBdVar   = new VariableDeclaration(setBdVarName, setSort);
+        LinkedHashMap<VariableDeclaration, Expression> inputBdVars = new LinkedHashMap<>();
         List<String> inputVarNames = new ArrayList<>();
         
         // Declare input variables
@@ -305,7 +305,7 @@ public class Alloy2SmtTranslator
                 String  bdVarName       = n.label;
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
                 Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(sanBdVarName, bdVarSort);
+                VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
                 
                 inputVarNames.add(sanBdVarName);
                 variablesScope.put(bdVarName, bdVarDecl.getConstantExpr());
@@ -320,7 +320,7 @@ public class Alloy2SmtTranslator
             for (ExprHasName name: decl.names)
             {
                 String sanitizedName = TranslatorUtils.sanitizeName(name.label);
-                BoundVariableDeclaration bdVar = new BoundVariableDeclaration(sanitizedName, declExprSorts.get(0));
+                VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0));
                 variablesScope.put(name.label, bdVar.getConstantExpr());
                 inputBdVars.put(bdVar, declExpr);                
             }                    
@@ -354,7 +354,7 @@ public class Alloy2SmtTranslator
         
         Sort    returnSort  = new BoolSort();        
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
-        List<BoundVariableDeclaration>      bdVars          = new ArrayList<>();
+        List<VariableDeclaration>      bdVars          = new ArrayList<>();
         Map<String, Expression>             variablesScope  = new HashMap<>();
                 
         // Save function name
@@ -367,7 +367,7 @@ public class Alloy2SmtTranslator
                 String  bdVarName       = n.label;
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
                 Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                BoundVariableDeclaration bdVarDecl = new BoundVariableDeclaration(sanBdVarName, bdVarSort);
+                VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
                 
                 bdVars.add(bdVarDecl);
                 variablesScope.put(bdVarName, bdVarDecl.getConstantExpr());

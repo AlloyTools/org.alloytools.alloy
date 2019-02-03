@@ -352,8 +352,8 @@ public class SignatureTranslator
         for(Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
         {
             String bdVarName = "this";
-            Map<BoundVariableDeclaration, Expression> boundVariables = new HashMap<>();
-            BoundVariableDeclaration bdVar = new BoundVariableDeclaration(bdVarName, translator.atomSort);
+            Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
+            VariableDeclaration bdVar = new VariableDeclaration(bdVarName, translator.atomSort);
             boundVariables.put(bdVar, translator.signaturesMap.get(sigFact.getKey()).getConstantExpr());
             Expression member = translator.exprTranslator.getMemberExpression(boundVariables, 0);
             Map<String, Expression> variablesScope = new HashMap<>();
@@ -411,11 +411,11 @@ public class SignatureTranslator
         // prev relation
         ConstantDeclaration ordPrev     = addOrdPrev(prefix,setExpression, mappingName, ordNext);
 
-        BoundVariableDeclaration set1   = new BoundVariableDeclaration("s1", translator.setOfUnaryAtomSort);
-        BoundVariableDeclaration set2   = new BoundVariableDeclaration("s2", translator.setOfUnaryAtomSort);
+        VariableDeclaration set1   = new VariableDeclaration("s1", translator.setOfUnaryAtomSort);
+        VariableDeclaration set2   = new VariableDeclaration("s2", translator.setOfUnaryAtomSort);
 
-        BoundVariableDeclaration element1 = new BoundVariableDeclaration("e1", translator.atomSort);
-        BoundVariableDeclaration element2 = new BoundVariableDeclaration("e2", translator.atomSort);
+        VariableDeclaration element1 = new VariableDeclaration("e1", translator.atomSort);
+        VariableDeclaration element2 = new VariableDeclaration("e2", translator.atomSort);
 
         // ordering/prevs
         FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
@@ -465,8 +465,8 @@ public class SignatureTranslator
 
         // the mapping is one-to-one(injective)
         // for all x, y (x != y and  implies f(x) != f(y))
-        BoundVariableDeclaration x = new BoundVariableDeclaration("_x", translator.atomSort);
-        BoundVariableDeclaration y = new BoundVariableDeclaration("_y", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("_x", translator.atomSort);
+        VariableDeclaration y = new VariableDeclaration("_y", translator.atomSort);
 
         Expression xEqualsY = new BinaryExpression(x.getConstantExpr(), BinaryExpression.Op.EQ, y.getConstantExpr());
 
@@ -508,7 +508,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
-        BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("x", translator.atomSort);
         Expression member = new BinaryExpression(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr()),
                 BinaryExpression.Op.MEMBER, setExpression);
@@ -550,7 +550,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
-        BoundVariableDeclaration x = new BoundVariableDeclaration("x", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("x", translator.atomSort);
         Expression xMember = new BinaryExpression(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr()),
                 BinaryExpression.Op.MEMBER, setExpression);
@@ -566,7 +566,7 @@ public class SignatureTranslator
         return lastAtom;
     }
 
-    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, BoundVariableDeclaration set, ConstantDeclaration declaration)
+    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, VariableDeclaration set, ConstantDeclaration declaration)
     {
         Expression tClosure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, declaration.getConstantExpr());
 
@@ -578,7 +578,7 @@ public class SignatureTranslator
                 difference, set);
     }
 
-    private FunctionDefinition getPrevsNextsDefinition(String prefix, BoundVariableDeclaration set1, ConstantDeclaration ord, String suffix)
+    private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, ConstantDeclaration ord, String suffix)
     {
         UnaryExpression tClosure = new UnaryExpression(UnaryExpression.Op.TCLOSURE, ord.getConstantExpr());
         BinaryExpression join = new BinaryExpression(set1.getConstantExpr(), BinaryExpression.Op.JOIN, tClosure);
@@ -587,9 +587,9 @@ public class SignatureTranslator
         return definition;
     }
 
-    private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, BoundVariableDeclaration set1, BoundVariableDeclaration set2, FunctionDefinition definition)
+    private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, VariableDeclaration set1, VariableDeclaration set2, FunctionDefinition definition)
     {
-        FunctionCallExpression call = new FunctionCallExpression(definition.funcName, set1.getConstantExpr(), set2.getConstantExpr());
+        FunctionCallExpression call = new FunctionCallExpression(definition.getName(), set1.getConstantExpr(), set2.getConstantExpr());
         ITEExpression ite = new ITEExpression(call, set1.getConstantExpr(),
                 set2.getConstantExpr());
         return new FunctionDefinition(prefix + suffix,
@@ -606,8 +606,8 @@ public class SignatureTranslator
         FunctionDeclaration mapping     = new FunctionDeclaration(nextMapping, translator.atomSort, translator.atomSort);
         translator.smtProgram.addFunctionDeclaration(mapping);
 
-        BoundVariableDeclaration x = new BoundVariableDeclaration("_x", translator.atomSort);
-        BoundVariableDeclaration y = new BoundVariableDeclaration("_y", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("_x", translator.atomSort);
+        VariableDeclaration y = new VariableDeclaration("_y", translator.atomSort);
 
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member
@@ -742,7 +742,7 @@ public class SignatureTranslator
         return ordPrev;
     }
 
-    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, BoundVariableDeclaration set1, BoundVariableDeclaration set2, BoundVariableDeclaration element1, BoundVariableDeclaration element2, BinaryExpression.Op operator)
+    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, BinaryExpression.Op operator)
     {
         QuantifiedExpression ltExpression =
                 new QuantifiedExpression

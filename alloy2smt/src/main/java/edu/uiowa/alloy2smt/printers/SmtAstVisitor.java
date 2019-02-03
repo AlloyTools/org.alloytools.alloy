@@ -54,7 +54,7 @@ public interface SmtAstVisitor
 
     public void visit(FunctionCallExpression functionCallExpression);
 
-    public void visit(BoundVariableDeclaration boundVariableDeclaration);
+    public void visit(VariableDeclaration variableDeclaration);
 
     public void visit(BoolSort boolSort);
 

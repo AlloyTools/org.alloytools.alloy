@@ -52,7 +52,7 @@ class SmtModelVisitorTests
         Assertions.assertEquals(6, smtModel.getFunctionDefinitions().size());
 
         FunctionDefinition atomUniv = smtModel.getFunctionDefinitions().stream()
-                .filter(function -> function.funcName.equals("atomUniv")).findFirst().get();
+                .filter(function -> function.getName().equals("atomUniv")).findFirst().get();
 
         Assertions.assertTrue(atomUniv.expression != null);
     }
@@ -198,7 +198,7 @@ class SmtModelVisitorTests
         SmtModel smtModel = parseModel(model);
         FunctionDefinition atomUniv = smtModel.getFunctionDefinitions()
                 .stream()
-                .filter(function -> function.funcName.equals("atomUniv"))
+                .filter(function -> function.getName().equals("atomUniv"))
                 .findFirst().get();
         Assertions.assertEquals("(union (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_2))) (singleton (mkTuple @uc_Atom_3))) (singleton (mkTuple @uc_Atom_1)))",
                 atomUniv.expression.toString());

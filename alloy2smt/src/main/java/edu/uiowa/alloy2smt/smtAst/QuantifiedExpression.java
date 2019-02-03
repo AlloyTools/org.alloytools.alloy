@@ -18,28 +18,28 @@ import java.util.List;
 public class QuantifiedExpression extends Expression
 {
     private final Expression                  expr;
-    private final List<BoundVariableDeclaration>   boundVars;
+    private final List<VariableDeclaration>   boundVars;
     private final Op                          op;
     
-    public QuantifiedExpression(Op op, List<BoundVariableDeclaration> boundVars, Expression expr)
+    public QuantifiedExpression(Op op, List<VariableDeclaration> boundVars, Expression expr)
     {
         this.boundVars  = new ArrayList<>();        
         this.expr       = expr;
         this.op         = op;
-        for(BoundVariableDeclaration bdVar : boundVars)
+        for(VariableDeclaration bdVar : boundVars)
         {
             this.boundVars.add(bdVar);
         }
     }
     
-    public QuantifiedExpression(Op op, Expression expr, BoundVariableDeclaration... boundVars)
+    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... boundVars)
     {
         this.boundVars  = Arrays.asList(boundVars);
         this.expr       = expr;
         this.op         = op;
     }
     
-    public List<BoundVariableDeclaration> getBoundVars()
+    public List<VariableDeclaration> getBoundVars()
     {
         return this.boundVars;
     }

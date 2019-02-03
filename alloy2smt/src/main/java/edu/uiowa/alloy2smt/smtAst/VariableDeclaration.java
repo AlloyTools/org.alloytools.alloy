@@ -10,9 +10,9 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
-public class BoundVariableDeclaration extends Declaration
+public class VariableDeclaration extends Declaration
 {
-    public BoundVariableDeclaration(String name, Sort sort)
+    public VariableDeclaration(String name, Sort sort)
     {
         super(name, sort);
     }

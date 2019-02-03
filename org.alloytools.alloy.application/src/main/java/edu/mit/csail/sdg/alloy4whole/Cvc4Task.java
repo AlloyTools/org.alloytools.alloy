@@ -301,7 +301,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         for(FunctionDefinition function: model.getFunctionDefinitions())
         {
-            functionsMap.put(function.funcName, function);
+            functionsMap.put(function.getName(), function);
         }
 
         List<Signature> signatures = new ArrayList<>();
