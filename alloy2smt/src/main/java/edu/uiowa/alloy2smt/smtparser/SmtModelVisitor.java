@@ -30,7 +30,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 
         for (SmtParser.FunctionDefinitionContext context: ctx.functionDefinition())
         {
-            model.addFunctionDefinition((FunctionDefinition) this.visitFunctionDefinition(context));
+            model.addFunction((FunctionDefinition) this.visitFunctionDefinition(context));
         }
 
         return model;

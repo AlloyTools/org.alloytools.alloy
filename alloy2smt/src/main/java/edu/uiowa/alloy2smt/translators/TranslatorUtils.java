@@ -47,7 +47,7 @@ public class TranslatorUtils
 
         FunctionDeclaration declaration = new FunctionDeclaration(getNewSetName(), setSort);
 
-        translator.smtProgram.addFunctionDeclaration(declaration);
+        translator.smtProgram.addFunction(declaration);
 
         Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, expressions.get(expressions.size() - 1));
 

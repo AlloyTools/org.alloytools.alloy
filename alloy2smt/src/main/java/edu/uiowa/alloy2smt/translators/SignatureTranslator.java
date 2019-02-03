@@ -195,8 +195,8 @@ public class SignatureTranslator
         
         if(isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.unaryIntTup);            
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), constDecl.getConstantExpr()));
+            constDecl = new ConstantDeclaration(name, translator.unaryIntTup);
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup, constDecl.getConstantExpr()));
         }
         else
         {
@@ -220,7 +220,7 @@ public class SignatureTranslator
         if(isInt)
         {
             constDecl = new ConstantDeclaration(name, translator.unaryIntTup);            
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), constDecl.getConstantExpr()));
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup, constDecl.getConstantExpr()));
         }
         else
         {
@@ -244,7 +244,7 @@ public class SignatureTranslator
         if(isInt)
         {
             constDecl = new ConstantDeclaration(name, translator.unaryIntTup);            
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup.getName(), constDecl.getConstantExpr()));
+            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.valueOfUnaryIntTup, constDecl.getConstantExpr()));
         }
         else
         {
@@ -310,7 +310,7 @@ public class SignatureTranslator
     {
         translator.signaturesMap.put(Sig.SIGINT, translator.intUniv);
         BinaryExpression    eqExpr  = new BinaryExpression(translator.intUnivExpr, BinaryExpression.Op.EQ, translator.intUniv.getConstantExpr());
-        translator.smtProgram.addFunctionDeclaration(translator.intUniv);
+        translator.smtProgram.addFunction(translator.intUniv);
         translator.smtProgram.addAssertion(new Assertion(eqExpr));           
     }
 
@@ -321,7 +321,7 @@ public class SignatureTranslator
         if(varName != null)
         {
             declaration = new FunctionDeclaration(varName, translator.setOfUnaryAtomSort);
-            translator.smtProgram.addFunctionDeclaration(declaration);
+            translator.smtProgram.addFunction(declaration);
         }
         return declaration;
     }
@@ -332,10 +332,10 @@ public class SignatureTranslator
         if(varName != null)
         {
             declaration = new FunctionDeclaration(varName, translator.setOfUnaryIntSort);
-            translator.smtProgram.addFunctionDeclaration(declaration);
+            translator.smtProgram.addFunction(declaration);
         }
         return declaration;
-    }    
+    }
 
     public void translateSigs()
     {
@@ -345,7 +345,7 @@ public class SignatureTranslator
         this.fieldTranslator.translateFields();
         translateSigFacts();
     }
-    
+
     private void translateSigFacts()
     {
         // Translate facts on signatures
@@ -374,10 +374,9 @@ public class SignatureTranslator
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), variablesScope);
 
             translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), new BinaryExpression(member, BinaryExpression.Op.IMPLIES, bodyExpr))));
-        }        
+        }
     }
 
-    //ToDo: refactor this method
     private void translateTotalOrder(Sig ordSig, ExprList exprList, Map<String, Expression> variablesScope)
     {
         if(exprList.args.size() != 3)
@@ -394,22 +393,22 @@ public class SignatureTranslator
         String              prefix      = label.replaceFirst("/Ord", "_");
         String              mappingName = TranslatorUtils.sanitizeName(prefix + "IntMapping");
 
-        defineInjectiveMapping(mappingName, translator.atomSort, translator.intSort);
+        FunctionDeclaration mapping     = defineInjectiveMapping(mappingName, translator.atomSort, translator.intSort);
 
         Expression setExpression        = translator.exprTranslator.translateExpr(set, variablesScope);
         Expression firstExpression      = translator.exprTranslator.translateExpr(first, variablesScope);
 
         // ordering/first
-        Expression firstSet             = defineFirstElement(prefix, firstExpression, mappingName, setExpression);
+        Expression firstSet             = defineFirstElement(prefix, firstExpression, mapping, setExpression);
 
         // ordering/last
-        ConstantDeclaration lastAtom    = defineLastElement(prefix, mappingName, setExpression);
+        ConstantDeclaration lastAtom    = defineLastElement(prefix, mapping, setExpression);
 
         // Next relation
-        ConstantDeclaration ordNext     =  addOrdNext(prefix,setExpression, mappingName, ordSig, firstSet, lastAtom);
+        FunctionDeclaration ordNext     =  addOrdNext(prefix,setExpression, mapping, ordSig, firstSet, lastAtom);
 
         // prev relation
-        ConstantDeclaration ordPrev     = addOrdPrev(prefix,setExpression, mappingName, ordNext);
+        FunctionDeclaration ordPrev     = addOrdPrev(prefix, ordNext);
 
         VariableDeclaration set1   = new VariableDeclaration("s1", translator.setOfUnaryAtomSort);
         VariableDeclaration set2   = new VariableDeclaration("s2", translator.setOfUnaryAtomSort);
@@ -419,49 +418,49 @@ public class SignatureTranslator
 
         // ordering/prevs
         FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
-        translator.smtProgram.addFunctionDefinition(prevs);
+        translator.addFunction(prevs);
 
         // ordering/nexts
         FunctionDefinition nexts = getPrevsNextsDefinition(prefix, set1, ordNext, "nexts");
-        translator.smtProgram.addFunctionDefinition(nexts);
+        translator.addFunction(nexts);
 
         // ordering/lt
-        FunctionDefinition lt = getComparisonDefinition(prefix, "lt", mappingName, set1, set2, element1, element2, BinaryExpression.Op.LT);
-        translator.smtProgram.addFunctionDefinition(lt);
+        FunctionDefinition lt = getComparisonDefinition(prefix, "lt", mapping, set1, set2, element1, element2, BinaryExpression.Op.LT);
+        translator.addFunction(lt);
 
         // ordering/gt
-        FunctionDefinition gt = getComparisonDefinition(prefix, "gt", mappingName, set1, set2, element1, element2, BinaryExpression.Op.GT);
-        translator.smtProgram.addFunctionDefinition(gt);
+        FunctionDefinition gt = getComparisonDefinition(prefix, "gt", mapping, set1, set2, element1, element2, BinaryExpression.Op.GT);
+        translator.addFunction(gt);
 
         // ordering/lte
-        FunctionDefinition lte = getComparisonDefinition(prefix, "lte", mappingName, set1, set2, element1, element2, BinaryExpression.Op.LTE);
-        translator.smtProgram.addFunctionDefinition(lte);
+        FunctionDefinition lte = getComparisonDefinition(prefix, "lte", mapping, set1, set2, element1, element2, BinaryExpression.Op.LTE);
+        translator.addFunction(lte);
 
         // ordering/gte
-        FunctionDefinition gte = getComparisonDefinition(prefix, "gte", mappingName, set1, set2, element1, element2, BinaryExpression.Op.GTE);
-        translator.smtProgram.addFunctionDefinition(gte);
+        FunctionDefinition gte = getComparisonDefinition(prefix, "gte", mapping, set1, set2, element1, element2, BinaryExpression.Op.GTE);
+        translator.addFunction(gte);
 
         //ordering/larger
         FunctionDefinition larger = getLargerSmallerDefinition(prefix, "larger", set1, set2, gt);
-        translator.smtProgram.addFunctionDefinition(larger);
+        translator.addFunction(larger);
 
         //ordering/smaller
         FunctionDefinition smaller = getLargerSmallerDefinition(prefix, "smaller", set1, set2, lt);
-        translator.smtProgram.addFunctionDefinition(smaller);
+        translator.addFunction(smaller);
 
         //ordering/max
         FunctionDefinition max = getMaxMinDefinition(prefix, "max", set1, ordPrev);
-        translator.smtProgram.addFunctionDefinition(max);
+        translator.addFunction(max);
 
         //ordering/min
         FunctionDefinition min = getMaxMinDefinition(prefix, "min", set1, ordNext);
-        translator.smtProgram.addFunctionDefinition(min);
+        translator.addFunction(min);
     }
 
-    private void defineInjectiveMapping(String mappingName, Sort inputSort, Sort outputSort)
+    private FunctionDeclaration defineInjectiveMapping(String mappingName, Sort inputSort, Sort outputSort)
     {
         FunctionDeclaration mapping     = new FunctionDeclaration(mappingName, inputSort, outputSort);
-        translator.smtProgram.addFunctionDeclaration(mapping);
+        translator.addFunction(mapping);
 
         // the mapping is one-to-one(injective)
         // for all x, y (x != y and  implies f(x) != f(y))
@@ -473,9 +472,9 @@ public class SignatureTranslator
         Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, xEqualsY);
 
         Expression mappingXEqualsMappingY = new BinaryExpression(
-                new FunctionCallExpression(mappingName, x.getConstantExpr()),
+                new FunctionCallExpression(mapping, x.getConstantExpr()),
                 BinaryExpression.Op.EQ,
-                new FunctionCallExpression(mappingName, y.getConstantExpr()));
+                new FunctionCallExpression(mapping, y.getConstantExpr()));
 
         Expression not = new UnaryExpression(UnaryExpression.Op.NOT, mappingXEqualsMappingY);
 
@@ -484,19 +483,21 @@ public class SignatureTranslator
         QuantifiedExpression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x, y);
 
         translator.smtProgram.addAssertion(new Assertion(mappingName + " is injective", forAll));
+
+        return mapping;
     }
 
-    private Expression defineFirstElement(String prefix, Expression firstExpression, String mappingName, Expression setExpression)
+    private Expression defineFirstElement(String prefix, Expression firstExpression, FunctionDeclaration mapping, Expression setExpression)
     {
         final String suffix = "first";
         ConstantDeclaration firstAtom   = new ConstantDeclaration(prefix + "FirstAtom", translator.atomSort);
-        ConstantDeclaration first       = new ConstantDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+        FunctionDeclaration first       = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
 
         Expression          firstSet    = new UnaryExpression(UnaryExpression.Op.SINGLETON,
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getConstantExpr()));
 
         translator.smtProgram.addConstantDeclaration(firstAtom);
-        translator.smtProgram.addConstantDeclaration(first);
+        translator.addFunction(first);
 
         // there is only one first element
         // ordering/first = (singleton (mktuple firstAtom))
@@ -513,9 +514,9 @@ public class SignatureTranslator
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr()),
                 BinaryExpression.Op.MEMBER, setExpression);
         Expression gte = new BinaryExpression(
-                new FunctionCallExpression(mappingName, x.getConstantExpr()),
+                new FunctionCallExpression(mapping, x.getConstantExpr()),
                 BinaryExpression.Op.GTE,
-                new FunctionCallExpression(mappingName, firstAtom.getConstantExpr()));
+                new FunctionCallExpression(mapping, firstAtom.getConstantExpr()));
         Expression implies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, gte);
         Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x);
         translator.smtProgram.addAssertion(new Assertion(
@@ -524,17 +525,17 @@ public class SignatureTranslator
         return firstSet;
     }
 
-    private ConstantDeclaration defineLastElement(String prefix, String mappingName, Expression setExpression)
+    private ConstantDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, Expression setExpression)
     {
         final String suffix = "last";
         ConstantDeclaration lastAtom   = new ConstantDeclaration(prefix + "LastAtom", translator.atomSort);
-        ConstantDeclaration last       = new ConstantDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+        FunctionDeclaration last       = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
 
         Expression          lastSet    = new UnaryExpression(UnaryExpression.Op.SINGLETON,
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getConstantExpr()));
 
         translator.smtProgram.addConstantDeclaration(lastAtom);
-        translator.smtProgram.addConstantDeclaration(last);
+        translator.addFunction(last);
 
 
         // last element is a member of the set
@@ -555,9 +556,9 @@ public class SignatureTranslator
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr()),
                 BinaryExpression.Op.MEMBER, setExpression);
         Expression lte = new BinaryExpression(
-                new FunctionCallExpression(mappingName, x.getConstantExpr()),
+                new FunctionCallExpression(mapping, x.getConstantExpr()),
                 BinaryExpression.Op.LTE,
-                new FunctionCallExpression(mappingName, lastAtom.getConstantExpr()));
+                new FunctionCallExpression(mapping, lastAtom.getConstantExpr()));
         Expression implies = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, lte);
         Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x);
         translator.smtProgram.addAssertion(new Assertion(
@@ -566,7 +567,7 @@ public class SignatureTranslator
         return lastAtom;
     }
 
-    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, VariableDeclaration set, ConstantDeclaration declaration)
+    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, VariableDeclaration set, FunctionDeclaration declaration)
     {
         Expression tClosure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, declaration.getConstantExpr());
 
@@ -578,7 +579,7 @@ public class SignatureTranslator
                 difference, set);
     }
 
-    private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, ConstantDeclaration ord, String suffix)
+    private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, FunctionDeclaration ord, String suffix)
     {
         UnaryExpression tClosure = new UnaryExpression(UnaryExpression.Op.TCLOSURE, ord.getConstantExpr());
         BinaryExpression join = new BinaryExpression(set1.getConstantExpr(), BinaryExpression.Op.JOIN, tClosure);
@@ -589,7 +590,7 @@ public class SignatureTranslator
 
     private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, VariableDeclaration set1, VariableDeclaration set2, FunctionDefinition definition)
     {
-        FunctionCallExpression call = new FunctionCallExpression(definition.getName(), set1.getConstantExpr(), set2.getConstantExpr());
+        FunctionCallExpression call = new FunctionCallExpression(definition, set1.getConstantExpr(), set2.getConstantExpr());
         ITEExpression ite = new ITEExpression(call, set1.getConstantExpr(),
                 set2.getConstantExpr());
         return new FunctionDefinition(prefix + suffix,
@@ -599,12 +600,12 @@ public class SignatureTranslator
         );
     }
 
-    private ConstantDeclaration addOrdNext(String prefix, Expression setExpression, String intMapping, Sig ordSig, Expression firstSet, ConstantDeclaration lastAtom)
+    private FunctionDeclaration addOrdNext(String prefix, Expression setExpression, FunctionDeclaration intMapping, Sig ordSig, Expression firstSet, ConstantDeclaration lastAtom)
     {
         String nextMapping = prefix + "nextMapping";
 
         FunctionDeclaration mapping     = new FunctionDeclaration(nextMapping, translator.atomSort, translator.atomSort);
-        translator.smtProgram.addFunctionDeclaration(mapping);
+        translator.addFunction(mapping);
 
         VariableDeclaration x = new VariableDeclaration("_x", translator.atomSort);
         VariableDeclaration y = new VariableDeclaration("_y", translator.atomSort);
@@ -617,12 +618,12 @@ public class SignatureTranslator
                 new FunctionCallExpression(intMapping, x.getConstantExpr()),
                 BinaryExpression.Op.LT,
                 new FunctionCallExpression(intMapping,
-                        new FunctionCallExpression(nextMapping, x.getConstantExpr())));
+                        new FunctionCallExpression(mapping, x.getConstantExpr())));
 
         Expression notXEqualsLast = new UnaryExpression(UnaryExpression.Op.NOT,
                 new BinaryExpression(x.getConstantExpr(), BinaryExpression.Op.EQ, lastAtom.getConstantExpr()));
         Expression nextIsMember = new BinaryExpression(
-                TranslatorUtils.getTuple(new FunctionCallExpression(nextMapping, x.getConstantExpr())),
+                TranslatorUtils.getTuple(new FunctionCallExpression(mapping, x.getConstantExpr())),
                 BinaryExpression.Op.MEMBER, setExpression);
 
         Expression impliesNextIsMember = new BinaryExpression(notXEqualsLast, BinaryExpression.Op.IMPLIES, nextIsMember);
@@ -657,9 +658,9 @@ public class SignatureTranslator
         Expression antecedent = new BinaryExpression(notXEqualsY, BinaryExpression.Op.AND, xyMembers);
 
         Expression mappingXEqualsMappingY = new BinaryExpression(
-                new FunctionCallExpression(nextMapping, x.getConstantExpr()),
+                new FunctionCallExpression(mapping, x.getConstantExpr()),
                 BinaryExpression.Op.EQ,
-                new FunctionCallExpression(nextMapping, y.getConstantExpr()));
+                new FunctionCallExpression(mapping, y.getConstantExpr()));
 
         Expression consequent = new UnaryExpression(UnaryExpression.Op.NOT, mappingXEqualsMappingY);
 
@@ -669,8 +670,8 @@ public class SignatureTranslator
 
         translator.smtProgram.addAssertion(new Assertion(nextMapping + " is injective for members", forAll));
 
-        ConstantDeclaration ordNext = new ConstantDeclaration(prefix + "next", translator.setOfBinaryAtomSort);
-        translator.smtProgram.addConstantDeclaration(ordNext);
+        FunctionDeclaration ordNext = new FunctionDeclaration(prefix + "next", translator.setOfBinaryAtomSort);
+        translator.addFunction(ordNext);
 
         // for all x, y (x,y) in the next relation iff x, y are members and nextMapping(x) = y
         Expression xy = TranslatorUtils.getTuple(x, y);
@@ -682,7 +683,7 @@ public class SignatureTranslator
                 new FunctionCallExpression(intMapping, y.getConstantExpr()));
 
         Expression nextXEqualsY =  new BinaryExpression(
-                new FunctionCallExpression(nextMapping, x.getConstantExpr()),
+                new FunctionCallExpression(mapping, x.getConstantExpr()),
                 BinaryExpression.Op.EQ,
                 y.getConstantExpr());
 
@@ -726,23 +727,23 @@ public class SignatureTranslator
         return ordNext;
     }
 
-    private ConstantDeclaration addOrdPrev(String prefix, Expression setExpression, String mappingName, ConstantDeclaration ordNext)
+    private FunctionDeclaration addOrdPrev(String prefix, FunctionDeclaration ordNext)
     {
-        ConstantDeclaration ordPrev = new ConstantDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
+        FunctionDeclaration ordPrev = new FunctionDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
 
         UnaryExpression transpose = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, ordNext.getConstantExpr());
 
         BinaryExpression equality = new BinaryExpression(ordPrev.getConstantExpr(),
                 BinaryExpression.Op.EQ, transpose);
 
-        translator.smtProgram.addConstantDeclaration(ordPrev);
+        translator.addFunction(ordPrev);
 
         translator.smtProgram.addAssertion(new Assertion(prefix + "PrevAuxiliary", equality));
 
         return ordPrev;
     }
 
-    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, String mappingName, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, BinaryExpression.Op operator)
+    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, FunctionDeclaration mapping, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, BinaryExpression.Op operator)
     {
         QuantifiedExpression ltExpression =
                 new QuantifiedExpression
@@ -769,9 +770,9 @@ public class SignatureTranslator
                                 BinaryExpression.Op.IMPLIES,
                                 new BinaryExpression
                                 (
-                                    new FunctionCallExpression(mappingName, element1.getConstantExpr()),
+                                    new FunctionCallExpression(mapping, element1.getConstantExpr()),
                                     operator,
-                                    new FunctionCallExpression(mappingName, element1.getConstantExpr())
+                                    new FunctionCallExpression(mapping, element1.getConstantExpr())
                                 )
                             ),
                     element1, element2

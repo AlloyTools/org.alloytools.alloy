@@ -24,8 +24,8 @@ public class SampleModelTests
 
         String script = translation.translateAllCommandsWithCheckSat();
 
-        Assertions.assertTrue(script.contains("(declare-const ord_next"));
-        Assertions.assertTrue(script.contains("(declare-const ord_last"));
+        Assertions.assertTrue(script.contains("(declare-fun ord_next"));
+        Assertions.assertTrue(script.contains("(declare-fun ord_last"));
     }
 
     @Test

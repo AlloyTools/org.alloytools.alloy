@@ -48,20 +48,22 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 this.stringBuilder.append(" 0)\n");
             }
         }
-        for (FunctionDeclaration declaration : program.getFunctionDeclarations())
+        for (FunctionDeclaration declaration : program.getFunctions())
         {
-            this.visit(declaration);
+            if(declaration instanceof  FunctionDefinition)
+            {
+                this.visit((FunctionDefinition) declaration);
+            }
+            else
+            {
+                this.visit(declaration);
+            }
         }
 
         for (ConstantDeclaration declaration : program.getConstantDeclarations())
         {
             this.visit(declaration);
         }
-
-        for (FunctionDefinition funcDef : program.getFunctionDefinitions())
-        {
-            this.visit(funcDef);
-        }        
 
         for (Assertion assertion: program.getAssertions())
         {

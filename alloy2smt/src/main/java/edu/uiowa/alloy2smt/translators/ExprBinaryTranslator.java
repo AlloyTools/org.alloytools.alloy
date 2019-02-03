@@ -646,7 +646,7 @@ public class ExprBinaryTranslator
             {
                 declComparisonOps(op);
             }
-            comparisonExpr = new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op).getName(), leftExpr, rightExpr);
+            comparisonExpr = new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op), leftExpr, rightExpr);
             
             // Add auxiliary quantifiers and expressions
             if(!exprTranslator.translator.existentialBdVars.isEmpty())
@@ -702,7 +702,7 @@ public class ExprBinaryTranslator
                 break;
             default:break;
         } 
-        exprTranslator.translator.smtProgram.addFunctionDefinition(compFunc);
+        exprTranslator.translator.smtProgram.addFunction(compFunc);
         exprTranslator.translator.comparisonOps.put(op, compFunc);                
     }
     

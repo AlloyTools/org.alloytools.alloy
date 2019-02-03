@@ -168,11 +168,11 @@ public class ExprTranslator
         
         if(this.translator.funcNamesMap.containsKey(funcName))
         {
-            return new FunctionCallExpression(this.translator.funcNamesMap.get(funcName), argExprs);
+            return new FunctionCallExpression(translator.getFunctionFromAlloyName(funcName), argExprs);
         }
-        else if(this.translator.setCompFuncNameToInputsMap.containsKey(funcName))
+        else if(this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
         {
-            return translateSetCompFuncCallExpr(funcName, argExprs);
+            return translateSetComprehensionFuncCallExpr(funcName, argExprs);
         }
         else if(funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
@@ -194,17 +194,22 @@ public class ExprTranslator
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, variablesScope);
         }
-        else if(!this.translator.funcNamesMap.containsKey(funcName))
+        else if(translator.functionsMap.containsKey(TranslatorUtils.sanitizeName(funcName)))
         {
-            return new FunctionCallExpression(TranslatorUtils.sanitizeName(funcName), argExprs);            
+            FunctionDeclaration function = translator.getFunction(TranslatorUtils.sanitizeName(funcName));
+            return new FunctionCallExpression(function, argExprs);
         }
-        throw new UnsupportedOperationException(funcName);
-    }    
+        else
+        {
+            FunctionDeclaration function = translator.translateFunction(translator.nameToFuncMap.get(funcName));
+            return new FunctionCallExpression(function, argExprs);
+        }
+    }
     
-    public Expression translateSetCompFuncCallExpr(String funcName, List<Expression> argExprs)
+    public Expression translateSetComprehensionFuncCallExpr(String funcName, List<Expression> argExprs)
     {
         Map<String, Expression> letVars = new HashMap<>();
-        List<String> inputs = translator.setCompFuncNameToInputsMap.get(funcName);
+        List<String> inputs = translator.setComprehensionFuncNameToInputsMap.get(funcName);
         Expression setCompDef = translator.setCompFuncNameToDefMap.get(funcName);
         VariableDeclaration setBdVar = translator.setCompFuncNameToBdVarExprMap.get(funcName);
         
@@ -250,13 +255,13 @@ public class ExprTranslator
         Expression memberOfOp = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdIntVar1Expr, bdIntVar2Expr, bdIntVar3Expr);
 
         VariableDeclaration existentialBdVar = new VariableDeclaration("_w", translator.ternaryIntTup);
-        Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(translator.valueOfTernaryIntTup.getName(), existentialBdVar.getConstantExpr()),
+        Expression rhsExpr  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, new BinaryExpression(new FunctionCallExpression(translator.valueOfTernaryIntTup, existentialBdVar.getConstantExpr()),
                                                     BinaryExpression.Op.EQ, memberOfOp), existentialBdVar);
 //        Expression rhsExpr = new BooleanConstant(true);
         
         VariableDeclaration bdTernaryIntVar = new VariableDeclaration("_w", translator.ternaryIntTup);
         
-        Expression ternaryIntTupExpr = new FunctionCallExpression(translator.valueOfTernaryIntTup.getName(), bdTernaryIntVar.getConstantExpr());
+        Expression ternaryIntTupExpr = new FunctionCallExpression(translator.valueOfTernaryIntTup, bdTernaryIntVar.getConstantExpr());
 
         Expression lhsExpr               = null;  
         Expression lhsExprII             = null; 

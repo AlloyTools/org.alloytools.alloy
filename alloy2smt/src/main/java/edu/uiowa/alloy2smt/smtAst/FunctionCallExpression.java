@@ -15,24 +15,24 @@ import java.util.List;
 
 public class FunctionCallExpression extends Expression
 {
-    private final String            functionName;
+    private final FunctionDeclaration function;
     private final List<Expression>  arguments;
 
-    public FunctionCallExpression(String functionName, Expression ... arguments)
+    public FunctionCallExpression(FunctionDeclaration function, Expression ... arguments)
     {
-        this.functionName   = functionName;
+        this.function = function;
         this.arguments      = Arrays.asList(arguments);
     }
     
-    public FunctionCallExpression(String functionName, List<Expression> arguments)
+    public FunctionCallExpression(FunctionDeclaration function, List<Expression> arguments)
     {
-        this.functionName   = functionName;
+        this.function = function;
         this.arguments      = arguments;
     }    
 
     public String getFunctionName()
     {
-        return this.functionName;
+        return this.function.getName();
     }
 
     public List<Expression>  getArguments()
@@ -49,6 +49,6 @@ public class FunctionCallExpression extends Expression
     @Override
     public Sort getSort() throws Exception
     {
-        throw new UnsupportedOperationException("Function calls do not store yet function declarations");
+        return function.getSort();
     }
 }

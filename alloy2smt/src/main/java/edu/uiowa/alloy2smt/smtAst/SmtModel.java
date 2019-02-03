@@ -15,8 +15,8 @@ import java.util.List;
 
 public class SmtModel extends SmtAst
 {
-    protected final List<FunctionDefinition>     functionDefinitions  = new ArrayList<>();
-    protected final List<Sort>                   sorts                = new ArrayList<>();
+    protected final List<FunctionDeclaration>    functions = new ArrayList<>();
+    protected final List<Sort>                   sorts     = new ArrayList<>();
 
     public SmtModel()
     {
@@ -24,7 +24,7 @@ public class SmtModel extends SmtAst
 
     public SmtModel(SmtModel model)
     {
-        this.functionDefinitions.addAll(model.functionDefinitions);
+        this.functions.addAll(model.functions);
         this.sorts.addAll(model.sorts);
     }
 
@@ -39,11 +39,11 @@ public class SmtModel extends SmtAst
 
 
 
-    public void addFunctionDefinition(FunctionDefinition functionDefinition)
+    public void addFunction(FunctionDeclaration function)
     {
-        if(functionDefinition != null)
+        if(function != null)
         {
-            this.functionDefinitions.add(functionDefinition);
+            this.functions.add(function);
         }
     }
 
@@ -52,8 +52,9 @@ public class SmtModel extends SmtAst
         return this.sorts;
     }
 
-    public List<FunctionDefinition> getFunctionDefinitions() {
-        return this.functionDefinitions;
+    public List<FunctionDeclaration> getFunctions()
+    {
+        return this.functions;
     }
 
     @Override

@@ -86,12 +86,6 @@ public class FunctionDeclaration extends Declaration
         throw new UnsupportedOperationException();
     }
 
-    public FunctionCallExpression getCallExpr(Expression ... expressions)
-    {
-        return new FunctionCallExpression(this.getName(), expressions);
-    }
-
-
     @Override
     public void accept(SmtAstVisitor visitor)
     {

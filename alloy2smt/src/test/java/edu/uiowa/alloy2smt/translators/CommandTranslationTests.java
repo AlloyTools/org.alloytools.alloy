@@ -72,8 +72,7 @@ class CommandTranslationTests
         String command = translation.translateCommand(0);
 
         Assertions.assertEquals(
-                "(define-fun _GT ((_rel1 (Set (Tuple Int)))(_rel2 (Set (Tuple Int)))) Bool \n" +
-                        "(exists ((_x_int UnaryIntTup)(_y_int UnaryIntTup)) (and (and (= (singleton (value_of_unaryIntTup _x_int)) _rel1) (= (singleton (value_of_unaryIntTup _y_int)) _rel2)) (> ((_ tupSel 0) (value_of_unaryIntTup _x_int)) ((_ tupSel 0) (value_of_unaryIntTup _y_int))))))\n" +
+                "(declare-fun _GT ((Set (Tuple Int))(Set (Tuple Int))) Bool)\n" +
                         "; command1\n" +
                         "(assert (_GT this_A0 (union this_A1 this_A2)))\n",
                 command);

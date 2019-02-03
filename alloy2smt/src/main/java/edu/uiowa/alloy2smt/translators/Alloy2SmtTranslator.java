@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.alloy4.Env;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
@@ -79,16 +80,16 @@ public class Alloy2SmtTranslator
     Map<Sig, Expr>                                  sigFacts;    
     
     Map<String, String>                             funcNamesMap;
-    Map<String, List<String>>                       setCompFuncNameToInputsMap;
+    Map<String, List<String>> setComprehensionFuncNameToInputsMap;
     Map<String, Expression>                         setCompFuncNameToDefMap;
-    Map<String, VariableDeclaration>           setCompFuncNameToBdVarExprMap;
+    Map<String, VariableDeclaration>                setCompFuncNameToBdVarExprMap;
     Map<Sig, FunctionDeclaration>                   signaturesMap;   
-    List<VariableDeclaration>                  existentialBdVars;
-    Map<String, FunctionDefinition>                 funcDefsMap;        
+    List<VariableDeclaration>                       existentialBdVars;
+    Map<String, FunctionDeclaration>                functionsMap;
     Map<Sig.Field, FunctionDeclaration>             fieldsMap;     
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
-    Map<BinaryExpression.Op, ConstantExpression>    arithOps;  
-    
+    Map<BinaryExpression.Op, ConstantExpression>    arithOps;
+    Map<String, Func> nameToFuncMap;
 
 
     public Alloy2SmtTranslator(CompModule alloyModel)
@@ -106,7 +107,8 @@ public class Alloy2SmtTranslator
         this.arithOps               = new HashMap<>();
         this.signaturesMap          = new HashMap<>();
         this.funcNamesMap           = new HashMap<>();
-        this.funcDefsMap            = new HashMap<>();
+        this.functionsMap           = new HashMap<>();
+        this.nameToFuncMap          = new HashMap<>();
         this.fieldsMap              = new HashMap<>();
         this.sigFacts               = new HashMap<>();
         this.existentialBdVars      = new ArrayList<>();
@@ -118,11 +120,15 @@ public class Alloy2SmtTranslator
         this.smtProgram.addSort(unaryIntTup);
         this.smtProgram.addSort(binaryIntTup);
         this.smtProgram.addSort(ternaryIntTup);
-        this.smtProgram.addFunctionDeclaration(valueOfUnaryIntTup);
-        this.smtProgram.addFunctionDeclaration(valueOfBinaryIntTup);
-        this.smtProgram.addFunctionDeclaration(valueOfTernaryIntTup);
-        
-        this.setCompFuncNameToInputsMap     = new HashMap<>();
+        this.smtProgram.addFunction(valueOfUnaryIntTup);
+        this.smtProgram.addFunction(valueOfBinaryIntTup);
+        this.smtProgram.addFunction(valueOfTernaryIntTup);
+
+        this.functionsMap.put(valueOfUnaryIntTup.getName(), valueOfUnaryIntTup);
+        this.functionsMap.put(valueOfBinaryIntTup.getName(), valueOfBinaryIntTup);
+        this.functionsMap.put(valueOfTernaryIntTup.getName(), valueOfTernaryIntTup);
+
+        this.setComprehensionFuncNameToInputsMap = new HashMap<>();
         this.setCompFuncNameToDefMap        = new HashMap<>(); 
         this.setCompFuncNameToBdVarExprMap  = new HashMap<>();
         this.exprTranslator                 = new ExprTranslator(this);        
@@ -149,8 +155,8 @@ public class Alloy2SmtTranslator
         this.signaturesMap.putAll(translator.signaturesMap);
         this.funcNamesMap           = new HashMap<>();
         this.funcNamesMap.putAll(translator.funcNamesMap);
-        this.funcDefsMap            = new HashMap<>();
-        this.funcDefsMap.putAll(translator.funcDefsMap);
+        this.functionsMap = new HashMap<>();
+        this.functionsMap.putAll(translator.functionsMap);
         this.fieldsMap              = new HashMap<>();
         this.fieldsMap.putAll(translator.fieldsMap);
         this.sigFacts               = new HashMap<>();
@@ -160,13 +166,40 @@ public class Alloy2SmtTranslator
         this.funcNames              = new HashSet<>();
         this.funcNames.addAll(translator.funcNames);
 
-        this.setCompFuncNameToInputsMap     = new HashMap<>();
-        this.setCompFuncNameToInputsMap.putAll(translator.setCompFuncNameToInputsMap);
+        this.setComprehensionFuncNameToInputsMap = new HashMap<>();
+        this.setComprehensionFuncNameToInputsMap.putAll(translator.setComprehensionFuncNameToInputsMap);
         this.setCompFuncNameToDefMap        = new HashMap<>();
         this.setCompFuncNameToDefMap.putAll(translator.setCompFuncNameToDefMap);
         this.setCompFuncNameToBdVarExprMap  = new HashMap<>();
         this.setCompFuncNameToBdVarExprMap.putAll(translator.setCompFuncNameToBdVarExprMap);
         this.exprTranslator                 = new ExprTranslator(this);
+    }
+
+
+    void addFunction(FunctionDeclaration function)
+    {
+        this.functionsMap.put(function.getName(), function);
+        this.smtProgram.addFunction(function);
+    }
+
+    FunctionDeclaration getFunctionFromAlloyName(String name)
+    {
+        FunctionDeclaration function = functionsMap.get(funcNamesMap.get(name));
+        if(function == null)
+        {
+            throw new RuntimeException("Function " + name + " is not found.");
+        }
+        return function;
+    }
+
+    FunctionDeclaration getFunction(String functionName)
+    {
+        FunctionDeclaration function = functionsMap.get(functionName);
+        if(function == null)
+        {
+            throw new RuntimeException("Function " + functionName + " is not found.");
+        }
+        return function;
     }
 
     public SmtProgram translate()
@@ -181,9 +214,9 @@ public class Alloy2SmtTranslator
 
     private void translateSpecialFunctions()
     {
-        this.smtProgram.addFunctionDeclaration(this.atomNone);
-        this.smtProgram.addFunctionDeclaration(this.atomUniv);
-        this.smtProgram.addFunctionDeclaration(this.atomIden);
+        this.smtProgram.addFunction(this.atomNone);
+        this.smtProgram.addFunction(this.atomUniv);
+        this.smtProgram.addFunction(this.atomIden);
     }
 
     private void translateSpecialAssertions()
@@ -239,6 +272,7 @@ public class Alloy2SmtTranslator
             for (Func func : module.getAllFunc())
             {
                 funcNames.add(func.label);
+                this.nameToFuncMap.put(func.label, func);
             }
 
             // translate functions in ordering module differently
@@ -257,7 +291,14 @@ public class Alloy2SmtTranslator
                     continue;
                 }
 
-                translateFunc(f);
+                if(isSetComprehension(f.getBody()))
+                {
+                    translateSetComprehensionFunction(f);
+                }
+                else
+                {
+                    translateFunction(f);
+                }
                 sortFunctionDependency(f.label, f.getBody(), dependency);
             }
         }
@@ -269,12 +310,12 @@ public class Alloy2SmtTranslator
         {
             if(!this.setCompFuncNameToDefMap.containsKey(funcOrder.get(i)))
             {
-                this.smtProgram.addFunctionDefinition(this.funcDefsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
+                this.smtProgram.addFunction(this.functionsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
             }            
         }
     }
 
-    private void translateSetCompFunc(Func f)
+    private void translateSetComprehensionFunction(Func f)
     {
         String funcName = f.label;
         Map<String, Expression> variablesScope = new HashMap<>();
@@ -340,19 +381,23 @@ public class Alloy2SmtTranslator
 
         this.setCompFuncNameToBdVarExprMap.put(funcName, setBdVar);
         this.setCompFuncNameToDefMap.put(funcName, forallExpr); 
-        this.setCompFuncNameToInputsMap.put(funcName, inputVarNames);                       
+        this.setComprehensionFuncNameToInputsMap.put(funcName, inputVarNames);
     }    
          
     
-    private void translateFunc(Func f)
-    { 
-        if(isSetComp(f.getBody()))
+    public FunctionDefinition translateFunction(Func f)
+    {
+        if(f == null)
         {
-           translateSetCompFunc(f);
-           return; 
+            //ToDo: fix the null issue with  examples/case_studies/firewire.als
+            throw new RuntimeException("Null argument");
         }
-        
-        Sort    returnSort  = new BoolSort();        
+        if(isSetComprehension(f.getBody()))
+        {
+           throw new RuntimeException("The body of function " + f.label + " is a set comprehension. It should be translated using method Alloy2SmtTranslator.translateSetComprehensionFunction");
+        }
+
+        Sort    returnSort  = new BoolSort();
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
         List<VariableDeclaration>      bdVars          = new ArrayList<>();
         Map<String, Expression>             variablesScope  = new HashMap<>();
@@ -381,7 +426,8 @@ public class Alloy2SmtTranslator
         
         FunctionDefinition funcDef = new FunctionDefinition(funcName, bdVars, returnSort, 
                                                             this.exprTranslator.translateExpr(f.getBody(), variablesScope));
-        this.funcDefsMap.put(funcName, funcDef);
+        this.functionsMap.put(funcName, funcDef);
+        return funcDef;
     }    
     
     private int getArityofExpr(Expr expr)
@@ -393,17 +439,17 @@ public class Alloy2SmtTranslator
     {
         this.smtProgram.addAssertion(new Assertion(factName, this.exprTranslator.translateExpr(factExpr)));
     }
-    
+
     private void translateAssertion(String assertionName, Expr assertionExpr)
     {
         Expression expression = this.exprTranslator.translateExpr(assertionExpr);
         this.smtProgram.addAssertion(new Assertion(assertionName, new UnaryExpression(UnaryExpression.Op.NOT, expression)));
-    }    
-    
-    
-    
-    
-    
+    }
+
+
+
+
+
 
     /**
      * This is to sort out the function dependencies so that 
@@ -553,7 +599,7 @@ public class Alloy2SmtTranslator
     }
     
     
-    private boolean isSetComp(Expr expr)
+    private boolean isSetComprehension(Expr expr)
     {
         if(expr instanceof ExprUnary)
         {

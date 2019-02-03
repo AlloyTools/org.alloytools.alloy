@@ -25,9 +25,9 @@ public class ExprUnaryTranslator
     public ExprUnaryTranslator(ExprTranslator exprTranslator)
     {
         this.exprTranslator         = exprTranslator;
-        this.valueOfUnaryIntTup     = exprTranslator.translator.valueOfUnaryIntTup.getName();
-        this.valueOfBinaryIntTup    = exprTranslator.translator.valueOfBinaryIntTup.getName();
-        this.valueOfTernaryIntTup   = exprTranslator.translator.valueOfTernaryIntTup.getName();
+        this.valueOfUnaryIntTup     = getTranslator().valueOfUnaryIntTup.getName();
+        this.valueOfBinaryIntTup    = getTranslator().valueOfBinaryIntTup.getName();
+        this.valueOfTernaryIntTup   = getTranslator().valueOfTernaryIntTup.getName();
     }
 
     Expression translateExprUnary(ExprUnary exprUnary, Map<String, Expression> variablesScope)
@@ -81,7 +81,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
-        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, exprTranslator.translator.atomIden.getConstantExpr());
+        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIden.getConstantExpr());
         return reflexiveClosure;
     }
 
@@ -103,9 +103,9 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {                    
-                    case "univ": return exprTranslator.translator.atomUniv.getConstantExpr();
-                    case "iden": return exprTranslator.translator.atomIden.getConstantExpr();
-                    case "none": return exprTranslator.translator.atomNone.getConstantExpr();
+                    case "univ": return getTranslator().atomUniv.getConstantExpr();
+                    case "iden": return getTranslator().atomIden.getConstantExpr();
+                    case "none": return getTranslator().atomNone.getConstantExpr();
                     case "Int": throw new UnsupportedOperationException("We do not support the built-in signature Int used in facts!");
                     default:
                         throw new UnsupportedOperationException();
@@ -113,13 +113,13 @@ public class ExprUnaryTranslator
             }
             else
             {
-                return exprTranslator.translator.signaturesMap.get(((Sig) exprUnary.sub)).getConstantExpr();
+                return getTranslator().signaturesMap.get(((Sig) exprUnary.sub)).getConstantExpr();
             }
         }
 
         if(exprUnary.sub instanceof Sig.Field)
         {
-            return exprTranslator.translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getConstantExpr();
+            return getTranslator().fieldsMap.get(((Sig.Field) exprUnary.sub)).getConstantExpr();
         }
 
         if(exprUnary.sub instanceof ExprVar)
@@ -132,11 +132,11 @@ public class ExprUnaryTranslator
                 
                 if(constExpr instanceof ConstantExpression)
                 {
-                    if(((ConstantExpression)constExpr).getDeclaration().getSort() == exprTranslator.translator.atomSort)
+                    if(((ConstantExpression)constExpr).getDeclaration().getSort() == getTranslator().atomSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     }                    
-                    else if(((ConstantExpression)constExpr).getDeclaration().getSort() == exprTranslator.translator.intSort)
+                    else if(((ConstantExpression)constExpr).getDeclaration().getSort() == getTranslator().intSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     } 
@@ -160,12 +160,12 @@ public class ExprUnaryTranslator
     {
         Expression finalExpr = expr;
         
-        if(exprTranslator.translator.auxExpr != null)
+        if(getTranslator().auxExpr != null)
         {
-            finalExpr = new BinaryExpression(exprTranslator.translator.auxExpr, BinaryExpression.Op.AND, finalExpr);            
-            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, finalExpr);
-            exprTranslator.translator.auxExpr = null;
-            exprTranslator.translator.existentialBdVars.clear();            
+            finalExpr = new BinaryExpression(getTranslator().auxExpr, BinaryExpression.Op.AND, finalExpr);            
+            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, getTranslator().existentialBdVars, finalExpr);
+            getTranslator().auxExpr = null;
+            getTranslator().existentialBdVars.clear();            
             
         }
         return finalExpr;
@@ -205,12 +205,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, exprTranslator.translator.unaryIntTup);
+                bdVar = new VariableDeclaration(name, getTranslator().unaryIntTup);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVar = new VariableDeclaration(name, getTranslator().atomSort);
                 bdVarExpr = bdVar.getConstantExpr();
             }
             bdVars.add(bdVar);
@@ -244,12 +244,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, exprTranslator.translator.unaryIntTup);
+                bdVar = new VariableDeclaration(name, getTranslator().unaryIntTup);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVar = new VariableDeclaration(name, getTranslator().atomSort);
                 bdVarExpr = bdVar.getConstantExpr();
             }
             bdVars.add(bdVar);
@@ -287,12 +287,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, exprTranslator.translator.unaryIntTup);
+                bdVar = new VariableDeclaration(name, getTranslator().unaryIntTup);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, exprTranslator.translator.atomSort);
+                bdVar = new VariableDeclaration(name, getTranslator().atomSort);
                 bdVarExpr = bdVar.getConstantExpr();
             }
             bdVars.add(bdVar);
@@ -390,17 +390,22 @@ public class ExprUnaryTranslator
     
     public Expression mkUnaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(this.valueOfUnaryIntTup, expr);
+        return new FunctionCallExpression(getTranslator().getFunction(valueOfUnaryIntTup), expr);
     }
-    
+
+    private Alloy2SmtTranslator getTranslator() 
+    {
+        return exprTranslator.translator;
+    }
+
     public Expression mkBinaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(this.valueOfBinaryIntTup, expr);
+        return new FunctionCallExpression(getTranslator().getFunction(valueOfBinaryIntTup), expr);
     }
 
     public Expression mkTernaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(this.valueOfTernaryIntTup, expr);
+        return new FunctionCallExpression(getTranslator().getFunction(valueOfTernaryIntTup), expr);
     }    
    
     
@@ -443,14 +448,14 @@ public class ExprUnaryTranslator
         Expression finalExpr = bodyExpr;
         if(isBinaryIntField(exprUnary))
         {            
-            VariableDeclaration bdBinIntTup = new VariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.binaryIntTup);
+            VariableDeclaration bdBinIntTup = new VariableDeclaration(TranslatorUtils.getNewName(), getTranslator().binaryIntTup);
             Expression eq = new BinaryExpression(mkBinaryIntTupValue(bdBinIntTup.getConstantExpr()), BinaryExpression.Op.EQ, bdVarTupExpr);
             QuantifiedExpression quantEq = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, eq, bdBinIntTup);            
             finalExpr = new BinaryExpression(bodyExpr, BinaryExpression.Op.AND, quantEq);
         }
         else if(isTernaryIntField(exprUnary))
         {            
-            VariableDeclaration bdTernaryIntTup = new VariableDeclaration(TranslatorUtils.getNewName(), exprTranslator.translator.ternaryIntTup);
+            VariableDeclaration bdTernaryIntTup = new VariableDeclaration(TranslatorUtils.getNewName(), getTranslator().ternaryIntTup);
             Expression eq = new BinaryExpression(mkTernaryIntTupValue(bdTernaryIntTup.getConstantExpr()), BinaryExpression.Op.EQ, bdVarTupExpr);
             QuantifiedExpression quantEq = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, eq, bdTernaryIntTup);
             finalExpr = new BinaryExpression(bodyExpr, BinaryExpression.Op.AND, quantEq);

@@ -78,8 +78,8 @@ public class Translation
         // store old declarations and definitions
         List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtProgram.getSorts());
         List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getConstantDeclarations());
-        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctionDeclarations());
-        List<FunctionDefinition>  functionDefinitions   = new ArrayList<>(commandTranslator.smtProgram.getFunctionDefinitions());
+        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctions());
+
 
         Assertion           assertion   =  commandTranslator.translateCommand(commandIndex);
 
@@ -95,14 +95,10 @@ public class Translation
                 .collect(Collectors.toList());
 
         List<FunctionDeclaration> newFunctionDeclarations = commandTranslator.smtProgram
-                .getFunctionDeclarations().stream()
+                .getFunctions().stream()
                 .filter(((Predicate<FunctionDeclaration>) new HashSet<>(functionDeclarations)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<FunctionDefinition> newFunctionDefinitions = commandTranslator.smtProgram
-                .getFunctionDefinitions().stream()
-                .filter(((Predicate<FunctionDefinition>) new HashSet<>(functionDefinitions)::contains).negate())
-                .collect(Collectors.toList());
 
         // get the translation for new declarations and definitions
         StringBuilder stringBuilder = new StringBuilder();
@@ -124,13 +120,6 @@ public class Translation
         {
             SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(declaration);
-            stringBuilder.append(printer.getSmtLib());
-        }
-
-        for (FunctionDefinition definition : newFunctionDefinitions)
-        {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
-            printer.visit(definition);
             stringBuilder.append(printer.getSmtLib());
         }
 

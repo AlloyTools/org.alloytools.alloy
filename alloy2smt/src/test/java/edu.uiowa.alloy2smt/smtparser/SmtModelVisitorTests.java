@@ -49,9 +49,9 @@ class SmtModelVisitorTests
 
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(4, smtModel.getSorts().size());
-        Assertions.assertEquals(6, smtModel.getFunctionDefinitions().size());
+        Assertions.assertEquals(6, smtModel.getFunctions().size());
 
-        FunctionDefinition atomUniv = smtModel.getFunctionDefinitions().stream()
+        FunctionDefinition atomUniv = (FunctionDefinition) smtModel.getFunctions().stream()
                 .filter(function -> function.getName().equals("atomUniv")).findFirst().get();
 
         Assertions.assertTrue(atomUniv.expression != null);
@@ -84,7 +84,7 @@ class SmtModelVisitorTests
 
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(4, smtModel.getSorts().size());
-        Assertions.assertEquals(12, smtModel.getFunctionDefinitions().size());
+        Assertions.assertEquals(12, smtModel.getFunctions().size());
     }
 
     @Test
@@ -112,7 +112,7 @@ class SmtModelVisitorTests
                         ")";
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(4, smtModel.getSorts().size());
-        Assertions.assertEquals(9, smtModel.getFunctionDefinitions().size());
+        Assertions.assertEquals(9, smtModel.getFunctions().size());
     }
 
     @Test
@@ -142,7 +142,7 @@ class SmtModelVisitorTests
 
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(4, smtModel.getSorts().size());
-        Assertions.assertEquals(9, smtModel.getFunctionDefinitions().size());
+        Assertions.assertEquals(9, smtModel.getFunctions().size());
     }
 
     @Test
@@ -155,7 +155,7 @@ class SmtModelVisitorTests
 
         SmtModel smtModel = parseModel(model);
         Assertions.assertEquals(0, smtModel.getSorts().size());
-        Assertions.assertEquals(1, smtModel.getFunctionDefinitions().size());
+        Assertions.assertEquals(1, smtModel.getFunctions().size());
     }
 
     @Test
@@ -196,7 +196,7 @@ class SmtModelVisitorTests
                         ")";
 
         SmtModel smtModel = parseModel(model);
-        FunctionDefinition atomUniv = smtModel.getFunctionDefinitions()
+        FunctionDefinition atomUniv = (FunctionDefinition) smtModel.getFunctions()
                 .stream()
                 .filter(function -> function.getName().equals("atomUniv"))
                 .findFirst().get();

@@ -13,7 +13,6 @@ import java.util.List;
 
 public class SmtProgram extends SmtModel
 {
-    private final List<FunctionDeclaration>    functionDeclarations = new ArrayList<>();
     private final List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
     private final List<Assertion>              assertions           = new ArrayList<>();
 
@@ -24,17 +23,8 @@ public class SmtProgram extends SmtModel
     public SmtProgram(SmtProgram program)
     {
         super(program);
-        this.functionDeclarations.addAll(program.functionDeclarations);
         this.constantDeclarations.addAll(program.constantDeclarations);
         this.assertions.addAll(program.assertions);
-    }
-
-    public void addFunctionDeclaration(FunctionDeclaration declaration)
-    {
-        if(declaration != null)
-        {
-            this.functionDeclarations.add(declaration);
-        }
     }
 
     public void addConstantDeclaration(ConstantDeclaration constantDeclaration)
@@ -51,11 +41,6 @@ public class SmtProgram extends SmtModel
         {
             this.assertions.add(assertion);
         }
-    }
-
-    public List<FunctionDeclaration> getFunctionDeclarations()
-    {
-        return this.functionDeclarations;
     }
 
     public List<ConstantDeclaration> getConstantDeclarations()

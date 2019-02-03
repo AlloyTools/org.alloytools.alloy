@@ -3,6 +3,7 @@ package edu.mit.csail.sdg.alloy4whole;
 import edu.mit.csail.sdg.alloy4.*;
 
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Func;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
@@ -299,9 +300,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         Map<String, FunctionDefinition> functionsMap = new HashMap<>();
 
-        for(FunctionDefinition function: model.getFunctionDefinitions())
+        for(FunctionDeclaration function: model.getFunctions())
         {
-            functionsMap.put(function.getName(), function);
+            functionsMap.put(function.getName(), (FunctionDefinition) function);
         }
 
         List<Signature> signatures = new ArrayList<>();
