@@ -26,6 +26,8 @@ public class SignatureTranslator
     private final Alloy2SmtTranslator translator;
     private final FieldTranslator fieldTranslator;
 
+    private List<Map.Entry<Sig, Expr>> translatedSigFacts = new ArrayList<>();
+
     public SignatureTranslator(Alloy2SmtTranslator translator)
     {
         this.translator         = translator;
@@ -359,6 +361,7 @@ public class SignatureTranslator
                     ((ExprList) ((ExprUnary) expr).sub).op == ExprList.Op.TOTALORDER)
             {
                 translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), variablesScope);
+                this.translatedSigFacts.add(sigFact);
             }
         }
     }
@@ -369,6 +372,12 @@ public class SignatureTranslator
         // Translate facts on signatures
         for(Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
         {
+            // ignore already translated signature facts
+            if(this.translatedSigFacts.contains(sigFact))
+            {
+                continue;
+            }
+
             String bdVarName = "this";
             Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
             VariableDeclaration bdVar = new VariableDeclaration(bdVarName, translator.atomSort);
@@ -377,17 +386,6 @@ public class SignatureTranslator
             Map<String, Expression> variablesScope = new HashMap<>();
 
             variablesScope.put(bdVarName, new ConstantExpression(new FunctionDeclaration(bdVarName, translator.atomSort)));
-
-            Expr       expr     = sigFact.getValue();
-
-            // handle total order operator differently
-            if(expr instanceof ExprUnary &&
-                    ((ExprUnary) expr).sub instanceof ExprList &&
-                    ((ExprList) ((ExprUnary) expr).sub).op == ExprList.Op.TOTALORDER)
-            {
-                translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), variablesScope);
-                continue;
-            }
 
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), variablesScope);
 
