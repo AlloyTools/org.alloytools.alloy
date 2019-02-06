@@ -343,10 +343,28 @@ public class SignatureTranslator
         translateSignatures();
         translateSignatureHierarchies();
         this.fieldTranslator.translateFields();
-        translateSigFacts();
     }
 
-    private void translateSigFacts()
+    void translateSpecialSigFacts()
+    {
+        // Translate facts on signatures
+        for (Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
+        {
+            Map<String, Expression> variablesScope = new HashMap<>();
+            Expr expr = sigFact.getValue();
+
+            // handle total order operator differently
+            if (expr instanceof ExprUnary &&
+                    ((ExprUnary) expr).sub instanceof ExprList &&
+                    ((ExprList) ((ExprUnary) expr).sub).op == ExprList.Op.TOTALORDER)
+            {
+                translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), variablesScope);
+            }
+        }
+    }
+
+
+    void translateSigFacts()
     {
         // Translate facts on signatures
         for(Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())

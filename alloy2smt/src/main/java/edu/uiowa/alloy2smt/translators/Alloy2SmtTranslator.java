@@ -206,7 +206,9 @@ public class Alloy2SmtTranslator
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
+        this.signatureTranslator.translateSpecialSigFacts();
         translateFunctionsAndPredicates();
+        this.signatureTranslator.translateSigFacts();
         translateFacts();
         translateSpecialAssertions();
         return this.smtProgram;
