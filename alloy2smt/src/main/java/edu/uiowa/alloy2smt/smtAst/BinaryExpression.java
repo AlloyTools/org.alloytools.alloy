@@ -23,8 +23,17 @@ public class BinaryExpression extends Expression
     public BinaryExpression(Expression lhsExpr, Op op, Expression rhsExpr) 
     {
         this.op         = op;
+        if(lhsExpr == null)
+        {
+            throw new RuntimeException("Left expression is null");
+        }
         this.lhsExpr    = lhsExpr;
+        if(rhsExpr == null)
+        {
+            throw new RuntimeException("Right expression is null");
+        }
         this.rhsExpr    = rhsExpr;
+
     }
     
     public Expression getLhsExpr() 

@@ -39,6 +39,7 @@ public class ExprUnaryTranslator
             case SOME       : return translateSome(exprUnary, variablesScope);
             case ONE        : return translateOne(exprUnary, variablesScope);
             case ONEOF      : return translateOneOf(exprUnary, variablesScope);
+            case LONEOF     : return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
             case LONE       : return translateLone(exprUnary, variablesScope);
             case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
             case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);

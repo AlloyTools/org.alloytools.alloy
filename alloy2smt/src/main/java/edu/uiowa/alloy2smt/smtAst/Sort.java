@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 
 public class Sort extends Expression
 {
@@ -29,7 +30,9 @@ public class Sort extends Expression
     @Override
     public String toString()
     {
-        return this.name;
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+        printer.visit(this);
+        return printer.getSmtLib();
     }
 
     @Override
