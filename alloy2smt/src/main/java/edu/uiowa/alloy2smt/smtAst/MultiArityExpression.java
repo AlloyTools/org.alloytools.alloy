@@ -14,6 +14,7 @@ import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class MultiArityExpression extends Expression
@@ -25,12 +26,16 @@ public class MultiArityExpression extends Expression
     {
         this.op     = op;
         this.exprs  = exprs;
+
+        if(this.exprs.stream().anyMatch(Objects::isNull))
+        {
+            throw new RuntimeException("One of the expression is null");
+        }
     }
     
     public MultiArityExpression(Op op, Expression ... exprs)
     {
-        this.op     = op;
-        this.exprs  = Arrays.asList(exprs);
+        this(op,  Arrays.asList(exprs));
     }    
     
     public Op getOp()

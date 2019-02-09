@@ -9,7 +9,7 @@ import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
 /**
  *
- * @author Paul Meng
+ * @author Mudathir Mohamed, Paul Meng
  */
 public class ITEExpression extends Expression
 {
@@ -19,7 +19,19 @@ public class ITEExpression extends Expression
     private final Op                          op = Op.ITE;
     
     public ITEExpression(Expression condExpr, Expression thenExpr, Expression elseExpr)
-    {        
+    {
+        if(condExpr == null)
+        {
+            throw new RuntimeException("Condition expression of the ite is null");
+        }
+        if(thenExpr == null)
+        {
+            throw new RuntimeException("Then expression of the ite is null");
+        }
+        if(elseExpr == null)
+        {
+            throw new RuntimeException("Else expression of the ite is null");
+        }
         this.condExpr = condExpr;
         this.thenExpr = thenExpr;
         this.elseExpr = elseExpr;
