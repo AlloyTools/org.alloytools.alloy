@@ -104,13 +104,13 @@ public class ExprTranslator
         {
             case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
             case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
-            case DISJOINT   : return translateExprListToDisjBinaryExpressions(UnaryExpression.Op.DISTINCT, exprList, variablesScope);
+            case DISJOINT   : return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, variablesScope);
             case TOTALORDER : throw new UnsupportedOperationException();// total order should be handled before coming here
             default         : throw new UnsupportedOperationException();
         }
     }
 
-    Expression translateExprListToDisjBinaryExpressions(UnaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
+    Expression translateExprListToDisjBinaryExpressions(MultiArityExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
     {        
         List<Expression> exprs = new ArrayList<>();
         
@@ -656,7 +656,7 @@ public class ExprTranslator
         {
             Expression fstExpr = varNameToExpr.getValue();
             Expression sndExpr = sndBdVarNameToTupleExpr.get(varNameToExpr.getKey());
-            distExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.DISTINCT, fstExpr, sndExpr));
+            distExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, new MultiArityExpression(MultiArityExpression.Op.DISTINCT, fstExpr, sndExpr));
         }
         distExpr = new BinaryExpression(distExpr, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, thdPartBodyExpr));
         QuantifiedExpression sndForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndBdVars, distExpr);
@@ -704,7 +704,7 @@ public class ExprTranslator
         {
             Expression fstExpr = varNameToExpr.getValue();
             Expression sndExpr = sndBdVarNameToTupleExpr.get(varNameToExpr.getKey());
-            distExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.DISTINCT, fstExpr, sndExpr));
+            distExpr = new BinaryExpression(distExpr, BinaryExpression.Op.AND, new MultiArityExpression(MultiArityExpression.Op.DISTINCT, fstExpr, sndExpr));
         }
         distExpr = new BinaryExpression(distExpr, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, thdPartBodyExpr));
         QuantifiedExpression sndForall = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, sndBdVars, distExpr);

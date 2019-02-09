@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 
 public class UnaryExpressionTests
 {
+    Expression booleanConstant = new BooleanConstant(true);
     @Test
     void booleanConstant() throws Exception
     {
-        Expression expression = new BooleanConstant(true);
-        Assertions.assertEquals(Alloy2SmtTranslator.boolSort, expression.getSort());
+        Assertions.assertEquals(Alloy2SmtTranslator.boolSort, booleanConstant.getSort());
     }
 
     @Test
@@ -31,7 +31,7 @@ public class UnaryExpressionTests
     @Test
     void or() throws Exception
     {
-        Expression expression = new BinaryExpression(null, BinaryExpression.Op.AND, null);
+        Expression expression = new BinaryExpression(booleanConstant, BinaryExpression.Op.AND, booleanConstant);
         Assertions.assertEquals(Alloy2SmtTranslator.boolSort, expression.getSort());
     }
 }

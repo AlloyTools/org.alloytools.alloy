@@ -18,38 +18,16 @@ public class UnaryExpression extends Expression
 {    
     private final Op op;
     private final Expression expr;
-    private final List<Expression> exprs;
     
     public UnaryExpression(Op op, Expression expr)
     {
         this.op     = op;
+        if(expr == null)
+        {
+            throw new RuntimeException("Expression is null");
+        }
         this.expr   = expr;
-        this.exprs  = null;
     }
-    
-    public UnaryExpression(Op op, List<Expression> exprs)
-    {
-        this.op     = op;
-        this.expr   = null;
-        this.exprs  = new ArrayList<>();
-        for(Expression e : exprs)
-        {
-            this.exprs.add(e);
-        }
-        
-    }  
-    
-    public UnaryExpression(Op op, Expression ... exprs)
-    {
-        this.op     = op;
-        this.expr   = null;
-        this.exprs  = new ArrayList<>();
-        for(Expression e : exprs)
-        {
-            this.exprs.add(e);
-        }
-        
-    }      
 
     public Op getOP() 
     {
@@ -61,31 +39,6 @@ public class UnaryExpression extends Expression
         return this.expr;
     }
     
-    public List<Expression> getExpressions() 
-    {
-        return this.exprs;
-    }   
-    
-    @Override
-    public String toString()
-    {
-        String exprStr = "";
-        
-        if(this.expr != null)
-        {
-            exprStr = this.expr.toString();
-        }
-        if(this.exprs != null)
-        {
-            for(Expression e : this.exprs)
-            {
-                exprStr += e.toString() + " ";
-            }
-        }
-        
-        return this.op.toString() + " " + exprStr;
-    }    
-    
     @Override
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
@@ -94,7 +47,6 @@ public class UnaryExpression extends Expression
     public enum Op 
     {	        
         NOT ("not"),
-        DISTINCT ("distinct"), //ToDo: clean up this
         COMPLEMENT ("complement"),
         TRANSPOSE ("transpose"),
         TCLOSURE("tclosure"),
@@ -114,7 +66,6 @@ public class UnaryExpression extends Expression
             switch (operator)
             {
                 case"not"           : return NOT;
-                case "distinct"     : return DISTINCT;
                 case "complement"   : return COMPLEMENT;
                 case "transpose"    : return TRANSPOSE;
                 case "tclosure"     : return TCLOSURE;
@@ -138,8 +89,6 @@ public class UnaryExpression extends Expression
     {
         switch (op) {
             case NOT:
-                return Alloy2SmtTranslator.boolSort;
-            case DISTINCT:
                 return Alloy2SmtTranslator.boolSort;
             case COMPLEMENT:
                 return expr.getSort();
