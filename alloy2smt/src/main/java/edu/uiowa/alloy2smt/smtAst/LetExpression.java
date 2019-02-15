@@ -70,7 +70,7 @@ public class LetExpression extends Expression
     }
 
     @Override
-    public Sort getSort() throws Exception
+    public Sort getSort()
     {
         //ToDo: review this case
         return expr.getSort();

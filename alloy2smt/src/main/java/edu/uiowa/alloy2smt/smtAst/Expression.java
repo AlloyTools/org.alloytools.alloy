@@ -20,5 +20,5 @@ public abstract class Expression extends SmtAst
         return printer.getSmtLib();
     }
 
-    public abstract Sort getSort() throws Exception;
+    public abstract Sort getSort();
 }

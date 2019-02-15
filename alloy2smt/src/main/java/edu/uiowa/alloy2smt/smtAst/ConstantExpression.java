@@ -35,7 +35,7 @@ public class ConstantExpression extends Expression
     }
 
     @Override
-    public Sort getSort() throws Exception
+    public Sort getSort()
     {
         return declaration.getSort();
     }

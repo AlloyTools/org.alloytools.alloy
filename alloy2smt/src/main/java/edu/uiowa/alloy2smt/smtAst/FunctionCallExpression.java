@@ -47,7 +47,7 @@ public class FunctionCallExpression extends Expression
     }
 
     @Override
-    public Sort getSort() throws Exception
+    public Sort getSort()
     {
         return function.getSort();
     }

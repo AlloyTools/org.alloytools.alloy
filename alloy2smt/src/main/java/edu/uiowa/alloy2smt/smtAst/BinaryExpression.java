@@ -126,7 +126,7 @@ public class BinaryExpression extends Expression
     }
 
     @Override
-    public Sort getSort() throws Exception
+    public Sort getSort()
     {
         switch (op)
         {

@@ -43,7 +43,7 @@ public class IntConstant extends Expression
     }
 
     @Override
-    public Sort getSort() throws Exception
+    public Sort getSort()
     {
         return Alloy2SmtTranslator.intSort;
     }

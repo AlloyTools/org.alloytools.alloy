@@ -396,9 +396,9 @@ public class ExprTranslator
 
     Expression translateExprQt(ExprQt exprQt, Map<String, Expression> variablesScope)
     {
-        Map<String, List<VariableDeclaration>>         bdVarNameTobdAtomVars   = new HashMap<>();
-        Map<String, Expression>                             bdVarNameToTupleExpr    = new HashMap<>();
-        LinkedHashMap<String, Expression>                   bdVarNameToExprMap      = new LinkedHashMap<>();        
+        Map<String, List<VariableDeclaration>> quantifiedSingleton2AtomMap = new HashMap<>();
+        Map<String, Expression> quantifiedVariable2ExpressionMap = new HashMap<>();
+        LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap = new LinkedHashMap<>();
         
         for (Decl decl: exprQt.decls)
         {
@@ -439,8 +439,8 @@ public class ExprTranslator
                         bdAtomExprs.add(bdAtomVarExpr);
                     }
                     bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdAtomExprs);
-                    bdVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
-                    bdVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);
+                    quantifiedVariable2ExpressionMap.put(sanBdVarName, bdVarTupleExpr);
+                    quantifiedSingleton2AtomMap.put(sanBdVarName, bdAtomVars);
                 }
                 else
                 {
@@ -453,12 +453,12 @@ public class ExprTranslator
                     {
                         bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdVarTupleExpr);
                     }                    
-                    bdVarNameToTupleExpr.put(sanBdVarName, bdVarTupleExpr);
-                    bdVarNameTobdAtomVars.put(sanBdVarName, bdAtomVars);                    
+                    quantifiedVariable2ExpressionMap.put(sanBdVarName, bdVarTupleExpr);
+                    quantifiedSingleton2AtomMap.put(sanBdVarName, bdAtomVars);
                 }
 
                 variablesScope.put(name.label, mkSingletonOutOfTuple(bdVarTupleExpr));
-                bdVarNameToExprMap.put(sanBdVarName, declExpr);
+                quantifiedVariable2SignatureMap.put(sanBdVarName, declExpr);
             }
         }
         
@@ -467,9 +467,9 @@ public class ExprTranslator
 
         switch (exprQt.op)
         {
-            case ALL    : return  translateAllQuantifier(bdVarNameToExprMap, bdVarNameTobdAtomVars, bdVarNameToTupleExpr, bodyExpr);
-            case SOME   : return  translateSomeQuantifier(bdVarNameToExprMap, bdVarNameTobdAtomVars, bdVarNameToTupleExpr, bodyExpr);
-            case NO     : return  translateNoQuantifier(bdVarNameToExprMap, bdVarNameTobdAtomVars, bdVarNameToTupleExpr, bodyExpr);
+            case ALL    : return  translateAllQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr);
+            case SOME   : return  translateSomeQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr);
+            case NO     : return  translateNoQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr);
             case LONE   : {
                 Map<String, List<VariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
                 Map<String, Expression>                             sndBdVarNameToTupleExpr     = new HashMap<>();
@@ -477,8 +477,8 @@ public class ExprTranslator
                 
                 Expression sndBodyExpr = createSndSetBdvarsAndExpr(sndBdVarNameToExprMap, sndBdVarNameTobdAtomVars, sndBdVarNameToTupleExpr, variablesScope, exprQt);
               
-                return  translateLoneQuantifier(bdVarNameToExprMap, sndBdVarNameToExprMap, bdVarNameTobdAtomVars, sndBdVarNameTobdAtomVars, 
-                                                bdVarNameToTupleExpr, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
+                return  translateLoneQuantifier(quantifiedVariable2SignatureMap, sndBdVarNameToExprMap, quantifiedSingleton2AtomMap, sndBdVarNameTobdAtomVars,
+                                                quantifiedVariable2ExpressionMap, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
             }
             case ONE    : {
                 Map<String, List<VariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
@@ -487,8 +487,8 @@ public class ExprTranslator
                 
                 Expression sndBodyExpr = createSndSetBdvarsAndExpr(sndBdVarNameToExprMap, sndBdVarNameTobdAtomVars, sndBdVarNameToTupleExpr, variablesScope, exprQt);
                            
-                return  translateOneQuantifier(bdVarNameToExprMap, sndBdVarNameToExprMap, bdVarNameTobdAtomVars, sndBdVarNameTobdAtomVars, 
-                                               bdVarNameToTupleExpr, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
+                return  translateOneQuantifier(quantifiedVariable2SignatureMap, sndBdVarNameToExprMap, quantifiedSingleton2AtomMap, sndBdVarNameTobdAtomVars,
+                                               quantifiedVariable2ExpressionMap, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
             }
             case COMPREHENSION :
             {
@@ -618,7 +618,7 @@ public class ExprTranslator
     }
     
     // (all e: R|not P) or (some e : R | P and all e2 : R | not(e = e2) => not P)
-    private Expression translateLoneQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
+    private Expression translateLoneQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
                                                Map<String, List<VariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<VariableDeclaration>> sndBdVarNameTobdAtomVars,
                                                Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr,
                                                Expression bodyExpr, Expression sndBodyExpr)
@@ -633,7 +633,7 @@ public class ExprTranslator
         {
             fstBdVars.addAll(bdVars);
         }
-        Expression fstMembership = getMembershipConstraints(bdVarToExprMap, bdVarNameToTupleExpr);
+        Expression fstMembership = getConstraints(quantifiedVariable2SignatureMap, bdVarNameToTupleExpr);
         Expression fstBodyExpr = new BinaryExpression(fstMembership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, bodyExpr));
         QuantifiedExpression fstQuantExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, fstBdVars, fstBodyExpr);
         
@@ -650,7 +650,7 @@ public class ExprTranslator
         }
         
         // all e2 : R | not(e1 = e2) => not P
-        Expression distExpr = getMembershipConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr);
+        Expression distExpr = getConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr);
         
         for(Map.Entry<String, Expression> varNameToExpr : bdVarNameToTupleExpr.entrySet())
         {
@@ -667,7 +667,7 @@ public class ExprTranslator
     }   
     
     // (some e : R | P and all e2 : R | not(e = e2) => not P)
-    private Expression translateOneQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
+    private Expression translateOneQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
                                               Map<String, List<VariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<VariableDeclaration>> sndBdVarNameTobdAtomVars,
                                               Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr,
                                               Expression bodyExpr, Expression sndBodyExpr)
@@ -683,7 +683,7 @@ public class ExprTranslator
         {
             fstBdVars.addAll(bdVars);
         }
-        Expression fstMembership = getMembershipConstraints(bdVarToExprMap, bdVarNameToTupleExpr);
+        Expression fstMembership = getConstraints(quantifiedVariable2SignatureMap, bdVarNameToTupleExpr);
 
         // some e1 : R | P
         Expression sndExistExpr = new BinaryExpression(fstMembership, BinaryExpression.Op.AND, sndPartBodyExpr);
@@ -698,7 +698,7 @@ public class ExprTranslator
         }
         
         // all e2 : R | not(e1 = e2) => not P
-        Expression distExpr = getMembershipConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr);
+        Expression distExpr = getConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr);
         
         for(Map.Entry<String, Expression> varNameToExpr : bdVarNameToTupleExpr.entrySet())
         {
@@ -714,10 +714,10 @@ public class ExprTranslator
         return existFormula;
     }       
     
-    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        Expression membership = getMembershipConstraints(bdVarToExprMap, bdTupVarNameToTupleExpr);
+        Expression membership = getConstraints(quantifiedVariable2SignatureMap, bdTupVarNameToTupleExpr);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, bodyExpr));
         for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
@@ -727,26 +727,35 @@ public class ExprTranslator
         return quantifiedExpression;     
     }
     
-    private Expression getMembershipConstraints(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, Expression> bdTupVarNameToTupleExpr)
+    private Expression getConstraints(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, Expression> quantifiedVariable2ExpressionMap)
     {
-        Expression membership = new BooleanConstant(true);
+        Expression constraint = new BooleanConstant(true);
         
-        for(Map.Entry<String, Expression> bdVarToExprEntry : bdVarToExprMap.entrySet())
+        for(Map.Entry<String, Expression> entry : quantifiedVariable2SignatureMap.entrySet())
         {
-            String      bdVarName   = bdVarToExprEntry.getKey();
-            Expression  parentExpr  = bdVarToExprEntry.getValue();
-            Expression  tupMember   = bdTupVarNameToTupleExpr.get(bdVarName);
-            
-            membership = new BinaryExpression(membership, BinaryExpression.Op.AND, 
-                                new BinaryExpression(tupMember, BinaryExpression.Op.MEMBER, parentExpr));
+            String      name            = entry.getKey();
+            Expression  setExpression   = entry.getValue();
+            Expression  quantifiedVariableExpression   = quantifiedVariable2ExpressionMap.get(name);
+
+            // add constraint (member (mkTuple x) A) for x: A
+            if(quantifiedVariableExpression.getSort() instanceof TupleSort)
+            {
+                constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND,
+                        new BinaryExpression(quantifiedVariableExpression, BinaryExpression.Op.MEMBER, setExpression));
+            }
+            else // add constraint (subset x A) for x: set A (or lone A, some A)
+            {
+                constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND,
+                        new BinaryExpression(quantifiedVariableExpression, BinaryExpression.Op.SUBSET, setExpression));
+            }
         }
-        return membership;
+        return constraint;
     }
 
-    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        Expression membership = getMembershipConstraints(bdVarToExprMap, bdTupVarNameToTupleExpr);
+        Expression membership = getConstraints(quantifiedVariable2SignatureMap, bdTupVarNameToTupleExpr);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, bodyExpr);
         for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
@@ -756,12 +765,12 @@ public class ExprTranslator
         return quantifiedExpression;
     }
 
-    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<String, Expression> bdVarToExprMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> quantifiedSingleton2AtomMap, Map<String, Expression> quantifiedVariable2ExpressionMap, Expression bodyExpr)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        Expression membership = getMembershipConstraints(bdVarToExprMap, bdTupVarNameToTupleExpr);
+        Expression membership = getConstraints(quantifiedVariable2SignatureMap, quantifiedVariable2ExpressionMap);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.AND, bodyExpr);
-        for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
+        for(List<VariableDeclaration> vars : quantifiedSingleton2AtomMap.values())
         {
             bdVars.addAll(vars);
         }        
