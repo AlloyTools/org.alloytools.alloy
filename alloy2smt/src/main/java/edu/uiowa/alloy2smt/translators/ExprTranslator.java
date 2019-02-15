@@ -397,6 +397,8 @@ public class ExprTranslator
         Map<String, List<VariableDeclaration>> quantifiedSingleton2AtomMap = new HashMap<>();
         Map<String, Expression> quantifiedVariable2ExpressionMap = new HashMap<>();
         LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap = new LinkedHashMap<>();
+
+        Expression multiplicityConstraint = new BooleanConstant(true);
         
         for (Decl decl: exprQt.decls)
         {
@@ -406,17 +408,47 @@ public class ExprTranslator
             if( decl.expr instanceof ExprUnary &&
                     ((ExprUnary) decl.expr).op != ExprUnary.Op.ONEOF)
             {
+                Sort sort = declSorts.get(0).getSort();
                 declSorts = declSorts.stream()
-                        .map(sort -> new SetSort(new TupleSort(sort)))
+                        .map(s -> new SetSort(new TupleSort(s)))
                         .collect(Collectors.toList());
 
                 String name = TranslatorUtils.sanitizeName(decl.get().label);
                 VariableDeclaration variable = createVariable(declSorts.get(0), name);
                 //ToDo: refactor this for set case
-                quantifiedSingleton2AtomMap.put(name, Collections.singletonList(variable));
+                quantifiedSingleton2AtomMap.put(name, new ArrayList<>(Collections.singletonList(variable)));
                 variablesScope.put(decl.get().label, variable.getConstantExpr());
                 quantifiedVariable2SignatureMap.put(decl.get().label, declExpr);
                 quantifiedVariable2ExpressionMap.put(name, variable.getConstantExpr());
+
+                switch (((ExprUnary) decl.expr).op)
+                {
+                    case SOMEOF:
+                    {
+                        multiplicityConstraint = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
+                            new UnaryExpression(UnaryExpression.Op.EMPTYSET, variable.getSort())
+                            ));
+                    } break;
+                    case ONEOF:
+                    {
+                        VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
+                        quantifiedSingleton2AtomMap.get(name).add(multiplicityVariable);
+                        multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
+                                new UnaryExpression(UnaryExpression.Op.SINGLETON,
+                                        new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
+                        );
+                    } break;
+                    case LONEOF:
+                    {
+                        VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
+
+                        quantifiedSingleton2AtomMap.get(name).add(multiplicityVariable);
+                        multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.SUBSET,
+                                new UnaryExpression(UnaryExpression.Op.SINGLETON,
+                                        new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
+                        );
+                    } break;
+                }
             }
             else
             {
@@ -473,9 +505,9 @@ public class ExprTranslator
 
         switch (exprQt.op)
         {
-            case ALL    : return  translateAllQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr);
-            case SOME   : return  translateSomeQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr);
-            case NO     : return  translateNoQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr);
+            case ALL    : return  translateAllQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr, multiplicityConstraint);
+            case SOME   : return  translateSomeQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr, multiplicityConstraint);
+            case NO     : return  translateNoQuantifier(quantifiedVariable2SignatureMap, quantifiedSingleton2AtomMap, quantifiedVariable2ExpressionMap, bodyExpr, multiplicityConstraint);
             case LONE   : {
                 Map<String, List<VariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
                 Map<String, Expression>                             sndBdVarNameToTupleExpr     = new HashMap<>();
@@ -484,7 +516,7 @@ public class ExprTranslator
                 Expression sndBodyExpr = createSndSetBdvarsAndExpr(sndBdVarNameToExprMap, sndBdVarNameTobdAtomVars, sndBdVarNameToTupleExpr, variablesScope, exprQt);
               
                 return  translateLoneQuantifier(quantifiedVariable2SignatureMap, sndBdVarNameToExprMap, quantifiedSingleton2AtomMap, sndBdVarNameTobdAtomVars,
-                                                quantifiedVariable2ExpressionMap, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
+                                                quantifiedVariable2ExpressionMap, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr, multiplicityConstraint);
             }
             case ONE    : {
                 Map<String, List<VariableDeclaration>>         sndBdVarNameTobdAtomVars    = new HashMap<>();
@@ -494,7 +526,7 @@ public class ExprTranslator
                 Expression sndBodyExpr = createSndSetBdvarsAndExpr(sndBdVarNameToExprMap, sndBdVarNameTobdAtomVars, sndBdVarNameToTupleExpr, variablesScope, exprQt);
                            
                 return  translateOneQuantifier(quantifiedVariable2SignatureMap, sndBdVarNameToExprMap, quantifiedSingleton2AtomMap, sndBdVarNameTobdAtomVars,
-                                               quantifiedVariable2ExpressionMap, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr);
+                                               quantifiedVariable2ExpressionMap, sndBdVarNameToTupleExpr, bodyExpr, sndBodyExpr, multiplicityConstraint);
             }
             case COMPREHENSION :
             {
@@ -627,7 +659,7 @@ public class ExprTranslator
     private Expression translateLoneQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
                                                Map<String, List<VariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<VariableDeclaration>> sndBdVarNameTobdAtomVars,
                                                Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr,
-                                               Expression bodyExpr, Expression sndBodyExpr)
+                                               Expression bodyExpr, Expression sndBodyExpr, Expression multiplicityConstraint)
     {
         Expression fstPartBodyExpr = bodyExpr;
         Expression sndPartBodyExpr = bodyExpr;
@@ -639,7 +671,7 @@ public class ExprTranslator
         {
             fstBdVars.addAll(bdVars);
         }
-        Expression fstMembership = getConstraints(quantifiedVariable2SignatureMap, bdVarNameToTupleExpr);
+        Expression fstMembership = getConstraints(quantifiedVariable2SignatureMap, bdVarNameToTupleExpr, multiplicityConstraint);
         Expression fstBodyExpr = new BinaryExpression(fstMembership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, bodyExpr));
         QuantifiedExpression fstQuantExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, fstBdVars, fstBodyExpr);
         
@@ -656,7 +688,7 @@ public class ExprTranslator
         }
         
         // all e2 : R | not(e1 = e2) => not P
-        Expression distExpr = getConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr);
+        Expression distExpr = getConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr, multiplicityConstraint);
         
         for(Map.Entry<String, Expression> varNameToExpr : bdVarNameToTupleExpr.entrySet())
         {
@@ -676,7 +708,8 @@ public class ExprTranslator
     private Expression translateOneQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, LinkedHashMap<String, Expression> sndBdVarToExprMap,
                                               Map<String, List<VariableDeclaration>> bdVarNameTobdAtomVars, Map<String, List<VariableDeclaration>> sndBdVarNameTobdAtomVars,
                                               Map<String, Expression> bdVarNameToTupleExpr, Map<String, Expression> sndBdVarNameToTupleExpr,
-                                              Expression bodyExpr, Expression sndBodyExpr)
+                                              Expression bodyExpr, Expression sndBodyExpr,
+                                              Expression multiplicityConstraint)
     {
         Expression fstPartBodyExpr = bodyExpr;
         Expression sndPartBodyExpr = bodyExpr;
@@ -689,7 +722,7 @@ public class ExprTranslator
         {
             fstBdVars.addAll(bdVars);
         }
-        Expression fstMembership = getConstraints(quantifiedVariable2SignatureMap, bdVarNameToTupleExpr);
+        Expression fstMembership = getConstraints(quantifiedVariable2SignatureMap, bdVarNameToTupleExpr, multiplicityConstraint);
 
         // some e1 : R | P
         Expression sndExistExpr = new BinaryExpression(fstMembership, BinaryExpression.Op.AND, sndPartBodyExpr);
@@ -704,7 +737,7 @@ public class ExprTranslator
         }
         
         // all e2 : R | not(e1 = e2) => not P
-        Expression distExpr = getConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr);
+        Expression distExpr = getConstraints(sndBdVarToExprMap, sndBdVarNameToTupleExpr, multiplicityConstraint);
         
         for(Map.Entry<String, Expression> varNameToExpr : bdVarNameToTupleExpr.entrySet())
         {
@@ -720,10 +753,11 @@ public class ExprTranslator
         return existFormula;
     }       
     
-    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateNoQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr,
+                                                       Expression multiplicityConstraint)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        Expression membership = getConstraints(quantifiedVariable2SignatureMap, bdTupVarNameToTupleExpr);
+        Expression membership = getConstraints(quantifiedVariable2SignatureMap, bdTupVarNameToTupleExpr, multiplicityConstraint);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, new UnaryExpression(UnaryExpression.Op.NOT, bodyExpr));
         for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
@@ -733,7 +767,7 @@ public class ExprTranslator
         return quantifiedExpression;     
     }
     
-    private Expression getConstraints(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, Expression> quantifiedVariable2ExpressionMap)
+    private Expression getConstraints(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, Expression> quantifiedVariable2ExpressionMap, Expression multiplicityConstraint)
     {
         Expression constraint = new BooleanConstant(true);
         
@@ -753,15 +787,18 @@ public class ExprTranslator
             {
                 constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND,
                         new BinaryExpression(quantifiedVariableExpression, BinaryExpression.Op.SUBSET, setExpression));
+
             }
         }
+        constraint = new BinaryExpression(multiplicityConstraint, BinaryExpression.Op.AND, constraint);
         return constraint;
     }
 
-    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr)
+    private QuantifiedExpression translateAllQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> bdTupVarNameTobdAtomVars, Map<String, Expression> bdTupVarNameToTupleExpr, Expression bodyExpr,
+                                                        Expression multiplicityConstraint)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        Expression membership = getConstraints(quantifiedVariable2SignatureMap, bdTupVarNameToTupleExpr);
+        Expression membership = getConstraints(quantifiedVariable2SignatureMap, bdTupVarNameToTupleExpr, multiplicityConstraint);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.IMPLIES, bodyExpr);
         for(List<VariableDeclaration> vars : bdTupVarNameTobdAtomVars.values())
         {
@@ -771,10 +808,10 @@ public class ExprTranslator
         return quantifiedExpression;
     }
 
-    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> quantifiedSingleton2AtomMap, Map<String, Expression> quantifiedVariable2ExpressionMap, Expression bodyExpr)
+    private QuantifiedExpression translateSomeQuantifier(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, List<VariableDeclaration>> quantifiedSingleton2AtomMap, Map<String, Expression> quantifiedVariable2ExpressionMap, Expression bodyExpr, Expression multiplicityConstraint)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        Expression membership = getConstraints(quantifiedVariable2SignatureMap, quantifiedVariable2ExpressionMap);
+        Expression membership = getConstraints(quantifiedVariable2SignatureMap, quantifiedVariable2ExpressionMap, multiplicityConstraint);
         bodyExpr = new BinaryExpression(membership, BinaryExpression.Op.AND, bodyExpr);
         for(List<VariableDeclaration> vars : quantifiedSingleton2AtomMap.values())
         {
