@@ -11,13 +11,11 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.uiowa.alloy2smt.smtAst.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ExprTranslator
 {
@@ -403,62 +401,70 @@ public class ExprTranslator
         for (Decl decl: exprQt.decls)
         {
             Expression declExpr     = getDeclarationExpr(decl, variablesScope);
-            List<Sort> declSorts    = getExprSorts(decl.expr);            
-            
-            for (ExprHasName name: decl.names)
-            {
-                Sort    declExprSort    = declSorts.get(0);
-                int     arity           = decl.expr.type().arity();
-                String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
-                
-                VariableDeclaration bdVarDecl = getBdVar(declExprSort, sanBdVarName);
-                Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
-                List<VariableDeclaration>  bdAtomVars    = new ArrayList<>();
-                
-                if(arity > 1)
-                {
-                    List<Expression> bdAtomExprs   = new ArrayList<>();
-                    
-                    for(int i = 0; i < arity; i++)
-                    {
-                        Expression bdAtomVarExpr;
-                        String varName = sanBdVarName+"_"+i;
-                        VariableDeclaration bdAtomVar;
-                                                
-                        if(declSorts.get(i) instanceof IntSort)
-                        {
-                            bdAtomVar = new VariableDeclaration(varName, translator.unaryIntTup);
-                            bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
-                        }
-                        else
-                        {
-                            bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
-                            bdAtomVarExpr = bdAtomVar.getConstantExpr();
-                        } 
-                        bdAtomVars.add(bdAtomVar);
-                        bdAtomExprs.add(bdAtomVarExpr);
-                    }
-                    bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdAtomExprs);
-                    quantifiedVariable2ExpressionMap.put(sanBdVarName, bdVarTupleExpr);
-                    quantifiedSingleton2AtomMap.put(sanBdVarName, bdAtomVars);
-                }
-                else
-                {
-                    bdAtomVars.add(bdVarDecl);
-                    if((declExprSort instanceof IntSort))
-                    {
-                        bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getConstantExpr());
-                    }
-                    else
-                    {
-                        bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdVarTupleExpr);
-                    }                    
-                    quantifiedVariable2ExpressionMap.put(sanBdVarName, bdVarTupleExpr);
-                    quantifiedSingleton2AtomMap.put(sanBdVarName, bdAtomVars);
-                }
+            List<Sort> declSorts    = getExprSorts(decl.expr);
 
-                variablesScope.put(name.label, mkSingletonOutOfTuple(bdVarTupleExpr));
-                quantifiedVariable2SignatureMap.put(sanBdVarName, declExpr);
+            if( decl.expr instanceof ExprUnary &&
+                    ((ExprUnary) decl.expr).op != ExprUnary.Op.ONEOF)
+            {
+                declSorts = declSorts.stream()
+                        .map(sort -> new SetSort(new TupleSort(sort)))
+                        .collect(Collectors.toList());
+
+                String name = TranslatorUtils.sanitizeName(decl.get().label);
+                VariableDeclaration variable = createVariable(declSorts.get(0), name);
+                //ToDo: refactor this for set case
+                quantifiedSingleton2AtomMap.put(name, Collections.singletonList(variable));
+                variablesScope.put(decl.get().label, variable.getConstantExpr());
+                quantifiedVariable2SignatureMap.put(decl.get().label, declExpr);
+                quantifiedVariable2ExpressionMap.put(name, variable.getConstantExpr());
+            }
+            else
+            {
+                for (ExprHasName name : decl.names)
+                {
+                    Sort declExprSort = declSorts.get(0);
+                    int arity = decl.expr.type().arity();
+                    String sanBdVarName = TranslatorUtils.sanitizeName(name.label);
+
+                    VariableDeclaration bdVarDecl = createVariable(declExprSort, sanBdVarName);
+                    Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
+                    List<VariableDeclaration> bdAtomVars = new ArrayList<>();
+
+                    if (arity > 1) {
+                        List<Expression> bdAtomExprs = new ArrayList<>();
+
+                        for (int i = 0; i < arity; i++) {
+                            Expression bdAtomVarExpr;
+                            String varName = sanBdVarName + "_" + i;
+                            VariableDeclaration bdAtomVar;
+
+                            if (declSorts.get(i) instanceof IntSort) {
+                                bdAtomVar = new VariableDeclaration(varName, translator.unaryIntTup);
+                                bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
+                            } else {
+                                bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
+                                bdAtomVarExpr = bdAtomVar.getConstantExpr();
+                            }
+                            bdAtomVars.add(bdAtomVar);
+                            bdAtomExprs.add(bdAtomVarExpr);
+                        }
+                        bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdAtomExprs);
+                        quantifiedVariable2ExpressionMap.put(sanBdVarName, bdVarTupleExpr);
+                        quantifiedSingleton2AtomMap.put(sanBdVarName, bdAtomVars);
+                    } else {
+                        bdAtomVars.add(bdVarDecl);
+                        if ((declExprSort instanceof IntSort)) {
+                            bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getConstantExpr());
+                        } else {
+                            bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdVarTupleExpr);
+                        }
+                        quantifiedVariable2ExpressionMap.put(sanBdVarName, bdVarTupleExpr);
+                        quantifiedSingleton2AtomMap.put(sanBdVarName, bdAtomVars);
+                    }
+
+                    variablesScope.put(name.label, mkSingletonOutOfTuple(bdVarTupleExpr));
+                    quantifiedVariable2SignatureMap.put(sanBdVarName, declExpr);
+                }
             }
         }
         
@@ -564,7 +570,7 @@ public class ExprTranslator
                 int     arity           = decl.expr.type().arity();
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
                 
-                VariableDeclaration bdVarDecl = getBdVar(declExprSort, sanBdVarName);
+                VariableDeclaration bdVarDecl = createVariable(declExprSort, sanBdVarName);
                 Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
                 List<VariableDeclaration>  bdAtomVars    = new ArrayList<>();
                 
@@ -821,14 +827,14 @@ public class ExprTranslator
         return bdVars;
     }
     
-    VariableDeclaration getBdVar(Sort sort, String name)
+    VariableDeclaration createVariable(Sort sort, String name)
     {
         if(sort instanceof IntSort)
         {
             return new VariableDeclaration(name, translator.unaryIntTup);
         }
         return new VariableDeclaration(name, sort);
-    }    
+    }
 
     List<Sort> getExprSorts(Expr expr)
     {

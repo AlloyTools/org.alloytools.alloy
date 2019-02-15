@@ -668,8 +668,8 @@ public class ExprBinaryTranslator
     {
         VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);
         VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
-        VariableDeclaration bdIntAtomVar1       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_x_int");
-        VariableDeclaration bdIntAtomVar2       = exprTranslator.getBdVar(exprTranslator.translator.intSort, "_y_int");
+        VariableDeclaration bdIntAtomVar1       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_x_int");
+        VariableDeclaration bdIntAtomVar2       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_y_int");
         Expression                  unaryIntTup1        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar1.getConstantExpr());
         Expression                  unaryIntTup2        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar2.getConstantExpr());
         
