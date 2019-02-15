@@ -61,13 +61,13 @@ class MultiplicityTests
     @Test
     public void setSetDeclaration()
     {
-        String alloy =  "sig A {} fact f {some x: set A | lone x and no x}";
+        String alloy =  "sig A {} fact f {some x: set A | no x}";
 
         Translation translation = Utils.translate(alloy);
 
         String script = translation.getSmtScript();
 
         Assertions.assertTrue(script.contains("; f\n" +
-                "(assert (exists ((x (Set (Tuple Atom)))) (and (and true (subset x this_A)) (and (exists ((_x1 Atom)) (subset x (singleton (mkTuple _x1)))) (= x (as emptyset (Set (Tuple Atom))))))))\n"));
+                "(assert (exists ((x (Set (Tuple Atom)))) (and (and true (and true (subset x this_A))) (= x (as emptyset (Set (Tuple Atom)))))))\n"));
     }
 }
