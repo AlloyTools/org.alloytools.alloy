@@ -75,6 +75,11 @@ public class AlloyLanguageServerUtil {
 		return filename.replace(Util.jarPrefix(), AlloyAppUtil.alloyHome() + fs);
 	}
 
+	/**
+	 * Return .getLeft() of the Either object, or throw .getRight()
+	 * @return .getLeft() of the Either object if it isLeft()
+	 * @throws TErr
+	 */
 	public static <TRes,TErr extends Exception> TRes getResult(Either<TRes,TErr> val) throws TErr{
 		if (val.isRight()) throw val.getRight();
 		return val.getLeft();

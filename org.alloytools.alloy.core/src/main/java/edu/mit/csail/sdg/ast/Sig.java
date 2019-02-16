@@ -20,6 +20,8 @@ import static edu.mit.csail.sdg.alloy4.TableView.clean;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.alloytools.util.table.Table;
 
@@ -1021,10 +1023,15 @@ public abstract class Sig extends Expr implements Clause {
             sb.append("subset ");
 
         sb.append(clean(label));
-        if(! realFields.isEmpty()) sb.append(":\n");
-        for (Field f : realFields) {
-            sb.append(clean(f.label)).append(" : ")
-              .append(clean(type.join(f.type).toString())).append("\n");
+        if(! realFields.isEmpty()){
+            sb.append(" {\n");
+
+            sb.append(StreamSupport.stream(realFields.spliterator(), false)
+            .map(f -> " " + clean(f.label) + " : " +
+                      clean(type.join(f.type).toString()))
+            .collect(Collectors.joining(",\n")));
+
+            sb.append("\n}");
         }
 
         return sb.toString();

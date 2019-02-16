@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.alloytools.util.table.Table;
 
@@ -350,17 +351,15 @@ public final class Func extends Expr implements Clause {
 
         sb.append(clean(label));
 
-        if (decls.size() > 0 || !isPred) {
-            sb.append(":\n");
-
-            for (Decl decl : decls) {
-                for (Expr e : decl.names) {
-                    sb.append(e.toString()).append(" : ").append(decl.expr.type.toString() + "\n");
-                }
-            }
-            if (!isPred) {
-                sb.append("⟶ ").append(returnDecl.type.toString());
-            }
+        if (decls.size() > 0 ) {
+            sb.append(" [\n");
+            sb.append(decls.stream()
+                      .flatMap(decl -> decl.names.stream().map(e -> " " + e + " : " + decl.expr.type))
+                      .collect(Collectors.joining(",\n")));
+            sb.append("\n]");
+        }
+        if (!isPred) {
+            sb.append(" ⟶ ").append(returnDecl.type.toString());
         }
         return sb.toString();
     }

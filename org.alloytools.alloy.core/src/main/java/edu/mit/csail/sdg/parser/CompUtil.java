@@ -452,4 +452,10 @@ public final class CompUtil {
         module.addDefaultCommand();
         return module;
     }
+
+    public static CompModule nullModule() {
+        CompModule res = new CompModule(null, "", "");
+
+        return res;
+    }
 }

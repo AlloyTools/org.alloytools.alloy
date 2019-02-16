@@ -18,8 +18,10 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
 
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -286,9 +288,16 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		if(uri.equals(cachedCompModuleForFileUri_Uri)){
 			return getResult(cachedCompModuleForFileUri);
 		}
-
+		
 		try {
 			String path = fileUriToPath(uri);
+			
+			// Try to return a nullModule object for non-AlloyMarkdown files.
+			// Not a big deal if the file has not been cached
+			String contents = fileContents.get(uri);
+			if (contents != null && !isAlloyFile(path, contents)) {
+				return CompUtil.nullModule();
+			}
 			
 			cachedCompModuleForFileUri = Either.forLeft(CompUtil.parseEverything_fromFile(null, fileContentsPathBased(), path, 2));
 			
@@ -654,7 +663,6 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			DocumentLink link = new DocumentLink();
 			link.setRange(createRangeFromPos(command.commandKeyword.pos));
 			List<Object> args = vsCommand.getArguments();
-			new com.google.gson.JsonObject();
 			Gson gson = new Gson();
 			try {
 				link.setTarget("command:" + vsCommand.getCommand() + "?" + 
@@ -693,10 +701,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 		Position position = new Position(line, character);
 		Pos pos = positionToPos(position);
-
 		CompModule module = CompUtil.parseOneModule(fileContents.get(uri));
 		ConstList<edu.mit.csail.sdg.ast.Command> commands = module.getAllCommands();
-
 		edu.mit.csail.sdg.ast.Command command = commands.stream()
 				.filter(comm -> comm.pos().y == pos.y && comm.pos.x == pos.x).findFirst().orElse(null);
 		if (command != null || ind == -1) {
@@ -1655,9 +1661,27 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		File[] directoryListing = new File(dir).listFiles();
 		return Arrays.stream(directoryListing)
 				.filter(child -> child.isFile()
-						&& FilenameUtils.isExtension(child.getAbsolutePath(), new String[] { "als" }))
+						&& (FilenameUtils.isExtension(child.getAbsolutePath(), new String[] { "als" }) || 
+							isAlloyMarkdownFile(child.getAbsolutePath())))
 				.collect(Collectors.toList());
-
+	}
+	
+	static boolean isAlloyMarkdownFile(String filename) {
+		if (!FilenameUtils.isExtension(filename, new String[] { "md" })) return false;
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(filename))){
+			return "---".equals(br.readLine());
+		} catch(IOException ex) {
+			return false;
+		}
+	}
+	
+	static boolean isAlloyFile(String filename, String contents) {
+		if (FilenameUtils.isExtension(filename, new String[] { "als" })) return true;
+		
+		if(FilenameUtils.isExtension(filename, new String[] { "md" }) && contents.startsWith("---")) return true;
+		
+		return false;
 	}
 
 	
