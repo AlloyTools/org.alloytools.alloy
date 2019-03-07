@@ -9,7 +9,12 @@
 -testpath: \
 	osgi.enroute.junit.wrapper, \
 	osgi.enroute.hamcrest.wrapper, \
-    org.sat4j.core
+    org.sat4j.core, \
+    org.alloytools.kodkod.nativesat.amd64-linux, \
+    org.alloytools.kodkod.nativesat.util, \
+    org.alloytools.kodkod.nativesat.x86-linux, \
+    org.alloytools.kodkod.nativesat.x86-mac, \
+    org.alloytools.kodkod.nativesat.x86-windows
 	
 Private-Package: \
 	edu.mit.csail.sdg.alloy4graph,\
