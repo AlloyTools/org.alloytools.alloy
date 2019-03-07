@@ -351,53 +351,58 @@ public final class A4Solution {
         solver.options().setNoOverflow(opt.noOverflow);
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
-        if (opt.solver.external() != null) {
-            String ext = opt.solver.external();
-            if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
-                ext = opt.solverDirectory + File.separatorChar + ext;
-            try {
-                File tmp = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
-                tmp.deleteOnExit();
-                solver.options().setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), opt.solver.options()));
-                // solver.options().setSolver(SATFactory.externalFactory(ext,
-                // tmp.getAbsolutePath(), opt.solver.options()));
-            } catch (IOException ex) {
-                throw new ErrorFatal("Cannot create temporary directory.", ex);
-            }
-        } else if (opt.solver.equals(A4Options.SatSolver.LingelingJNI)) {
-            solver.options().setSolver(SATFactory.Lingeling);
-        } else if (opt.solver.equals(A4Options.SatSolver.PLingelingJNI)) {
-            solver.options().setSolver(SATFactory.plingeling(4, null));
-        } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
-            solver.options().setSolver(SATFactory.Glucose);
-        } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
-            solver.options().setSolver(SATFactory.CryptoMiniSat);
-        } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {
-            solver.options().setSolver(SATFactory.MiniSat);
-        } else if (opt.solver.equals(A4Options.SatSolver.MiniSatProverJNI)) {
-            sym = 20;
-            solver.options().setSolver(SATFactory.MiniSatProver);
-            solver.options().setLogTranslation(2);
-            solver.options().setCoreGranularity(opt.coreGranularity);
+
+        if (opt.a4Helper != null) {
+            opt.a4Helper.setupSolver(this);
         } else {
-            solver.options().setSolver(SATFactory.DefaultSAT4J); // Even for
-                                                                // "KK" and
-                                                                // "CNF", we
-                                                                // choose
-                                                                // SAT4J
-                                                                // here;
-                                                                // later,
-                                                                // just
-                                                                // before
-                                                                // solving,
-                                                                // we'll
-                                                                // change it
-                                                                // to a
-                                                                // Write2CNF
-                                                                // solver
+            if (opt.solver.external() != null) {
+                String ext = opt.solver.external();
+                if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
+                    ext = opt.solverDirectory + File.separatorChar + ext;
+                try {
+                    File tmp = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
+                    tmp.deleteOnExit();
+                    solver.options().setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), opt.solver.options()));
+                    // solver.options().setSolver(SATFactory.externalFactory(ext,
+                    // tmp.getAbsolutePath(), opt.solver.options()));
+                } catch (IOException ex) {
+                    throw new ErrorFatal("Cannot create temporary directory.", ex);
+                }
+            } else if (opt.solver.equals(A4Options.SatSolver.LingelingJNI)) {
+                solver.options().setSolver(SATFactory.Lingeling);
+            } else if (opt.solver.equals(A4Options.SatSolver.PLingelingJNI)) {
+                solver.options().setSolver(SATFactory.plingeling(4, null));
+            } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
+                solver.options().setSolver(SATFactory.Glucose);
+            } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
+                solver.options().setSolver(SATFactory.CryptoMiniSat);
+            } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {
+                solver.options().setSolver(SATFactory.MiniSat);
+            } else if (opt.solver.equals(A4Options.SatSolver.MiniSatProverJNI)) {
+                sym = 20;
+                solver.options().setSolver(SATFactory.MiniSatProver);
+                solver.options().setLogTranslation(2);
+                solver.options().setCoreGranularity(opt.coreGranularity);
+            } else {
+                solver.options().setSolver(SATFactory.DefaultSAT4J); // Even for
+                                                                    // "KK" and
+                                                                    // "CNF", we
+                                                                    // choose
+                                                                    // SAT4J
+                                                                    // here;
+                                                                    // later,
+                                                                    // just
+                                                                    // before
+                                                                    // solving,
+                                                                    // we'll
+                                                                    // change it
+                                                                    // to a
+                                                                    // Write2CNF
+                                                                    // solver
+            }
+            solver.options().setSymmetryBreaking(sym);
+            solver.options().setSkolemDepth(opt.skolemDepth);
         }
-        solver.options().setSymmetryBreaking(sym);
-        solver.options().setSkolemDepth(opt.skolemDepth);
         solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
         solver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
     }
@@ -820,7 +825,7 @@ public final class A4Solution {
      * Returns the short unique name corresponding to the given atom if the problem
      * is solved and is satisfiable; else returns atom.toString().
      */
-    String atom2name(Object atom) {
+    public String atom2name(Object atom) {
         String ans = atom2name.get(atom);
         return ans == null ? atom.toString() : ans;
     }
@@ -829,7 +834,7 @@ public final class A4Solution {
      * Returns the most specific sig corresponding to the given atom if the problem
      * is solved and is satisfiable; else returns UNIV.
      */
-    PrimSig atom2sig(Object atom) {
+    public PrimSig atom2sig(Object atom) {
         PrimSig sig = atom2sig.get(atom);
         return sig == null ? UNIV : sig;
     }
@@ -1675,6 +1680,10 @@ public final class A4Solution {
 
         Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
+    }
+
+    public Solver getSolver() {
+        return solver;
     }
 
 }
