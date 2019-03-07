@@ -26,12 +26,12 @@ package kodkod.engine.satlab;
  *
  * @author Emina Torlak
  */
-final class Glucose extends NativeSolver {
+final public class Glucose extends NativeSolver {
 
     /**
      * Constructs a new Glucose wrapper.
      */
-    Glucose() {
+    public Glucose() {
         super(make());
     }
 
@@ -62,7 +62,7 @@ final class Glucose extends NativeSolver {
      * @see kodkod.engine.satlab.NativeSolver#free(long)
      */
     @Override
-    native void free(long peer);
+    protected native void free(long peer);
 
     /**
      * {@inheritDoc}
@@ -70,7 +70,7 @@ final class Glucose extends NativeSolver {
      * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
      */
     @Override
-    native void addVariables(long peer, int numVariables);
+    protected native void addVariables(long peer, int numVariables);
 
     /**
      * {@inheritDoc}
@@ -78,7 +78,7 @@ final class Glucose extends NativeSolver {
      * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
      */
     @Override
-    native boolean addClause(long peer, int[] lits);
+    protected native boolean addClause(long peer, int[] lits);
 
     /**
      * {@inheritDoc}
@@ -86,7 +86,7 @@ final class Glucose extends NativeSolver {
      * @see kodkod.engine.satlab.NativeSolver#solve(long)
      */
     @Override
-    native boolean solve(long peer);
+    protected native boolean solve(long peer);
 
     /**
      * {@inheritDoc}
@@ -94,6 +94,6 @@ final class Glucose extends NativeSolver {
      * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
      */
     @Override
-    native boolean valueOf(long peer, int literal);
+    protected native boolean valueOf(long peer, int literal);
 
 }
