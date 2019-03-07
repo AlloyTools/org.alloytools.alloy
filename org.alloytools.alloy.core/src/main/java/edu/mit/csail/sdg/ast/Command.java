@@ -20,6 +20,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TCommand;
+import org.alloytools.alloy.core.api.TScope;
+
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -41,7 +45,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <b>Invariant:</b> maxstring >= -1
  */
 
-public final class Command extends Browsable {
+public final class Command extends Browsable implements TCommand {
 
     /**
      * If nonnull, it means this command depends on this parent command.
@@ -319,4 +323,30 @@ public final class Command extends Browsable {
     public List< ? extends Browsable> getSubnodes() {
         return formula == null ? (new ArrayList<Browsable>(0)) : Util.asList(formula);
     }
+
+
+    public boolean isCheck() {
+        return check;
+    }
+
+    @Override
+    public String getName() {
+        return label;
+    }
+
+    @Override
+    public Set<TScope> getScopes() {
+        return new HashSet<TScope>(scope);
+    }
+
+    @Override
+    public Expects getExpects() {
+        return expects < 0 ? Expects.UNKNOWN : (expects > 0 ? Expects.SATISFIED : Expects.UNSATISFIED);
+    }
+
+    @Override
+    public Module getModule() {
+        return null;
+    }
+
 }
