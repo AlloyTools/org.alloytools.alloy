@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +27,9 @@ import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TCommand;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.Visualizer;
 import org.alloytools.alloy.core.spi.AlloySolverFactory;
+import org.alloytools.alloy.core.spi.AlloyVisualizerFactory;
 import org.alloytools.metainf.util.ManifestAccess;
 
 import aQute.lib.io.IO;
@@ -40,14 +43,15 @@ import edu.mit.csail.sdg.parser.CompUtil;
  * 
  */
 public class AlloyClassicFacade implements Alloy {
-	static String			JNAME_S		= "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
-	final static Pattern	OPTIONS_P	= Pattern
+	static String				JNAME_S		= "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
+	final static Pattern		OPTIONS_P	= Pattern
 		.compile("^--option(\\.(?<glob>[\\p{javaJavaIdentifierPart}*?.-]+))?\\s+(?<key>" + JNAME_S
 			+ ")\\s*=\\s*(?<value>[^\\s]+)\\s*$", Pattern.MULTILINE);
-	final Path				home;
+	final Path					home;
 
-	final List<Solver>	solvers		= new ArrayList<>();
-	private File			preferencesDir;
+	final List<Solver>			solvers		= new ArrayList<>();
+	private File				preferencesDir;
+	private List<Visualizer>	visualizers	= new ArrayList<>();
 
 	public AlloyClassicFacade(Path home) {
 		this.home = home;
@@ -355,5 +359,14 @@ public class AlloyClassicFacade implements Alloy {
 	@Override
 	public File getPreferencesDir(String id) {
 		return new File(preferencesDir, id);
+	}
+
+	@Override
+	public List<Visualizer> getVisualizers() {
+		if (visualizers.isEmpty()) {
+			ServiceLoader.load(AlloyVisualizerFactory.class)
+				.forEach(f -> visualizers.addAll(f.getVisualizers()));
+		}
+		return visualizers;
 	}
 }

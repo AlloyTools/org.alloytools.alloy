@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Primary interface into Alloy.
+ * Primary interface into Alloy. An instance can be found through the Java
+ * {@link java.util.ServiceLoader}
+ * <p>
+ * This class is the root into Alloy. It provides access to the solvers, the
+ * compiler, and
  */
 public interface Alloy {
 	/**
@@ -35,11 +39,22 @@ public interface Alloy {
 	Compiler compiler(SourceResolver resolver);
 
 	/**
+	 * Return a list of visualizers that can render an {@link Instance}
+	 * 
+	 * @return a list of visualizers
+	 */
+	List<Visualizer> getVisualizers();
+
+	/**
 	 * Return a default compiler based on the current file system
 	 * 
 	 * @return a compiler
 	 */
 	Compiler compiler();
+
+	/**
+	 * 
+	 */
 
 	/**
 	 * Get a file in the Alloy private directory. The intention for this path is

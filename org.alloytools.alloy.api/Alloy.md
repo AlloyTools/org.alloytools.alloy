@@ -232,6 +232,8 @@ _TColumnType_. (##note it is probably more complex that is why it has its own si
 ```
 
 *note*: not sure if we need to model the `extends` and `in` relations in the API?
+*note*: Daniel remarked we can get rid of TColumnType by just making a TField.type a seq 
+of `TSig`. Guess it is just flattening.
 
 ## Solving
 
@@ -327,7 +329,7 @@ and reused for an Alloy Solution so that for one solution, atoms can be associca
 	} {
 		size = # tuples
 		all tuple : tuples | # tuple.atoms = arity
-		size = 0 => arity = 0 //? or do we have a none for each arity? I think this is true in Alloy?
+		all disj t1, t2 : tuples | t1.atoms != t2.atoms
 		arity < 4 // limit in Alloy
 	}
 
@@ -350,6 +352,13 @@ and reused for an Alloy Solution so that for one solution, atoms can be associca
 	}
 
 	fun IRelation.join[ r : IRelation ] : IRelation {none}
+	fun IRelation.product[ r : IRelation ] : IRelation {none}
+	fun IRelation.head : IRelation {none}
+	fun IRelation.tail : IRelation {none}
+	pred IRelation.isScalar {
+		size = 1 and arity = 1
+	}
+
 ```
 		
 ## Housekeeping	
