@@ -496,6 +496,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 m = methods[i];
                 break;
             }
+
+        if (m == null)
+            throw new RuntimeException("No such method " + name + " to wrap");
+
         final Method method = m;
         return new Runner() {
 
@@ -537,6 +541,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 m = methods[i];
                 break;
             }
+
+        if (m == null)
+            throw new RuntimeException("No such method " + name + " to wrap");
+
         final Method method = m;
         return new Runner() {
 
@@ -1561,8 +1569,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
         final JTextArea text = OurUtil.textarea(alloytxt, 15, 85, false, false, new EmptyBorder(2, 2, 2, 2), new Font("Monospaced", Font.PLAIN, 12));
         final JScrollPane scroll = OurUtil.scrollpane(text, new LineBorder(Color.DARK_GRAY, 1));
-        final JComboBox combo = new OurCombobox(new String[] {
-                                                              "Alloy", "Kodkod", "JavaCup", "SAT4J", "ZChaff", "MiniSat"
+        final JComboBox< ? > combo = new OurCombobox(new String[] {
+                                                                   "Alloy", "Kodkod", "JavaCup", "SAT4J", "ZChaff", "MiniSat"
         }) {
 
             private static final long serialVersionUID = 0;
@@ -1642,13 +1650,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
             text.shade(hCore.a, coreColor, false);
         }
         if (arg.startsWith("POS: ")) { // POS: x1 y1 x2 y2 filename
-            Scanner s = new Scanner(arg.substring(5));
-            int x1 = s.nextInt(), y1 = s.nextInt(), x2 = s.nextInt(), y2 = s.nextInt();
-            String f = s.nextLine();
-            if (f.length() > 0 && f.charAt(0) == ' ')
-                f = f.substring(1); // Get rid of the space after Y2
-            Pos p = new Pos(Util.canon(f), x1, y1, x2, y2);
-            text.shade(p);
+            try (Scanner s = new Scanner(arg.substring(5))) {
+                int x1 = s.nextInt(), y1 = s.nextInt(), x2 = s.nextInt(), y2 = s.nextInt();
+                String f = s.nextLine();
+                if (f.length() > 0 && f.charAt(0) == ' ')
+                    f = f.substring(1); // Get rid of the space after Y2
+                Pos p = new Pos(Util.canon(f), x1, y1, x2, y2);
+                text.shade(p);
+            }
         }
         if (arg.startsWith("CNF: ")) { // CNF: filename
             String filename = Util.canon(arg.substring(5));
