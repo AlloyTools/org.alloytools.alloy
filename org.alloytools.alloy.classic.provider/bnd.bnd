@@ -1,0 +1,25 @@
+
+Bundle-Description: \
+    An Alloy Provider compiled against the Alloy 4 implementation, called _classic_.
+
+Export-Package: \
+	org.alloytools.alloy.classic.solver,\
+	org.alloytools.alloy.classic.solver.kodkod,\
+	org.alloytools.alloy.classic.provider,\
+	org.alloytools.alloy.module.api,\
+	org.alloytools.alloy.solver.api,\
+	org.osgi.dto
+
+-conditionalpackage: aQute.lib*
+
+-buildpath: \
+	org.alloytools.alloy.api;version=latest,\
+	org.alloytools.alloy.core;version=latest,\
+	org.alloytools.kodkod.core;version=latest,\
+	org.alloytools.util;version=latest,\
+	biz.aQute.bndlib;packages=*
+
+-testpath: \
+    osgi.enroute.junit.wrapper;version=4.12, \
+    osgi.enroute.hamcrest.wrapper;version=1.3
+

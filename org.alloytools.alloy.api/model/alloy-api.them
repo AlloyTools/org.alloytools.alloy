@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Alloy"/>
+   <type name="AlloyCompiler"/>
+   <type name="AlloyInstance"/>
+   <type name="AlloyModule"/>
+   <type name="AlloySolution"/>
+   <type name="AlloySolver"/>
+   <type name="AlloySolverFactory"/>
+   <type name="false"/>
+   <type name="IAtom"/>
+   <type name="ITuple"/>
+   <type name="ITupleSet"/>
+   <type name="OTHER"/>
+   <type name="SAT"/>
+   <type name="SATISFIED"/>
+   <type name="SMT"/>
+   <type name="Source"/>
+   <type name="SourceResolver"/>
+   <type name="String"/>
+   <type name="TCheck"/>
+   <type name="TColumnType"/>
+   <type name="TCommand"/>
+   <type name="TField"/>
+   <type name="true"/>
+   <type name="TRun"/>
+   <type name="TScope"/>
+   <type name="TSig"/>
+   <type name="univ"/>
+   <type name="UNKNOWN"/>
+   <type name="UNSAT"/>
+   <type name="UNSATISFIED"/>
+   <type name="open$3/Ord"/>
+   <type name="open$5/Ord"/>
+   <type name="ordering/Ord"/>
+   <type name="seq/Int"/>
+</node>
+
+<node visible="no">
+   <type name="boolean"/>
+   <type name="Expects"/>
+   <type name="Int"/>
+   <type name="Name"/>
+   <type name="Option"/>
+   <type name="Path"/>
+   <type name="SolverType"/>
+   <type name="Value"/>
+</node>
+
+<edge visible="no" attribute="yes">
+   <relation name="exact"> <type name="TScope"/> <type name="boolean"/> </relation>
+   <relation name="size"> <type name="TScope"/> <type name="Int"/> </relation>
+</edge>
+
+</view>
+
+</alloy>
