@@ -129,21 +129,4 @@ public final class MacUtil {
             }
         });
     }
-
-    /**
-     * Delegates the call to {@link #addMenus(SimpleGUI)} catching all errors. If no
-     * error is caught, <code>null</code> is returned; otherwise, the caught {@link Error}
-     * is returned.
-     *
-     * Use this method to guard from runtime exceptions thrown when running on newer versions
-     * of OSX that do not support adding OSX-specific menus from Java applications.
-     */
-    public Error tryAddMenus(SimpleGUI simpleGUI) {
-        try {
-            addMenus(simpleGUI);
-            return null;
-        } catch (Error e) {
-            return e;
-        }
-    }
 }
