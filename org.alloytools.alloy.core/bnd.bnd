@@ -26,3 +26,7 @@ Export-Package: \
 	org.alloytools.alloy.core
 
 Private-Package: java_cup.runtime
+
+-stalecheck \
+    src/main/java/edu/mit/csail/sdg/parser/Alloy.cup; \
+        newer='src/main/java/edu/mit/csail/sdg/parser/CompParser.java'

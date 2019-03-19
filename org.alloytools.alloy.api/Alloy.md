@@ -6,7 +6,7 @@ The Alloy API is a high level API to use Alloy from Java. Its purpose is to esta
 allows different Alloy implementations to create a layered interface between the different parts of Alloy so that each
 part can be developed in its own way and have multiple independent implementations. 
 
-For example, Electrumn has added a new keyword to the language and is doing work with different kinds of logic. They
+For example, [Electrum] has added a new keyword to the language and is doing work with different kinds of logic. They
 have forked Alloy and therefore they have to maintain everything themselves now. This API could be used to share front
 end logic including visualizers. For example, we could share a command line tool. 
 
@@ -372,4 +372,6 @@ run show {
 } for 5
 
 ```
+
+[Electrum]: https://github.com/haslab/Electrum
 
