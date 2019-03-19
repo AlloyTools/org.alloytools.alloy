@@ -76,19 +76,19 @@ public final class OurConsole extends JScrollPane {
     private static final long         serialVersionUID    = 0;
 
     /** The style for default text. */
-    private final static AttributeSet plain               = style("Verdana", 14, false, false, false, Color.BLACK, 0);
+    private final static AttributeSet plain               = style("Verdana,Helvetica", 14, false, false, false, Color.BLACK, 0);
 
     /** The style for table text. */
     private final static AttributeSet mono                = style("Input Mono,DejaVu Sans Mono,Courier New,Courier", 14, false, false, false, Color.BLACK, 10);
 
     /** The style for bold text. */
-    private final static AttributeSet bold                = style("Verdana", 14, true, false, false, Color.BLACK, 0);
+    private final static AttributeSet bold                = style("Verdana,Helvetica", 14, true, false, false, Color.BLACK, 0);
 
     /** The style for successful result. */
-    private final static AttributeSet good                = style("Verdana", 14, false, false, false, Color.BLUE, 10);
+    private final static AttributeSet good                = style("Verdana,Helvetica", 14, false, false, false, Color.BLUE, 10);
 
     /** The style for failed result. */
-    private final static AttributeSet bad                 = style("Verdana", 14, false, false, false, Color.RED, 10);
+    private final static AttributeSet bad                 = style("Verdana,Helvetica", 14, false, false, false, Color.RED, 10);
 
     /**
      * The number of characters that currently exist above the horizontal divider
