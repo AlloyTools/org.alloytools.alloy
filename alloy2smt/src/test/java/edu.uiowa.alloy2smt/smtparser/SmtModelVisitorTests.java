@@ -203,4 +203,44 @@ class SmtModelVisitorTests
         Assertions.assertEquals("(union (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_2))) (singleton (mkTuple @uc_Atom_3))) (singleton (mkTuple @uc_Atom_1)))",
                 atomUniv.expression.toString());
     }
+
+    @Test
+    void model17()
+    {
+        String model =
+                "(model\n" +
+                        "; cardinality of Atom is 1\n" +
+                        "(declare-sort Atom 0)\n" +
+                        "; rep: @uc_Atom_0\n" +
+                        "; cardinality of UnaryIntTup is 3\n" +
+                        "(declare-sort UnaryIntTup 0)\n" +
+                        "; rep: @uc_UnaryIntTup_0\n" +
+                        "; rep: @uc_UnaryIntTup_1\n" +
+                        "; rep: @uc_UnaryIntTup_2\n" +
+                        "(declare-sort BinaryIntTup 0)\n" +
+                        "; cardinality of TernaryIntTup is 7\n" +
+                        "(declare-sort TernaryIntTup 0)\n" +
+                        "; rep: @uc_TernaryIntTup_0\n" +
+                        "; rep: @uc_TernaryIntTup_1\n" +
+                        "; rep: @uc_TernaryIntTup_2\n" +
+                        "; rep: @uc_TernaryIntTup_3\n" +
+                        "; rep: @uc_TernaryIntTup_4\n" +
+                        "; rep: @uc_TernaryIntTup_5\n" +
+                        "; rep: @uc_TernaryIntTup_6\n" +
+                        "(define-fun value_of_unaryIntTup ((BOUND_VARIABLE_15814 UnaryIntTup)) (Tuple Int) (ite (= @uc_UnaryIntTup_2 BOUND_VARIABLE_15814) (mkTuple 3) (ite (= @uc_UnaryIntTup_0 BOUND_VARIABLE_15814) (mkTuple 2) (mkTuple 0))))\n" +
+                        "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_15833 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
+                        "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_15844 TernaryIntTup)) (Tuple Int Int Int) (ite (= @uc_TernaryIntTup_6 BOUND_VARIABLE_15844) (mkTuple 3 3 0) (ite (= @uc_TernaryIntTup_4 BOUND_VARIABLE_15844) (mkTuple 3 0 3) (ite (= @uc_TernaryIntTup_3 BOUND_VARIABLE_15844) (mkTuple 2 0 2) (ite (= @uc_TernaryIntTup_2 BOUND_VARIABLE_15844) (mkTuple 2 2 0) (ite (= @uc_TernaryIntTup_1 BOUND_VARIABLE_15844) (mkTuple 0 0 0) (ite (= @uc_TernaryIntTup_0 BOUND_VARIABLE_15844) (mkTuple 0 2 2) (mkTuple 0 3 3))))))))\n" +
+                        "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
+                        "(define-fun atomUniv () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
+                        "(define-fun atomIden () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
+                        "(define-fun this_a () (Set (Tuple Int)) (singleton (mkTuple 2)))\n" +
+                        "(define-fun this_b () (Set (Tuple Int)) (singleton (mkTuple 3)))\n" +
+                        "(define-fun this_c () (Set (Tuple Int)) (singleton (mkTuple 3)))\n" +
+                        "(define-fun this_d () (Set (Tuple Int)) (singleton (mkTuple 2)))\n" +
+                        "(define-fun PLUS () (Set (Tuple Int Int Int)) (union (union (union (union (union (union (singleton (mkTuple 0 0 0)) (singleton (mkTuple 2 0 2))) (singleton (mkTuple 0 2 2))) (singleton (mkTuple 2 3 2))) (singleton (mkTuple 3 0 3))) (singleton (mkTuple 2 3 3))) (singleton (mkTuple 0 3 3))))\n" +
+                        "(define-fun MINUS () (Set (Tuple Int Int Int)) (union (union (union (union (union (singleton (mkTuple 0 0 0)) (singleton (mkTuple 2 2 0))) (singleton (mkTuple 2 0 2))) (singleton (mkTuple 3 3 0))) (singleton (mkTuple 3 0 3))) (singleton (mkTuple 2 3 3))))\n" +
+                        ")";
+
+        SmtModel smtModel = parseModel(model);
+    }
 }

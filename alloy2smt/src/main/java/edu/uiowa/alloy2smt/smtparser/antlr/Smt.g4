@@ -67,7 +67,7 @@ TernaryOperator : 'ite' ;
 
 MultiArityOperator : 'mkTuple' | 'insert' | 'distinct' ;
 
-AtomPrefix : '@uc_Atom_' | '@uc_UnaryIntTup_' ;
+AtomPrefix : '@uc_Atom_' | '@uc_UnaryIntTup_' | '@uc_BinaryIntTup_' | '@uc_TernaryIntTup_';
 
 Identifier : IdentifierLetter (IdentifierLetter | Digit)* ;
 
