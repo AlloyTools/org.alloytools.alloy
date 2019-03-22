@@ -232,7 +232,7 @@ public class ExprTranslator
         return setBdVar.getConstantExpr();
     }
     
-    public Expression translateArithmetic(Expression leftExpr, Expression rightExpr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
+    public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
         if(!translator.arithOps.containsKey(op))
         {                      
@@ -242,22 +242,37 @@ public class ExprTranslator
         // (leftExpr, rightExpr, _) in operation
         //i.e. rightExpr o (leftExpr o operation) is not empty
 
-        VariableDeclaration ternaryTuple = new VariableDeclaration("_w", Alloy2SmtTranslator.ternaryIntTup);
-        Expression valueOfTernaryTuple = new FunctionCallExpression(translator.valueOfTernaryIntTup, ternaryTuple.getConstantExpr());
-        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, valueOfTernaryTuple);
-        Expression transpose = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, singleton);
-        Expression member = new BinaryExpression(valueOfTernaryTuple, BinaryExpression.Op.MEMBER, operation);
-        Expression join = new BinaryExpression(singleton, BinaryExpression.Op.JOIN, transpose);
-        Expression productAB = new BinaryExpression(leftExpr, BinaryExpression.Op.PRODUCT, rightExpr);
-        Expression productBA = new BinaryExpression(rightExpr, BinaryExpression.Op.PRODUCT, leftExpr);
-        Expression product = new BinaryExpression(productAB, BinaryExpression.Op.PRODUCT, productBA);
-        Expression equal = new BinaryExpression(join, BinaryExpression.Op.EQ, product);
-        Expression and = new BinaryExpression(member, BinaryExpression.Op.AND, equal);
+        VariableDeclaration w = new VariableDeclaration("_w", Alloy2SmtTranslator.ternaryIntTup);
+        VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.intSort);
+        VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.intSort);
+        Expression valueOfw = new FunctionCallExpression(translator.valueOfTernaryIntTup, w.getConstantExpr());
+        Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
+        Expression xSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, xTuple);
+        Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getConstantExpr());
+        Expression ySingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, yTuple);
+
+        Expression xSingletonEqualsA = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, A);
+        Expression ySingletonEqualsB = new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, B);
+
+        Expression w0 = exprBinaryTranslator.mkTupleSelectExpr(valueOfw, 0);
+        Expression w1 = exprBinaryTranslator.mkTupleSelectExpr(valueOfw, 1);
+        Expression w2 = exprBinaryTranslator.mkTupleSelectExpr(valueOfw, 2);
+        Expression member = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, operation);
+        Expression xEqualsw0 = new BinaryExpression(x.getConstantExpr(), BinaryExpression.Op.EQ, w0);
+        Expression yEqualsw1 = new BinaryExpression(y.getConstantExpr(), BinaryExpression.Op.EQ, w1);
+        Expression w0Operationw1 = new BinaryExpression(w0, op, w1);
+        Expression w2EqualswOperationPlusw1 = new BinaryExpression(w2, BinaryExpression.Op.EQ, w0Operationw1);
+        Expression and1 = new BinaryExpression(xEqualsw0, BinaryExpression.Op.AND, yEqualsw1);
+        Expression and2 = new BinaryExpression(w2EqualswOperationPlusw1, BinaryExpression.Op.AND, member);
+        Expression and3 = new BinaryExpression(and1, BinaryExpression.Op.AND, and2);
+        Expression and4 = new BinaryExpression(xSingletonEqualsA, BinaryExpression.Op.AND, ySingletonEqualsB);
+        Expression and5 = new BinaryExpression(and3, BinaryExpression.Op.AND, and4);
+
         Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                and, ternaryTuple);
+                and5, w, x, y);
         translator.smtProgram.addAssertion(new Assertion("Operands are in the relation", exists));
 
-        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, operation));
+        return new BinaryExpression(B, BinaryExpression.Op.JOIN, new BinaryExpression(A, BinaryExpression.Op.JOIN, operation));
     }
 
     public void declArithmeticOp(BinaryExpression.Op op)
