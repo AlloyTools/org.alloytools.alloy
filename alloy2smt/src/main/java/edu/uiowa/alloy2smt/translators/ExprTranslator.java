@@ -381,7 +381,28 @@ public class ExprTranslator
         translator.smtProgram.addConstantDeclaration(arithVarDecl);
         translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition", finalExprI));
         translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition II", finalExprII));
-        translator.arithOps.put(op, arithVarDecl.getConstantExpr());        
+        ConstantExpression operation = arithVarDecl.getConstantExpr();
+        translator.arithOps.put(op, operation);
+        Expression member = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, operation);
+        Expression w0 = exprUnaryTranslator.mkTupleSelExpr(valueOfw, 0);
+        Expression w1 = exprUnaryTranslator.mkTupleSelExpr(valueOfw, 1);
+        Expression w2 = exprUnaryTranslator.mkTupleSelExpr(valueOfw, 2);
+        VariableDeclaration _x = new VariableDeclaration("_x", Alloy2SmtTranslator.intSort);
+        Expression _xEqualw2 = new BinaryExpression(_x.getConstantExpr(), BinaryExpression.Op.EQ, w2);
+        Expression w0Tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, w0);
+        Expression w1Tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, w1);
+        Expression w0Singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, w0Tuple);
+        Expression w1Singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, w1Tuple);
+        Expression w0Join = new BinaryExpression(w0Singleton, BinaryExpression.Op.JOIN, operation);
+        Expression w1Join = new BinaryExpression(w1Singleton, BinaryExpression.Op.JOIN, w0Join);
+        Expression _xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, _x.getConstantExpr());
+        Expression _xSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, _xTuple);
+        Expression equality = new BinaryExpression(_xSingleton, BinaryExpression.Op.EQ,w1Join);
+        Expression and = new BinaryExpression(_xEqualw2, BinaryExpression.Op.AND, equality);
+        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and, _x);
+        Expression implies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, exists);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, w);
+        translator.smtProgram.addAssertion(new Assertion("TernaryIntTup operation relation uniqueness", forAll));
     }
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
