@@ -238,7 +238,20 @@ public class ExprTranslator
         {                      
             declArithmeticOp(op);
         }
-        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, translator.arithOps.get(op)));
+        Expression operation = translator.arithOps.get(op);
+        // (leftExpr, rightExpr, _) in operation
+        //i.e. rightExpr o (leftExpr o operation) is not empty
+        Expression leftExprJoin = new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, operation);
+        Expression rightExprJoin = new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, leftExprJoin);
+        Expression equal = new BinaryExpression(rightExprJoin, BinaryExpression.Op.EQ,
+                new UnaryExpression(UnaryExpression.Op.EMPTYSET, Alloy2SmtTranslator.setOfUnaryIntSort));
+        Expression not = new UnaryExpression(UnaryExpression.Op.NOT, equal);
+
+        translator.smtProgram.addAssertion(new Assertion("Operands are in the relation", not));
+
+
+
+        return new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, operation));
     }
 
     public void declArithmeticOp(BinaryExpression.Op op)
