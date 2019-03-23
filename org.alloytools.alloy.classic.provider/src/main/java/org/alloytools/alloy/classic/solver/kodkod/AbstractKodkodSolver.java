@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 import org.alloytools.alloy.classic.provider.AbstractCommand;
 import org.alloytools.alloy.classic.provider.AlloyModuleClassic;
 import org.alloytools.alloy.classic.provider.Atom;
-import org.alloytools.alloy.classic.provider.TupleSet;
+import org.alloytools.alloy.classic.provider.Relation;
 import org.alloytools.alloy.classic.solver.AbstractSolver;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.IAtom;
@@ -78,7 +78,7 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 				});
 			}
 
-			private TupleSet to(A4TupleSet set) {
+			private Relation to(A4TupleSet set) {
 				List<IAtom> atoms = new ArrayList<>();
 
 				for (A4Tuple tuple : set) {
@@ -106,10 +106,10 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 					}
 				}
 
-				return new TupleSet(this, set.arity(), atoms);
+				return new Relation(this, set.arity(), atoms);
 			}
 
-			TupleSet none = new TupleSet(this, 0, Collections.emptyList());
+			Relation none = new Relation(this, 0, Collections.emptyList());
 
 			@Override
 			public IRelation none() {
@@ -175,7 +175,7 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 							}
 
 							@Override
-							public TupleSet universe() {
+							public Relation universe() {
 								A4TupleSet eval = ai.eval((Sig) univ);
 								return to(eval);
 							}

@@ -45,7 +45,7 @@ public interface ITuple extends Comparable<ITuple> {
      * 
      * @return a tuple set
      */
-    IRelation asTupleSet();
+    IRelation asRelation();
 
     /**
      * See {@link #equals(Object)}
