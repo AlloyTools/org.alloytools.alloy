@@ -24,7 +24,7 @@ public interface Alloy {
 	 * 
 	 * @param id
 	 *            the name of the solver
-	 * @return and optional AlloySolver
+	 * @return an optional AlloySolver
 	 */
 	Optional<Solver> getSolver(String id);
 
