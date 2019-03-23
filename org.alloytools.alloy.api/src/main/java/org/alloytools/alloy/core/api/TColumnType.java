@@ -6,5 +6,5 @@ import java.util.List;
  * The type of a column in a relation TField.
  */
 public interface TColumnType {
-	List<TSig> getSigs();
+    List<TSig> getSigs();
 }

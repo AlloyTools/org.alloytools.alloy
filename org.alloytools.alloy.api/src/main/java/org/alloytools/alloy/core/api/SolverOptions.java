@@ -5,8 +5,8 @@ package org.alloytools.alloy.core.api;
  * DTO with their own preferences.
  */
 public class SolverOptions {
-	/**
-	 * Enable tracing
-	 */
-	boolean trace = false;
+    /**
+     * Enable tracing
+     */
+    boolean trace = false;
 }

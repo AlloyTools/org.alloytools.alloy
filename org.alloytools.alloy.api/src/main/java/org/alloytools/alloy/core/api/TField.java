@@ -6,24 +6,24 @@ import java.util.List;
  * A Field in a sig
  */
 public interface TField {
-	/**
-	 * The type of this field.
-	 * 
-	 * @return the type of this relation
-	 */
-	List<TColumnType> getType();
-	
-	/**
-	 * Parent type 
-	 * 
-	 * TODO (not sure this is needed?)
-	 * 
-	 * @return the parent type
-	 */
-	TSig getParent();
+    /**
+     * The type of this field.
+     * 
+     * @return the type of this relation
+     */
+    List<TColumnType> getType();
+    
+    /**
+     * Parent type 
+     * 
+     * TODO (not sure this is needed?)
+     * 
+     * @return the parent type
+     */
+    TSig getParent();
 
-	/**
-	 * The name of the field
-	 */
-	String getName();
+    /**
+     * The name of the field
+     */
+    String getName();
 }

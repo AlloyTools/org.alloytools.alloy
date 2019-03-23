@@ -1,4 +1,5 @@
 package org.alloytools.alloy.core.api;
+
 /**
  * An Alloy check command
  */
