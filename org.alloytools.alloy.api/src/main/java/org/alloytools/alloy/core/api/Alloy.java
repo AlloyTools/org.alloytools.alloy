@@ -9,7 +9,7 @@ import java.util.Optional;
  * {@link java.util.ServiceLoader}
  * <p>
  * This class is the root into Alloy. It provides access to the solvers, the
- * compiler, and
+ * compiler, and the visualizers.
  */
 public interface Alloy {
 	/**
