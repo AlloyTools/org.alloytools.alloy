@@ -6,7 +6,7 @@ import java.util.Set;
 public interface TCommand {
 
 	enum Expects {
-		UNKNOWN, SATISFIED, UNSATISFIED
+		UNKNOWN, SATISFIABLE, UNSATISFIABLE
 	}
 
 	/**
@@ -15,16 +15,16 @@ public interface TCommand {
 	String getName();
 
 	/**
-	 * Set scopes on the command
+	 * Return the scopes defined by this command
 	 * 
-	 * @return get the sig scopes in this command
+	 * @return scopes defined by this command
 	 */
 	Set<TScope> getScopes();
 
 	/**
-	 * Answer the expects part of the run. The expects predicts if the run
-	 * should have a solution or not. If not specified, {@link Expects#UNKNOWN}
-	 * is returned.
+	 * A hint whether the command is expected to be satisfiable or not. This is
+	 * mainly used for testing and documentation purposes and has no effect on
+	 * solving.
 	 * 
 	 * @return expects
 	 */

@@ -3,12 +3,12 @@ package org.alloytools.alloy.core.api;
 /**
  * An atom is an immutable object that has no meaning. Atoms always belong to a
  * single Alloy Solution and cannot be used across solutions. However, the same
- * atoms are used across Alloy Instances.
+ * atoms are reused across Alloy Instances.
  */
 public interface IAtom extends Comparable<IAtom> {
 
 	/**
-	 * Return a human readble name for the atom that is unique for all atoms of
+	 * Return a human readable name for the atom that is unique for all atoms of
 	 * the solution.
 	 * 
 	 * @return the unique name of the atom
@@ -30,47 +30,45 @@ public interface IAtom extends Comparable<IAtom> {
 	TSig getSig();
 
 	/**
-	 * Convert the atom to an ITupleSet
+	 * Convert the atom to a {@link IRelation}
 	 * 
-	 * @return a tupleset with one atom
+	 * @return a unary singleton relation containing only this atom
 	 */
 	IRelation asTupleSet();
 
 	/**
-	 * Each atom has a unique index int the universe.
+	 * Each atom has a unique index the universe. 
 	 * 
 	 * TODO necessary?
 	 * 
-	 * @return the universe index
+	 * @return the index of this atom in the Alloy universe
 	 */
 	int getIndex();
 
 	/**
-	 * Join this atom with a tuple set
+	 * Join this atom with a relation
 	 * 
-	 * @param right
-	 *            the tuple set to join with
-	 * @return a new tuple set that is the Alloy join of this and the right
+	 * @param right the relation to join with
+	 * @return the result of the join
 	 */
 	default IRelation join(IRelation right) {
 		return asTupleSet().join(right);
 	}
 
 	/**
-	 * Create the product atom with a tuple set
+	 * Create the product of this atom with a given relation
 	 * 
-	 * @param right
-	 *            the tuple set to create the product with
-	 * @return a new tuple set that is the Alloy product of this and the right
+	 * @param right the relation to create the product with
+	 * @return the result of the product
 	 */
 	default IRelation product(IRelation right) {
 		return asTupleSet().product(right);
 	}
 
 	/**
-	 * Provides a new tupleset with itself
+	 * The same as {@link IAtom#asTupleSet()}
 	 * 
-	 * @return a tupleset of itself
+	 * @return a unary singleton relation containing only this atom
 	 */
 	default IRelation head() {
 		return asTupleSet();
@@ -88,7 +86,7 @@ public interface IAtom extends Comparable<IAtom> {
 	/**
 	 * See {@link #equals(Object)}
 	 * 
-	 * @return a hashcode
+	 * @return a hash code of this atom
 	 */
 	int hashCode();
 
@@ -100,8 +98,8 @@ public interface IAtom extends Comparable<IAtom> {
 	boolean equals(Object o);
 
 	/**
-	 * Return the int value, assuming this atom is an Int. This will throw a
-	 * Runtime Exception if the atom is not an Int
+	 * Return the int value, assuming this atom is an Int. Throws a
+	 * {@link RuntimeException} if this atom is not an integer
 	 */
 	int toInt();
 }

@@ -6,9 +6,10 @@ package org.alloytools.alloy.core.api;
 public interface ITuple extends Comparable<ITuple> {
 
 	/**
-	 * Number of atoms in the tuple.
+	 * Number of atoms in the tuple. A tuple must contain at least one atom,
+	 * hence the arity must be positive
 	 * 
-	 * @return the width of this tuple
+	 * @return the arity of this tuple
 	 */
 	int arity();
 
@@ -16,8 +17,7 @@ public interface ITuple extends Comparable<ITuple> {
 	 * Get the n'th (starting at 0) atom in this tuple. n must be less than the
 	 * arity.
 	 * 
-	 * @param n
-	 *            the index
+	 * @param n the index
 	 * @return the atom
 	 */
 	IAtom get(int n);
@@ -38,30 +38,27 @@ public interface ITuple extends Comparable<ITuple> {
 	 */
 	default IAtom first() {
 		return get(0);
-
 	}
 
 	/**
-	 * Return this Tuple as a tuple set.
+	 * Return this tuple as a relation
 	 * 
 	 * @return a tuple set
 	 */
-
 	IRelation asTupleSet();
 
 	/**
 	 * See {@link #equals(Object)}
 	 * 
-	 * @return a hashcode
+	 * @return a hash code
 	 */
 	int hashCode();
 
 	/**
-	 * Equality is when the other tuple has the same arity . Notice that atoms
-	 * belong to a solution, it is therefore impossible to compare tuples from
-	 * different solutions.
+	 * Two tuples are equal if they have the same arity and they have matching
+	 * atoms at each each position (from 0 to arity-1).
 	 * 
-	 * @return true if the other ITuple is equal.
+	 * @return true if equal to {@code o}
 	 */
 	boolean equals(Object o);
 

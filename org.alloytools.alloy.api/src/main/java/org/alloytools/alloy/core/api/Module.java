@@ -14,7 +14,7 @@ public interface Module {
 	 * The source path of this module. In certain cases a module does not have a
 	 * path, for example when it is compiled from a string.
 	 * 
-	 * @return an optional to a module
+	 * @return an optional file path to a module
 	 */
 	Optional<String> getPath();
 
@@ -28,9 +28,8 @@ public interface Module {
 	/**
 	 * Get a sig by name
 	 * 
-	 * @param name
-	 *            the name of the request sig
-	 * @return an optional TSig
+	 * @param name the name of the requested sig
+	 * @return an optional sig
 	 */
 	Optional<TSig> getSig(String name);
 
@@ -49,8 +48,7 @@ public interface Module {
 	List<TCheck> getChecks();
 
 	/**
-	 * Get compiler warnings. Warnings are messages that should be corrected but
-	 * do not stop the module from becoming unusable.
+	 * Get compiler warnings.
 	 * 
 	 * @return compiler warnings
 	 */
@@ -64,7 +62,7 @@ public interface Module {
 	List<CompilerMessage> getErrors();
 
 	/**
-	 * Return true if this module had no fatal errors.
+	 * Return true if this module has no fatal errors.
 	 * 
 	 * @return true if no fatal errors
 	 */

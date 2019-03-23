@@ -1,13 +1,12 @@
 package org.alloytools.alloy.core.api;
 
 /**
- * Represents a solver of Alloy Modules.
- * 
+ * Represents a solver.
  */
 public interface Solver {
 
 	/**
-	 * The identity of the solver. This identity must be unique world wide so a
+	 * The identity of the solver. This identity must be unique world-wide so a
 	 * FQN is recommended. For example, the primary class name.
 	 * 
 	 * @return the identity
@@ -37,7 +36,7 @@ public interface Solver {
 	SolverType getSolverType();
 
 	/**
-	 * Get a short english description of this solver.
+	 * Get a short English description of this solver.
 	 * 
 	 * @return a description
 	 */
@@ -52,13 +51,13 @@ public interface Solver {
 	SolverOptions newOptions();
 
 	/**
-	 * Create a solution out of a command, a module
+	 * Solve a constraint problem embodied in an Alloy command.
 	 * 
 	 * @param command the command to run/check
 	 * @param options the specified options or null if not options are given
-	 * @param instance provide the lower bound for the solution
-	 * @return a Solution that could be unsatisfied
+	 * @param lowerBound provide the lower bound for the solution
+	 * @return a Solution
 	 */
-	Solution solve(TCommand command, SolverOptions options, Instance instance);
+	Solution solve(TCommand command, SolverOptions options, Instance lowerBound);
 
 }

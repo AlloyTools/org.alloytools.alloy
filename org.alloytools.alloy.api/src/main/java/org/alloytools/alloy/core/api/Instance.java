@@ -1,27 +1,24 @@
 package org.alloytools.alloy.core.api;
 
 /**
- * An Alloy Solution is calculated by an {@link Solver}. A solution,
- * however, can have multiple instances that each hold a unique set of values
- * that match the Alloy specification.
+ * Represents a value assignment that satisfies an Alloy specification. An
+ * instance belongs to a {@link Solution}. A solution can have multiple
+ * instances, all satisfying the same Alloy specification.
  */
 public interface Instance {
 
 	/**
-	 * Get the values for a field
+	 * Get the value of a field
 	 * 
-	 * @param field
-	 *            the field
+	 * @param field the field
 	 * @return the values
 	 */
 	IRelation getField(TField field);
 
 	/**
-	 * Get all atoms in this solution instance for a specific sig in a TupleSet
-	 * with arity=1.
+	 * Get the valueof a sig.
 	 * 
-	 * @param sig
-	 *            the sig
+	 * @param sig the sig
 	 * @return the atoms with an arity=1
 	 */
 	IRelation getAtoms(TSig sig);
@@ -31,31 +28,32 @@ public interface Instance {
 	 * 
 	 * @param functionName the function name
 	 * @param varName the variable name
-	 * @return the value, could be empty
+	 * @return the value (can be empty)
 	 */
 	IRelation getVariable(String functionName, String varName);
 
 	/**
-	 * Evaluate a command in the context of this instance. TODO what is the
+	 * Evaluate an expression in the context of this instance. TODO what is the
 	 * syntax?
 	 * 
-	 * @param cmd
-	 *            the command to execute
+	 * @param expr the expression to evaluate
 	 * @return the return value
 	 */
-	IRelation eval(String cmd);
+	IRelation eval(String expr);
 
 	/**
-	 * The universe for this solution
+	 * Get the universe for this instance (i.e., all the atoms as a unary
+	 * relation)
 	 * 
 	 * @return the universe
 	 */
 	IRelation universe();
 
 	/**
-	 * The ident set for this solution
+	 * Return the identity relation for this instance (i.e., a binary relation
+	 * where each atom is mapped to itself)
 	 * 
-	 * @return the ident set
+	 * @return the identity relation
 	 */
 	IRelation ident();
 

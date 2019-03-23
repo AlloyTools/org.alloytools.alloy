@@ -22,7 +22,7 @@ public class MiniSatProverPlugin extends AbstractUnsatKodkodSolver {
 
     @Override
     public SolverType getSolverType() {
-        return SolverType.UNSAT;
+        return SolverType.SAT_WITH_UNSAT_CORE;
     }
 
     @Override

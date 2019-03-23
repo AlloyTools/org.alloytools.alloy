@@ -80,10 +80,10 @@ public class AlloyLanguageTest {
 		Solution solution = solver.solve(run, null, null);
 		try {
 			switch (run.getExpects()) {
-			case SATISFIED:
+			case SATISFIABLE:
 				assertTrue(name + " - " + run + " was expecting a solution", solution.isSatisfied());
 				break;
-			case UNSATISFIED:
+			case UNSATISFIABLE:
 				assertTrue(name + " - " + run + " was not expecting a solution", !solution.isSatisfied());
 				break;
 			default:

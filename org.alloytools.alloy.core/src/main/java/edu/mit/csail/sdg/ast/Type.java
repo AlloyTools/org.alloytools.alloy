@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -342,8 +341,8 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
         }
 
         @Override
-        public Set<TSig> getSigs() {
-            return Stream.of(types).collect(Collectors.toSet());
+        public List<TSig> getSigs() {
+            return Stream.of(types).collect(Collectors.toList());
         }
     }
 

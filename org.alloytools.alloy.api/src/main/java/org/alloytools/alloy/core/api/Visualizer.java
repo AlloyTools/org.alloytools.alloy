@@ -10,30 +10,24 @@ import java.net.URI;
  */
 public interface Visualizer {
 	/**
-	 * A preferrred output format for a visualizer. Visualizer only have to
+	 * A preferred output format for a visualizer. Visualizer only has to
 	 * support at last one of these Hints.
 	 */
 	enum Hint {
-	/**
-	 * SVG Format
-	 */
-	SVG(String.class),
-	/**
-	 * HTML format
-	 */
-	HTML(String.class),
-	/**
-	 * Plain text. Will be displayed with a monospace font.
-	 */
-	TEXT(String.class),
-	/**
-	 * PNG format
-	 */
-	PNG(byte[].class),
-	/**
-	 * An interactive JComponent
-	 */
-	JCOMPONENT(Object.class);
+		/** SVG Format */
+		SVG(String.class),
+
+		/** HTML format */
+		HTML(String.class),
+
+		/** Plain text. Will be displayed with a monospace font. */
+		TEXT(String.class),
+
+		/** PNG format */
+		PNG(byte[].class),
+
+		/** An interactive JComponent */
+		JCOMPONENT(Object.class);
 
 		public final Class<?> type;
 
@@ -50,7 +44,7 @@ public interface Visualizer {
 	String getName();
 
 	/**
-	 * The description of the visualizer. Used in tooltips etc.
+	 * The description of the visualizer. Used in tool tips etc.
 	 * 
 	 * @return the description of the visualizer
 	 */
@@ -59,8 +53,8 @@ public interface Visualizer {
 	/**
 	 * A URI to an icon that represents this visualizer
 	 * 
-	 * @param pixels the number of hor/vert pixels desired. This is a hint, a
-	 *            different size may be returned
+	 * @param pixels the number of horizontal/vertical pixels desired. This is a
+	 *            hint, a different size may be returned
 	 * @return an icon for the visualizer
 	 */
 	URI getIcon(int pixels);
@@ -74,7 +68,7 @@ public interface Visualizer {
 	Hint prefers(Hint... hint);
 
 	/**
-	 * Return a renderning according to the hint. If the hint was returned from
+	 * Return a rendering according to the hint. If the hint was returned from
 	 * {@link #prefers(Hint...)} then the return object must be not null,
 	 * otherwise it may be null.
 	 * 

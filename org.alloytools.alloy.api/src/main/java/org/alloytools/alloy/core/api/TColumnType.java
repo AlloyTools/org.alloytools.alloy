@@ -1,10 +1,10 @@
 package org.alloytools.alloy.core.api;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * The type of a column in a relation TField.
  */
 public interface TColumnType {
-	Set<TSig> getSigs();
+	List<TSig> getSigs();
 }

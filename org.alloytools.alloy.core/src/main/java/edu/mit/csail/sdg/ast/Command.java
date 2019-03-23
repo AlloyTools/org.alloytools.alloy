@@ -341,7 +341,7 @@ public final class Command extends Browsable implements TCommand {
 
     @Override
     public Expects getExpects() {
-        return expects < 0 ? Expects.UNKNOWN : (expects > 0 ? Expects.SATISFIED : Expects.UNSATISFIED);
+        return expects < 0 ? Expects.UNKNOWN : (expects > 0 ? Expects.SATISFIABLE : Expects.UNSATISFIABLE);
     }
 
     @Override

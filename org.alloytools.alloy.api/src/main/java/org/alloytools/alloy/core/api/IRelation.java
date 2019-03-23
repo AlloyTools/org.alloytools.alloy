@@ -5,71 +5,70 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * An IRelation is a matrix of {@link IAtom}s. The {@link #arity()} is the width
- * of the relation and the {@link #size()} is the length of the relation. An
- * IRelation always belongs to an {@link Solution}. A row in the relation
- * is called a <em>tuple</em>.
+ * A relation is a list of {@link ITuple}s. The {@link #arity()} is the arity
+ * (length) of each tuple in this relation (all tuples in a relation must have
+ * the same arity) and the {@link #size()} is the number of tuples in this
+ * relation. A relation always belongs to a {@link Solution}.
  */
 public interface IRelation extends Iterable<ITuple> {
 
 	/**
-	 * The solution this set belongs to
+	 * The solution this relation belongs to
 	 * 
-	 * @return the alloy solution
+	 * @return the alloy solution this relation belongs to
 	 */
 	Solution getSolution();
 
 	/**
-	 * The arity of this tuple set, also called the width.
+	 * The arity of this relation (which must coincide with the arity of each
+	 * tuple in this relation)
 	 * 
 	 * @return the arity
 	 */
 	public int arity();
 
 	/**
-	 * The size of the matrix or also called the height.
+	 * The number of tuples in this relation
 	 * 
-	 * @return the size of the tuple set
+	 * @return the number of tuples
 	 */
 	int size();
 
 	/**
-	 * Join this atom with a tuple set
+	 * Join this relation with another one
 	 * 
-	 * @param right
-	 *            the tuple set to join with
-	 * @return a new tuple set that is the Alloy join of this and the right
+	 * @param right the relation to join with
+	 * @return the result of the join
 	 */
 	IRelation join(IRelation right);
 
 	/**
-	 * Create the product atom with a tuple set
+	 * Create a relation product of this relation and another one
 	 * 
-	 * @param right
-	 *            the tuple set to create the product with
-	 * @return a new tuple set that is the Alloy product of this and the right
+	 * @param right the relation to create a product with
+	 * @return the result of the product
 	 */
 	IRelation product(IRelation right);
 
 	/**
-	 * Provides a new tupleset with the left column
+	 * Returns a new unary relation that contains only the 1st column (at index
+	 * 0) of this relation.
 	 * 
-	 * @return a tupleset of itself
+	 * @return the head of this relation
 	 */
 	IRelation head();
 
 	/**
-	 * An new tuple set that is equal to this tuple set but lacks the first
-	 * column
+	 * Returns a new relation that contains all the columns of this relation but
+	 * the first.
 	 * 
-	 * @return a tuple set
+	 * @return the tail of this relation
 	 */
 	IRelation tail();
 
 	/**
-	 * Since Alloy stores all atoms as tuple sets also simple scalars are stored
-	 * that way. This provides an easy check to see if the tupleset only holds 1
-	 * scalar.
+	 * A relation is a "scalar" if it contains a single tuple with a single atom
+	 * in it (i.e., both the arity and the size of the relation is 1).
 	 * 
 	 * @return is this tuple set a scalar?
 	 */
@@ -78,20 +77,20 @@ public interface IRelation extends Iterable<ITuple> {
 	}
 
 	/**
-	 * Is this tupleset empty?
+	 * Is this relation empty (i.e., it contains 0 tuples)?
 	 * 
-	 * @return true if this tuple set is empty
+	 * @return whether this relation is empty.
 	 */
 	default boolean isEmpty() {
-		return arity() == 0 && size() == 0;
+		return size() == 0;
 	}
 
 	/**
-	 * Is this tuple set arity 1?
+	 * Is this relation unary (i.e., its arity is 1)?
 	 * 
-	 * @return true if this tuple set has arity 1
+	 * @return whether this is a unary relation.
 	 */
-	default boolean isList() {
+	default boolean isUnary() {
 		return arity() == 1;
 	}
 
@@ -109,34 +108,35 @@ public interface IRelation extends Iterable<ITuple> {
 	}
 
 	/**
-	 * Return the most left column as a list of atoms
+	 * Return the most left column as a list of atoms PRECONDITION: this must be
+	 * a unary relation
 	 * 
 	 * @return a list of atoms
 	 */
 	default List<IAtom> asList() {
-		assert isList();
+		assert isUnary();
 
 		List<IAtom> list = new ArrayList<>();
 
 		for (ITuple tuple : this) {
 			list.add(tuple.get(0));
 		}
+
 		return list;
 	}
 
 	/**
 	 * See {@link #equals(Object)}
 	 * 
-	 * @return a hashcode
+	 * @return a hash code
 	 */
 	int hashCode();
 
 	/**
-	 * Equality is when the other tuple set has the same arity and the identical
-	 * atoms. Notice that atoms belong to a solution, it is therefore impossible
-	 * to compare tuplesets from different solutions.
+	 * Two relations are equal when they have the same arity, the same size, and
+	 * the same sets of tuples.
 	 * 
-	 * @return true if the other ITupleSet is equal.
+	 * @return true if equal to {@code o}
 	 */
 	boolean equals(Object o);
 }

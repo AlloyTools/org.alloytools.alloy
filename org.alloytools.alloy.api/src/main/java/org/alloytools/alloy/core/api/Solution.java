@@ -4,50 +4,48 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * A solution is the answer of a solver. It can either be satisfied or not. If
- * it is satisfied then you can ask for the _instances_.
- * 
+ * A solution is produced by a {@link Solver}. It can either be satisfiable or
+ * not. Only a satisfiable solution contains instances.
  */
 public interface Solution extends Iterable<Instance> {
 
 	/**
-	 * Return the solver that created this solution
+	 * The solver that produced this solution
 	 * 
-	 * @return the solver that created this solution
+	 * @return the solver that produced this solution
 	 */
 	Solver getSolver();
 
 	/**
-	 * Return the solver that created this solution
+	 * The options used when solving for this solution
 	 * 
-	 * @return the solver that created this solution
+	 * @return the options used when solving for this solution
 	 */
 	SolverOptions getOptions();
 
 	/**
-	 * Return the module that was used for this solution
+	 * The module this solution was derived from.
 	 * 
-	 * @return the module that was used this solution
+	 * @return the module this solution was derived from.
 	 */
 	Module getModule();
 
 	/**
-	 * Answer the command that was used for this solution
+	 * The command this is a solution to
 	 * 
-	 * @return the command that was used for this solution
+	 * @return the command this is a solution to
 	 */
 	TCommand getCommand();
 
 	/**
-	 * Answer if this solution is satisfied.
+	 * Whether the specification was satisfiable or not.
 	 */
 	boolean isSatisfied();
 
 	/**
-	 * Provides access to a root tupleset which can be used to create new
-	 * tuplesets.
+	 * Returns an empty relation.
 	 * 
-	 * @return a tuple set representing none.
+	 * @return an empty relation.
 	 */
 	IRelation none();
 

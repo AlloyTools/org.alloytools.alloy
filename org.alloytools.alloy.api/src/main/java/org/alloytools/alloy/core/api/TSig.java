@@ -24,9 +24,8 @@ public interface TSig {
 	/**
 	 * Get a particular field
 	 * 
-	 * @param fieldName
-	 *            the field name
+	 * @param fieldName the field name
 	 * @return an optional field
 	 */
-	Optional<? extends TField> getTField(String fieldName);
+	Optional<? extends TField> getField(String fieldName);
 }

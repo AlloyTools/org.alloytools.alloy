@@ -623,7 +623,7 @@ public abstract class Sig extends Expr implements Clause, TSig {
         }
 
         @Override
-        public Optional< ? extends TField> getTField(String fieldName) {
+        public Optional< ? extends TField> getField(String fieldName) {
             return getFields().stream().filter(f -> f.getName().equals(fieldName)).findAny();
         }
 
@@ -721,7 +721,7 @@ public abstract class Sig extends Expr implements Clause, TSig {
         }
 
         @Override
-        public Optional<TField> getTField(String fieldName) {
+        public Optional<TField> getField(String fieldName) {
             return Optional.empty();
         }
 

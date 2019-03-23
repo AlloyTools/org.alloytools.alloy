@@ -7,7 +7,7 @@ import java.util.List;
  */
 public interface TField {
 	/**
-	 * The type of this relation.
+	 * The type of this field.
 	 * 
 	 * @return the type of this relation
 	 */
