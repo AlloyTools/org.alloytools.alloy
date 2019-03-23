@@ -22,18 +22,16 @@ public interface Alloy {
 	/**
 	 * Get a solver with a specific name
 	 * 
-	 * @param id
-	 *            the name of the solver
-	 * @return an optional AlloySolver
+	 * @param id the name of the solver
+	 * @return an optional Alloy solver
 	 */
 	Optional<Solver> getSolver(String id);
 
 	/**
-	 * Return the compiler but providing a resolver for abstracting where the
-	 * content is coming from.
+	 * Return the compiler given a resolver for abstracting where the content is
+	 * coming from.
 	 * 
-	 * @param resolver
-	 *            abstracts the file system
+	 * @param resolver abstracts the file system
 	 * @return an Alloy compiler
 	 */
 	Compiler compiler(SourceResolver resolver);
@@ -53,10 +51,6 @@ public interface Alloy {
 	Compiler compiler();
 
 	/**
-	 * 
-	 */
-
-	/**
 	 * Get a file in the Alloy private directory. The intention for this path is
 	 * to be used by solvers or visualizers for caches and preferences.
 	 * 
@@ -64,6 +58,5 @@ public interface Alloy {
 	 * @return a Path to a file on the file system using slashes to separate
 	 *         directories.
 	 */
-
 	File getPreferencesDir(String id);
 }
