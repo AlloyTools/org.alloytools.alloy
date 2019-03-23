@@ -305,13 +305,6 @@ public class AlloyClassicFacade implements Alloy {
 			public Module compile(String path) {
 				return compileSource(resolver.resolve(path));
 			}
-
-			@Override
-			public String resolve(String path) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
 		};
 	}
 
