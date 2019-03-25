@@ -6,12 +6,12 @@ package org.alloytools.alloy.core.api;
  * caching if so desired.
  */
 public interface SourceResolver {
+
     /**
      * Resolve a path to a source string
      * 
-     * @param path
-     *            the path referenced in an Alloy file
+     * @param path the path referenced in an Alloy file
      * @return the content associated with the given path
      */
-    String resolve(String path) ;
+    String resolve(String path);
 }

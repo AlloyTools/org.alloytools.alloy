@@ -11,32 +11,30 @@ import org.alloytools.alloy.core.api.TCommand;
 
 public abstract class AbstractSolver implements Solver {
 
-	private final Alloy core;
+    private final Alloy core;
 
-	public AbstractSolver(Alloy core) {
-		this.core = core;
-	}
+    public AbstractSolver(Alloy core) {
+        this.core = core;
+    }
 
-	public Alloy getAlloy() {
-		return core;
-	}
+    public Alloy getAlloy() {
+        return core;
+    }
 
-	public String toString() {
-		return getName();
-	}
+    public String toString() {
+        return getName();
+    }
 
-	protected SolverOptions processOptions(Module module, TCommand command, SolverOptions optionsOrNull) {
+    protected SolverOptions processOptions(Module module, TCommand command, SolverOptions optionsOrNull) {
 
-		SolverOptions options = optionsOrNull == null ? newOptions() : optionsOrNull;
+        SolverOptions options = optionsOrNull == null ? newOptions() : optionsOrNull;
 
-		assert newOptions().getClass()
-			.isAssignableFrom(options.getClass()) : options.getClass()
-			+ " is invalid option class for " + this;
+        assert newOptions().getClass().isAssignableFrom(options.getClass()) : options.getClass() + " is invalid option class for " + this;
 
-		Map<String, String> sourceOptions = module.getSourceOptions(command);
-		DTOs.set(options, sourceOptions);
+        Map<String,String> sourceOptions = module.getSourceOptions(command);
+        DTOs.set(options, sourceOptions);
 
-		return options;
-	}
+        return options;
+    }
 
 }

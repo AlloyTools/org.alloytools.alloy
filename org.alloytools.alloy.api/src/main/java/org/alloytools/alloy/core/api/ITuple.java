@@ -6,8 +6,8 @@ package org.alloytools.alloy.core.api;
 public interface ITuple extends Comparable<ITuple> {
 
     /**
-     * Number of atoms in the tuple. A tuple must contain at least one atom,
-     * hence the arity must be positive
+     * Number of atoms in the tuple. A tuple must contain at least one atom, hence
+     * the arity must be positive
      * 
      * @return the arity of this tuple
      */
@@ -55,8 +55,8 @@ public interface ITuple extends Comparable<ITuple> {
     int hashCode();
 
     /**
-     * Two tuples are equal if they have the same arity and they have matching
-     * atoms at each each position (from 0 to arity-1).
+     * Two tuples are equal if they have the same arity and they have matching atoms
+     * at each each position (from 0 to arity-1).
      * 
      * @return true if equal to {@code o}
      */

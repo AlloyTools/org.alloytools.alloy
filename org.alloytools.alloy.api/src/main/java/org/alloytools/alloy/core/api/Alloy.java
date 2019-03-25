@@ -12,6 +12,7 @@ import java.util.Optional;
  * compiler, and the visualizers.
  */
 public interface Alloy {
+
     /**
      * Get a list of available solvers
      * 
@@ -51,8 +52,8 @@ public interface Alloy {
     Compiler compiler();
 
     /**
-     * Get a file in the Alloy private directory. The intention for this path is
-     * to be used by solvers or visualizers for caches and preferences.
+     * Get a file in the Alloy private directory. The intention for this path is to
+     * be used by solvers or visualizers for caches and preferences.
      * 
      * @param pathWithSlashes a path separated with slashes also on windows
      * @return a Path to a file on the file system using slashes to separate

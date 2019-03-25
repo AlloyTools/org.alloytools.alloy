@@ -6,17 +6,16 @@ import java.util.List;
  * A Field in a sig
  */
 public interface TField {
+
     /**
      * The type of this field.
      * 
      * @return the type of this relation
      */
     List<TSig> getType();
-    
+
     /**
-     * Parent type 
-     * 
-     * TODO (not sure this is needed?)
+     * Parent type TODO (not sure this is needed?)
      * 
      * @return the parent type
      */

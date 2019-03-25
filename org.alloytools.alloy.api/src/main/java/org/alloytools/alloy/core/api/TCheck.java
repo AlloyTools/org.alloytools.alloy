@@ -3,5 +3,4 @@ package org.alloytools.alloy.core.api;
 /**
  * An Alloy check command
  */
-public interface TCheck extends TCommand {
-}
+public interface TCheck extends TCommand {}

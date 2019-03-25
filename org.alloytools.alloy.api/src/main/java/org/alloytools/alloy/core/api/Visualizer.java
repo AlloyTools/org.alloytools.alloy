@@ -9,29 +9,30 @@ import java.net.URI;
  * {@link Visualizer.Hint}.
  */
 public interface Visualizer {
+
     /**
-     * A preferred output format for a visualizer. Visualizer only has to
-     * support at last one of these Hints.
+     * A preferred output format for a visualizer. Visualizer only has to support at
+     * last one of these Hints.
      */
     enum Hint {
-        /** SVG Format */
-        SVG(String.class),
+               /** SVG Format */
+               SVG(String.class),
 
-        /** HTML format */
-        HTML(String.class),
+               /** HTML format */
+               HTML(String.class),
 
-        /** Plain text. Will be displayed with a monospace font. */
-        TEXT(String.class),
+               /** Plain text. Will be displayed with a monospace font. */
+               TEXT(String.class),
 
-        /** PNG format */
-        PNG(byte[].class),
+               /** PNG format */
+               PNG(byte[].class),
 
-        /** An interactive JComponent */
-        JCOMPONENT(Object.class);
+               /** An interactive JComponent */
+               JCOMPONENT(Object.class);
 
-        public final Class<?> type;
+        public final Class< ? > type;
 
-        Hint(Class<?> type) {
+        Hint(Class< ? > type) {
             this.type = type;
         }
     }
@@ -69,8 +70,8 @@ public interface Visualizer {
 
     /**
      * Return a rendering according to the hint. If the hint was returned from
-     * {@link #prefers(Hint...)} then the return object must be not null,
-     * otherwise it may be null.
+     * {@link #prefers(Hint...)} then the return object must be not null, otherwise
+     * it may be null.
      * 
      * @param instance the instance of a solution
      * @param hint the hint to define the format

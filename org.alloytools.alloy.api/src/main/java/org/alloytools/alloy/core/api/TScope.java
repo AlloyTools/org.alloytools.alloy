@@ -1,11 +1,11 @@
 package org.alloytools.alloy.core.api;
 
 /**
- * A scope designates a sig bound for a command (check/run)
- * 
- * TODO does this need a start and ending scope like the original?
+ * A scope designates a sig bound for a command (check/run) TODO does this need
+ * a start and ending scope like the original?
  */
 public interface TScope {
+
     /**
      * The signature for which this scope is set
      */

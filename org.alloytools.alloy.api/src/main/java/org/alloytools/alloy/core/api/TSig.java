@@ -7,6 +7,7 @@ import java.util.Optional;
  * Represents a signature in Alloy.
  */
 public interface TSig {
+
     /**
      * The name of the signature
      * 
@@ -19,7 +20,7 @@ public interface TSig {
      * 
      * @return the fields
      */
-    List<? extends TField> getFields();
+    List< ? extends TField> getFields();
 
     /**
      * Get a particular field
@@ -27,5 +28,5 @@ public interface TSig {
      * @param fieldName the field name
      * @return an optional field
      */
-    Optional<? extends TField> getField(String fieldName);
+    Optional< ? extends TField> getField(String fieldName);
 }

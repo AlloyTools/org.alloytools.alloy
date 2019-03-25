@@ -11,11 +11,11 @@ import java.util.ServiceLoader;
  */
 public class Services {
 
-	public static <S> List<S> getServices(Class<S> serviceType) {
-		List<S> result = new ArrayList<>();
-		for (S s : ServiceLoader.load(serviceType)) {
-			result.add(s);
-		}
-		return result;
-	}
+    public static <S> List<S> getServices(Class<S> serviceType) {
+        List<S> result = new ArrayList<>();
+        for (S s : ServiceLoader.load(serviceType)) {
+            result.add(s);
+        }
+        return result;
+    }
 }

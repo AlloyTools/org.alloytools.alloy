@@ -6,7 +6,9 @@ import java.util.Set;
 public interface TCommand {
 
     enum Expects {
-        UNKNOWN, SATISFIABLE, UNSATISFIABLE
+                  UNKNOWN,
+                  SATISFIABLE,
+                  UNSATISFIABLE
     }
 
     /**

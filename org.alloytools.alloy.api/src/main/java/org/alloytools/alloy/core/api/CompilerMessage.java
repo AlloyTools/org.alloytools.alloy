@@ -4,6 +4,7 @@ package org.alloytools.alloy.core.api;
  * A warning or error from the compilation
  */
 public interface CompilerMessage {
+
     /**
      * The actual message
      * 
@@ -20,8 +21,8 @@ public interface CompilerMessage {
 
     /**
      * The path to the source code. This path must be interpreted through the
-     * compiler used to compile the module since some sources are in user
-     * interface components.
+     * compiler used to compile the module since some sources are in user interface
+     * components.
      * 
      * @return the path to the source code
      */

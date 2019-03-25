@@ -5,6 +5,7 @@ import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Solution;
 
 abstract class Tuple implements ITuple {
+
     final Solution solution;
 
     public Tuple(Solution solution) {
@@ -29,7 +30,9 @@ abstract class Tuple implements ITuple {
 
     @Override
     public IRelation asRelation() {
-        return new Relation(solution, arity(), new Tuple[] { this });
+        return new Relation(solution, arity(), new Tuple[] {
+                                                            this
+        });
     }
 
     @Override

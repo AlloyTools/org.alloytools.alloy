@@ -42,16 +42,15 @@ public interface Instance {
     IRelation eval(String expr);
 
     /**
-     * Get the universe for this instance (i.e., all the atoms as a unary
-     * relation)
+     * Get the universe for this instance (i.e., all the atoms as a unary relation)
      * 
      * @return the universe
      */
     IRelation universe();
 
     /**
-     * Return the identity relation for this instance (i.e., a binary relation
-     * where each atom is mapped to itself)
+     * Return the identity relation for this instance (i.e., a binary relation where
+     * each atom is mapped to itself)
      * 
      * @return the identity relation
      */

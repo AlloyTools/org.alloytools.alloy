@@ -76,7 +76,7 @@ public interface Module {
      * @param command
      * @return Options given in the source for the given command
      */
-    Map<String, String> getSourceOptions(TCommand command);
+    Map<String,String> getSourceOptions(TCommand command);
 
     /**
      * Return the compiler that compiled this module.

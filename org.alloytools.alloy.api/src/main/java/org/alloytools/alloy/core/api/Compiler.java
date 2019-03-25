@@ -7,6 +7,7 @@ import java.io.File;
  * {@link Module}
  */
 public interface Compiler {
+
     /**
      * Compile a source string into a module
      * 
@@ -15,9 +16,9 @@ public interface Compiler {
     Module compileSource(String source);
 
     /**
-     * Compile a path, the path is resolved via the resolver. Any explicit
-     * imports in the content (specified using the 'open' keyword) will also be
-     * recursively compiled.
+     * Compile a path, the path is resolved via the resolver. Any explicit imports
+     * in the content (specified using the 'open' keyword) will also be recursively
+     * compiled.
      * 
      * @return a Module
      */

@@ -3,6 +3,7 @@ package org.alloytools.alloy.classic.provider;
 import aQute.libg.glob.Glob;
 
 class Option implements Comparable<Option> {
+
     final String value;
     final Glob   glob;
     final String key;

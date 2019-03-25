@@ -6,6 +6,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 
 public interface AlloyModuleClassic extends Module {
 
-	CompModule getOriginalModule();
+    CompModule getOriginalModule();
 
 }

@@ -7,10 +7,10 @@ import org.junit.Test;
 
 public class NativeCodeTest {
 
-	@Test
-	public void testNative() {
-		Platform platform = NativeCode.platform;
-		assertNotNull(platform);
-		System.out.println(platform);
-	}
+    @Test
+    public void testNative() {
+        Platform platform = NativeCode.platform;
+        assertNotNull(platform);
+        System.out.println(platform);
+    }
 }

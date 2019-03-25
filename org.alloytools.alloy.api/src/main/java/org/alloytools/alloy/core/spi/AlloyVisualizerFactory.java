@@ -9,10 +9,10 @@ import org.alloytools.alloy.core.api.Visualizer;
  */
 public interface AlloyVisualizerFactory {
 
-	/**
-	 * Get a list of visualizers
-	 * 
-	 * @return list of visualizers
-	 */
-	Set<Visualizer> getVisualizers();
+    /**
+     * Get a list of visualizers
+     *
+     * @return list of visualizers
+     */
+    Set<Visualizer> getVisualizers();
 }

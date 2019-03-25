@@ -20,8 +20,8 @@ public interface IRelation extends Iterable<ITuple> {
     Solution getSolution();
 
     /**
-     * The arity of this relation (which must coincide with the arity of each
-     * tuple in this relation)
+     * The arity of this relation (which must coincide with the arity of each tuple
+     * in this relation)
      * 
      * @return the arity
      */
@@ -51,24 +51,24 @@ public interface IRelation extends Iterable<ITuple> {
     IRelation product(IRelation right);
 
     /**
-     * Returns a new unary relation that contains only the 1st column (at index
-     * 0) of this relation.
+     * Returns a new unary relation that contains only the 1st column (at index 0)
+     * of this relation.
      * 
      * @return the head of this relation
      */
     IRelation head();
 
     /**
-     * Returns a new relation that contains all the columns of this relation but
-     * the first.
+     * Returns a new relation that contains all the columns of this relation but the
+     * first.
      * 
      * @return the tail of this relation
      */
     IRelation tail();
 
     /**
-     * A relation is a "scalar" if it contains a single tuple with a single atom
-     * in it (i.e., both the arity and the size of the relation is 1).
+     * A relation is a "scalar" if it contains a single tuple with a single atom in
+     * it (i.e., both the arity and the size of the relation is 1).
      * 
      * @return is this tuple set a scalar?
      */
@@ -95,8 +95,7 @@ public interface IRelation extends Iterable<ITuple> {
     }
 
     /**
-     * If this tuple sets holds a single scalar then this method returns the
-     * scalar.
+     * If this tuple sets holds a single scalar then this method returns the scalar.
      * 
      * @return the scalar value
      */
@@ -108,8 +107,8 @@ public interface IRelation extends Iterable<ITuple> {
     }
 
     /**
-     * Return the most left column as a list of atoms PRECONDITION: this must be
-     * a unary relation
+     * Return the most left column as a list of atoms PRECONDITION: this must be a
+     * unary relation
      * 
      * @return a list of atoms
      */
@@ -133,8 +132,8 @@ public interface IRelation extends Iterable<ITuple> {
     int hashCode();
 
     /**
-     * Two relations are equal when they have the same arity, the same size, and
-     * the same sets of tuples.
+     * Two relations are equal when they have the same arity, the same size, and the
+     * same sets of tuples.
      * 
      * @return true if equal to {@code o}
      */

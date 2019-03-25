@@ -11,6 +11,7 @@ import org.alloytools.alloy.core.api.TScope;
 import edu.mit.csail.sdg.ast.Command;
 
 public class AbstractCommand implements TCommand, TRun, TCheck {
+
     final Command command;
     final Module  module;
 

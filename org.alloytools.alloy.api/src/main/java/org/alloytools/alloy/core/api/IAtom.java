@@ -8,8 +8,8 @@ package org.alloytools.alloy.core.api;
 public interface IAtom extends Comparable<IAtom> {
 
     /**
-     * Return a human readable name for the atom that is unique for all atoms of
-     * the solution.
+     * Return a human readable name for the atom that is unique for all atoms of the
+     * solution.
      * 
      * @return the unique name of the atom
      */
@@ -37,9 +37,7 @@ public interface IAtom extends Comparable<IAtom> {
     IRelation asTupleSet();
 
     /**
-     * Each atom has a unique index the universe. 
-     * 
-     * TODO necessary?
+     * Each atom has a unique index the universe. TODO necessary?
      * 
      * @return the index of this atom in the Alloy universe
      */
@@ -98,8 +96,8 @@ public interface IAtom extends Comparable<IAtom> {
     boolean equals(Object o);
 
     /**
-	 * Return the integer value, assuming this atom is an integer. Throws a
-	 * {@link RuntimeException} if this atom is not an integer
-	 */
+     * Return the integer value, assuming this atom is an integer. Throws a
+     * {@link RuntimeException} if this atom is not an integer
+     */
     int toInt();
 }

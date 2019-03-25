@@ -6,8 +6,8 @@ package org.alloytools.alloy.core.api;
 public interface Solver {
 
     /**
-     * The identity of the solver. This identity must be unique world-wide so a
-     * FQN is recommended. For example, the primary class name.
+     * The identity of the solver. This identity must be unique world-wide so a FQN
+     * is recommended. For example, the primary class name.
      * 
      * @return the identity
      */

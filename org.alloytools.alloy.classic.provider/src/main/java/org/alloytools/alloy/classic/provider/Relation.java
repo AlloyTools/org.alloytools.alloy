@@ -24,7 +24,7 @@ public class Relation implements IRelation {
         this.arity = arity;
     }
 
-    public Relation(Solution solution, int arity, List<? extends IAtom> atoms) {
+    public Relation(Solution solution, int arity, List< ? extends IAtom> atoms) {
         this(solution, arity, toTuples(solution, arity, atoms));
     }
 
@@ -119,11 +119,12 @@ public class Relation implements IRelation {
         return solution;
     }
 
-    static Tuple[] toTuples(Solution solution, int arity, List<? extends IAtom> atoms) {
+    static Tuple[] toTuples(Solution solution, int arity, List< ? extends IAtom> atoms) {
         Set<Tuple> removeDuplicates = new HashSet<>();
         for (int i = 0; i < atoms.size(); i += arity) {
             int base = i;
             Tuple tuple = new Tuple(solution) {
+
                 @Override
                 public int arity() {
                     return arity;
@@ -159,12 +160,13 @@ public class Relation implements IRelation {
     }
 
     /**
-     * Return a relation that takes the first colum of the this
-     * as the first and second columm. Further columns are ignored.
+     * Return a relation that takes the first colum of the this as the first and
+     * second columm. Further columns are ignored.
+     * 
      * @return a new relation
      */
     public IRelation toIdent() {
-        
+
         List<IAtom> atoms = new ArrayList<>();
         for (ITuple t : this) {
             atoms.add(t.first());
