@@ -11,7 +11,7 @@ public interface TField {
      * 
      * @return the type of this relation
      */
-    List<TColumnType> getType();
+    List<TSig> getType();
     
     /**
      * Parent type 

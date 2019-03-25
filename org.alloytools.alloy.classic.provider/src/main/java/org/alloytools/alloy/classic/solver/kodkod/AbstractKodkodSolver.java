@@ -47,7 +47,7 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 	}
 
 	@Override
-	public Solution solve(TCommand command, SolverOptions optionsOrNull, Instance lowerBound) {
+	public Solution solve(TCommand command, SolverOptions optionsOrNull, Instance lowerBound, Instance upperBound) {
 		AbstractCommand c = (AbstractCommand) command;
 		return command(command.getModule(), optionsOrNull, c.getOriginalCommand());
 	}

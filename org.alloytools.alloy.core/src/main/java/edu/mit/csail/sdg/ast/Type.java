@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.alloytools.alloy.core.api.TColumnType;
 import org.alloytools.alloy.core.api.TSig;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -69,7 +68,7 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
      * result C will always be the intersection of A and B even if the caller later
      * constructs more sigs or subsigs or subsetsigs...
      */
-    public static final class ProductType implements TColumnType {
+    public static final class ProductType {
 
         /** The array of PrimSig objects. */
         private final PrimSig[]          types;
@@ -340,7 +339,6 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
             return ans.toString();
         }
 
-        @Override
         public List<TSig> getSigs() {
             return Stream.of(types).collect(Collectors.toList());
         }

@@ -56,7 +56,8 @@ public interface Solver {
      * @param command the command to run/check
      * @param options the specified options or null if not options are given
      * @param lowerBound provide the lower bound for the solution
+     * @param upperBound provide the upper bound for the solution
      * @return a Solution
      */
-    Solution solve(TCommand command, SolverOptions options, Instance lowerBound);
+    Solution solve(TCommand command, SolverOptions options, Instance lowerBound, Instance upperBound);
 }

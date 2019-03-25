@@ -86,7 +86,7 @@ public class Relation implements IRelation {
     }
 
     private Relation split(int from, int to) {
-        assert from > 0;
+        assert from >= 0;
         assert from < to;
         assert to > from;
         assert to <= arity;
@@ -158,7 +158,13 @@ public class Relation implements IRelation {
         return sb.toString();
     }
 
+    /**
+     * Return a relation that takes the first colum of the this
+     * as the first and second columm. Further columns are ignored.
+     * @return a new relation
+     */
     public IRelation toIdent() {
+        
         List<IAtom> atoms = new ArrayList<>();
         for (ITuple t : this) {
             atoms.add(t.first());

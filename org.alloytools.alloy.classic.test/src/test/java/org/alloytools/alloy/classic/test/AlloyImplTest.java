@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 
 import org.alloytools.alloy.classic.provider.AlloyClassicFacade;
 import org.alloytools.alloy.core.api.Alloy;
+import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
-import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TSig;
@@ -42,7 +42,7 @@ public class AlloyImplTest {
 
 		for (TRun run : module.getRuns()) {
 			for (Solver solver : ai.getSolvers()) {
-				Solution solution = solver.solve(run, null, null);
+				Solution solution = solver.solve(run, null, null, null);
 				assertTrue(solution.iterator()
 					.hasNext());
 			}
@@ -58,7 +58,7 @@ public class AlloyImplTest {
 			.get(0);
 		TRun run = module.getRuns()
 			.get(0);
-		Solution solution = solver.solve(run, null, null);
+		Solution solution = solver.solve(run, null, null, null);
 		TSig B = module.getSig("B")
 			.get();
 			
@@ -103,7 +103,7 @@ public class AlloyImplTest {
 			.get(0);
 		for (TRun run : module.getRuns()) {
 
-			Solution solution = solver.solve(run, null, null);
+			Solution solution = solver.solve(run, null, null, null);
 			List<Integer> collect = solution.stream()
 				.map(instance -> instance.getVariable("two", "y")
 					.scalar()
@@ -126,7 +126,7 @@ public class AlloyImplTest {
 		TRun run = module.getRuns()
 			.get(0);
 
-		Solution solution = solver.solve(run, null, null);
+		Solution solution = solver.solve(run, null, null, null);
 		assertFalse(solution.isSatisfied());
 		solution.iterator()
 			.next();
@@ -144,7 +144,7 @@ public class AlloyImplTest {
 			.get(0);
 		for (TRun run : module.getRuns()) {
 
-			Solution solution = solver.solve(run, null, null);
+			Solution solution = solver.solve(run, null, null, null);
 
 			for (Instance instance : solution) {
 
@@ -174,7 +174,7 @@ public class AlloyImplTest {
 
 		for (TRun run : module.getRuns()) {
 
-			Solution solution = solver.solve(run, null, null);
+			Solution solution = solver.solve(run, null, null, null);
 
 			for (Instance instance : solution) {
 				int x = instance.getVariable(run.getName(), "x")
@@ -205,7 +205,7 @@ public class AlloyImplTest {
 			.get(0);
 		for (TRun run : module.getRuns()) {
 
-			Solution solution = solver.solve(run, null, null);
+			Solution solution = solver.solve(run, null, null, null);
 			// TSig B = module.getSig("B").get();
 
 			for (Instance instance : solution) {
@@ -227,7 +227,7 @@ public class AlloyImplTest {
 
 		for (TRun run : module.getRuns()) {
 
-			Solution solution = solver.solve(run, null, null);
+			Solution solution = solver.solve(run, null, null, null);
 
 			TSig B = module.getSig("B")
 				.get();

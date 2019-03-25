@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.alloytools.alloy.core.api.TColumnType;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TSig;
 import org.alloytools.util.table.Table;
@@ -851,9 +850,11 @@ public abstract class Sig extends Expr implements Clause, TSig {
         }
 
         @Override
-        public List<TColumnType> getType() {
-            List<TColumnType> types = new ArrayList<>();
-            type.forEach(types::add);
+        public List<TSig> getType() {
+            List<TSig> types = new ArrayList<>();
+            type.forEach( p -> {
+                types.addAll(p.getSigs());
+            });
             return types;
         }
 
