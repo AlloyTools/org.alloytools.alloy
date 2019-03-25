@@ -14,4 +14,4 @@
 -testpath: \
     osgi.enroute.junit.wrapper, \
     osgi.enroute.hamcrest.wrapper, \
-    biz.aQute.bndlib;packages=*
+    aQute.libg;packages=*

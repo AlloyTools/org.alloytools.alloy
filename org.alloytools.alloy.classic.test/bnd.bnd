@@ -15,6 +15,6 @@
 	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
 	org.alloytools.kodkod.nativesat.shared;version=latest,\
 	org.alloytools.kodkod.nativesat.amd64-linux;version=latest, \
-	biz.aQute.bndlib;packages=*,\
+	aQute.libg;packages=*,\
 	slf4j.api, \
 	slf4j.simple

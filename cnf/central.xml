@@ -43,7 +43,7 @@
 		</dependency>
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
-			<artifactId>biz.aQute.bndlib</artifactId>
+			<artifactId>aQute.libg</artifactId>
 			<version>4.1.0</version>
 		</dependency>
 		<dependency>

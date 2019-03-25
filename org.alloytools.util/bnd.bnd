@@ -11,7 +11,7 @@ Export-Package: \
 -conditionalpackage: aQute.lib*
 
 -buildpath: \
-    biz.aQute.bndlib;packages=*
+    aQute.libg;packages=*
     
 -testpath: \
     osgi.enroute.hamcrest.wrapper, \
