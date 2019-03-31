@@ -12,30 +12,24 @@ public class DTOs {
 
     @SuppressWarnings("unchecked" )
     public static <T> T copy(T from, T to) {
+        try {
+            Class< ? extends Object> class1 = from.getClass();
+            assert class1 == to.getClass();
 
-        Class< ? extends Object> class1 = from.getClass();
-        assert class1 == to.getClass();
-
-        if (to == null) {
-            try {
+            if (to == null) {
                 to = (T) class1.newInstance();
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
-        }
 
-        for (java.lang.reflect.Field toField : to.getClass().getFields()) {
-            try {
+            for (java.lang.reflect.Field toField : to.getClass().getFields()) {
                 java.lang.reflect.Field fromField = class1.getField(toField.getName());
                 Object fromValue = fromField.get(from);
                 Object toValue = convert(toField.getGenericType(), fromValue);
                 toField.set(to, toValue);
-            } catch (Exception e) {
-                //
             }
+            return to;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return to;
     }
 
     @SuppressWarnings("unchecked" )
@@ -44,8 +38,6 @@ public class DTOs {
             Object cnv = Converter.cnv(type, source);
             return (T) cnv;
         } catch (Exception e) {
-            // TODO
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -59,8 +51,6 @@ public class DTOs {
         try {
             return type.newInstance();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
             throw new IllegalArgumentException(type + " not suitable to instantiate", e);
         }
     }
@@ -76,8 +66,8 @@ public class DTOs {
     }
 
     public static void set(Object options, Map<String,String> sourceOptions) {
-        for (Field field : options.getClass().getFields()) {
-            try {
+        try {
+            for (Field field : options.getClass().getFields()) {
                 if (Modifier.isStatic(field.getModifiers()))
                     continue;
 
@@ -86,29 +76,29 @@ public class DTOs {
                     Object value = convert(field.getGenericType(), string);
                     field.set(options, value);
                 }
-            } catch (Exception e) {
-                // TODO log
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static String readableTime(long l) {
-        if (l < 1000) {
-            return l + " ms";
-        }
-        l = (l + 500) / 1000;
-        if (l < 60) {
-            return l + " s";
+    public static String readableTime(long timeMs) {
+        if (timeMs < 1000) {
+            return timeMs + " ms";
         }
 
-        l = (l + 30) / 60;
-        if (l < 60) {
-            return l + " min";
+        timeMs = (timeMs + 500) / 1000;
+        if (timeMs < 60) {
+            return timeMs + " s";
         }
 
-        l = (l + 30) / 60;
-        return l + " h";
+        timeMs = (timeMs + 30) / 60;
+        if (timeMs < 60) {
+            return timeMs + " min";
+        }
+
+        timeMs = (timeMs + 30) / 60;
+        return timeMs + " h";
     }
 
 }

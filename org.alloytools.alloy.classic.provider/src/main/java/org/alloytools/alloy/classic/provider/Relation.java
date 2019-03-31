@@ -160,9 +160,9 @@ public class Relation implements IRelation {
     }
 
     /**
-     * Return a relation that takes the first colum of the this as the first and
-     * second columm. Further columns are ignored.
-     * 
+     * Return a relation that takes the first column of the this as the first and
+     * second column. Further columns are ignored.
+     *
      * @return a new relation
      */
     public IRelation toIdent() {
