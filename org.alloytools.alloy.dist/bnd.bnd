@@ -2,28 +2,36 @@
 Main-Class: edu.mit.csail.sdg.alloy4whole.SimpleGUI
 
 -buildpath: \
+    org.alloytools.alloy.api, \
 	org.alloytools.alloy.application,\
     org.alloytools.alloy.core,\
+    org.alloytools.alloy.classic.provider, \
 	org.alloytools.alloy.extra,\
 	org.alloytools.kodkod.core;version=latest,\
+    org.alloytools.kodkod.nativesat.shared, \
 	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
 	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.util;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-mac;version=latest
+	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
+    org.alloytools.kodkod.sat4j, \
+    org.sat4j.core, \
+    org.alloytools.util, \
 	
 
 -sources: false
 
 -includeresource: \
+    @${repo;org.alloytools.alloy.api}, \
 	@${repo;org.alloytools.alloy.application}, \
     @${repo;org.alloytools.alloy.core}, \
+    @${repo;org.alloytools.alloy.classic.provider}, \
 	@${repo;org.alloytools.alloy.extra}, \
 	@${repo;org.alloytools.kodkod.core}, \
-	@${repo;org.alloytools.kodkod.nativesat.util}, \
+    @${repo;org.alloytools.kodkod.nativesat.shared}, \
 	@${repo;org.alloytools.kodkod.nativesat.amd64-linux}, \
 	@${repo;org.alloytools.kodkod.nativesat.x86-linux}, \
 	@${repo;org.alloytools.kodkod.nativesat.x86-mac}, \
-	@${repo;org.alloytools.kodkod.nativesat.x86-windows}, \
+    @${repo;org.alloytools.kodkod.nativesat.x86-windows}, \
+    @${repo;org.alloytools.kodkod.sat4j}, \
 	@${repo;org.sat4j.core}, \
-	LICENSES
+    @${repo;org.alloytools.util}

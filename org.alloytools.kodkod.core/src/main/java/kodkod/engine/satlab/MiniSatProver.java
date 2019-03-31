@@ -33,14 +33,14 @@ import kodkod.util.ints.IntSet;
  *
  * @author Emina Torlak
  */
-final class MiniSatProver extends NativeSolver implements SATProver {
+public final class MiniSatProver extends NativeSolver implements SATProver {
 
     private LazyTrace proof;
 
     /**
      * Constructs a new MiniSat prover wrapper.
      */
-    MiniSatProver() {
+    public MiniSatProver() {
         super(make());
         proof = null;
     }
@@ -216,7 +216,7 @@ final class MiniSatProver extends NativeSolver implements SATProver {
      * @see kodkod.engine.satlab.NativeSolver#free(long)
      */
     @Override
-    native void free(long peer);
+    protected native void free(long peer);
 
     /**
      * {@inheritDoc}
@@ -224,7 +224,7 @@ final class MiniSatProver extends NativeSolver implements SATProver {
      * @see kodkod.engine.satlab.NativeSolver#addVariables(long, int)
      */
     @Override
-    native void addVariables(long peer, int numVariables);
+    protected native void addVariables(long peer, int numVariables);
 
     /**
      * {@inheritDoc}
@@ -232,7 +232,7 @@ final class MiniSatProver extends NativeSolver implements SATProver {
      * @see kodkod.engine.satlab.NativeSolver#addClause(long, int[])
      */
     @Override
-    native boolean addClause(long peer, int[] lits);
+    protected native boolean addClause(long peer, int[] lits);
 
     /**
      * {@inheritDoc}
@@ -240,7 +240,7 @@ final class MiniSatProver extends NativeSolver implements SATProver {
      * @see kodkod.engine.satlab.NativeSolver#solve(long)
      */
     @Override
-    native boolean solve(long peer);
+    protected native boolean solve(long peer);
 
     /**
      * {@inheritDoc}
@@ -248,7 +248,7 @@ final class MiniSatProver extends NativeSolver implements SATProver {
      * @see kodkod.engine.satlab.NativeSolver#valueOf(long, int)
      */
     @Override
-    native boolean valueOf(long peer, int literal);
+    protected native boolean valueOf(long peer, int literal);
 
     /**
      * Returns an array of arrays that encodes the most recently generated

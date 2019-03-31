@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -2439,6 +2440,11 @@ public final class CompModule extends Browsable implements Module {
     @Override
     public String explain() {
         return "module " + moduleName;
+    }
+
+    public Optional<Command> getRunCommand(String run) {
+
+        return getAllCommands().stream().filter(x -> x.label.equals(run)).findAny();
     }
 
 }

@@ -30,7 +30,7 @@ import org.alloytools.nativecode.util.NativeCode;
  *
  * @author Emina Torlak
  */
-abstract class NativeSolver implements SATSolver {
+public abstract class NativeSolver implements SATSolver {
 
     /**
      * The memory address of the native instance wrapped by this wrapper.
@@ -42,7 +42,7 @@ abstract class NativeSolver implements SATSolver {
     /**
      * Constructs a new wrapper for the given instance of the native solver.
      */
-    NativeSolver(long peer) {
+    protected NativeSolver(long peer) {
         this.peer = peer;
         this.clauses = this.vars = 0;
         this.sat = null;
@@ -56,7 +56,7 @@ abstract class NativeSolver implements SATSolver {
      * ranges over the path-separator delimited list obtained by calling
      * System.getProperty("kodkod." + library.getSimpleName().toLowerCase()).
      */
-    static void loadLibrary(Class< ? extends NativeSolver> library) {
+    protected static void loadLibrary(Class< ? extends NativeSolver> library) {
         final String name = library.getSimpleName().toLowerCase();
         try {
             System.loadLibrary(name);
@@ -71,7 +71,7 @@ abstract class NativeSolver implements SATSolver {
                 }
             }
 
-            if (NativeCode.loadlibrary(null, name))
+            if (NativeCode.loadlibrary(null, name, library))
                 return;
 
             throw new UnsatisfiedLinkError("Could not load the library " + System.mapLibraryName(name) + " or any of its variants:" + e.getMessage());
@@ -107,7 +107,7 @@ abstract class NativeSolver implements SATSolver {
      * @ensures adjusts the internal clause so that the next call to
      *          {@linkplain #numberOfClauses()} will return the given value.
      */
-    final void adjustClauseCount(int clauseCount) {
+    protected final void adjustClauseCount(int clauseCount) {
         assert clauseCount >= 0;
         clauses = clauseCount;
     }
@@ -154,7 +154,7 @@ abstract class NativeSolver implements SATSolver {
      * @return a pointer to the C++ peer class (the native instance wrapped by this
      *         object).
      */
-    final long peer() {
+    protected final long peer() {
         return peer;
     }
 
@@ -164,7 +164,7 @@ abstract class NativeSolver implements SATSolver {
      * @return null if the sat is unknown, TRUE if the last call to solve() yielded
      *         SAT, and FALSE if the last call to solve() yielded UNSAT.
      */
-    final Boolean status() {
+    protected final Boolean status() {
         return sat;
     }
 
@@ -237,7 +237,7 @@ abstract class NativeSolver implements SATSolver {
      *
      * @ensures releases the resources associated with the given native peer
      */
-    abstract void free(long peer);
+    protected abstract void free(long peer);
 
     /**
      * Adds the specified number of variables to the given native peer.
@@ -245,7 +245,7 @@ abstract class NativeSolver implements SATSolver {
      * @ensures increases the vocabulary of the given native peer by the specified
      *          number of variables
      */
-    abstract void addVariables(long peer, int numVariables);
+    protected abstract void addVariables(long peer, int numVariables);
 
     /**
      * Ensures that the given native peer logically contains the specified clause
@@ -259,14 +259,14 @@ abstract class NativeSolver implements SATSolver {
      * @return true if the peer's clause database changed as a result of the call; a
      *         negative integer if not.
      */
-    abstract boolean addClause(long peer, int[] lits);
+    protected abstract boolean addClause(long peer, int[] lits);
 
     /**
      * Calls the solve method on the given native peer.
      *
      * @return true if the clauses in the solver are SAT; otherwise returns false.
      */
-    abstract boolean solve(long peer);
+    protected abstract boolean solve(long peer);
 
     /**
      * Returns the assignment for the given literal by the specified native peer
@@ -275,6 +275,6 @@ abstract class NativeSolver implements SATSolver {
      *           SATISFIABLE
      * @return the assignment for the given literal
      */
-    abstract boolean valueOf(long peer, int literal);
+    protected abstract boolean valueOf(long peer, int literal);
 
 }

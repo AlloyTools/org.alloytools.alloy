@@ -1,0 +1,4 @@
+
+Private-Package: org.alloytools.alloy.solver.*.natve
+
+-includeresource: src/main/resources

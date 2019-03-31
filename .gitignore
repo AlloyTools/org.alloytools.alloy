@@ -6,9 +6,6 @@ bin_test/
 target/
 enroute.zip
 .metadata
-org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/CompLexer.java
-org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/CompParser.java
-org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/parser/CompSym.java
 *.slo
 *.lo
 *.o
@@ -36,4 +33,3 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.exe
 *.out
 *.app
-

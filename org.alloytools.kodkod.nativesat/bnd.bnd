@@ -1,1 +1,10 @@
 -sub: *.bnd
+
+-buildpath: \
+	org.alloytools.alloy.api;version=latest, \
+    org.alloytools.alloy.core;version=latest, \
+    org.alloytools.util;version=latest, \
+    org.alloytools.kodkod.core;version=latest, \
+	org.alloytools.alloy.classic.provider;version=latest
+
+-fixupmessages: Split package

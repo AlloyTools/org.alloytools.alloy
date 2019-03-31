@@ -122,7 +122,7 @@ public class PreferencesDialog extends JFrame {
     }
 
     @SuppressWarnings("unchecked" )
-    private static class CBModel<T> extends AbstractListModel implements ComboBoxModel {
+    private static class CBModel<T> extends AbstractListModel<T> implements ComboBoxModel<T> {
 
         private final ChoicePref<T> pref;
 
@@ -143,7 +143,7 @@ public class PreferencesDialog extends JFrame {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public T getElementAt(int index) {
             return pref.validChoices().get(index);
         }
 
@@ -535,7 +535,7 @@ public class PreferencesDialog extends JFrame {
                        "unchecked"
     } )
     protected <T> JPanel mkCombo(final ChoicePref<T> pref) {
-        JComboBox cb = make(new JComboBox(mkComboBoxModelFor(pref)));
+        JComboBox<T> cb = make(new JComboBox<>(mkComboBoxModelFor(pref)));
         pref2comp.put(pref, cb);
         cb.setRenderer(new CBRenderer() {
 
@@ -555,7 +555,7 @@ public class PreferencesDialog extends JFrame {
         return new MyIntSpinnerModel(pref);
     }
 
-    private <T> ComboBoxModel mkComboBoxModelFor(ChoicePref<T> pref) {
+    private <T> ComboBoxModel<T> mkComboBoxModelFor(ChoicePref<T> pref) {
         return new CBModel<T>(pref);
     }
 

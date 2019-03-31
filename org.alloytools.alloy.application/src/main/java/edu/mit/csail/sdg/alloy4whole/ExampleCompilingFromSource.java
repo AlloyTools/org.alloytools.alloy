@@ -1,10 +1,11 @@
 package edu.mit.csail.sdg.alloy4whole;
 
+import java.util.List;
+
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorAPI;
-import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
@@ -38,7 +39,7 @@ public class ExampleCompilingFromSource {
 
         for (Sig sig : world.getAllReachableSigs()) {
             System.out.println("traversing sig: " + sig);
-            SafeList<Field> fields = sig.getFields();
+            List<Field> fields = sig.getFields();
             for (Field field : fields) {
                 System.out.println("  traversing field: " + field);
                 A4TupleSet ts = (sol.eval(field));

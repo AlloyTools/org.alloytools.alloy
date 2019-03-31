@@ -1,0 +1,7 @@
+
+-buildpath: \
+	org.alloytools.kodkod.core,\
+	org.alloytools.alloy.api,\
+	org.sat4j.core,\
+	org.alloytools.alloy.classic.provider;version=latest
+    
