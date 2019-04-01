@@ -34,8 +34,132 @@ public class BinaryExpression extends Expression
         }
         this.rhsExpr    = rhsExpr;
 
+        checkTypes();
     }
-    
+
+    private void checkTypes()
+    {
+        switch (op)
+        {
+            case OR:
+            case AND:
+            case IMPLIES:
+                {
+                    if (lhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
+                    {
+                        throw new RuntimeException(String.format("Left expression sort '%1$s' is not boolean", lhsExpr.getSort()));
+                    }
+                    if (rhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
+                    {
+                        throw new RuntimeException(String.format("Right expression sort '%1$s' is not boolean", rhsExpr.getSort()));
+                    }
+                } break;
+            case PLUS:
+            case MINUS:
+            case MULTIPLY:
+            case DIVIDE:
+            case MOD:
+            case GTE:
+            case LTE:
+            case GT:
+            case LT:
+            {
+                if (lhsExpr.getSort() != Alloy2SmtTranslator.intSort ||
+                        lhsExpr.getSort() != Alloy2SmtTranslator.setOfUnaryIntSort)
+                {
+                    throw new RuntimeException(String.format("Left expression sort '%1$s' is not integer or  set of integers", lhsExpr.getSort()));
+                }
+                if (rhsExpr.getSort() != Alloy2SmtTranslator.intSort ||
+                        rhsExpr.getSort() != Alloy2SmtTranslator.setOfUnaryIntSort)
+                {
+                    throw new RuntimeException(String.format("Right expression sort '%1$s' is not integer or  set of integers", rhsExpr.getSort()));
+                }
+            } break;
+
+            case EQ:
+            case UNION:
+            case INTERSECTION:
+            case SETMINUS:
+            case SUBSET:
+            {
+                if(lhsExpr.getSort() != rhsExpr.getSort())
+                {
+                    throw new RuntimeException(String.format("The sort of left expression sort '%1$s' is different than the sort of right expression '%2$s'", lhsExpr.getSort(), rhsExpr.getSort()));
+                }
+            } break;
+
+            case MEMBER:
+            {
+                if(!(rhsExpr.getSort() instanceof  SetSort))
+                {
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set", rhsExpr.getSort()));
+                }
+                SetSort setSort = (SetSort) rhsExpr.getSort();
+
+                if(lhsExpr.getSort() != setSort.elementSort)
+                {
+                    throw new RuntimeException(String.format("The sort of left expression '%1$s' doesn't match the element sort of the right expression '%2$s'", lhsExpr.getSort(), setSort.elementSort));
+                }
+            } break;
+
+            case JOIN:
+            {
+                if(!(lhsExpr.getSort() instanceof  SetSort &&
+                        ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
+                {
+                    throw new RuntimeException(String.format("The sort of left expression '%1$s' is not a set of tuples", lhsExpr.getSort()));
+                }
+                if(!(rhsExpr.getSort() instanceof  SetSort &&
+                        ((SetSort) rhsExpr.getSort()).elementSort instanceof TupleSort))
+                {
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set of tuples", rhsExpr.getSort()));
+                }
+
+                TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
+                TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
+
+                if(leftSort.elementSorts.get(leftSort.elementSorts.size() - 1) !=
+                        rightSort.elementSorts.get(0))
+                {
+                    throw new RuntimeException(String.format("The left and right sorts ('%1$s' and '%2$s') can't be joined", leftSort, rightSort));
+                }
+            } break;
+            case PRODUCT:
+            {
+                if(!(lhsExpr.getSort() instanceof  SetSort &&
+                        ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
+                {
+                    throw new RuntimeException(String.format("The sort of left expression '%1$s' is not a set of tuples", lhsExpr.getSort()));
+                }
+                if(!(rhsExpr.getSort() instanceof  SetSort &&
+                        ((SetSort) rhsExpr.getSort()).elementSort instanceof TupleSort))
+                {
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set of tuples", rhsExpr.getSort()));
+                }
+            } break;
+            case TUPSEL:
+            {
+                if(!(lhsExpr instanceof IntConstant))
+                {
+                    throw new RuntimeException(String.format("The left expression '%1$s' is not a constant integer", lhsExpr));
+                }
+                if(!(rhsExpr.getSort() instanceof TupleSort))
+                {
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not tuple", rhsExpr.getSort()));
+                }
+
+                int index = Integer.parseInt(((IntConstant) lhsExpr).getValue());
+                TupleSort sort = (TupleSort)rhsExpr.getSort();
+                if (index >= sort.elementSorts.size() || index < 0)
+                {
+                    throw new RuntimeException(String.format("The index '%1$d' out of range", index));
+                }
+            } break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
     public Expression getLhsExpr() 
     {
         return this.lhsExpr;
@@ -188,7 +312,12 @@ public class BinaryExpression extends Expression
                 Sort sort = new TupleSort(newSorts);
                 return sort;
             }
-            case TUPSEL: throw new UnsupportedOperationException("TUPSEL");
+            case TUPSEL:
+            {
+                int index = Integer.parseInt(((IntConstant) lhsExpr).getValue());
+                TupleSort sort = (TupleSort)rhsExpr.getSort();
+                return sort.elementSorts.get(index);
+            }
             default:
                 throw new UnsupportedOperationException();
         }
