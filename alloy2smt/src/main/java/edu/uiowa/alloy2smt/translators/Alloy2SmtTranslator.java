@@ -44,7 +44,7 @@ public class Alloy2SmtTranslator
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
 
-    public final static IntSort intSort        = new IntSort();
+    public final static IntSort intSort        = IntSort.getInstance();
 
     public final static BoolSort          boolSort               = BoolSort.getInstance();
     public final static UninterpretedSort atomSort               = new UninterpretedSort(atom);

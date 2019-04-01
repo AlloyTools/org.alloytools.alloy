@@ -12,9 +12,16 @@ import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
 public class IntSort extends Sort
 {
-    public IntSort()
+    private static IntSort instance = new IntSort();
+
+    private IntSort()
     {
         super("Int", 0);
+    }
+
+    public static IntSort getInstance()
+    {
+        return instance;
     }
 
     @Override
