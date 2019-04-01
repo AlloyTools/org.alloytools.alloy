@@ -686,19 +686,19 @@ public class ExprBinaryTranslator
         {
             case GT:
                 funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GT, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_GT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                compFunc = new FunctionDefinition("_GT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
                 break;
             case LT:
                 funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LT, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_LT", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                compFunc = new FunctionDefinition("_LT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
                 break;
             case GTE:
                 funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GTE, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_GTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                
+                compFunc = new FunctionDefinition("_GTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
                 break;
             case LTE:
                 funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LTE, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_LTE", new BoolSort(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);                                        
+                compFunc = new FunctionDefinition("_LTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
                 break;
             default:break;
         } 

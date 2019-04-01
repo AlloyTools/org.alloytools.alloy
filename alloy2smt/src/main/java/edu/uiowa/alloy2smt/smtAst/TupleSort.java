@@ -49,4 +49,21 @@ public class TupleSort extends Sort
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if (object == this)
+        {
+            return true;
+        }
+
+        if (!(object instanceof TupleSort))
+        {
+            return false;
+        }
+
+        TupleSort sort = (TupleSort) object;
+        return sort.elementSorts.equals(this.elementSorts);
+    }
 }

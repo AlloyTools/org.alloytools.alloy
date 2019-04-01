@@ -19,5 +19,21 @@ public class UninterpretedSort extends Sort
     @Override
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
-    }    
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        if (object == this)
+        {
+            return true;
+        }
+
+        if (!(object instanceof UninterpretedSort))
+        {
+            return false;
+        }
+
+        UninterpretedSort sort = (UninterpretedSort) object;
+        return sort.getName().equals(this.getName());
+    }
 }

@@ -46,7 +46,7 @@ public class Alloy2SmtTranslator
 
     public final static IntSort intSort        = new IntSort();
 
-    public final static BoolSort          boolSort               = new BoolSort();
+    public final static BoolSort          boolSort               = BoolSort.getInstance();
     public final static UninterpretedSort atomSort               = new UninterpretedSort(atom);
     public final static UninterpretedSort unaryIntTup            = new UninterpretedSort(unaryIntAtom);
     public final static UninterpretedSort binaryIntTup           = new UninterpretedSort(binaryIntAtom);
@@ -399,7 +399,7 @@ public class Alloy2SmtTranslator
            throw new RuntimeException("The body of function " + f.label + " is a set comprehension. It should be translated using method Alloy2SmtTranslator.translateSetComprehensionFunction");
         }
 
-        Sort    returnSort  = new BoolSort();
+        Sort    returnSort  = BoolSort.getInstance();
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
         List<VariableDeclaration>      bdVars          = new ArrayList<>();
         Map<String, Expression>             variablesScope  = new HashMap<>();

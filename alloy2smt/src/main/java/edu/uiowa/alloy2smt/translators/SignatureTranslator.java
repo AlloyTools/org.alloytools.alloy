@@ -795,7 +795,7 @@ public class SignatureTranslator
                 );
 
         return new FunctionDefinition(prefix + suffix,
-                new BoolSort(),
+                BoolSort.getInstance(),
                 ltExpression,
                 set1, set2
         );

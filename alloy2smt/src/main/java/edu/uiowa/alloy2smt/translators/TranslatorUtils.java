@@ -125,10 +125,9 @@ public class TranslatorUtils
     public static Sort getSetSortOfAtomWithArity(int n)
     {
         List<Sort> elementSorts = new ArrayList<>();
-        UninterpretedSort atomSort = new UninterpretedSort("Atom");
         for(int i = 0; i < n; ++i)
         {
-            elementSorts.add(atomSort);
+            elementSorts.add(Alloy2SmtTranslator.atomSort);
         }
         return new SetSort(new TupleSort(elementSorts));
     }

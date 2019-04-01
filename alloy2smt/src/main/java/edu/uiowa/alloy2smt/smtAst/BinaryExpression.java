@@ -64,13 +64,11 @@ public class BinaryExpression extends Expression
             case GT:
             case LT:
             {
-                if (lhsExpr.getSort() != Alloy2SmtTranslator.intSort ||
-                        lhsExpr.getSort() != Alloy2SmtTranslator.setOfUnaryIntSort)
+                if (lhsExpr.getSort() != Alloy2SmtTranslator.intSort)
                 {
                     throw new RuntimeException(String.format("Left expression sort '%1$s' is not integer or  set of integers", lhsExpr.getSort()));
                 }
-                if (rhsExpr.getSort() != Alloy2SmtTranslator.intSort ||
-                        rhsExpr.getSort() != Alloy2SmtTranslator.setOfUnaryIntSort)
+                if (rhsExpr.getSort() != Alloy2SmtTranslator.intSort)
                 {
                     throw new RuntimeException(String.format("Right expression sort '%1$s' is not integer or  set of integers", rhsExpr.getSort()));
                 }
@@ -82,7 +80,7 @@ public class BinaryExpression extends Expression
             case SETMINUS:
             case SUBSET:
             {
-                if(lhsExpr.getSort() != rhsExpr.getSort())
+                if(! lhsExpr.getSort().equals(rhsExpr.getSort()))
                 {
                     throw new RuntimeException(String.format("The sort of left expression sort '%1$s' is different than the sort of right expression '%2$s'", lhsExpr.getSort(), rhsExpr.getSort()));
                 }
@@ -96,7 +94,7 @@ public class BinaryExpression extends Expression
                 }
                 SetSort setSort = (SetSort) rhsExpr.getSort();
 
-                if(lhsExpr.getSort() != setSort.elementSort)
+                if(!(lhsExpr.getSort().equals(setSort.elementSort)))
                 {
                     throw new RuntimeException(String.format("The sort of left expression '%1$s' doesn't match the element sort of the right expression '%2$s'", lhsExpr.getSort(), setSort.elementSort));
                 }
@@ -118,8 +116,7 @@ public class BinaryExpression extends Expression
                 TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
                 TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
 
-                if(leftSort.elementSorts.get(leftSort.elementSorts.size() - 1) !=
-                        rightSort.elementSorts.get(0))
+                if(!(leftSort.elementSorts.get(leftSort.elementSorts.size() - 1).equals(rightSort.elementSorts.get(0))))
                 {
                     throw new RuntimeException(String.format("The left and right sorts ('%1$s' and '%2$s') can't be joined", leftSort, rightSort));
                 }
@@ -294,7 +291,7 @@ public class BinaryExpression extends Expression
                     newSorts.add(rightSort.elementSorts.get(i));
                 }
 
-                Sort sort = new TupleSort(newSorts);
+                Sort sort = new SetSort(new TupleSort(newSorts));
 
                 return sort;
             }
@@ -309,7 +306,7 @@ public class BinaryExpression extends Expression
                 newSorts.addAll(leftSort.elementSorts);
                 newSorts.addAll(rightSort.elementSorts);
 
-                Sort sort = new TupleSort(newSorts);
+                Sort sort = new SetSort(new TupleSort(newSorts));
                 return sort;
             }
             case TUPSEL:

@@ -24,4 +24,21 @@ public class SetSort extends Sort
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if (object == this)
+        {
+            return true;
+        }
+
+        if (!(object instanceof SetSort))
+        {
+            return false;
+        }
+
+        SetSort sort = (SetSort) object;
+        return sort.elementSort.equals(this.elementSort);
+    }
 }
