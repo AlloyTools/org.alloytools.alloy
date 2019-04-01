@@ -24,7 +24,7 @@ public class UnaryExpressionTests
     @Test
     void atomConstant() throws Exception
     {
-        Expression expression = new AtomConstant("a");
+        Expression expression = new UninterpretedConstant("a", Alloy2SmtTranslator.atomSort);
         Assertions.assertEquals(Alloy2SmtTranslator.atomSort, expression.getSort());
     }
 

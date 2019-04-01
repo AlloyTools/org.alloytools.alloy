@@ -333,9 +333,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         {
             this.visit((ITEExpression) expression);
         }
-        else if (expression instanceof  AtomConstant)
+        else if (expression instanceof UninterpretedConstant)
         {
-            this.visit((AtomConstant) expression);
+            this.visit((UninterpretedConstant) expression);
         }
         else
         {   
@@ -417,9 +417,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(AtomConstant atomConstant)
+    public void visit(UninterpretedConstant uninterpretedConstant)
     {
-        this.stringBuilder.append(atomConstant.getName());
+        this.stringBuilder.append(uninterpretedConstant.getName());
     }
 
     @Override

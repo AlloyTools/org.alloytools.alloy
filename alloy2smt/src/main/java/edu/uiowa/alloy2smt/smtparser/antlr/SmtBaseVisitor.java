@@ -150,7 +150,7 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAtomConstant(SmtParser.AtomConstantContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

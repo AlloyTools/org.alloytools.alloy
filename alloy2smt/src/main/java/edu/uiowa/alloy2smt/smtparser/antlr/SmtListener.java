@@ -198,15 +198,15 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitIntegerConstant(SmtParser.IntegerConstantContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#atomConstant}.
+	 * Enter a parse tree produced by {@link SmtParser#uninterpretedConstant}.
 	 * @param ctx the parse tree
 	 */
-	void enterAtomConstant(SmtParser.AtomConstantContext ctx);
+	void enterUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#atomConstant}.
+	 * Exit a parse tree produced by {@link SmtParser#uninterpretedConstant}.
 	 * @param ctx the parse tree
 	 */
-	void exitAtomConstant(SmtParser.AtomConstantContext ctx);
+	void exitUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#emptySet}.
 	 * @param ctx the parse tree

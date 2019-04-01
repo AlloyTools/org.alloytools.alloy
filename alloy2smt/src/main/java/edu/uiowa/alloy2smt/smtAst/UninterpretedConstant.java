@@ -3,14 +3,16 @@ package edu.uiowa.alloy2smt.smtAst;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
-public class AtomConstant extends Expression
+public class UninterpretedConstant extends Expression
 {
 
     private String name;
+    private UninterpretedSort sort;
 
-    public AtomConstant(String name)
+    public UninterpretedConstant(String name, UninterpretedSort sort)
     {
         this.name = name;
+        this.sort = sort;
     }
 
     public String getName()
@@ -27,6 +29,6 @@ public class AtomConstant extends Expression
     @Override
     public Sort getSort()
     {
-        return Alloy2SmtTranslator.atomSort;
+        return sort;
     }
 }

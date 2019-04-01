@@ -53,10 +53,11 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         {
             switch (ctx.sortName().getText())
             {
+                case Alloy2SmtTranslator.atom: return Alloy2SmtTranslator.atomSort;
                 case Alloy2SmtTranslator.intSortName: return Alloy2SmtTranslator.intSort;
-                case Alloy2SmtTranslator.unaryIntAtom: return Alloy2SmtTranslator.unaryIntSort;
-                case Alloy2SmtTranslator.binaryIntAtom: return Alloy2SmtTranslator.binaryIntSort;
-                case Alloy2SmtTranslator.ternaryIntAtom: return Alloy2SmtTranslator.ternaryIntSort;
+                case Alloy2SmtTranslator.unaryIntAtom: return Alloy2SmtTranslator.unaryIntTup;
+                case Alloy2SmtTranslator.binaryIntAtom: return Alloy2SmtTranslator.binaryIntTup;
+                case Alloy2SmtTranslator.ternaryIntAtom: return Alloy2SmtTranslator.ternaryIntTup;
                 default:
                     throw new UnsupportedOperationException(String.format("Unknown sort '%s'", ctx.sortName().getText()));
             }
@@ -117,7 +118,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     public SmtAst visitArgument(SmtParser.ArgumentContext ctx)
     {
         String argumentName = ctx.argumentName().getText();
-        Sort   argumentSort = (Sort) this.visit(ctx.sort());
+        Sort   argumentSort = (Sort) this.visitSort(ctx.sort());
         return new VariableDeclaration(argumentName, argumentSort);
     }
 
@@ -198,9 +199,9 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         {
             return this.visitIntegerConstant(ctx.integerConstant());
         }
-        if(ctx.atomConstant() != null)
+        if(ctx.uninterpretedConstant() != null)
         {
-            return this.visitAtomConstant(ctx.atomConstant());
+            return this.visitUninterpretedConstant(ctx.uninterpretedConstant());
         }
         if(ctx.emptySet() != null)
         {
@@ -217,9 +218,27 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     }
 
     @Override
-    public SmtAst visitAtomConstant(SmtParser.AtomConstantContext ctx)
+    public SmtAst visitUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx)
     {
-        return new AtomConstant(ctx.getText());
+        if(ctx.AtomPrefix() != null)
+        {
+            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.atomSort);
+        }
+        if(ctx.UnaryPrefix() != null)
+        {
+            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.unaryIntTup);
+        }
+        if(ctx.BinaryPrefix() != null)
+        {
+            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.binaryIntTup);
+        }
+
+        if(ctx.TernaryPrefix() != null)
+        {
+            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.ternaryIntTup);
+        }
+
+        throw new UnsupportedOperationException(String.format("Unknown constant value '%s'", ctx.getText()));
     }
 
     @Override

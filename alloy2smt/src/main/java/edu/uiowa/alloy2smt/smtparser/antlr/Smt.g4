@@ -45,12 +45,12 @@ multiArityExpression :  MultiArityOperator expression+ ;
 variable : Identifier;
 
 constant :  integerConstant
-            | atomConstant
+            | uninterpretedConstant
             | emptySet ;
 
 integerConstant : '-' Integer | Integer ;
 
-atomConstant : AtomPrefix Integer;
+uninterpretedConstant : (AtomPrefix | UnaryPrefix | BinaryPrefix | TernaryPrefix) Integer;
 
 emptySet : 'as' 'emptyset' '(' 'Set' '(' sort ')' ')' ;
 
@@ -67,7 +67,13 @@ TernaryOperator : 'ite' ;
 
 MultiArityOperator : 'mkTuple' | 'insert' | 'distinct' ;
 
-AtomPrefix : '@uc_Atom_' | '@uc_UnaryIntTup_' | '@uc_BinaryIntTup_' | '@uc_TernaryIntTup_';
+AtomPrefix : '@uc_Atom_';
+
+UnaryPrefix : '@uc_UnaryIntTup_' ;
+
+BinaryPrefix : '@uc_BinaryIntTup_' ;
+
+TernaryPrefix : '@uc_TernaryIntTup_' ;
 
 Identifier : IdentifierLetter (IdentifierLetter | Digit)* ;
 

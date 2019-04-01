@@ -62,7 +62,7 @@ public interface SmtAstVisitor
 
     public void visit(ITEExpression iteExpression);
 
-    public void visit(AtomConstant atomConstant);
+    public void visit(UninterpretedConstant uninterpretedConstant);
 
     public void visit(SolverOption solverOption);
 }

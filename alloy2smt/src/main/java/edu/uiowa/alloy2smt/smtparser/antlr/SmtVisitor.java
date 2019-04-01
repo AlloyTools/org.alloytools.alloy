@@ -125,11 +125,11 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIntegerConstant(SmtParser.IntegerConstantContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#atomConstant}.
+	 * Visit a parse tree produced by {@link SmtParser#uninterpretedConstant}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAtomConstant(SmtParser.AtomConstantContext ctx);
+	T visitUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#emptySet}.
 	 * @param ctx the parse tree

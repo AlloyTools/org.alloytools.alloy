@@ -3,7 +3,6 @@ package edu.mit.csail.sdg.alloy4whole;
 import edu.mit.csail.sdg.alloy4.*;
 
 import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Func;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
@@ -487,10 +486,10 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     {
         List<Atom> atoms = new ArrayList<>();
 
-        if(expression instanceof  AtomConstant)
+        if(expression instanceof UninterpretedConstant)
         {
-            AtomConstant atomConstant = (AtomConstant) expression;
-            atoms.add(new Atom(atomConstant.getName()));
+            UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) expression;
+            atoms.add(new Atom(uninterpretedConstant.getName()));
             return  atoms;
         }
 

@@ -244,13 +244,13 @@ public class SmtBaseListener implements SmtListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAtomConstant(SmtParser.AtomConstantContext ctx) { }
+	@Override public void enterUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAtomConstant(SmtParser.AtomConstantContext ctx) { }
+	@Override public void exitUninterpretedConstant(SmtParser.UninterpretedConstantContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
