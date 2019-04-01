@@ -31,6 +31,7 @@ public class Alloy2SmtTranslator
 {
     public final SmtProgram smtProgram;
 
+    public final static String intSortName        = "Int";
     public final static String atom               = "Atom";
     public final static String unaryIntAtom       = "UnaryIntTup";
     public final static String binaryIntAtom      = "BinaryIntTup";

@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.smtparser;
 import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtBaseVisitor;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,15 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         if(ctx.sortName() != null)
         {
-            return new Sort(ctx.sortName().getText(), 0);
+            switch (ctx.sortName().getText())
+            {
+                case Alloy2SmtTranslator.intSortName: return Alloy2SmtTranslator.intSort;
+                case Alloy2SmtTranslator.unaryIntAtom: return Alloy2SmtTranslator.unaryIntSort;
+                case Alloy2SmtTranslator.binaryIntAtom: return Alloy2SmtTranslator.binaryIntSort;
+                case Alloy2SmtTranslator.ternaryIntAtom: return Alloy2SmtTranslator.ternaryIntSort;
+                default:
+                    throw new UnsupportedOperationException(String.format("Unknown sort '%s'", ctx.sortName().getText()));
+            }
         }
 
         if(ctx.tupleSort() != null)
