@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
@@ -32,7 +33,50 @@ public class MultiArityExpression extends Expression
             throw new RuntimeException("One of the expression is null");
         }
     }
-    
+
+    public void checkTypes()
+    {
+        switch (op)
+        {
+            case MKTUPLE:break;
+            case INSERT:
+            {
+                if(exprs.size() <= 1)
+                {
+                    throw new RuntimeException("Insert operation requires at least two expressions");
+                }
+                // the last expression should have a set sort
+                Expression setExpression = exprs.get(exprs.size() - 1);
+                if(!(setExpression.getSort() instanceof  SetSort))
+                {
+                    throw new RuntimeException(String.format("The expression '%1$s' has sort '%2S' which is not set",setExpression, setExpression.getSort()));
+                }
+                SetSort setSort = (SetSort) setExpression.getSort();
+
+                // all remaining expressions should have the same sort of the elements of the set
+                for (int i = 0; i < exprs.size() - 1; i++)
+                {
+                    Expression expression = exprs.get(i);
+                    if(!(expression.getSort().equals(setSort.elementSort)))
+                    {
+                        throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' doesn't match the elements sort '%3$s'", exprs.get(i).getSort(), expression , setSort.elementSort));
+                    }
+                }
+            } break;
+            case DISTINCT:
+            {
+                List<Sort> sorts = this.exprs.stream()
+                                .map(Expression::getSort).collect(Collectors.toList());
+                if(sorts.size() > 1)
+                {
+                    throw new RuntimeException("Not all expressions have of the same type");
+                }
+            }break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
     public MultiArityExpression(Op op, Expression ... exprs)
     {
         this(op,  Arrays.asList(exprs));
