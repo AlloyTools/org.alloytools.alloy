@@ -7,6 +7,22 @@ import org.junit.jupiter.api.Assertions;
 public class ArithmeticTests
 {
     @Test
+    public void simple()
+    {
+        String alloy =
+                "sig a, b, c in Int {}\n" +
+                "\n" +
+                "fact {\n" +
+                "#a = 1\n" +
+                "#b = 1\n" +
+                "plus[a, b] = 2\n" +
+                "plus[c, 0] = 2\n" +
+                "}\n";
+        Translation translation = Utils.translate(alloy);
+        translation.translateAllCommandsWithCheckSat();
+    }
+
+    @Test
     public void testPlusMinus()
     {
         String alloy =
