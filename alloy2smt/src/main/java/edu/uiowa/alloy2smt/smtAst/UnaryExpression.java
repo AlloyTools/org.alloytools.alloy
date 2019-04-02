@@ -27,6 +27,48 @@ public class UnaryExpression extends Expression
             throw new RuntimeException("Expression is null");
         }
         this.expr   = expr;
+        checkTypes();
+    }
+
+    private void checkTypes()
+    {
+        switch (op)
+        {
+            case NOT:
+            {
+                if (expr.getSort() != Alloy2SmtTranslator.boolSort)
+                {
+                    throw new RuntimeException(String.format("Expression sort '%1$s' is not boolean", expr.getSort()));
+                }
+            } break;
+            case COMPLEMENT:
+            {
+                if(!(expr.getSort() instanceof  SetSort))
+                {
+                    throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not a set", expr.getSort(), expr));
+                }
+            } break;
+            case TRANSPOSE:
+            case TCLOSURE:
+            {
+                if(!(expr.getSort() instanceof  SetSort &&
+                        ((SetSort) expr.getSort()).elementSort instanceof TupleSort))
+                {
+                    throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not a set of tuples", expr.getSort(), expr));
+                }
+            } break;
+            case EMPTYSET:
+            case UNIVSET:
+            {
+                if(!(expr instanceof Sort))
+                {
+                    throw new RuntimeException(String.format("Expected a set sort. Found '%1$s'", expr));
+                }
+            }
+            case SINGLETON: break;
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
     public Op getOP() 
