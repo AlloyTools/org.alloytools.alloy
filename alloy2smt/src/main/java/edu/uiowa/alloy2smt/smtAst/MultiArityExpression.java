@@ -148,8 +148,8 @@ public class MultiArityExpression extends Expression
             }
             case INSERT:
             {
-                // at least there should be one expression
-                return exprs.get(0).getSort();
+                // return the sort of the last element
+                return exprs.get(exprs.size() - 1).getSort();
             }
             case DISTINCT: return Alloy2SmtTranslator.boolSort;
             default:
