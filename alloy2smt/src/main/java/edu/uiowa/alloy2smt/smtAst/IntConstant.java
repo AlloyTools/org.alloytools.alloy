@@ -22,9 +22,30 @@ public class IntConstant extends Expression
         this.value = value;
     }
     
-    public IntConstant(int value)
+    private IntConstant(int value)
     {
         this.value = new BigInteger(String.valueOf(value));
+    }
+
+    public static IntConstant getInstance(int value)
+    {
+        return new IntConstant(value);
+    }
+
+    public static Expression getSingletonTuple(int value)
+    {
+        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                new IntConstant(value));
+        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return singleton;
+    }
+
+    public static Expression getSingletonTuple(IntConstant intConstant)
+    {
+        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                intConstant);
+        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return singleton;
     }
     
     public IntConstant(String value)

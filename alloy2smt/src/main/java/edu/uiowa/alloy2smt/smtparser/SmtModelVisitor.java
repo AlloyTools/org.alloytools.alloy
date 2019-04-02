@@ -214,7 +214,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     public SmtAst visitIntegerConstant(SmtParser.IntegerConstantContext ctx)
     {
         int constant = Integer.parseInt(ctx.getText());
-        return new IntConstant(constant);
+        return IntConstant.getInstance(constant);
     }
 
     @Override

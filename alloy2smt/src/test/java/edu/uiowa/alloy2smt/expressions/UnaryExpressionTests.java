@@ -9,27 +9,27 @@ public class UnaryExpressionTests
 {
     Expression booleanConstant = new BooleanConstant(true);
     @Test
-    void booleanConstant() throws Exception
+    void booleanConstant()
     {
         Assertions.assertEquals(Alloy2SmtTranslator.boolSort, booleanConstant.getSort());
     }
 
     @Test
-    void intConstant() throws Exception
+    void intConstant()
     {
-        Expression expression = new IntConstant(5);
+        Expression expression = IntConstant.getInstance(5);
         Assertions.assertEquals(Alloy2SmtTranslator.intSort, expression.getSort());
     }
 
     @Test
-    void atomConstant() throws Exception
+    void atomConstant()
     {
         Expression expression = new UninterpretedConstant("a", Alloy2SmtTranslator.atomSort);
         Assertions.assertEquals(Alloy2SmtTranslator.atomSort, expression.getSort());
     }
 
     @Test
-    void or() throws Exception
+    void or()
     {
         Expression expression = new BinaryExpression(booleanConstant, BinaryExpression.Op.AND, booleanConstant);
         Assertions.assertEquals(Alloy2SmtTranslator.boolSort, expression.getSort());

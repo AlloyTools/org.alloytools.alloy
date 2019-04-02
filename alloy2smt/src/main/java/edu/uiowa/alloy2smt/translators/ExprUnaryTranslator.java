@@ -331,7 +331,7 @@ public class ExprUnaryTranslator
         
         for(Expression e : exprs)
         {
-            atomExprs.add(new BinaryExpression(new IntConstant(0), BinaryExpression.Op.TUPSEL, e));
+            atomExprs.add(new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, e));
         }
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
     }     
@@ -388,7 +388,7 @@ public class ExprUnaryTranslator
     
     public Expression mkTupleSelExpr(Expression expr, int index)
     {
-        return new BinaryExpression(new IntConstant(index), BinaryExpression.Op.TUPSEL, expr);
+        return new BinaryExpression(IntConstant.getInstance(index), BinaryExpression.Op.TUPSEL, expr);
     }
     
     public Expression mkUnaryIntTupValue(Expression expr)

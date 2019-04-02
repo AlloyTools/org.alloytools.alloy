@@ -999,6 +999,6 @@ public class ExprBinaryTranslator
     
     public Expression mkTupleSelectExpr(Expression tupleExpr, int index)
     {
-        return new BinaryExpression(new IntConstant(index), BinaryExpression.Op.TUPSEL, tupleExpr);        
+        return new BinaryExpression(IntConstant.getInstance(index), BinaryExpression.Op.TUPSEL, tupleExpr);
     }    
 }

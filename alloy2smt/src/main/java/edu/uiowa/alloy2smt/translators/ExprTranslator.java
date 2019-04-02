@@ -88,7 +88,7 @@ public class ExprTranslator
         switch (expr.op)
         {
             // alloy only supports integers
-            case NUMBER : return new IntConstant(expr.num); 
+            case NUMBER : return IntConstant.getInstance(expr.num);
             case IDEN   : return translator.atomIden.getConstantExpr();
             case TRUE   : return new BooleanConstant(true);
             case FALSE  : return new BooleanConstant(false); 
@@ -346,14 +346,14 @@ public class ExprTranslator
                 arithVarDecl = new ConstantDeclaration("DIV", translator.setOfTernaryIntSort);
                 lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.DIVIDE, ySelect);
                 lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, new IntConstant(0))));
+                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0))));
                 xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
                 finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
 
                 lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
                 rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.DIVIDE, ySelect);
                 rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, new IntConstant(0)));
+                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0)));
                 rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
                 rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
                 finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.IMPLIES, rhsExprII), w);
@@ -363,14 +363,14 @@ public class ExprTranslator
                 arithVarDecl = new ConstantDeclaration("MOD", translator.setOfTernaryIntSort);
                 lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.MOD, ySelect);
                 lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, new IntConstant(0))));
+                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0))));
                 xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
                 finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
 
                 lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
                 rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.MOD, ySelect);
                 rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, new IntConstant(0)));
+                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0)));
                 rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
                 rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
                 finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.EQ, rhsExprII), w);
@@ -463,42 +463,43 @@ public class ExprTranslator
                 declSorts = declSorts.stream()
                         .map(s -> new SetSort(new TupleSort(s)))
                         .collect(Collectors.toList());
-
-                String name = TranslatorUtils.sanitizeName(decl.get().label);
-                VariableDeclaration variable = createVariable(declSorts.get(0), name);
-                //ToDo: refactor this for set case
-                quantifiedSingleton2AtomMap.put(name, new ArrayList<>(Collections.singletonList(variable)));
-                variablesScope.put(decl.get().label, variable.getConstantExpr());
-                quantifiedVariable2SignatureMap.put(decl.get().label, declExpr);
-                quantifiedVariable2ExpressionMap.put(name, variable.getConstantExpr());
-
-                switch (((ExprUnary) decl.expr).op)
+                for(ExprHasName name : decl.names)
                 {
-                    case SOMEOF:
-                    {
-                        multiplicityConstraint = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
-                            new UnaryExpression(UnaryExpression.Op.EMPTYSET, variable.getSort())
-                            ));
-                    } break;
-                    case ONEOF:
-                    {
-                        VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
-                        quantifiedSingleton2AtomMap.get(name).add(multiplicityVariable);
-                        multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
-                                new UnaryExpression(UnaryExpression.Op.SINGLETON,
-                                        new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
-                        );
-                    } break;
-                    case LONEOF:
-                    {
-                        VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
+                    VariableDeclaration variable = createVariable(declSorts.get(0), name.label);
+                    //ToDo: refactor this for set case
+                    quantifiedSingleton2AtomMap.put(name.label, new ArrayList<>(Collections.singletonList(variable)));
+                    variablesScope.put(name.label, variable.getConstantExpr());
+                    quantifiedVariable2SignatureMap.put(name.label, declExpr);
+                    quantifiedVariable2ExpressionMap.put(name.label, variable.getConstantExpr());
 
-                        quantifiedSingleton2AtomMap.get(name).add(multiplicityVariable);
-                        multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.SUBSET,
-                                new UnaryExpression(UnaryExpression.Op.SINGLETON,
-                                        new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
-                        );
-                    } break;
+                    switch (((ExprUnary) decl.expr).op)
+                    {
+                        case SOMEOF:
+                        {
+                            multiplicityConstraint = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
+                                    new UnaryExpression(UnaryExpression.Op.EMPTYSET, variable.getSort())
+                            ));
+                        } break;
+                        case ONEOF:
+                        {
+                            VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
+                            quantifiedSingleton2AtomMap.get(name.label).add(multiplicityVariable);
+                            multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
+                                    new UnaryExpression(UnaryExpression.Op.SINGLETON,
+                                            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
+                            );
+                        } break;
+                        case LONEOF:
+                        {
+                            VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
+
+                            quantifiedSingleton2AtomMap.get(name.label).add(multiplicityVariable);
+                            multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.SUBSET,
+                                    new UnaryExpression(UnaryExpression.Op.SINGLETON,
+                                            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
+                            );
+                        } break;
+                    }
                 }
             }
             else

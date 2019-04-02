@@ -160,10 +160,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(IntConstant intConstant)
     {
-        this.stringBuilder.append("(singleton (mkTuple ")
-        .append(intConstant.getValue())
-        .append("))");
-        
+        this.stringBuilder.append(intConstant.getValue());
     }
 
     @Override

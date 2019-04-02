@@ -17,8 +17,8 @@ import java.util.List;
 public class BinaryExpression extends Expression
 {
     private final Op            op;
-    private final Expression    lhsExpr;
-    private final Expression    rhsExpr;
+    private Expression    lhsExpr;
+    private Expression    rhsExpr;
     
     public BinaryExpression(Expression lhsExpr, Op op, Expression rhsExpr) 
     {
@@ -81,6 +81,7 @@ public class BinaryExpression extends Expression
             case SETMINUS:
             case SUBSET:
             {
+                convertIntConstantsToSingletons();
                 if(! lhsExpr.getSort().equals(rhsExpr.getSort()))
                 {
                     throw new RuntimeException(String.format("The sort of left expression sort '%1$s' is different than the sort of right expression '%2$s'", lhsExpr.getSort(), rhsExpr.getSort()));
@@ -89,10 +90,16 @@ public class BinaryExpression extends Expression
 
             case MEMBER:
             {
+                if(rhsExpr instanceof IntConstant)
+                {
+                    rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
+                }
+
                 if(!(rhsExpr.getSort() instanceof  SetSort))
                 {
                     throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set", rhsExpr.getSort()));
                 }
+
                 SetSort setSort = (SetSort) rhsExpr.getSort();
 
                 if(!(lhsExpr.getSort().equals(setSort.elementSort)))
@@ -103,6 +110,8 @@ public class BinaryExpression extends Expression
 
             case JOIN:
             {
+                convertIntConstantsToSingletons();
+
                 if(!(lhsExpr.getSort() instanceof  SetSort &&
                         ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
                 {
@@ -124,6 +133,7 @@ public class BinaryExpression extends Expression
             } break;
             case PRODUCT:
             {
+                convertIntConstantsToSingletons();
                 if(!(lhsExpr.getSort() instanceof  SetSort &&
                         ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
                 {
@@ -155,6 +165,18 @@ public class BinaryExpression extends Expression
             } break;
             default:
                 throw new UnsupportedOperationException();
+        }
+    }
+
+    private void convertIntConstantsToSingletons()
+    {
+        if (lhsExpr instanceof IntConstant)
+        {
+            lhsExpr = IntConstant.getSingletonTuple((IntConstant) lhsExpr);
+        }
+        if (rhsExpr instanceof IntConstant)
+        {
+            rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
         }
     }
 
