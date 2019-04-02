@@ -37,7 +37,8 @@ public class BinaryExpression extends Expression
         checkTypes();
     }
 
-    private void checkTypes()
+    @Override
+    protected void checkTypes()
     {
         switch (op)
         {

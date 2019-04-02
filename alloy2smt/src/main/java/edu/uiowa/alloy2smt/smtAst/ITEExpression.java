@@ -6,6 +6,7 @@
 package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 /**
  *
@@ -35,9 +36,24 @@ public class ITEExpression extends Expression
         this.condExpr = condExpr;
         this.thenExpr = thenExpr;
         this.elseExpr = elseExpr;
+        checkTypes();
     }
 
-    
+    @Override
+    protected void checkTypes()
+    {
+        if(condExpr.getSort() != Alloy2SmtTranslator.boolSort)
+        {
+            throw new RuntimeException(String.format("The sort '%1$s' of the condition expression is not boolean", condExpr.getSort()));
+        }
+
+        if(!thenExpr.getSort().equals(elseExpr.getSort()))
+        {
+            throw new RuntimeException(String.format("The sort '%1$s' of then expression is different than the sort '%1$s' of else expression", thenExpr.getSort(), elseExpr.getSort()));
+        }
+    }
+
+
     public Expression getCondExpression()
     {
         return this.condExpr;

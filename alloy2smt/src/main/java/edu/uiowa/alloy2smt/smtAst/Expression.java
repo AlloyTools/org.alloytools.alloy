@@ -21,4 +21,5 @@ public abstract class Expression extends SmtAst
     }
 
     public abstract Sort getSort();
+    protected void checkTypes(){}
 }

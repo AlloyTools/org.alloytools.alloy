@@ -30,8 +30,18 @@ public class QuantifiedExpression extends Expression
         {
             this.boundVars.add(bdVar);
         }
+        checkTypes();
     }
-    
+
+    @Override
+    protected void checkTypes()
+    {
+        if(expr.getSort() != Alloy2SmtTranslator.boolSort)
+        {
+            throw new RuntimeException(String.format("The sort '%1$s' of the quantified expression is not boolean", expr.getSort()));
+        }
+    }
+
     public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... boundVars)
     {
         this.boundVars  = Arrays.asList(boundVars);

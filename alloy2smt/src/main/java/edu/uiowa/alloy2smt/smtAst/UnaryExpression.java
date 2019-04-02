@@ -30,7 +30,8 @@ public class UnaryExpression extends Expression
         checkTypes();
     }
 
-    private void checkTypes()
+    @Override
+    protected void checkTypes()
     {
         switch (op)
         {
