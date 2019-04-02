@@ -64,7 +64,7 @@ public class UnaryExpression extends Expression
                 {
                     throw new RuntimeException(String.format("Expected a set sort. Found '%1$s'", expr));
                 }
-            }
+            } break;
             case SINGLETON: break;
             default:
                 throw new UnsupportedOperationException();
