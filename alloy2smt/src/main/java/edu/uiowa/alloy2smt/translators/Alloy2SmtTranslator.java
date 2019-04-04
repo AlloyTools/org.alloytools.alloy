@@ -47,6 +47,7 @@ public class Alloy2SmtTranslator
     public final static BoolSort          boolSort          = BoolSort.getInstance();
     public final static UninterpretedSort atomSort          = new UninterpretedSort(atom);
     public final static UninterpretedSort uninterpretedInt  = new UninterpretedSort(uninterpretedIntName);
+    public final static TupleSort uninterpretedIntTuple = new TupleSort(uninterpretedInt);
     public final static SetSort setOfUninterpretedInt =  new SetSort(new TupleSort(uninterpretedInt));
     public final static SetSort setOfUninterpretedIntPairs =  new SetSort(new TupleSort(uninterpretedInt, uninterpretedInt));
 
