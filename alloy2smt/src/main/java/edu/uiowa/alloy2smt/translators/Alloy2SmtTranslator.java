@@ -51,7 +51,7 @@ public class Alloy2SmtTranslator
     public final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
     public final static TupleSort binaryAtomSort         = new TupleSort(atomSort,atomSort);
     public final static TupleSort unaryIntSort           = new TupleSort(intSort);
-    public final static TupleSort ternaryIntSort         = new TupleSort(intSort,intSort,intSort);
+    public final static TupleSort ternaryIntSort         = new TupleSort(uninterpretedInt, uninterpretedInt, uninterpretedInt);
     public final static SetSort setOfUnaryAtomSort     = new SetSort(unaryAtomSort);
     public final static SetSort setOfUnaryIntSort      = new SetSort(unaryIntSort);
     public final static SetSort setOfBinaryAtomSort    = new SetSort(binaryAtomSort);
@@ -64,7 +64,7 @@ public class Alloy2SmtTranslator
     public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
     public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
     public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);
-    public final static FunctionDeclaration valueOfUnaryIntTup     = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt,unaryIntSort);
+    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt,unaryIntSort);
 
 
     Expression                                      auxExpr;
@@ -110,9 +110,9 @@ public class Alloy2SmtTranslator
         this.signaturesMap.put(Sig.SIGINT, intUniv);
         this.smtProgram.addSort(atomSort);
         this.smtProgram.addSort(uninterpretedInt);
-        this.smtProgram.addFunction(valueOfUnaryIntTup);
+        this.smtProgram.addFunction(uninterpretedIntValue);
 
-        this.functionsMap.put(valueOfUnaryIntTup.getName(), valueOfUnaryIntTup);
+        this.functionsMap.put(uninterpretedIntValue.getName(), uninterpretedIntValue);
 
         this.setComprehensionFuncNameToInputsMap = new HashMap<>();
         this.setCompFuncNameToDefMap        = new HashMap<>(); 

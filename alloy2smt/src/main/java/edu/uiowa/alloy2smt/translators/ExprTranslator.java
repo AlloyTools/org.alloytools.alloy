@@ -273,129 +273,63 @@ public class ExprTranslator
         VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt);
         VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt);
         VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt);
-        Expression xSelect = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(x.getConstantExpr()), 0);
-        Expression ySelect = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(y.getConstantExpr()), 0);
-        Expression zSelect = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(z.getConstantExpr()), 0);
 
-        Expression xyz = exprUnaryTranslator.mkOneTupleExprOutofAtoms(xSelect, ySelect, zSelect);
+        Expression xValue = new FunctionCallExpression(translator.uninterpretedIntValue, x.getConstantExpr());
+        Expression yValue = new FunctionCallExpression(translator.uninterpretedIntValue, y.getConstantExpr());
+        Expression zValue = new FunctionCallExpression(translator.uninterpretedIntValue, z.getConstantExpr());
 
-        VariableDeclaration w = new VariableDeclaration("_w", translator.ternaryIntTup);
-        Expression valueOfw = new FunctionCallExpression(translator.valueOfTernaryIntTup, w.getConstantExpr());
-        Expression xyzEqualsValueOfw  = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz), w);
 
-        Expression lhsExpr               = null;  
-        Expression lhsExprII             = null; 
-        Expression rhsExprII             = null; 
-        Expression finalExprI            = null;
-        Expression finalExprII           = null;
-        ConstantDeclaration arithVarDecl = null;
+        Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                x.getConstantExpr(),  y.getConstantExpr(), z.getConstantExpr());
+
+        String relationName;
 
         switch(op)
         {
-            case PLUS:     
-                arithVarDecl = new ConstantDeclaration("PLUS", translator.setOfTernaryIntSort);
-                lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.PLUS, ySelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
-                finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
-                
-                lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.PLUS, ySelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
-                rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
-                finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.IMPLIES, rhsExprII), w);
-                break;
-            case MINUS:
-                arithVarDecl = new ConstantDeclaration("MINUS", translator.setOfTernaryIntSort);
-                lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.MINUS, ySelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
-                finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
-
-                lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.MINUS, ySelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
-                rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
-                finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.IMPLIES, rhsExprII), w);
-                break;
-            case MULTIPLY:
-                arithVarDecl = new ConstantDeclaration("MUL", translator.setOfTernaryIntSort);
-                lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.MULTIPLY, ySelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
-                finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
-
-                lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.MULTIPLY, ySelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
-                rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
-                finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.EQ, rhsExprII), w);
-                break;
-            case DIVIDE:
-                arithVarDecl = new ConstantDeclaration("DIV", translator.setOfTernaryIntSort);
-                lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.DIVIDE, ySelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0))));
-                xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
-                finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
-
-                lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.DIVIDE, ySelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0)));
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
-                rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
-                finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.IMPLIES, rhsExprII), w);
-                break;
-
-                case MOD:
-                arithVarDecl = new ConstantDeclaration("MOD", translator.setOfTernaryIntSort);
-                lhsExpr = new BinaryExpression(xSelect, BinaryExpression.Op.MOD, ySelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.EQ, zSelect);
-                lhsExpr = new BinaryExpression(lhsExpr, BinaryExpression.Op.AND, new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0))));
-                xyzEqualsValueOfw = new BinaryExpression(xyzEqualsValueOfw, BinaryExpression.Op.AND, new BinaryExpression(xyz, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr()));
-                finalExprI = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExpr, BinaryExpression.Op.IMPLIES, xyzEqualsValueOfw), x, y, z);
-
-                lhsExprII = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, arithVarDecl.getConstantExpr());
-                rhsExprII = new BinaryExpression(xSelect, BinaryExpression.Op.MOD, ySelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.EQ, zSelect);
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(exprUnaryTranslator.mkSingletonOutOfAtomExpr(ySelect), BinaryExpression.Op.EQ, IntConstant.getSingletonTuple(0)));
-                rhsExprII = new BinaryExpression(rhsExprII, BinaryExpression.Op.AND, new BinaryExpression(valueOfw, BinaryExpression.Op.EQ, xyz));
-                rhsExprII = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, rhsExprII, x, y, z);
-                finalExprII = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new BinaryExpression(lhsExprII, BinaryExpression.Op.EQ, rhsExprII), w);
-                break;
+            case PLUS: relationName = "PLUS"; break;
+            case MINUS: relationName = "MINUS"; break;
+            case MULTIPLY: relationName = "MUL"; break;
+            case DIVIDE: relationName = "DIV"; break;
+            case MOD: relationName = "MOD"; break;
             default:
-                break;                   
+                throw new UnsupportedOperationException(op.toString());
         }
-        translator.smtProgram.addConstantDeclaration(arithVarDecl);
-        translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition", finalExprI));
-        translator.smtProgram.addAssertion(new Assertion("Arithmetic operator constant definition II", finalExprII));
-        ConstantExpression operation = arithVarDecl.getConstantExpr();
-        translator.arithOps.put(op, operation);
-        Expression member = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, operation);
-        Expression w0 = exprUnaryTranslator.mkTupleSelExpr(valueOfw, 0);
-        Expression w1 = exprUnaryTranslator.mkTupleSelExpr(valueOfw, 1);
-        Expression w2 = exprUnaryTranslator.mkTupleSelExpr(valueOfw, 2);
-        VariableDeclaration _x = new VariableDeclaration("_x", Alloy2SmtTranslator.intSort);
-        Expression _xEqualw2 = new BinaryExpression(_x.getConstantExpr(), BinaryExpression.Op.EQ, w2);
-        Expression w0Tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, w0);
-        Expression w1Tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, w1);
-        Expression w0Singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, w0Tuple);
-        Expression w1Singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, w1Tuple);
-        Expression w0Join = new BinaryExpression(w0Singleton, BinaryExpression.Op.JOIN, operation);
-        Expression w1Join = new BinaryExpression(w1Singleton, BinaryExpression.Op.JOIN, w0Join);
-        Expression _xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, _x.getConstantExpr());
-        Expression _xSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, _xTuple);
-        Expression equality = new BinaryExpression(_xSingleton, BinaryExpression.Op.EQ,w1Join);
-        Expression and = new BinaryExpression(_xEqualw2, BinaryExpression.Op.AND, equality);
-        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and, _x);
-        Expression implies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, exists);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, w);
-        translator.smtProgram.addAssertion(new Assertion("TernaryIntTup operation relation uniqueness", forAll));
+
+        ConstantDeclaration relation = new ConstantDeclaration(relationName, Alloy2SmtTranslator.setOfTernaryIntSort);
+        Expression xyOperation = new BinaryExpression(xValue, op, yValue);
+        Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
+        Expression xyzTupleMember = new BinaryExpression(xyzTuple, BinaryExpression.Op.MEMBER, relation.getConstantExpr());
+        Expression implies1 = new BinaryExpression(equal, BinaryExpression.Op.IMPLIES, xyzTupleMember);
+        Expression implies2 = new BinaryExpression(xyzTupleMember, BinaryExpression.Op.IMPLIES, equal);
+        Expression equivalence = new BinaryExpression(implies1, BinaryExpression.Op.AND, implies2);
+        Expression axiom1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, equivalence, x, y, z);
+        translator.smtProgram.addConstantDeclaration(relation);
+        translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom1));
+        translator.arithOps.put(op, relation.getConstantExpr());
+
+        // the relation is actually a mathematical operation
+        // i.e. for all (a,b,c), (x,y,z): (a,b,c) and (x,y,z) in relation and
+        // a = x and b = y implies c = z
+
+        VariableDeclaration a = new VariableDeclaration("_a", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration b = new VariableDeclaration("_b", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration c = new VariableDeclaration("_c", Alloy2SmtTranslator.uninterpretedInt);
+
+        Expression abcTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                a.getConstantExpr(),  b.getConstantExpr(), c.getConstantExpr());
+
+        Expression abcTupleMember = new BinaryExpression(abcTuple, BinaryExpression.Op.MEMBER, relation.getConstantExpr());
+        Expression axEqual = new BinaryExpression(a.getConstantExpr(), BinaryExpression.Op.EQ, x.getConstantExpr());
+        Expression byEqual = new BinaryExpression(b.getConstantExpr(), BinaryExpression.Op.EQ, y.getConstantExpr());
+        Expression czEqual = new BinaryExpression(c.getConstantExpr(), BinaryExpression.Op.EQ, z.getConstantExpr());
+
+        Expression and1 = new BinaryExpression(abcTupleMember, BinaryExpression.Op.AND, xyzTupleMember);
+        Expression and2 = new BinaryExpression(axEqual, BinaryExpression.Op.AND, byEqual);
+        Expression and3 = new BinaryExpression(and1, BinaryExpression.Op.AND, and2);
+
+        Expression implies = new BinaryExpression(and3, BinaryExpression.Op.IMPLIES,czEqual);
+        Expression axiom2 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b, c, x, y , z);
+        translator.smtProgram.addAssertion(new Assertion(relationName + " operation axiom", axiom2));
     }
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)

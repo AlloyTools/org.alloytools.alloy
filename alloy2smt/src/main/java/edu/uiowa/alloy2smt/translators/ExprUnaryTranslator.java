@@ -25,7 +25,7 @@ public class ExprUnaryTranslator
     public ExprUnaryTranslator(ExprTranslator exprTranslator)
     {
         this.exprTranslator         = exprTranslator;
-        this.valueOfUnaryIntTup     = getTranslator().valueOfUnaryIntTup.getName();
+        this.valueOfUnaryIntTup     = getTranslator().uninterpretedIntValue.getName();
         this.valueOfBinaryIntTup    = getTranslator().valueOfBinaryIntTup.getName();
         this.valueOfTernaryIntTup   = getTranslator().valueOfTernaryIntTup.getName();
     }

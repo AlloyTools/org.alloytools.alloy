@@ -259,11 +259,11 @@ public class FieldTranslator
         VariableDeclaration fstSigVar  = new VariableDeclaration(fstSigVarName, fstSigVarSort);
         VariableDeclaration sndSigVar  = new VariableDeclaration(sndSigVarName, sndSigVarSort);
 
-        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr())
+        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sigVar.getConstantExpr());
-        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr())
+        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstSigVar.getConstantExpr());
-        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndSigVar.getConstantExpr())
+        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndSigVar.getConstantExpr());
 
         Expression fstTupSigVarExpr = new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, sigVarExpr);
@@ -313,11 +313,11 @@ public class FieldTranslator
         VariableDeclaration sndSigVar  = new VariableDeclaration(sndSigVarName, sndSigVarSort);
         VariableDeclaration fstSigVar  = new VariableDeclaration(fstSigVarName, fstSigVarSort);
 
-        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr())
+        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sigVar.getConstantExpr());
-        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr())
+        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstSigVar.getConstantExpr());
-        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndSigVar.getConstantExpr())
+        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndSigVar.getConstantExpr());
 
         Expression fstTupSigVarExpr = new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, sigVarExpr);
@@ -374,13 +374,13 @@ public class FieldTranslator
         VariableDeclaration sndSigVar          = new VariableDeclaration(sndSigVarName, sndSigVarSort);
         VariableDeclaration fstPrimeSigVar     = new VariableDeclaration(fstPrimeSigVarName, fstSigVarSort);
 
-        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr())
+        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sigVar.getConstantExpr());
-        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr())
+        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstSigVar.getConstantExpr());
-        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndSigVar.getConstantExpr())
+        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndSigVar.getConstantExpr());
-        Expression fstPrimeSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstPrimeSigVar.getConstantExpr())
+        Expression fstPrimeSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstPrimeSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstPrimeSigVar.getConstantExpr());
 
         Expression fstTupSigVarExpr    = new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, sigVarExpr);
@@ -445,13 +445,13 @@ public class FieldTranslator
         VariableDeclaration sndSigVar          = new VariableDeclaration(sndSigVarName, sndSigVarSort);
         VariableDeclaration sndPrimeSigVar     = new VariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
 
-        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr())
+        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sigVar.getConstantExpr());
-        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr())
+        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstSigVar.getConstantExpr());
-        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndSigVar.getConstantExpr())
+        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndSigVar.getConstantExpr());
-        Expression sndPrimeSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndPrimeSigVar.getConstantExpr())
+        Expression sndPrimeSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndPrimeSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr());
 
         Expression fstTupSigVarExpr    = new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, sigVarExpr);
@@ -514,13 +514,13 @@ public class FieldTranslator
         VariableDeclaration sndSigVar          = new VariableDeclaration(sndSigVarName, sndSigVarSort);
         VariableDeclaration sndPrimeSigVar     = new VariableDeclaration(sndPrimeSigVarName, sndSigVarSort);
 
-        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr())
+        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sigVar.getConstantExpr());
-        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr())
+        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstSigVar.getConstantExpr());
-        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndSigVar.getConstantExpr())
+        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndSigVar.getConstantExpr());
-        Expression sndPrimeSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndPrimeSigVar.getConstantExpr())
+        Expression sndPrimeSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndPrimeSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndPrimeSigVar.getConstantExpr());
 
         Expression fstTupSigVarExpr    = new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, sigVarExpr);
@@ -583,13 +583,13 @@ public class FieldTranslator
         VariableDeclaration sndSigVar          = new VariableDeclaration(sndSigVarName, sndSigVarSort);
         VariableDeclaration fstPrimeSigVar     = new VariableDeclaration(fstPrimeSigVarName, fstSigVarSort);
 
-        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr())
+        Expression sigVarExpr = isSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sigVar.getConstantExpr());
-        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr())
+        Expression fstSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstSigVar.getConstantExpr());
-        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, sndSigVar.getConstantExpr())
+        Expression sndSigVarExpr = isSndSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, sndSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(sndSigVar.getConstantExpr());
-        Expression fstPrimeSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.valueOfUnaryIntTup, fstPrimeSigVar.getConstantExpr())
+        Expression fstPrimeSigVarExpr = isFstSigVarInt?new FunctionCallExpression(translator.uninterpretedIntValue, fstPrimeSigVar.getConstantExpr())
                                 :mkTupleOutofAtoms(fstPrimeSigVar.getConstantExpr());
 
         Expression fstTupSigVarExpr    = new BinaryExpression(IntConstant.getInstance(0), BinaryExpression.Op.TUPSEL, sigVarExpr);
@@ -663,8 +663,8 @@ public class FieldTranslator
         VariableDeclaration fstSigVar  = new VariableDeclaration(fstSigVarName,
                                                     fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
-        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr()), 0);
-        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr()), 0);
+        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr()), 0);
+        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr()), 0);
 
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ?
@@ -726,9 +726,9 @@ public class FieldTranslator
         VariableDeclaration fstPrimeSigVar = new VariableDeclaration(fstPrimeSigVarName,
                                                     fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
-        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr()), 0);
-        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr()), 0);
-        Expression fstPrimeSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstPrimeSigVar.getConstantExpr()), 0);
+        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr()), 0);
+        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr()), 0);
+        Expression fstPrimeSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstPrimeSigVar.getConstantExpr()), 0);
 
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ?
@@ -807,9 +807,9 @@ public class FieldTranslator
         VariableDeclaration fstPrimeSigVar = new VariableDeclaration(fstPrimeSigVarName,
                                                     fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
-        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr()), 0);
-        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr()), 0);
-        Expression fstPrimeSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstPrimeSigVar.getConstantExpr()), 0);
+        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getConstantExpr()), 0);
+        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getConstantExpr()), 0);
+        Expression fstPrimeSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstPrimeSigVar.getConstantExpr()), 0);
 
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getConstantExpr();
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ?
