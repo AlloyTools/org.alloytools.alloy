@@ -861,7 +861,7 @@ public class ExprTranslator
             {
                 if(s.type().is_int())
                 {
-                    sorts.add(translator.intSort);
+                    sorts.add(translator.uninterpretedInt);
                 }
                 else
                 {
@@ -946,7 +946,7 @@ public class ExprTranslator
             if(e instanceof ConstantExpression)
             {
                 if(((ConstantExpression)e).getDeclaration().getSort() == translator.atomSort || 
-                        ((ConstantExpression)e).getDeclaration().getSort() == translator.intSort)
+                        ((ConstantExpression)e).getDeclaration().getSort() == translator.uninterpretedInt)
                 {
                     MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
                     atomTupleExprs.add(tuple);                    

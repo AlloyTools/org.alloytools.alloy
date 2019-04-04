@@ -666,8 +666,8 @@ public class ExprBinaryTranslator
     
     private void declComparisonOps(BinaryExpression.Op op)
     {
-        VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUnaryIntSort);
-        VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUnaryIntSort);
+        VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUninterpretedInt);
+        VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUninterpretedInt);
         VariableDeclaration bdIntAtomVar1       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_x_int");
         VariableDeclaration bdIntAtomVar2       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_y_int");
         Expression                  unaryIntTup1        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar1.getConstantExpr());

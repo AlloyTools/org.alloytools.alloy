@@ -333,7 +333,7 @@ public class SignatureTranslator
         FunctionDeclaration declaration = null;
         if(varName != null)
         {
-            declaration = new FunctionDeclaration(varName, translator.setOfUnaryIntSort);
+            declaration = new FunctionDeclaration(varName, translator.setOfUninterpretedInt);
             translator.smtProgram.addFunction(declaration);
         }
         return declaration;

@@ -277,11 +277,11 @@ public class BinaryExpression extends Expression
             case OR: return Alloy2SmtTranslator.boolSort;
             case AND: return Alloy2SmtTranslator.boolSort ;
             case IMPLIES: return Alloy2SmtTranslator.boolSort;
-            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
-            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
-            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
-            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
-            case MOD: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUnaryIntSort;
+            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
+            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
+            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
+            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
+            case MOD: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
             case EQ: return Alloy2SmtTranslator.boolSort;
             case GTE: return Alloy2SmtTranslator.boolSort;
             case LTE: return Alloy2SmtTranslator.boolSort;

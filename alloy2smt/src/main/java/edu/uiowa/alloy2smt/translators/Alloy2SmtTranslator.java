@@ -44,27 +44,28 @@ public class Alloy2SmtTranslator
 
     public final static IntSort intSort        = IntSort.getInstance();
 
-    public final static BoolSort          boolSort               = BoolSort.getInstance();
-    public final static UninterpretedSort atomSort               = new UninterpretedSort(atom);
-    public final static UninterpretedSort uninterpretedInt = new UninterpretedSort(uninterpretedIntName);
+    public final static BoolSort          boolSort          = BoolSort.getInstance();
+    public final static UninterpretedSort atomSort          = new UninterpretedSort(atom);
+    public final static UninterpretedSort uninterpretedInt  = new UninterpretedSort(uninterpretedIntName);
+    public final static SetSort setOfUninterpretedInt =  new SetSort(new TupleSort(uninterpretedInt));
+    public final static SetSort setOfUninterpretedIntPairs =  new SetSort(new TupleSort(uninterpretedInt, uninterpretedInt));
 
     public final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
     public final static TupleSort binaryAtomSort         = new TupleSort(atomSort,atomSort);
-    public final static TupleSort unaryIntSort           = new TupleSort(intSort);
     public final static TupleSort ternaryIntSort         = new TupleSort(uninterpretedInt, uninterpretedInt, uninterpretedInt);
     public final static SetSort setOfUnaryAtomSort     = new SetSort(unaryAtomSort);
-    public final static SetSort setOfUnaryIntSort      = new SetSort(unaryIntSort);
     public final static SetSort setOfBinaryAtomSort    = new SetSort(binaryAtomSort);
     public final static SetSort setOfTernaryIntSort    = new SetSort(ternaryIntSort);
 
     public final static FunctionDeclaration atomUniv               = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );
-    public final static FunctionDeclaration intUniv                = new FunctionDeclaration("intUniv", setOfUnaryIntSort);
-    public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
-    public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
-    public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);
-    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt,unaryIntSort);
+    //ToDo: review intUniv
+    public final static FunctionDeclaration intUniv                = new FunctionDeclaration("intUniv", setOfUninterpretedInt);
+    public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUninterpretedIntPairs);
+    public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUninterpretedInt);
+    public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedInt);
+    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt, intSort);
 
 
     Expression                                      auxExpr;

@@ -21,6 +21,7 @@ public class ArithmeticTests
                 "fact {\n" +
                 "#a = 1\n" +
                 "#b = 1\n" +
+                "1 = 1\n" +
                 "plus[a, b] = 2\n" +
                 "plus[c, 0] = 2\n" +
                 "}\n";
