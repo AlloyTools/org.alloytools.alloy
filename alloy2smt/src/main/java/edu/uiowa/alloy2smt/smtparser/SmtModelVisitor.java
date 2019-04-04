@@ -55,9 +55,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
             {
                 case Alloy2SmtTranslator.atom: return Alloy2SmtTranslator.atomSort;
                 case Alloy2SmtTranslator.intSortName: return Alloy2SmtTranslator.intSort;
-                case Alloy2SmtTranslator.unaryIntAtom: return Alloy2SmtTranslator.unaryIntTup;
-                case Alloy2SmtTranslator.binaryIntAtom: return Alloy2SmtTranslator.binaryIntTup;
-                case Alloy2SmtTranslator.ternaryIntAtom: return Alloy2SmtTranslator.ternaryIntTup;
+                case Alloy2SmtTranslator.uninterpretedIntName: return Alloy2SmtTranslator.uninterpretedInt;
                 default:
                     throw new UnsupportedOperationException(String.format("Unknown sort '%s'", ctx.sortName().getText()));
             }
@@ -226,18 +224,8 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         }
         if(ctx.UnaryPrefix() != null)
         {
-            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.unaryIntTup);
+            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.uninterpretedInt);
         }
-        if(ctx.BinaryPrefix() != null)
-        {
-            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.binaryIntTup);
-        }
-
-        if(ctx.TernaryPrefix() != null)
-        {
-            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.ternaryIntTup);
-        }
-
         throw new UnsupportedOperationException(String.format("Unknown constant value '%s'", ctx.getText()));
     }
 

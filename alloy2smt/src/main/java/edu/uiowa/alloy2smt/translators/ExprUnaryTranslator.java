@@ -208,7 +208,7 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, getTranslator().unaryIntTup);
+                bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
@@ -247,7 +247,7 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, getTranslator().unaryIntTup);
+                bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else
@@ -290,7 +290,7 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, getTranslator().unaryIntTup);
+                bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
             }
             else

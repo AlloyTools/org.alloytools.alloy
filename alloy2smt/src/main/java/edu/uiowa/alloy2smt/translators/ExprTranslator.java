@@ -239,47 +239,40 @@ public class ExprTranslator
             declArithmeticOp(op);
         }
         Expression operation = translator.arithOps.get(op);
-        // (leftExpr, rightExpr, _) in operation
-        //i.e. rightExpr o (leftExpr o operation) is not empty
 
-        VariableDeclaration w = new VariableDeclaration("_w", Alloy2SmtTranslator.ternaryIntTup);
-        VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.intSort);
-        VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.intSort);
-        Expression valueOfw = new FunctionCallExpression(translator.valueOfTernaryIntTup, w.getConstantExpr());
+        // for all x, y : uninterpretedInt. x in A and y in B implies
+        // exists z :uninterpretedInt. (x, y, z) in operation
+
+        VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("_z", Alloy2SmtTranslator.uninterpretedInt);
+
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
-        Expression xSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, xTuple);
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getConstantExpr());
-        Expression ySingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, yTuple);
+        Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                x.getConstantExpr(),  y.getConstantExpr(), z.getConstantExpr());
 
-        Expression xSingletonEqualsA = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, A);
-        Expression ySingletonEqualsB = new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, B);
+        Expression xMemberA = new BinaryExpression(xTuple, BinaryExpression.Op.MEMBER, A);
+        Expression yMemberB = new BinaryExpression(yTuple, BinaryExpression.Op.MEMBER, B);
+        Expression xyzTupleMember = new BinaryExpression(xyzTuple, BinaryExpression.Op.MEMBER, operation);
 
-        Expression w0 = exprBinaryTranslator.mkTupleSelectExpr(valueOfw, 0);
-        Expression w1 = exprBinaryTranslator.mkTupleSelectExpr(valueOfw, 1);
-        Expression w2 = exprBinaryTranslator.mkTupleSelectExpr(valueOfw, 2);
-        Expression member = new BinaryExpression(valueOfw, BinaryExpression.Op.MEMBER, operation);
-        Expression xEqualsw0 = new BinaryExpression(x.getConstantExpr(), BinaryExpression.Op.EQ, w0);
-        Expression yEqualsw1 = new BinaryExpression(y.getConstantExpr(), BinaryExpression.Op.EQ, w1);
-        Expression w0Operationw1 = new BinaryExpression(w0, op, w1);
-        Expression w2EqualswOperationPlusw1 = new BinaryExpression(w2, BinaryExpression.Op.EQ, w0Operationw1);
-        Expression and1 = new BinaryExpression(xEqualsw0, BinaryExpression.Op.AND, yEqualsw1);
-        Expression and2 = new BinaryExpression(w2EqualswOperationPlusw1, BinaryExpression.Op.AND, member);
-        Expression and3 = new BinaryExpression(and1, BinaryExpression.Op.AND, and2);
-        Expression and4 = new BinaryExpression(xSingletonEqualsA, BinaryExpression.Op.AND, ySingletonEqualsB);
-        Expression and5 = new BinaryExpression(and3, BinaryExpression.Op.AND, and4);
+        Expression and = new BinaryExpression(xMemberA, BinaryExpression.Op.AND, yMemberB);
 
         Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                and5, w, x, y);
-        translator.smtProgram.addAssertion(new Assertion("Operands are in the relation", exists));
+                xyzTupleMember, z);
+        Expression implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, exists);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL,
+                implies, x, y);
+        translator.smtProgram.addAssertion(new Assertion("Operands are in the relation", forAll));
 
         return new BinaryExpression(B, BinaryExpression.Op.JOIN, new BinaryExpression(A, BinaryExpression.Op.JOIN, operation));
     }
 
     public void declArithmeticOp(BinaryExpression.Op op)
     {
-        VariableDeclaration x = new VariableDeclaration("_x", translator.unaryIntTup);
-        VariableDeclaration y = new VariableDeclaration("_y", translator.unaryIntTup);
-        VariableDeclaration z = new VariableDeclaration("_z", translator.unaryIntTup);
+        VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt);
         Expression xSelect = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(x.getConstantExpr()), 0);
         Expression ySelect = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(y.getConstantExpr()), 0);
         Expression zSelect = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(z.getConstantExpr()), 0);
@@ -523,7 +516,7 @@ public class ExprTranslator
                             VariableDeclaration bdAtomVar;
 
                             if (declSorts.get(i) instanceof IntSort) {
-                                bdAtomVar = new VariableDeclaration(varName, translator.unaryIntTup);
+                                bdAtomVar = new VariableDeclaration(varName, translator.uninterpretedInt);
                                 bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
                             } else {
                                 bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
@@ -669,7 +662,7 @@ public class ExprTranslator
                                                 
                         if(declSorts.get(i) instanceof IntSort)
                         {
-                            bdAtomVar = new VariableDeclaration(varName, translator.unaryIntTup);
+                            bdAtomVar = new VariableDeclaration(varName, translator.uninterpretedInt);
                             bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
                         }
                         else
@@ -920,7 +913,7 @@ public class ExprTranslator
     {
         if(sort instanceof IntSort)
         {
-            return new VariableDeclaration(name, translator.unaryIntTup);
+            return new VariableDeclaration(name, translator.uninterpretedInt);
         }
         return new VariableDeclaration(name, sort);
     }

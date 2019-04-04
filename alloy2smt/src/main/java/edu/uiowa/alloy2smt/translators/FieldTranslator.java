@@ -251,9 +251,9 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         String sndSigVarName    = TranslatorUtils.getNewName();
 
-        Sort sigVarSort     = isSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort fstSigVarSort  = isFstSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort sndSigVarSort  = isSndSigVarInt?translator.unaryIntTup:translator.atomSort;
+        Sort sigVarSort     = isSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort fstSigVarSort  = isFstSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort sndSigVarSort  = isSndSigVarInt?translator.uninterpretedInt :translator.atomSort;
 
         VariableDeclaration sigVar  = new VariableDeclaration(sigVarName, sigVarSort);
         VariableDeclaration fstSigVar  = new VariableDeclaration(fstSigVarName, fstSigVarSort);
@@ -305,9 +305,9 @@ public class FieldTranslator
         String fstSigVarName    = TranslatorUtils.getNewName();
         String sndSigVarName    = TranslatorUtils.getNewName();
 
-        Sort sigVarSort     = isSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort fstSigVarSort  = isFstSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort sndSigVarSort  = isSndSigVarInt?translator.unaryIntTup:translator.atomSort;
+        Sort sigVarSort     = isSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort fstSigVarSort  = isFstSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort sndSigVarSort  = isSndSigVarInt?translator.uninterpretedInt :translator.atomSort;
 
         VariableDeclaration sigVar  = new VariableDeclaration(sigVarName, sigVarSort);
         VariableDeclaration sndSigVar  = new VariableDeclaration(sndSigVarName, sndSigVarSort);
@@ -365,9 +365,9 @@ public class FieldTranslator
         String sndSigVarName    = TranslatorUtils.getNewName();
         String fstPrimeSigVarName    = TranslatorUtils.getNewName();
 
-        Sort sigVarSort     = isSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort fstSigVarSort  = isFstSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort sndSigVarSort  = isSndSigVarInt?translator.unaryIntTup:translator.atomSort;
+        Sort sigVarSort     = isSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort fstSigVarSort  = isFstSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort sndSigVarSort  = isSndSigVarInt?translator.uninterpretedInt :translator.atomSort;
 
         VariableDeclaration sigVar          = new VariableDeclaration(sigVarName, sigVarSort);
         VariableDeclaration fstSigVar          = new VariableDeclaration(fstSigVarName, fstSigVarSort);
@@ -436,9 +436,9 @@ public class FieldTranslator
         String sndSigVarName    = TranslatorUtils.getNewName();
         String sndPrimeSigVarName    = TranslatorUtils.getNewName();
 
-        Sort sigVarSort     = isSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort fstSigVarSort  = isFstSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort sndSigVarSort  = isSndSigVarInt?translator.unaryIntTup:translator.atomSort;
+        Sort sigVarSort     = isSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort fstSigVarSort  = isFstSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort sndSigVarSort  = isSndSigVarInt?translator.uninterpretedInt :translator.atomSort;
 
         VariableDeclaration sigVar          = new VariableDeclaration(sigVarName, sigVarSort);
         VariableDeclaration fstSigVar          = new VariableDeclaration(fstSigVarName, fstSigVarSort);
@@ -505,9 +505,9 @@ public class FieldTranslator
         String sndSigVarName    = TranslatorUtils.getNewName();
         String sndPrimeSigVarName    = TranslatorUtils.getNewName();
 
-        Sort sigVarSort     = isSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort fstSigVarSort  = isFstSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort sndSigVarSort  = isSndSigVarInt?translator.unaryIntTup:translator.atomSort;
+        Sort sigVarSort     = isSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort fstSigVarSort  = isFstSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort sndSigVarSort  = isSndSigVarInt?translator.uninterpretedInt :translator.atomSort;
 
         VariableDeclaration sigVar          = new VariableDeclaration(sigVarName, sigVarSort);
         VariableDeclaration fstSigVar          = new VariableDeclaration(fstSigVarName, fstSigVarSort);
@@ -574,9 +574,9 @@ public class FieldTranslator
         String sndSigVarName    = TranslatorUtils.getNewName();
         String fstPrimeSigVarName    = TranslatorUtils.getNewName();
 
-        Sort sigVarSort     = isSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort fstSigVarSort  = isFstSigVarInt?translator.unaryIntTup:translator.atomSort;
-        Sort sndSigVarSort  = isSndSigVarInt?translator.unaryIntTup:translator.atomSort;
+        Sort sigVarSort     = isSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort fstSigVarSort  = isFstSigVarInt?translator.uninterpretedInt :translator.atomSort;
+        Sort sndSigVarSort  = isSndSigVarInt?translator.uninterpretedInt :translator.atomSort;
 
         VariableDeclaration sigVar          = new VariableDeclaration(sigVarName, sigVarSort);
         VariableDeclaration fstSigVar          = new VariableDeclaration(fstSigVarName, fstSigVarSort);
@@ -659,9 +659,9 @@ public class FieldTranslator
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
 
         VariableDeclaration sigVar  = new VariableDeclaration(sigVarName,
-                                                    sigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    sigVarIsInt? translator.uninterpretedInt :translator.atomSort);
         VariableDeclaration fstSigVar  = new VariableDeclaration(fstSigVarName,
-                                                    fstSigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
         Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr()), 0);
         Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr()), 0);
@@ -720,11 +720,11 @@ public class FieldTranslator
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
 
         VariableDeclaration sigVar      = new VariableDeclaration(sigVarName,
-                                                    sigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    sigVarIsInt? translator.uninterpretedInt :translator.atomSort);
         VariableDeclaration fstSigVar      = new VariableDeclaration(fstSigVarName,
-                                                    fstSigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
         VariableDeclaration fstPrimeSigVar = new VariableDeclaration(fstPrimeSigVarName,
-                                                    fstSigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
         Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr()), 0);
         Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr()), 0);
@@ -801,11 +801,11 @@ public class FieldTranslator
         TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
 
         VariableDeclaration sigVar      = new VariableDeclaration(sigVarName,
-                                                    sigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    sigVarIsInt? translator.uninterpretedInt :translator.atomSort);
         VariableDeclaration fstSigVar      = new VariableDeclaration(fstSigVarName,
-                                                    fstSigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
         VariableDeclaration fstPrimeSigVar = new VariableDeclaration(fstPrimeSigVarName,
-                                                    fstSigVarIsInt? translator.unaryIntTup:translator.atomSort);
+                                                    fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
         Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, sigVar.getConstantExpr()), 0);
         Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.valueOfUnaryIntTup, fstSigVar.getConstantExpr()), 0);

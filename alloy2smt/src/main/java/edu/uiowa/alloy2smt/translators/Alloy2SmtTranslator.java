@@ -8,7 +8,6 @@
 
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.alloy4.Env;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
@@ -31,12 +30,10 @@ public class Alloy2SmtTranslator
 {
     public final SmtProgram smtProgram;
 
-    public final static String intSortName        = "Int";
-    public final static String atom               = "Atom";
-    public final static String unaryIntAtom       = "UnaryIntTup";
-    public final static String binaryIntAtom      = "BinaryIntTup";
-    public final static String ternaryIntAtom     = "TernaryIntTup";
-    
+    public final static String intSortName          = "Int";
+    public final static String atom                 = "Atom";
+    public final static String uninterpretedIntName = "UninterpretedInt";
+
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
@@ -49,15 +46,11 @@ public class Alloy2SmtTranslator
 
     public final static BoolSort          boolSort               = BoolSort.getInstance();
     public final static UninterpretedSort atomSort               = new UninterpretedSort(atom);
-    public final static UninterpretedSort unaryIntTup            = new UninterpretedSort(unaryIntAtom);
-    public final static UninterpretedSort binaryIntTup           = new UninterpretedSort(binaryIntAtom);
-    public final static UninterpretedSort ternaryIntTup          = new UninterpretedSort(ternaryIntAtom);
+    public final static UninterpretedSort uninterpretedInt = new UninterpretedSort(uninterpretedIntName);
 
     public final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
     public final static TupleSort binaryAtomSort         = new TupleSort(atomSort,atomSort);
-    public final static TupleSort unaryIntAtomSort       = new TupleSort(unaryIntTup);
     public final static TupleSort unaryIntSort           = new TupleSort(intSort);
-    public final static TupleSort binaryIntSort          = new TupleSort(intSort,intSort);
     public final static TupleSort ternaryIntSort         = new TupleSort(intSort,intSort,intSort);
     public final static SetSort setOfUnaryAtomSort     = new SetSort(unaryAtomSort);
     public final static SetSort setOfUnaryIntSort      = new SetSort(unaryIntSort);
@@ -71,9 +64,7 @@ public class Alloy2SmtTranslator
     public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUnaryIntSort );
     public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryIntSort);
     public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryIntSort);
-    public final static FunctionDeclaration valueOfUnaryIntTup     = new FunctionDeclaration("value_of_unaryIntTup",unaryIntTup,unaryIntSort);
-    public final static FunctionDeclaration valueOfBinaryIntTup    = new FunctionDeclaration("value_of_binaryIntTup",binaryIntTup,binaryIntSort);
-    public final static FunctionDeclaration valueOfTernaryIntTup   = new FunctionDeclaration("value_of_ternaryIntTup",ternaryIntTup,ternaryIntSort);
+    public final static FunctionDeclaration valueOfUnaryIntTup     = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt,unaryIntSort);
 
 
     Expression                                      auxExpr;
@@ -118,16 +109,10 @@ public class Alloy2SmtTranslator
         this.signaturesMap.put(Sig.UNIV, atomUniv);
         this.signaturesMap.put(Sig.SIGINT, intUniv);
         this.smtProgram.addSort(atomSort);
-        this.smtProgram.addSort(unaryIntTup);
-        this.smtProgram.addSort(binaryIntTup);
-        this.smtProgram.addSort(ternaryIntTup);
+        this.smtProgram.addSort(uninterpretedInt);
         this.smtProgram.addFunction(valueOfUnaryIntTup);
-        this.smtProgram.addFunction(valueOfBinaryIntTup);
-        this.smtProgram.addFunction(valueOfTernaryIntTup);
 
         this.functionsMap.put(valueOfUnaryIntTup.getName(), valueOfUnaryIntTup);
-        this.functionsMap.put(valueOfBinaryIntTup.getName(), valueOfBinaryIntTup);
-        this.functionsMap.put(valueOfTernaryIntTup.getName(), valueOfTernaryIntTup);
 
         this.setComprehensionFuncNameToInputsMap = new HashMap<>();
         this.setCompFuncNameToDefMap        = new HashMap<>(); 
