@@ -10,18 +10,17 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
-import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BinaryExpression extends Expression
 {
-    private Op            op;
+    private final Op            op;
     private Expression    lhsExpr;
     private Expression    rhsExpr;
-    
-    public BinaryExpression(Expression lhsExpr, Op op, Expression rhsExpr) 
+
+    public BinaryExpression(Expression lhsExpr, Op op, Expression rhsExpr)
     {
         this.op         = op;
         if(lhsExpr == null)
@@ -46,16 +45,16 @@ public class BinaryExpression extends Expression
             case OR:
             case AND:
             case IMPLIES:
+            {
+                if (lhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
                 {
-                    if (lhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
-                    {
-                        throw new RuntimeException(String.format("Left expression sort '%1$s' is not boolean", lhsExpr.getSort()));
-                    }
-                    if (rhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
-                    {
-                        throw new RuntimeException(String.format("Right expression sort '%1$s' is not boolean", rhsExpr.getSort()));
-                    }
-                } break;
+                    throw new RuntimeException(String.format("Left expression sort '%1$s' is not boolean", lhsExpr.getSort()));
+                }
+                if (rhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
+                {
+                    throw new RuntimeException(String.format("Right expression sort '%1$s' is not boolean", rhsExpr.getSort()));
+                }
+            } break;
             case PLUS:
             case MINUS:
             case MULTIPLY:
@@ -82,7 +81,6 @@ public class BinaryExpression extends Expression
             case SETMINUS:
             case SUBSET:
             {
-                convertIntConstantsToSingletons();
                 if(! lhsExpr.getSort().equals(rhsExpr.getSort()))
                 {
                     throw new RuntimeException(String.format("The sort of left expression sort '%1$s' is different than the sort of right expression '%2$s'", lhsExpr.getSort(), rhsExpr.getSort()));
@@ -91,24 +89,9 @@ public class BinaryExpression extends Expression
 
             case MEMBER:
             {
-                if(rhsExpr instanceof IntConstant &&
-                        lhsExpr.getSort().equals(Alloy2SmtTranslator.uninterpretedIntTuple))
+                if(rhsExpr instanceof IntConstant)
                 {
-                    VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getNewAtomName(),
-                            Alloy2SmtTranslator.uninterpretedInt);
-                    Expression variableValue = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue,
-                            variable.constantExpression);
-                    Expression equality = new BinaryExpression(variableValue, Op.EQ, rhsExpr);
-                    QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                            equality, variable);
-                    Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                            variable.getConstantExpr());
-                    Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-                    Expression newExpression = new BinaryExpression(lhsExpr, op, singleton);
-                    Expression and = new BinaryExpression(newExpression, Op.AND, exists);
-                    rhsExpr = and;
-                    this.op = Op.AND;
-                    lhsExpr = new BooleanConstant(true);
+                    rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
                 }
 
                 if(!(rhsExpr.getSort() instanceof  SetSort))
@@ -181,63 +164,16 @@ public class BinaryExpression extends Expression
         }
     }
 
-    private void convertIntConstantsToSingletons()
-    {
-        if (lhsExpr instanceof  IntConstant && rhsExpr instanceof IntConstant)
-        {
-            lhsExpr = IntConstant.getSingletonTuple((IntConstant) lhsExpr);
-            rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
-        }
-
-        // introduce a new quantified formula for the uninterpreted sort
-        if (lhsExpr instanceof IntConstant && rhsExpr.getSort() instanceof SetSort)
-        {
-            VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getNewAtomName(),
-                    Alloy2SmtTranslator.uninterpretedInt);
-            Expression variableValue = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue,
-                    variable.constantExpression);
-            Expression equality = new BinaryExpression(variableValue, Op.EQ, lhsExpr);
-            QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                    equality, variable);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                    variable.getConstantExpr());
-            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-            Expression newExpression = new BinaryExpression(singleton, op, rhsExpr);
-            Expression and = new BinaryExpression(newExpression, Op.AND, exists);
-            lhsExpr = and;
-            this.op = Op.AND;
-            rhsExpr = new BooleanConstant(true);
-        }
-        if (rhsExpr instanceof IntConstant && lhsExpr.getSort() instanceof SetSort)
-        {
-            VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getNewAtomName(),
-                    Alloy2SmtTranslator.uninterpretedInt);
-            Expression variableValue = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue,
-                    variable.constantExpression);
-            Expression equality = new BinaryExpression(variableValue, Op.EQ, rhsExpr);
-            QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
-                    equality, variable);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                    variable.getConstantExpr());
-            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-            Expression newExpression = new BinaryExpression(lhsExpr, op, singleton);
-            Expression and = new BinaryExpression(newExpression, Op.AND, exists);
-            rhsExpr = and;
-            this.op = Op.AND;
-            lhsExpr = new BooleanConstant(true);
-        }
-    }
-
-    public Expression getLhsExpr() 
+    public Expression getLhsExpr()
     {
         return this.lhsExpr;
     }
-    
-    public Expression getRhsExpr() 
+
+    public Expression getRhsExpr()
     {
         return this.rhsExpr;
-    }    
-    
+    }
+
     public Op getOp()
     {
         return this.op;
@@ -248,11 +184,11 @@ public class BinaryExpression extends Expression
         visitor.visit(this);
     }
 
-    public enum Op 
-    {        
+    public enum Op
+    {
         OR ("or"),
-        AND ("and"),  
-        IMPLIES ("=>"),        
+        AND ("and"),
+        IMPLIES ("=>"),
         PLUS ("+"),
         MINUS ("-"),
         MULTIPLY ("*"),
@@ -263,10 +199,10 @@ public class BinaryExpression extends Expression
         GTE (">="),
         LTE ("<="),
         GT (">"),
-        LT ("<"),        
+        LT ("<"),
         UNION ("union"),
         INTERSECTION ("intersection"),
-        SETMINUS ("setminus"),        
+        SETMINUS ("setminus"),
         MEMBER ("member"),
         SUBSET ("subset"),
         JOIN ("join"),
@@ -311,10 +247,10 @@ public class BinaryExpression extends Expression
         }
 
         @Override
-        public String toString() 
+        public String toString()
         {
             return this.opStr;
-        }        
+        }
     }
 
     @Override
