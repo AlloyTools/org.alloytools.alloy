@@ -10,13 +10,14 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BinaryExpression extends Expression
 {
-    private final Op            op;
+    private Op            op;
     private Expression    lhsExpr;
     private Expression    rhsExpr;
     
@@ -90,9 +91,24 @@ public class BinaryExpression extends Expression
 
             case MEMBER:
             {
-                if(rhsExpr instanceof IntConstant)
+                if(rhsExpr instanceof IntConstant &&
+                        lhsExpr.getSort().equals(Alloy2SmtTranslator.uninterpretedIntTuple))
                 {
-                    rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
+                    VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getNewAtomName(),
+                            Alloy2SmtTranslator.uninterpretedInt);
+                    Expression variableValue = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue,
+                            variable.constantExpression);
+                    Expression equality = new BinaryExpression(variableValue, Op.EQ, rhsExpr);
+                    QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
+                            equality, variable);
+                    Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                            variable.getConstantExpr());
+                    Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+                    Expression newExpression = new BinaryExpression(lhsExpr, op, singleton);
+                    Expression and = new BinaryExpression(newExpression, Op.AND, exists);
+                    rhsExpr = and;
+                    this.op = Op.AND;
+                    lhsExpr = new BooleanConstant(true);
                 }
 
                 if(!(rhsExpr.getSort() instanceof  SetSort))
@@ -110,8 +126,6 @@ public class BinaryExpression extends Expression
 
             case JOIN:
             {
-                convertIntConstantsToSingletons();
-
                 if(!(lhsExpr.getSort() instanceof  SetSort &&
                         ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
                 {
@@ -133,7 +147,6 @@ public class BinaryExpression extends Expression
             } break;
             case PRODUCT:
             {
-                convertIntConstantsToSingletons();
                 if(!(lhsExpr.getSort() instanceof  SetSort &&
                         ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
                 {
@@ -170,13 +183,48 @@ public class BinaryExpression extends Expression
 
     private void convertIntConstantsToSingletons()
     {
-        if (lhsExpr instanceof IntConstant)
+        if (lhsExpr instanceof  IntConstant && rhsExpr instanceof IntConstant)
         {
             lhsExpr = IntConstant.getSingletonTuple((IntConstant) lhsExpr);
-        }
-        if (rhsExpr instanceof IntConstant)
-        {
             rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
+        }
+
+        // introduce a new quantified formula for the uninterpreted sort
+        if (lhsExpr instanceof IntConstant && rhsExpr.getSort() instanceof SetSort)
+        {
+            VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getNewAtomName(),
+                    Alloy2SmtTranslator.uninterpretedInt);
+            Expression variableValue = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue,
+                    variable.constantExpression);
+            Expression equality = new BinaryExpression(variableValue, Op.EQ, lhsExpr);
+            QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
+                    equality, variable);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                    variable.getConstantExpr());
+            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+            Expression newExpression = new BinaryExpression(singleton, op, rhsExpr);
+            Expression and = new BinaryExpression(newExpression, Op.AND, exists);
+            lhsExpr = and;
+            this.op = Op.AND;
+            rhsExpr = new BooleanConstant(true);
+        }
+        if (rhsExpr instanceof IntConstant && lhsExpr.getSort() instanceof SetSort)
+        {
+            VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getNewAtomName(),
+                    Alloy2SmtTranslator.uninterpretedInt);
+            Expression variableValue = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue,
+                    variable.constantExpression);
+            Expression equality = new BinaryExpression(variableValue, Op.EQ, rhsExpr);
+            QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS,
+                    equality, variable);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+                    variable.getConstantExpr());
+            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+            Expression newExpression = new BinaryExpression(lhsExpr, op, singleton);
+            Expression and = new BinaryExpression(newExpression, Op.AND, exists);
+            rhsExpr = and;
+            this.op = Op.AND;
+            lhsExpr = new BooleanConstant(true);
         }
     }
 
