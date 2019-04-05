@@ -48,7 +48,7 @@ public class ExprBinaryTranslator
             case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
             case PLUSPLUS           : return translatePlusPlus(expr, variablesScope);
             case EQUALS             : return translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope);
-            case NOT_EQUALS         : return translateEqComparison(expr, BinaryExpression.Op.NEQ, variablesScope);            
+            case NOT_EQUALS         : return new UnaryExpression(UnaryExpression.Op.NOT, translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope));
 
             // Set op
             case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
@@ -666,8 +666,8 @@ public class ExprBinaryTranslator
     
     private void declComparisonOps(BinaryExpression.Op op)
     {
-        VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUninterpretedInt);
-        VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUninterpretedInt);
+        VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUninterpretedIntTuple);
+        VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUninterpretedIntTuple);
         VariableDeclaration bdIntAtomVar1       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_x_int");
         VariableDeclaration bdIntAtomVar2       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_y_int");
         Expression                  unaryIntTup1        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar1.getConstantExpr());
@@ -743,16 +743,24 @@ public class ExprBinaryTranslator
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
         } 
 
-        Expression finalExpr;
-        
-        if(op == BinaryExpression.Op.NEQ)
+        if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
+                right instanceof IntConstant)
         {
-            finalExpr = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(left, BinaryExpression.Op.EQ, right));
+            ConstantDeclaration uninterpretedInt = exprTranslator.translator.getUninterpretedIntConstant((IntConstant) right);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getConstantExpr());
+            right = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
         }
-        else
-        { 
-            finalExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
-        }        
+
+        if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
+                left instanceof IntConstant)
+        {
+            ConstantDeclaration uninterpretedInt = exprTranslator.translator.getUninterpretedIntConstant((IntConstant) left);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getConstantExpr());
+            left = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        }
+
+        Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+
 
         if(!exprTranslator.translator.existentialBdVars.isEmpty())
         {
@@ -868,8 +876,8 @@ public class ExprBinaryTranslator
         
         switch (op)
         {
-            case NEQ:
-            case EQ : {
+            case EQ :
+            {
                 Expression eqExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
                 
                 if(exprTranslator.translator.auxExpr != null)
@@ -881,10 +889,6 @@ public class ExprBinaryTranslator
                 {
                     eqExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existentialBdVars, eqExpr);
                     exprTranslator.translator.existentialBdVars.clear();
-                }
-                if(op == BinaryExpression.Op.NEQ)
-                {
-                    eqExpr = new UnaryExpression(UnaryExpression.Op.NOT, eqExpr);
                 }
                 return eqExpr;
             }

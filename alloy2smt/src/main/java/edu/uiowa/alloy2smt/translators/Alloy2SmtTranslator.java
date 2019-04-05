@@ -17,6 +17,7 @@ import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
 import edu.uiowa.alloy2smt.smtAst.*;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +49,7 @@ public class Alloy2SmtTranslator
     public final static UninterpretedSort atomSort          = new UninterpretedSort(atom);
     public final static UninterpretedSort uninterpretedInt  = new UninterpretedSort(uninterpretedIntName);
     public final static TupleSort uninterpretedIntTuple = new TupleSort(uninterpretedInt);
-    public final static SetSort setOfUninterpretedInt =  new SetSort(new TupleSort(uninterpretedInt));
+    public final static SetSort setOfUninterpretedIntTuple =  new SetSort(new TupleSort(uninterpretedInt));
     public final static SetSort setOfUninterpretedIntPairs =  new SetSort(new TupleSort(uninterpretedInt, uninterpretedInt));
 
     public final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
@@ -62,10 +63,10 @@ public class Alloy2SmtTranslator
     public final static FunctionDeclaration atomNone               = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomIden               = new FunctionDeclaration("atomIden", setOfBinaryAtomSort );
     //ToDo: review intUniv
-    public final static FunctionDeclaration intUniv                = new FunctionDeclaration("intUniv", setOfUninterpretedInt);
+    public final static FunctionDeclaration intUniv                = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple);
     public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUninterpretedIntPairs);
-    public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUninterpretedInt);
-    public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedInt);
+    public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUninterpretedIntTuple);
+    public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt, intSort);
 
 
@@ -84,6 +85,7 @@ public class Alloy2SmtTranslator
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
     Map<BinaryExpression.Op, ConstantExpression>    arithOps;
     Map<String, Func> nameToFuncMap;
+    Map<BigInteger, ConstantDeclaration> integerConstants;
 
 
     public Alloy2SmtTranslator(CompModule alloyModel)
@@ -106,7 +108,8 @@ public class Alloy2SmtTranslator
         this.fieldsMap              = new HashMap<>();
         this.sigFacts               = new HashMap<>();
         this.existentialBdVars      = new ArrayList<>();
-        this.funcNames              = new HashSet<>();    
+        this.funcNames              = new HashSet<>();
+        this.integerConstants       = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, atomUniv);
         this.signaturesMap.put(Sig.SIGINT, intUniv);
@@ -137,6 +140,8 @@ public class Alloy2SmtTranslator
         this.signatureTranslator    = new SignatureTranslator(this);
         this.comparisonOps          = new HashMap<>();
         this.comparisonOps.putAll(translator.comparisonOps);
+        this.integerConstants       = new HashMap<>();
+        this.integerConstants.putAll(translator.integerConstants);
         this.arithOps               = new HashMap<>();
         this.arithOps.putAll(translator.arithOps);
         this.signaturesMap          = new HashMap<>();
@@ -767,6 +772,24 @@ public class Alloy2SmtTranslator
     {
         mappingSignatureId ++;
         return mappingSignatureId;
+    }
+
+    public ConstantDeclaration getUninterpretedIntConstant(IntConstant intConstant)
+    {
+        BigInteger value = new BigInteger(intConstant.getValue());
+        if(integerConstants.containsKey(value))
+        {
+            return integerConstants.get(value);
+        }
+
+        ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), Alloy2SmtTranslator.uninterpretedInt);
+        integerConstants.put(value, uninterpretedInt);
+        smtProgram.addConstantDeclaration(uninterpretedInt);
+        Expression callExpression = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, uninterpretedInt.getConstantExpr());
+        Expression equality = new BinaryExpression(callExpression, BinaryExpression.Op.EQ, intConstant);
+        Assertion assertion = new Assertion("constant integer", equality);
+        smtProgram.addAssertion(assertion);
+        return uninterpretedInt;
     }
 
     /**

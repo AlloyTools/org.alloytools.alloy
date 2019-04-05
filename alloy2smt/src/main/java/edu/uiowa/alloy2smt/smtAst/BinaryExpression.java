@@ -195,7 +195,6 @@ public class BinaryExpression extends Expression
         DIVIDE ("/"),
         MOD ("mod"),
         EQ ("="),
-        NEQ ("<>"), //ToDo: clean this up
         GTE (">="),
         LTE ("<="),
         GT (">"),
@@ -261,11 +260,11 @@ public class BinaryExpression extends Expression
             case OR: return Alloy2SmtTranslator.boolSort;
             case AND: return Alloy2SmtTranslator.boolSort ;
             case IMPLIES: return Alloy2SmtTranslator.boolSort;
-            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
-            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
-            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
-            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
-            case MOD: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedInt;
+            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
+            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
+            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
+            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
+            case MOD: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
             case EQ: return Alloy2SmtTranslator.boolSort;
             case GTE: return Alloy2SmtTranslator.boolSort;
             case LTE: return Alloy2SmtTranslator.boolSort;

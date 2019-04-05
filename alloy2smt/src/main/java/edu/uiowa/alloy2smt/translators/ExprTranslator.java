@@ -240,6 +240,10 @@ public class ExprTranslator
         }
         Expression operation = translator.arithOps.get(op);
 
+        A = convertIntConstantToSet(A);
+
+        B = convertIntConstantToSet(B);
+
         // for all x, y : uninterpretedInt. x in A and y in B implies
         // exists z :uninterpretedInt. (x, y, z) in operation
 
@@ -266,6 +270,17 @@ public class ExprTranslator
         translator.smtProgram.addAssertion(new Assertion("Operands are in the relation", forAll));
 
         return new BinaryExpression(B, BinaryExpression.Op.JOIN, new BinaryExpression(A, BinaryExpression.Op.JOIN, operation));
+    }
+
+    private Expression convertIntConstantToSet(Expression A)
+    {
+        if(A instanceof IntConstant)
+        {
+            ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getConstantExpr());
+            A = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        }
+        return A;
     }
 
     public void declArithmeticOp(BinaryExpression.Op op)
