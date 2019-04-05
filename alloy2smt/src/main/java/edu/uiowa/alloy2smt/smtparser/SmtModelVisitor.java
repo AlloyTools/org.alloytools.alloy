@@ -222,7 +222,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         {
             return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.atomSort);
         }
-        if(ctx.UnaryPrefix() != null)
+        if(ctx.UninterpretedIntPrefix() != null)
         {
             return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.uninterpretedInt);
         }

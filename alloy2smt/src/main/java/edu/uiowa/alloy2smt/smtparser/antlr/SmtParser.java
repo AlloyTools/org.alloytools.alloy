@@ -19,8 +19,8 @@ public class SmtParser extends Parser {
 	public static final int
 		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
 		T__9=10, UnaryOperator=11, BinaryOperator=12, TernaryOperator=13, MultiArityOperator=14, 
-		AtomPrefix=15, UnaryPrefix=16, BinaryPrefix=17, TernaryPrefix=18, Identifier=19, 
-		IdentifierLetter=20, Integer=21, Digit=22, Comment=23, Whitespace=24;
+		AtomPrefix=15, UninterpretedIntPrefix=16, Identifier=17, IdentifierLetter=18, 
+		Integer=19, Digit=20, Comment=21, Whitespace=22;
 	public static final int
 		RULE_model = 0, RULE_sortDeclaration = 1, RULE_functionDefinition = 2, 
 		RULE_argument = 3, RULE_sort = 4, RULE_setSort = 5, RULE_tupleSort = 6, 
@@ -44,7 +44,7 @@ public class SmtParser extends Parser {
 		return new String[] {
 			null, "'('", "'model'", "')'", "'declare-sort'", "'define-fun'", "'Set'", 
 			"'Tuple'", "'-'", "'as'", "'emptyset'", null, null, "'ite'", null, "'@uc_Atom_'", 
-			"'@uc_UnaryIntTup_'", "'@uc_BinaryIntTup_'", "'@uc_TernaryIntTup_'"
+			"'@uc_UninterpretedInt_'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -52,8 +52,8 @@ public class SmtParser extends Parser {
 		return new String[] {
 			null, null, null, null, null, null, null, null, null, null, null, "UnaryOperator", 
 			"BinaryOperator", "TernaryOperator", "MultiArityOperator", "AtomPrefix", 
-			"UnaryPrefix", "BinaryPrefix", "TernaryPrefix", "Identifier", "IdentifierLetter", 
-			"Integer", "Digit", "Comment", "Whitespace"
+			"UninterpretedIntPrefix", "Identifier", "IdentifierLetter", "Integer", 
+			"Digit", "Comment", "Whitespace"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -820,9 +820,7 @@ public class SmtParser extends Parser {
 			case T__7:
 			case T__8:
 			case AtomPrefix:
-			case UnaryPrefix:
-			case BinaryPrefix:
-			case TernaryPrefix:
+			case UninterpretedIntPrefix:
 			case Integer:
 				enterOuterAlt(_localctx, 1);
 				{
@@ -1200,9 +1198,7 @@ public class SmtParser extends Parser {
 				}
 				break;
 			case AtomPrefix:
-			case UnaryPrefix:
-			case BinaryPrefix:
-			case TernaryPrefix:
+			case UninterpretedIntPrefix:
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(147);
@@ -1293,9 +1289,7 @@ public class SmtParser extends Parser {
 	public static class UninterpretedConstantContext extends ParserRuleContext {
 		public TerminalNode Integer() { return getToken(SmtParser.Integer, 0); }
 		public TerminalNode AtomPrefix() { return getToken(SmtParser.AtomPrefix, 0); }
-		public TerminalNode UnaryPrefix() { return getToken(SmtParser.UnaryPrefix, 0); }
-		public TerminalNode BinaryPrefix() { return getToken(SmtParser.BinaryPrefix, 0); }
-		public TerminalNode TernaryPrefix() { return getToken(SmtParser.TernaryPrefix, 0); }
+		public TerminalNode UninterpretedIntPrefix() { return getToken(SmtParser.UninterpretedIntPrefix, 0); }
 		public UninterpretedConstantContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1324,7 +1318,7 @@ public class SmtParser extends Parser {
 			{
 			setState(156);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << AtomPrefix) | (1L << UnaryPrefix) | (1L << BinaryPrefix) | (1L << TernaryPrefix))) != 0)) ) {
+			if ( !(_la==AtomPrefix || _la==UninterpretedIntPrefix) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -1406,7 +1400,7 @@ public class SmtParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\32\u00ab\4\2\t\2"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\30\u00ab\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\3\2\3\2\3\2\7\2\60\n\2\f\2\16"+
@@ -1419,7 +1413,7 @@ public class SmtParser extends Parser {
 		"\r\21\16\21\u0090\3\22\3\22\3\23\3\23\3\23\5\23\u0098\n\23\3\24\3\24\3"+
 		"\24\5\24\u009d\n\24\3\25\3\25\3\25\3\26\3\26\3\26\3\26\3\26\3\26\3\26"+
 		"\3\26\3\26\3\26\2\2\27\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*\2"+
-		"\3\3\2\21\24\2\u00a6\2,\3\2\2\2\4<\3\2\2\2\6B\3\2\2\2\bW\3\2\2\2\n_\3"+
+		"\3\3\2\21\22\2\u00a6\2,\3\2\2\2\4<\3\2\2\2\6B\3\2\2\2\bW\3\2\2\2\n_\3"+
 		"\2\2\2\fa\3\2\2\2\16f\3\2\2\2\20l\3\2\2\2\22n\3\2\2\2\24p\3\2\2\2\26r"+
 		"\3\2\2\2\30~\3\2\2\2\32\u0080\3\2\2\2\34\u0083\3\2\2\2\36\u0087\3\2\2"+
 		"\2 \u008c\3\2\2\2\"\u0092\3\2\2\2$\u0097\3\2\2\2&\u009c\3\2\2\2(\u009e"+
@@ -1434,8 +1428,8 @@ public class SmtParser extends Parser {
 		"\f\2YZ\5\n\6\2Z[\7\5\2\2[\t\3\2\2\2\\`\5\20\t\2]`\5\16\b\2^`\5\f\7\2_"+
 		"\\\3\2\2\2_]\3\2\2\2_^\3\2\2\2`\13\3\2\2\2ab\7\b\2\2bc\7\3\2\2cd\5\n\6"+
 		"\2de\7\5\2\2e\r\3\2\2\2fh\7\t\2\2gi\5\n\6\2hg\3\2\2\2ij\3\2\2\2jh\3\2"+
-		"\2\2jk\3\2\2\2k\17\3\2\2\2lm\7\25\2\2m\21\3\2\2\2no\7\27\2\2o\23\3\2\2"+
-		"\2pq\7\25\2\2q\25\3\2\2\2rs\7\25\2\2s\27\3\2\2\2t\177\5$\23\2u\177\5\""+
+		"\2\2jk\3\2\2\2k\17\3\2\2\2lm\7\23\2\2m\21\3\2\2\2no\7\25\2\2o\23\3\2\2"+
+		"\2pq\7\23\2\2q\25\3\2\2\2rs\7\23\2\2s\27\3\2\2\2t\177\5$\23\2u\177\5\""+
 		"\22\2v\177\5\32\16\2w\177\5\34\17\2x\177\5\36\20\2y\177\5 \21\2z{\7\3"+
 		"\2\2{|\5\30\r\2|}\7\5\2\2}\177\3\2\2\2~t\3\2\2\2~u\3\2\2\2~v\3\2\2\2~"+
 		"w\3\2\2\2~x\3\2\2\2~y\3\2\2\2~z\3\2\2\2\177\31\3\2\2\2\u0080\u0081\7\r"+
@@ -1444,11 +1438,11 @@ public class SmtParser extends Parser {
 		"\2\2\u0088\u0089\5\30\r\2\u0089\u008a\5\30\r\2\u008a\u008b\5\30\r\2\u008b"+
 		"\37\3\2\2\2\u008c\u008e\7\20\2\2\u008d\u008f\5\30\r\2\u008e\u008d\3\2"+
 		"\2\2\u008f\u0090\3\2\2\2\u0090\u008e\3\2\2\2\u0090\u0091\3\2\2\2\u0091"+
-		"!\3\2\2\2\u0092\u0093\7\25\2\2\u0093#\3\2\2\2\u0094\u0098\5&\24\2\u0095"+
+		"!\3\2\2\2\u0092\u0093\7\23\2\2\u0093#\3\2\2\2\u0094\u0098\5&\24\2\u0095"+
 		"\u0098\5(\25\2\u0096\u0098\5*\26\2\u0097\u0094\3\2\2\2\u0097\u0095\3\2"+
 		"\2\2\u0097\u0096\3\2\2\2\u0098%\3\2\2\2\u0099\u009a\7\n\2\2\u009a\u009d"+
-		"\7\27\2\2\u009b\u009d\7\27\2\2\u009c\u0099\3\2\2\2\u009c\u009b\3\2\2\2"+
-		"\u009d\'\3\2\2\2\u009e\u009f\t\2\2\2\u009f\u00a0\7\27\2\2\u00a0)\3\2\2"+
+		"\7\25\2\2\u009b\u009d\7\25\2\2\u009c\u0099\3\2\2\2\u009c\u009b\3\2\2\2"+
+		"\u009d\'\3\2\2\2\u009e\u009f\t\2\2\2\u009f\u00a0\7\25\2\2\u00a0)\3\2\2"+
 		"\2\u00a1\u00a2\7\13\2\2\u00a2\u00a3\7\f\2\2\u00a3\u00a4\7\3\2\2\u00a4"+
 		"\u00a5\7\b\2\2\u00a5\u00a6\7\3\2\2\u00a6\u00a7\5\n\6\2\u00a7\u00a8\7\5"+
 		"\2\2\u00a8\u00a9\7\5\2\2\u00a9+\3\2\2\2\f\61\67IR_j~\u0090\u0097\u009c";

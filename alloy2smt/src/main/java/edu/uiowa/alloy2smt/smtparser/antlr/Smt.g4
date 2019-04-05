@@ -50,7 +50,7 @@ constant :  integerConstant
 
 integerConstant : '-' Integer | Integer ;
 
-uninterpretedConstant : (AtomPrefix | UnaryPrefix | BinaryPrefix | TernaryPrefix) Integer;
+uninterpretedConstant : (AtomPrefix | UninterpretedIntPrefix) Integer;
 
 emptySet : 'as' 'emptyset' '(' 'Set' '(' sort ')' ')' ;
 
@@ -69,11 +69,7 @@ MultiArityOperator : 'mkTuple' | 'insert' | 'distinct' ;
 
 AtomPrefix : '@uc_Atom_';
 
-UnaryPrefix : '@uc_UnaryIntTup_' ;
-
-BinaryPrefix : '@uc_BinaryIntTup_' ;
-
-TernaryPrefix : '@uc_TernaryIntTup_' ;
+UninterpretedIntPrefix : '@uc_UninterpretedInt_' ;
 
 Identifier : IdentifierLetter (IdentifierLetter | Digit)* ;
 

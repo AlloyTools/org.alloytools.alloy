@@ -34,6 +34,7 @@ public class Alloy2SmtTranslator
     public final static String intSortName          = "Int";
     public final static String atom                 = "Atom";
     public final static String uninterpretedIntName = "UninterpretedInt";
+    public final static String uninterpretedIntValueName = "uninterpretedIntValue";
 
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
@@ -49,7 +50,7 @@ public class Alloy2SmtTranslator
     public final static UninterpretedSort atomSort          = new UninterpretedSort(atom);
     public final static UninterpretedSort uninterpretedInt  = new UninterpretedSort(uninterpretedIntName);
     public final static TupleSort uninterpretedIntTuple = new TupleSort(uninterpretedInt);
-    public final static SetSort setOfUninterpretedIntTuple =  new SetSort(new TupleSort(uninterpretedInt));
+    public final static SetSort setOfUninterpretedIntTuple =  new SetSort(uninterpretedIntTuple);
     public final static SetSort setOfUninterpretedIntPairs =  new SetSort(new TupleSort(uninterpretedInt, uninterpretedInt));
 
     public final static TupleSort unaryAtomSort          = new TupleSort(atomSort);
@@ -67,7 +68,7 @@ public class Alloy2SmtTranslator
     public final static FunctionDeclaration intIden                = new FunctionDeclaration("intIden", setOfUninterpretedIntPairs);
     public final static UnaryExpression intNone                = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUninterpretedIntTuple);
     public final static UnaryExpression intUnivExpr            = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple);
-    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration("value_of_unaryIntTup", uninterpretedInt, intSort);
+    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort);
 
 
     Expression                                      auxExpr;
