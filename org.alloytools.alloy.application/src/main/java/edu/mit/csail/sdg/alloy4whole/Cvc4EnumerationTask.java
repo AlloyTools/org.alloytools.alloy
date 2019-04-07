@@ -111,7 +111,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        Cvc4Task.writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath,
+        Cvc4Task.writeModelToAlloyXmlFile(translation, model, xmlFilePath,
                 originalFileName, command, alloy.getAlloyFiles());
     }
 }

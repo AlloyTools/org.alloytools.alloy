@@ -1,6 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.alloy2smt.smtAst.*;
@@ -158,5 +159,15 @@ public class Translation
             stringBuilder.append(POP + "\n");
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     *
+     * @param expr can be Sig, Field, or Skolem
+     * @return the unique id of the expr it exists in the idMap, or generate  a new id
+     */
+    public int getSigId(Expr expr)
+    {
+        return  translator.getSigId(expr);
     }
 }

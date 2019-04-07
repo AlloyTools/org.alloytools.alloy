@@ -94,6 +94,7 @@ public class Alloy2SmtTranslator
     Map<BinaryExpression.Op, Variable>    arithOps;
     Map<String, Func> nameToFuncMap;
     Map<BigInteger, ConstantDeclaration> integerConstants;
+    Map<Expr, Integer>  sigToIdMap;
 
 
     public Alloy2SmtTranslator(CompModule alloyModel)
@@ -118,6 +119,7 @@ public class Alloy2SmtTranslator
         this.existentialBdVars      = new ArrayList<>();
         this.funcNames              = new HashSet<>();
         this.integerConstants       = new HashMap<>();
+        this.sigToIdMap             = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, atomUniv);
         this.signaturesMap.put(Sig.SIGINT, intUniv);
@@ -137,42 +139,28 @@ public class Alloy2SmtTranslator
     {
         this.smtProgram             = new SmtProgram(translator.smtProgram);
         this.alloyModel             = translator.alloyModel;
-        this.reachableSigs          = new ArrayList<>();
-        this.reachableSigs.addAll(translator.reachableSigs);
-        this.topLevelSigs           = new ArrayList<>();
-        this.topLevelSigs.addAll(translator.topLevelSigs);
+        this.reachableSigs          = new ArrayList<>(translator.reachableSigs);
+        this.topLevelSigs           = new ArrayList<>(translator.topLevelSigs);
+        this.sigToIdMap             = new HashMap<>(translator.sigToIdMap);
 
         this.commands               = this.alloyModel.getAllCommands();
 
 
         this.signatureTranslator    = new SignatureTranslator(this);
-        this.comparisonOps          = new HashMap<>();
-        this.comparisonOps.putAll(translator.comparisonOps);
-        this.integerConstants       = new HashMap<>();
-        this.integerConstants.putAll(translator.integerConstants);
-        this.arithOps               = new HashMap<>();
-        this.arithOps.putAll(translator.arithOps);
-        this.signaturesMap          = new HashMap<>();
-        this.signaturesMap.putAll(translator.signaturesMap);
-        this.funcNamesMap           = new HashMap<>();
-        this.funcNamesMap.putAll(translator.funcNamesMap);
-        this.functionsMap = new HashMap<>();
-        this.functionsMap.putAll(translator.functionsMap);
-        this.fieldsMap              = new HashMap<>();
-        this.fieldsMap.putAll(translator.fieldsMap);
-        this.sigFacts               = new HashMap<>();
-        this.sigFacts.putAll(translator.sigFacts);
-        this.existentialBdVars      = new ArrayList<>();
-        this.existentialBdVars.addAll(translator.existentialBdVars);
-        this.funcNames              = new HashSet<>();
-        this.funcNames.addAll(translator.funcNames);
+        this.comparisonOps          = new HashMap<>(translator.comparisonOps);
+        this.integerConstants       = new HashMap<>(translator.integerConstants);
+        this.arithOps               = new HashMap<>(translator.arithOps);
+        this.signaturesMap          = new HashMap<>(translator.signaturesMap);
+        this.funcNamesMap           = new HashMap<>(translator.funcNamesMap);
+        this.functionsMap           = new HashMap<>(translator.functionsMap);
+        this.fieldsMap              = new HashMap<>(translator.fieldsMap);
+        this.sigFacts               = new HashMap<>(translator.sigFacts);
+        this.existentialBdVars      = new ArrayList<>(translator.existentialBdVars);
+        this.funcNames              = new HashSet<>(translator.funcNames);
 
-        this.setComprehensionFuncNameToInputsMap = new HashMap<>();
-        this.setComprehensionFuncNameToInputsMap.putAll(translator.setComprehensionFuncNameToInputsMap);
-        this.setCompFuncNameToDefMap        = new HashMap<>();
-        this.setCompFuncNameToDefMap.putAll(translator.setCompFuncNameToDefMap);
-        this.setCompFuncNameToBdVarExprMap  = new HashMap<>();
-        this.setCompFuncNameToBdVarExprMap.putAll(translator.setCompFuncNameToBdVarExprMap);
+        this.setComprehensionFuncNameToInputsMap = new HashMap<>(translator.setComprehensionFuncNameToInputsMap);
+        this.setCompFuncNameToDefMap        = new HashMap<>(translator.setCompFuncNameToDefMap);
+        this.setCompFuncNameToBdVarExprMap  = new HashMap<>(translator.setCompFuncNameToBdVarExprMap);
         this.exprTranslator                 = new ExprTranslator(this);
     }
 
@@ -622,63 +610,59 @@ public class Alloy2SmtTranslator
     public Mapper generateMapper()
     {
         Mapper              mapper  = new Mapper();
-        Map<Expr, Integer>  idMap   = new HashMap<>();
-
         // add special signatures
 
-        MappingSignature univSignature = getSignature(idMap, Sig.UNIV);
+        MappingSignature univSignature = getSignature(Sig.UNIV);
         mapper.signatures.add(univSignature);
 
-        MappingSignature intSignature = getSignature(idMap, Sig.SIGINT);
+        MappingSignature intSignature = getSignature(Sig.SIGINT);
         mapper.signatures.add(intSignature);
 
         //ToDo: add other special signatures: none, iden, string
 
         for (Sig sig : topLevelSigs)
         {
-            mapper.signatures.addAll(getSignatures(idMap, sig));
+            mapper.signatures.addAll(getSignatures(sig));
         }
 
         // add remaining signatures like int signatures
         for (Sig sig : reachableSigs)
         {
-            if(! idMap.keySet().contains(sig))
+            if(! sigToIdMap.keySet().contains(sig))
             {
-                mapper.signatures.addAll(getSignatures(idMap, sig));
+                mapper.signatures.addAll(getSignatures(sig));
             }
         }
 
         for (Sig sig : reachableSigs)
         {
-            mapper.fields.addAll(getFields(idMap, sig));
+            mapper.fields.addAll(getFields(sig));
         }
 
         return mapper;
     }
 
-    private List<MappingSignature> getSignatures(Map<Expr, Integer> idMap,Sig sig) {
-
+    private List<MappingSignature> getSignatures(Sig sig)
+    {
         List<MappingSignature> signatures = new ArrayList<>();
-
-        MappingSignature signature = getSignature(idMap, sig);
-
+        MappingSignature signature = getSignature(sig);
         signatures.add(signature);
 
         for (Sig childSig : children(sig))
         {
-            signatures.addAll(getSignatures(idMap, childSig));
+            signatures.addAll(getSignatures(childSig));
         }
 
         return signatures;
     }
 
-    private List<MappingField> getFields(Map<Expr, Integer> idMap, Sig sig)
+    private List<MappingField> getFields(Sig sig)
     {
         List<MappingField> fields = new ArrayList<>();
 
         for (Sig.Field field : sig.getFields())
         {
-            fields.add(getField(idMap, field));
+            fields.add(getField(field));
         }
 
         return fields;
@@ -700,26 +684,26 @@ public class Alloy2SmtTranslator
     }
 
 
-    private MappingSignature getSignature(Map<Expr, Integer> idMap, Sig sig)
+    private MappingSignature getSignature(Sig sig)
     {
         MappingSignature signature = new MappingSignature();
 
         signature.label         = sig.label;
         signature.functionName  = signaturesMap.get(sig).getName();
 
-        signature.id            = getId(sig, idMap);
+        signature.id            = getSigId(sig);
 
         // find the ids of the parents
         if (sig instanceof Sig.PrimSig && sig != Sig.UNIV)
         {
-            signature.parents.add(getId(((Sig.PrimSig) sig).parent, idMap));
+            signature.parents.add(getSigId(((Sig.PrimSig) sig).parent));
         }
         else if (sig instanceof Sig.SubsetSig)
         {
             signature.isSubset = true;
             for (Sig parent :  ((Sig.SubsetSig) sig).parents)
             {
-                signature.parents.add(getId(parent, idMap));
+                signature.parents.add(getSigId(parent));
             }
         }
 
@@ -741,22 +725,22 @@ public class Alloy2SmtTranslator
         return signature;
     }
 
-    private MappingField getField(Map<Expr,Integer> idMap, Sig.Field field)
+    private MappingField getField(Sig.Field field)
     {
         MappingField mappingField   = new MappingField();
 
         mappingField.label          = field.label;
         mappingField.functionName   = fieldsMap.get(field).getName();
-        mappingField.id             = getId(field, idMap);
-        mappingField.parentId       = getId(field.sig, idMap);
+        mappingField.id             = getSigId(field);
+        mappingField.parentId       = getSigId(field.sig);
         mappingField.isPrivate      = field.isPrivate != null;
         mappingField.isMeta         = field.isMeta != null;
-        mappingField.types          = getFieldType(idMap, field);
+        mappingField.types          = getFieldType(field);
 
         return mappingField;
     }
 
-    private List<MappingType> getFieldType(Map<Expr,Integer> idMap, Sig.Field field)
+    private List<MappingType> getFieldType(Sig.Field field)
     {
         List<MappingType> types = new ArrayList<>(field.type().arity());
 
@@ -766,7 +750,7 @@ public class Alloy2SmtTranslator
         for (Sig sig : sigs)
         {
             MappingType mappingType = new MappingType();
-            mappingType.id          = getId(sig, idMap);
+            mappingType.id          = getSigId(sig);
             types.add(mappingType);
         }
 
@@ -803,17 +787,16 @@ public class Alloy2SmtTranslator
     /**
      *
      * @param expr can be Sig, Field, or Skolem
-     * @param idMap a store for unqiue ids
      * @return the unique id of the expr it exists in the idMap, or generate  a new id
      */
-    private int getId(Expr expr, Map<Expr, Integer>  idMap)
+    public int getSigId(Expr expr)
     {
-        Integer id = idMap.get(expr);
+        Integer id = sigToIdMap.get(expr);
 
         if(id == null)
         {
             id = getUniqueId();
-            idMap.put(expr, id);
+            sigToIdMap.put(expr, id);
         }
         return id;
     }

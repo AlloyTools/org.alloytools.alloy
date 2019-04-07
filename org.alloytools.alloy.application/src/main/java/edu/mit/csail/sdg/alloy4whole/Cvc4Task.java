@@ -3,6 +3,7 @@ package edu.mit.csail.sdg.alloy4whole;
 import edu.mit.csail.sdg.alloy4.*;
 
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
@@ -282,7 +283,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        writeModelToAlloyXmlFile(translation.getMapper(), model, xmlFilePath, originalFileName, command, alloyFiles);
+        writeModelToAlloyXmlFile(translation, model, xmlFilePath, originalFileName, command, alloyFiles);
 
         callbackBold("Generated alloy instance file: " + xmlFilePath +"\n");
 
@@ -294,9 +295,10 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return xmlFilePath;
     }
 
-    public static void writeModelToAlloyXmlFile(Mapper mapper, SmtModel model, String xmlFileName,
+    public static void writeModelToAlloyXmlFile(Translation translation, SmtModel model, String xmlFileName,
               String originalFileName, Command command, Map<String, String> alloyFiles) throws Exception
     {
+        Mapper mapper = translation.getMapper();
 
         Map<String, FunctionDefinition> functionsMap = new HashMap<>();
 
@@ -319,6 +321,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             signatures.add(signature);
         }
 
+
+
         List<Field> fields = new ArrayList<>();
 
         for (MappingField mappingField : mapper.fields )
@@ -327,7 +331,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             fields.add(field);
         }
 
-        // addSpecialFields(functionsMap, fields);
+        addSpecialSignatures(translation, functionsMap, signatures ,fields);
 
         Instance instance   = new Instance();
         instance.signatures = signatures;
@@ -352,27 +356,49 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         alloy.writeToXml(xmlFileName);
     }
 
-    private static void addSpecialFields(Map<String, FunctionDefinition> functionsMap, List<Field> fields) throws Exception
+    private static void addSpecialSignatures(Translation translation, Map<String, FunctionDefinition> functionsMap, List<Signature> signatures, List<Field> fields) throws Exception
+    {
+        Signature signature  = new Signature();
+        signature.label         = "Operations";
+        Sig.SubsetSig operations = new Sig.SubsetSig(signature.label, Arrays.asList(Sig.SIGINT));
+        signature.id            = translation.getSigId(operations);
+        signature.parentId = translation.getSigId(Sig.SIGINT);
+        signature.types.add(new Type(signature.parentId));
+
+        signature.builtIn       = "no";
+        signature.isAbstract    = "no";
+        signature.isOne         = "no";
+        signature.isLone        = "no";
+        signature.isSome        = "no";
+        signature.isPrivate     = "no";
+        signature.isMeta        = "no";
+        signature.isExact   	= "no";
+        signature.isEnum        = "no";
+        signatures.add(signature);
+        addSpecialFields(functionsMap, fields, signature.id);
+    }
+
+    private static void addSpecialFields(Map<String, FunctionDefinition> functionsMap, List<Field> fields, int parentId) throws Exception
     {
         if(functionsMap.containsKey(Alloy2SmtTranslator.plus))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.plus));
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.plus, parentId));
         }
         if(functionsMap.containsKey(Alloy2SmtTranslator.minus))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.minus));
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.minus, parentId));
         }
         if(functionsMap.containsKey(Alloy2SmtTranslator.multiply))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.multiply));
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.multiply, parentId));
         }
         if(functionsMap.containsKey(Alloy2SmtTranslator.divide))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.divide));
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.divide, parentId));
         }
         if(functionsMap.containsKey(Alloy2SmtTranslator.mod))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.mod));
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.mod, parentId));
         }
     }
 
@@ -426,10 +452,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return signature;
     }
 
-    private static Field getSpecialField(Map<String,FunctionDefinition> functionsMap, String fieldName) throws Exception
+    private static Field getSpecialField(Map<String,FunctionDefinition> functionsMap, String fieldName, int parentId) throws Exception
     {
         Field field = new Field();
-        int parentId = 2; // for integers
         field.label = fieldName;
         field.id = fieldName.hashCode();
         field.parentId = parentId;
