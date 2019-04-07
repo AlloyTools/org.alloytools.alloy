@@ -65,7 +65,7 @@ public class TranslatorUtils
             set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atoms);
         }
 
-        BinaryExpression equality = new BinaryExpression(declaration.getConstantExpr(), BinaryExpression.Op.EQ, set);
+        BinaryExpression equality = new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.EQ, set);
 
         translator.smtProgram.addAssertion(new Assertion(equality));
 
@@ -80,7 +80,7 @@ public class TranslatorUtils
             for (int i = 0; i < n; i++)
             {
                 ConstantDeclaration constantDeclaration = new ConstantDeclaration(getNewAtomName(), sort);
-                expressions.add(constantDeclaration.getConstantExpr());
+                expressions.add(constantDeclaration.getVariable());
                 smtProgram.addConstantDeclaration(constantDeclaration);
             }
 
@@ -167,7 +167,7 @@ public class TranslatorUtils
     public static Expression getTuple(Declaration ... elements)
     {
         List<Expression> expressions = Arrays.stream(elements)
-                .map(Declaration::getConstantExpr).collect(Collectors.toList());
+                                             .map(Declaration::getVariable).collect(Collectors.toList());
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
     }
 

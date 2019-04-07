@@ -240,7 +240,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         Expression variable = arguments.stream()
                 .filter(argument -> argument.getName().equals(ctx.getText()))
-                .findFirst().get().getConstantExpr();
+                .findFirst().get().getVariable();
         return variable;
     }
 }

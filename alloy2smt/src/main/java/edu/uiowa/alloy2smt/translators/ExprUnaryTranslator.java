@@ -80,7 +80,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
-        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIden.getConstantExpr());
+        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIden.getVariable());
         return reflexiveClosure;
     }
 
@@ -102,9 +102,9 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {                    
-                    case "univ": return getTranslator().atomUniv.getConstantExpr();
-                    case "iden": return getTranslator().atomIden.getConstantExpr();
-                    case "none": return getTranslator().atomNone.getConstantExpr();
+                    case "univ": return getTranslator().atomUniv.getVariable();
+                    case "iden": return getTranslator().atomIden.getVariable();
+                    case "none": return getTranslator().atomNone.getVariable();
                     case "Int": throw new UnsupportedOperationException("We do not support the built-in signature Int used in facts!");
                     default:
                         throw new UnsupportedOperationException();
@@ -112,13 +112,13 @@ public class ExprUnaryTranslator
             }
             else
             {
-                return getTranslator().signaturesMap.get(((Sig) exprUnary.sub)).getConstantExpr();
+                return getTranslator().signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
             }
         }
 
         if(exprUnary.sub instanceof Sig.Field)
         {
-            return getTranslator().fieldsMap.get(((Sig.Field) exprUnary.sub)).getConstantExpr();
+            return getTranslator().fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
         }
 
         if(exprUnary.sub instanceof ExprVar)
@@ -205,12 +205,12 @@ public class ExprUnaryTranslator
             if(sort instanceof IntSort)
             {
                 bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
                 bdVar = new VariableDeclaration(name, getTranslator().atomSort);
-                bdVarExpr = bdVar.getConstantExpr();
+                bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
@@ -244,12 +244,12 @@ public class ExprUnaryTranslator
             if(sort instanceof IntSort)
             {
                 bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
                 bdVar = new VariableDeclaration(name, getTranslator().atomSort);
-                bdVarExpr = bdVar.getConstantExpr();
+                bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
@@ -287,12 +287,12 @@ public class ExprUnaryTranslator
             if(sort instanceof IntSort)
             {
                 bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getConstantExpr()), 0);
+                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
                 bdVar = new VariableDeclaration(name, getTranslator().atomSort);
-                bdVarExpr = bdVar.getConstantExpr();
+                bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
@@ -308,7 +308,7 @@ public class ExprUnaryTranslator
     
     public MultiArityExpression mkTupleExpr(VariableDeclaration bdVarDecl)
     {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getConstantExpr());
+        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getVariable());
     }
     
     public MultiArityExpression mkOneTupleExprOutofAtoms(Expression ... exprs)
@@ -331,7 +331,7 @@ public class ExprUnaryTranslator
         List<Expression> constExprs = new ArrayList<>();
         for(VariableDeclaration varDecl : bdVarDecls)
         {
-            constExprs.add(varDecl.getConstantExpr());
+            constExprs.add(varDecl.getVariable());
         }
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
     }  

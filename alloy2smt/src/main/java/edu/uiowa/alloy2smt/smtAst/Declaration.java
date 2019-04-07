@@ -32,7 +32,7 @@ abstract public class Declaration extends SmtAst
         return this.sort;
     }
 
-    public Variable getConstantExpr()
+    public Variable getVariable()
     {
         return this.variable;
     }

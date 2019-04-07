@@ -89,7 +89,7 @@ public class ExprTranslator
         {
             // alloy only supports integers
             case NUMBER : return IntConstant.getInstance(expr.num);
-            case IDEN   : return translator.atomIden.getConstantExpr();
+            case IDEN   : return translator.atomIden.getVariable();
             case TRUE   : return new BoolConstant(true);
             case FALSE  : return new BoolConstant(false);
             default: throw new UnsupportedOperationException(expr.op.name());
@@ -123,7 +123,7 @@ public class ExprTranslator
         {
             for(int i = 0; i < exprs.size()-1; ++i)
             {
-                Expression disjExpr = new BinaryExpression(translator.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new BinaryExpression(exprs.get(i), BinaryExpression.Op.INTERSECTION, exprs.get(i+1)));
+                Expression disjExpr = new BinaryExpression(translator.atomNone.getVariable(), BinaryExpression.Op.EQ, new BinaryExpression(exprs.get(i), BinaryExpression.Op.INTERSECTION, exprs.get(i+1)));
                 finalExprs.add(disjExpr);
             }
             finalExpr = finalExprs.get(0);
@@ -229,7 +229,7 @@ public class ExprTranslator
             translator.auxExpr = setCompDef;
         }
         translator.existentialBdVars.add(setBdVar);
-        return setBdVar.getConstantExpr();
+        return setBdVar.getVariable();
     }
     
     public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Map<String,Expression> variablesScope)
@@ -251,10 +251,10 @@ public class ExprTranslator
         VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.uninterpretedInt);
         VariableDeclaration z = new VariableDeclaration("_z", Alloy2SmtTranslator.uninterpretedInt);
 
-        Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getConstantExpr());
-        Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getConstantExpr());
+        Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
+        Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
         Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                x.getConstantExpr(),  y.getConstantExpr(), z.getConstantExpr());
+                x.getVariable(),  y.getVariable(), z.getVariable());
 
         Expression xMemberA = new BinaryExpression(xTuple, BinaryExpression.Op.MEMBER, A);
         Expression yMemberB = new BinaryExpression(yTuple, BinaryExpression.Op.MEMBER, B);
@@ -277,7 +277,7 @@ public class ExprTranslator
         if(A instanceof IntConstant)
         {
             ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getConstantExpr());
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
             A = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
         }
         return A;
@@ -289,13 +289,13 @@ public class ExprTranslator
         VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt);
         VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt);
 
-        Expression xValue = new FunctionCallExpression(translator.uninterpretedIntValue, x.getConstantExpr());
-        Expression yValue = new FunctionCallExpression(translator.uninterpretedIntValue, y.getConstantExpr());
-        Expression zValue = new FunctionCallExpression(translator.uninterpretedIntValue, z.getConstantExpr());
+        Expression xValue = new FunctionCallExpression(translator.uninterpretedIntValue, x.getVariable());
+        Expression yValue = new FunctionCallExpression(translator.uninterpretedIntValue, y.getVariable());
+        Expression zValue = new FunctionCallExpression(translator.uninterpretedIntValue, z.getVariable());
 
 
         Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                x.getConstantExpr(),  y.getConstantExpr(), z.getConstantExpr());
+                x.getVariable(),  y.getVariable(), z.getVariable());
 
         String relationName;
 
@@ -313,14 +313,14 @@ public class ExprTranslator
         ConstantDeclaration relation = new ConstantDeclaration(relationName, Alloy2SmtTranslator.setOfTernaryIntSort);
         Expression xyOperation = new BinaryExpression(xValue, op, yValue);
         Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
-        Expression xyzTupleMember = new BinaryExpression(xyzTuple, BinaryExpression.Op.MEMBER, relation.getConstantExpr());
+        Expression xyzTupleMember = new BinaryExpression(xyzTuple, BinaryExpression.Op.MEMBER, relation.getVariable());
         Expression implies1 = new BinaryExpression(equal, BinaryExpression.Op.IMPLIES, xyzTupleMember);
         Expression implies2 = new BinaryExpression(xyzTupleMember, BinaryExpression.Op.IMPLIES, equal);
         Expression equivalence = new BinaryExpression(implies1, BinaryExpression.Op.AND, implies2);
         Expression axiom1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, equivalence, x, y, z);
         translator.smtProgram.addConstantDeclaration(relation);
         translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom1));
-        translator.arithOps.put(op, relation.getConstantExpr());
+        translator.arithOps.put(op, relation.getVariable());
 
         // the relation is actually a mathematical operation
         // i.e. for all (a,b,c), (x,y,z): (a,b,c) and (x,y,z) in relation and
@@ -331,12 +331,12 @@ public class ExprTranslator
         VariableDeclaration c = new VariableDeclaration("_c", Alloy2SmtTranslator.uninterpretedInt);
 
         Expression abcTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                a.getConstantExpr(),  b.getConstantExpr(), c.getConstantExpr());
+                a.getVariable(),  b.getVariable(), c.getVariable());
 
-        Expression abcTupleMember = new BinaryExpression(abcTuple, BinaryExpression.Op.MEMBER, relation.getConstantExpr());
-        Expression axEqual = new BinaryExpression(a.getConstantExpr(), BinaryExpression.Op.EQ, x.getConstantExpr());
-        Expression byEqual = new BinaryExpression(b.getConstantExpr(), BinaryExpression.Op.EQ, y.getConstantExpr());
-        Expression czEqual = new BinaryExpression(c.getConstantExpr(), BinaryExpression.Op.EQ, z.getConstantExpr());
+        Expression abcTupleMember = new BinaryExpression(abcTuple, BinaryExpression.Op.MEMBER, relation.getVariable());
+        Expression axEqual = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, x.getVariable());
+        Expression byEqual = new BinaryExpression(b.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
+        Expression czEqual = new BinaryExpression(c.getVariable(), BinaryExpression.Op.EQ, z.getVariable());
 
         Expression and1 = new BinaryExpression(abcTupleMember, BinaryExpression.Op.AND, xyzTupleMember);
         Expression and2 = new BinaryExpression(axEqual, BinaryExpression.Op.AND, byEqual);
@@ -410,15 +410,15 @@ public class ExprTranslator
                     VariableDeclaration variable = createVariable(declSorts.get(0), name.label);
                     //ToDo: refactor this for set case
                     quantifiedSingleton2AtomMap.put(name.label, new ArrayList<>(Collections.singletonList(variable)));
-                    variablesScope.put(name.label, variable.getConstantExpr());
+                    variablesScope.put(name.label, variable.getVariable());
                     quantifiedVariable2SignatureMap.put(name.label, declExpr);
-                    quantifiedVariable2ExpressionMap.put(name.label, variable.getConstantExpr());
+                    quantifiedVariable2ExpressionMap.put(name.label, variable.getVariable());
 
                     switch (((ExprUnary) decl.expr).op)
                     {
                         case SOMEOF:
                         {
-                            multiplicityConstraint = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
+                            multiplicityConstraint = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ,
                                     new UnaryExpression(UnaryExpression.Op.EMPTYSET, variable.getSort())
                             ));
                         } break;
@@ -426,9 +426,9 @@ public class ExprTranslator
                         {
                             VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
                             quantifiedSingleton2AtomMap.get(name.label).add(multiplicityVariable);
-                            multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.EQ,
+                            multiplicityConstraint = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ,
                                     new UnaryExpression(UnaryExpression.Op.SINGLETON,
-                                            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
+                                            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getVariable()))
                             );
                         } break;
                         case LONEOF:
@@ -436,9 +436,9 @@ public class ExprTranslator
                             VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
 
                             quantifiedSingleton2AtomMap.get(name.label).add(multiplicityVariable);
-                            multiplicityConstraint = new BinaryExpression(variable.getConstantExpr(), BinaryExpression.Op.SUBSET,
+                            multiplicityConstraint = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.SUBSET,
                                     new UnaryExpression(UnaryExpression.Op.SINGLETON,
-                                            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getConstantExpr()))
+                                            new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getVariable()))
                             );
                         } break;
                     }
@@ -453,7 +453,7 @@ public class ExprTranslator
                     String sanBdVarName = TranslatorUtils.sanitizeName(name.label);
 
                     VariableDeclaration bdVarDecl = createVariable(declExprSort, sanBdVarName);
-                    Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
+                    Expression bdVarTupleExpr = bdVarDecl.getVariable();
                     List<VariableDeclaration> bdAtomVars = new ArrayList<>();
 
                     if (arity > 1) {
@@ -466,10 +466,10 @@ public class ExprTranslator
 
                             if (declSorts.get(i) instanceof IntSort) {
                                 bdAtomVar = new VariableDeclaration(varName, translator.uninterpretedInt);
-                                bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
+                                bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getVariable()), 0);
                             } else {
                                 bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
-                                bdAtomVarExpr = bdAtomVar.getConstantExpr();
+                                bdAtomVarExpr = bdAtomVar.getVariable();
                             }
                             bdAtomVars.add(bdAtomVar);
                             bdAtomExprs.add(bdAtomVarExpr);
@@ -480,7 +480,7 @@ public class ExprTranslator
                     } else {
                         bdAtomVars.add(bdVarDecl);
                         if ((declExprSort instanceof IntSort)) {
-                            bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getConstantExpr());
+                            bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getVariable());
                         } else {
                             bdVarTupleExpr = exprUnaryTranslator.mkOneTupleExprOutofAtoms(bdVarTupleExpr);
                         }
@@ -548,7 +548,7 @@ public class ExprTranslator
                     {
                         String sanitizedName = TranslatorUtils.sanitizeName(name.label);
                         VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0));
-                        variablesScope.put(name.label, bdVar.getConstantExpr());
+                        variablesScope.put(name.label, bdVar.getVariable());
                         bdVars.put(bdVar, declExpr);
                     }                    
                 }
@@ -560,7 +560,7 @@ public class ExprTranslator
                     membership = new BinaryExpression(membership, BinaryExpression.Op.AND, getMemberExpression(bdVars, i));
                 }
                 membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
-                Expression setMembership = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(new ArrayList<>(bdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getConstantExpr());
+                Expression setMembership = new BinaryExpression(exprUnaryTranslator.mkTupleExpr(new ArrayList<>(bdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getVariable());
                 membership = new BinaryExpression(membership, BinaryExpression.Op.EQ, setMembership);
                 Expression forallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(bdVars.keySet()), membership);
                 
@@ -574,7 +574,7 @@ public class ExprTranslator
                 }
                 
                 translator.existentialBdVars.add(setBdVar);
-                return setBdVar.getConstantExpr();
+                return setBdVar.getVariable();
             }
             default: throw new UnsupportedOperationException();
         }
@@ -597,7 +597,7 @@ public class ExprTranslator
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(name.label);
                 
                 VariableDeclaration bdVarDecl = createVariable(declExprSort, sanBdVarName);
-                Expression bdVarTupleExpr = bdVarDecl.getConstantExpr();
+                Expression bdVarTupleExpr = bdVarDecl.getVariable();
                 List<VariableDeclaration>  bdAtomVars    = new ArrayList<>();
                 
                 if(arity > 1)
@@ -612,12 +612,12 @@ public class ExprTranslator
                         if(declSorts.get(i) instanceof IntSort)
                         {
                             bdAtomVar = new VariableDeclaration(varName, translator.uninterpretedInt);
-                            bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getConstantExpr()), 0);
+                            bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getVariable()), 0);
                         }
                         else
                         {
                             bdAtomVar = new VariableDeclaration(varName, translator.atomSort);
-                            bdAtomVarExpr = bdAtomVar.getConstantExpr();
+                            bdAtomVarExpr = bdAtomVar.getVariable();
                         } 
                         bdAtomVars.add(bdAtomVar);
                         bdAtomExprs.add(bdAtomVarExpr);
@@ -631,7 +631,7 @@ public class ExprTranslator
                     bdAtomVars.add(bdVarDecl);
                     if((declExprSort instanceof IntSort))
                     {
-                        bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getConstantExpr());
+                        bdVarTupleExpr = exprUnaryTranslator.mkUnaryIntTupValue(bdVarDecl.getVariable());
                     }
                     else
                     {
@@ -820,19 +820,19 @@ public class ExprTranslator
     {
         VariableDeclaration bdVar           = (new ArrayList<>(bdVarToExprMap.keySet())).get(index);
         Expression                  bdVarParExpr    = bdVarToExprMap.get(bdVar);
-        Expression                  tupleExpr       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVar.getConstantExpr());
+        Expression                  tupleExpr       = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVar.getVariable());
         
         if((bdVar.getSort() instanceof UninterpretedSort) || (bdVar.getSort() instanceof IntSort))
         {
-            tupleExpr = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVar.getConstantExpr());
+            tupleExpr = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVar.getVariable());
         }
         else if(bdVar.getSort() instanceof TupleSort)
         {
-            tupleExpr = bdVar.getConstantExpr();
+            tupleExpr = bdVar.getVariable();
         }
         else if(bdVar.getSort() instanceof SetSort)
         {
-            return new BinaryExpression(bdVar.getConstantExpr(), BinaryExpression.Op.SUBSET, bdVarParExpr);
+            return new BinaryExpression(bdVar.getVariable(), BinaryExpression.Op.SUBSET, bdVarParExpr);
         }
         return new BinaryExpression(tupleExpr, BinaryExpression.Op.MEMBER, bdVarParExpr);
     }

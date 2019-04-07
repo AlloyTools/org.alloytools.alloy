@@ -76,7 +76,7 @@ public class FunctionDeclaration extends Declaration
     }
 
     @Override
-    public Variable getConstantExpr()
+    public Variable getVariable()
     {
         if(this.variable != null)
         {

@@ -226,20 +226,20 @@ public class Alloy2SmtTranslator
     {
         // Axiom for identity relation
         VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
-        MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr());
-        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
+        MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
+        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniv.getVariable());
 
         VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
-        MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getConstantExpr());
-        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniv.getConstantExpr());
+        MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
+        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniv.getVariable());
 
         BinaryExpression            and     = new BinaryExpression(memberA, BinaryExpression.Op.AND, memberB);
 
-        MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getConstantExpr(), b.getConstantExpr());
+        MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
 
-        BinaryExpression            member  = new BinaryExpression(tupleAB, BinaryExpression.Op.MEMBER, this.atomIden.getConstantExpr());
+        BinaryExpression            member  = new BinaryExpression(tupleAB, BinaryExpression.Op.MEMBER, this.atomIden.getVariable());
 
-        BinaryExpression            equals  = new BinaryExpression(a.getConstantExpr(), BinaryExpression.Op.EQ, b.getConstantExpr());
+        BinaryExpression            equals  = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, b.getVariable());
 
         BinaryExpression            equiv   = new BinaryExpression(member, BinaryExpression.Op.EQ, equals);
 
@@ -247,8 +247,8 @@ public class Alloy2SmtTranslator
         
         QuantifiedExpression        idenSemantics  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniv.getConstantExpr(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniv.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
     }
 
@@ -352,7 +352,7 @@ public class Alloy2SmtTranslator
                 VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
                 
                 inputVarNames.add(sanBdVarName);
-                variablesScope.put(bdVarName, bdVarDecl.getConstantExpr());
+                variablesScope.put(bdVarName, bdVarDecl.getVariable());
             }
         }        
 
@@ -365,7 +365,7 @@ public class Alloy2SmtTranslator
             {
                 String sanitizedName = TranslatorUtils.sanitizeName(name.label);
                 VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0));
-                variablesScope.put(name.label, bdVar.getConstantExpr());
+                variablesScope.put(name.label, bdVar.getVariable());
                 inputBdVars.put(bdVar, declExpr);                
             }                    
         }
@@ -378,7 +378,7 @@ public class Alloy2SmtTranslator
             membership = new BinaryExpression(membership, BinaryExpression.Op.AND, exprTranslator.getMemberExpression(inputBdVars, i));
         }
         membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
-        Expression setMembership = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getConstantExpr());
+        Expression setMembership = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getVariable());
         membership = new BinaryExpression(membership, BinaryExpression.Op.EQ, setMembership);
         Expression forallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(inputBdVars.keySet()), membership);
 
@@ -418,7 +418,7 @@ public class Alloy2SmtTranslator
                 VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
                 
                 bdVars.add(bdVarDecl);
-                variablesScope.put(bdVarName, bdVarDecl.getConstantExpr());
+                variablesScope.put(bdVarName, bdVarDecl.getVariable());
             }
         }
         // If the function is not predicate, we change its returned type.
@@ -793,7 +793,7 @@ public class Alloy2SmtTranslator
         ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getNewAtomName(), Alloy2SmtTranslator.uninterpretedInt);
         integerConstants.put(value, uninterpretedInt);
         smtProgram.addConstantDeclaration(uninterpretedInt);
-        Expression callExpression = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, uninterpretedInt.getConstantExpr());
+        Expression callExpression = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
         Expression equality = new BinaryExpression(callExpression, BinaryExpression.Op.EQ, intConstant);
         Assertion assertion = new Assertion("constant integer", equality);
         smtProgram.addAssertion(assertion);
