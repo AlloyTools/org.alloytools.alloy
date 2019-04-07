@@ -13,6 +13,7 @@ import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class UnaryExpression extends Expression
 {    
@@ -156,5 +157,27 @@ public class UnaryExpression extends Expression
             default:
                 throw new UnsupportedOperationException();
         }
+    }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        Expression expression = this.expr.evaluate(functions);
+        return new UnaryExpression(this.op, expression);
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof UnaryExpression))
+        {
+            return false;
+        }
+        UnaryExpression unaryObject = (UnaryExpression) object;
+        return op ==  unaryObject.op &&
+                expr.equals(unaryObject.expr);
     }
 }

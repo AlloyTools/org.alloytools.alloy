@@ -38,7 +38,7 @@ public interface SmtAstVisitor
 
     public void visit(IntConstant intConstant);
 
-    public void visit(ConstantExpression constantExpression);
+    public void visit(Variable variable);
 
     public void visit(FunctionDeclaration functionDeclaration);
 
@@ -46,7 +46,7 @@ public interface SmtAstVisitor
 
     public void visit(ConstantDeclaration constantDeclaration);
 
-    public void visit(BooleanConstant booleanConstant);
+    public void visit(BoolConstant booleanConstant);
 
     public void visit(Assertion assertion);
 

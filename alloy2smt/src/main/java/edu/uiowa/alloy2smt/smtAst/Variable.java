@@ -10,16 +10,18 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
-public class ConstantExpression extends Expression
+import java.util.Map;
+
+public class Variable extends Expression
 {
     private final Declaration declaration;
 
-    public ConstantExpression(Declaration declaration)
+    public Variable(Declaration declaration)
     {
         this.declaration = declaration;
     }
     
-    public String getVarName()
+    public String getName()
     {
         return this.declaration.getName();
     }
@@ -38,5 +40,25 @@ public class ConstantExpression extends Expression
     public Sort getSort()
     {
         return declaration.getSort();
+    }
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof Variable))
+        {
+            return false;
+        }
+        Variable constantObject = (Variable) object;
+        return declaration.equals(constantObject.declaration);
     }
 }

@@ -10,6 +10,8 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 
+import java.util.Map;
+
 public abstract class Expression extends SmtAst
 {
     @Override
@@ -22,4 +24,9 @@ public abstract class Expression extends SmtAst
 
     public abstract Sort getSort();
     protected void checkTypes(){}
+
+    public abstract Expression evaluate(Map<String, FunctionDefinition> functions);
+
+    @Override
+    public abstract boolean equals(Object object);
 }

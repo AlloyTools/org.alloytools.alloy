@@ -11,7 +11,9 @@ package edu.uiowa.alloy2smt.smtAst;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FunctionCallExpression extends Expression
 {
@@ -71,5 +73,46 @@ public class FunctionCallExpression extends Expression
     public Sort getSort()
     {
         return function.getSort();
+    }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        FunctionDefinition definition = functions.get(this.function.getName());
+        // improve the performance of this line
+        Map<String, FunctionDefinition> newScope = new HashMap<>(functions);
+        for(int i = 0; i < arguments.size(); i++)
+        {
+            Expression argument = arguments.get(i);
+            if(argument instanceof UninterpretedConstant)
+            {
+                UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) argument;
+                String argumentName = definition.inputVariables.get(i).getName();
+                // ToDo: refactor this
+                // for now generate a new constant with the passed parameter;
+                ConstantDefinition constant = new ConstantDefinition(argumentName, uninterpretedConstant.getSort(), uninterpretedConstant);
+                newScope.put(constant.getName(), constant);
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+        return definition.getExpression().evaluate(newScope);
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof FunctionCallExpression))
+        {
+            return false;
+        }
+        FunctionCallExpression functionCall = (FunctionCallExpression) object;
+        return function.equals(functionCall.function) &&
+                arguments.equals(functionCall.arguments);
     }
 }

@@ -75,4 +75,16 @@ public class LetExpression extends Expression
         //ToDo: review this case
         return expr.getSort();
     }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

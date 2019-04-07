@@ -12,8 +12,9 @@ import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 import java.math.BigInteger;
+import java.util.Map;
 
-public class IntConstant extends Expression
+public class IntConstant extends Constant
 {
     private final BigInteger value;
     
@@ -67,5 +68,25 @@ public class IntConstant extends Expression
     public Sort getSort()
     {
         return Alloy2SmtTranslator.intSort;
+    }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        return this;
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof IntConstant))
+        {
+            return false;
+        }
+        IntConstant intConstant = (IntConstant) object;
+        return value.equals(intConstant.value);
     }
 }

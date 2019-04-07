@@ -14,6 +14,7 @@ import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class QuantifiedExpression extends Expression
 {
@@ -93,5 +94,31 @@ public class QuantifiedExpression extends Expression
     public Sort getSort()
     {
         return Alloy2SmtTranslator.boolSort;
+    }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof QuantifiedExpression))
+        {
+            return false;
+        }
+        QuantifiedExpression quantifiedObject = (QuantifiedExpression) object;
+        if(! boundVars.equals(quantifiedObject.boundVars))
+        {
+            return false;
+        }
+        return op ==  quantifiedObject.op &&
+                expr.equals(quantifiedObject.expr);
     }
 }

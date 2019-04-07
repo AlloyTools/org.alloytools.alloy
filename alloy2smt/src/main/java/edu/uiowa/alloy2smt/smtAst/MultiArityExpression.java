@@ -12,10 +12,7 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MultiArityExpression extends Expression
@@ -155,5 +152,31 @@ public class MultiArityExpression extends Expression
             default:
                 throw new UnsupportedOperationException();
         }
+    }
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        List<Expression> expressions = new ArrayList<>();
+        for (Expression expression : this.exprs)
+        {
+            expressions.add(expression.evaluate(functions));
+        }
+        return new MultiArityExpression(this.op, expressions);
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof MultiArityExpression))
+        {
+            return false;
+        }
+        MultiArityExpression multiArity = (MultiArityExpression) object;
+        return op ==  multiArity.op &&
+                exprs.equals(multiArity.exprs);
     }
 }

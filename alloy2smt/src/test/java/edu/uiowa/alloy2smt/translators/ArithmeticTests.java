@@ -1,10 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
-import edu.uiowa.alloy2smt.smtAst.IntConstant;
-import edu.uiowa.alloy2smt.smtAst.MultiArityExpression;
-import edu.uiowa.alloy2smt.smtAst.UnaryExpression;
+import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.shared.CommandResult;
 import edu.uiowa.shared.Cvc4Task;
 import org.junit.Test;
@@ -34,6 +31,7 @@ public class ArithmeticTests
         FunctionDefinition c = (FunctionDefinition) commandResults.get(0).smtModel
                 .getFunctions().stream()
                 .filter(f -> f.getName().equals(cName)).findFirst().get();
+        c = commandResults.get(0).smtModel.evaluateUninterpretedInt(c);
         UnaryExpression unary =  (UnaryExpression) c.expression;
         Assertions.assertEquals(UnaryExpression.Op.SINGLETON, unary.getOP());
         MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();

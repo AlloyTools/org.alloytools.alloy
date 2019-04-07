@@ -33,14 +33,6 @@ public class FunctionDefinition extends FunctionDeclaration
         this.inputVariables = Collections.singletonList(inputVariable);
         this.expression = expression;
     }
-
-    public FunctionDefinition(String name, Sort outputSort, Expression expression)
-    {
-        super(name, outputSort);
-        this.inputVariables = new ArrayList<>();
-        this.expression = expression;
-    }  
-    
     public FunctionDefinition(String name, Sort outputSort, Expression expression, VariableDeclaration... inputVariables)
     {
         super(name, Arrays.stream(inputVariables).map(v -> v.getSort()).collect(Collectors.toList()), outputSort);

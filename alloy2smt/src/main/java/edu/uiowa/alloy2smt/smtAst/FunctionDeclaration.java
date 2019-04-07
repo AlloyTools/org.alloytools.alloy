@@ -25,11 +25,11 @@ public class FunctionDeclaration extends Declaration
 
         if(this.inputSorts.isEmpty())
         {
-            constantExpression = new ConstantExpression(this);
+            variable = new Variable(this);
         }
         else
         {
-            constantExpression = null;
+            variable = null;
         }
     }
 
@@ -40,11 +40,11 @@ public class FunctionDeclaration extends Declaration
 
         if(this.inputSorts.isEmpty())
         {
-            constantExpression = new ConstantExpression(this);
+            variable = new Variable(this);
         }
         else
         {
-            constantExpression = null;
+            variable = null;
         }
     }
 
@@ -52,7 +52,7 @@ public class FunctionDeclaration extends Declaration
     {
         super(name, outputSort);
         this.inputSorts         = new ArrayList<>();
-        this.constantExpression = new ConstantExpression(this);
+        this.variable = new Variable(this);
     } 
     
     public FunctionDeclaration(String name, Sort outputSort, Sort ... inputSorts)
@@ -62,11 +62,11 @@ public class FunctionDeclaration extends Declaration
 
         if(this.inputSorts.isEmpty())
         {
-            constantExpression = new ConstantExpression(this);
+            variable = new Variable(this);
         }
         else
         {
-            constantExpression = null;
+            variable = null;
         }
     }     
     
@@ -76,11 +76,11 @@ public class FunctionDeclaration extends Declaration
     }
 
     @Override
-    public ConstantExpression getConstantExpr()
+    public Variable getConstantExpr()
     {
-        if(this.constantExpression != null)
+        if(this.variable != null)
         {
-            return this.constantExpression;
+            return this.variable;
         }
         // this is a function call
         throw new UnsupportedOperationException();

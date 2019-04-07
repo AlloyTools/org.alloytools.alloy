@@ -13,13 +13,13 @@ abstract public class Declaration extends SmtAst
     private final String                name;
     private final Sort                  sort;
 
-    protected ConstantExpression    constantExpression;
+    protected Variable variable;
 
     protected Declaration(String name, Sort sort)
     {
         this.name = name;
         this.sort = sort;
-        this.constantExpression = new ConstantExpression(this);
+        this.variable = new Variable(this);
     }
 
     public String getName()
@@ -32,8 +32,8 @@ abstract public class Declaration extends SmtAst
         return this.sort;
     }
 
-    public ConstantExpression getConstantExpr()
+    public Variable getConstantExpr()
     {
-        return this.constantExpression;
+        return this.variable;
     }
 }

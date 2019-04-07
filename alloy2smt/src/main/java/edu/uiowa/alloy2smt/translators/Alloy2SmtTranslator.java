@@ -45,6 +45,8 @@ public class Alloy2SmtTranslator
     final ExprTranslator            exprTranslator;
 
     public final static IntSort intSort        = IntSort.getInstance();
+    public final static TupleSort intSortTuple = new TupleSort(intSort);
+    public final static SetSort setOfIntSortTuple = new SetSort(intSortTuple);
 
     public final static BoolSort          boolSort          = BoolSort.getInstance();
     public final static UninterpretedSort atomSort          = new UninterpretedSort(atom);
@@ -84,7 +86,7 @@ public class Alloy2SmtTranslator
     Map<String, FunctionDeclaration>                functionsMap;
     Map<Sig.Field, FunctionDeclaration>             fieldsMap;     
     Map<BinaryExpression.Op, FunctionDefinition>    comparisonOps;
-    Map<BinaryExpression.Op, ConstantExpression>    arithOps;
+    Map<BinaryExpression.Op, Variable>    arithOps;
     Map<String, Func> nameToFuncMap;
     Map<BigInteger, ConstantDeclaration> integerConstants;
 

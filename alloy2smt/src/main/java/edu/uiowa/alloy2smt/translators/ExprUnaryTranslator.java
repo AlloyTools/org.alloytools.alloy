@@ -129,17 +129,17 @@ public class ExprUnaryTranslator
             {
                 Expression constExpr = variablesScope.get(varName);
                 
-                if(constExpr instanceof ConstantExpression)
+                if(constExpr instanceof Variable)
                 {
-                    if(((ConstantExpression)constExpr).getDeclaration().getSort() == getTranslator().atomSort)
+                    if(((Variable)constExpr).getDeclaration().getSort() == getTranslator().atomSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     }                    
-                    else if(((ConstantExpression)constExpr).getDeclaration().getSort() == getTranslator().intSort)
+                    else if(((Variable)constExpr).getDeclaration().getSort() == getTranslator().intSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     } 
-                    else if(((ConstantExpression)constExpr).getDeclaration().getSort() instanceof TupleSort)
+                    else if(((Variable)constExpr).getDeclaration().getSort() instanceof TupleSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, constExpr);
                     }                     

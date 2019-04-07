@@ -8,10 +8,14 @@
 
 package edu.uiowa.alloy2smt.smtAst;
 
+import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SmtModel extends SmtAst
 {
@@ -60,6 +64,32 @@ public class SmtModel extends SmtAst
     @Override
     public void accept(SmtAstVisitor visitor)
     {
+        throw new UnsupportedOperationException();
+    }
+
+    public FunctionDefinition evaluateUninterpretedInt(FunctionDefinition function)
+    {
+        Map<String, FunctionDefinition> functions = new HashMap<>();
+
+        if(function.inputVariables.size() > 0)
+        {
+            throw new UnsupportedOperationException();
+        }
+        // make sure this is a cvc4 model
+        for (FunctionDeclaration declaration: this.functions)
+        {
+            if(!(declaration instanceof FunctionDefinition))
+            {
+                throw new RuntimeException("The function " + declaration + " is not defined");
+            }
+            functions.put(declaration.getName(), (FunctionDefinition) declaration);
+        }
+        Expression body = function.expression.evaluate(functions);
+        if(function.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple))
+        {
+            return new FunctionDefinition(function.getName(), function.inputVariables,
+                    Alloy2SmtTranslator.setOfIntSortTuple, body);
+        }
         throw new UnsupportedOperationException();
     }
 }

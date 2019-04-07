@@ -11,6 +11,8 @@ package edu.uiowa.alloy2smt.smtAst;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.printers.SmtLibPrettyPrinter;
 
+import java.util.Map;
+
 public class Sort extends Expression
 {
     private final String name;
@@ -45,5 +47,16 @@ public class Sort extends Expression
     public Sort getSort()
     {
         return this;
+    }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        throw new UnsupportedOperationException();
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        throw new UnsupportedOperationException();
     }
 }

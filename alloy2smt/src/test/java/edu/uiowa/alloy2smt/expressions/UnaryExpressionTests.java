@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 public class UnaryExpressionTests
 {
-    Expression booleanConstant = new BooleanConstant(true);
+    Expression booleanConstant = new BoolConstant(true);
     @Test
     void booleanConstant()
     {

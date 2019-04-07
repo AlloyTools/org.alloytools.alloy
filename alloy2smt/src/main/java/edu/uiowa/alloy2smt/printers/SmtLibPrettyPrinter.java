@@ -164,9 +164,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(ConstantExpression constantExpression)
+    public void visit(Variable variable)
     {
-        this.stringBuilder.append(constantExpression.getVarName());
+        this.stringBuilder.append(variable.getName());
     }
 
     @Override
@@ -211,7 +211,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(BooleanConstant aThis) {
+    public void visit(BoolConstant aThis) {
         this.stringBuilder.append(aThis.getValue());
     }
 
@@ -286,9 +286,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(Expression expression)
     {
-        if (expression instanceof ConstantExpression)
+        if (expression instanceof Variable)
         {
-            this.visit((ConstantExpression) expression);
+            this.visit((Variable) expression);
         }
         else if (expression instanceof  UnaryExpression)
         {
@@ -318,9 +318,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         {
             this.visit((FunctionCallExpression) expression);
         }      
-        else if (expression instanceof  BooleanConstant)
+        else if (expression instanceof BoolConstant)
         {
-            this.visit((BooleanConstant) expression);
+            this.visit((BoolConstant) expression);
         }
         else if (expression instanceof  LetExpression)
         {

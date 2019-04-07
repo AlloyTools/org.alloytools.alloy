@@ -147,7 +147,7 @@ public class FieldTranslator
                 case SOMEOF     : multExpr = translateRelationSomeMultiplicity(field, fieldComponentExprs);break;
                 case LONEOF     : multExpr = translateRelationLoneMultiplicity(field, fieldComponentExprs);break;
                 case ONEOF      : multExpr = translateRelationOneMultiplicity(field, fieldComponentExprs);break;
-                case SETOF      : multExpr = new BooleanConstant(true);break; // no assertion needed
+                case SETOF      : multExpr = new BoolConstant(true);break; // no assertion needed
                 case EXACTLYOF  : break; //ToDo: review translator case
                 default:
                 {
@@ -178,7 +178,7 @@ public class FieldTranslator
 
         switch (exprBinary.op)
         {
-            case ARROW              : expr = new BooleanConstant(true);break;
+            case ARROW              : expr = new BoolConstant(true);break;
             case ANY_ARROW_SOME     : expr = translateAnyArrowSome(fieldComponentExprs, field); break;
             case ANY_ARROW_ONE      : expr = translateAnyArrowOne(fieldComponentExprs, field); break;
             case ANY_ARROW_LONE     : expr = translateAnyArrowLone(fieldComponentExprs, field); break;

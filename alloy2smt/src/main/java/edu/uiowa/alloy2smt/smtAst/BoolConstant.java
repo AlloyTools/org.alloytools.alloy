@@ -11,11 +11,13 @@ package edu.uiowa.alloy2smt.smtAst;
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
-public class BooleanConstant extends Expression
+import java.util.Map;
+
+public class BoolConstant extends Constant
 {
     private final boolean value;
     
-    public BooleanConstant(boolean value)
+    public BoolConstant(boolean value)
     {
         this.value = value;
     }
@@ -35,5 +37,24 @@ public class BooleanConstant extends Expression
     public Sort getSort()
     {
         return Alloy2SmtTranslator.boolSort;
+    }
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        return this;
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof BoolConstant))
+        {
+            return false;
+        }
+        BoolConstant booleanObject = (BoolConstant) object;
+        return value == booleanObject.value;
     }
 }

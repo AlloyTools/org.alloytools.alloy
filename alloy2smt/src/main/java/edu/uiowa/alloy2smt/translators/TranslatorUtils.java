@@ -156,7 +156,7 @@ public class TranslatorUtils
         }
         else if(exprs.isEmpty() || exprs.size() == 1)
         {
-            return new BooleanConstant(true);
+            return new BoolConstant(true);
         }
         else
         {

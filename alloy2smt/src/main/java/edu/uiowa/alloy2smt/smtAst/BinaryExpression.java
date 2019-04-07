@@ -13,6 +13,7 @@ import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BinaryExpression extends Expression
 {
@@ -324,5 +325,53 @@ public class BinaryExpression extends Expression
             default:
                 throw new UnsupportedOperationException();
         }
+    }
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        switch(op)
+        {
+            case EQ:
+            {
+                if(lhsExpr instanceof Variable && rhsExpr instanceof UninterpretedConstant)
+                {
+                    return evaluateEquality(functions, lhsExpr, rhsExpr);
+                }
+                if(rhsExpr instanceof Variable && lhsExpr instanceof UninterpretedConstant)
+                {
+                    return evaluateEquality(functions, rhsExpr, lhsExpr);
+                }
+            }break;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof BinaryExpression))
+        {
+            return false;
+        }
+        BinaryExpression binaryObject = (BinaryExpression) object;
+        return op ==  binaryObject.op &&
+                lhsExpr.equals(binaryObject.lhsExpr) &&
+                rhsExpr.equals(binaryObject.rhsExpr);
+    }
+
+    private Expression evaluateEquality(Map<String, FunctionDefinition> functions, Expression left, Expression right)
+    {
+        String variableName = ((Variable) left).getName();
+        if(! functions.containsKey(variableName))
+        {
+            throw new RuntimeException("Function " + variableName + " is undefined");
+        }
+        Expression leftValue = functions.get(variableName).getExpression();
+        boolean isEqual = leftValue.equals(right);
+        return new BoolConstant(isEqual);
     }
 }

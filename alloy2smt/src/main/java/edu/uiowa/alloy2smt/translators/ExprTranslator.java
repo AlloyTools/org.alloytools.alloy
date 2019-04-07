@@ -90,8 +90,8 @@ public class ExprTranslator
             // alloy only supports integers
             case NUMBER : return IntConstant.getInstance(expr.num);
             case IDEN   : return translator.atomIden.getConstantExpr();
-            case TRUE   : return new BooleanConstant(true);
-            case FALSE  : return new BooleanConstant(false); 
+            case TRUE   : return new BoolConstant(true);
+            case FALSE  : return new BoolConstant(false);
             default: throw new UnsupportedOperationException(expr.op.name());
         }
     }   
@@ -145,7 +145,7 @@ public class ExprTranslator
         Map<String, Expression> varToExprMap    = new HashMap<>();
         String                  sanitizeName    = TranslatorUtils.sanitizeName(exprLet.var.label);
         List<Sort>              exprSorts       = getExprSorts(exprLet.expr);
-        ConstantExpression      varDeclExpr     = new ConstantExpression(new ConstantDeclaration(sanitizeName, new SetSort(new TupleSort(exprSorts))));
+        Variable varDeclExpr     = new Variable(new ConstantDeclaration(sanitizeName, new SetSort(new TupleSort(exprSorts))));
         
         varToExprMap.put(sanitizeName, varExpr);        
         variablesScope.put(exprLet.var.label, varDeclExpr);
@@ -354,12 +354,12 @@ public class ExprTranslator
         {
             if (op == BinaryExpression.Op.AND)
             {
-                return new BooleanConstant(true);
+                return new BoolConstant(true);
             }
 
             if (op == BinaryExpression.Op.OR)
             {
-                return new BooleanConstant(false);
+                return new BoolConstant(false);
             }
             throw new UnsupportedOperationException();
         }
@@ -391,7 +391,7 @@ public class ExprTranslator
         Map<String, Expression> quantifiedVariable2ExpressionMap = new HashMap<>();
         LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap = new LinkedHashMap<>();
 
-        Expression multiplicityConstraint = new BooleanConstant(true);
+        Expression multiplicityConstraint = new BoolConstant(true);
         
         for (Decl decl: exprQt.decls)
         {
@@ -763,7 +763,7 @@ public class ExprTranslator
     
     private Expression getConstraints(LinkedHashMap<String, Expression> quantifiedVariable2SignatureMap, Map<String, Expression> quantifiedVariable2ExpressionMap, Expression multiplicityConstraint)
     {
-        Expression constraint = new BooleanConstant(true);
+        Expression constraint = new BoolConstant(true);
         
         for(Map.Entry<String, Expression> entry : quantifiedVariable2SignatureMap.entrySet())
         {
@@ -903,19 +903,19 @@ public class ExprTranslator
         return bdVars;
     }    
 
-    Expression mkSingletonOutOfTupleOrAtom(ConstantExpression constantExpression)
+    Expression mkSingletonOutOfTupleOrAtom(Variable variable)
     {
         UnaryExpression singleton = null;
         
-        if((constantExpression.getDeclaration().getSort() instanceof UninterpretedSort) ||
-                constantExpression.getDeclaration().getSort() instanceof IntSort)
+        if((variable.getDeclaration().getSort() instanceof UninterpretedSort) ||
+                variable.getDeclaration().getSort() instanceof IntSort)
         {
-            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constantExpression);
+            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable);
             singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);            
         }
-        else if(constantExpression.getDeclaration().getSort() instanceof TupleSort)
+        else if(variable.getDeclaration().getSort() instanceof TupleSort)
         {
-            singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, constantExpression);  
+            singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, variable);
         }
         else
         {
@@ -958,15 +958,15 @@ public class ExprTranslator
         
         for(Expression e : atomOrTupleExprs)
         {
-            if(e instanceof ConstantExpression)
+            if(e instanceof Variable)
             {
-                if(((ConstantExpression)e).getDeclaration().getSort() == translator.atomSort || 
-                        ((ConstantExpression)e).getDeclaration().getSort() == translator.uninterpretedInt)
+                if(((Variable)e).getDeclaration().getSort() == translator.atomSort ||
+                        ((Variable)e).getDeclaration().getSort() == translator.uninterpretedInt)
                 {
                     MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
                     atomTupleExprs.add(tuple);                    
                 }
-                else if(((ConstantExpression)e).getDeclaration().getSort() instanceof TupleSort)
+                else if(((Variable)e).getDeclaration().getSort() instanceof TupleSort)
                 {
                     atomTupleExprs.add(e);
                 }

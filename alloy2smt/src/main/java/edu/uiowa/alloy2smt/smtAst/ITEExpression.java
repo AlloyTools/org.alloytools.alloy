@@ -7,6 +7,9 @@ package edu.uiowa.alloy2smt.smtAst;
 
 import edu.uiowa.alloy2smt.printers.SmtAstVisitor;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import kodkod.engine.bool.BooleanConstant;
+
+import java.util.Map;
 
 /**
  *
@@ -101,5 +104,41 @@ public class ITEExpression extends Expression
     public Sort getSort()
     {
         return this.thenExpr.getSort();
+    }
+
+    @Override
+    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    {
+        Expression evaluatedCondition =  condExpr.evaluate(functions);
+        if(!(evaluatedCondition instanceof BoolConstant))
+        {
+            throw new RuntimeException("Expected a boolean constant but got " + evaluatedCondition);
+        }
+        boolean isTrue = Boolean.parseBoolean(((BoolConstant) evaluatedCondition).getValue());
+        if(isTrue)
+        {
+            return thenExpr.evaluate(functions);
+        }
+        else
+        {
+            return elseExpr.evaluate(functions);
+        }
+    }
+    @Override
+    public boolean equals(Object object)
+    {
+        if(object == this)
+        {
+            return true;
+        }
+        if(!(object instanceof ITEExpression))
+        {
+            return false;
+        }
+        ITEExpression iteObject = (ITEExpression) object;
+        return op ==  iteObject.op &&
+                condExpr.equals(iteObject.condExpr) &&
+                thenExpr.equals(iteObject.thenExpr) &&
+                elseExpr.equals(iteObject.elseExpr);
     }
 }
