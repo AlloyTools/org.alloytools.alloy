@@ -90,6 +90,11 @@ public class SmtModel extends SmtAst
             return new FunctionDefinition(function.getName(), function.inputVariables,
                     Alloy2SmtTranslator.setOfIntSortTuple, body);
         }
+        if(function.getSort().equals(Alloy2SmtTranslator.setOfTernaryIntSort))
+        {
+            return new FunctionDefinition(function.getName(), function.inputVariables,
+                    Alloy2SmtTranslator.setOfIntSortTuple, body);
+        }
         throw new UnsupportedOperationException();
     }
 }

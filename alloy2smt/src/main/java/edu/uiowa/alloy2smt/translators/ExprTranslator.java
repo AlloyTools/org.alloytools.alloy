@@ -301,11 +301,11 @@ public class ExprTranslator
 
         switch(op)
         {
-            case PLUS: relationName = "PLUS"; break;
-            case MINUS: relationName = "MINUS"; break;
-            case MULTIPLY: relationName = "MUL"; break;
-            case DIVIDE: relationName = "DIV"; break;
-            case MOD: relationName = "MOD"; break;
+            case PLUS: relationName = Alloy2SmtTranslator.plus; break;
+            case MINUS: relationName = Alloy2SmtTranslator.minus; break;
+            case MULTIPLY: relationName = Alloy2SmtTranslator.multiply; break;
+            case DIVIDE: relationName = Alloy2SmtTranslator.divide; break;
+            case MOD: relationName = Alloy2SmtTranslator.mod; break;
             default:
                 throw new UnsupportedOperationException(op.toString());
         }

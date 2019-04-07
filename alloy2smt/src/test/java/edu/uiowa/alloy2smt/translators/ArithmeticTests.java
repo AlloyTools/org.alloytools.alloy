@@ -42,6 +42,29 @@ public class ArithmeticTests
     }
 
     @Test
+    public void test1() throws Exception
+    {
+        String alloy =
+                "sig a, b, c in Int {} \n" +
+                "fact { \n" +
+                "#a = 2 \n" +
+                "#b = 2\n" +
+                "#c = 4 \n" +
+                "plus[a, b] = c\n" +
+                "}";
+        Translation translation = Utils.translate(alloy);
+        Cvc4Task task = new Cvc4Task();
+        List<CommandResult> commandResults =  task.run(translation);
+        Assertions.assertTrue(commandResults.size() == 1);
+        Assertions.assertEquals("sat", commandResults.get(0).result);
+        FunctionDefinition plus = (FunctionDefinition) commandResults.get(0).smtModel
+                .getFunctions().stream()
+                .filter(f -> f.getName().equals(Alloy2SmtTranslator.plus)).findFirst().get();
+        plus = commandResults.get(0).smtModel.evaluateUninterpretedInt(plus);
+
+    }
+
+    @Test
     public void testPlusMinus()
     {
         String alloy =

@@ -11,6 +11,7 @@ import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.alloy2smt.smtparser.SmtModelVisitor;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtLexer;
 import edu.uiowa.alloy2smt.smtparser.antlr.SmtParser;
+import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -301,7 +302,13 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         for(FunctionDeclaration function: model.getFunctions())
         {
-            functionsMap.put(function.getName(), (FunctionDefinition) function);
+            FunctionDefinition definition = (FunctionDefinition) function;
+            if(function.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) ||
+                    function.getSort().equals(Alloy2SmtTranslator.setOfTernaryIntSort))
+            {
+                definition = model.evaluateUninterpretedInt((FunctionDefinition) function);
+            }
+            functionsMap.put(function.getName(), definition);
         }
 
         List<Signature> signatures = new ArrayList<>();
@@ -319,6 +326,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             Field field = getField(functionsMap, mappingField);
             fields.add(field);
         }
+
+        // addSpecialFields(functionsMap, fields);
 
         Instance instance   = new Instance();
         instance.signatures = signatures;
@@ -341,6 +350,30 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
 
         alloy.writeToXml(xmlFileName);
+    }
+
+    private static void addSpecialFields(Map<String, FunctionDefinition> functionsMap, List<Field> fields) throws Exception
+    {
+        if(functionsMap.containsKey(Alloy2SmtTranslator.plus))
+        {
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.plus));
+        }
+        if(functionsMap.containsKey(Alloy2SmtTranslator.minus))
+        {
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.minus));
+        }
+        if(functionsMap.containsKey(Alloy2SmtTranslator.multiply))
+        {
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.multiply));
+        }
+        if(functionsMap.containsKey(Alloy2SmtTranslator.divide))
+        {
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.divide));
+        }
+        if(functionsMap.containsKey(Alloy2SmtTranslator.mod))
+        {
+            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.mod));
+        }
     }
 
     private static Signature getSignature(Map<String, FunctionDefinition> functionsMap, MappingSignature mappingSignature) throws Exception
@@ -393,7 +426,35 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return signature;
     }
 
-    private static Field getField(Map<String,FunctionDefinition> functionsMap, MappingField mappingField) throws Exception
+    private static Field getSpecialField(Map<String,FunctionDefinition> functionsMap, String fieldName) throws Exception
+    {
+        Field field = new Field();
+        int parentId = 2; // for integers
+        field.label = fieldName;
+        field.id = fieldName.hashCode();
+        field.parentId = parentId;
+
+        field.isPrivate = "no";
+        field.isMeta = "no";
+
+        // get the corresponding function from the model
+        FunctionDefinition function = functionsMap.get(fieldName);
+        if (function == null)
+        {
+            throw new Exception("Can not find the function " + fieldName
+                    + " for field " + field.label + "in the model.");
+        }
+        field.tuples = getTuples(function.expression);
+        field.types  =  new Types();
+        //ToDo: refactor these magic numbers
+        field.types.types = Arrays.stream(new int[]{parentId, parentId, parentId})
+                                  .mapToObj(Type::new).collect(Collectors.toList());
+
+        return field;
+    }
+
+
+        private static Field getField(Map<String,FunctionDefinition> functionsMap, MappingField mappingField) throws Exception
     {
         Field field  = new Field();
 

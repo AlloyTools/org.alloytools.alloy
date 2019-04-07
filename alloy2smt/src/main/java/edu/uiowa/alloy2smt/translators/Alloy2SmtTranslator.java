@@ -35,6 +35,11 @@ public class Alloy2SmtTranslator
     public final static String atom                 = "Atom";
     public final static String uninterpretedIntName = "UninterpretedInt";
     public final static String uninterpretedIntValueName = "uninterpretedIntValue";
+    public final static String plus = "PLUS";
+    public final static String minus = "MINUS";
+    public final static String multiply = "MUL";
+    public final static String divide = "DIV";
+    public final static String mod = "MOD";
 
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;

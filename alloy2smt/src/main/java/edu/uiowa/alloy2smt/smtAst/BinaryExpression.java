@@ -342,6 +342,12 @@ public class BinaryExpression extends Expression
                     return evaluateEquality(functions, rhsExpr, lhsExpr);
                 }
             }break;
+            case UNION:
+            {
+                Expression left = lhsExpr.evaluate(functions);
+                Expression right = rhsExpr.evaluate(functions);
+                return new BinaryExpression(left, Op.UNION, right);
+            }
         }
         throw new UnsupportedOperationException();
     }
