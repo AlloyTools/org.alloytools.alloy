@@ -238,6 +238,23 @@ public class Alloy2SmtTranslator
         this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
         this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniv.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
+
+        // uninterpretedIntValue is injective function
+        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt);
+        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt);
+        Expression XEqualsY = new BinaryExpression(X.getVariable(), BinaryExpression.Op.EQ, Y.getVariable());
+        Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, XEqualsY);
+
+        Expression XValue = new FunctionCallExpression(uninterpretedIntValue, X.getVariable());
+        Expression YValue = new FunctionCallExpression(uninterpretedIntValue, Y.getVariable());
+
+        Expression XValueEqualsYValue = new BinaryExpression(XValue, BinaryExpression.Op.EQ, YValue);
+        Expression notXValueEqualsYValue = new UnaryExpression(UnaryExpression.Op.NOT, XValueEqualsYValue);
+        Expression implication = new BinaryExpression(notXEqualsY, BinaryExpression.Op.IMPLIES, notXValueEqualsYValue);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implication, X, Y);
+
+        smtProgram.addAssertion(new Assertion(uninterpretedIntValueName + " is injective", forAll));
+
     }
 
     private void translateFacts()
