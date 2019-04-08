@@ -741,23 +741,21 @@ public class ExprBinaryTranslator
                 ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
-        } 
-
-        if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                right instanceof IntConstant)
-        {
-            ConstantDeclaration uninterpretedInt = exprTranslator.translator.getUninterpretedIntConstant((IntConstant) right);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-            right = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
         }
 
         if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
                 left instanceof IntConstant)
         {
-            ConstantDeclaration uninterpretedInt = exprTranslator.translator.getUninterpretedIntConstant((IntConstant) left);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-            left = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+            left = handleIntConstant(left);
         }
+
+        if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
+                right instanceof IntConstant)
+        {
+            right = handleIntConstant(right);
+        }
+
+
 
         Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
 
@@ -772,6 +770,14 @@ public class ExprBinaryTranslator
             finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, finalExpr);
         }                
         return finalExpr;        
+    }
+
+    private Expression handleIntConstant(Expression right)
+    {
+        ConstantDeclaration uninterpretedInt = exprTranslator.translator.getUninterpretedIntConstant((IntConstant) right);
+        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
+        right = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return right;
     }
 
     private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, Expression> variablesScope)
@@ -951,7 +957,19 @@ public class ExprBinaryTranslator
                 ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
-        } 
+        }
+
+        if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
+                left instanceof IntConstant)
+        {
+            left = handleIntConstant(left);
+        }
+
+        if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
+                right instanceof IntConstant)
+        {
+            right = handleIntConstant(right);
+        }
                 
         Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);
         

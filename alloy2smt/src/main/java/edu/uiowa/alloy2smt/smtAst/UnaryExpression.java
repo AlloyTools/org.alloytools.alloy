@@ -162,6 +162,17 @@ public class UnaryExpression extends Expression
     @Override
     public Expression evaluate(Map<String, FunctionDefinition> functions)
     {
+        if(op == Op.EMPTYSET)
+        {
+            if(expr.equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple))
+            {
+                return new UnaryExpression(op, Alloy2SmtTranslator.setOfIntSortTuple);
+            }
+            else
+            {
+                return this;
+            }
+        }
         Expression expression = this.expr.evaluate(functions);
         return new UnaryExpression(this.op, expression);
     }
