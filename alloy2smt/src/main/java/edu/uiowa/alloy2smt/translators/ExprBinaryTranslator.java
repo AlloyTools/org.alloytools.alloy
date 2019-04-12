@@ -743,14 +743,12 @@ public class ExprBinaryTranslator
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
         }
 
-        if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
             left = exprTranslator.translator.handleIntConstant(left);
         }
 
-        if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
             right = exprTranslator.translator.handleIntConstant(right);
         }
@@ -951,14 +949,12 @@ public class ExprBinaryTranslator
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
         }
 
-        if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
             left = exprTranslator.translator.handleIntConstant(left);
         }
 
-        if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
             right = exprTranslator.translator.handleIntConstant(right);
         }

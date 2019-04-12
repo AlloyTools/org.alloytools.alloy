@@ -88,7 +88,11 @@ public class ExprTranslator
         switch (expr.op)
         {
             // alloy only supports integers
-            case NUMBER : return IntConstant.getSingletonTuple(expr.num);
+            case NUMBER :
+            {
+                Expression intConstant = IntConstant.getSingletonTuple(expr.num);
+                return translator.handleIntConstant(intConstant) ;
+            }
             case IDEN   : return translator.atomIden.getVariable();
             case TRUE   : return new BoolConstant(true);
             case FALSE  : return new BoolConstant(false);
