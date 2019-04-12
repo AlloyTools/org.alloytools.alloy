@@ -26,6 +26,10 @@ public class ArithmeticTests
     private int getInt(Expression expression)
     {
         UnaryExpression unary =  (UnaryExpression) expression;
+        if(unary.getOP() == UnaryExpression.Op.EMPTYSET)
+        {
+            return 0; // zero is equivalent to an empty set
+        }
         Assertions.assertEquals(UnaryExpression.Op.SINGLETON, unary.getOP());
         MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
         Assertions.assertEquals(MultiArityExpression.Op.MKTUPLE, tuple.getOp());
@@ -35,29 +39,20 @@ public class ArithmeticTests
 
     private Set<Integer> getIntSet(FunctionDefinition definition)
     {
-        return getIntSet((BinaryExpression) definition.getExpression());
+        return getIntSet(definition.getExpression());
     }
 
-    private Set<Integer> getIntSet(BinaryExpression binary)
+    private Set<Integer> getIntSet(Expression expression)
     {
+        if(expression instanceof UnaryExpression)
+        {
+            return new HashSet<>(Arrays.asList(getInt(expression)));
+        }
+        BinaryExpression binary = (BinaryExpression) expression;
         Set<Integer> set = new HashSet<>();
         Assertions.assertEquals(BinaryExpression.Op.UNION, binary.getOp());
-        if(binary.getLhsExpr() instanceof UnaryExpression)
-        {
-            set.add(getInt(binary.getLhsExpr()));
-        }
-        if(binary.getRhsExpr() instanceof UnaryExpression)
-        {
-            set.add(getInt(binary.getRhsExpr()));
-        }
-        if(binary.getLhsExpr() instanceof BinaryExpression)
-        {
-            set.addAll(getIntSet((BinaryExpression) binary.getLhsExpr()));
-        }
-        if(binary.getRhsExpr() instanceof BinaryExpression)
-        {
-            set.addAll(getIntSet((BinaryExpression) binary.getRhsExpr()));
-        }
+        set.addAll(getIntSet(binary.getLhsExpr()));
+        set.addAll(getIntSet(binary.getRhsExpr()));
         return set;
     }
 
@@ -108,7 +103,7 @@ public class ArithmeticTests
     }
 
     @Test
-    public void pairs() throws Exception
+    public void sets() throws Exception
     {
         String alloy =
                 "sig a, b, c in Int {} \n" +
@@ -129,7 +124,6 @@ public class ArithmeticTests
         FunctionDefinition c = getFunctionDefinition(commandResults.get(0), "this_c");
         Set<Integer> cSet = getIntSet(c);
         Assertions.assertEquals(cSet, new HashSet<>(Arrays.asList(5, 7, 6, 8)));
-        FunctionDefinition plus = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.plus);
     }
 
     @Test
@@ -144,7 +138,9 @@ public class ArithmeticTests
         List<CommandResult> commandResults = runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition plus = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.plus);
+        FunctionDefinition b = getFunctionDefinition(commandResults.get(0), "this_b");
+        Set<Integer> bSet = getIntSet(b);
+        Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(0)));
     }
 
     @Test
