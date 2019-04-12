@@ -10,6 +10,25 @@ import java.util.List;
 
 public class ArithmeticTests
 {
+    private int getSingletonInt(FunctionDefinition definition)
+    {
+        UnaryExpression unary =  (UnaryExpression) definition.expression;
+        Assertions.assertEquals(UnaryExpression.Op.SINGLETON, unary.getOP());
+        MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
+        Assertions.assertEquals(MultiArityExpression.Op.MKTUPLE, tuple.getOp());
+        IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
+        return Integer.parseInt(constant.getValue());
+    }
+
+    private FunctionDefinition getFunctionDefinition(CommandResult commandResult, String name)
+    {
+        FunctionDefinition definition = (FunctionDefinition) commandResult.smtModel
+                .getFunctions().stream()
+                .filter(f -> f.getName().equals(name)).findFirst().get();
+        definition = commandResult.smtModel.evaluateUninterpretedInt(definition);
+        return definition;
+    }
+
     @Test
     public void simple() throws Exception
     {
@@ -27,17 +46,14 @@ public class ArithmeticTests
         List<CommandResult> commandResults =  task.run(translation);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        String cName = "this_c";
-        FunctionDefinition c = (FunctionDefinition) commandResults.get(0).smtModel
-                .getFunctions().stream()
-                .filter(f -> f.getName().equals(cName)).findFirst().get();
-        c = commandResults.get(0).smtModel.evaluateUninterpretedInt(c);
-        UnaryExpression unary =  (UnaryExpression) c.expression;
-        Assertions.assertEquals(UnaryExpression.Op.SINGLETON, unary.getOP());
-        MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
-        Assertions.assertEquals(MultiArityExpression.Op.MKTUPLE, tuple.getOp());
-        IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
-        int cValue = Integer.parseInt(constant.getValue());
+        FunctionDefinition a = getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition b = getFunctionDefinition(commandResults.get(0), "this_b");
+        FunctionDefinition c = getFunctionDefinition(commandResults.get(0), "this_c");
+
+        int aValue = getSingletonInt(a);
+        int bValue = getSingletonInt(b);
+        int cValue = getSingletonInt(c);
+        Assertions.assertEquals(2, aValue + bValue);
         Assertions.assertEquals(2, cValue);
     }
 
@@ -57,10 +73,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults =  task.run(translation);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition plus = (FunctionDefinition) commandResults.get(0).smtModel
-                .getFunctions().stream()
-                .filter(f -> f.getName().equals(Alloy2SmtTranslator.plus)).findFirst().get();
-        plus = commandResults.get(0).smtModel.evaluateUninterpretedInt(plus);
+        FunctionDefinition plus = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.plus);
 
     }
 
@@ -78,10 +91,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults =  task.run(translation);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition plus = (FunctionDefinition) commandResults.get(0).smtModel
-                .getFunctions().stream()
-                .filter(f -> f.getName().equals(Alloy2SmtTranslator.plus)).findFirst().get();
-        plus = commandResults.get(0).smtModel.evaluateUninterpretedInt(plus);
+        FunctionDefinition plus = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.plus);
     }
 
     @Test
@@ -101,10 +111,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults =  task.run(translation);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition mod = (FunctionDefinition) commandResults.get(0).smtModel
-                .getFunctions().stream()
-                .filter(f -> f.getName().equals(Alloy2SmtTranslator.mod)).findFirst().get();
-        mod = commandResults.get(0).smtModel.evaluateUninterpretedInt(mod);
+        FunctionDefinition mod = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.mod);
     }
 
     @Test
@@ -115,10 +122,7 @@ public class ArithmeticTests
         Cvc4Task task = new Cvc4Task();
         List<CommandResult> commandResults =  task.run(translation);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition a = (FunctionDefinition) commandResults.get(0).smtModel
-                .getFunctions().stream()
-                .filter(f -> f.getName().equals("this_a")).findFirst().get();
-        a = commandResults.get(0).smtModel.evaluateUninterpretedInt(a);
+        FunctionDefinition a = getFunctionDefinition(commandResults.get(0), "this_a");
     }
 
     @Test
