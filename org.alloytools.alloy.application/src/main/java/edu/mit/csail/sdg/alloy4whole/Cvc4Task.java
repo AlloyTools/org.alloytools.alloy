@@ -336,8 +336,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         Instance instance   = new Instance();
         instance.signatures = signatures;
         instance.fields     = fields;
-        instance.bitWidth   = command.bitwidth;
-        instance.maxSeq     = command.maxseq;
+        instance.bitWidth   = command.bitwidth >= 0? command.bitwidth: 4;
+        instance.maxSeq     = command.maxseq >= 0? command.maxseq: 4;
         instance.command    = command.toString();
 
         instance.fileName = originalFileName;
