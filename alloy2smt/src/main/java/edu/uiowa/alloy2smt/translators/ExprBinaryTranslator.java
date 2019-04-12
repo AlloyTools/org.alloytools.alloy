@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -677,33 +678,35 @@ public class ExprBinaryTranslator
         Expression xValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, x.getVariable());
         Expression yValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, y.getVariable());
 
-        Expression          relation1Variable    = new Variable(relation1);
-        Expression          relation2Variable    = new Variable(relation2);
-        FunctionDefinition  function            = null;
+        Expression          relation1Variable    = relation1.getVariable();
+        Expression          relation2Variable    = relation2.getVariable();
 
-        Expression funcExpr = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, relation1Variable);
-        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, relation2Variable));
+        Expression relation1EqualsX = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, relation1Variable);
+        Expression relation2EqualsY = new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, relation2Variable);
+        Expression and1 = new BinaryExpression(relation1EqualsX, BinaryExpression.Op.AND, relation2EqualsY);
 
+        Expression comparison = new BinaryExpression(xValue, op, yValue);
+        Expression and2 = new BinaryExpression(and1, BinaryExpression.Op.AND, comparison);
+        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), and2);
+        String functionName;
         switch(op)
         {
             case GT:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xValue, BinaryExpression.Op.GT, yValue));
-                function = new FunctionDefinition("_GT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
+                functionName = "_GT";
                 break;
             case LT:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xTuple, BinaryExpression.Op.LT, yTuple));
-                function = new FunctionDefinition("_LT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
+                functionName = "_LT";
                 break;
             case GTE:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xTuple, BinaryExpression.Op.GTE, yTuple));
-                function = new FunctionDefinition("_GTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
+                functionName = "_GTE";
                 break;
             case LTE:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xTuple, BinaryExpression.Op.LTE, yTuple));
-                function = new FunctionDefinition("_LTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
+                functionName = "_LTE";
                 break;
-            default:break;
-        } 
+            default:
+                throw new UnsupportedOperationException();
+        }
+        FunctionDefinition function = new FunctionDefinition(functionName, BoolSort.getInstance(),exists, relation1, relation2);
         exprTranslator.translator.smtProgram.addFunction(function);
         exprTranslator.translator.comparisonOps.put(op, function);
     }
