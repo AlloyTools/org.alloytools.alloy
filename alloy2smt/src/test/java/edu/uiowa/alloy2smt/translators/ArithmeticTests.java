@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ArithmeticTests
@@ -56,8 +57,7 @@ public class ArithmeticTests
         Assertions.assertEquals("sat", commandResults.get(0).result);
         FunctionDefinition a = getFunctionDefinition(commandResults.get(0), "this_a");
         List<Integer> pair = getIntPair(a);
-        Assertions.assertTrue(pair.contains(6));
-        Assertions.assertTrue(pair.contains(8));
+        Assertions.assertTrue(pair.containsAll(Arrays.asList(6, 8)));
     }
 
     @Test
@@ -94,9 +94,8 @@ public class ArithmeticTests
         String alloy =
                 "sig a, b, c in Int {} \n" +
                 "fact { \n" +
-                "#a = 2 \n" +
-                "#b = 2\n" +
-                "#c = 4 \n" +
+                "a = 1+2 \n" +
+                "b = 4+6 \n" +
                 "plus[a, b] = c\n" +
                 "}";
         Translation translation = Utils.translate(alloy);
@@ -104,6 +103,12 @@ public class ArithmeticTests
         List<CommandResult> commandResults =  task.run(translation);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
+        FunctionDefinition a = getFunctionDefinition(commandResults.get(0), "this_a");
+        List<Integer> aPair = getIntPair(a);
+        Assertions.assertTrue(aPair.containsAll(Arrays.asList(1, 2)));
+        FunctionDefinition b = getFunctionDefinition(commandResults.get(0), "this_b");
+        List<Integer> bPair = getIntPair(b);
+        Assertions.assertTrue(bPair.containsAll(Arrays.asList(4, 6)));
         FunctionDefinition plus = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.plus);
 
     }
