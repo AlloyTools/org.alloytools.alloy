@@ -35,11 +35,29 @@ public class ArithmeticTests
 
     private Set<Integer> getIntSet(FunctionDefinition definition)
     {
+        return getIntSet((BinaryExpression) definition.getExpression());
+    }
+
+    private Set<Integer> getIntSet(BinaryExpression binary)
+    {
         Set<Integer> set = new HashSet<>();
-        BinaryExpression binary =  (BinaryExpression) definition.expression;
         Assertions.assertEquals(BinaryExpression.Op.UNION, binary.getOp());
-        set.add(getInt(binary.getLhsExpr()));
-        set.add(getInt(binary.getRhsExpr()));
+        if(binary.getLhsExpr() instanceof UnaryExpression)
+        {
+            set.add(getInt(binary.getLhsExpr()));
+        }
+        if(binary.getRhsExpr() instanceof UnaryExpression)
+        {
+            set.add(getInt(binary.getRhsExpr()));
+        }
+        if(binary.getLhsExpr() instanceof BinaryExpression)
+        {
+            set.addAll(getIntSet((BinaryExpression) binary.getLhsExpr()));
+        }
+        if(binary.getRhsExpr() instanceof BinaryExpression)
+        {
+            set.addAll(getIntSet((BinaryExpression) binary.getRhsExpr()));
+        }
         return set;
     }
 
@@ -108,6 +126,9 @@ public class ArithmeticTests
         FunctionDefinition b = getFunctionDefinition(commandResults.get(0), "this_b");
         Set<Integer> bSet = getIntSet(b);
         Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(4, 6)));
+        FunctionDefinition c = getFunctionDefinition(commandResults.get(0), "this_c");
+        Set<Integer> cSet = getIntSet(c);
+        Assertions.assertEquals(cSet, new HashSet<>(Arrays.asList(5, 7, 6, 8)));
         FunctionDefinition plus = getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.plus);
     }
 
