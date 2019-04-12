@@ -50,7 +50,7 @@ public class Cvc4Task
     public static String setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
     {
         Map<String, String> options = new HashMap<>();
-        options.put("tlimit", "3000");
+        options.put("tlimit", "30000");
         String script = translation.translateOptions(options);
         cvc4Process.sendCommand(script);
         return script;
