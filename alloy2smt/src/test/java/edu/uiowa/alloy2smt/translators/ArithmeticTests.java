@@ -6,18 +6,35 @@ import edu.uiowa.shared.CommandResult;
 import edu.uiowa.shared.Cvc4Task;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ArithmeticTests
 {
-    private int getSingletonInt(FunctionDefinition definition)
+    private int getInt(FunctionDefinition definition)
     {
-        UnaryExpression unary =  (UnaryExpression) definition.expression;
+        return getInt(definition.expression);
+    }
+
+    private int getInt(Expression expression)
+    {
+        UnaryExpression unary =  (UnaryExpression) expression;
         Assertions.assertEquals(UnaryExpression.Op.SINGLETON, unary.getOP());
         MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
         Assertions.assertEquals(MultiArityExpression.Op.MKTUPLE, tuple.getOp());
         IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
         return Integer.parseInt(constant.getValue());
+    }
+
+    private List<Integer> getIntPair(FunctionDefinition definition)
+    {
+        List<Integer> pair = new ArrayList<>();
+        BinaryExpression binary =  (BinaryExpression) definition.expression;
+        Assertions.assertEquals(BinaryExpression.Op.UNION, binary.getOp());
+        pair.add(getInt(binary.getLhsExpr()));
+        pair.add(getInt(binary.getRhsExpr()));
+        return pair;
     }
 
     private FunctionDefinition getFunctionDefinition(CommandResult commandResult, String name)
@@ -30,7 +47,21 @@ public class ArithmeticTests
     }
 
     @Test
-    public void simple() throws Exception
+    public void union() throws Exception
+    {
+        String alloy = "sig a in Int {} fact {a = 6 + 8}";
+        Translation translation = Utils.translate(alloy);
+        Cvc4Task task = new Cvc4Task();
+        List<CommandResult> commandResults =  task.run(translation);
+        Assertions.assertEquals("sat", commandResults.get(0).result);
+        FunctionDefinition a = getFunctionDefinition(commandResults.get(0), "this_a");
+        List<Integer> pair = getIntPair(a);
+        Assertions.assertTrue(pair.contains(6));
+        Assertions.assertTrue(pair.contains(8));
+    }
+
+    @Test
+    public void singletons() throws Exception
     {
         String alloy =
                 "sig a, b, c in Int {}\n" +
@@ -50,15 +81,15 @@ public class ArithmeticTests
         FunctionDefinition b = getFunctionDefinition(commandResults.get(0), "this_b");
         FunctionDefinition c = getFunctionDefinition(commandResults.get(0), "this_c");
 
-        int aValue = getSingletonInt(a);
-        int bValue = getSingletonInt(b);
-        int cValue = getSingletonInt(c);
+        int aValue = getInt(a);
+        int bValue = getInt(b);
+        int cValue = getInt(c);
         Assertions.assertEquals(2, aValue + bValue);
         Assertions.assertEquals(2, cValue);
     }
 
     @Test
-    public void test1() throws Exception
+    public void pairs() throws Exception
     {
         String alloy =
                 "sig a, b, c in Int {} \n" +
@@ -115,18 +146,7 @@ public class ArithmeticTests
     }
 
     @Test
-    public void union() throws Exception
-    {
-        String alloy = "sig a in Int {} fact {a = 6 + 8}";
-        Translation translation = Utils.translate(alloy);
-        Cvc4Task task = new Cvc4Task();
-        List<CommandResult> commandResults =  task.run(translation);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition a = getFunctionDefinition(commandResults.get(0), "this_a");
-    }
-
-    @Test
-    public void testPlusMinus() throws Exception
+    public void unsatPlusMinus() throws Exception
     {
         String alloy =
                 "sig a, b, c, d in Int {}\n" +
