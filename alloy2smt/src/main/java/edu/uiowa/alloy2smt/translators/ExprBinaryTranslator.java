@@ -744,15 +744,15 @@ public class ExprBinaryTranslator
         }
 
         if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                left instanceof IntConstant)
+                left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
-            left = handleIntConstant(left);
+            left = exprTranslator.translator.handleIntConstant(left);
         }
 
         if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                right instanceof IntConstant)
+                right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
-            right = handleIntConstant(right);
+            right = exprTranslator.translator.handleIntConstant(right);
         }
 
 
@@ -770,14 +770,6 @@ public class ExprBinaryTranslator
             finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, finalExpr);
         }                
         return finalExpr;        
-    }
-
-    private Expression handleIntConstant(Expression right)
-    {
-        ConstantDeclaration uninterpretedInt = exprTranslator.translator.getUninterpretedIntConstant((IntConstant) right);
-        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-        right = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-        return right;
     }
 
     private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, Expression> variablesScope)
@@ -960,15 +952,15 @@ public class ExprBinaryTranslator
         }
 
         if(right.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                left instanceof IntConstant)
+                left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
-            left = handleIntConstant(left);
+            left = exprTranslator.translator.handleIntConstant(left);
         }
 
         if(left.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) &&
-                right instanceof IntConstant)
+                right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
         {
-            right = handleIntConstant(right);
+            right = exprTranslator.translator.handleIntConstant(right);
         }
                 
         Expression finalExpr = new BinaryExpression(left, BinaryExpression.Op.SUBSET, right);

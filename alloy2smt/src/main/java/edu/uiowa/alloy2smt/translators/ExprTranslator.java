@@ -88,7 +88,7 @@ public class ExprTranslator
         switch (expr.op)
         {
             // alloy only supports integers
-            case NUMBER : return IntConstant.getInstance(expr.num);
+            case NUMBER : return IntConstant.getSingletonTuple(expr.num);
             case IDEN   : return translator.atomIden.getVariable();
             case TRUE   : return new BoolConstant(true);
             case FALSE  : return new BoolConstant(false);
@@ -255,6 +255,16 @@ public class ExprTranslator
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
         Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
                 x.getVariable(),  y.getVariable(), z.getVariable());
+
+        if(A.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        {
+            A = translator.handleIntConstant(A);
+        }
+
+        if(B.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        {
+            B = translator.handleIntConstant(B);
+        }
 
         Expression xMemberA = new BinaryExpression(xTuple, BinaryExpression.Op.MEMBER, A);
         Expression yMemberB = new BinaryExpression(yTuple, BinaryExpression.Op.MEMBER, B);

@@ -783,6 +783,15 @@ public class Alloy2SmtTranslator
         return mappingSignatureId;
     }
 
+    public Expression handleIntConstant(Expression expression)
+    {
+        Expression intConstant = ((MultiArityExpression) ((UnaryExpression) expression).getExpression()).getExpressions().get(0);
+        ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
+        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
+        expression = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return expression;
+    }
+
     public ConstantDeclaration getUninterpretedIntConstant(IntConstant intConstant)
     {
         BigInteger value = new BigInteger(intConstant.getValue());

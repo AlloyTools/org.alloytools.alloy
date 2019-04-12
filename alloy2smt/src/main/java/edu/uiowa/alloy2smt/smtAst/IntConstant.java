@@ -17,12 +17,7 @@ import java.util.Map;
 public class IntConstant extends Constant
 {
     private final BigInteger value;
-    
-    public IntConstant(BigInteger value)
-    {
-        this.value = value;
-    }
-    
+
     private IntConstant(int value)
     {
         this.value = new BigInteger(String.valueOf(value));
