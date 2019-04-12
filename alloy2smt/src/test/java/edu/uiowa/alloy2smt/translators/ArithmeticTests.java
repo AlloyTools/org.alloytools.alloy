@@ -107,6 +107,19 @@ public class ArithmeticTests
         mod = commandResults.get(0).smtModel.evaluateUninterpretedInt(mod);
     }
 
+    @Test
+    public void union() throws Exception
+    {
+        String alloy = "sig a in Int {} fact {a = 6 + 8}";
+        Translation translation = Utils.translate(alloy);
+        Cvc4Task task = new Cvc4Task();
+        List<CommandResult> commandResults =  task.run(translation);
+        Assertions.assertEquals("sat", commandResults.get(0).result);
+        FunctionDefinition a = (FunctionDefinition) commandResults.get(0).smtModel
+                .getFunctions().stream()
+                .filter(f -> f.getName().equals("this_a")).findFirst().get();
+        a = commandResults.get(0).smtModel.evaluateUninterpretedInt(a);
+    }
 
     @Test
     public void testPlusMinus()
