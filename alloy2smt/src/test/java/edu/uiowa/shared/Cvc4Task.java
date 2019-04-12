@@ -72,11 +72,6 @@ public class Cvc4Task
             String model = cvc4Process.sendCommand(Translation.GET_MODEL);
             commandResult.smtModel = parseModel(model);
         }
-        else
-        {
-            commandResult.result = "";
-        }
-
         return commandResult;
     }
 

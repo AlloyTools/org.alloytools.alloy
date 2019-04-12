@@ -666,44 +666,46 @@ public class ExprBinaryTranslator
     
     private void declComparisonOps(BinaryExpression.Op op)
     {
-        VariableDeclaration bdIntRelVar1        = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUninterpretedIntTuple);
-        VariableDeclaration bdIntRelVar2        = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUninterpretedIntTuple);
-        VariableDeclaration bdIntAtomVar1       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_x_int");
-        VariableDeclaration bdIntAtomVar2       = exprTranslator.createVariable(exprTranslator.translator.intSort, "_y_int");
-        Expression                  unaryIntTup1        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar1.getVariable());
-        Expression                  unaryIntTup2        = exprTranslator.exprUnaryTranslator.mkUnaryIntTupValue(bdIntAtomVar2.getVariable());
-        
-        Expression          bdIntVar1Expr       = mkTupleSelectExpr(unaryIntTup1, 0);
-        Expression          bdIntVar2Expr       = mkTupleSelectExpr(unaryIntTup2, 0);
-        Expression          bdIntRelVar1Expr    = new Variable(bdIntRelVar1);
-        Expression          bdIntRelVar2Expr    = new Variable(bdIntRelVar2);
-        FunctionDefinition  compFunc            = null;
+        VariableDeclaration relation1 = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUninterpretedIntTuple);
+        VariableDeclaration relation2 = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUninterpretedIntTuple);
+        VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.uninterpretedInt);
+        Expression xTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
+        Expression yTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
+        Expression xSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, xTuple);
+        Expression ySingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, yTuple);
+        Expression xValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, x.getVariable());
+        Expression yValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, y.getVariable());
 
-        Expression funcExpr = new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(unaryIntTup1), BinaryExpression.Op.EQ, bdIntRelVar1Expr);
-        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(exprTranslator.mkSingletonOutOfTuple(unaryIntTup2), BinaryExpression.Op.EQ, bdIntRelVar2Expr));
+        Expression          relation1Variable    = new Variable(relation1);
+        Expression          relation2Variable    = new Variable(relation2);
+        FunctionDefinition  function            = null;
+
+        Expression funcExpr = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, relation1Variable);
+        funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, relation2Variable));
 
         switch(op)
         {
             case GT:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GT, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_GT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xValue, BinaryExpression.Op.GT, yValue));
+                function = new FunctionDefinition("_GT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
                 break;
             case LT:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LT, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_LT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xTuple, BinaryExpression.Op.LT, yTuple));
+                function = new FunctionDefinition("_LT", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
                 break;
             case GTE:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.GTE, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_GTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xTuple, BinaryExpression.Op.GTE, yTuple));
+                function = new FunctionDefinition("_GTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
                 break;
             case LTE:
-                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(bdIntVar1Expr, BinaryExpression.Op.LTE, bdIntVar2Expr));
-                compFunc = new FunctionDefinition("_LTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(bdIntAtomVar1, bdIntAtomVar2), funcExpr), bdIntRelVar1, bdIntRelVar2);
+                funcExpr = new BinaryExpression(funcExpr, BinaryExpression.Op.AND, new BinaryExpression(xTuple, BinaryExpression.Op.LTE, yTuple));
+                function = new FunctionDefinition("_LTE", BoolSort.getInstance(), new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), funcExpr), relation1, relation2);
                 break;
             default:break;
         } 
-        exprTranslator.translator.smtProgram.addFunction(compFunc);
-        exprTranslator.translator.comparisonOps.put(op, compFunc);                
+        exprTranslator.translator.smtProgram.addFunction(function);
+        exprTranslator.translator.comparisonOps.put(op, function);
     }
     
     private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)

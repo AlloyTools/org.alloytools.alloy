@@ -122,7 +122,7 @@ public class ArithmeticTests
     }
 
     @Test
-    public void testPlusMinus()
+    public void testPlusMinus() throws Exception
     {
         String alloy =
                 "sig a, b, c, d in Int {}\n" +
@@ -132,7 +132,8 @@ public class ArithmeticTests
                 "fact nonzero {a > 0 and b > 0 and c > 0 and d > 0}\n";
         Translation translation = Utils.translate(alloy);
 
-        Assertions.assertTrue(translation.getSmtScript().contains(
-                "(declare-fun intUniv"));
+        Cvc4Task task = new Cvc4Task();
+        List<CommandResult> commandResults =  task.run(translation);
+        Assertions.assertEquals("unsat", commandResults.get(0).result);
     }
 }
