@@ -448,7 +448,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     + " for signature "+ signature.label + "in the model.") ;
         }
 
-        signature.atoms = getAtoms(function.expression);
+        signature.atoms = getAtoms(function.expression, functionsMap);
         return signature;
     }
 
@@ -469,7 +469,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             throw new Exception("Can not find the function " + fieldName
                     + " for field " + field.label + "in the model.");
         }
-        field.tuples = getTuples(function.expression);
+        field.tuples = getTuples(function.expression, functionsMap);
         field.types  =  new Types();
         //ToDo: refactor these magic numbers
         field.types.types = Arrays.stream(new int[]{parentId, parentId, parentId})
@@ -499,7 +499,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     + " for field "+ field.label + "in the model.") ;
         }
 
-        field.tuples = getTuples(function.expression);
+        field.tuples = getTuples(function.expression, functionsMap);
         field.types  = getTypes(mappingField);
 
         return field;
@@ -514,7 +514,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return types;
     }
 
-    private static List<Tuple> getTuples(Expression expression)
+    private static List<Tuple> getTuples(Expression expression, Map<String,FunctionDefinition> functionsMap)
     {
         List<Tuple> tuples = new ArrayList<>();
 
@@ -533,7 +533,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
                         if(multiArity.getOp() == MultiArityExpression.Op.MKTUPLE)
                         {
-                            List<Atom> atoms    = getAtoms(multiArity);
+                            List<Atom> atoms    = getAtoms(multiArity, functionsMap);
                             Tuple tuple         = new Tuple();
                             tuple.atoms         = atoms;
                             return Collections.singletonList(tuple);
@@ -556,8 +556,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             {
                 case UNION:
                 {
-                    tuples.addAll(getTuples(binary.getLhsExpr()));
-                    tuples.addAll(getTuples(binary.getRhsExpr()));
+                    tuples.addAll(getTuples(binary.getLhsExpr(), functionsMap));
+                    tuples.addAll(getTuples(binary.getRhsExpr(), functionsMap));
                     return tuples;
                 }
                 default:
@@ -568,17 +568,26 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private static List<Atom> getAtoms(Expression expression)
+    private static List<Atom> getAtoms(Expression expression, Map<String,FunctionDefinition> functions)
     {
         List<Atom> atoms = new ArrayList<>();
 
         if(expression instanceof UninterpretedConstant)
         {
             UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) expression;
-            atoms.add(new Atom(uninterpretedConstant.getName()));
+            if(uninterpretedConstant.getSort().equals(Alloy2SmtTranslator.atomSort))
+            {
+                atoms.add(new Atom(uninterpretedConstant.getName()));
+            }
+            if(uninterpretedConstant.getSort().equals(Alloy2SmtTranslator.uninterpretedInt))
+            {
+                IntConstant intConstant = (IntConstant) uninterpretedConstant.evaluate(functions);
+                atoms.add(new Atom(intConstant.getValue()));
+            }
             return  atoms;
         }
 
+        //ToDo: review removing this which is replaced with uninterpretedInt
         if(expression instanceof IntConstant)
         {
             IntConstant intConstant  = (IntConstant) expression;
@@ -594,7 +603,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                 case EMPTYSET: return new ArrayList<>();
                 case SINGLETON:
                     {
-                        return getAtoms(unary.getExpression());
+                        return getAtoms(unary.getExpression(), functions);
                     }
                 default:
                     throw new UnsupportedOperationException();
@@ -609,8 +618,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             {
                 case UNION:
                 {
-                    atoms.addAll(getAtoms(binary.getLhsExpr()));
-                    atoms.addAll(getAtoms(binary.getRhsExpr()));
+                    atoms.addAll(getAtoms(binary.getLhsExpr(), functions));
+                    atoms.addAll(getAtoms(binary.getRhsExpr(), functions));
                     return atoms;
                 }
                 default:
@@ -627,7 +636,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                 {
                     for (Expression expr: multiArity.getExpressions())
                     {
-                        atoms.addAll(getAtoms(expr));
+                        atoms.addAll(getAtoms(expr, functions));
                     }
 
                     return atoms;
