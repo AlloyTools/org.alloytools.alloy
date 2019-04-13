@@ -108,11 +108,11 @@ public class FieldTranslator
         {
             if(fieldComponentExprs.get(i).type().is_int())
             {
-                fieldSorts.add(translator.intSort);
+                fieldSorts.add(Alloy2SmtTranslator.uninterpretedInt);
             }
             else
             {
-                fieldSorts.add(translator.atomSort);
+                fieldSorts.add(Alloy2SmtTranslator.atomSort);
             }
         }        
         
