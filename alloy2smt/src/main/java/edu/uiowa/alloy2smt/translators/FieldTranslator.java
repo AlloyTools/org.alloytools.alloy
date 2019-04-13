@@ -717,7 +717,6 @@ public class FieldTranslator
         String sigVarName       = TranslatorUtils.getNewName();
         String fstSigVarName    = TranslatorUtils.getNewName();
         String fstPrimeSigVarName    = TranslatorUtils.getNewName();
-        TupleSort unaryTupleSort = new TupleSort(translator.atomSort);
 
         VariableDeclaration sigVar      = new VariableDeclaration(sigVarName,
                                                     sigVarIsInt? translator.uninterpretedInt :translator.atomSort);
@@ -726,19 +725,15 @@ public class FieldTranslator
         VariableDeclaration fstPrimeSigVar = new VariableDeclaration(fstPrimeSigVarName,
                                                     fstSigVarIsInt? translator.uninterpretedInt :translator.atomSort);
 
-        Expression sigVarIntExpr    = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, sigVar.getVariable()), 0);
-        Expression fstSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstSigVar.getVariable()), 0);
-        Expression fstPrimeSigVarIntExpr = translator.exprTranslator.exprBinaryTranslator.mkTupleSelectExpr(new FunctionCallExpression(translator.uninterpretedIntValue, fstPrimeSigVar.getVariable()), 0);
-
         Expression sigExpr      = translator.signaturesMap.get(field.sig).getVariable();
         Expression fstSigExpr   = (fieldComponentExprs.get(0) instanceof Sig) ?
                                     translator.signaturesMap.get((Sig)fieldComponentExprs.get(0)).getVariable()
                                     : translator.exprTranslator.translateExpr(fieldComponentExprs.get(0));
         Expression fieldExpr    = translator.fieldsMap.get(field).getVariable();
 
-        Expression sigVarMember = sigVarIsInt?sigVarIntExpr:sigVar.getVariable();
-        Expression fstSigVarMember = fstSigVarIsInt?fstSigVarIntExpr:fstSigVar.getVariable();
-        Expression fstPrimeSigVarMember = fstSigVarIsInt?fstPrimeSigVarIntExpr:fstPrimeSigVar.getVariable();
+        Expression sigVarMember = sigVar.getVariable();
+        Expression fstSigVarMember = fstSigVar.getVariable();
+        Expression fstPrimeSigVarMember = fstPrimeSigVar.getVariable();
 
         Expression sigVarMembership     = new BinaryExpression(mkTupleOutofAtoms(sigVarMember),
                                                             BinaryExpression.Op.MEMBER, sigExpr);
