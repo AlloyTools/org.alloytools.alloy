@@ -335,30 +335,6 @@ public class ExprTranslator
         translator.smtProgram.addConstantDeclaration(relation);
         translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom1));
         translator.arithOps.put(op, relation.getVariable());
-
-        // the relation is actually a mathematical operation
-        // i.e. for all (a,b,c), (x,y,z): (a,b,c) and (x,y,z) in relation and
-        // a = x and b = y implies c = z
-
-        VariableDeclaration a = new VariableDeclaration("_a", Alloy2SmtTranslator.uninterpretedInt);
-        VariableDeclaration b = new VariableDeclaration("_b", Alloy2SmtTranslator.uninterpretedInt);
-        VariableDeclaration c = new VariableDeclaration("_c", Alloy2SmtTranslator.uninterpretedInt);
-
-        Expression abcTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                a.getVariable(),  b.getVariable(), c.getVariable());
-
-        Expression abcTupleMember = new BinaryExpression(abcTuple, BinaryExpression.Op.MEMBER, relation.getVariable());
-        Expression axEqual = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, x.getVariable());
-        Expression byEqual = new BinaryExpression(b.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
-        Expression czEqual = new BinaryExpression(c.getVariable(), BinaryExpression.Op.EQ, z.getVariable());
-
-        Expression and1 = new BinaryExpression(abcTupleMember, BinaryExpression.Op.AND, xyzTupleMember);
-        Expression and2 = new BinaryExpression(axEqual, BinaryExpression.Op.AND, byEqual);
-        Expression and3 = new BinaryExpression(and1, BinaryExpression.Op.AND, and2);
-
-        Expression implies = new BinaryExpression(and3, BinaryExpression.Op.IMPLIES,czEqual);
-        Expression axiom2 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b, c, x, y , z);
-        translator.smtProgram.addAssertion(new Assertion(relationName + " operation axiom", axiom2));
     }
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)

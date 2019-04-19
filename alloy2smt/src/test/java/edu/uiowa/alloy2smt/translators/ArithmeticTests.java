@@ -1,9 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.smtAst.*;
 import edu.uiowa.shared.CommandResult;
-import edu.uiowa.shared.Cvc4Task;
 import edu.uiowa.shared.TestUtils;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
