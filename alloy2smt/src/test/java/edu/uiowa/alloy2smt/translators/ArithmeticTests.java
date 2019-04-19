@@ -156,4 +156,37 @@ public class ArithmeticTests
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertEquals("unsat", commandResults.get(0).result);
     }
+
+    @Test
+    public void sum() throws Exception
+    {
+        String alloy = "sig a, b, c in Int {}\n" +
+                "fact {sum [a] = 1  and sum[b] = 2 and sum[c] = 3}";
+
+        List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
+        Assertions.assertTrue(commandResults.size() == 1);
+        Assertions.assertEquals("sat", commandResults.get(0).result);
+        FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        Set<Integer> aSet = getIntSet(a);
+        Assertions.assertEquals(aSet, new HashSet<>(Arrays.asList(1)));
+
+        FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
+        Set<Integer> bSet = getIntSet(b);
+        Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(2)));
+
+        FunctionDefinition c = TestUtils.getFunctionDefinition(commandResults.get(0), "this_c");
+        Set<Integer> cSet = getIntSet(c);
+        Assertions.assertEquals(cSet, new HashSet<>(Arrays.asList(3)));
+    }
+
+    @Test
+    public void sumUnsat() throws Exception
+    {
+        String alloy = "sig a, b, c in Int {}\n" +
+                "fact {sum [a] = 1  and sum[b] = 2 and sum[c] = 3 and #c = 3}";
+
+        List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
+        Assertions.assertTrue(commandResults.size() == 1);
+        Assertions.assertEquals("unsat", commandResults.get(0).result);
+    }
 }
