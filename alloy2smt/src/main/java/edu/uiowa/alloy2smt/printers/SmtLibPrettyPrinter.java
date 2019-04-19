@@ -160,7 +160,15 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(IntConstant intConstant)
     {
-        this.stringBuilder.append(intConstant.getValue());
+        int value = Integer.parseInt(intConstant.getValue());
+        if(value >= 0)
+        {
+            this.stringBuilder.append(intConstant.getValue());
+        }
+        else
+        {
+            this.stringBuilder.append("(- " + -value + ")");
+        }
     }
 
     @Override
