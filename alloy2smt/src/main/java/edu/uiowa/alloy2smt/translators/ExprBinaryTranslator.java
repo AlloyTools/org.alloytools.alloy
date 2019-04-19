@@ -1,6 +1,5 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -643,21 +642,10 @@ public class ExprBinaryTranslator
             Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
             Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);
 
-            if(!exprTranslator.translator.comparisonOps.containsKey(op))
-            {
-                declComparisonOps(op);
-            }
-            comparisonExpr = new FunctionCallExpression(exprTranslator.translator.comparisonOps.get(op), leftExpr, rightExpr);
-            
-            // Add auxiliary quantifiers and expressions
-            if(!exprTranslator.translator.existentialBdVars.isEmpty())
-            {
-                if(exprTranslator.translator.auxExpr != null)
-                {
-                    comparisonExpr = new BinaryExpression(comparisonExpr, op, exprTranslator.translator.auxExpr);
-                }
-                comparisonExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, exprTranslator.translator.existentialBdVars, comparisonExpr);
-            }
+
+            comparisonExpr =  getComparison(op, leftExpr, rightExpr);
+
+            //ToDo: review the purpose of these 2 lines.
             exprTranslator.translator.auxExpr = null;
             exprTranslator.translator.existentialBdVars.clear();
         }    
@@ -665,10 +653,8 @@ public class ExprBinaryTranslator
         return comparisonExpr;     
     }
     
-    private void declComparisonOps(BinaryExpression.Op op)
+    private Expression getComparison(BinaryExpression.Op op, Expression left, Expression right)
     {
-        VariableDeclaration relation1 = new VariableDeclaration("_rel1", exprTranslator.translator.setOfUninterpretedIntTuple);
-        VariableDeclaration relation2 = new VariableDeclaration("_rel2", exprTranslator.translator.setOfUninterpretedIntTuple);
         VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.uninterpretedInt);
         VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.uninterpretedInt);
         Expression xTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
@@ -678,37 +664,18 @@ public class ExprBinaryTranslator
         Expression xValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, x.getVariable());
         Expression yValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, y.getVariable());
 
-        Expression          relation1Variable    = relation1.getVariable();
-        Expression          relation2Variable    = relation2.getVariable();
-
-        Expression relation1EqualsX = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, relation1Variable);
-        Expression relation2EqualsY = new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, relation2Variable);
+        Expression relation1EqualsX = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, left);
+        Expression relation2EqualsY = new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, right);
         Expression and1 = new BinaryExpression(relation1EqualsX, BinaryExpression.Op.AND, relation2EqualsY);
 
         Expression comparison = new BinaryExpression(xValue, op, yValue);
         Expression and2 = new BinaryExpression(and1, BinaryExpression.Op.AND, comparison);
         Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, Arrays.asList(x, y), and2);
-        String functionName;
-        switch(op)
-        {
-            case GT:
-                functionName = "_GT";
-                break;
-            case LT:
-                functionName = "_LT";
-                break;
-            case GTE:
-                functionName = "_GTE";
-                break;
-            case LTE:
-                functionName = "_LTE";
-                break;
-            default:
-                throw new UnsupportedOperationException();
-        }
-        FunctionDefinition function = new FunctionDefinition(functionName, BoolSort.getInstance(),exists, relation1, relation2);
-        exprTranslator.translator.smtProgram.addFunction(function);
-        exprTranslator.translator.comparisonOps.put(op, function);
+
+        //ToDo: remove these 2 lines
+//        Assertion assertion = new Assertion(left + " " + op + " " + right , exists);
+//        exprTranslator.translator.smtProgram.addAssertion(assertion);
+        return exists;
     }
     
     private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)

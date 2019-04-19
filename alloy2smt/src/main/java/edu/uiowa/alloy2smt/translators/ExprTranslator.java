@@ -331,9 +331,9 @@ public class ExprTranslator
         Expression implies1 = new BinaryExpression(equal, BinaryExpression.Op.IMPLIES, xyzTupleMember);
         Expression implies2 = new BinaryExpression(xyzTupleMember, BinaryExpression.Op.IMPLIES, equal);
         Expression equivalence = new BinaryExpression(implies1, BinaryExpression.Op.AND, implies2);
-        Expression axiom1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, equivalence, x, y, z);
+        Expression axiom = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2, x, y, z);
         translator.smtProgram.addConstantDeclaration(relation);
-        translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom1));
+        translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom));
         translator.arithOps.put(op, relation.getVariable());
     }
 

@@ -189,4 +189,17 @@ public class ArithmeticTests
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("unsat", commandResults.get(0).result);
     }
+
+    @Test
+    public void GT() throws Exception
+    {
+        String alloy = "sig a in Int {} fact {a > 2}";
+
+        List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
+        Assertions.assertTrue(commandResults.size() == 1);
+        Assertions.assertEquals("sat", commandResults.get(0).result);
+        FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        int aValue = getInt(a);
+        Assertions.assertTrue(aValue > 2);
+    }
 }
