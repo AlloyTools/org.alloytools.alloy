@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.uiowa.alloy2smt.smt.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.TranslatorUtils;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 
 import java.util.*;

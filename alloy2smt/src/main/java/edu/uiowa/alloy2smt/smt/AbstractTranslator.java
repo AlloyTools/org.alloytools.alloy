@@ -1,7 +1,6 @@
 package edu.uiowa.alloy2smt.smt;
 
 import edu.uiowa.alloy2smt.smt.smtAst.*;
-import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 
 import java.math.BigInteger;
 import java.util.Map;

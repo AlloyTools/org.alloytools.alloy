@@ -6,9 +6,8 @@
  *
  */
 
-package edu.uiowa.alloy2smt.translators;
+package edu.uiowa.alloy2smt.smt;
 
-import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -25,23 +24,19 @@ public class TranslatorUtils
 
     private static int setIndex = 0;
 
-    //ToDo: review if 0 is acceptable
-    public static final int UNIV_SIGNATURE_ID = 2;
-
     /**
      * Sanitize string s by replacing "\" with "_".
-     * @param s
-     * @return
      */
-    public static String sanitizeName(String s) {
+    public static String sanitizeName(String s)
+    {
         return s.replaceAll("/", "_").replaceAll("'", "_").replaceAll("\"", "_");
     }
 
     public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, AbstractTranslator translator)
     {
-        List<Sort>  sorts       = IntStream.range(1, arity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList());
-        Sort        tupleSort   = new TupleSort(sorts);
-        Sort        setSort     = new SetSort(tupleSort);
+        List<Sort> sorts = IntStream.range(1, arity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList());
+        Sort tupleSort = new TupleSort(sorts);
+        Sort setSort = new SetSort(tupleSort);
 
         //ToDo: handle the case when n = 0
         List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
@@ -52,11 +47,11 @@ public class TranslatorUtils
 
         Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, expressions.get(expressions.size() - 1));
 
-        if(expressions.size() > 1)
+        if (expressions.size() > 1)
         {
             List<Expression> atoms = new ArrayList<>();
 
-            for(int i = 0; i < expressions.size() - 1; i++)
+            for (int i = 0; i < expressions.size() - 1; i++)
             {
                 atoms.add(expressions.get(i));
             }
@@ -76,7 +71,7 @@ public class TranslatorUtils
     public static List<Expression> declareNDistinctConstants(Sort sort, int n, SmtProgram smtProgram)
     {
         List<Expression> expressions = new ArrayList<>();
-        if(n > 0)
+        if (n > 0)
         {
             for (int i = 0; i < n; i++)
             {
@@ -106,13 +101,13 @@ public class TranslatorUtils
 
     public static String getNewAtomName()
     {
-        atomIndex ++;
+        atomIndex++;
         return "_a" + atomIndex;
     }
 
     public static String getNewSetName()
     {
-        setIndex ++;
+        setIndex++;
         return "_S" + setIndex;
     }
 
@@ -120,42 +115,42 @@ public class TranslatorUtils
     {
         nameIndex = 0;
         atomIndex = 0;
-        setIndex  = 0;
+        setIndex = 0;
     }
-    
+
     public static Sort getSetSortOfAtomWithArity(int n)
     {
         List<Sort> elementSorts = new ArrayList<>();
-        for(int i = 0; i < n; ++i)
+        for (int i = 0; i < n; ++i)
         {
             elementSorts.add(AbstractTranslator.atomSort);
         }
         return new SetSort(new TupleSort(elementSorts));
     }
-    
-    public static Expression mkDistinctExpr(Expression ... exprs)
+
+    public static Expression mkDistinctExpr(Expression... exprs)
     {
-        if(exprs == null)
+        if (exprs == null)
         {
             throw new RuntimeException();
-        }        
-        else if(exprs.length == 1)
+        }
+        else if (exprs.length == 1)
         {
             return exprs[0];
         }
-        else 
+        else
         {
             return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
         }
     }
-    
+
     public static Expression mkDistinctExpr(List<Expression> exprs)
     {
-        if(exprs == null)
+        if (exprs == null)
         {
             throw new RuntimeException();
         }
-        else if(exprs.isEmpty() || exprs.size() == 1)
+        else if (exprs.isEmpty() || exprs.size() == 1)
         {
             return new BoolConstant(true);
         }
@@ -165,14 +160,14 @@ public class TranslatorUtils
         }
     }
 
-    public static Expression getTuple(Declaration ... elements)
+    public static Expression getTuple(Declaration... elements)
     {
         List<Expression> expressions = Arrays.stream(elements)
                                              .map(Declaration::getVariable).collect(Collectors.toList());
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
     }
 
-    public static Expression getTuple(Expression ... expressions)
+    public static Expression getTuple(Expression... expressions)
     {
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
     }

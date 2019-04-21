@@ -2,12 +2,13 @@ package edu.uiowa.alloy2smt.mapping;
 
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
-import edu.uiowa.alloy2smt.translators.TranslatorUtils;
+import edu.uiowa.alloy2smt.smt.TranslatorUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class MapperTests
 {
+    int univSignatureId = 2;
     @Test
     void signature1()
     {
@@ -23,8 +24,8 @@ class MapperTests
 
         Assertions.assertFalse(signature.builtIn);
         Assertions.assertFalse(signature.isAbstract);
-        Assertions.assertFalse(signature.id < TranslatorUtils.UNIV_SIGNATURE_ID);
-        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signature.parents.get(0));
+        Assertions.assertFalse(signature.id < univSignatureId);
+        Assertions.assertEquals(univSignatureId, signature.parents.get(0));
         Assertions.assertEquals("this_A", signature.functionName);
     }
 
@@ -48,8 +49,8 @@ class MapperTests
                 .stream().filter(s -> s.label.equals("this/B"))
                 .findFirst().get();
 
-        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signatureA.parents.get(0));
-        Assertions.assertEquals(TranslatorUtils.UNIV_SIGNATURE_ID, signatureB.parents.get(0));
+        Assertions.assertEquals(univSignatureId, signatureA.parents.get(0));
+        Assertions.assertEquals(univSignatureId, signatureB.parents.get(0));
 
         Assertions.assertEquals("this_A", signatureA.functionName);
         Assertions.assertEquals("this_B", signatureB.functionName);

@@ -4,6 +4,7 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.smt.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.TranslatorUtils;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -16,6 +16,7 @@ import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
 import edu.uiowa.alloy2smt.smt.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.TranslatorUtils;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ import java.util.stream.Collectors;
 
 public class Alloy2SmtTranslator extends AbstractTranslator
 {
-
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
@@ -716,7 +716,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     }
 
     // Sig.univ usually has id = 2 (1 ++)
-    private int mappingSignatureId =  TranslatorUtils.UNIV_SIGNATURE_ID - 1;
+    private int mappingSignatureId = 1;
 
     private int getUniqueId()
     {
