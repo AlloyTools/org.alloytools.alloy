@@ -2,7 +2,6 @@ package edu.uiowa.alloy2smt.mapping;
 
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
-import edu.uiowa.alloy2smt.smt.TranslatorUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
