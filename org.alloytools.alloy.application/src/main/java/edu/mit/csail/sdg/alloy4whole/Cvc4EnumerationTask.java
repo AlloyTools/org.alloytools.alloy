@@ -5,7 +5,7 @@ import edu.mit.csail.sdg.alloy4.WorkerEngine;
 import edu.mit.csail.sdg.alloy4whole.instances.Alloy;
 import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smtAst.SmtModel;
+import edu.uiowa.alloy2smt.smt.smtAst.SmtModel;
 import edu.uiowa.alloy2smt.translators.Translation;
 
 import java.io.File;

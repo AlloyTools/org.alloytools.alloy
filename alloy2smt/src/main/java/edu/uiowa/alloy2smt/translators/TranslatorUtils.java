@@ -8,7 +8,7 @@
 
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.smtAst.*;
+import edu.uiowa.alloy2smt.smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

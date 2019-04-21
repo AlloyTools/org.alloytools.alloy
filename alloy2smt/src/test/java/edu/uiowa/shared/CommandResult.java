@@ -1,7 +1,7 @@
 package edu.uiowa.shared;
 
 import edu.mit.csail.sdg.ast.Command;
-import edu.uiowa.alloy2smt.smtAst.SmtModel;
+import edu.uiowa.alloy2smt.smt.smtAst.SmtModel;
 
 public class CommandResult
 {

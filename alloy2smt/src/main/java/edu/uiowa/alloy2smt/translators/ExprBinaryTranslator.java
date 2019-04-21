@@ -3,7 +3,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.uiowa.alloy2smt.smtAst.*;
+import edu.uiowa.alloy2smt.smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

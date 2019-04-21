@@ -1,10 +1,8 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smtAst.FunctionDefinition;
+import edu.uiowa.alloy2smt.smt.smtAst.FunctionDefinition;
 import edu.uiowa.shared.CommandResult;
 import edu.uiowa.shared.TestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

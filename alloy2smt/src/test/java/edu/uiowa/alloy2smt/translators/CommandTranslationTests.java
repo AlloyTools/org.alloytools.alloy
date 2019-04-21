@@ -1,9 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smtAst.Assertion;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CommandTranslationTests

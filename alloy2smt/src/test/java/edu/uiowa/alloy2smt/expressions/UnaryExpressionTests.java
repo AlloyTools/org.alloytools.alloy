@@ -1,6 +1,6 @@
 package edu.uiowa.alloy2smt.expressions;
 
-import edu.uiowa.alloy2smt.smtAst.*;
+import edu.uiowa.alloy2smt.smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
