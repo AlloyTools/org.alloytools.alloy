@@ -1,10 +1,10 @@
 package edu.uiowa.shared;
 
 import edu.mit.csail.sdg.ast.Command;
-import edu.uiowa.alloy2smt.smt.smtAst.SmtModel;
-import edu.uiowa.alloy2smt.smt.parser.SmtModelVisitor;
-import edu.uiowa.alloy2smt.smt.parser.antlr.SmtLexer;
-import edu.uiowa.alloy2smt.smt.parser.antlr.SmtParser;
+import edu.uiowa.smt.smtAst.SmtModel;
+import edu.uiowa.smt.parser.SmtModelVisitor;
+import edu.uiowa.smt.parser.antlr.SmtLexer;
+import edu.uiowa.smt.parser.antlr.SmtParser;
 import edu.uiowa.alloy2smt.translators.Translation;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;

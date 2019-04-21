@@ -15,9 +15,9 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
-import edu.uiowa.alloy2smt.smt.AbstractTranslator;
-import edu.uiowa.alloy2smt.smt.TranslatorUtils;
-import edu.uiowa.alloy2smt.smt.smtAst.*;
+import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.TranslatorUtils;
+import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

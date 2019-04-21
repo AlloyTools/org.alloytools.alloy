@@ -13,8 +13,8 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Sig;
-import edu.uiowa.alloy2smt.smt.TranslatorUtils;
-import edu.uiowa.alloy2smt.smt.smtAst.*;
+import edu.uiowa.smt.TranslatorUtils;
+import edu.uiowa.smt.smtAst.*;
 
 import java.util.*;
 

@@ -9,9 +9,9 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
-import edu.uiowa.alloy2smt.smt.AbstractTranslator;
-import edu.uiowa.alloy2smt.smt.TranslatorUtils;
-import edu.uiowa.alloy2smt.smt.smtAst.*;
+import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.TranslatorUtils;
+import edu.uiowa.smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.List;
 

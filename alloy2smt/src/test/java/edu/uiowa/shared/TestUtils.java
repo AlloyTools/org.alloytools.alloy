@@ -1,7 +1,7 @@
 package edu.uiowa.shared;
 
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.smt.smtAst.FunctionDefinition;
+import edu.uiowa.smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.translators.Translation;
 
 import java.util.List;

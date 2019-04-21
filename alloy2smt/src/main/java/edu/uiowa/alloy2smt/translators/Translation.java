@@ -3,8 +3,8 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
-import edu.uiowa.alloy2smt.smt.printers.SmtLibPrettyPrinter;
-import edu.uiowa.alloy2smt.smt.smtAst.*;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;

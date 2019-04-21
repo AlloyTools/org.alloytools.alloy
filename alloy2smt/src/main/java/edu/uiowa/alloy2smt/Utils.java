@@ -11,8 +11,8 @@ package edu.uiowa.alloy2smt;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.mapping.Mapper;
-import edu.uiowa.alloy2smt.smt.printers.SmtLibPrettyPrinter;
-import edu.uiowa.alloy2smt.smt.smtAst.*;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 

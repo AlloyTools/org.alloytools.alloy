@@ -1,6 +1,6 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.smt.smtAst.FunctionDefinition;
+import edu.uiowa.smt.smtAst.FunctionDefinition;
 import edu.uiowa.shared.CommandResult;
 import edu.uiowa.shared.TestUtils;
 import org.junit.jupiter.api.Test;
