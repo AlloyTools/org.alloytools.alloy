@@ -1,12 +1,12 @@
-package edu.uiowa.shared;
+package edu.uiowa.smt.cvc4;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
-import edu.mit.csail.sdg.alloy4.Util;
 
 
 public class Cvc4Process
@@ -31,11 +31,11 @@ public class Cvc4Process
     {
         String cvc4;
 
-        if(Util.onWindows())
+        if(onWindows())
         {
             cvc4 = BIN_PATH + "cvc4_win64.exe";
         }
-        else if(Util.onMac())
+        else if(onMac())
         {
             cvc4 = BIN_PATH + "cvc4_mac";
         }
@@ -106,5 +106,14 @@ public class Cvc4Process
     public void destroy()
     {
         process.destroyForcibly();
+    }
+
+    private static boolean onWindows()
+    {
+        return System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows");
+    }
+    private static boolean onMac()
+    {
+        return System.getProperty("mrj.version") != null || System.getProperty("os.name").toLowerCase(Locale.US).startsWith("mac ");
     }
 }

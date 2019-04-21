@@ -1,6 +1,7 @@
 package edu.uiowa.shared;
 
 import edu.mit.csail.sdg.ast.Command;
+import edu.uiowa.smt.cvc4.Cvc4Process;
 import edu.uiowa.smt.smtAst.SmtModel;
 import edu.uiowa.smt.parser.SmtModelVisitor;
 import edu.uiowa.smt.parser.antlr.SmtLexer;
