@@ -11,7 +11,7 @@ package edu.uiowa.alloy2smt.smt.parser;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtBaseVisitor;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtParser;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +53,9 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         {
             switch (ctx.sortName().getText())
             {
-                case Alloy2SmtTranslator.atom: return Alloy2SmtTranslator.atomSort;
-                case Alloy2SmtTranslator.intSortName: return Alloy2SmtTranslator.intSort;
-                case Alloy2SmtTranslator.uninterpretedIntName: return Alloy2SmtTranslator.uninterpretedInt;
+                case AbstractTranslator.atom: return AbstractTranslator.atomSort;
+                case AbstractTranslator.intSortName: return AbstractTranslator.intSort;
+                case AbstractTranslator.uninterpretedIntName: return AbstractTranslator.uninterpretedInt;
                 default:
                     throw new UnsupportedOperationException(String.format("Unknown sort '%s'", ctx.sortName().getText()));
             }
@@ -220,11 +220,11 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         if(ctx.AtomPrefix() != null)
         {
-            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.atomSort);
+            return new UninterpretedConstant(ctx.getText(), AbstractTranslator.atomSort);
         }
         if(ctx.UninterpretedIntPrefix() != null)
         {
-            return new UninterpretedConstant(ctx.getText(), Alloy2SmtTranslator.uninterpretedInt);
+            return new UninterpretedConstant(ctx.getText(), AbstractTranslator.uninterpretedInt);
         }
         throw new UnsupportedOperationException(String.format("Unknown constant value '%s'", ctx.getText()));
     }

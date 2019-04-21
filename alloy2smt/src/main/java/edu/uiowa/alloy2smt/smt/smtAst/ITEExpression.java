@@ -6,7 +6,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.Map;
 
@@ -44,7 +44,7 @@ public class ITEExpression extends Expression
     @Override
     protected void checkTypes()
     {
-        if(condExpr.getSort() != Alloy2SmtTranslator.boolSort)
+        if(condExpr.getSort() != AbstractTranslator.boolSort)
         {
             throw new RuntimeException(String.format("The sort '%1$s' of the condition expression is not boolean", condExpr.getSort()));
         }

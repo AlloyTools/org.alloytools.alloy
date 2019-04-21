@@ -655,14 +655,14 @@ public class ExprBinaryTranslator
     
     private Expression getComparison(BinaryExpression.Op op, Expression left, Expression right)
     {
-        VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration x = new VariableDeclaration("_x", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", AbstractTranslator.uninterpretedInt);
         Expression xTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
         Expression xSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, xTuple);
         Expression ySingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, yTuple);
-        Expression xValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, x.getVariable());
-        Expression yValue     = new FunctionCallExpression(Alloy2SmtTranslator.uninterpretedIntValue, y.getVariable());
+        Expression xValue     = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, x.getVariable());
+        Expression yValue     = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, y.getVariable());
 
         Expression relation1EqualsX = new BinaryExpression(xSingleton, BinaryExpression.Op.EQ, left);
         Expression relation2EqualsY = new BinaryExpression(ySingleton, BinaryExpression.Op.EQ, right);
@@ -715,12 +715,12 @@ public class ExprBinaryTranslator
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
         }
 
-        if(left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(left.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             left = exprTranslator.translator.handleIntConstant(left);
         }
 
-        if(right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(right.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             right = exprTranslator.translator.handleIntConstant(right);
         }
@@ -921,12 +921,12 @@ public class ExprBinaryTranslator
             right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
         }
 
-        if(left.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(left.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             left = exprTranslator.translator.handleIntConstant(left);
         }
 
-        if(right.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(right.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             right = exprTranslator.translator.handleIntConstant(right);
         }

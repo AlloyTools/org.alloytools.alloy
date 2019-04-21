@@ -141,7 +141,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
-        FunctionDefinition mod = TestUtils.getFunctionDefinition(commandResults.get(0), Alloy2SmtTranslator.mod);
+        FunctionDefinition mod = TestUtils.getFunctionDefinition(commandResults.get(0), AbstractTranslator.mod);
     }
 
     @Test

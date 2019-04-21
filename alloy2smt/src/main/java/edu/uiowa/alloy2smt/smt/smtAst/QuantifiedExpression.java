@@ -9,7 +9,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +37,7 @@ public class QuantifiedExpression extends Expression
     @Override
     protected void checkTypes()
     {
-        if(expr.getSort() != Alloy2SmtTranslator.boolSort)
+        if(expr.getSort() != AbstractTranslator.boolSort)
         {
             throw new RuntimeException(String.format("The sort '%1$s' of the quantified expression is not boolean", expr.getSort()));
         }
@@ -93,7 +93,7 @@ public class QuantifiedExpression extends Expression
     @Override
     public Sort getSort()
     {
-        return Alloy2SmtTranslator.boolSort;
+        return AbstractTranslator.boolSort;
     }
 
     @Override

@@ -12,7 +12,7 @@ import edu.uiowa.alloy2smt.smt.smtAst.*;
 import edu.uiowa.alloy2smt.smt.parser.SmtModelVisitor;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtLexer;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtParser;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -305,8 +305,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         for(FunctionDeclaration function: model.getFunctions())
         {
             FunctionDefinition definition = (FunctionDefinition) function;
-            if(function.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple) ||
-                    function.getSort().equals(Alloy2SmtTranslator.setOfTernaryIntSort))
+            if(function.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple) ||
+                    function.getSort().equals(AbstractTranslator.setOfTernaryIntSort))
             {
                 definition = model.evaluateUninterpretedInt((FunctionDefinition) function);
             }
@@ -380,25 +380,25 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private static void addSpecialFields(Map<String, FunctionDefinition> functionsMap, List<Field> fields, int parentId) throws Exception
     {
-        if(functionsMap.containsKey(Alloy2SmtTranslator.plus))
+        if(functionsMap.containsKey(AbstractTranslator.plus))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.plus, parentId));
+            fields.add(getSpecialField(functionsMap, AbstractTranslator.plus, parentId));
         }
-        if(functionsMap.containsKey(Alloy2SmtTranslator.minus))
+        if(functionsMap.containsKey(AbstractTranslator.minus))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.minus, parentId));
+            fields.add(getSpecialField(functionsMap, AbstractTranslator.minus, parentId));
         }
-        if(functionsMap.containsKey(Alloy2SmtTranslator.multiply))
+        if(functionsMap.containsKey(AbstractTranslator.multiply))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.multiply, parentId));
+            fields.add(getSpecialField(functionsMap, AbstractTranslator.multiply, parentId));
         }
-        if(functionsMap.containsKey(Alloy2SmtTranslator.divide))
+        if(functionsMap.containsKey(AbstractTranslator.divide))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.divide, parentId));
+            fields.add(getSpecialField(functionsMap, AbstractTranslator.divide, parentId));
         }
-        if(functionsMap.containsKey(Alloy2SmtTranslator.mod))
+        if(functionsMap.containsKey(AbstractTranslator.mod))
         {
-            fields.add(getSpecialField(functionsMap, Alloy2SmtTranslator.mod, parentId));
+            fields.add(getSpecialField(functionsMap, AbstractTranslator.mod, parentId));
         }
     }
 
@@ -575,11 +575,11 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         if(expression instanceof UninterpretedConstant)
         {
             UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) expression;
-            if(uninterpretedConstant.getSort().equals(Alloy2SmtTranslator.atomSort))
+            if(uninterpretedConstant.getSort().equals(AbstractTranslator.atomSort))
             {
                 atoms.add(new Atom(uninterpretedConstant.getName()));
             }
-            if(uninterpretedConstant.getSort().equals(Alloy2SmtTranslator.uninterpretedInt))
+            if(uninterpretedConstant.getSort().equals(AbstractTranslator.uninterpretedInt))
             {
                 IntConstant intConstant = (IntConstant) uninterpretedConstant.evaluate(functions);
                 atoms.add(new Atom(intConstant.getValue()));

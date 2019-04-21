@@ -1,7 +1,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.Map;
 
@@ -37,18 +37,18 @@ public class UninterpretedConstant extends Constant
     @Override
     public Expression evaluate(Map<String, FunctionDefinition> functions)
     {
-        if(this.getSort().equals(Alloy2SmtTranslator.atomSort))
+        if(this.getSort().equals(AbstractTranslator.atomSort))
         {
             return this;
         }
-        if(this.getSort().equals(Alloy2SmtTranslator.uninterpretedInt))
+        if(this.getSort().equals(AbstractTranslator.uninterpretedInt))
         {
-            if(!functions.containsKey(Alloy2SmtTranslator.uninterpretedIntValueName))
+            if(!functions.containsKey(AbstractTranslator.uninterpretedIntValueName))
             {
-                throw new RuntimeException("The function " + Alloy2SmtTranslator.uninterpretedInt + " is undefined in this model");
+                throw new RuntimeException("The function " + AbstractTranslator.uninterpretedInt + " is undefined in this model");
             }
             // convert the uninterpreted int to int
-            FunctionDefinition uninterpretedIntValue = functions.get(Alloy2SmtTranslator.uninterpretedIntValueName);
+            FunctionDefinition uninterpretedIntValue = functions.get(AbstractTranslator.uninterpretedIntValueName);
             // uninterpretedIntValue: UninterpretedInt -> Int
             assert (uninterpretedIntValue.inputVariables.size() == 1);
             FunctionCallExpression functionCall = new FunctionCallExpression(uninterpretedIntValue, this);

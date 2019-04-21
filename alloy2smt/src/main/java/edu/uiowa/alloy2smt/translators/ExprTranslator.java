@@ -251,21 +251,21 @@ public class ExprTranslator
         // for all x, y : uninterpretedInt. x in A and y in B implies
         // exists z :uninterpretedInt. (x, y, z) in operation
 
-        VariableDeclaration x = new VariableDeclaration("_x", Alloy2SmtTranslator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("_y", Alloy2SmtTranslator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("_z", Alloy2SmtTranslator.uninterpretedInt);
+        VariableDeclaration x = new VariableDeclaration("_x", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("_z", AbstractTranslator.uninterpretedInt);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
         Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
                 x.getVariable(),  y.getVariable(), z.getVariable());
 
-        if(A.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(A.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             A = translator.handleIntConstant(A);
         }
 
-        if(B.getSort().equals(Alloy2SmtTranslator.setOfIntSortTuple))
+        if(B.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             B = translator.handleIntConstant(B);
         }
@@ -315,16 +315,16 @@ public class ExprTranslator
 
         switch(op)
         {
-            case PLUS: relationName = Alloy2SmtTranslator.plus; break;
-            case MINUS: relationName = Alloy2SmtTranslator.minus; break;
-            case MULTIPLY: relationName = Alloy2SmtTranslator.multiply; break;
-            case DIVIDE: relationName = Alloy2SmtTranslator.divide; break;
-            case MOD: relationName = Alloy2SmtTranslator.mod; break;
+            case PLUS: relationName = AbstractTranslator.plus; break;
+            case MINUS: relationName = AbstractTranslator.minus; break;
+            case MULTIPLY: relationName = AbstractTranslator.multiply; break;
+            case DIVIDE: relationName = AbstractTranslator.divide; break;
+            case MOD: relationName = AbstractTranslator.mod; break;
             default:
                 throw new UnsupportedOperationException(op.toString());
         }
 
-        ConstantDeclaration relation = new ConstantDeclaration(relationName, Alloy2SmtTranslator.setOfTernaryIntSort);
+        ConstantDeclaration relation = new ConstantDeclaration(relationName, AbstractTranslator.setOfTernaryIntSort);
         Expression xyOperation = new BinaryExpression(xValue, op, yValue);
         Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
         Expression xyzTupleMember = new BinaryExpression(xyzTuple, BinaryExpression.Op.MEMBER, relation.getVariable());

@@ -9,7 +9,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -62,7 +62,7 @@ public class IntConstant extends Constant
     @Override
     public Sort getSort()
     {
-        return Alloy2SmtTranslator.intSort;
+        return AbstractTranslator.intSort;
     }
 
     @Override

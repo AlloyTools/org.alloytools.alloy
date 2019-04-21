@@ -9,7 +9,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class UnaryExpression extends Expression
         {
             case NOT:
             {
-                if (expr.getSort() != Alloy2SmtTranslator.boolSort)
+                if (expr.getSort() != AbstractTranslator.boolSort)
                 {
                     throw new RuntimeException(String.format("Expression sort '%1$s' is not boolean", expr.getSort()));
                 }
@@ -133,7 +133,7 @@ public class UnaryExpression extends Expression
     {
         switch (op) {
             case NOT:
-                return Alloy2SmtTranslator.boolSort;
+                return AbstractTranslator.boolSort;
             case COMPLEMENT:
                 return expr.getSort();
             case TRANSPOSE: {
@@ -164,9 +164,9 @@ public class UnaryExpression extends Expression
     {
         if(op == Op.EMPTYSET)
         {
-            if(expr.equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple))
+            if(expr.equals(AbstractTranslator.setOfUninterpretedIntTuple))
             {
-                return new UnaryExpression(op, Alloy2SmtTranslator.setOfIntSortTuple);
+                return new UnaryExpression(op, AbstractTranslator.setOfIntSortTuple);
             }
             else
             {

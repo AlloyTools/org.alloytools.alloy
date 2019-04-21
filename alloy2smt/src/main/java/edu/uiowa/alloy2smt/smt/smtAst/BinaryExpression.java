@@ -9,7 +9,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +47,11 @@ public class BinaryExpression extends Expression
             case AND:
             case IMPLIES:
             {
-                if (lhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
+                if (lhsExpr.getSort() != AbstractTranslator.boolSort)
                 {
                     throw new RuntimeException(String.format("Left expression sort '%1$s' is not boolean", lhsExpr.getSort()));
                 }
-                if (rhsExpr.getSort() != Alloy2SmtTranslator.boolSort)
+                if (rhsExpr.getSort() != AbstractTranslator.boolSort)
                 {
                     throw new RuntimeException(String.format("Right expression sort '%1$s' is not boolean", rhsExpr.getSort()));
                 }
@@ -66,11 +66,11 @@ public class BinaryExpression extends Expression
             case GT:
             case LT:
             {
-                if (lhsExpr.getSort() != Alloy2SmtTranslator.intSort)
+                if (lhsExpr.getSort() != AbstractTranslator.intSort)
                 {
                     throw new RuntimeException(String.format("Left expression sort '%1$s' is not integer or  set of integers", lhsExpr.getSort()));
                 }
-                if (rhsExpr.getSort() != Alloy2SmtTranslator.intSort)
+                if (rhsExpr.getSort() != AbstractTranslator.intSort)
                 {
                     throw new RuntimeException(String.format("Right expression sort '%1$s' is not integer or  set of integers", rhsExpr.getSort()));
                 }
@@ -258,24 +258,24 @@ public class BinaryExpression extends Expression
     {
         switch (op)
         {
-            case OR: return Alloy2SmtTranslator.boolSort;
-            case AND: return Alloy2SmtTranslator.boolSort ;
-            case IMPLIES: return Alloy2SmtTranslator.boolSort;
-            case PLUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
-            case MINUS: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
-            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
-            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
-            case MOD: return lhsExpr.getSort() instanceof IntSort? Alloy2SmtTranslator.intSort: Alloy2SmtTranslator.setOfUninterpretedIntTuple;
-            case EQ: return Alloy2SmtTranslator.boolSort;
-            case GTE: return Alloy2SmtTranslator.boolSort;
-            case LTE: return Alloy2SmtTranslator.boolSort;
-            case GT: return Alloy2SmtTranslator.boolSort;
-            case LT: return Alloy2SmtTranslator.boolSort;
+            case OR: return AbstractTranslator.boolSort;
+            case AND: return AbstractTranslator.boolSort ;
+            case IMPLIES: return AbstractTranslator.boolSort;
+            case PLUS: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case MINUS: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case MOD: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case EQ: return AbstractTranslator.boolSort;
+            case GTE: return AbstractTranslator.boolSort;
+            case LTE: return AbstractTranslator.boolSort;
+            case GT: return AbstractTranslator.boolSort;
+            case LT: return AbstractTranslator.boolSort;
             case UNION: return lhsExpr.getSort();
             case INTERSECTION: return lhsExpr.getSort();
             case SETMINUS: return lhsExpr.getSort();
-            case MEMBER: return Alloy2SmtTranslator.boolSort;
-            case SUBSET: return Alloy2SmtTranslator.boolSort;
+            case MEMBER: return AbstractTranslator.boolSort;
+            case SUBSET: return AbstractTranslator.boolSort;
             case JOIN:
             {
                 // type checking is handled during construction

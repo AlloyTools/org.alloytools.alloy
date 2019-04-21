@@ -36,7 +36,7 @@ public class TranslatorUtils
         return s.replaceAll("/", "_").replaceAll("'", "_").replaceAll("\"", "_");
     }
 
-    public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, Alloy2SmtTranslator translator)
+    public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, AbstractTranslator translator)
     {
         List<Sort>  sorts       = IntStream.range(1, arity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList());
         Sort        tupleSort   = new TupleSort(sorts);
@@ -127,7 +127,7 @@ public class TranslatorUtils
         List<Sort> elementSorts = new ArrayList<>();
         for(int i = 0; i < n; ++i)
         {
-            elementSorts.add(Alloy2SmtTranslator.atomSort);
+            elementSorts.add(AbstractTranslator.atomSort);
         }
         return new SetSort(new TupleSort(elementSorts));
     }

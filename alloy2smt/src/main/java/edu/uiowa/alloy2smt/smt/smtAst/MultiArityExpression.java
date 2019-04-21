@@ -9,7 +9,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -147,7 +147,7 @@ public class MultiArityExpression extends Expression
                 // return the sort of the last element
                 return exprs.get(exprs.size() - 1).getSort();
             }
-            case DISTINCT: return Alloy2SmtTranslator.boolSort;
+            case DISTINCT: return AbstractTranslator.boolSort;
             default:
                 throw new UnsupportedOperationException();
         }

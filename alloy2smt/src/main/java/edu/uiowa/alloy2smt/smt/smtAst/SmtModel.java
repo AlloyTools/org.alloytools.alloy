@@ -9,7 +9,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
+import edu.uiowa.alloy2smt.translators.AbstractTranslator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,15 +84,15 @@ public class SmtModel extends SmtAst
             functions.put(declaration.getName(), (FunctionDefinition) declaration);
         }
         Expression body = function.expression.evaluate(functions);
-        if(function.getSort().equals(Alloy2SmtTranslator.setOfUninterpretedIntTuple))
+        if(function.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple))
         {
             return new FunctionDefinition(function.getName(), function.inputVariables,
-                    Alloy2SmtTranslator.setOfIntSortTuple, body);
+                    AbstractTranslator.setOfIntSortTuple, body);
         }
-        if(function.getSort().equals(Alloy2SmtTranslator.setOfTernaryIntSort))
+        if(function.getSort().equals(AbstractTranslator.setOfTernaryIntSort))
         {
             return new FunctionDefinition(function.getName(), function.inputVariables,
-                    Alloy2SmtTranslator.setOfIntSortTuple, body);
+                    AbstractTranslator.setOfIntSortTuple, body);
         }
         throw new UnsupportedOperationException();
     }
