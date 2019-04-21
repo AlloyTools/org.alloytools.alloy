@@ -43,8 +43,8 @@ class SmtModelVisitorTests
                 "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_457 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
                 "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_466 TernaryIntTup)) (Tuple Int Int Int) (mkTuple 0 0 0))\n" +
                 "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                "(define-fun atomUniv () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                "(define-fun atomIden () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
+                "(define-fun atomUniverse () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
+                "(define-fun atomIdentity () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
                 ")";
 
         SmtModel smtModel = parseModel(model);
@@ -52,7 +52,7 @@ class SmtModelVisitorTests
         Assertions.assertEquals(6, smtModel.getFunctions().size());
 
         FunctionDefinition atomUniv = (FunctionDefinition) smtModel.getFunctions().stream()
-                .filter(function -> function.getName().equals("atomUniv")).findFirst().get();
+                .filter(function -> function.getName().equals("atomUniverse")).findFirst().get();
 
         Assertions.assertTrue(atomUniv.expression != null);
     }
@@ -72,8 +72,8 @@ class SmtModelVisitorTests
                         "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_1799 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
                         "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_1808 TernaryIntTup)) (Tuple Int Int Int) (mkTuple 0 0 0))\n" +
                         "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                        "(define-fun atomUniv () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_0)))\n" +
-                        "(define-fun atomIden () (Set (Tuple Atom Atom)) (singleton (mkTuple @uc_Atom_0 @uc_Atom_0)))\n" +
+                        "(define-fun atomUniverse () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_0)))\n" +
+                        "(define-fun atomIdentity () (Set (Tuple Atom Atom)) (singleton (mkTuple @uc_Atom_0 @uc_Atom_0)))\n" +
                         "(define-fun this_Object () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_0)))\n" +
                         "(define-fun this_Dir () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_0)))\n" +
                         "(define-fun this_Root () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_0)))\n" +
@@ -104,8 +104,8 @@ class SmtModelVisitorTests
                         "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_701 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
                         "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_710 TernaryIntTup)) (Tuple Int Int Int) (mkTuple 0 0 0))\n" +
                         "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                        "(define-fun atomUniv () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                        "(define-fun atomIden () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
+                        "(define-fun atomUniverse () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
+                        "(define-fun atomIdentity () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
                         "(define-fun this_A () (Set (Tuple Int)) (singleton (mkTuple 0)))\n" +
                         "(define-fun this_B () (Set (Tuple Int)) (singleton (mkTuple 0)))\n" +
                         "(define-fun PLUS () (Set (Tuple Int Int Int)) (singleton (mkTuple 0 0 5)))\n" +
@@ -133,8 +133,8 @@ class SmtModelVisitorTests
                 "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_757 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
                 "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_766 TernaryIntTup)) (Tuple Int Int Int) (mkTuple 0 0 0))\n" +
                 "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                "(define-fun atomUniv () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                "(define-fun atomIden () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
+                "(define-fun atomUniverse () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
+                "(define-fun atomIdentity () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
                 "(define-fun this_A0 () (Set (Tuple Int)) (singleton (mkTuple 0)))\n" +
                 "(define-fun this_A1 () (Set (Tuple Int)) (singleton (mkTuple (- 1))))\n" +
                 "(define-fun this_A2 () (Set (Tuple Int)) (as emptyset (Set (Tuple Int))))\n" +
@@ -176,8 +176,8 @@ class SmtModelVisitorTests
                         "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_6470 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
                         "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_6479 TernaryIntTup)) (Tuple Int Int Int) (mkTuple 0 0 0))\n" +
                         "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                        "(define-fun atomUniv () (Set (Tuple Atom)) (union (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_2))) (singleton (mkTuple @uc_Atom_3))) (singleton (mkTuple @uc_Atom_1))))\n" +
-                        "(define-fun atomIden () (Set (Tuple Atom Atom)) (union (union (union (singleton (mkTuple @uc_Atom_3 @uc_Atom_3)) (singleton (mkTuple @uc_Atom_2 @uc_Atom_2))) (singleton (mkTuple @uc_Atom_1 @uc_Atom_1))) (singleton (mkTuple @uc_Atom_0 @uc_Atom_0))))\n" +
+                        "(define-fun atomUniverse () (Set (Tuple Atom)) (union (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_2))) (singleton (mkTuple @uc_Atom_3))) (singleton (mkTuple @uc_Atom_1))))\n" +
+                        "(define-fun atomIdentity () (Set (Tuple Atom Atom)) (union (union (union (singleton (mkTuple @uc_Atom_3 @uc_Atom_3)) (singleton (mkTuple @uc_Atom_2 @uc_Atom_2))) (singleton (mkTuple @uc_Atom_1 @uc_Atom_1))) (singleton (mkTuple @uc_Atom_0 @uc_Atom_0))))\n" +
                         "(define-fun this_A () (Set (Tuple Atom)) (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_2))) (singleton (mkTuple @uc_Atom_3))))\n" +
                         "(define-fun this_A0 () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_2)))\n" +
                         "(define-fun this_A1 () (Set (Tuple Atom)) (singleton (mkTuple @uc_Atom_3)))\n" +
@@ -198,7 +198,7 @@ class SmtModelVisitorTests
         SmtModel smtModel = parseModel(model);
         FunctionDefinition atomUniv = (FunctionDefinition) smtModel.getFunctions()
                 .stream()
-                .filter(function -> function.getName().equals("atomUniv"))
+                .filter(function -> function.getName().equals("atomUniverse"))
                 .findFirst().get();
         Assertions.assertEquals("(union (union (union (singleton (mkTuple @uc_Atom_0)) (singleton (mkTuple @uc_Atom_2))) (singleton (mkTuple @uc_Atom_3))) (singleton (mkTuple @uc_Atom_1)))",
                 atomUniv.expression.toString());
@@ -231,8 +231,8 @@ class SmtModelVisitorTests
                         "(define-fun value_of_binaryIntTup ((BOUND_VARIABLE_15833 BinaryIntTup)) (Tuple Int Int) (mkTuple 0 0))\n" +
                         "(define-fun value_of_ternaryIntTup ((BOUND_VARIABLE_15844 TernaryIntTup)) (Tuple Int Int Int) (ite (= @uc_TernaryIntTup_6 BOUND_VARIABLE_15844) (mkTuple 3 3 0) (ite (= @uc_TernaryIntTup_4 BOUND_VARIABLE_15844) (mkTuple 3 0 3) (ite (= @uc_TernaryIntTup_3 BOUND_VARIABLE_15844) (mkTuple 2 0 2) (ite (= @uc_TernaryIntTup_2 BOUND_VARIABLE_15844) (mkTuple 2 2 0) (ite (= @uc_TernaryIntTup_1 BOUND_VARIABLE_15844) (mkTuple 0 0 0) (ite (= @uc_TernaryIntTup_0 BOUND_VARIABLE_15844) (mkTuple 0 2 2) (mkTuple 0 3 3))))))))\n" +
                         "(define-fun atomNone () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                        "(define-fun atomUniv () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
-                        "(define-fun atomIden () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
+                        "(define-fun atomUniverse () (Set (Tuple Atom)) (as emptyset (Set (Tuple Atom))))\n" +
+                        "(define-fun atomIdentity () (Set (Tuple Atom Atom)) (as emptyset (Set (Tuple Atom Atom))))\n" +
                         "(define-fun this_a () (Set (Tuple Int)) (singleton (mkTuple 2)))\n" +
                         "(define-fun this_b () (Set (Tuple Int)) (singleton (mkTuple 3)))\n" +
                         "(define-fun this_c () (Set (Tuple Int)) (singleton (mkTuple 3)))\n" +

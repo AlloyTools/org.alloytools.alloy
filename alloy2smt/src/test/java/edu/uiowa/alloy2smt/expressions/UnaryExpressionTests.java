@@ -1,7 +1,7 @@
 package edu.uiowa.alloy2smt.expressions;
 
 import edu.uiowa.alloy2smt.smt.smtAst.*;
-import edu.uiowa.alloy2smt.translators.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

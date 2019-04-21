@@ -15,9 +15,9 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +38,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     final SignatureTranslator       signatureTranslator;
     final ExprTranslator            exprTranslator;
 
-
+    Set<String> funcNames;
     Expression                                      auxExpr;
     Map<Sig, Expr>                                  sigFacts;
     
@@ -64,8 +64,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.commands               = alloyModel.getAllCommands();
 
         this.signatureTranslator    = new SignatureTranslator(this);
-        this.comparisonOps          = new HashMap<>();  
-        this.arithOps               = new HashMap<>();
+        this.comparisonOperations = new HashMap<>();
+        this.arithmeticOperations = new HashMap<>();
         this.signaturesMap          = new HashMap<>();
         this.funcNamesMap           = new HashMap<>();
         this.functionsMap           = new HashMap<>();
@@ -77,7 +77,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.integerConstants       = new HashMap<>();
         this.sigToIdMap             = new HashMap<>();
 
-        this.signaturesMap.put(Sig.UNIV, atomUniv);
+        this.signaturesMap.put(Sig.UNIV, atomUniverse);
         this.signaturesMap.put(Sig.SIGINT, intUniv);
         this.smtProgram.addSort(atomSort);
         this.smtProgram.addSort(uninterpretedInt);
@@ -103,9 +103,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
 
         this.signatureTranslator    = new SignatureTranslator(this);
-        this.comparisonOps          = new HashMap<>(translator.comparisonOps);
+        this.comparisonOperations = new HashMap<>(translator.comparisonOperations);
         this.integerConstants       = new HashMap<>(translator.integerConstants);
-        this.arithOps               = new HashMap<>(translator.arithOps);
+        this.arithmeticOperations = new HashMap<>(translator.arithmeticOperations);
         this.signaturesMap          = new HashMap<>(translator.signaturesMap);
         this.funcNamesMap           = new HashMap<>(translator.funcNamesMap);
         this.functionsMap           = new HashMap<>(translator.functionsMap);
@@ -147,8 +147,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private void translateSpecialFunctions()
     {
         this.smtProgram.addFunction(this.atomNone);
-        this.smtProgram.addFunction(this.atomUniv);
-        this.smtProgram.addFunction(this.atomIden);
+        this.smtProgram.addFunction(this.atomUniverse);
+        this.smtProgram.addFunction(this.atomIdentity);
     }
 
     private void translateSpecialAssertions()
@@ -156,17 +156,17 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         // Axiom for identity relation
         VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
-        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniv.getVariable());
+        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniverse.getVariable());
 
         VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
-        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniv.getVariable());
+        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniverse.getVariable());
 
         BinaryExpression            and     = new BinaryExpression(memberA, BinaryExpression.Op.AND, memberB);
 
         MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
 
-        BinaryExpression            member  = new BinaryExpression(tupleAB, BinaryExpression.Op.MEMBER, this.atomIden.getVariable());
+        BinaryExpression            member  = new BinaryExpression(tupleAB, BinaryExpression.Op.MEMBER, this.atomIdentity.getVariable());
 
         BinaryExpression            equals  = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, b.getVariable());
 
@@ -177,7 +177,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         QuantifiedExpression        idenSemantics  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
 
         this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniv.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniverse.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function

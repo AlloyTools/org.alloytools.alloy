@@ -1,7 +1,7 @@
 package edu.uiowa.alloy2smt.smt.smtAst;
 
 import edu.uiowa.alloy2smt.smt.printers.SmtAstVisitor;
-import edu.uiowa.alloy2smt.translators.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 
 import java.util.Map;
 

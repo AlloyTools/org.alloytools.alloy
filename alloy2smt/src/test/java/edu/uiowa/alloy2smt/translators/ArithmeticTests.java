@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 import edu.uiowa.shared.CommandResult;
 import edu.uiowa.shared.TestUtils;

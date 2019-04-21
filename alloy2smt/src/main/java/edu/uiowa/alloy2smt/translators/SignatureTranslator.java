@@ -80,7 +80,7 @@ public class SignatureTranslator
             {
                 unionTopSigExprs = new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.UNION, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable());
             }
-            translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniv.getVariable())));
+            translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniverse.getVariable())));
             
             // Top-level sigs are mutually disjoin
             if(translator.topLevelSigs.size() > 1)

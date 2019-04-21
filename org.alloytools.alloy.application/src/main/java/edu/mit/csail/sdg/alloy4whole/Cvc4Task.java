@@ -12,7 +12,7 @@ import edu.uiowa.alloy2smt.smt.smtAst.*;
 import edu.uiowa.alloy2smt.smt.parser.SmtModelVisitor;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtLexer;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtParser;
-import edu.uiowa.alloy2smt.translators.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;

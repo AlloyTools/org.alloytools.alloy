@@ -10,6 +10,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 
 import java.util.*;
@@ -93,7 +94,7 @@ public class ExprTranslator
                 Expression intConstant = IntConstant.getSingletonTuple(expr.num);
                 return translator.handleIntConstant(intConstant) ;
             }
-            case IDEN   : return translator.atomIden.getVariable();
+            case IDEN   : return translator.atomIdentity.getVariable();
             case TRUE   : return new BoolConstant(true);
             case FALSE  : return new BoolConstant(false);
             default: throw new UnsupportedOperationException(expr.op.name());
@@ -238,11 +239,11 @@ public class ExprTranslator
     
     public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Map<String,Expression> variablesScope)
     {
-        if(!translator.arithOps.containsKey(op))
+        if(!translator.arithmeticOperations.containsKey(op))
         {                      
             declArithmeticOp(op);
         }
-        Expression operation = translator.arithOps.get(op);
+        Expression operation = translator.arithmeticOperations.get(op);
 
         A = convertIntConstantToSet(A);
 
@@ -334,7 +335,7 @@ public class ExprTranslator
         Expression axiom = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2, x, y, z);
         translator.smtProgram.addConstantDeclaration(relation);
         translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom));
-        translator.arithOps.put(op, relation.getVariable());
+        translator.arithmeticOperations.put(op, relation.getVariable());
     }
 
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)

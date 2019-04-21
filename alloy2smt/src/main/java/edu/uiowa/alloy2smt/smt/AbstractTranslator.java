@@ -1,10 +1,10 @@
-package edu.uiowa.alloy2smt.translators;
+package edu.uiowa.alloy2smt.smt;
 
 import edu.uiowa.alloy2smt.smt.smtAst.*;
+import edu.uiowa.alloy2smt.translators.TranslatorUtils;
 
 import java.math.BigInteger;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class AbstractTranslator
 {
@@ -33,9 +33,9 @@ public abstract class AbstractTranslator
     public final static SetSort setOfUnaryAtomSort = new SetSort(unaryAtomSort);
     public final static SetSort setOfBinaryAtomSort = new SetSort(binaryAtomSort);
     public final static SetSort setOfTernaryIntSort = new SetSort(ternaryIntSort);
-    public final static FunctionDeclaration atomUniv = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
+    public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniverse", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
-    public final static FunctionDeclaration atomIden = new FunctionDeclaration("atomIden", setOfBinaryAtomSort);
+    public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort);
     //ToDo: review intUniv
     public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple);
     public final static UnaryExpression intUnivExpr = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple);
@@ -43,19 +43,18 @@ public abstract class AbstractTranslator
 
     // non static members
     public SmtProgram smtProgram;
-    Set<String> funcNames;
-    Map<String, FunctionDeclaration> functionsMap;
-    Map<BinaryExpression.Op, FunctionDefinition> comparisonOps;
-    Map<BinaryExpression.Op, Variable> arithOps;
-    Map<BigInteger, ConstantDeclaration> integerConstants;
+    public Map<String, FunctionDeclaration> functionsMap;
+    public Map<BinaryExpression.Op, FunctionDefinition> comparisonOperations;
+    public Map<BinaryExpression.Op, Variable> arithmeticOperations;
+    public Map<BigInteger, ConstantDeclaration> integerConstants;
 
-    void addFunction(FunctionDeclaration function)
+    public void addFunction(FunctionDeclaration function)
     {
         this.functionsMap.put(function.getName(), function);
         this.smtProgram.addFunction(function);
     }
 
-    FunctionDeclaration getFunction(String functionName)
+    public FunctionDeclaration getFunction(String functionName)
     {
         FunctionDeclaration function = functionsMap.get(functionName);
         if (function == null)

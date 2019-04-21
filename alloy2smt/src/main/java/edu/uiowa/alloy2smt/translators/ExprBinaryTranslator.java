@@ -3,6 +3,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,11 +135,11 @@ public class ExprBinaryTranslator
             
             for(int i = 0; i < rightExprArity-1; ++i)
             {
-                join = new BinaryExpression(join, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUniv.getVariable());
+                join = new BinaryExpression(join, BinaryExpression.Op.JOIN, exprTranslator.translator.atomUniverse.getVariable());
             }
             for(int i = 0; i < rightExprArity-1; ++i)
             {
-                join = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getVariable());
+                join = new BinaryExpression(join, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniverse.getVariable());
             }            
             
             Expression intersection         = new BinaryExpression(join, BinaryExpression.Op.INTERSECTION, left);
@@ -166,7 +167,7 @@ public class ExprBinaryTranslator
 
             for(int i = 0; i < arity - 1; ++i)
             {
-                left = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniv.getVariable());
+                left = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, exprTranslator.translator.atomUniverse.getVariable());
             }
             BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
             return intersection;
@@ -189,7 +190,7 @@ public class ExprBinaryTranslator
             
             for(int i = 0; i < arity - 1; ++i)
             {
-                right = new BinaryExpression(exprTranslator.translator.atomUniv.getVariable(), BinaryExpression.Op.PRODUCT, right);
+                right = new BinaryExpression(exprTranslator.translator.atomUniverse.getVariable(), BinaryExpression.Op.PRODUCT, right);
             }            
 
             BinaryExpression    intersection    = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
@@ -203,11 +204,11 @@ public class ExprBinaryTranslator
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);    
         
-        if(!exprTranslator.translator.arithOps.containsKey(op))
+        if(!exprTranslator.translator.arithmeticOperations.containsKey(op))
         {                      
             exprTranslator.declArithmeticOp(op);
         }
-        return new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithOps.get(op)));
+        return new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithmeticOperations.get(op)));
     }
     
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)

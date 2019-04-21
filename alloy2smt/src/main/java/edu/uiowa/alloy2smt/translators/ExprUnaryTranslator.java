@@ -80,7 +80,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
-        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIden.getVariable());
+        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIdentity.getVariable());
         return reflexiveClosure;
     }
 
@@ -102,8 +102,8 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {                    
-                    case "univ": return getTranslator().atomUniv.getVariable();
-                    case "iden": return getTranslator().atomIden.getVariable();
+                    case "univ": return getTranslator().atomUniverse.getVariable();
+                    case "iden": return getTranslator().atomIdentity.getVariable();
                     case "none": return getTranslator().atomNone.getVariable();
                     case "Int": throw new UnsupportedOperationException("We do not support the built-in signature Int used in facts!");
                     default:

@@ -11,7 +11,7 @@ package edu.uiowa.alloy2smt.smt.parser;
 import edu.uiowa.alloy2smt.smt.smtAst.*;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtBaseVisitor;
 import edu.uiowa.alloy2smt.smt.parser.antlr.SmtParser;
-import edu.uiowa.alloy2smt.translators.AbstractTranslator;
+import edu.uiowa.alloy2smt.smt.AbstractTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
