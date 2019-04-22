@@ -3,22 +3,18 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Translation
 {
-    public final static String CHECK_SAT    = "(check-sat)";
-    public final static String GET_MODEL    = "(get-model)";
-    public final static String PUSH         = "(push 1)";
-    public final static String POP          = "(pop 1)";
 
     private Alloy2SmtTranslator translator;
     private final SmtProgram    smtAst;
@@ -141,10 +137,10 @@ public class Translation
         StringBuilder stringBuilder = new StringBuilder(getSmtScript());
         for (int i = 0; i < translator.commands.size() ; i++)
         {
-            stringBuilder.append(PUSH + "\n");
+            stringBuilder.append(AbstractTranslator.PUSH + "\n");
             stringBuilder.append(translateCommand(i) + "\n");
-            stringBuilder.append(CHECK_SAT + "\n");
-            stringBuilder.append(POP + "\n");
+            stringBuilder.append(AbstractTranslator.CHECK_SAT + "\n");
+            stringBuilder.append(AbstractTranslator.POP + "\n");
         }
         return stringBuilder.toString();
     }

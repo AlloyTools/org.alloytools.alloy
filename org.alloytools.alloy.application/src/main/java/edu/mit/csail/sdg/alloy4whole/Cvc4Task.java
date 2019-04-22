@@ -88,10 +88,10 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     for (int index = 0; index < translation.getCommands().size() - 1; index++)
                     {
                         // (push)
-                        cvc4Process.sendCommand(Translation.PUSH);
+                        cvc4Process.sendCommand(AbstractTranslator.PUSH);
                         commandResult = solveCommand(index);
                         // (pop)
-                        cvc4Process.sendCommand(Translation.POP);
+                        cvc4Process.sendCommand(AbstractTranslator.POP);
                         this.commandResults.add(commandResult);
                     }
 
@@ -194,8 +194,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         final long startSolve   = System.currentTimeMillis();
 
         // (check-sat)
-        callbackPlain( commandTranslation + Translation.CHECK_SAT);
-        String result = cvc4Process.sendCommand(commandTranslation + Translation.CHECK_SAT);
+        callbackPlain( commandTranslation + AbstractTranslator.CHECK_SAT);
+        String result = cvc4Process.sendCommand(commandTranslation + AbstractTranslator.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
@@ -272,7 +272,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
      */
     private String prepareInstance(int commandIndex, long duration) throws Exception
     {
-        String smtModel = cvc4Process.sendCommand(Translation.GET_MODEL);
+        String smtModel = cvc4Process.sendCommand(AbstractTranslator.GET_MODEL);
 
         callbackPlain("A model has been found\n");
         callbackPlain(smtModel + "\n");

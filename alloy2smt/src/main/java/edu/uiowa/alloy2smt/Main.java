@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt;
 import edu.uiowa.alloy2smt.translators.Translation;
+import edu.uiowa.smt.AbstractTranslator;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -121,9 +122,9 @@ public class Main
                 {
                     String commandTranslation = translation.translateCommand(i);
 
-                    commandTranslation         =    Translation.PUSH + "\n" + commandTranslation +
-                                                    Translation.CHECK_SAT + "\n" + Translation.GET_MODEL + "\n" +
-                                                    Translation.POP + "\n";
+                    commandTranslation         =    AbstractTranslator.PUSH + "\n" + commandTranslation +
+                                                    AbstractTranslator.CHECK_SAT + "\n" + AbstractTranslator.GET_MODEL + "\n" +
+                                                    AbstractTranslator.POP + "\n";
 
                     formatter.format("%s\n", commandTranslation);
                     System.out.println("\n" + commandTranslation);

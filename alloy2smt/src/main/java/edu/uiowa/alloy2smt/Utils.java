@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
@@ -42,7 +43,7 @@ public class Utils
 
         String              command         = commandPrinter.getSmtLib();
 
-        return program + command + Translation.CHECK_SAT + "\n" + Translation.GET_MODEL + "\n";
+        return program + command + AbstractTranslator.CHECK_SAT + "\n" + AbstractTranslator.GET_MODEL + "\n";
     }
 
     public static String translateFromString(String alloyProgram, int commandIndex)
