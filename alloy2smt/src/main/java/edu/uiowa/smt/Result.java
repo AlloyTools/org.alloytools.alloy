@@ -4,6 +4,6 @@ import edu.uiowa.smt.smtAst.SmtModel;
 
 public class Result
 {
-    public String result;
+    public String satResult;
     public SmtModel smtModel;
 }

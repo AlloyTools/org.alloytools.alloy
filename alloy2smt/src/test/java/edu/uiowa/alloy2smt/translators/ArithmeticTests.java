@@ -17,7 +17,7 @@ public class ArithmeticTests
     {
         String alloy = "sig a in Int {} fact {a = 6 + 8}";
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
         Set<Integer> set = TranslatorUtils.getIntSet(a);
         Assertions.assertEquals(set, new HashSet<>(Arrays.asList(6, 8)));
@@ -37,7 +37,7 @@ public class ArithmeticTests
                 "}\n";
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
         FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
         FunctionDefinition c = TestUtils.getFunctionDefinition(commandResults.get(0), "this_c");
@@ -61,7 +61,7 @@ public class ArithmeticTests
                 "}";
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
         Set<Integer> aSet = TranslatorUtils.getIntSet(a);
         Assertions.assertEquals(aSet, new HashSet<>(Arrays.asList(1, 2)));
@@ -84,7 +84,7 @@ public class ArithmeticTests
                 "}";
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
         Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(0)));
@@ -104,7 +104,7 @@ public class ArithmeticTests
                 "}";
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition mod = TestUtils.getFunctionDefinition(commandResults.get(0), AbstractTranslator.mod);
     }
 
@@ -118,7 +118,7 @@ public class ArithmeticTests
                 "fact notEqual{a != c and b != d}\n" +
                 "fact nonzero {a > 0 and b > 0 and c > 0 and d > 0}\n";
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
-        Assertions.assertEquals("unsat", commandResults.get(0).result);
+        Assertions.assertEquals("unsat", commandResults.get(0).satResult);
     }
 
     @Test
@@ -129,7 +129,7 @@ public class ArithmeticTests
 
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
         Set<Integer> aSet = TranslatorUtils.getIntSet(a);
         Assertions.assertEquals(aSet, new HashSet<>(Arrays.asList(1)));
@@ -151,7 +151,7 @@ public class ArithmeticTests
 
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("unsat", commandResults.get(0).result);
+        Assertions.assertEquals("unsat", commandResults.get(0).satResult);
     }
 
     @Test
@@ -161,7 +161,7 @@ public class ArithmeticTests
 
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
-        Assertions.assertEquals("sat", commandResults.get(0).result);
+        Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
         int aValue = TranslatorUtils.getInt(a);
         Assertions.assertTrue(aValue > 2);

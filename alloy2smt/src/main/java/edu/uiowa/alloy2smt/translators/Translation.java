@@ -30,7 +30,7 @@ public class Translation
     }
 
     /**
-     * @return the result of translating the alloy model
+     * @return the satResult of translating the alloy model
      * (excluding assertions and commands like check and run) into smt.
      * Command translation is handled separately  by the method
      * {@link Translation#translateCommand(int)}
@@ -64,7 +64,7 @@ public class Translation
 
     /**
      * @param commandIndex the index of the command
-     * @return the result of translating the given command (ignoring
+     * @return the satResult of translating the given command (ignoring
      * scope constraints) into smt
      */
     public String translateCommand(int commandIndex)

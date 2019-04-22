@@ -531,7 +531,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /**
-     * This variable caches the result of alloyHome() function call.
+     * This variable caches the satResult of alloyHome() function call.
      */
     private static String alloyHome = null;
 

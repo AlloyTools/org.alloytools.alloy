@@ -222,16 +222,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     }
                     else
                     {
-                        callbackPlain("The result is unsat\n");
+                        callbackPlain("The satResult is unsat\n");
                     }
                     break;
                 default:
-                    callbackPlain("The result is unknown\n");
+                    callbackPlain("The satResult is unknown\n");
             }
         }
         else
         {
-            callbackPlain("No result returned from cvc4\n");
+            callbackPlain("No satResult returned from cvc4\n");
             commandResult.result = "";
         }
 
@@ -263,7 +263,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
 
     /**
-     * gets a model from cvc4 if the result is sat and saves it into a new xml file
+     * gets a model from cvc4 if the satResult is sat and saves it into a new xml file
      * and return its path
      * @param commandIndex the index of the sat command
      * @param duration the solving duration in milli seconds

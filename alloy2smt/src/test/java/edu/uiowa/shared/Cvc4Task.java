@@ -48,7 +48,7 @@ public class Cvc4Task
         CommandResult commandResult = new CommandResult();
         commandResult.index         = index;
         commandResult.command       = command;
-        commandResult.result        = result;
+        commandResult.satResult = result;
 
         if(result.equals("sat"))
         {
