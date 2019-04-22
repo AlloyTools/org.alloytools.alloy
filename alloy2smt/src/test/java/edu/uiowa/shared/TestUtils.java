@@ -1,6 +1,7 @@
 package edu.uiowa.shared;
 
 import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.smt.ModelUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.translators.Translation;
 
@@ -17,10 +18,6 @@ public class TestUtils
 
     public static FunctionDefinition getFunctionDefinition(CommandResult commandResult, String name)
     {
-        FunctionDefinition definition = (FunctionDefinition) commandResult.smtModel
-                .getFunctions().stream()
-                .filter(f -> f.getName().equals(name)).findFirst().get();
-        definition = commandResult.smtModel.evaluateUninterpretedInt(definition);
-        return definition;
+        return ModelUtils.getFunctionDefinition(commandResult.smtModel, name);
     }
 }
