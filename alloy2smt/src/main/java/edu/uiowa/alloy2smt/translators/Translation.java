@@ -132,18 +132,6 @@ public class Translation
         return stringBuilder.toString();
     }
 
-    public String translateOptions(Map<String, String> options)
-    {
-        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
-
-        for (Map.Entry<String, String> entry: options.entrySet())
-        {
-            SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
-            printer.visit(option);
-        }
-        return printer.getSmtLib();
-    }
-
     /**
      * @return a translation for all commands in smt using (check-sat)
      * without getting the models

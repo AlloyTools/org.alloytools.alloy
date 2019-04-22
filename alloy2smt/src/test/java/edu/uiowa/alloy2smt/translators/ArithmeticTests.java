@@ -1,7 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.ModelUtils;
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.shared.CommandResult;
 import edu.uiowa.shared.TestUtils;
@@ -19,7 +19,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults = TestUtils.runCVC4(alloy);
         Assertions.assertEquals("sat", commandResults.get(0).result);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
-        Set<Integer> set = ModelUtils.getIntSet(a);
+        Set<Integer> set = TranslatorUtils.getIntSet(a);
         Assertions.assertEquals(set, new HashSet<>(Arrays.asList(6, 8)));
     }
 
@@ -42,9 +42,9 @@ public class ArithmeticTests
         FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
         FunctionDefinition c = TestUtils.getFunctionDefinition(commandResults.get(0), "this_c");
 
-        int aValue = ModelUtils.getInt(a);
-        int bValue = ModelUtils.getInt(b);
-        int cValue = ModelUtils.getInt(c);
+        int aValue = TranslatorUtils.getInt(a);
+        int bValue = TranslatorUtils.getInt(b);
+        int cValue = TranslatorUtils.getInt(c);
         Assertions.assertEquals(2, aValue + bValue);
         Assertions.assertEquals(2, cValue);
     }
@@ -63,13 +63,13 @@ public class ArithmeticTests
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
-        Set<Integer> aSet = ModelUtils.getIntSet(a);
+        Set<Integer> aSet = TranslatorUtils.getIntSet(a);
         Assertions.assertEquals(aSet, new HashSet<>(Arrays.asList(1, 2)));
         FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
-        Set<Integer> bSet = ModelUtils.getIntSet(b);
+        Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(4, 6)));
         FunctionDefinition c = TestUtils.getFunctionDefinition(commandResults.get(0), "this_c");
-        Set<Integer> cSet = ModelUtils.getIntSet(c);
+        Set<Integer> cSet = TranslatorUtils.getIntSet(c);
         Assertions.assertEquals(cSet, new HashSet<>(Arrays.asList(5, 7, 6, 8)));
     }
 
@@ -86,7 +86,7 @@ public class ArithmeticTests
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
         FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
-        Set<Integer> bSet = ModelUtils.getIntSet(b);
+        Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(0)));
     }
 
@@ -131,15 +131,15 @@ public class ArithmeticTests
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
-        Set<Integer> aSet = ModelUtils.getIntSet(a);
+        Set<Integer> aSet = TranslatorUtils.getIntSet(a);
         Assertions.assertEquals(aSet, new HashSet<>(Arrays.asList(1)));
 
         FunctionDefinition b = TestUtils.getFunctionDefinition(commandResults.get(0), "this_b");
-        Set<Integer> bSet = ModelUtils.getIntSet(b);
+        Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         Assertions.assertEquals(bSet, new HashSet<>(Arrays.asList(2)));
 
         FunctionDefinition c = TestUtils.getFunctionDefinition(commandResults.get(0), "this_c");
-        Set<Integer> cSet = ModelUtils.getIntSet(c);
+        Set<Integer> cSet = TranslatorUtils.getIntSet(c);
         Assertions.assertEquals(cSet, new HashSet<>(Arrays.asList(3)));
     }
 
@@ -163,7 +163,7 @@ public class ArithmeticTests
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).result);
         FunctionDefinition a = TestUtils.getFunctionDefinition(commandResults.get(0), "this_a");
-        int aValue = ModelUtils.getInt(a);
+        int aValue = TranslatorUtils.getInt(a);
         Assertions.assertTrue(aValue > 2);
     }
 }

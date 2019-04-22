@@ -8,11 +8,19 @@
 
 package edu.uiowa.smt;
 
+import edu.uiowa.smt.cvc4.Cvc4Process;
+import edu.uiowa.smt.parser.SmtModelVisitor;
+import edu.uiowa.smt.parser.antlr.SmtLexer;
+import edu.uiowa.smt.parser.antlr.SmtParser;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -170,5 +178,89 @@ public class TranslatorUtils
     public static Expression getTuple(Expression... expressions)
     {
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
+    }
+
+    public static int getInt(FunctionDefinition definition)
+    {
+        return getInt(definition.expression);
+    }
+
+    public static int getInt(Expression expression)
+    {
+        UnaryExpression unary =  (UnaryExpression) expression;
+        if(unary.getOP() == UnaryExpression.Op.EMPTYSET)
+        {
+            return 0; // zero is equivalent to an empty set
+        }
+        assert( UnaryExpression.Op.SINGLETON ==  unary.getOP());
+        MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
+        assert(MultiArityExpression.Op.MKTUPLE == tuple.getOp());
+        IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
+        return Integer.parseInt(constant.getValue());
+    }
+
+    public static Set<Integer> getIntSet(FunctionDefinition definition)
+    {
+        return getIntSet(definition.getExpression());
+    }
+
+    public static Set<Integer> getIntSet(Expression expression)
+    {
+        if(expression instanceof UnaryExpression)
+        {
+            return new HashSet<>(Arrays.asList(getInt(expression)));
+        }
+        BinaryExpression binary = (BinaryExpression) expression;
+        Set<Integer> set = new HashSet<>();
+        assert(binary.getOp() == BinaryExpression.Op.UNION);
+        set.addAll(getIntSet(binary.getLhsExpr()));
+        set.addAll(getIntSet(binary.getRhsExpr()));
+        return set;
+    }
+
+    public static FunctionDefinition getFunctionDefinition(SmtModel smtModel, String name)
+    {
+        FunctionDefinition definition = (FunctionDefinition) smtModel
+                .getFunctions().stream()
+                .filter(f -> f.getName().equals(name)).findFirst().get();
+        definition = smtModel.evaluateUninterpretedInt(definition);
+        return definition;
+    }
+
+    public static SmtModel parseModel(String model)
+    {
+        CharStream charStream = CharStreams.fromString(model);
+
+        SmtLexer lexer = new SmtLexer(charStream);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        SmtParser parser = new SmtParser(tokenStream);
+
+        ParseTree tree =  parser.model();
+        SmtModelVisitor visitor = new SmtModelVisitor();
+
+        SmtModel smtModel = (SmtModel) visitor.visit(tree);
+
+        return  smtModel;
+    }
+
+    public static String setSolverOptions(Cvc4Process cvc4Process) throws IOException
+    {
+        Map<String, String> options = new HashMap<>();
+        options.put("tlimit", "30000");
+        String script = translateOptions(options);
+        cvc4Process.sendCommand(script);
+        return script;
+    }
+
+    public static String translateOptions(Map<String, String> options)
+    {
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+
+        for (Map.Entry<String, String> entry: options.entrySet())
+        {
+            SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
+            printer.visit(option);
+        }
+        return printer.getSmtLib();
     }
 }

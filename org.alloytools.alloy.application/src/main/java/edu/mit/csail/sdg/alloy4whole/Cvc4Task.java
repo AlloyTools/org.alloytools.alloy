@@ -8,6 +8,7 @@ import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.smt.parser.SmtModelVisitor;
 import edu.uiowa.smt.parser.antlr.SmtLexer;
@@ -171,7 +172,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         // (set-option :tlimit 30000)
         options.put(TIMEOUT_OPTION, Cvc4Timeout.get().toString());
 
-        String script = translation.translateOptions(options);
+        String script = TranslatorUtils.translateOptions(options);
         cvc4Process.sendCommand(script);
 
         return script;

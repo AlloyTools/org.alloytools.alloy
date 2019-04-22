@@ -1,7 +1,7 @@
 package edu.uiowa.shared;
 
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.smt.ModelUtils;
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.translators.Translation;
 
@@ -18,6 +18,6 @@ public class TestUtils
 
     public static FunctionDefinition getFunctionDefinition(CommandResult commandResult, String name)
     {
-        return ModelUtils.getFunctionDefinition(commandResult.smtModel, name);
+        return TranslatorUtils.getFunctionDefinition(commandResult.smtModel, name);
     }
 }

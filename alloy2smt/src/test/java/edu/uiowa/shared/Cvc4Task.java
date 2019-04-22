@@ -1,22 +1,12 @@
 package edu.uiowa.shared;
 
 import edu.mit.csail.sdg.ast.Command;
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.cvc4.Cvc4Process;
-import edu.uiowa.smt.smtAst.SmtModel;
-import edu.uiowa.smt.parser.SmtModelVisitor;
-import edu.uiowa.smt.parser.antlr.SmtLexer;
-import edu.uiowa.smt.parser.antlr.SmtParser;
 import edu.uiowa.alloy2smt.translators.Translation;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Cvc4Task
 {
@@ -31,7 +21,7 @@ public class Cvc4Task
 
             cvc4Process.sendCommand(smtScript);
 
-            setSolverOptions(cvc4Process, translation);
+            TranslatorUtils.setSolverOptions(cvc4Process);
 
             // surround each command except the last one with (push) and (pop)
             for (int index = 0; index < translation.getCommands().size(); index++)
@@ -48,15 +38,6 @@ public class Cvc4Task
         return new ArrayList<>();
     }
 
-    public static String setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
-    {
-        Map<String, String> options = new HashMap<>();
-        options.put("tlimit", "30000");
-        String script = translation.translateOptions(options);
-        cvc4Process.sendCommand(script);
-        return script;
-    }
-
     private CommandResult solveCommand(int index, Translation translation) throws Exception
     {
         String commandTranslation = translation.translateCommand(index);
@@ -71,24 +52,8 @@ public class Cvc4Task
         if(result.equals("sat"))
         {
             String model = cvc4Process.sendCommand(Translation.GET_MODEL);
-            commandResult.smtModel = parseModel(model);
+            commandResult.smtModel = TranslatorUtils.parseModel(model);
         }
         return commandResult;
-    }
-
-    public SmtModel parseModel(String model)
-    {
-        CharStream charStream = CharStreams.fromString(model);
-
-        SmtLexer lexer = new SmtLexer(charStream);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        SmtParser parser = new SmtParser(tokenStream);
-
-        ParseTree tree =  parser.model();
-        SmtModelVisitor visitor = new SmtModelVisitor();
-
-        SmtModel smtModel = (SmtModel) visitor.visit(tree);
-
-        return  smtModel;
     }
 }
