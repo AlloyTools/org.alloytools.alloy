@@ -84,7 +84,7 @@ public class ExprUnaryTranslator
 
         //ToDo: wrong, review this case when the expression is not the global identity
         // the result may contains more elements than the actual ones.
-        //Expression identityExpression = ;
+        Expression identityExpression = ;
         BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIdentity.getVariable());
         return reflexiveClosure;
     }
