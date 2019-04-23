@@ -187,14 +187,14 @@ public class TranslatorUtils
 
     public static int getInt(Expression expression)
     {
-        UnaryExpression unary =  (UnaryExpression) expression;
-        if(unary.getOP() == UnaryExpression.Op.EMPTYSET)
+        UnaryExpression unary = (UnaryExpression) expression;
+        if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
         {
             return 0; // zero is equivalent to an empty set
         }
-        assert( UnaryExpression.Op.SINGLETON ==  unary.getOP());
-        MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
-        assert(MultiArityExpression.Op.MKTUPLE == tuple.getOp());
+        assert (UnaryExpression.Op.SINGLETON == unary.getOP());
+        MultiArityExpression tuple = (MultiArityExpression) unary.getExpression();
+        assert (MultiArityExpression.Op.MKTUPLE == tuple.getOp());
         IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
         return Integer.parseInt(constant.getValue());
     }
@@ -206,13 +206,13 @@ public class TranslatorUtils
 
     public static Set<Integer> getIntSet(Expression expression)
     {
-        if(expression instanceof UnaryExpression)
+        if (expression instanceof UnaryExpression)
         {
             return new HashSet<>(Arrays.asList(getInt(expression)));
         }
         BinaryExpression binary = (BinaryExpression) expression;
         Set<Integer> set = new HashSet<>();
-        assert(binary.getOp() == BinaryExpression.Op.UNION);
+        assert (binary.getOp() == BinaryExpression.Op.UNION);
         set.addAll(getIntSet(binary.getLhsExpr()));
         set.addAll(getIntSet(binary.getRhsExpr()));
         return set;
@@ -225,24 +225,54 @@ public class TranslatorUtils
 
     public static Set<String> getAtomSet(Expression expression)
     {
-        if(expression instanceof UnaryExpression)
+        if (expression instanceof UnaryExpression)
         {
-            UnaryExpression unary =  (UnaryExpression) expression;
-            if(unary.getOP() == UnaryExpression.Op.EMPTYSET)
+            UnaryExpression unary = (UnaryExpression) expression;
+            if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
             {
                 return new HashSet<>();
             }
-            assert( UnaryExpression.Op.SINGLETON ==  unary.getOP());
-            MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
-            assert(MultiArityExpression.Op.MKTUPLE == tuple.getOp());
+            assert (UnaryExpression.Op.SINGLETON == unary.getOP());
+            MultiArityExpression tuple = (MultiArityExpression) unary.getExpression();
+            assert (MultiArityExpression.Op.MKTUPLE == tuple.getOp());
             UninterpretedConstant constant = (UninterpretedConstant) tuple.getExpressions().get(0);
             return new HashSet<>(Collections.singletonList(constant.getName()));
         }
         BinaryExpression binary = (BinaryExpression) expression;
         Set<String> set = new HashSet<>();
-        assert(binary.getOp() == BinaryExpression.Op.UNION);
+        assert (binary.getOp() == BinaryExpression.Op.UNION);
         set.addAll(getAtomSet(binary.getLhsExpr()));
         set.addAll(getAtomSet(binary.getRhsExpr()));
+        return set;
+    }
+
+    public static Set<List<String>> getAtomRelation(FunctionDefinition definition)
+    {
+        return getAtomRelation(definition.getExpression());
+    }
+
+    public static Set<List<String>> getAtomRelation(Expression expression)
+    {
+        if (expression instanceof UnaryExpression)
+        {
+            UnaryExpression unary = (UnaryExpression) expression;
+            if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
+            {
+                return new HashSet<>();
+            }
+            assert (UnaryExpression.Op.SINGLETON == unary.getOP());
+            MultiArityExpression tupleExpression = (MultiArityExpression) unary.getExpression();
+            assert (MultiArityExpression.Op.MKTUPLE == tupleExpression.getOp());
+            List<String> tuple = tupleExpression.getExpressions()
+                                                .stream().map(x -> ((UninterpretedConstant) x).getName())
+                                                .collect(Collectors.toList());
+            return new HashSet<>(Collections.singletonList(tuple));
+        }
+        BinaryExpression binary = (BinaryExpression) expression;
+        Set<List<String>> set = new HashSet<>();
+        assert (binary.getOp() == BinaryExpression.Op.UNION);
+        set.addAll(getAtomRelation(binary.getLhsExpr()));
+        set.addAll(getAtomRelation(binary.getRhsExpr()));
         return set;
     }
 
@@ -251,7 +281,7 @@ public class TranslatorUtils
         FunctionDefinition definition = (FunctionDefinition) smtModel
                 .getFunctions().stream()
                 .filter(f -> f.getName().equals(name)).findFirst().get();
-        if(definition.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple))
+        if (definition.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple))
         {
             definition = smtModel.evaluateUninterpretedInt(definition);
         }
@@ -266,12 +296,12 @@ public class TranslatorUtils
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         SmtParser parser = new SmtParser(tokenStream);
 
-        ParseTree tree =  parser.model();
+        ParseTree tree = parser.model();
         SmtModelVisitor visitor = new SmtModelVisitor();
 
         SmtModel smtModel = (SmtModel) visitor.visit(tree);
 
-        return  smtModel;
+        return smtModel;
     }
 
     public static String setSolverOptions(Cvc4Process cvc4Process) throws IOException
@@ -287,7 +317,7 @@ public class TranslatorUtils
     {
         SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
 
-        for (Map.Entry<String, String> entry: options.entrySet())
+        for (Map.Entry<String, String> entry : options.entrySet())
         {
             SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
             printer.visit(option);
