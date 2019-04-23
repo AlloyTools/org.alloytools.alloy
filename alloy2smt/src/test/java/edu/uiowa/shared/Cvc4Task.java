@@ -45,10 +45,8 @@ public class Cvc4Task
         Command command = translation.getCommands().get(index);
         String result = cvc4Process.sendCommand(commandTranslation + AbstractTranslator.CHECK_SAT);
 
-        CommandResult commandResult = new CommandResult();
-        commandResult.index         = index;
-        commandResult.command       = command;
-        commandResult.satResult = result;
+        String smt = translation.getSmtScript() + "\n" + commandTranslation + AbstractTranslator.CHECK_SAT;
+        CommandResult commandResult = new CommandResult(index, command, smt, result);
 
         if(result.equals("sat"))
         {
