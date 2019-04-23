@@ -218,12 +218,43 @@ public class TranslatorUtils
         return set;
     }
 
+    public static Set<String> getAtomSet(FunctionDefinition definition)
+    {
+        return getAtomSet(definition.getExpression());
+    }
+
+    public static Set<String> getAtomSet(Expression expression)
+    {
+        if(expression instanceof UnaryExpression)
+        {
+            UnaryExpression unary =  (UnaryExpression) expression;
+            if(unary.getOP() == UnaryExpression.Op.EMPTYSET)
+            {
+                return new HashSet<>();
+            }
+            assert( UnaryExpression.Op.SINGLETON ==  unary.getOP());
+            MultiArityExpression tuple =  (MultiArityExpression) unary.getExpression();
+            assert(MultiArityExpression.Op.MKTUPLE == tuple.getOp());
+            UninterpretedConstant constant = (UninterpretedConstant) tuple.getExpressions().get(0);
+            return new HashSet<>(Collections.singletonList(constant.getName()));
+        }
+        BinaryExpression binary = (BinaryExpression) expression;
+        Set<String> set = new HashSet<>();
+        assert(binary.getOp() == BinaryExpression.Op.UNION);
+        set.addAll(getAtomSet(binary.getLhsExpr()));
+        set.addAll(getAtomSet(binary.getRhsExpr()));
+        return set;
+    }
+
     public static FunctionDefinition getFunctionDefinition(SmtModel smtModel, String name)
     {
         FunctionDefinition definition = (FunctionDefinition) smtModel
                 .getFunctions().stream()
                 .filter(f -> f.getName().equals(name)).findFirst().get();
-        definition = smtModel.evaluateUninterpretedInt(definition);
+        if(definition.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple))
+        {
+            definition = smtModel.evaluateUninterpretedInt(definition);
+        }
         return definition;
     }
 
