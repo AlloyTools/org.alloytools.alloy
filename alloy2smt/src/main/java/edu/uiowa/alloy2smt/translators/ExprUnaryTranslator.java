@@ -81,6 +81,10 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
+
+        //ToDo: wrong, review this case when the expression is not the global identity
+        // the result may contains more elements than the actual ones.
+        Expression identityExpression = ;
         BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIdentity.getVariable());
         return reflexiveClosure;
     }
