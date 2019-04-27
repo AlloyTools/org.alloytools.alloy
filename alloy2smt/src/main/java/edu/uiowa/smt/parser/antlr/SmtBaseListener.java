@@ -232,6 +232,18 @@ public class SmtBaseListener implements SmtListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterBoolConstant(SmtParser.BoolConstantContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBoolConstant(SmtParser.BoolConstantContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIntegerConstant(SmtParser.IntegerConstantContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -263,6 +275,18 @@ public class SmtBaseListener implements SmtListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitEmptySet(SmtParser.EmptySetContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGetValue(SmtParser.GetValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGetValue(SmtParser.GetValueContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

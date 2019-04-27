@@ -188,6 +188,16 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitConstant(SmtParser.ConstantContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SmtParser#boolConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterBoolConstant(SmtParser.BoolConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#boolConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitBoolConstant(SmtParser.BoolConstantContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SmtParser#integerConstant}.
 	 * @param ctx the parse tree
 	 */
@@ -217,4 +227,14 @@ public interface SmtListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitEmptySet(SmtParser.EmptySetContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#getValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterGetValue(SmtParser.GetValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#getValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitGetValue(SmtParser.GetValueContext ctx);
 }

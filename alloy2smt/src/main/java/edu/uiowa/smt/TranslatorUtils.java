@@ -225,6 +225,11 @@ public class TranslatorUtils
 
     public static Set<String> getAtomSet(Expression expression)
     {
+        if(expression instanceof UninterpretedConstant)
+        {
+            UninterpretedConstant constant  = (UninterpretedConstant) expression;
+            return Collections.singleton(constant.getName());
+        }
         if (expression instanceof UnaryExpression)
         {
             UnaryExpression unary = (UnaryExpression) expression;
@@ -238,12 +243,17 @@ public class TranslatorUtils
             UninterpretedConstant constant = (UninterpretedConstant) tuple.getExpressions().get(0);
             return new HashSet<>(Collections.singletonList(constant.getName()));
         }
-        BinaryExpression binary = (BinaryExpression) expression;
-        Set<String> set = new HashSet<>();
-        assert (binary.getOp() == BinaryExpression.Op.UNION);
-        set.addAll(getAtomSet(binary.getLhsExpr()));
-        set.addAll(getAtomSet(binary.getRhsExpr()));
-        return set;
+        if(expression instanceof BinaryExpression)
+        {
+            BinaryExpression binary = (BinaryExpression) expression;
+            Set<String> set = new HashSet<>();
+            assert (binary.getOp() == BinaryExpression.Op.UNION);
+            set.addAll(getAtomSet(binary.getLhsExpr()));
+            set.addAll(getAtomSet(binary.getRhsExpr()));
+            return set;
+        }
+
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     public static Set<List<String>> getAtomRelation(FunctionDefinition definition)
@@ -288,22 +298,6 @@ public class TranslatorUtils
         return definition;
     }
 
-    public static SmtModel parseModel(String model)
-    {
-        CharStream charStream = CharStreams.fromString(model);
-
-        SmtLexer lexer = new SmtLexer(charStream);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        SmtParser parser = new SmtParser(tokenStream);
-
-        ParseTree tree = parser.model();
-        SmtModelVisitor visitor = new SmtModelVisitor();
-
-        SmtModel smtModel = (SmtModel) visitor.visit(tree);
-
-        return smtModel;
-    }
-
     public static String setSolverOptions(Cvc4Process cvc4Process) throws IOException
     {
         Map<String, String> options = new HashMap<>();
@@ -323,5 +317,10 @@ public class TranslatorUtils
             printer.visit(option);
         }
         return printer.getSmtLib();
+    }
+
+    public static String getFriendlyAtom(String uninterpretedConstant, String replacement)
+    {
+        return uninterpretedConstant.replaceFirst("@uc_Atom_", replacement);
     }
 }

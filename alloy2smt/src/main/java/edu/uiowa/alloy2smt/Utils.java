@@ -43,7 +43,7 @@ public class Utils
 
         String              command         = commandPrinter.getSmtLib();
 
-        return program + command + AbstractTranslator.CHECK_SAT + "\n" + AbstractTranslator.GET_MODEL + "\n";
+        return program + command + SmtLibPrettyPrinter.CHECK_SAT + "\n" + SmtLibPrettyPrinter.GET_MODEL + "\n";
     }
 
     public static String translateFromString(String alloyProgram, int commandIndex)

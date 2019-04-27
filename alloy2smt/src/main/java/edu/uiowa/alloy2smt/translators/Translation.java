@@ -137,10 +137,10 @@ public class Translation
         StringBuilder stringBuilder = new StringBuilder(getSmtScript());
         for (int i = 0; i < translator.commands.size() ; i++)
         {
-            stringBuilder.append(AbstractTranslator.PUSH + "\n");
+            stringBuilder.append(SmtLibPrettyPrinter.PUSH + "\n");
             stringBuilder.append(translateCommand(i) + "\n");
-            stringBuilder.append(AbstractTranslator.CHECK_SAT + "\n");
-            stringBuilder.append(AbstractTranslator.POP + "\n");
+            stringBuilder.append(SmtLibPrettyPrinter.CHECK_SAT + "\n");
+            stringBuilder.append(SmtLibPrettyPrinter.POP + "\n");
         }
         return stringBuilder.toString();
     }

@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -122,9 +123,9 @@ public class Main
                 {
                     String commandTranslation = translation.translateCommand(i);
 
-                    commandTranslation         =    AbstractTranslator.PUSH + "\n" + commandTranslation +
-                                                    AbstractTranslator.CHECK_SAT + "\n" + AbstractTranslator.GET_MODEL + "\n" +
-                                                    AbstractTranslator.POP + "\n";
+                    commandTranslation         =    SmtLibPrettyPrinter.PUSH + "\n" + commandTranslation +
+                            SmtLibPrettyPrinter.CHECK_SAT + "\n" + SmtLibPrettyPrinter.GET_MODEL + "\n" +
+                            SmtLibPrettyPrinter.POP + "\n";
 
                     formatter.format("%s\n", commandTranslation);
                     System.out.println("\n" + commandTranslation);

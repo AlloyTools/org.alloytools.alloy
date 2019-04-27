@@ -25,7 +25,12 @@ public class BoolConstant extends Constant
     public String getValue()
     {
         return String.valueOf(this.value);
-    }   
+    }
+
+    public boolean getBooleanValue()
+    {
+        return value;
+    }
 
     @Override
     public void accept(SmtAstVisitor visitor)

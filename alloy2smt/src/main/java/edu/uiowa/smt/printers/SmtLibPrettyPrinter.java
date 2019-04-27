@@ -15,6 +15,11 @@ import java.util.Map;
 
 public class SmtLibPrettyPrinter implements SmtAstVisitor
 {
+    public final static String CHECK_SAT = "(check-sat)";
+    public final static String GET_MODEL = "(get-model)";
+    public final static String PUSH = "(push 1)";
+    public final static String POP = "(pop 1)";
+
     private StringBuilder stringBuilder = new StringBuilder();
 
     public String getSmtLib()
@@ -43,9 +48,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         {
             if(sort instanceof UninterpretedSort)
             {
-                this.stringBuilder.append("(declare-sort ");
-                this.stringBuilder.append(((UninterpretedSort) sort).getName());
-                this.stringBuilder.append(" 0)\n");
+                stringBuilder.append("(declare-sort ");
+                stringBuilder.append(((UninterpretedSort) sort).getName());
+                stringBuilder.append(" 0)\n");
             }
         }
         for (FunctionDeclaration declaration : program.getFunctions())
@@ -76,39 +81,39 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     {
         if(binaryExpression.getOp() != BinaryExpression.Op.TUPSEL)
         {
-            this.stringBuilder.append("(" + binaryExpression.getOp() + " ");
+            stringBuilder.append("(" + binaryExpression.getOp() + " ");
             this.visit(binaryExpression.getLhsExpr());
-            this.stringBuilder.append(" ");
+            stringBuilder.append(" ");
             this.visit(binaryExpression.getRhsExpr());
-            this.stringBuilder.append(")");            
+            stringBuilder.append(")");            
         }
         else
         {
-            this.stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
-            this.stringBuilder.append(((IntConstant)binaryExpression.getLhsExpr()).getValue());
-            this.stringBuilder.append(") ");
+            stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
+            stringBuilder.append(((IntConstant)binaryExpression.getLhsExpr()).getValue());
+            stringBuilder.append(") ");
             this.visit(binaryExpression.getRhsExpr());
-            this.stringBuilder.append(")");
+            stringBuilder.append(")");
         }
     }
 
     @Override
     public void visit(IntSort intSort)
     {
-        this.stringBuilder.append(intSort.getName());
+        stringBuilder.append(intSort.getName());
     }
 
     @Override
     public void visit(QuantifiedExpression quantifiedExpression)
     {
-        this.stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
+        stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
         for (VariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
         {
             this.visit(boundVariable);
         }
-        this.stringBuilder.append(") ");
+        stringBuilder.append(") ");
         this.visit(quantifiedExpression.getExpression());
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
     }
 
     @Override
@@ -120,9 +125,9 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(SetSort setSort)
     {
-        this.stringBuilder.append("(Set ");
+        stringBuilder.append("(Set ");
         this.visit(setSort.elementSort);
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
     }
 
     @Override
@@ -133,28 +138,28 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(TupleSort tupleSort)
     {
-        this.stringBuilder.append("(Tuple ");
+        stringBuilder.append("(Tuple ");
         for(int i = 0; i < tupleSort.elementSorts.size()-1; ++i)
         {
             this.visit(tupleSort.elementSorts.get(i));
-            this.stringBuilder.append(" ");
+            stringBuilder.append(" ");
         }
         this.visit(tupleSort.elementSorts.get(tupleSort.elementSorts.size()-1));
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
     }
 
     @Override
     public void visit(UnaryExpression unaryExpression)
     {
-        this.stringBuilder.append("(" + unaryExpression.getOP() + " ");
+        stringBuilder.append("(" + unaryExpression.getOP() + " ");
         this.visit(unaryExpression.getExpression());
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
     }
 
     @Override
     public void visit(UninterpretedSort uninterpretedSort)
     {
-        this.stringBuilder.append(uninterpretedSort.getName());
+        stringBuilder.append(uninterpretedSort.getName());
     }
 
     @Override
@@ -163,64 +168,64 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         int value = Integer.parseInt(intConstant.getValue());
         if(value >= 0)
         {
-            this.stringBuilder.append(intConstant.getValue());
+            stringBuilder.append(intConstant.getValue());
         }
         else
         {
-            this.stringBuilder.append("(- " + -value + ")");
+            stringBuilder.append("(- " + -value + ")");
         }
     }
 
     @Override
     public void visit(Variable variable)
     {
-        this.stringBuilder.append(variable.getName());
+        stringBuilder.append(variable.getName());
     }
 
     @Override
     public void visit(FunctionDeclaration functionDeclaration)
     {
-        this.stringBuilder.append("(declare-fun ");
-        this.stringBuilder.append(functionDeclaration.getName() + " (");
+        stringBuilder.append("(declare-fun ");
+        stringBuilder.append(functionDeclaration.getName() + " (");
 
         List<Sort> inputSorts  = functionDeclaration.getInputSorts();
         for(int i = 0 ; i < inputSorts.size(); i++)
         {
             this.visit(inputSorts.get(i));
         }
-        this.stringBuilder.append(") ");
+        stringBuilder.append(") ");
         this.visit(functionDeclaration.getSort());
-        this.stringBuilder.append(")\n");
+        stringBuilder.append(")\n");
     }
 
     @Override
     public void visit(FunctionDefinition funcDef)
     {
-        this.stringBuilder.append("(define-fun ").append(funcDef.getName()).append(" (");
+        stringBuilder.append("(define-fun ").append(funcDef.getName()).append(" (");
         for(VariableDeclaration bdVar : funcDef.inputVariables)
         {
             this.visit(bdVar);
         }
-        this.stringBuilder.append(") ");
+        stringBuilder.append(") ");
         this.visit(funcDef.getSort());
-        this.stringBuilder.append(" ").append("\n");
+        stringBuilder.append(" ").append("\n");
         this.visit(funcDef.expression);
-        this.stringBuilder.append(")");
-        this.stringBuilder.append("\n");
+        stringBuilder.append(")");
+        stringBuilder.append("\n");
     }
 
     @Override
     public void visit(ConstantDeclaration constantDeclaration)
     {
-        this.stringBuilder.append("(declare-const ");
-        this.stringBuilder.append(constantDeclaration.getName() + " ");
+        stringBuilder.append("(declare-const ");
+        stringBuilder.append(constantDeclaration.getName() + " ");
         this.visit(constantDeclaration.getSort());
-        this.stringBuilder.append(")\n");
+        stringBuilder.append(")\n");
     }
 
     @Override
     public void visit(BoolConstant aThis) {
-        this.stringBuilder.append(aThis.getValue());
+        stringBuilder.append(aThis.getValue());
     }
 
     @Override
@@ -230,17 +235,17 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         if(! assertion.getName().isEmpty())
         {
             // print comment
-            this.stringBuilder.append("; " + assertion.getName() + "\n");
+            stringBuilder.append("; " + assertion.getName() + "\n");
         }
-        this.stringBuilder.append("(assert ");
+        stringBuilder.append("(assert ");
         this.visit(assertion.getExpression());
-        this.stringBuilder.append(")\n");
+        stringBuilder.append(")\n");
     }
 
     @Override
     public void visit(MultiArityExpression multiArityExpression)
     {
-        this.stringBuilder.append("(" + multiArityExpression.getOp() + " ");
+        stringBuilder.append("(" + multiArityExpression.getOp() + " ");
         if(multiArityExpression.getExpressions().size() == 1)
         {
             this.visit(multiArityExpression.getExpressions().get(0));
@@ -250,7 +255,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
             for (int i = 0; i < multiArityExpression.getExpressions().size()-1; ++i)
             {
                 this.visit(multiArityExpression.getExpressions().get(i));
-                this.stringBuilder.append(" ");
+                stringBuilder.append(" ");
             }
             this.visit(multiArityExpression.getExpressions().get(multiArityExpression.getExpressions().size()-1));            
         }
@@ -258,7 +263,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         {
             throw new RuntimeException("");
         }
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
     }
 
     @Override
@@ -266,29 +271,29 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     {
         if(functionCallExpression.getArguments().size() > 0)
         {
-            this.stringBuilder.append("(");
-            this.stringBuilder.append(functionCallExpression.getFunctionName());            
-            this.stringBuilder.append(" ");
+            stringBuilder.append("(");
+            stringBuilder.append(functionCallExpression.getFunctionName());            
+            stringBuilder.append(" ");
             for(int i = 0; i < functionCallExpression.getArguments().size()-1; ++i)
             {
                 this.visit(functionCallExpression.getArguments().get(i));
-                this.stringBuilder.append(" ");
+                stringBuilder.append(" ");
             }
             this.visit(functionCallExpression.getArguments().get(functionCallExpression.getArguments().size()-1));            
-            this.stringBuilder.append(")");
+            stringBuilder.append(")");
         }
         else
         {
-            this.stringBuilder.append(functionCallExpression.getFunctionName());
+            stringBuilder.append(functionCallExpression.getFunctionName());
         }     
     }
 
     @Override
     public void visit(VariableDeclaration boundVariable)
     {
-        this.stringBuilder.append("(" + boundVariable.getName() + " ");
+        stringBuilder.append("(" + boundVariable.getName() + " ");
         this.visit(boundVariable.getSort());
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
     }
 
     @Override
@@ -390,48 +395,78 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
 
     @Override
     public void visit(BoolSort aThis) {
-        this.stringBuilder.append(aThis.getName());
+        stringBuilder.append(aThis.getName());
     }
 
     @Override
     public void visit(LetExpression aThis) {
-        this.stringBuilder.append("(" + aThis.getOp() + " (");
+        stringBuilder.append("(" + aThis.getOp() + " (");
         for(Map.Entry<String, Expression> letVar : aThis.getLetVars().entrySet())
         {
-            this.stringBuilder.append("(");
-            this.stringBuilder.append(letVar.getKey()).append(" ");
+            stringBuilder.append("(");
+            stringBuilder.append(letVar.getKey()).append(" ");
             this.visit(letVar.getValue());
-            this.stringBuilder.append(")");
+            stringBuilder.append(")");
         }
-        this.stringBuilder.append(") ");
+        stringBuilder.append(") ");
         this.visit(aThis.getExpression());
-        this.stringBuilder.append(")");        
+        stringBuilder.append(")");        
     }
 
     @Override
     public void visit(ITEExpression aThis) 
     {
-        this.stringBuilder.append("(" + aThis.getOp() + " ");
+        stringBuilder.append("(" + aThis.getOp() + " ");
         this.visit(aThis.getCondExpression());
-        this.stringBuilder.append(" ");
+        stringBuilder.append(" ");
         this.visit(aThis.getThenExpression());
-        this.stringBuilder.append(" ");
+        stringBuilder.append(" ");
         this.visit(aThis.getElseExpression());
-        this.stringBuilder.append(")");
+        stringBuilder.append(")");
         
     }
 
     @Override
     public void visit(UninterpretedConstant uninterpretedConstant)
     {
-        this.stringBuilder.append(uninterpretedConstant.getName());
+        stringBuilder.append(uninterpretedConstant.getName());
     }
 
     @Override
     public void visit(SolverOption solverOption)
     {
-        this.stringBuilder.append("(set-option ");
-        this.stringBuilder.append(":" + solverOption.name + " ");
-        this.stringBuilder.append(solverOption.value + ")\n");
+        stringBuilder.append("(set-option ");
+        stringBuilder.append(":" + solverOption.name + " ");
+        stringBuilder.append(solverOption.value + ")\n");
+    }
+
+    @Override
+    public String printGetValue(Expression expression)
+    {
+        stringBuilder.append("(get-value (");
+        visit(expression);
+        stringBuilder.append("))");
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public void visit(SmtValues smtValues)
+    {
+        stringBuilder.append("(");
+        for (ExpressionValue value : smtValues.getValues())
+        {
+            visit(value);
+        }
+        stringBuilder.append(")");
+    }
+
+    @Override
+    public void visit(ExpressionValue expressionValue)
+    {
+        stringBuilder.append("(");
+        visit(expressionValue.getExpression());
+        stringBuilder.append(" ");
+        visit(expressionValue.getValue());
+        stringBuilder.append(")");
     }
 }

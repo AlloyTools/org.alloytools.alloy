@@ -44,9 +44,12 @@ multiArityExpression :  MultiArityOperator expression+ ;
 
 variable : Identifier;
 
-constant :  integerConstant
+constant :  boolConstant
+            | integerConstant
             | uninterpretedConstant
             | emptySet ;
+
+boolConstant : True | False;
 
 integerConstant : '-' Integer | Integer ;
 
@@ -54,7 +57,14 @@ uninterpretedConstant : (AtomPrefix | UninterpretedIntPrefix) Integer;
 
 emptySet : 'as' 'emptyset' '(' 'Set' '(' sort ')' ')' ;
 
+getValue : '(' ('(' expression expression ')' )+ ')';
+
 // lexer rules
+
+True: 'true' ;
+
+False: 'false' ;
+
 UnaryOperator : 'not' | 'singleton' | 'complement' | 'transpose' | 'tclosure' ;
 
 BinaryOperator : '=' | '>' | '>=' | '<' | '<='

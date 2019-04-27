@@ -9,6 +9,7 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.smt.TranslatorUtils;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.smt.parser.SmtModelVisitor;
 import edu.uiowa.smt.parser.antlr.SmtLexer;
@@ -88,10 +89,10 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     for (int index = 0; index < translation.getCommands().size() - 1; index++)
                     {
                         // (push)
-                        cvc4Process.sendCommand(AbstractTranslator.PUSH);
+                        cvc4Process.sendCommand(SmtLibPrettyPrinter.PUSH);
                         commandResult = solveCommand(index);
                         // (pop)
-                        cvc4Process.sendCommand(AbstractTranslator.POP);
+                        cvc4Process.sendCommand(SmtLibPrettyPrinter.POP);
                         this.commandResults.add(commandResult);
                     }
 
@@ -194,8 +195,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         final long startSolve   = System.currentTimeMillis();
 
         // (check-sat)
-        callbackPlain( commandTranslation + AbstractTranslator.CHECK_SAT);
-        String result = cvc4Process.sendCommand(commandTranslation + AbstractTranslator.CHECK_SAT);
+        callbackPlain( commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
+        String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
@@ -272,7 +273,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
      */
     private String prepareInstance(int commandIndex, long duration) throws Exception
     {
-        String smtModel = cvc4Process.sendCommand(AbstractTranslator.GET_MODEL);
+        String smtModel = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
 
         callbackPlain("A model has been found\n");
         callbackPlain(smtModel + "\n");

@@ -12,57 +12,63 @@ import edu.uiowa.smt.smtAst.*;
 
 public interface SmtAstVisitor
 {
-    public void visit(SmtProgram program);
+    void visit(SmtProgram program);
 
-    public void visit(BinaryExpression bExpr);
+    void visit(BinaryExpression bExpr);
 
-    public void visit(Sort intSort);
+    void visit(Sort intSort);
     
-    public void visit(IntSort intSort);   
+    void visit(IntSort intSort);
 
-    public void visit(QuantifiedExpression quantifiedExpression);
+    void visit(QuantifiedExpression quantifiedExpression);
 
-    public void visit(RealSort realSort);
+    void visit(RealSort realSort);
 
-    public void visit(SetSort setSort);
+    void visit(SetSort setSort);
 
-    public void visit(StringSort stringSort);
+    void visit(StringSort stringSort);
 
-    public void visit(TupleSort tupleSort);
+    void visit(TupleSort tupleSort);
 
-    public void visit(Expression expression);
+    void visit(Expression expression);
 
-    public void visit(UnaryExpression unaryExpression);
+    void visit(UnaryExpression unaryExpression);
 
-    public void visit(UninterpretedSort uninterpretedSort);
+    void visit(UninterpretedSort uninterpretedSort);
 
-    public void visit(IntConstant intConstant);
+    void visit(IntConstant intConstant);
 
-    public void visit(Variable variable);
+    void visit(Variable variable);
 
-    public void visit(FunctionDeclaration functionDeclaration);
+    void visit(FunctionDeclaration functionDeclaration);
 
-    public void visit(FunctionDefinition functionDefinition);
+    void visit(FunctionDefinition functionDefinition);
 
-    public void visit(ConstantDeclaration constantDeclaration);
+    void visit(ConstantDeclaration constantDeclaration);
 
-    public void visit(BoolConstant booleanConstant);
+    void visit(BoolConstant booleanConstant);
 
-    public void visit(Assertion assertion);
+    void visit(Assertion assertion);
 
-    public void visit(MultiArityExpression expression);
+    void visit(MultiArityExpression expression);
 
-    public void visit(FunctionCallExpression functionCallExpression);
+    void visit(FunctionCallExpression functionCallExpression);
 
-    public void visit(VariableDeclaration variableDeclaration);
+    void visit(VariableDeclaration variableDeclaration);
 
-    public void visit(BoolSort boolSort);
+    void visit(BoolSort boolSort);
 
-    public void visit(LetExpression letExpression);
+    void visit(LetExpression letExpression);
 
-    public void visit(ITEExpression iteExpression);
+    void visit(ITEExpression iteExpression);
 
-    public void visit(UninterpretedConstant uninterpretedConstant);
+    void visit(UninterpretedConstant uninterpretedConstant);
 
-    public void visit(SolverOption solverOption);
+    void visit(SolverOption solverOption);
+
+    String printGetValue(Expression expression);
+
+    void visit(SmtValues smtValues);
+
+    void visit(ExpressionValue expressionValue);
 }

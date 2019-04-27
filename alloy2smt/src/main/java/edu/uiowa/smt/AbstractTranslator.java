@@ -47,10 +47,6 @@ public abstract class AbstractTranslator
     public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple);
     public final static UnaryExpression intUnivExpr = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort);
-    public final static String CHECK_SAT = "(check-sat)";
-    public final static String GET_MODEL = "(get-model)";
-    public final static String PUSH = "(push 1)";
-    public final static String POP = "(pop 1)";
 
     // non static members
     public SmtProgram smtProgram;

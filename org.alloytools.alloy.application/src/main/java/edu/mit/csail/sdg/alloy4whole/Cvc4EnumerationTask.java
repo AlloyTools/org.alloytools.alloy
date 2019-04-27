@@ -6,6 +6,7 @@ import edu.mit.csail.sdg.alloy4whole.instances.Alloy;
 import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.SmtModel;
 import edu.uiowa.alloy2smt.translators.Translation;
 
@@ -67,7 +68,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
             }
 
             // (check-sat)
-            String result = Cvc4Task.cvc4Process.sendCommand(AbstractTranslator.CHECK_SAT);
+            String result = Cvc4Task.cvc4Process.sendCommand(SmtLibPrettyPrinter.CHECK_SAT);
             if(result != null)
             {
                 switch (result)
@@ -103,7 +104,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
 
     private void prepareInstance(int commandIndex) throws Exception
     {
-        String smtModel     = Cvc4Task.cvc4Process.sendCommand(AbstractTranslator.GET_MODEL);
+        String smtModel     = Cvc4Task.cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
         Command command     = translation.getCommands().get(commandIndex);
 
         SmtModel model      = Cvc4Task.parseModel(smtModel);
