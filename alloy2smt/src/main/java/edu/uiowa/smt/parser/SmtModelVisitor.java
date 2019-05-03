@@ -110,8 +110,8 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         String name = ctx.functionName().getText();
 
         List<VariableDeclaration> arguments   = ctx.argument().stream()
-            .map(argument -> (VariableDeclaration) this.visitArgument(argument))
-            .collect(Collectors.toList());
+                                                   .map(argument -> (VariableDeclaration) this.visitArgument(argument))
+                                                   .collect(Collectors.toList());
 
         Sort returnSort = (Sort) visitSort(ctx.sort());
 
@@ -189,8 +189,8 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     public SmtAst visitTernaryExpression(SmtParser.TernaryExpressionContext ctx, Map<String, Variable> arguments)
     {
         List<Expression> expressions = ctx.expression().stream()
-                .map(expression -> (Expression) this.visitExpression(expression, arguments))
-                .collect(Collectors.toList());
+                                          .map(expression -> (Expression) this.visitExpression(expression, arguments))
+                                          .collect(Collectors.toList());
 
         return new ITEExpression(expressions.get(0), expressions.get(1), expressions.get(2));
     }
@@ -198,8 +198,8 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     public SmtAst visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx, Map<String, Variable> arguments)
     {
         List<Expression> expressions = ctx.expression().stream()
-                .map(expression -> (Expression) this.visitExpression(expression, arguments))
-                .collect(Collectors.toList());
+                                          .map(expression -> (Expression) this.visitExpression(expression, arguments))
+                                          .collect(Collectors.toList());
 
         MultiArityExpression.Op operator = MultiArityExpression.Op.getOp(ctx.MultiArityOperator().getText());
         return new MultiArityExpression(operator, expressions);
