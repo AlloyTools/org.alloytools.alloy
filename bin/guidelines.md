@@ -22,7 +22,7 @@ The relational solver CVC4 can be chosen from the the options menu. CVC4 timeout
 - minus[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x - y = z}
 - mul[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x * y = z}
 - div[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x / y = z}
-- mod[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x mod y = z}
+- rem[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x mod y = z}
  
  **Example**
  ```
@@ -41,7 +41,7 @@ this/A={1, 2}
 this/B={4, 5}
 this/C={5, 6, 7}
 ```
-In this example `C = plus[A, B]` acts like there is exists a relation `plus={1->4->5, 1->5->6, 2->4->6, 2->5->7}` where `C = B.(A.plus)`.
+In this example `C = plus[A, B]` acts like there exists a relation `plus={1->4->5, 1->5->6, 2->4->6, 2->5->7}` where `C = B.(A.plus)`.
 Compare this with the result returned from Kodkod solver which interprets an integer signature as the sum of its elements. 
 ```
 this/A={1, 2}
