@@ -19,11 +19,11 @@ The relational solver CVC4 can be chosen from the the options menu. CVC4 timeout
 ## Semantics of functions plus, minus, mul, div, rem
  CVC4 relational solver interprets integer signatures as sets of mathematical integers. It uses different semantics for functions plus, minus, mul, div, and rem as follows: 
 
-- plus[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x + y = z}
-- minus[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x - y = z}
-- mul[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x * y = z}
-- div[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x / y = z}
-- rem[A, B] = {z | &#8707; x &#8712; A, y &#8712; B. x mod y = z}
+- plus[A, B] = {z | ∃ x ∈ A, y ∈ B. x + y = z}
+- minus[A, B] = {z | ∃ x ∈ A, y ∈ B. x - y = z}
+- mul[A, B] = {z | ∃ x ∈ A, y ∈ B. x * y = z}
+- div[A, B] = {z | ∃ x ∈ A, y ∈ B. x / y = z}
+- rem[A, B] = {z | ∃ x ∈ A, y ∈ B. x mod y = z}
  
  **Example**
  ```
