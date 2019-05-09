@@ -89,7 +89,18 @@ this/A={-7, 2}
 this/B={-4, -5, -7, -8, 1}
 ``` 
  Which is congruent to $A=[(-7 + 2) mod 8] = [3] $
- and $B=[(-4 + -5 + -7 + -8 + 1) mod 8 ] = [1]$ which satisfies 3 > 4
+ and $B=[(-4 + -5 + -7 + -8 + 1) mod 8 ] = [1]$ which satisfies 3 > 4. 
+ 
+When both operands are singletons, the semantics is similar. Both solvers return sat for this model
+```
+sig A, B in Int {} 
+fact { 
+A > B
+#A = 1
+#B = 1   
+}
+run {} for 4 Int, 7 seq
+```
 # Examples
 
 # Unsupported alloy features 
