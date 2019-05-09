@@ -26,7 +26,7 @@ The relational solver CVC4 can be chosen from the the options menu. CVC4 timeout
 - rem[A, B] = {z | ∃ x ∈ A, y ∈ B. x mod y = z}
  
  **Example**
- ```
+ ```cmd
  sig A, B, C in Int {} 
  fact { 
      A = 1 + 2
@@ -36,20 +36,20 @@ The relational solver CVC4 can be chosen from the the options menu. CVC4 timeout
 run {} for 5 Int, 12 seq
 ```
 The result returned from CVC4 relational solver is 
-```
+```cmd
 this/A={1, 2}
 this/B={4, 5}
 this/C={5, 6, 7}
 ```
 In this example `C = plus[A, B]` acts like there exists a relation `plus={1->4->5, 1->5->6, 2->4->6, 2->5->7}` where `C = B.(A.plus)`.
 Compare this with the result returned from Kodkod solver which interprets an integer signature as the sum of its elements. 
-```
+```cmd
 this/A={1, 2}
 this/B={4, 5}
 this/C={12}
 ```
 When the operands are singletons, the the semantics of CVC4 relational solver is similar to the Kodkod solver (modulo bitwidth) as shown in the following example:
-```
+```cmd
 sig A, B in Int {} 
 fact { 
     plus[A, B] = 6
@@ -60,7 +60,7 @@ fact {
 run {} for 4 Int, 7 seq
 ```
 CVC4 and Kodkod Result
-```
+```cmd
 this/A={4}
 this/B={2}
 ```
@@ -75,7 +75,7 @@ Semantics for comparison operators: <, =<, >, >=  is based on singletons as foll
 - A > B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x > y
 
 This is different than Kodkod semantics which compares between the sum of the two operands. The following examples compares between them:
-```
+```cmd
 sig A, B in Int {} 
 fact { 
 A > B
@@ -85,7 +85,7 @@ run {} for 4 Int, 7 seq
 ```
 
 CVC4  solver returns unsat for this model because when #A = 2, A = {x}  for some x is false which makes A > B always false. However Kodkod solver returns the model
-```
+```cmd
 this/A={-7, 2}
 this/B={-4, -5, -7, -8, 1}
 ``` 
@@ -93,7 +93,7 @@ this/B={-4, -5, -7, -8, 1}
  and B = [-4 + -5 + -7 + -8 + 1]<sub>8</sub> = [1]<sub>8</sub>$ which satisfies 3 > 4. 
  
 When both operands are singletons, the semantics is similar. Both solvers return sat for this model
-```
+```cmd
 sig A, B in Int {} 
 fact { 
 A > B
@@ -118,7 +118,7 @@ fact {
 ```
 - Cardinality operator on fields: e.g. `sig A {r: A} fact {#r = 2 }`.
 - Fields with arity > 3: e.g. `sig A {r: A -> A -> A }`.
-- 
+ 
 # Examples
 
 See [examples](examples) for a list of simple examples. 
