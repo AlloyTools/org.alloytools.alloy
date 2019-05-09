@@ -58,7 +58,7 @@ fact {
 }
 run {} for 4 Int, 7 seq
 ```
-Result
+CVC4 and Kodkod Result
 ```
 this/A={4}
 this/B={2}
