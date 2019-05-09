@@ -287,7 +287,7 @@ public class ExprBinaryTranslator
                         existentialBdVarExprs.add(bdVar.getVariable());
                     }        
 
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -336,7 +336,7 @@ public class ExprBinaryTranslator
                     }        
                     
                     // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -385,7 +385,7 @@ public class ExprBinaryTranslator
                     }        
                     
                     // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -434,7 +434,7 @@ public class ExprBinaryTranslator
                     }        
                     
                     // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -498,7 +498,7 @@ public class ExprBinaryTranslator
                         existentialBdVarExprs.add(bdVar.getVariable());
                     }        
 
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -547,7 +547,7 @@ public class ExprBinaryTranslator
                     }        
                     
                     // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -596,7 +596,7 @@ public class ExprBinaryTranslator
                     }        
                     
                     // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)
@@ -645,7 +645,7 @@ public class ExprBinaryTranslator
                     }        
                     
                     // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.mkDistinctExpr(existentialBdVarExprs);
+                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
 
                     exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
                     if(exprTranslator.translator.auxExpr != null)

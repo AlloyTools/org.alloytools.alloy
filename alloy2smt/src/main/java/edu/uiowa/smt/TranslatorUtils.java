@@ -136,7 +136,7 @@ public class TranslatorUtils
         return new SetSort(new TupleSort(elementSorts));
     }
 
-    public static Expression mkDistinctExpr(Expression... exprs)
+    public static Expression makeDistinct(Expression... exprs)
     {
         if (exprs == null)
         {
@@ -152,7 +152,7 @@ public class TranslatorUtils
         }
     }
 
-    public static Expression mkDistinctExpr(List<Expression> exprs)
+    public static Expression makeDistinct(List<Expression> exprs)
     {
         if (exprs == null)
         {
