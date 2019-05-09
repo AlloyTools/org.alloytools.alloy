@@ -205,11 +205,53 @@ public class ExprBinaryTranslator
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);    
         
-        if(!exprTranslator.translator.arithmeticOperations.containsKey(op))
-        {                      
-            exprTranslator.declArithmeticOp(op);
-        }
-        return new BinaryExpression(leftExpr, BinaryExpression.Op.JOIN, new BinaryExpression(rightExpr, BinaryExpression.Op.JOIN, exprTranslator.translator.arithmeticOperations.get(op)));
+        //if(!exprTranslator.translator.arithmeticOperations.containsKey(op))
+        // {
+            // how about avoiding declaring any arithmetic relation?
+            // exprTranslator.declArithmeticOp(op);
+        // }
+
+        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), AbstractTranslator.setOfUninterpretedIntTuple);
+        exprTranslator.translator.smtProgram.addFunction(result);
+
+        VariableDeclaration x = new VariableDeclaration("_x", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("_z", AbstractTranslator.uninterpretedInt);
+
+        Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
+        Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
+        Expression zTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getVariable());
+
+        Expression xValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, x.getVariable());
+        Expression yValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, y.getVariable());
+        Expression zValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, z.getVariable());
+
+        Expression xMember = new BinaryExpression(xTuple, BinaryExpression.Op.MEMBER, leftExpr);
+        Expression yMember = new BinaryExpression(yTuple, BinaryExpression.Op.MEMBER, rightExpr);
+        Expression zMember = new BinaryExpression(zTuple, BinaryExpression.Op.MEMBER, result.getVariable());
+
+        Expression xyOperation = new BinaryExpression(xValue, op, yValue);
+        Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
+
+        Expression and1 = new BinaryExpression(xMember, BinaryExpression.Op.AND, yMember);
+        Expression and2 = new BinaryExpression(equal, BinaryExpression.Op.AND, and1);
+        Expression exists1 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and2, x, y);
+        Expression implies1 = new BinaryExpression(zMember, BinaryExpression.Op.IMPLIES, exists1);
+        Expression forall1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1, z);
+
+        Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, leftExpr, rightExpr), forall1);
+        exprTranslator.translator.smtProgram.addAssertion(assertion1);
+
+        Expression and3 = new BinaryExpression(equal, BinaryExpression.Op.MEMBER,zMember);
+        Expression exists2 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3, z);
+
+        Expression implies2 = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, exists2);
+        Expression forall2 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2, x, y);
+
+        Assertion assertion2 = new Assertion(String.format("%1$s %2$s %3$s axiom2", op, leftExpr, rightExpr), forall2);
+        exprTranslator.translator.smtProgram.addAssertion(assertion2);
+
+        return result.getVariable();
     }
     
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
