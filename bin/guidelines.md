@@ -67,7 +67,29 @@ this/B={2}
 To avoid performance issues, it is recommended to use only singletons for integer signatures by restricting their cardinality to be 1. Otherwise, the performance would degrade significantly as the cardinality increases.     
 
 ## Comparisons
+Semantics for comparison operators: <, =<, >, >=  is based on singletons as follows:
+- A =< B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x <= y
+- A < B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x < y
+- A >= B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x >= y
+- A > B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x > y
 
+This is different than Kodkod semantics which compares between the sum of the two operands. The following examples compares between them:
+```
+sig A, B in Int {} 
+fact { 
+A > B
+#A = 2   
+}
+run {} for 4 Int, 7 seq
+```
+
+CVC4  solver returns unsat for this model because when #A = 2, A = {x}  for some x is false which makes A > B always false. However Kodkod solver returns 
+```
+this/A={-7, 2}
+this/B={-4, -5, -7, -8, 1}
+``` 
+ Which is congruent to $A=[(-7 + 2) mod 8] = [3] $
+ and $B=[(-4 + -5 + -7 + -8 + 1) mod 8 ] = [1]$ which satisfies 3 > 4
 # Examples
 
 # Unsupported alloy features 
