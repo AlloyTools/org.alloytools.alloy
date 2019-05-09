@@ -6,6 +6,7 @@ CVC4 binaries for Windows, macOS and Linux are included in the release [alloy_cv
 git clone https://github.com/CVC4/org.alloytools.alloy
 cd org.alloytools.alloy     
 git checkout cvc4
+./gradlew alloyCVC4
 cd bin
 java -jar alloy_cvc4.jar     
 ```
