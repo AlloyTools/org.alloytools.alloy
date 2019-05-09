@@ -31,8 +31,7 @@ The relational solver CVC4 can be chosen from the the options menu. CVC4 timeout
      A = 1 + 2
      B = 4 + 5
      C = plus[A, B]
- }
- 
+ } 
 run {} for 5 Int, 12 seq
 ```
 The result returned from CVC4 relational solver is 
@@ -48,6 +47,24 @@ this/A={1, 2}
 this/B={4, 5}
 this/C={12}
 ```
+When the operands are singletons, the the semantics of CVC4 relational solver is similar to the Kodkod solver (modulo bitwidth) as shown in the following example:
+```
+sig A, B in Int {} 
+fact { 
+    plus[A, B] = 6
+    minus[A, B] = 2
+    #A = 1
+    #B = 1
+}
+run {} for 4 Int, 7 seq
+```
+Result
+```
+this/A={4}
+this/B={2}
+```
+
+To avoid performance issues, it is recommended to use only singletons for integer signatures by restricting their cardinality to be 1. Otherwise, the performance would degrade significantly as the cardinality increases.     
 
 ## Comparisons
 
@@ -55,4 +72,3 @@ this/C={12}
 
 # Unsupported alloy features 
 
-# 
