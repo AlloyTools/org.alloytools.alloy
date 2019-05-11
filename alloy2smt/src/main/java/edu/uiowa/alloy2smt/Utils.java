@@ -21,10 +21,10 @@ import java.util.Map;
 
 public class Utils
 {
-    public static String translateFromFile(String filePath, int commandIndex)
+    public static Translation translateFromFile(String filePath)
     {
         CompModule alloyModel = CompUtil.parseEverything_fromFile(null, null, filePath);
-        return translateFromModel(alloyModel, commandIndex);
+        return getTranslation(alloyModel);
     }
 
     private static String translateFromModel(CompModule alloyModel, int commandIndex)

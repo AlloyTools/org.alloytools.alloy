@@ -1,4 +1,4 @@
-package edu.uiowa.shared;
+package edu.uiowa.alloy2smt.utils;
 
 import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.smt.Result;

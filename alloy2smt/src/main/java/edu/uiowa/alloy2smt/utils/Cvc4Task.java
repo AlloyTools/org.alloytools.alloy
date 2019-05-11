@@ -1,10 +1,9 @@
-package edu.uiowa.shared;
+package edu.uiowa.alloy2smt.utils;
 
 import edu.mit.csail.sdg.ast.Command;
-import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.cvc4.Cvc4Process;
-import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 
 import java.util.ArrayList;
@@ -13,6 +12,7 @@ import java.util.List;
 public class Cvc4Task
 {
     public Cvc4Process cvc4Process;
+
     public List<CommandResult> run(Translation translation) throws Exception
     {
         List<CommandResult> commandResults = new ArrayList<>();
@@ -49,7 +49,7 @@ public class Cvc4Task
         String smt = translation.getSmtScript() + commandTranslation + SmtLibPrettyPrinter.CHECK_SAT;
         CommandResult commandResult = new CommandResult(index, command, smt, result);
 
-        if(result.equals("sat"))
+        if (result.equals("sat"))
         {
             String model = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
             commandResult.smtModel = commandResult.parseModel(model);

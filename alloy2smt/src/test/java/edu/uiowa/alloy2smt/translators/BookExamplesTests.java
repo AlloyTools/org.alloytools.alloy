@@ -1,361 +1,362 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.alloy2smt.utils.CommandResult;
+import edu.uiowa.smt.TranslatorUtils;
+import edu.uiowa.smt.smtAst.FunctionDefinition;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class BookExamplesTests
 {
-    private Translation getExample(String fileName) throws IOException
+    
+    @Test
+    public void addressBook1a() throws Exception
     {
-        String content = new String(Files.readAllBytes(Paths.get(fileName)));
-        Translation translation = Utils.translate(content);
-        return translation;
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1a.als");
+        assertEquals("sat", results.get(0).satResult);
     }
 
     @Test
-    public void addressBook1a() throws IOException
+    public void addressBook1b() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1a.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1b.als");
+        
     }
 
     @Test
-    public void addressBook1b() throws IOException
+    public void addressBook1c() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1b.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1c.als");
+        
     }
 
     @Test
-    public void addressBook1c() throws IOException
+    public void addressBook1d() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1c.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1d.als");
+        
     }
 
     @Test
-    public void addressBook1d() throws IOException
+    public void addressBook1e() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1d.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1e.als");
+        
     }
 
     @Test
-    public void addressBook1e() throws IOException
+    public void addressBook1f() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1e.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1f.als");
+        
     }
 
     @Test
-    public void addressBook1f() throws IOException
+    public void addressBook1g() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1f.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1g.als");
+        
     }
 
     @Test
-    public void addressBook1g() throws IOException
+    public void addressBook1h() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1g.als");
-        translation.translateAllCommandsWithCheckSat();
-    }
-
-    @Test
-    public void addressBook1h() throws IOException
-    {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als");
+        
     }
 
 
     @Test
-    public void addressBook2a() throws IOException
+    public void addressBook2a() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2a.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2a.als");
+        
     }
 
     @Test
-    public void addressBook2b() throws IOException
+    public void addressBook2b() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2b.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2b.als");
+        
     }
 
     @Test
-    public void addressBook2c() throws IOException
+    public void addressBook2c() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2c.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2c.als");
+        
     }
 
     @Test
-    public void addressBook2d() throws IOException
+    public void addressBook2d() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2d.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2d.als");
+        
     }
 
     @Test
-    public void addressBook2e() throws IOException
+    public void addressBook2e() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als");
+        
     }
 
 
     @Test
-    public void addressBook3a() throws IOException
+    public void addressBook3a() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3a.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3a.als");
+        
     }
 
     @Test
-    public void addressBook3b() throws IOException
+    public void addressBook3b() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als");
+        
     }
 
     @Test
-    public void addressBook3c() throws IOException
+    public void addressBook3c() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als");
+        
     }
 
     @Test
-    public void addressBook3d() throws IOException
+    public void addressBook3d() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als");
+        
     }
 
     @Test
-    public void filesystem() throws IOException
+    public void filesystem() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter4/filesystem.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/filesystem.als");
+        
     }
 
     @Test
-    public void grandpa1() throws IOException
+    public void grandpa1() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa1.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa1.als");
+        
     }
 
     @Test
-    public void grandpa2() throws IOException
+    public void grandpa2() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa2.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa2.als");
+        
     }
 
     @Test
-    public void grandpa3() throws IOException
+    public void grandpa3() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa3.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa3.als");
+        
     }
 
     @Test
-    public void lights() throws IOException
+    public void lights() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter4/lights.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/lights.als");
+        
     }
 
     @Test
-    public void addressBook() throws IOException
+    public void addressBook() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter5/addressBook.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/addressBook.als");
+        
     }
 
     @Test
-    public void lists() throws IOException
+    public void lists() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter5/lists.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/lists.als");
+        
     }
 
     @Test
-    public void sets1() throws IOException
+    public void sets1() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter5/sets1.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/sets1.als");
+        
     }
 
     @Test
-    public void sets2() throws IOException
+    public void sets2() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter5/sets2.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/sets2.als");
+        
     }
 
     @Test
-    public void hotel1() throws IOException
+    public void hotel1() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel1.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel1.als");
+        
     }
     @Test
-    public void hotel2() throws IOException
+    public void hotel2() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel2.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel2.als");
+        
     }
     @Test
-    public void hotel3() throws IOException
+    public void hotel3() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel3.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel3.als");
+        
     }
     @Test
-    public void hotel4() throws IOException
+    public void hotel4() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel4.als");
-        translation.translateAllCommandsWithCheckSat();
-    }
-
-    @Test
-    public void mediaAssets() throws IOException
-    {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel4.als");
+        
     }
 
     @Test
-    public void ringElection1() throws IOException
+    public void mediaAssets() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection1.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als");
+        
     }
 
     @Test
-    public void ringElection2() throws IOException
+    public void ringElection1() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection1.als");
+        
     }
 
     @Test
-    public void addressBook1() throws IOException
+    public void ringElection2() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/addressBook1.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als");
+        
     }
 
     @Test
-    public void addressBook2() throws IOException
+    public void addressBook1() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/addressBook2.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/addressBook1.als");
+        
     }
 
     @Test
-    public void barbers() throws IOException
+    public void addressBook2() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/barbers.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/addressBook2.als");
+        
     }
 
     @Test
-    public void closure() throws IOException
+    public void barbers() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/closure.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/barbers.als");
+        
     }
 
     @Test
-    public void distribution() throws IOException
+    public void closure() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/distribution.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/closure.als");
+        
     }
 
     @Test
-    public void phones() throws IOException
+    public void distribution() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/phones.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/distribution.als");
+        
     }
 
     @Test
-    public void prison() throws IOException
+    public void phones() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/prison.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/phones.als");
+        
     }
 
     @Test
-    public void properties() throws IOException
+    public void prison() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/properties.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/prison.als");
+        
     }
 
     @Test
-    public void ring() throws IOException
+    public void properties() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/ring.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/properties.als");
+        
     }
 
     @Test
-    public void spanning() throws IOException
+    public void ring() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/spanning.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/ring.als");
+        
     }
 
     @Test
-    public void tree() throws IOException
+    public void spanning() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/tree.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/spanning.als");
+        
     }
 
     @Test
-    public void tube() throws IOException
+    public void tree() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/tube.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/tree.als");
+        
     }
 
     @Test
-    public void undirected() throws IOException
+    public void tube() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixA/undirected.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/tube.als");
+        
     }
 
     @Test
-    public void p300_hotel() throws IOException
+    public void undirected() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixE/p300-hotel.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/undirected.als");
+        
     }
 
     @Test
-    public void p303_hotel() throws IOException
+    public void p300_hotel() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixE/p303-hotel.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p300-hotel.als");
+        
     }
 
     @Test
-    public void p306_hotel() throws IOException
+    public void p303_hotel() throws Exception
     {
-        Translation translation = getExample("../org.alloytools.alloy.extra/extra/models/book/appendixE/p306-hotel.als");
-        translation.translateAllCommandsWithCheckSat();
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p303-hotel.als");
+        
+    }
+
+    @Test
+    public void p306_hotel() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p306-hotel.als");
+        
     }
 }
