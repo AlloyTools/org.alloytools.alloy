@@ -16,12 +16,7 @@ class CardinalityTests
     @Test
     public void test1() throws Exception
     {
-        String alloy =  "sig A {r: A -> A}\n" +
-                "\n" +
-                "fact {\n" +
-                "#r = 2\n" +
-                "}\n" +
-                "run {} for 4 Int, 7 seq";
+        String alloy =  "sig A {r: A -> A} fact{#r = 2}";                
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
@@ -38,12 +33,7 @@ class CardinalityTests
     @Test
     public void test2() throws Exception
     {
-        String alloy =  "sig A {r: A -> A}\n" +
-                "\n" +
-                "fact {\n" +
-                "#r >= 2\n" +
-                "}\n" +
-                "run {} for 4 Int, 7 seq";
+        String alloy =  "sig A {r: A -> A} fact{#r >= 2}";
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
@@ -60,12 +50,7 @@ class CardinalityTests
     @Test
     public void test3() throws Exception
     {
-        String alloy =  "sig A {r: A -> A}\n" +
-                "\n" +
-                "fact {\n" +
-                "#r > 2\n" +
-                "}\n" +
-                "run {} for 4 Int, 7 seq";
+        String alloy =  "sig A {r: A -> A} fact {#r > 2}";                
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
@@ -82,12 +67,8 @@ class CardinalityTests
     @Test
     public void test4() throws Exception
     {
-        String alloy =  "sig A {r: A -> A}\n" +
-                "\n" +
-                "fact {\n" +
-                "#r < 2\n" +
-                "}\n" +
-                "run {} for 4 Int, 7 seq";
+        String alloy =  "sig A {r: A -> A} fact {#r < 2}";
+                
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
@@ -104,12 +85,8 @@ class CardinalityTests
     @Test
     public void test5() throws Exception
     {
-        String alloy =  "sig A {r: A -> A}\n" +
-                "\n" +
-                "fact {\n" +
-                "#r <= 2\n" +
-                "}\n" +
-                "run {} for 4 Int, 7 seq";
+        String alloy =  "sig A {r: A -> A}fact {#r <= 2}";
+                
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
@@ -126,12 +103,8 @@ class CardinalityTests
     @Test
     public void test6() throws Exception
     {
-        String alloy =  "sig A in Int{r: A -> A}\n" +
-                "\n" +
-                "fact {\n" +
-                "#r = 2\n" +
-                "}\n" +
-                "run {} for 4 Int, 7 seq";
+        String alloy =  "sig A in Int{r: A -> A}fact {#r = 2}";
+                
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
