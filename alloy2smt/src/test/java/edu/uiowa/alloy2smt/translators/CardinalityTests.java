@@ -11,7 +11,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GeneralTests
+class CardinalityTests
 {
     @Test
     public void test1() throws Exception
@@ -143,5 +143,77 @@ class GeneralTests
         FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(2, tuples.size());
+    }
+
+    @Test
+    public void test7() throws Exception
+    {
+        String alloy =  "sig A{} fact {#A = 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        Set<String> atoms = TranslatorUtils.getAtomSet(A);
+        assertEquals(2, atoms.size());
+    }
+
+    @Test
+    public void test8() throws Exception
+    {
+        String alloy =  "sig A{} fact {#A > 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        Set<String> atoms = TranslatorUtils.getAtomSet(A);
+        assertEquals(3, atoms.size());
+    }
+
+    @Test
+    public void test9() throws Exception
+    {
+        String alloy =  "sig A{} fact {#A >= 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        Set<String> atoms = TranslatorUtils.getAtomSet(A);
+        assertEquals(2, atoms.size());
+    }
+
+    @Test
+    public void test10() throws Exception
+    {
+        String alloy =  "sig A{} fact {#A < 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        Set<String> atoms = TranslatorUtils.getAtomSet(A);
+        assertEquals(0, atoms.size());
+    }
+
+    @Test
+    public void test11() throws Exception
+    {
+        String alloy =  "sig A{} fact {#A <= 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        Set<String> atoms = TranslatorUtils.getAtomSet(A);
+        assertEquals(0, atoms.size());
+    }
+
+    @Test
+    public void test12() throws Exception
+    {
+        String alloy =  "sig A in Int{} fact {#A = 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        Set<Integer> atoms = TranslatorUtils.getIntSet(A);
+        assertEquals(2, atoms.size());
     }
 }
