@@ -199,13 +199,12 @@ public class SignatureTranslator
         if(isInt)
         {
             constDecl = new ConstantDeclaration(name, translator.uninterpretedInt);
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
-            constDecl = new ConstantDeclaration(name, translator.atomSort);       
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+            constDecl = new ConstantDeclaration(name, translator.atomSort);
         }
+        expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         translator.smtProgram.addConstantDeclaration(constDecl);
         
         BinaryExpression subset   = new BinaryExpression(signature.getVariable(), BinaryExpression.Op.EQ, expr);

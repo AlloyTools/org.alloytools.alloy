@@ -173,7 +173,7 @@ public class FieldTranslator
     {
         if(fieldComponentExprs.size() > 2)
         {
-            throw new UnsupportedOperationException("Currently, we do not support multiplicity constraints on relations with arity GT 3!");
+//            throw new UnsupportedOperationException("Currently, we do not support multiplicity constraints on relations with arity GT 3!");
         }
 
         Expression expr  = null;
