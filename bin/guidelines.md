@@ -1,6 +1,6 @@
 # CVC4 relational solver 
 CVC4 relational solver extends Alloy with proving unsatisfiable models and supporting mathematical integers. It is not restricted by **signatures scope**, **integer bit width**, or **integer sequence**. 
-The relational solver uses the relation theory in the SMT solver [CVC4](https://cvc4.github.io).
+The relational solver uses the relation theory of the SMT solver [CVC4](https://cvc4.github.io).
 CVC4 binaries for Windows, macOS and Linux are included in the release [alloy_cvc4.zip](https://github.com/CVC4/org.alloytools.alloy/releases/download/v5.0.0.2/alloy_cvc4.zip). The latest version of CVC4 can be downloaded from [here](https://cvc4.github.io/downloads.html). To build the latest version of alloy_cvc4 run the commands:
 ```cmd
 git clone https://github.com/CVC4/org.alloytools.alloy
