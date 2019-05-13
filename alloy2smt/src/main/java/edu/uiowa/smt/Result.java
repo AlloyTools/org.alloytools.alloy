@@ -14,6 +14,7 @@ public class Result
 {
     public String smtProgram;
     public String satResult;
+    public String model;
     public SmtModel smtModel;
     private SmtModelVisitor visitor;
 

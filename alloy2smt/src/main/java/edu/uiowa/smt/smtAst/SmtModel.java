@@ -84,16 +84,8 @@ public class SmtModel extends SmtAst
             functions.put(declaration.getName(), (FunctionDefinition) declaration);
         }
         Expression body = function.expression.evaluate(functions);
-        if(function.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple))
-        {
-            return new FunctionDefinition(function.getName(), function.inputVariables,
-                    AbstractTranslator.setOfIntSortTuple, body);
-        }
-        if(function.getSort().equals(AbstractTranslator.setOfTernaryIntSort))
-        {
-            return new FunctionDefinition(function.getName(), function.inputVariables,
-                    AbstractTranslator.setOfIntSortTuple, body);
-        }
-        throw new UnsupportedOperationException();
+
+        return new FunctionDefinition(function.getName(), function.inputVariables,
+                    function.getSort(), body);
     }
 }

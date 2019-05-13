@@ -51,8 +51,8 @@ public class Cvc4Task
 
         if (result.equals("sat"))
         {
-            String model = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
-            commandResult.smtModel = commandResult.parseModel(model);
+            commandResult.model = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
+            commandResult.smtModel = commandResult.parseModel(commandResult.model);
         }
         return commandResult;
     }

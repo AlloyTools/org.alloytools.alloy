@@ -286,15 +286,68 @@ public class TranslatorUtils
         return set;
     }
 
+
+    public static Set<List<String>> getRelation(FunctionDefinition definition)
+    {
+        if(!(definition.getSort() instanceof SetSort))
+        {
+            throw new UnsupportedOperationException(definition.getSort().toString());
+        }
+        SetSort setSort = (SetSort) definition.getSort();
+        if(!(setSort.elementSort instanceof TupleSort))
+        {
+            throw new UnsupportedOperationException(setSort.elementSort.toString());
+        }
+        TupleSort tupleSort = (TupleSort) setSort.elementSort;
+        return getRelation(definition.getExpression(), tupleSort.elementSorts);
+    }
+
+    public static Set<List<String>> getRelation(Expression expression, List<Sort> elementSorts)
+    {
+        if (expression instanceof UnaryExpression)
+        {
+            UnaryExpression unary = (UnaryExpression) expression;
+            if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
+            {
+                return new HashSet<>();
+            }
+            assert (UnaryExpression.Op.SINGLETON == unary.getOP());
+            MultiArityExpression tupleExpression = (MultiArityExpression) unary.getExpression();
+            assert (MultiArityExpression.Op.MKTUPLE == tupleExpression.getOp());
+            List<String> tuple = new ArrayList<>();
+
+            for (Expression expr: tupleExpression.getExpressions())
+            {
+                if(expr instanceof IntConstant)
+                {
+                    tuple.add(((IntConstant) expr).getValue());
+                }
+                else if(expr instanceof UninterpretedConstant)
+                {
+                    tuple.add(((UninterpretedConstant) expr).getName());
+                }
+                else
+                {
+                    throw new UnsupportedOperationException(expr.toString());
+                }
+            }
+            return new HashSet<>(Collections.singletonList(tuple));
+        }
+        BinaryExpression binary = (BinaryExpression) expression;
+        Set<List<String>> set = new HashSet<>();
+        assert (binary.getOp() == BinaryExpression.Op.UNION);
+        set.addAll(getRelation(binary.getLhsExpr(), elementSorts));
+        set.addAll(getRelation(binary.getRhsExpr(), elementSorts));
+        return set;
+    }
+
+
     public static FunctionDefinition getFunctionDefinition(SmtModel smtModel, String name)
     {
         FunctionDefinition definition = (FunctionDefinition) smtModel
                 .getFunctions().stream()
                 .filter(f -> f.getName().equals(name)).findFirst().get();
-        if (definition.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple))
-        {
-            definition = smtModel.evaluateUninterpretedInt(definition);
-        }
+        definition = smtModel.evaluateUninterpretedInt(definition);
         return definition;
     }
 
