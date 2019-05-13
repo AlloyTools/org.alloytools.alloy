@@ -59,7 +59,7 @@ public class ArithmeticTests
                 "b = 4+6 \n" +
                 "plus[a, b] = c\n" +
                 "}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+                  List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         Assertions.assertTrue(commandResults.size() == 1);
         Assertions.assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");

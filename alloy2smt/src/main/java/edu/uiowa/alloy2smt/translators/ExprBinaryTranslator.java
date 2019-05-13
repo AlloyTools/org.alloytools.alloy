@@ -841,48 +841,50 @@ public class ExprBinaryTranslator
 
     private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, Expression> variablesScope)
     {
-        int arity = expr.type().arity();        
-        List<Expression> existentialBdVarExprs = new ArrayList<>();
-        List<VariableDeclaration> existentialBdVars = new ArrayList<>();
+        int arity = expr.sub.type().arity();
+        List<Expression> variables = new ArrayList<>();
+        List<VariableDeclaration> declarations = new ArrayList<>();
         List<Sort> exprSorts = exprTranslator.getExprSorts(expr.sub);
         
         if(arity == 1)
         {
-            existentialBdVars = exprTranslator.getBdVars(exprSorts.get(0), n);
+            declarations = exprTranslator.getBdVars(exprSorts.get(0), n);
         }
         else
         {
-            existentialBdVars = exprTranslator.getBdTupleVars(exprSorts, arity, n);
+            declarations = exprTranslator.getBdTupleVars(exprSorts, arity, n);
         }
         
-        for(VariableDeclaration bdVar : existentialBdVars)
+        for(VariableDeclaration declaration : declarations)
         {
-            existentialBdVarExprs.add(bdVar.getVariable());
+            variables.add(declaration.getVariable());
         }
 
-        Expression distElementsExpr;
+        Expression distinct;
 
-        if(existentialBdVarExprs.size() == 1)
+        if(variables.size() == 1)
         {
             // distinct operator needs at least 2 arguments
-            distElementsExpr = new BoolConstant(true);
+            distinct = new BoolConstant(true);
         }
         else
         {
-            distElementsExpr = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, existentialBdVarExprs);
+            distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, variables);
         }
         
-        exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);        
+        //ToDo: review the need of existentialBdVars in AlloyTranslator
+        exprTranslator.translator.existentialBdVars.addAll(declarations);
+
         if(exprTranslator.translator.auxExpr != null)
         {
-            exprTranslator.translator.auxExpr = new BinaryExpression(exprTranslator.translator.auxExpr, BinaryExpression.Op.AND, distElementsExpr);
+            exprTranslator.translator.auxExpr = new BinaryExpression(exprTranslator.translator.auxExpr, BinaryExpression.Op.AND, distinct);
         }
         else
         {
-            exprTranslator.translator.auxExpr = distElementsExpr;
+            exprTranslator.translator.auxExpr = distinct;
         }
         
-        Expression  distElementSetExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);        
+        Expression  distElementSetExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(variables);
         Expression  left    = exprTranslator.translateExpr(expr.sub, variablesScope);
         Expression  right   = distElementSetExpr;
         
@@ -899,7 +901,7 @@ public class ExprBinaryTranslator
                 }
                 if(!exprTranslator.translator.existentialBdVars.isEmpty())
                 {
-                    eqExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existentialBdVars, eqExpr);
+                    eqExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, declarations, eqExpr);
                     exprTranslator.translator.existentialBdVars.clear();
                 }
                 return eqExpr;
