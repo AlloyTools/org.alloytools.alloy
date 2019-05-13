@@ -256,37 +256,6 @@ public class TranslatorUtils
         throw new UnsupportedOperationException("Not supported yet");
     }
 
-    public static Set<List<String>> getAtomRelation(FunctionDefinition definition)
-    {
-        return getAtomRelation(definition.getExpression());
-    }
-
-    public static Set<List<String>> getAtomRelation(Expression expression)
-    {
-        if (expression instanceof UnaryExpression)
-        {
-            UnaryExpression unary = (UnaryExpression) expression;
-            if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
-            {
-                return new HashSet<>();
-            }
-            assert (UnaryExpression.Op.SINGLETON == unary.getOP());
-            MultiArityExpression tupleExpression = (MultiArityExpression) unary.getExpression();
-            assert (MultiArityExpression.Op.MKTUPLE == tupleExpression.getOp());
-            List<String> tuple = tupleExpression.getExpressions()
-                                                .stream().map(x -> ((UninterpretedConstant) x).getName())
-                                                .collect(Collectors.toList());
-            return new HashSet<>(Collections.singletonList(tuple));
-        }
-        BinaryExpression binary = (BinaryExpression) expression;
-        Set<List<String>> set = new HashSet<>();
-        assert (binary.getOp() == BinaryExpression.Op.UNION);
-        set.addAll(getAtomRelation(binary.getLhsExpr()));
-        set.addAll(getAtomRelation(binary.getRhsExpr()));
-        return set;
-    }
-
-
     public static Set<List<String>> getRelation(FunctionDefinition definition)
     {
         if(!(definition.getSort() instanceof SetSort))
@@ -298,11 +267,10 @@ public class TranslatorUtils
         {
             throw new UnsupportedOperationException(setSort.elementSort.toString());
         }
-        TupleSort tupleSort = (TupleSort) setSort.elementSort;
-        return getRelation(definition.getExpression(), tupleSort.elementSorts);
+        return getRelation(definition.getExpression());
     }
 
-    public static Set<List<String>> getRelation(Expression expression, List<Sort> elementSorts)
+    public static Set<List<String>> getRelation(Expression expression)
     {
         if (expression instanceof UnaryExpression)
         {
@@ -336,8 +304,8 @@ public class TranslatorUtils
         BinaryExpression binary = (BinaryExpression) expression;
         Set<List<String>> set = new HashSet<>();
         assert (binary.getOp() == BinaryExpression.Op.UNION);
-        set.addAll(getRelation(binary.getLhsExpr(), elementSorts));
-        set.addAll(getRelation(binary.getRhsExpr(), elementSorts));
+        set.addAll(getRelation(binary.getLhsExpr()));
+        set.addAll(getRelation(binary.getRhsExpr()));
         return set;
     }
 

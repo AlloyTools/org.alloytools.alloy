@@ -31,7 +31,7 @@ class GeneralTests
         assertTrue(2 <= atoms.size());
 
         FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
-        Set<List<String>> tuples = TranslatorUtils.getAtomRelation(r);
+        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(2, tuples.size());
     }
 
@@ -53,7 +53,7 @@ class GeneralTests
         assertTrue(2 <= atoms.size());
 
         FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
-        Set<List<String>> tuples = TranslatorUtils.getAtomRelation(r);
+        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(2, tuples.size());
     }
 
@@ -75,7 +75,7 @@ class GeneralTests
         assertTrue(2 <= atoms.size());
 
         FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
-        Set<List<String>> tuples = TranslatorUtils.getAtomRelation(r);
+        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertTrue(2 < tuples.size());
     }
 
@@ -97,7 +97,7 @@ class GeneralTests
         assertEquals(0, atoms.size());
 
         FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
-        Set<List<String>> tuples = TranslatorUtils.getAtomRelation(r);
+        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(0, tuples.size());
     }
 
@@ -119,7 +119,7 @@ class GeneralTests
         assertEquals(0, atoms.size());
 
         FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
-        Set<List<String>> tuples = TranslatorUtils.getAtomRelation(r);
+        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(0, tuples.size());
     }
 
