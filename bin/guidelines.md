@@ -8,6 +8,7 @@ cd org.alloytools.alloy
 git checkout cvc4
 ./gradlew alloyCVC4
 cd bin
+chmod +x cvc4_linux
 java -jar alloy_cvc4.jar     
 ```
 # CVC4 options 
@@ -116,7 +117,6 @@ fact {
 4 >= #A 
 }
 ```
-- Cardinality operator on fields: e.g. `sig A {r: A} fact {#r = 2 }`.
 - Fields with arity > 3: e.g. `sig A {r: A -> A -> A }`.
  
 # Examples
