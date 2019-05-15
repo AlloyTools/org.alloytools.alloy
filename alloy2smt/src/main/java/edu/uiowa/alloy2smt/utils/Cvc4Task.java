@@ -13,7 +13,7 @@ public class Cvc4Task
 {
     public Cvc4Process cvc4Process;
 
-    public List<CommandResult> run(Translation translation) throws Exception
+    public List<CommandResult> run(Translation translation, boolean includeScope) throws Exception
     {
         List<CommandResult> commandResults = new ArrayList<>();
         String smtScript = translation.getSmtScript();
@@ -30,7 +30,7 @@ public class Cvc4Task
             {
                 // (push)
                 cvc4Process.sendCommand(SmtLibPrettyPrinter.PUSH);
-                CommandResult commandResult = solveCommand(index, translation);
+                CommandResult commandResult = solveCommand(index, includeScope, translation);
                 // (pop)
                 cvc4Process.sendCommand(SmtLibPrettyPrinter.POP);
                 commandResults.add(commandResult);
@@ -40,9 +40,9 @@ public class Cvc4Task
         return new ArrayList<>();
     }
 
-    private CommandResult solveCommand(int index, Translation translation) throws Exception
+    private CommandResult solveCommand(int index, boolean includeScope, Translation translation) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index);
+        String commandTranslation = translation.translateCommand(index, includeScope);
         Command command = translation.getCommands().get(index);
         String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
 

@@ -27,7 +27,7 @@ public class Utils
         return getTranslation(alloyModel);
     }
 
-    private static String translateFromModel(CompModule alloyModel, int commandIndex)
+    private static String translateFromModel(CompModule alloyModel, int commandIndex, boolean includeScope)
     {
         Alloy2SmtTranslator translator      = new Alloy2SmtTranslator(alloyModel);
         SmtProgram          smtProgram      = translator.translate();
@@ -36,7 +36,7 @@ public class Utils
         programPrinter.visit(smtProgram);
 
         String              program         = programPrinter.getSmtLib();
-        Assertion           assertion       = translator.translateCommand(commandIndex);
+        Assertion           assertion       = translator.translateCommand(commandIndex, includeScope);
         SmtLibPrettyPrinter commandPrinter  = new SmtLibPrettyPrinter();
 
         commandPrinter.visit(assertion);
@@ -46,10 +46,10 @@ public class Utils
         return program + command + SmtLibPrettyPrinter.CHECK_SAT + "\n" + SmtLibPrettyPrinter.GET_MODEL + "\n";
     }
 
-    public static String translateFromString(String alloyProgram, int commandIndex)
+    public static String translateFromString(String alloyProgram, int commandIndex, boolean includeScope)
     {
         CompModule alloyModel = CompUtil.parseEverything_fromString(null, alloyProgram);
-        return translateFromModel(alloyModel, commandIndex);
+        return translateFromModel(alloyModel, commandIndex, includeScope);
     }
 
     public static Translation translate(String alloyProgram)

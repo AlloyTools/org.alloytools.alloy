@@ -15,7 +15,7 @@ class FieldTranslatorTests
     void oneMultiplicity() throws Exception
     {
         String alloy = "sig a {f: a}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
     }
 
@@ -23,7 +23,7 @@ class FieldTranslatorTests
     void oneMultiplicityInt() throws Exception
     {
         String alloy = "sig a in Int {f: a}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
     }
 
@@ -39,7 +39,7 @@ class FieldTranslatorTests
                 "one sig c0, c1, c2 extends c {}\n" +
                 "one sig d0, d1, d2 extends d {}\n" +
                 "fact {r = a0 -> b0 -> c0 -> d0}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
 
@@ -55,7 +55,7 @@ class FieldTranslatorTests
                         "one sig c0, c1, c2 extends c {}\n" +
                         "one sig d0, d1, d2 extends d {}\n" +
                         "fact {no r}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
 
@@ -65,7 +65,7 @@ class FieldTranslatorTests
         String alloy =
             "sig s{r: s ->s -> s}\n" +
             "fact {all x, y: s | x -> y in s -> s implies y.(x.r) in s one -> one s }";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
 }

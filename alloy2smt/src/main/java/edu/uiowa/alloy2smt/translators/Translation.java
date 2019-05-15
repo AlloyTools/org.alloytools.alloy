@@ -64,10 +64,11 @@ public class Translation
 
     /**
      * @param commandIndex the index of the command
+     * @param includeScope whether to include scope in translation
      * @return the satResult of translating the given command (ignoring
      * scope constraints) into smt
      */
-    public String translateCommand(int commandIndex)
+    public String translateCommand(int commandIndex, boolean includeScope)
     {
 
         Alloy2SmtTranslator commandTranslator = new Alloy2SmtTranslator(translator);
@@ -78,7 +79,7 @@ public class Translation
         List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctions());
 
 
-        Assertion           assertion   =  commandTranslator.translateCommand(commandIndex);
+        Assertion           assertion   =  commandTranslator.translateCommand(commandIndex, includeScope);
 
         // get new declarations and definitions
         List<Sort> newSorts = commandTranslator.smtProgram
@@ -138,7 +139,7 @@ public class Translation
         for (int i = 0; i < translator.commands.size() ; i++)
         {
             stringBuilder.append(SmtLibPrettyPrinter.PUSH + "\n");
-            stringBuilder.append(translateCommand(i) + "\n");
+            stringBuilder.append(translateCommand(i, false) + "\n");
             stringBuilder.append(SmtLibPrettyPrinter.CHECK_SAT + "\n");
             stringBuilder.append(SmtLibPrettyPrinter.POP + "\n");
         }

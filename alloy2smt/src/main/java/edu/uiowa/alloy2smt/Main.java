@@ -121,7 +121,7 @@ public class Main
                 // translate all alloy commands
                 for (int i = 0; i < translation.getCommands().size(); i++)
                 {
-                    String commandTranslation = translation.translateCommand(i);
+                    String commandTranslation = translation.translateCommand(i, false);
 
                     commandTranslation         =    SmtLibPrettyPrinter.PUSH + "\n" + commandTranslation +
                             SmtLibPrettyPrinter.CHECK_SAT + "\n" + SmtLibPrettyPrinter.GET_MODEL + "\n" +

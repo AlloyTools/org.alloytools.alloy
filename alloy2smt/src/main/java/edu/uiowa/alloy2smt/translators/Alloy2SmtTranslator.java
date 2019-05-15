@@ -746,13 +746,18 @@ public class Alloy2SmtTranslator extends AbstractTranslator
      * @return an assertion that represents the translation
      * of the command
      */
-    public Assertion translateCommand(int commandIndex)
+    public Assertion translateCommand(int commandIndex, boolean includeScope)
     {
         Command command = this.commands.get(commandIndex);
 
         Expression expression = this.exprTranslator.translateExpr(command.formula);
 
         Assertion assertion = new Assertion(command.label, expression);
+
+        if(includeScope)
+        {
+            throw new UnsupportedOperationException("Not supported yet");
+        }
 
         return assertion;
     }

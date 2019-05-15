@@ -10,19 +10,18 @@ import java.util.List;
 
 public class AlloyUtils
 {
-    public static List<CommandResult> runAlloyString(String alloy) throws Exception
+    public static List<CommandResult> runAlloyString(String alloy, boolean includeScope) throws Exception
     {
         Translation translation = Utils.translate(alloy);
         Cvc4Task task = new Cvc4Task();
-        return task.run(translation);
+        return task.run(translation, includeScope);
     }
 
-    public static List<CommandResult> runAlloyFile(String fileName) throws Exception
+    public static List<CommandResult> runAlloyFile(String fileName, boolean includeScope) throws Exception
     {
         Translation translation = Utils.translateFromFile(fileName);
         Cvc4Task task = new Cvc4Task();
-        task.run(translation);
-        return task.run(translation);
+        return task.run(translation, includeScope);
     }
 
     public static FunctionDefinition getFunctionDefinition(CommandResult commandResult, String name)

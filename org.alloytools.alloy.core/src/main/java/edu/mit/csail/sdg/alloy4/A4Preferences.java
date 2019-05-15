@@ -670,6 +670,8 @@ public class A4Preferences {
         }
     };
 
+    public static final BooleanPref Cvc4IncludeCommandScope = new BooleanPref("Cvc4IncludeCommandScope", "CVC4 include scope", false);
+
     public static final DelayedChoicePref<SatSolver> Solver                 = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
 
                                                                                 @Override

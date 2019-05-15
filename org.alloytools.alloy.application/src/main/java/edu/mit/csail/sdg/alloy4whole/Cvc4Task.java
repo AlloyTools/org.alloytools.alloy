@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import edu.mit.csail.sdg.alloy4whole.instances.*;
 
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4IncludeCommandScope;
 
 public class Cvc4Task implements WorkerEngine.WorkerTask
 {
@@ -181,7 +182,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private CommandResult solveCommand(int index) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index);
+        String commandTranslation = translation.translateCommand(index, Cvc4IncludeCommandScope.get());
 
         Command command = translation.getCommands().get(index);
 

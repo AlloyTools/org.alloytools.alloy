@@ -18,7 +18,7 @@ class CardinalityTests
     {
         String alloy =  "sig A {r: A -> A} fact{#r = 2}";                
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -35,7 +35,7 @@ class CardinalityTests
     {
         String alloy =  "sig A {r: A -> A} fact{#r >= 2}";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -52,7 +52,7 @@ class CardinalityTests
     {
         String alloy =  "sig A {r: A -> A} fact {#r > 2}";                
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -70,7 +70,7 @@ class CardinalityTests
         String alloy =  "sig A {r: A -> A} fact {#r < 2}";
                 
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -88,7 +88,7 @@ class CardinalityTests
         String alloy =  "sig A {r: A -> A}fact {#r <= 2}";
                 
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -106,7 +106,7 @@ class CardinalityTests
         String alloy =  "sig A in Int{r: A -> A}fact {#r = 2}";
                 
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -122,7 +122,7 @@ class CardinalityTests
     public void test7() throws Exception
     {
         String alloy =  "sig A{} fact {#A = 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -134,7 +134,7 @@ class CardinalityTests
     public void test8() throws Exception
     {
         String alloy =  "sig A{} fact {#A > 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -146,7 +146,7 @@ class CardinalityTests
     public void test9() throws Exception
     {
         String alloy =  "sig A{} fact {#A >= 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -158,7 +158,7 @@ class CardinalityTests
     public void test10() throws Exception
     {
         String alloy =  "sig A{} fact {#A < 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -170,7 +170,7 @@ class CardinalityTests
     public void test11() throws Exception
     {
         String alloy =  "sig A{} fact {#A <= 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
@@ -182,7 +182,7 @@ class CardinalityTests
     public void test12() throws Exception
     {
         String alloy =  "sig A in Int{} fact {#A = 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");

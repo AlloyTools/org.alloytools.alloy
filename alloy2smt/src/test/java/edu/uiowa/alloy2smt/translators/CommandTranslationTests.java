@@ -13,7 +13,7 @@ class CommandTranslationTests
         String alloy = "sig A {}\n";
 
         Translation translation = Utils.translate(alloy);
-        String command = translation.translateCommand(0);
+        String command = translation.translateCommand(0, false);
 
         Assertions.assertEquals(1, translation.getCommands().size());
     }
@@ -30,7 +30,7 @@ class CommandTranslationTests
         Assertions.assertFalse(translation.getSmtScript().contains("(check-sat)"));
         Assertions.assertFalse(translation.getSmtScript().contains("(get-model)"));
 
-        String command = translation.translateCommand(0);
+        String command = translation.translateCommand(0, false);
 
         Assertions.assertEquals(
                 "; command1\n" +
@@ -50,7 +50,7 @@ class CommandTranslationTests
                 ;
         Translation translation = Utils.translate(alloy);
 
-        String command = translation.translateCommand(1);
+        String command = translation.translateCommand(1, true);
 
         Assertions.assertEquals(
                 "; command1\n" +
@@ -67,7 +67,7 @@ class CommandTranslationTests
                 "run command1 {A0 > A1 + A2}";
 
         Translation translation = Utils.translate(alloy);
-        String command = translation.translateCommand(0);
+        String command = translation.translateCommand(0, false);
 
         Assertions.assertEquals(
                 "(declare-fun _GT ((Set (Tuple Int))(Set (Tuple Int))) Bool)\n" +
@@ -89,7 +89,7 @@ class CommandTranslationTests
 
         Translation translation = Utils.translate(alloy);
 
-        String command1 = translation.translateCommand(0);
+        String command1 = translation.translateCommand(0, true);
 
         Assertions.assertEquals(
                 "; command1\n" +
@@ -98,7 +98,7 @@ class CommandTranslationTests
                                         "(member (mkTuple _x1) this_A))))\n",
                 command1);
 
-        String command2 = translation.translateCommand(1);
+        String command2 = translation.translateCommand(1, true);
 
         Assertions.assertEquals(
                 "; command2\n" +
