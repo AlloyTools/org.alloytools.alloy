@@ -90,8 +90,8 @@ CVC4  solver returns unsat for this model because when #A = 2, A = {x}  for some
 this/A={-7, 2}
 this/B={-4, -5, -7, -8, 1}
 ``` 
- Which means A = [-7 + 2]<sub>8</sub> = [3]<sub>8</sub> $
- and B = [-4 + -5 + -7 + -8 + 1]<sub>8</sub> = [1]<sub>8</sub>$ which satisfies 3 > 4. 
+ Which means A = [-7 + 2]<sub>8</sub> = [3]<sub>8</sub> 
+ and B = [-4 + -5 + -7 + -8 + 1]<sub>8</sub> = [1]<sub>8</sub> which satisfies 3 > 4. 
  
 When both operands are singletons, the semantics is similar. Both solvers return sat for this model
 ```cmd
