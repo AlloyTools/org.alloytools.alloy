@@ -54,7 +54,17 @@ class FieldTranslatorTests
                         "one sig b0, b1, b2 extends b {}\n" +
                         "one sig c0, c1, c2 extends c {}\n" +
                         "one sig d0, d1, d2 extends d {}\n" +
-                        "fact {r = a0 -> b0 -> c0 -> d0}";
+                        "fact {no r}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
+
+    @Test
+    void arity3() throws Exception
+    {
+        String alloy =
+            "sig s{r: s ->s -> s}\n" +
+            "fact {all x, y: s | x -> y in s -> s implies y.(x.r) in s one -> one s }";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy);
         assertEquals("sat", commandResults.get(0).satResult);
     }

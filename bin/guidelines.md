@@ -103,9 +103,9 @@ A > B
 }
 run {} for 4 Int, 7 seq
 ```
-# CVC4 solver limitations
+# Unsupported features
 Currently the following alloy features are not supported by CVC4 solver:
-- Cardinality operator in expressions: e.g. `sig A,B {r: A} fact {#A + 2 = 3 and #B < #A}`. However it is supported for signatures when it is one side of the comparison operator and the other side is a constant integer. 
+- Cardinality operator in expressions: e.g. `sig A,B {r: A} fact {#A + 2 = 3 and #B < #A}`. However it is supported when it is one side of the comparison operator and the other side is a constant integer. 
 ```cmd
 sig A {r: A} 
 fact {
@@ -118,7 +118,7 @@ fact {
 }
 ```
 - Fields with arity > 3: e.g. `sig A {r: A -> A -> A }`.
- 
+- Multiplicity in binary or higher-arity relation: e.g. `fact {s -> s in s one -> one s }`
 # Examples
 
 See [examples](examples) for a list of simple examples. 
