@@ -19,13 +19,7 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Alloy2SmtTranslator extends AbstractTranslator
@@ -752,13 +746,69 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         Expression expression = this.exprTranslator.translateExpr(command.formula);
 
-        Assertion assertion = new Assertion(command.label, expression);
-
         if(includeScope)
         {
-            throw new UnsupportedOperationException("Not supported yet");
+            for (Sig signature: topLevelSigs)
+            {
+                Optional<CommandScope> optional = command.scope
+                        .stream()
+                        .filter(s -> s.sig == signature)
+                        .findFirst();
+                int scope;
+                BinaryExpression.Op op;
+                if (optional.isPresent())
+                {
+                    CommandScope commandScope = optional.get();
+                    if(commandScope.isExact)
+                    {
+                        op = BinaryExpression.Op.EQ;
+                    }
+                    else
+                    {
+                        op = BinaryExpression.Op.SUBSET;
+                    }
+                    scope = commandScope.endingScope;
+                }
+                else
+                {
+                    op = BinaryExpression.Op.SUBSET;
+                    scope = command.overall;
+                }
+
+                Expression variable = signaturesMap.get(signature).getVariable();
+                if(scope >= 1)
+                {
+                    List<VariableDeclaration> declarations = new ArrayList<>();
+                    Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
+                    VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
+                    declarations.add(firstAtom);
+                    Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
+                    Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, firstTuple);
+                    for (int i = 1; i < scope; i++)
+                    {
+                        VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
+                        declarations.add(declaration);
+                        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
+                        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+                        set = new BinaryExpression(singleton, BinaryExpression.Op.UNION, set);
+                    }
+
+                    Expression constraint = new BinaryExpression(variable, op, set);
+                    if(declarations.size() > 1)
+                    {
+                        List<Expression> expressions = declarations
+                                .stream().map(d -> d.getVariable())
+                                .collect(Collectors.toList());
+                        Expression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
+                        constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND, distinct);
+                    }
+                    Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, declarations, constraint);
+                    expression = new BinaryExpression(expression, BinaryExpression.Op.AND, exists);
+                }
+            }
         }
 
+        Assertion assertion = new Assertion(command.label, expression);
         return assertion;
     }
 }
