@@ -157,4 +157,23 @@ class CommandTranslationTests
         atomsB = TranslatorUtils.getAtomSet(b);
         assertEquals (4, atomsB.size());
     }
+
+    @Test
+    void scope3() throws Exception
+    {
+        String alloy = "sig a, b {}\n" +
+                "run {} for 3 but exactly 2 a";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals ("sat", results.get(0).satResult);
+
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        Set<String> atomsA = TranslatorUtils.getAtomSet(a);
+        assertEquals (2, atomsA.size());
+
+        FunctionDefinition b = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_b");
+        Set<String> atomsB = TranslatorUtils.getAtomSet(b);
+        assertEquals (0, atomsB.size());
+    }
 }
