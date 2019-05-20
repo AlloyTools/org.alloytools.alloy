@@ -414,7 +414,8 @@ public class ExprTranslator
                         .collect(Collectors.toList());
                 for(ExprHasName name : decl.names)
                 {
-                    VariableDeclaration variable = createVariable(declSorts.get(0), name.label);
+                    String sanitizedName = TranslatorUtils.sanitizeName(name.label);
+                    VariableDeclaration variable = createVariable(declSorts.get(0), sanitizedName);
                     //ToDo: refactor this for set case
                     quantifiedSingleton2AtomMap.put(name.label, new ArrayList<>(Collections.singletonList(variable)));
                     variablesScope.put(name.label, variable.getVariable());
