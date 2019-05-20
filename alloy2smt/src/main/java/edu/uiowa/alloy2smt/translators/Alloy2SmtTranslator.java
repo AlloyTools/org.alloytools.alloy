@@ -748,62 +748,65 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         if(includeScope)
         {
-            for (Sig signature: topLevelSigs)
+            for (Sig signature: reachableSigs)
             {
-                Optional<CommandScope> optional = command.scope
-                        .stream()
-                        .filter(s -> s.sig == signature)
-                        .findFirst();
-                int scope;
-                BinaryExpression.Op op;
-                if (optional.isPresent())
+                if (signature instanceof Sig.PrimSig)
                 {
-                    CommandScope commandScope = optional.get();
-                    if(commandScope.isExact)
+                    Optional<CommandScope> optional = command.scope
+                            .stream()
+                            .filter(s -> s.sig == signature)
+                            .findFirst();
+                    int scope;
+                    BinaryExpression.Op op;
+                    if (optional.isPresent())
                     {
-                        op = BinaryExpression.Op.EQ;
+                        CommandScope commandScope = optional.get();
+                        if(commandScope.isExact)
+                        {
+                            op = BinaryExpression.Op.EQ;
+                        }
+                        else
+                        {
+                            op = BinaryExpression.Op.SUBSET;
+                        }
+                        scope = commandScope.endingScope;
                     }
                     else
                     {
                         op = BinaryExpression.Op.SUBSET;
-                    }
-                    scope = commandScope.endingScope;
-                }
-                else
-                {
-                    op = BinaryExpression.Op.SUBSET;
-                    scope = command.overall;
-                }
-
-                Expression variable = signaturesMap.get(signature).getVariable();
-                if(scope >= 1)
-                {
-                    List<VariableDeclaration> declarations = new ArrayList<>();
-                    Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
-                    VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
-                    declarations.add(firstAtom);
-                    Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
-                    Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, firstTuple);
-                    for (int i = 1; i < scope; i++)
-                    {
-                        VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
-                        declarations.add(declaration);
-                        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
-                        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
-                        set = new BinaryExpression(singleton, BinaryExpression.Op.UNION, set);
+                        scope = command.overall;
                     }
 
-                    Expression constraint = new BinaryExpression(variable, op, set);
-                    if(declarations.size() > 1)
+                    Expression variable = signaturesMap.get(signature).getVariable();
+                    if(scope >= 1)
                     {
-                        List<Expression> expressions = declarations
-                                .stream().map(d -> d.getVariable())
-                                .collect(Collectors.toList());
-                        Expression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
-                        constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND, distinct);
+                        List<VariableDeclaration> declarations = new ArrayList<>();
+                        Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
+                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
+                        declarations.add(firstAtom);
+                        Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
+                        Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, firstTuple);
+                        for (int i = 1; i < scope; i++)
+                        {
+                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
+                            declarations.add(declaration);
+                            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
+                            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+                            set = new BinaryExpression(singleton, BinaryExpression.Op.UNION, set);
+                        }
+
+                        Expression constraint = new BinaryExpression(variable, op, set);
+                        if(declarations.size() > 1)
+                        {
+                            List<Expression> expressions = declarations
+                                    .stream().map(d -> d.getVariable())
+                                    .collect(Collectors.toList());
+                            Expression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
+                            constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND, distinct);
+                        }
+                        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, declarations, constraint);
+                        expression = new BinaryExpression(expression, BinaryExpression.Op.AND, exists);
                     }
-                    Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, declarations, constraint);
-                    expression = new BinaryExpression(expression, BinaryExpression.Op.AND, exists);
                 }
             }
         }

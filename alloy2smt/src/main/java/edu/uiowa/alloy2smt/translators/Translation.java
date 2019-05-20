@@ -133,13 +133,13 @@ public class Translation
      * @return a translation for all commands in smt using (check-sat)
      * without getting the models
      */
-    public String translateAllCommandsWithCheckSat()
+    public String translateAllCommandsWithCheckSat(boolean includeScope)
     {
         StringBuilder stringBuilder = new StringBuilder(getSmtScript());
         for (int i = 0; i < translator.commands.size() ; i++)
         {
             stringBuilder.append(SmtLibPrettyPrinter.PUSH + "\n");
-            stringBuilder.append(translateCommand(i, false) + "\n");
+            stringBuilder.append(translateCommand(i, includeScope) + "\n");
             stringBuilder.append(SmtLibPrettyPrinter.CHECK_SAT + "\n");
             stringBuilder.append(SmtLibPrettyPrinter.POP + "\n");
         }

@@ -662,7 +662,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         // output the smt file
         File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
-        String allCommands  = translation.translateAllCommandsWithCheckSat();
+        String allCommands  = translation.translateAllCommandsWithCheckSat(Cvc4IncludeCommandScope.get());
         Formatter formatter = new Formatter(smtFile);
         formatter.format("%s", allCommands);
         formatter.close();

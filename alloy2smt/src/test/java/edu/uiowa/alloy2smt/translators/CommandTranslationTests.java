@@ -17,13 +17,10 @@ class CommandTranslationTests
 {
 
     @Test
-    void noCommand()
+    void defaultCommand()
     {
         String alloy = "sig A {}\n";
-
         Translation translation = Utils.translate(alloy);
-        String command = translation.translateCommand(0, false);
-
         assertEquals(1, translation.getCommands().size());
     }
 
@@ -36,11 +33,7 @@ class CommandTranslationTests
 
         Translation translation = Utils.translate(alloy);
 
-        Assertions.assertFalse(translation.getSmtScript().contains("(check-sat)"));
-        Assertions.assertFalse(translation.getSmtScript().contains("(get-model)"));
-
         String command = translation.translateCommand(0, false);
-
         assertEquals(
                 "; command1\n" +
                 "(assert (or (exists ((_a3 Atom)) (and (= this_A (singleton (mkTuple _a3))) true)) (exists ((_a4 Atom)(_a5 Atom)) (and (= this_A (insert (mkTuple _a5) (singleton (mkTuple _a4)))) (distinct _a4 _a5)))))\n",
@@ -59,7 +52,7 @@ class CommandTranslationTests
                 ;
         Translation translation = Utils.translate(alloy);
 
-        String command = translation.translateCommand(1, true);
+        String command = translation.translateCommand(1, false);
 
         assertEquals(
                 "; command1\n" +
@@ -98,7 +91,7 @@ class CommandTranslationTests
 
         Translation translation = Utils.translate(alloy);
 
-        String command1 = translation.translateCommand(0, true);
+        String command1 = translation.translateCommand(0, false);
 
         assertEquals(
                 "; command1\n" +
@@ -107,7 +100,7 @@ class CommandTranslationTests
                                         "(member (mkTuple _x1) this_A))))\n",
                 command1);
 
-        String command2 = translation.translateCommand(1, true);
+        String command2 = translation.translateCommand(1, false);
 
         assertEquals(
                 "; command2\n" +
@@ -175,5 +168,25 @@ class CommandTranslationTests
         FunctionDefinition b = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_b");
         Set<String> atomsB = TranslatorUtils.getAtomSet(b);
         assertEquals (0, atomsB.size());
+    }
+
+    @Test
+    void scope4Abstract() throws Exception
+    {
+        String alloy = "abstract sig a, b {}\n" +
+                "sig a0, a1 extends a {}\n" +
+                "run {} for 3 but exactly 2 a0, exactly 1 a1";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals ("sat", results.get(0).satResult);
+
+        FunctionDefinition a0 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a0");
+        Set<String> atomsA0 = TranslatorUtils.getAtomSet(a0);
+        assertEquals (2, atomsA0.size());
+
+        FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a1");
+        Set<String> atomsA1 = TranslatorUtils.getAtomSet(a1);
+        assertEquals (1, atomsA1.size());
     }
 }
