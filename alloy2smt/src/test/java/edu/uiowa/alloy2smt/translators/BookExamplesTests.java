@@ -29,49 +29,54 @@ public class BookExamplesTests
     public void addressBook1b() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1b.als", true);
-        
+        assertEquals("sat", results.get(0).satResult);
     }
 
     @Test
     public void addressBook1c() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1c.als", true);
-        
+        assertEquals("unsat", results.get(0).satResult);
     }
 
     @Test
     public void addressBook1d() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1d.als", true);
-        
+        assertEquals("sat", results.get(0).satResult);
     }
 
     @Test
     public void addressBook1e() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1e.als", true);
-        
+        assertEquals("sat", results.get(0).satResult);
     }
 
     @Test
     public void addressBook1f() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1f.als", true);
-        
+        assertEquals("sat", results.get(0).satResult);
     }
 
     @Test
     public void addressBook1g() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1g.als", true);
-        
+        assertEquals("sat", results.get(0).satResult);
     }
 
     @Test
     public void addressBook1h() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true);
-        
+        assertEquals("sat", results.get(0).satResult);
+        assertEquals("sat", results.get(1).satResult);
+        assertEquals("unsat", results.get(2).satResult);
+        assertEquals("unsat", results.get(3).satResult);
+        assertEquals("unsat", results.get(4).satResult);
+        assertEquals("unsat", results.get(5).satResult);
     }
 
 
