@@ -8,7 +8,7 @@ import sys
 if sys.platform == 'win32' :
     solvers = [ 'glucose-2.1', 'minisat-2.2.0', 'minisat-p_v1.14' ]
 else :
-    solvers = [ 'cryptominisat-2.9.5', 'glucose-2.1', 'lingeling-587f', 'minisat-2.2.0', 'minisat-p_v1.14' ]
+    solvers = [ 'cryptominisat-2.9.5', 'glucose-2.1', 'glucose-syrup-4.1', 'lingeling-587f', 'minisat-2.2.0', 'minisat-p_v1.14' ]
 
 def options(opt):
     opt.recurse(solvers)               # set options for all solvers
