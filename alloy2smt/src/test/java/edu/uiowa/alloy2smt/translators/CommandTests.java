@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class CommandTranslationTests
+class CommandTests
 {
 
     @Test
@@ -188,5 +188,33 @@ class CommandTranslationTests
         FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a1");
         Set<String> atomsA1 = TranslatorUtils.getAtomSet(a1);
         assertEquals (1, atomsA1.size());
+    }
+
+    @Test
+    void scope5Abstract() throws Exception
+    {
+        String alloy = "abstract sig a {}\n" +
+                "sig a0, a1, a2 extends a {}\n" +
+                "run {} for 2 but exactly 2 a0, exactly 2 a1, exactly 1 a2";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals ("sat", results.get(0).satResult);
+
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        Set<String> atomsA = TranslatorUtils.getAtomSet(a);
+        assertEquals (5, atomsA.size());
+
+        FunctionDefinition a0 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a0");
+        Set<String> atomsA0 = TranslatorUtils.getAtomSet(a0);
+        assertEquals (2, atomsA0.size());
+
+        FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a1");
+        Set<String> atomsA1 = TranslatorUtils.getAtomSet(a1);
+        assertEquals (2, atomsA1.size());
+
+        FunctionDefinition a2 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a2");
+        Set<String> atomsA2 = TranslatorUtils.getAtomSet(a2);
+        assertEquals (1, atomsA2.size());
     }
 }

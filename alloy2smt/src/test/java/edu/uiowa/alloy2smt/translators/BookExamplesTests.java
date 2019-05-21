@@ -2,18 +2,11 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
-import edu.uiowa.smt.TranslatorUtils;
-import edu.uiowa.smt.smtAst.FunctionDefinition;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class BookExamplesTests
 {

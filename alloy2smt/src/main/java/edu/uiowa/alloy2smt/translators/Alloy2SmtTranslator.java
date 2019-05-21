@@ -774,7 +774,15 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     else
                     {
                         op = BinaryExpression.Op.SUBSET;
-                        scope = command.overall;
+                        if(signature.isAbstract == null)
+                        {
+                            scope = command.overall;
+                        }
+                        else
+                        {
+                            // the scope is the sum of its children
+                            scope = getScope((Sig.PrimSig) signature, command);
+                        }
                     }
 
                     Expression variable = signaturesMap.get(signature).getVariable();
@@ -813,5 +821,39 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         Assertion assertion = new Assertion(command.label, expression);
         return assertion;
+    }
+
+    private int getScope(Sig.PrimSig parent, Command command)
+    {
+        int scopeSum = 0;
+        for (Sig signature: parent.children())
+        {
+            if(signature.isAbstract == null)
+            {
+                Optional<CommandScope> optional = command.scope
+                        .stream()
+                        .filter(s -> s.sig == signature)
+                        .findFirst();
+                if (optional.isPresent())
+                {
+                    CommandScope commandScope = optional.get();
+                    scopeSum += commandScope.endingScope;
+                }
+                else
+                {
+                    scopeSum += command.overall;
+                }
+            }
+            else
+            {
+                scopeSum += getScope((Sig.PrimSig) signature, command);
+            }
+        }
+
+        if(scopeSum == 0) // no children yet
+        {
+            scopeSum = command.overall;
+        }
+        return scopeSum;
     }
 }
