@@ -688,12 +688,11 @@ public class ExprBinaryTranslator
 
 
             comparisonExpr =  getComparison(op, leftExpr, rightExpr);
+        }
 
-            //ToDo: review the purpose of these 2 lines.
-            exprTranslator.translator.auxExpr = null;
-            exprTranslator.translator.existentialBdVars.clear();
-        }    
-
+        //ToDo: review the purpose of these 2 lines.
+        exprTranslator.translator.auxExpr = null;
+        exprTranslator.translator.existentialBdVars.clear();
         return comparisonExpr;     
     }
     

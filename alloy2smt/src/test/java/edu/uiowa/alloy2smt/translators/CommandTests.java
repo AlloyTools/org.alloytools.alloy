@@ -113,6 +113,18 @@ class CommandTests
                 command2);
     }
 
+
+    @Test
+    void predicate1 () throws Exception
+    {
+        String alloy = "sig a{} pred p[]{#a > 2} run p for 4";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        Set<String> atoms = TranslatorUtils.getAtomSet(a);
+        assertEquals (3, atoms.size());
+    }
+
     @Test
     void scope1() throws Exception
     {

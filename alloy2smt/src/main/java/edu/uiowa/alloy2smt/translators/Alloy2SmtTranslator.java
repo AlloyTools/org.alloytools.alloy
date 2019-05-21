@@ -416,9 +416,10 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 case ONEOF      :
                 case LONEOF     :
                 case SOMEOF     : 
-                case SETOF      :                 
+                case SETOF      :
+                case CARDINALITY:
                 case NOT        : sortFunctionDependency(callingFuncName, exprUnary.sub, dependency); break;
-                case CAST2INT   : return;
+                case CAST2INT   :
                 case CAST2SIGINT : return;
                 default:
                 {
