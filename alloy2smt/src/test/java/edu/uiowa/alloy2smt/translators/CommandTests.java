@@ -217,4 +217,13 @@ class CommandTests
         Set<String> atomsA2 = TranslatorUtils.getAtomSet(a2);
         assertEquals (1, atomsA2.size());
     }
+
+    @Test
+    void scope6() throws Exception
+    {
+        String alloy = "sig a {} fact {#a = 5}";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
+        // default scope is 4, so the formula #a = 5 is unsat
+        assertEquals ("unsat", results.get(0).satResult);
+    }
 }
