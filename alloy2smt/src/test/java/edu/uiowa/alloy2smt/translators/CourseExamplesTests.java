@@ -24,7 +24,10 @@ public class CourseExamplesTests
     public void academia1() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-1.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("sat", results.get(1).satResult);
+        assertEquals("unsat", results.get(2).satResult);
+        assertEquals("sat", results.get(3).satResult);
     }
 
     @Test
@@ -39,27 +42,32 @@ public class CourseExamplesTests
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-2.als", true);
         assertEquals("sat", results.get(0).satResult);
+        assertEquals("unsat", results.get(1).satResult);
+        assertEquals("sat", results.get(2).satResult);
     }
 
     @Test
     public void academia3() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-3.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("unsat", results.get(0).satResult);
     }
 
     @Test
     public void academia3a() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-3a.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("unsat", results.get(0).satResult);
     }
 
     @Test
     public void adam_eve() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/adam_eve.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("sat", results.get(1).satResult);
+        assertEquals("unsat", results.get(2).satResult);
+        assertEquals("sat", results.get(3).satResult);
     }
 
     @Test
@@ -67,11 +75,6 @@ public class CourseExamplesTests
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/family-1.als", true);
         assertEquals("sat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("unsat", results.get(3).satResult);
-        assertEquals("unsat", results.get(4).satResult);
-        assertEquals("unsat", results.get(5).satResult);
     }
 
 
@@ -87,6 +90,11 @@ public class CourseExamplesTests
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("./test/family-3.als", true);
         assertEquals("sat", results.get(0).satResult);
+        assertEquals("unsat", results.get(1).satResult);
+        assertEquals("sat", results.get(2).satResult);
+        assertEquals("sat", results.get(3).satResult);
+        assertEquals("unsat", results.get(4).satResult);
+        assertEquals("sat", results.get(5).satResult);
     }
 
     @Test

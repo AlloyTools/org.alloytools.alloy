@@ -840,9 +840,17 @@ public class ExprBinaryTranslator
 
     private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, Expression> variablesScope)
     {
+        Expression expression = exprTranslator.translateExpr(expr.sub, variablesScope);
+        if(n == 0)
+        {
+            // the set expression is empty
+            Expression empty = new UnaryExpression(UnaryExpression.Op.EMPTYSET, expression.getSort());
+            Expression equal = new BinaryExpression(expression, BinaryExpression.Op.EQ, empty);
+            return equal;
+        }
         int arity = expr.sub.type().arity();
         List<Expression> variables = new ArrayList<>();
-        List<VariableDeclaration> declarations = new ArrayList<>();
+        List<VariableDeclaration> declarations;
         List<Sort> exprSorts = exprTranslator.getExprSorts(expr.sub);
         
         if(arity == 1)
@@ -884,14 +892,13 @@ public class ExprBinaryTranslator
         }
         
         Expression  distElementSetExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(variables);
-        Expression  left    = exprTranslator.translateExpr(expr.sub, variablesScope);
         Expression  right   = distElementSetExpr;
         
         switch (op)
         {
             case EQ :
             {
-                Expression eqExpr = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+                Expression eqExpr = new BinaryExpression(expression, BinaryExpression.Op.EQ, right);
                 
                 if(exprTranslator.translator.auxExpr != null)
                 {
