@@ -1,73 +1,73 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.alloy2smt.utils.CommandResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MultiplicityTests
 {
     @Test
-    public void oneSetDeclaration()
+    public void oneSetDeclaration() throws Exception
     {
-        String alloy =  "sig A {} fact f {some x: one A | some A}";
-
-        Translation translation = Utils.translate(alloy);
-
-        String script = translation.getSmtScript();
-
-        Assertions.assertTrue(script.contains("; f\n" +
-                "(assert (exists ((x Atom)) (and (and true (member (mkTuple x) this_A)) (exists ((_x1 Atom)) (member (mkTuple _x1) this_A)))))\n"));
+        String alloy =  "sig A {} fact f {#A = 1 and some x: one A | some A}";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
     }
 
     @Test
-    public void oneOneSetDeclaration()
+    public void oneOneSetDeclaration() throws Exception
     {
-        String alloy =  "sig A {} fact f {some x: A one -> one A | some A}";
-
-        Translation translation = Utils.translate(alloy);
-
-        String script = translation.getSmtScript();
-
-        Assertions.assertTrue(script.contains("; f\n" +
-                "(assert (exists ((x Atom)) (and (and true (member (mkTuple x) this_A)) (exists ((_x1 Atom)) (member (mkTuple _x1) this_A)))))\n"));
+        String alloy =  "sig A {} fact f {#A = 1 and some x: A one -> one A | some A}";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
     }
 
     @Test
-    public void loneSetDeclaration()
+    public void loneSetDeclaration() throws Exception
     {
-        String alloy =  "sig A {} fact f {some x: lone A | lone x and no x}";
-
-        Translation translation = Utils.translate(alloy);
-
-        String script = translation.getSmtScript();
-
-        Assertions.assertTrue(script.contains("; f\n" +
-                "(assert (exists ((x (Set (Tuple Atom)))) (and (and true (subset x this_A)) (and (exists ((_x1 Atom)) (subset x (singleton (mkTuple _x1)))) (= x (as emptyset (Set (Tuple Atom))))))))\n"));
+        String alloy =  "sig A {} fact f {#A = 1 and some x: lone A | lone x and no x}";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
     }
 
     @Test
-    public void someSetDeclaration()
+    public void someSetDeclaration() throws Exception
     {
         String alloy =  "sig A {} fact f {some x: some A | lone x and no x}";
-
-        Translation translation = Utils.translate(alloy);
-
-        String script = translation.getSmtScript();
-
-        Assertions.assertTrue(script.contains("; f\n" +
-                "(assert (exists ((x (Set (Tuple Atom)))) (and (and true (subset x this_A)) (and (exists ((_x1 Atom)) (subset x (singleton (mkTuple _x1)))) (= x (as emptyset (Set (Tuple Atom))))))))\n"));
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
     }
 
     @Test
-    public void setSetDeclaration()
+    public void setSetDeclaration() throws Exception
     {
         String alloy =  "sig A {} fact f {some x: set A | no x}";
 
-        Translation translation = Utils.translate(alloy);
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+    }
 
-        String script = translation.getSmtScript();
+    @Test
+    public void noneSetDeclaration1() throws Exception
+    {
+        String alloy =  "sig A {} fact f {some x: A | no x}";
 
-        Assertions.assertTrue(script.contains("; f\n" +
-                "(assert (exists ((x (Set (Tuple Atom)))) (and (and true (and true (subset x this_A))) (= x (as emptyset (Set (Tuple Atom)))))))\n"));
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
+    }
+
+    @Test
+    public void noneSetDeclaration2() throws Exception
+    {
+        String alloy =  "sig A {} pred p[a: A]{ no a} run p";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
     }
 }

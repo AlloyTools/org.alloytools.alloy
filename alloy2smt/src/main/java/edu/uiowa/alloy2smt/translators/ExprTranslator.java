@@ -405,8 +405,8 @@ public class ExprTranslator
             Expression declExpr     = getDeclarationExpr(decl, variablesScope);
             List<Sort> declSorts    = getExprSorts(decl.expr);
 
-            if( decl.expr instanceof ExprUnary &&
-                    ((ExprUnary) decl.expr).op != ExprUnary.Op.ONEOF)
+            //cases a: [one, some, set, lone] A where A has arity 1
+            if( decl.expr instanceof ExprUnary && decl.expr.type().hasArity(1))
             {
                 Sort sort = declSorts.get(0).getSort();
                 declSorts = declSorts.stream()
@@ -430,6 +430,7 @@ public class ExprTranslator
                                     new UnaryExpression(UnaryExpression.Op.EMPTYSET, variable.getSort())
                             ));
                         } break;
+                        case NOOP: // NOOP is the same as ONEOF in case of
                         case ONEOF:
                         {
                             VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
