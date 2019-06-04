@@ -3,6 +3,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
@@ -268,7 +269,7 @@ public class ExprBinaryTranslator
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
             List<VariableDeclaration>  existentialBdVars       = new ArrayList<>();
-            List<Sort> leftExprSorts = exprTranslator.getExprSorts(((ExprUnary)expr.left).sub);
+            List<Sort> leftExprSorts = AlloyUtils.getExprSorts(((ExprUnary)expr.left).sub);
             
             switch(op)
             {
@@ -479,7 +480,7 @@ public class ExprBinaryTranslator
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
             List<VariableDeclaration>  existentialBdVars       = new ArrayList<>();
-            List<Sort> rightExprSorts = exprTranslator.getExprSorts(((ExprUnary)expr.right).sub);
+            List<Sort> rightExprSorts = AlloyUtils.getExprSorts(((ExprUnary)expr.right).sub);
             
             switch(op)
             {
@@ -740,22 +741,22 @@ public class ExprBinaryTranslator
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) left);
+            left = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) left);
         }
         else if(left instanceof MultiArityExpression &&
                 ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
+            left = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)left);
         }
         if(right instanceof Variable &&
                 (!(((Variable)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) right);
+            right = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) right);
         }
         else if(right instanceof MultiArityExpression &&
                 ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+            right = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)right);
         }
 
         if(left.getSort().equals(AbstractTranslator.setOfIntSortTuple))
@@ -851,7 +852,7 @@ public class ExprBinaryTranslator
         int arity = expr.sub.type().arity();
         List<Expression> variables = new ArrayList<>();
         List<VariableDeclaration> declarations;
-        List<Sort> exprSorts = exprTranslator.getExprSorts(expr.sub);
+        List<Sort> exprSorts = AlloyUtils.getExprSorts(expr.sub);
         
         if(arity == 1)
         {
@@ -925,22 +926,22 @@ public class ExprBinaryTranslator
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) left);
+            left = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) left);
         }
         else if(left instanceof MultiArityExpression &&
                 ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
+            left = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)left);
         }
         if(right instanceof Variable &&
                 (!(((Variable)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) right);
+            right = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) right);
         }
         else if(right instanceof MultiArityExpression &&
                 ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+            right = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)right);
         } 
 
         BinaryExpression operation = new BinaryExpression(left, op, right);
@@ -955,22 +956,22 @@ public class ExprBinaryTranslator
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) left);
+            left = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) left);
         }
         else if(left instanceof MultiArityExpression &&
                 ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
+            left = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)left);
         }
         if(right instanceof Variable &&
                 (!(((Variable)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) right);
+            right = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) right);
         }
         else if(right instanceof MultiArityExpression &&
                 ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+            right = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)right);
         }
 
         if(left.getSort().equals(AbstractTranslator.setOfIntSortTuple))
@@ -1010,22 +1011,22 @@ public class ExprBinaryTranslator
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) left);
+            left = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) left);
         }
         else if(left instanceof MultiArityExpression &&
                 ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            left = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)left);
+            left = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)left);
         }
         if(right instanceof Variable &&
                 (!(((Variable)right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = exprTranslator.mkSingletonOutOfTupleOrAtom((Variable) right);
+            right = AlloyUtils.mkSingletonOutOfTupleOrAtom((Variable) right);
         }
         else if(right instanceof MultiArityExpression &&
                 ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
         {
-            right = exprTranslator.mkSingletonOutOfTuple((MultiArityExpression)right);
+            right = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)right);
         }        
         BinaryExpression    join    = new BinaryExpression(left, BinaryExpression.Op.JOIN, right);
         return join;

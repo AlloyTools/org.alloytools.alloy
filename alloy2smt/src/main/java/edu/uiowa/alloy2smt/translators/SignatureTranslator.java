@@ -13,6 +13,7 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Sig;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -204,7 +205,7 @@ public class SignatureTranslator
         {
             constDecl = new ConstantDeclaration(name, translator.atomSort);
         }
-        expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+        expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         translator.smtProgram.addConstantDeclaration(constDecl);
         
         BinaryExpression subset   = new BinaryExpression(signature.getVariable(), BinaryExpression.Op.EQ, expr);
@@ -222,12 +223,12 @@ public class SignatureTranslator
         if(isInt)
         {
             constDecl = new ConstantDeclaration(name, translator.uninterpretedInt);
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             constDecl = new ConstantDeclaration(name, translator.atomSort);       
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
 
@@ -246,12 +247,12 @@ public class SignatureTranslator
         if(isInt)
         {
             constDecl = new ConstantDeclaration(name, translator.uninterpretedInt);
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             constDecl = new ConstantDeclaration(name, translator.atomSort);       
-            expr = translator.exprTranslator.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
 
@@ -382,7 +383,7 @@ public class SignatureTranslator
             Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
             VariableDeclaration bdVar = new VariableDeclaration(bdVarName, translator.atomSort);
             boundVariables.put(bdVar, translator.signaturesMap.get(sigFact.getKey()).getVariable());
-            Expression member = translator.exprTranslator.getMemberExpression(boundVariables, 0);
+            Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
             Map<String, Expression> variablesScope = new HashMap<>();
 
             variablesScope.put(bdVarName, new Variable(new FunctionDeclaration(bdVarName, translator.atomSort)));

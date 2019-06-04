@@ -1,9 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -66,6 +64,28 @@ class MultiplicityTests
     public void noneSetDeclaration2() throws Exception
     {
         String alloy =  "sig A {} pred p[a: A]{ no a} run p";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
+    }
+
+    @Test
+    public void multipleQuantifiers() throws Exception
+    {
+        String alloy =  "sig A {}\n" +
+                "fact f1 {all a, b : A  ->  A | some A}\n" +
+                "fact f2 {all a, b : one A | some A}";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
+    }
+
+    @Test
+    public void multipleQuantifiersWithInt() throws Exception
+    {
+        String alloy =  "sig A {}\n" +
+                "fact f1 {all a, b : A  ->  IntA | some A}\n" +
+                "fact f2 {all a, b : one A | some A}";
 
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
         assertEquals ("unsat", results.get(0).satResult);

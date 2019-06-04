@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -175,7 +176,7 @@ public class ExprUnaryTranslator
     private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
     {
         int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
         Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);        
         
         List<Sort> elementSorts = new ArrayList<>();
@@ -192,7 +193,7 @@ public class ExprUnaryTranslator
     private Expression translateSome(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
         Expression someRel  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
         List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();        
@@ -231,7 +232,7 @@ public class ExprUnaryTranslator
     private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
         Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
         List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();
@@ -274,7 +275,7 @@ public class ExprUnaryTranslator
     private Expression translateLone(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = exprTranslator.getExprSorts(exprUnary.sub);
+        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
         Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
         List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();

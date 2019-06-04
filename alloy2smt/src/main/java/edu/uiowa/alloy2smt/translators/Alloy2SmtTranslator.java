@@ -15,6 +15,7 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
@@ -271,7 +272,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         {                    
             for(int j = 0; j < exprQtBody.decls.get(i).names.size(); ++j)
             {
-                elementSorts.addAll(exprTranslator.getExprSorts(exprQtBody.decls.get(i).expr));
+                elementSorts.addAll(AlloyUtils.getExprSorts(exprQtBody.decls.get(i).expr));
             }                    
         }
 
@@ -298,8 +299,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         for(Decl decl : exprQtBody.decls)
         {                    
-            Expression declExpr         = exprTranslator.getDeclarationExpr(decl, variablesScope);
-            List<Sort> declExprSorts    = exprTranslator.getExprSorts(decl.expr);
+            Expression declExpr         = exprTranslator.translateExpr(decl.expr, variablesScope);
+            List<Sort> declExprSorts    = AlloyUtils.getExprSorts(decl.expr);
 
             for (ExprHasName name: decl.names)
             {
@@ -311,11 +312,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         }
         
         Expression setCompBodyExpr  = exprTranslator.translateExpr(exprQtBody.sub, variablesScope);
-        Expression membership       = exprTranslator.getMemberExpression(inputBdVars, 0);
+        Expression membership       = AlloyUtils.getMemberExpression(inputBdVars, 0);
 
         for(int i = 1; i < inputBdVars.size(); ++i)
         {
-            membership = new BinaryExpression(membership, BinaryExpression.Op.AND, exprTranslator.getMemberExpression(inputBdVars, i));
+            membership = new BinaryExpression(membership, BinaryExpression.Op.AND, AlloyUtils.getMemberExpression(inputBdVars, i));
         }
         membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
         Expression setMembership = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getVariable());
