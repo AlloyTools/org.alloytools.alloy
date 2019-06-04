@@ -12,9 +12,21 @@ chmod +x cvc4_linux
 java -jar alloy_cvc4.jar     
 ```
 # CVC4 options 
-The relational solver CVC4 can be chosen from the the options menu. CVC4 timeout can also be set there.  
 
 ![Dependency graph](doc/options.png)
+
+The *relational solver* CVC4 can be chosen from the the options menu. *CVC4 timeout* can also be set there (default is 0.5 minutes).  *CVC4 include scope* specifies whether to translate or ignore the scope constraints in all commands. The default is to ignore the scope which is faster. For the following example, cvc4 relational solver returns the empty set for signature A when scope is ignored. 
+
+```cmd
+sig A {}
+run {} for exactly 3 A
+```
+Scope constraints can be written as cardinality constraints in which case cvc4 relational solver returns the intended result. 
+
+```cmd
+sig A {}
+run {#A = 3} 
+```
 
 # Integer signatures 
 ## Semantics of functions plus, minus, mul, div, rem
