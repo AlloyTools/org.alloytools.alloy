@@ -144,6 +144,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.smtProgram.addFunction(this.atomNone);
         this.smtProgram.addFunction(this.atomUniverse);
         this.smtProgram.addFunction(this.atomIdentity);
+        this.smtProgram.addFunction(this.intUniv);
     }
 
     private void translateSpecialAssertions()
@@ -173,6 +174,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
         this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniverse.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for UninterpretedInt", new BinaryExpression(intUniv.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple))));
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function

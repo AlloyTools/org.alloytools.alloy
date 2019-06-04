@@ -10,6 +10,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -20,12 +21,11 @@ import java.util.Map;
 public class ExprUnaryTranslator
 {
     final ExprTranslator exprTranslator;
-    final String valueOfUnaryIntTup;
-
+    final Alloy2SmtTranslator translator;
     public ExprUnaryTranslator(ExprTranslator exprTranslator)
     {
-        this.exprTranslator         = exprTranslator;
-        this.valueOfUnaryIntTup     = getTranslator().uninterpretedIntValue.getName();
+        this.exprTranslator = exprTranslator;
+        this.translator = exprTranslator.translator;
     }
 
     Expression translateExprUnary(ExprUnary exprUnary, Map<String, Expression> variablesScope)
@@ -82,7 +82,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
     {
         Expression          closure             = translateClosure(exprUnary, variablesScope);
-        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, getTranslator().atomIdentity.getVariable());
+        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, AbstractTranslator.atomIdentity.getVariable());
         return reflexiveClosure;
     }
 
@@ -104,23 +104,23 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {                    
-                    case "univ": return getTranslator().atomUniverse.getVariable();
-                    case "iden": return getTranslator().atomIdentity.getVariable();
-                    case "none": return getTranslator().atomNone.getVariable();
-                    case "Int": throw new UnsupportedOperationException("We do not support the built-in signature Int used in facts!");
+                    case "univ": return Alloy2SmtTranslator.atomUniverse.getVariable();
+                    case "iden": return Alloy2SmtTranslator.atomIdentity.getVariable();
+                    case "none": return Alloy2SmtTranslator.atomNone.getVariable();
+                    case "Int":  return Alloy2SmtTranslator.intUniv.getVariable();
                     default:
                         throw new UnsupportedOperationException();
                 }
             }
             else
             {
-                return getTranslator().signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
+                return translator.signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
             }
         }
 
         if(exprUnary.sub instanceof Sig.Field)
         {
-            return getTranslator().fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
+            return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
         }
 
         if(exprUnary.sub instanceof ExprVar)
@@ -133,11 +133,11 @@ public class ExprUnaryTranslator
                 
                 if(constExpr instanceof Variable)
                 {
-                    if(((Variable)constExpr).getDeclaration().getSort() == getTranslator().atomSort)
+                    if(((Variable)constExpr).getDeclaration().getSort() == AbstractTranslator.atomSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     }                    
-                    else if(((Variable)constExpr).getDeclaration().getSort() == getTranslator().intSort)
+                    else if(((Variable)constExpr).getDeclaration().getSort() == AbstractTranslator.intSort)
                     {
                         return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     } 
@@ -161,12 +161,12 @@ public class ExprUnaryTranslator
     {
         Expression finalExpr = expr;
         
-        if(getTranslator().auxExpr != null)
+        if(translator.auxExpr != null)
         {
-            finalExpr = new BinaryExpression(getTranslator().auxExpr, BinaryExpression.Op.AND, finalExpr);            
-            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, getTranslator().existentialBdVars, finalExpr);
-            getTranslator().auxExpr = null;
-            getTranslator().existentialBdVars.clear();            
+            finalExpr = new BinaryExpression(translator.auxExpr, BinaryExpression.Op.AND, finalExpr);
+            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, translator.existentialBdVars, finalExpr);
+            translator.auxExpr = null;
+            translator.existentialBdVars.clear();
             
         }
         return finalExpr;
@@ -203,17 +203,10 @@ public class ExprUnaryTranslator
             String name = TranslatorUtils.getNewName();
             VariableDeclaration bdVar;
             Expression bdVarExpr;
-            
-            if(sort instanceof IntSort)
-            {
-                bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
-            }
-            else
-            {
-                bdVar = new VariableDeclaration(name, getTranslator().atomSort);
-                bdVarExpr = bdVar.getVariable();
-            }
+
+            bdVar = new VariableDeclaration(name, sort);
+            bdVarExpr = bdVar.getVariable();
+
             bdVars.add(bdVar);
             bdVarExprs.add(bdVarExpr);
         }
@@ -245,12 +238,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, getTranslator().atomSort);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort);
                 bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
@@ -288,12 +281,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, getTranslator().uninterpretedInt);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, getTranslator().atomSort);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort);
                 bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
@@ -345,12 +338,6 @@ public class ExprUnaryTranslator
     
     public Expression mkUnaryIntTupValue(Expression expr)
     {
-        return new FunctionCallExpression(getTranslator().getFunction(valueOfUnaryIntTup), expr);
+        return new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, expr);
     }
-
-    private Alloy2SmtTranslator getTranslator() 
-    {
-        return exprTranslator.translator;
-    }
-
 }

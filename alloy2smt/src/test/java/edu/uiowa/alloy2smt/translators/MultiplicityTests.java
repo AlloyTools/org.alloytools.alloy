@@ -88,6 +88,6 @@ class MultiplicityTests
                 " fact f2 {all a, b : one A | some a & b }";
 
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
-        assertEquals ("unsat", results.get(0).satResult);
+        assertEquals ("sat", results.get(0).satResult);
     }
 }

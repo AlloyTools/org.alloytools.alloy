@@ -110,18 +110,15 @@ public class ExprQtTranslator
                     {
                         List<Expression> bdAtomExprs = new ArrayList<>();
 
-                        for (int i = 0; i < arity; i++) {
+                        for (int i = 0; i < arity; i++)
+                        {
                             Expression bdAtomVarExpr;
                             String varName = sanBdVarName + "_" + i;
                             VariableDeclaration bdAtomVar;
 
-                            if (declSorts.get(i) instanceof IntSort) {
-                                bdAtomVar = new VariableDeclaration(varName, AbstractTranslator.uninterpretedInt);
-                                bdAtomVarExpr = exprBinaryTranslator.mkTupleSelectExpr(exprUnaryTranslator.mkUnaryIntTupValue(bdAtomVar.getVariable()), 0);
-                            } else {
-                                bdAtomVar = new VariableDeclaration(varName, AbstractTranslator.atomSort);
-                                bdAtomVarExpr = bdAtomVar.getVariable();
-                            }
+                            bdAtomVar = new VariableDeclaration(varName, declSorts.get(i));
+                            bdAtomVarExpr = bdAtomVar.getVariable();
+
                             bdAtomVars.add(bdAtomVar);
                             bdAtomExprs.add(bdAtomVarExpr);
                         }
