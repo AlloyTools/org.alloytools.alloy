@@ -13,6 +13,8 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class FieldTranslator
@@ -171,74 +173,84 @@ public class FieldTranslator
 
     private Expression translateBinaryMultiplicities(ExprBinary exprBinary, Sig.Field field, List<Expr> fieldComponentExprs)
     {
-        if(fieldComponentExprs.size() > 2)
+        if(fieldComponentExprs.size() == 2)
         {
-//            throw new UnsupportedOperationException("Currently, we do not support multiplicity constraints on relations with arity GT 3!");
+            Expression expr  = null;
+
+            switch (exprBinary.op)
+            {
+                case ARROW              : expr = new BoolConstant(true);break;
+                case ANY_ARROW_SOME     : expr = translateAnyArrowSome(fieldComponentExprs, field); break;
+                case ANY_ARROW_ONE      : expr = translateAnyArrowOne(fieldComponentExprs, field); break;
+                case ANY_ARROW_LONE     : expr = translateAnyArrowLone(fieldComponentExprs, field); break;
+                case SOME_ARROW_ANY     : expr = translateSomeArrowAny(fieldComponentExprs, field); break;
+                case SOME_ARROW_SOME    :
+                {
+                    expr = new BinaryExpression(translateAnyArrowSome(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateSomeArrowAny(fieldComponentExprs, field)); break;
+                }
+                case SOME_ARROW_ONE     :
+                {
+                    expr = new BinaryExpression(translateAnyArrowOne(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateSomeArrowAny(fieldComponentExprs, field)); break;
+                }
+                case SOME_ARROW_LONE    :
+                {
+                    expr = new BinaryExpression(translateAnyArrowLone(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateSomeArrowAny(fieldComponentExprs, field)); break;
+                }
+                case ONE_ARROW_ANY      : expr = translateOneArrowAny(fieldComponentExprs, field); break;
+                case ONE_ARROW_SOME     :
+                {
+                    expr = new BinaryExpression(translateAnyArrowSome(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateOneArrowAny(fieldComponentExprs, field)); break;
+                }
+                case ONE_ARROW_ONE      :
+                {
+                    expr = new BinaryExpression(translateOneArrowAny(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateAnyArrowOne(fieldComponentExprs, field)); break;
+                }
+                case ONE_ARROW_LONE     :
+                {
+                    expr = new BinaryExpression(translateOneArrowAny(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateAnyArrowLone(fieldComponentExprs, field)); break;
+                }
+                case LONE_ARROW_ANY     : expr = translateLoneArrowAny(fieldComponentExprs, field); break;
+                case LONE_ARROW_SOME    :
+                {
+                    expr = new BinaryExpression(translateAnyArrowSome(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateLoneArrowAny(fieldComponentExprs, field)); break;
+                }
+                case LONE_ARROW_ONE     :
+                {
+                    expr = new BinaryExpression(translateLoneArrowAny(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateAnyArrowOne(fieldComponentExprs, field)); break;
+                }
+                case LONE_ARROW_LONE    :
+                {
+                    expr = new BinaryExpression(translateAnyArrowLone(fieldComponentExprs, field), BinaryExpression.Op.AND,
+                            translateLoneArrowAny(fieldComponentExprs, field)); break;
+                }
+                case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
+                default:
+                {
+                    throw new UnsupportedOperationException();
+                }
+            }
+            return expr;
         }
-
-        Expression expr  = null;
-
-        switch (exprBinary.op)
+        else
         {
-            case ARROW              : expr = new BoolConstant(true);break;
-            case ANY_ARROW_SOME     : expr = translateAnyArrowSome(fieldComponentExprs, field); break;
-            case ANY_ARROW_ONE      : expr = translateAnyArrowOne(fieldComponentExprs, field); break;
-            case ANY_ARROW_LONE     : expr = translateAnyArrowLone(fieldComponentExprs, field); break;
-            case SOME_ARROW_ANY     : expr = translateSomeArrowAny(fieldComponentExprs, field); break;
-            case SOME_ARROW_SOME    :
-            {
-                expr = new BinaryExpression(translateAnyArrowSome(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateSomeArrowAny(fieldComponentExprs, field)); break;
-            }
-            case SOME_ARROW_ONE     :
-            {
-                expr = new BinaryExpression(translateAnyArrowOne(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateSomeArrowAny(fieldComponentExprs, field)); break;
-            }
-            case SOME_ARROW_LONE    :
-            {
-                expr = new BinaryExpression(translateAnyArrowLone(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateSomeArrowAny(fieldComponentExprs, field)); break;
-            }
-            case ONE_ARROW_ANY      : expr = translateOneArrowAny(fieldComponentExprs, field); break;
-            case ONE_ARROW_SOME     :
-            {
-                expr = new BinaryExpression(translateAnyArrowSome(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateOneArrowAny(fieldComponentExprs, field)); break;
-            }
-            case ONE_ARROW_ONE      :
-            {
-                expr = new BinaryExpression(translateOneArrowAny(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                             translateAnyArrowOne(fieldComponentExprs, field)); break;
-            }
-            case ONE_ARROW_LONE     :
-            {
-                expr = new BinaryExpression(translateOneArrowAny(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                             translateAnyArrowLone(fieldComponentExprs, field)); break;
-            }
-            case LONE_ARROW_ANY     : expr = translateLoneArrowAny(fieldComponentExprs, field); break;
-            case LONE_ARROW_SOME    :
-            {
-                expr = new BinaryExpression(translateAnyArrowSome(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateLoneArrowAny(fieldComponentExprs, field)); break;
-            }
-            case LONE_ARROW_ONE     :
-            {
-                expr = new BinaryExpression(translateLoneArrowAny(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateAnyArrowOne(fieldComponentExprs, field)); break;
-            }
-            case LONE_ARROW_LONE    :
-            {
-                expr = new BinaryExpression(translateAnyArrowLone(fieldComponentExprs, field), BinaryExpression.Op.AND,
-                                            translateLoneArrowAny(fieldComponentExprs, field)); break;
-            }
-            case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
-            default:
-            {
-                throw new UnsupportedOperationException();
-            }
+            ExprVar quantifiedVar = ExprVar.make(null, TranslatorUtils.getNewAtomName(), field.sig.type());
+            Expr noopVar = ExprUnary.Op.NOOP.make(null, quantifiedVar);
+            Expr noopField = ExprUnary.Op.NOOP.make(null, field);
+            Expr join = ExprBinary.Op.JOIN.make(null, null, noopVar, noopField);
+            Expr in = ExprBinary.Op.IN.make(null, null, join, exprBinary);
+            Expr noopSig = ExprUnary.Op.NOOP.make(null, field.sig);
+            Decl decl = new Decl(null, null, null, Collections.singletonList(quantifiedVar), noopSig);
+            Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
+            return translator.exprTranslator.translateExpr(exprQt);
         }
-        return expr;
     }
 
 
