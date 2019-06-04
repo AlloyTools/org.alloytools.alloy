@@ -61,29 +61,35 @@ public class ExprQtTranslator
                     {
                         case SOMEOF:
                         {
-                            multiplicityConstraint = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ,
+                            Expression  notEmpty = new UnaryExpression(UnaryExpression.Op.NOT, new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ,
                                     new UnaryExpression(UnaryExpression.Op.EMPTYSET, variable.getSort())
                             ));
+
+                            multiplicityConstraint = new BinaryExpression(multiplicityConstraint, BinaryExpression.Op.AND, notEmpty);
                         } break;
                         case NOOP: // NOOP is the same as ONEOF in case of
                         case ONEOF:
                         {
                             VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
                             quantifiedSingleton2AtomMap.get(name.label).add(multiplicityVariable);
-                            multiplicityConstraint = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ,
+                            Expression singleton = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ,
                                     new UnaryExpression(UnaryExpression.Op.SINGLETON,
                                             new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getVariable()))
                             );
+
+                            multiplicityConstraint = new BinaryExpression(multiplicityConstraint, BinaryExpression.Op.AND, singleton);
                         } break;
                         case LONEOF:
                         {
                             VariableDeclaration multiplicityVariable = createVariable(sort, TranslatorUtils.getNewName());
 
                             quantifiedSingleton2AtomMap.get(name.label).add(multiplicityVariable);
-                            multiplicityConstraint = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.SUBSET,
+                            Expression lone = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.SUBSET,
                                     new UnaryExpression(UnaryExpression.Op.SINGLETON,
                                             new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, multiplicityVariable.getVariable()))
                             );
+
+                            multiplicityConstraint = new BinaryExpression(multiplicityConstraint, BinaryExpression.Op.AND, lone);
                         } break;
                     }
                 }

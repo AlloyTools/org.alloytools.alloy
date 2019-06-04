@@ -73,19 +73,19 @@ class MultiplicityTests
     public void multipleQuantifiers() throws Exception
     {
         String alloy =  "sig A {}\n" +
-                "fact f1 {all a, b : A  ->  A | some A}\n" +
-                "fact f2 {all a, b : one A | some A}";
+                " fact f1 {some a, b : A  ->  A | some a & b}\n" +
+                " fact f2 {all a, b : one A | some a & b }";
 
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
-        assertEquals ("unsat", results.get(0).satResult);
+        assertEquals ("sat", results.get(0).satResult);
     }
 
     @Test
     public void multipleQuantifiersWithInt() throws Exception
     {
-        String alloy =  "sig A {}\n" +
-                "fact f1 {all a, b : A  ->  IntA | some A}\n" +
-                "fact f2 {all a, b : one A | some A}";
+        String alloy =   "sig A {}\n" +
+                " fact f1 {some a, b : A  ->  Int | some a & b}\n" +
+                " fact f2 {all a, b : one A | some a & b }";
 
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
         assertEquals ("unsat", results.get(0).satResult);
