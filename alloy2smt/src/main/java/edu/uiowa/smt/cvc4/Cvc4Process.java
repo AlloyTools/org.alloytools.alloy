@@ -78,6 +78,7 @@ public class Cvc4Process
     public String sendCommand(String command) throws IOException
     {
         outputStream.write((command + "\n").getBytes());
+        System.out.println(command);
         outputStream.flush();
         return receiveOutput();
     }
