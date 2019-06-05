@@ -68,8 +68,44 @@ public class FieldTranslator
         }
         else if(expr instanceof ExprBinary)
         {
-            collectFieldComponentExprs(((ExprBinary)expr).left, fieldComponentExprs);
-            collectFieldComponentExprs(((ExprBinary)expr).right, fieldComponentExprs);           
+            ExprBinary exprBinary = (ExprBinary) expr;
+            switch (exprBinary.op)
+            {
+                case ARROW              :
+                case ANY_ARROW_SOME     :
+                case ANY_ARROW_ONE      :
+                case ANY_ARROW_LONE     :
+                case SOME_ARROW_ANY     :
+                case SOME_ARROW_SOME    :
+                case SOME_ARROW_ONE     :
+                case SOME_ARROW_LONE    :
+                case ONE_ARROW_ANY      :
+                case ONE_ARROW_SOME     :
+                case ONE_ARROW_ONE      :
+                case ONE_ARROW_LONE     :
+                case LONE_ARROW_ANY     :
+                case LONE_ARROW_SOME    :
+                case LONE_ARROW_ONE     :
+                case LONE_ARROW_LONE    :
+                case ISSEQ_ARROW_LONE   :
+                {
+                    collectFieldComponentExprs(((ExprBinary) expr).left, fieldComponentExprs);
+                    collectFieldComponentExprs(((ExprBinary) expr).right, fieldComponentExprs);
+                    break;
+                }
+                case JOIN               :
+                case DOMAIN             :
+                case RANGE              :
+                case INTERSECT          :
+                case PLUSPLUS           :
+                case PLUS               :
+                case MINUS              :
+                {
+                    fieldComponentExprs.add(exprBinary);
+                    break;
+                }
+                default                 : throw new UnsupportedOperationException();
+            }
         }
         else 
         {

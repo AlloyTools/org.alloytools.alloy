@@ -1277,28 +1277,10 @@ public class ExprBinaryTranslator
     
     private Expression translateArrow(ExprBinary expr, Map<String,Expression> variablesScope)
     {
-        FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
-
-        if(multiplicitySet != null)
-        {
-            return multiplicitySet.getVariable();
-        }
-
-        SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
-        translator.multiplicityVariableMap.put(expr, multiplicitySet);
-        translator.smtProgram.addFunction(multiplicitySet);
-
         Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
         Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
-
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
-        Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
-
-        // multiplicitySet subset of A set -> set B
-        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " subset constraint", subset));
-
-        return multiplicitySet.getVariable();
+        return product;
     }
 
     private Expression translatePlusPlus(ExprBinary expr, Map<String,Expression> variablesScope)
