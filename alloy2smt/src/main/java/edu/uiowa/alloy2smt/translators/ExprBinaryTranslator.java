@@ -30,10 +30,10 @@ public class ExprBinaryTranslator
         switch (expr.op)
         {
             case ARROW              : return translateArrow(expr, variablesScope);
-            case ANY_ARROW_SOME     : throw new UnsupportedOperationException();
+            case ANY_ARROW_SOME     : return translateAnyArrowSome(expr, variablesScope);
             case ANY_ARROW_ONE      : return translateAnyArrowOne(expr, variablesScope);
             case ANY_ARROW_LONE     : return translateAnyArrowLone(expr, variablesScope);
-            case SOME_ARROW_ANY     : throw new UnsupportedOperationException();
+            case SOME_ARROW_ANY     : return translateSomeArrowAny(expr, variablesScope);
             case SOME_ARROW_SOME    : return translateSomeArrowSome(expr, variablesScope);
             case SOME_ARROW_ONE     : return translateSomeArrowOne(expr, variablesScope);
             case SOME_ARROW_LONE    : return translateSomeArrowLone(expr, variablesScope);
@@ -515,6 +515,100 @@ public class ExprBinaryTranslator
         Expression yImplies = new BinaryExpression(yMemberB, BinaryExpression.Op.IMPLIES, existsX);
         Expression forAllY = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, yImplies, y);
         translator.smtProgram.addAssertion(new Assertion(expr.toString() + " east", forAllY));
+
+        return multiplicitySet.getVariable();
+    }
+
+    private Expression translateSomeArrowAny(ExprBinary expr, Map<String, Expression> variablesScope)
+    {
+        FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
+
+        if(multiplicitySet != null)
+        {
+            return multiplicitySet.getVariable();
+        }
+
+        SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        translator.multiplicityVariableMap.put(expr, multiplicitySet);
+        translator.smtProgram.addFunction(multiplicitySet);
+
+        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
+        Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
+
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " subset constraint", subset));
+
+        SetSort ASort = (SetSort) A.getSort();
+        SetSort BSort = (SetSort) B.getSort();
+
+        VariableDeclaration x = new VariableDeclaration("_x", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("_y", BSort.elementSort);
+        Expression xMemberA = new BinaryExpression(x.getVariable(), BinaryExpression.Op.MEMBER, A);
+        Expression yMemberB = new BinaryExpression(y.getVariable(), BinaryExpression.Op.MEMBER, B);
+
+        // multiplicitySet subset of A some -> set B
+        // and
+        // forall y in B . exists x in A . xy in multiplicitySet
+
+        Expression xyTuple = getTupleConcatenation(ASort, BSort, x, y);
+
+        Expression xyMember = new BinaryExpression(xyTuple, BinaryExpression.Op.MEMBER, multiplicitySet.getVariable());
+        
+        Expression existsXBody = new BinaryExpression(xMemberA, BinaryExpression.Op.AND, xyMember);
+        Expression existsX = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existsXBody, x);
+        Expression yImplies = new BinaryExpression(yMemberB, BinaryExpression.Op.IMPLIES, existsX);
+        Expression forAllY = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, yImplies, y);
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " east", forAllY));
+
+        return multiplicitySet.getVariable();
+    }
+
+    private Expression translateAnyArrowSome(ExprBinary expr, Map<String, Expression> variablesScope)
+    {
+        FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
+
+        if(multiplicitySet != null)
+        {
+            return multiplicitySet.getVariable();
+        }
+
+        SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        translator.multiplicityVariableMap.put(expr, multiplicitySet);
+        translator.smtProgram.addFunction(multiplicitySet);
+
+        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
+        Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
+
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " subset constraint", subset));
+
+        SetSort ASort = (SetSort) A.getSort();
+        SetSort BSort = (SetSort) B.getSort();
+
+        VariableDeclaration x = new VariableDeclaration("_x", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("_y", BSort.elementSort);
+        Expression xMemberA = new BinaryExpression(x.getVariable(), BinaryExpression.Op.MEMBER, A);
+        Expression yMemberB = new BinaryExpression(y.getVariable(), BinaryExpression.Op.MEMBER, B);
+
+        // multiplicitySet subset of A set -> some B
+        // and
+        // forall x in A . exists y in B . xy in multiplicitySet
+
+        Expression xyTuple = getTupleConcatenation(ASort, BSort, x, y);
+
+        Expression xyMember = new BinaryExpression(xyTuple, BinaryExpression.Op.MEMBER, multiplicitySet.getVariable());
+
+        Expression existsYBody = new BinaryExpression(yMemberB, BinaryExpression.Op.AND, xyMember);
+        Expression existsY = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existsYBody, y);
+        Expression xImplies = new BinaryExpression(xMemberA, BinaryExpression.Op.IMPLIES, existsY);
+        Expression forAllX = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, xImplies, x);
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " west", forAllX));
 
         return multiplicitySet.getVariable();
     }
