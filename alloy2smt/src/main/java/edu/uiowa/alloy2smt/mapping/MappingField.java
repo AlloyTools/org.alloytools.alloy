@@ -44,6 +44,5 @@ public class MappingField
 
     @XmlAttribute(name = "types")
     @JsonProperty("types")
-    public List<MappingType> types = new ArrayList<>();
-
+    public List<List<MappingType>> types = new ArrayList<>();
 }

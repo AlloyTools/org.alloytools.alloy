@@ -694,25 +694,25 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         mappingField.parentId       = getSigId(field.sig);
         mappingField.isPrivate      = field.isPrivate != null;
         mappingField.isMeta         = field.isMeta != null;
-        mappingField.types          = getFieldType(field);
+        mappingField.types          = getFieldTypes(field);
 
         return mappingField;
     }
 
-    private List<MappingType> getFieldType(Sig.Field field)
+    private List<List<MappingType>> getFieldTypes(Sig.Field field)
     {
-        List<MappingType> types = new ArrayList<>(field.type().arity());
-
-        List<Sig> sigs          = field.type().fold().stream()
-                .flatMap(s -> s.stream()).collect(Collectors.toList());
-
-        for (Sig sig : sigs)
+        List<List<MappingType>> types = new ArrayList<>();
+        for(List<Sig.PrimSig> sigs: field.type().fold())
         {
-            MappingType mappingType = new MappingType();
-            mappingType.id          = getSigId(sig);
-            types.add(mappingType);
+            List<MappingType> type = new ArrayList<>();
+            for (Sig sig: sigs)
+            {
+                MappingType mappingType = new MappingType();
+                mappingType.id = getSigId(sig);
+                type.add(mappingType);
+            }
+            types.add(type);
         }
-
         return types;
     }
 

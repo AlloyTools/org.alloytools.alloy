@@ -8,6 +8,7 @@ import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
+import edu.uiowa.alloy2smt.mapping.MappingType;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
@@ -473,9 +474,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     + " for field " + field.label + "in the model.");
         }
         field.tuples = getTuples(function.expression, functionsMap);
-        field.types  =  new Types();
+        field.types  = Collections.singletonList(new Types());
         //ToDo: refactor these magic numbers
-        field.types.types = Arrays.stream(new int[]{parentId, parentId, parentId})
+        field.types.get(0).types = Arrays.stream(new int[]{parentId, parentId, parentId})
                                   .mapToObj(Type::new).collect(Collectors.toList());
 
         return field;
@@ -508,12 +509,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return field;
     }
 
-    private static Types getTypes(MappingField mappingField)
+    private static List<Types> getTypes(MappingField mappingField)
     {
-        Types types = new Types();
-
-        types.types = mappingField.types.stream()
-                .map(t -> new Type(t.id)).collect(Collectors.toList());
+        List<Types> types = new ArrayList<>();
+        for (List<MappingType> list: mappingField.types)
+        {
+            Types alloyTypes = new Types();
+            alloyTypes.types = list.stream()
+                              .map(t -> new Type(t.id)).collect(Collectors.toList());
+            types.add(alloyTypes);
+        }
         return types;
     }
 

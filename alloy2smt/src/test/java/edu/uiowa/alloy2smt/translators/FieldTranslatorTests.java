@@ -68,6 +68,17 @@ class FieldTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void fieldWithUnion() throws Exception
+    {
+        String alloy =
+                "sig B {}\n" +
+                "sig A {r: A -> (A + B)}\n" +
+                "fact {A.(A.r) = (A + B) and A != none and B != none}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
 }
 
 

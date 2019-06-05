@@ -75,23 +75,23 @@ class MapperTests
         Assertions.assertEquals("f",fieldB_f.label);
         Assertions.assertEquals("g",fieldB_g.label);
 
-        Assertions.assertEquals(2, fieldA_f.types.size());
-        Assertions.assertEquals(signatureA.id, fieldA_f.types.get(0).id);
-        Assertions.assertEquals(signatureA.id, fieldA_f.types.get(1).id);
+        Assertions.assertEquals(2, fieldA_f.types.get(0).size());
+        Assertions.assertEquals(signatureA.id, fieldA_f.types.get(0).get(0).id);
+        Assertions.assertEquals(signatureA.id, fieldA_f.types.get(0).get(1).id);
 
-        Assertions.assertEquals(3    , fieldA_g.types.size());
-        Assertions.assertEquals(signatureA.id, fieldA_g.types.get(0).id);
-        Assertions.assertEquals(signatureA.id, fieldA_g.types.get(1).id);
-        Assertions.assertEquals(signatureA.id, fieldA_g.types.get(2).id);
+        Assertions.assertEquals(3    , fieldA_g.types.get(0).size());
+        Assertions.assertEquals(signatureA.id, fieldA_g.types.get(0).get(0).id);
+        Assertions.assertEquals(signatureA.id, fieldA_g.types.get(0).get(1).id);
+        Assertions.assertEquals(signatureA.id, fieldA_g.types.get(0).get(2).id);
 
-        Assertions.assertEquals(2    , fieldB_f.types.size());
-        Assertions.assertEquals(signatureB.id, fieldB_f.types.get(0).id);
-        Assertions.assertEquals(signatureA.id, fieldB_f.types.get(1).id);
+        Assertions.assertEquals(2    , fieldB_f.types.get(0).size());
+        Assertions.assertEquals(signatureB.id, fieldB_f.types.get(0).get(0).id);
+        Assertions.assertEquals(signatureA.id, fieldB_f.types.get(0).get(1).id);
 
 
-        Assertions.assertEquals(3    , fieldB_g.types.size());
-        Assertions.assertEquals(signatureB.id, fieldB_g.types.get(0).id);
-        Assertions.assertEquals(signatureB.id, fieldB_g.types.get(1).id);
-        Assertions.assertEquals(signatureA.id, fieldB_g.types.get(2).id);
+        Assertions.assertEquals(3    , fieldB_g.types.get(0).size());
+        Assertions.assertEquals(signatureB.id, fieldB_g.types.get(0).get(0).id);
+        Assertions.assertEquals(signatureB.id, fieldB_g.types.get(0).get(1).id);
+        Assertions.assertEquals(signatureA.id, fieldB_g.types.get(0).get(2).id);
     }
 }
