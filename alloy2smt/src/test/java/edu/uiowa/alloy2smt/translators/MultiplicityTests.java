@@ -58,6 +58,15 @@ class MultiplicityTests
         assertEquals ("sat", results.get(0).satResult);
     }
 
+
+    @Test
+    public void someSomeSetDeclaration() throws Exception
+    {
+        String alloy =  "sig A {} fact f {#A = 1 and some x: A some -> some A | some A}";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+    }
+
     @Test
     public void loneSetDeclaration() throws Exception
     {
