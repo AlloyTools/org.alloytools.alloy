@@ -46,6 +46,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Map<Sig.Field, FunctionDeclaration>             fieldsMap;
     Map<String, Func> nameToFuncMap;
     Map<Expr, Integer>  sigToIdMap;
+    Map<Expr, FunctionDeclaration> multiplicityVariableMap;
 
 
     public Alloy2SmtTranslator(CompModule alloyModel)
@@ -71,6 +72,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.funcNames              = new HashSet<>();
         this.integerConstants       = new HashMap<>();
         this.sigToIdMap             = new HashMap<>();
+        this.multiplicityVariableMap = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, atomUniverse);
         this.signaturesMap.put(Sig.SIGINT, intUniv);
@@ -108,6 +110,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.sigFacts               = new HashMap<>(translator.sigFacts);
         this.existentialBdVars      = new ArrayList<>(translator.existentialBdVars);
         this.funcNames              = new HashSet<>(translator.funcNames);
+        this.multiplicityVariableMap = new HashMap<>(translator.multiplicityVariableMap);
 
         this.setComprehensionFuncNameToInputsMap = new HashMap<>(translator.setComprehensionFuncNameToInputsMap);
         this.setCompFuncNameToDefMap        = new HashMap<>(translator.setCompFuncNameToDefMap);
