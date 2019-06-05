@@ -556,7 +556,7 @@ public class ExprBinaryTranslator
         Expression xyTuple = getTupleConcatenation(ASort, BSort, x, y);
 
         Expression xyMember = new BinaryExpression(xyTuple, BinaryExpression.Op.MEMBER, multiplicitySet.getVariable());
-        
+
         Expression existsXBody = new BinaryExpression(xMemberA, BinaryExpression.Op.AND, xyMember);
         Expression existsX = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existsXBody, x);
         Expression yImplies = new BinaryExpression(yMemberB, BinaryExpression.Op.IMPLIES, existsX);
@@ -1277,11 +1277,28 @@ public class ExprBinaryTranslator
     
     private Expression translateArrow(ExprBinary expr, Map<String,Expression> variablesScope)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
-        Expression product  = new BinaryExpression(left, BinaryExpression.Op.PRODUCT, right);
+        FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
-        return product;
+        if(multiplicitySet != null)
+        {
+            return multiplicitySet.getVariable();
+        }
+
+        SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        translator.multiplicityVariableMap.put(expr, multiplicitySet);
+        translator.smtProgram.addFunction(multiplicitySet);
+
+        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
+        Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
+
+        // multiplicitySet subset of A set -> set B
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " subset constraint", subset));
+
+        return multiplicitySet.getVariable();
     }
 
     private Expression translatePlusPlus(ExprBinary expr, Map<String,Expression> variablesScope)
