@@ -43,8 +43,7 @@ public abstract class AbstractTranslator
     public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniverse", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort);
-    //ToDo: review intUniv
-    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple);
+    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniverse", setOfUninterpretedIntTuple);
     public final static UnaryExpression intUnivExpr = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort);
 
