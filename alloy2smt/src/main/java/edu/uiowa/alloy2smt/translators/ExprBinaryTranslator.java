@@ -38,7 +38,7 @@ public class ExprBinaryTranslator
             case SOME_ARROW_ONE     : throw new UnsupportedOperationException();
             case SOME_ARROW_LONE    : throw new UnsupportedOperationException();
             case ONE_ARROW_ANY      : throw new UnsupportedOperationException();
-            case ONE_ARROW_SOME     : throw new UnsupportedOperationException();
+            case ONE_ARROW_SOME     : return translateOneArrowSome(expr, variablesScope);
             case ONE_ARROW_ONE      : return translateOneArrowOne(expr, variablesScope);
             case ONE_ARROW_LONE     : return translateOneArrowLone(expr, variablesScope);
             case LONE_ARROW_ANY     : throw new UnsupportedOperationException();
@@ -161,6 +161,82 @@ public class ExprBinaryTranslator
         Expression existsYBody = new BinaryExpression(
                 new BinaryExpression(yMemberB, BinaryExpression.Op.AND, xyMember),
                 BinaryExpression.Op.AND, forAllV);
+
+        Expression existsY = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existsYBody, y);
+        Expression xImplies = new BinaryExpression(xMemberA, BinaryExpression.Op.IMPLIES, existsY);
+        Expression forAllX = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, xImplies, x);
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " west", forAllX));
+
+        Expression existsXBody = new BinaryExpression(
+                new BinaryExpression(xMemberA, BinaryExpression.Op.AND, xyMember),
+                BinaryExpression.Op.AND, forAllU);
+
+        Expression existsX = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existsXBody, x);
+        Expression yImplies = new BinaryExpression(yMemberB, BinaryExpression.Op.IMPLIES, existsX);
+        Expression forAllY = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, yImplies, y);
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " east", forAllY));
+
+        return multiplicitySet.getVariable();
+    }
+
+    private Expression translateOneArrowSome(ExprBinary expr, Map<String, Expression> variablesScope)
+    {
+        FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
+
+        if(multiplicitySet != null)
+        {
+            return multiplicitySet.getVariable();
+        }
+
+        SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        translator.multiplicityVariableMap.put(expr, multiplicitySet);
+        translator.smtProgram.addFunction(multiplicitySet);
+
+        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
+        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+
+        Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
+        Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
+
+        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " subset constraint", subset));
+
+        SetSort ASort = (SetSort) A.getSort();
+        SetSort BSort = (SetSort) B.getSort();
+
+        VariableDeclaration x = new VariableDeclaration("_x", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("_y", BSort.elementSort);
+        Expression xMemberA = new BinaryExpression(x.getVariable(), BinaryExpression.Op.MEMBER, A);
+        Expression yMemberB = new BinaryExpression(y.getVariable(), BinaryExpression.Op.MEMBER, B);
+
+        VariableDeclaration u = new VariableDeclaration("_u", ASort.elementSort);
+        Expression uMemberA = new BinaryExpression(u.getVariable(), BinaryExpression.Op.MEMBER, A);
+
+        // multiplicitySet subset of A one -> one B
+        // and
+        // forall x in A . exists y in B . xy in multiplicitySet
+        // and
+        // forall y in B . exists x in A . xy in multiplicitySet and
+        //       forall u in A. u != x implies uy not in  multiplicitySet
+
+        Expression xyTuple = getTupleConcatenation(ASort, BSort, x, y);
+        Expression uyTuple = getTupleConcatenation(ASort, BSort, u, y);
+
+        Expression xyMember = new BinaryExpression(xyTuple, BinaryExpression.Op.MEMBER, multiplicitySet.getVariable());
+
+        Expression uyMember = new BinaryExpression(uyTuple, BinaryExpression.Op.MEMBER, multiplicitySet.getVariable());
+
+        Expression notUY = new UnaryExpression(UnaryExpression.Op.NOT, uyMember);
+
+        Expression uEqualX = new BinaryExpression(u.getVariable(), BinaryExpression.Op.EQ, x.getVariable());
+        Expression notUEqualX = new UnaryExpression(UnaryExpression.Op.NOT, uEqualX);
+
+        Expression uImplies = new BinaryExpression(
+                new BinaryExpression(uMemberA, BinaryExpression.Op.AND, notUEqualX),
+                BinaryExpression.Op.IMPLIES, notUY);
+        Expression forAllU = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, uImplies, u);
+
+        Expression existsYBody = new BinaryExpression(yMemberB, BinaryExpression.Op.AND, xyMember);
 
         Expression existsY = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, existsYBody, y);
         Expression xImplies = new BinaryExpression(xMemberA, BinaryExpression.Op.IMPLIES, existsY);
