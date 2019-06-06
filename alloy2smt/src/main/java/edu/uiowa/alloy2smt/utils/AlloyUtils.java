@@ -38,18 +38,16 @@ public class AlloyUtils
     public static List<Sort> getExprSorts(Expr expr)
     {
         List<Sort> sorts = new ArrayList<>();
-        for(List<Sig.PrimSig> sigs : expr.type().fold())
+        // get the first list of types from the fold function
+        for(Sig.PrimSig sig : expr.type().fold().get(0))
         {
-            for(Sig.PrimSig s : sigs)
+            if(sig.type().is_int())
             {
-                if(s.type().is_int())
-                {
-                    sorts.add(AbstractTranslator.uninterpretedInt);
-                }
-                else
-                {
-                    sorts.add(AbstractTranslator.atomSort);
-                }
+                sorts.add(AbstractTranslator.uninterpretedInt);
+            }
+            else
+            {
+                sorts.add(AbstractTranslator.atomSort);
             }
         }
         return sorts;

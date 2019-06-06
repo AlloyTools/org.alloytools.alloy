@@ -53,10 +53,17 @@ public class UnaryExpression extends Expression
             case TRANSPOSE:
             case TCLOSURE:
             {
+                // make sure expr is a set of tuples
                 if(!(expr.getSort() instanceof  SetSort &&
                         ((SetSort) expr.getSort()).elementSort instanceof TupleSort))
                 {
                     throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not a set of tuples", expr.getSort(), expr));
+                }
+                // make sure expr is a binary relation
+                TupleSort tupleSort = (TupleSort)((SetSort) expr.getSort()).elementSort;
+                if(tupleSort.elementSorts.size() != 2)
+                {
+                    throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not a binary relation", expr.getSort(), expr));
                 }
             } break;
             case EMPTYSET:

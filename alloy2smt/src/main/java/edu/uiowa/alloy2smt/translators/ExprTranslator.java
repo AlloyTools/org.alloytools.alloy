@@ -154,13 +154,14 @@ public class ExprTranslator
         Expression              varExpr         = translateExpr(exprLet.expr, variablesScope);
         Map<String, Expression> varToExprMap    = new HashMap<>();
         String                  sanitizeName    = TranslatorUtils.sanitizeName(exprLet.var.label);
-        List<Sort>              exprSorts       = AlloyUtils.getExprSorts(exprLet.expr);
-        Variable varDeclExpr     = new Variable(new ConstantDeclaration(sanitizeName, new SetSort(new TupleSort(exprSorts))));
+        Variable varDeclExpr     = new Variable(new ConstantDeclaration(sanitizeName, varExpr.getSort()));
         
-        varToExprMap.put(sanitizeName, varExpr);        
-        variablesScope.put(exprLet.var.label, varDeclExpr);
+        varToExprMap.put(sanitizeName, varExpr);
+        // make a new variables scope
+        Map<String, Expression> newVariablesScope = new HashMap<>(variablesScope);
+        newVariablesScope.put(exprLet.var.label, varDeclExpr);
         
-        Expression letBodyExpr = translateExpr(exprLet.sub, variablesScope);
+        Expression letBodyExpr = translateExpr(exprLet.sub, newVariablesScope);
         return new LetExpression(LetExpression.Op.LET, varToExprMap, letBodyExpr);
     }    
     
