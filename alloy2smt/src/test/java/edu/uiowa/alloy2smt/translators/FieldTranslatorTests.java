@@ -79,6 +79,14 @@ class FieldTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void fieldDependsOnAnotherField() throws Exception
+    {
+        String alloy = "sig A {r: set A, s: r->some A} fact {(A.r).(A.s) != none}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
 }
 
 
