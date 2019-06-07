@@ -150,6 +150,12 @@ public class ExprUnaryTranslator
             }
             else
             {
+                //ToDo: review the semantics of "this" keyword
+                if(exprUnary.toString().equals("this"))
+                {
+                    Sig sig = exprUnary.type().fold().get(0).get(0);
+                    return translator.signaturesMap.get(sig).getVariable();
+                }
                 throw new RuntimeException("Something is wrong: we do not have variable in scope - " + varName);
             }            
         }
