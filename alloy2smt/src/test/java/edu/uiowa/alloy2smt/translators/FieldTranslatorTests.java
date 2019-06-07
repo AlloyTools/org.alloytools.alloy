@@ -1,11 +1,14 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -86,6 +89,22 @@ class FieldTranslatorTests
         String alloy = "sig A {r: set A, s: r->some A} fact {(A.r).(A.s) != none}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
+    }
+
+    @Test
+    void fieldDependsOnAnotherFields() throws Exception
+    {
+        String alloy = "sig A {r: set A, s: r->some A, t: r -> s} " +
+                "fact {#t = 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition t = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A_t");
+        Set<List<String>> tElements = TranslatorUtils.getRelation(t);
+        assertEquals(2, tElements.size());
+        for (List<String> element: tElements)
+        {
+            assertEquals(4, element.size());
+        }
     }
 }
 

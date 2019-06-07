@@ -146,13 +146,16 @@ public class FieldTranslator
         // Collect field's type information
         for(int i = 0; i < fieldComponentExprs.size(); i++)
         {
-            if(fieldComponentExprs.get(i).type().is_int())
+            for (Sig sig :fieldComponentExprs.get(i).type().fold().get(0))
             {
-                fieldSorts.add(AbstractTranslator.uninterpretedInt);
-            }
-            else
-            {
-                fieldSorts.add(AbstractTranslator.atomSort);
+                if(sig.type().is_int())
+                {
+                    fieldSorts.add(AbstractTranslator.uninterpretedInt);
+                }
+                else
+                {
+                    fieldSorts.add(AbstractTranslator.atomSort);
+                }
             }
         }        
         
