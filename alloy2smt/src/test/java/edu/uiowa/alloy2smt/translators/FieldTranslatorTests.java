@@ -73,7 +73,30 @@ class FieldTranslatorTests
     }
 
     @Test
-    void fieldWithUnion() throws Exception
+    void fieldUnaryWithUnion() throws Exception
+    {
+        String alloy =
+                "sig B {}\n" +
+                "sig A {r: set A + B}\n" +
+                "fact {#r = 2 and A.r = A + B and #B = 1}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition r = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A_r");
+        Set<List<String>> rElements = TranslatorUtils.getRelation(r);
+        assertEquals(2, rElements.size());
+
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(1, aAtoms.size());
+
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_B");
+        Set<List<String>> bElements = TranslatorUtils.getRelation(b);
+        assertEquals(1, bElements.size());
+    }
+
+    @Test
+    void fieldBinaryWithUnion() throws Exception
     {
         String alloy =
                 "sig B {}\n" +

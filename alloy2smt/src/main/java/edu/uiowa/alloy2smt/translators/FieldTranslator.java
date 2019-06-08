@@ -119,94 +119,44 @@ public class FieldTranslator
         String      fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
         List<Sort>  fieldSorts  = new ArrayList<>();
 
-        // a field relation is a subset of the product of some signatures
-        List<Expr> fieldComponentExprs = new ArrayList<>();
-        
-        fieldComponentExprs.add(field.sig);
-        
-        // Collect component of the field
-        collectFieldComponentExprs(field.decl().expr, fieldComponentExprs);
-        
-        /* alloy: sig Book{addr: Name -> lone Addr}
-         *  smt  : (assert (subset addr (product (product Book Name) Addr)))
-         */
-        Expression  first   = translator.signaturesMap.get(field.sig).getVariable();
-        Expression  second  = (fieldComponentExprs.get(1) instanceof Sig) ? 
-                                    translator.signaturesMap.get((Sig)fieldComponentExprs.get(1)).getVariable()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(1));
-        BinaryExpression    product = new BinaryExpression(first, BinaryExpression.Op.PRODUCT, second);
-
-        for(int i = 2; i < fieldComponentExprs.size(); i++)
-        {       
-            Expression  expr  = (fieldComponentExprs.get(i) instanceof Sig) ? 
-                                    translator.signaturesMap.get((Sig)fieldComponentExprs.get(i)).getVariable()
-                                    : translator.exprTranslator.translateExpr(fieldComponentExprs.get(i));
-            product = new BinaryExpression(product, BinaryExpression.Op.PRODUCT, expr);            
-        }
-        // Collect field's type information
-        for(int i = 0; i < fieldComponentExprs.size(); i++)
+        for (Sig sig : field.type().fold().get(0))
         {
-            for (Sig sig :fieldComponentExprs.get(i).type().fold().get(0))
+            if(sig.type().is_int())
             {
-                if(sig.type().is_int())
-                {
-                    fieldSorts.add(AbstractTranslator.uninterpretedInt);
-                }
-                else
-                {
-                    fieldSorts.add(AbstractTranslator.atomSort);
-                }
+                fieldSorts.add(AbstractTranslator.uninterpretedInt);
             }
-        }        
-        
-      
-        FunctionDeclaration fieldDecl = new FunctionDeclaration(fieldName, new SetSort(new TupleSort(fieldSorts)));
-        // declare a variable for the field
-        translator.smtProgram.addFunction(fieldDecl);
-        translator.fieldsMap.put(field, fieldDecl);
-        // make a subset assertion
-        translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(fieldDecl.getVariable(), BinaryExpression.Op.SUBSET, product)));
+            else
+            {
+                fieldSorts.add(AbstractTranslator.atomSort);
+            }
+        }
 
-        // translateExpr multiplicities and remove the first field Sig in fieldComponentExprs
-        fieldComponentExprs.remove(0);
-        translateMultiplicities(field, fieldComponentExprs, fieldSorts);
+        FunctionDeclaration fieldDeclaration = new FunctionDeclaration(fieldName, new SetSort(new TupleSort(fieldSorts)));
+        // declare a variable for the field
+        translator.smtProgram.addFunction(fieldDeclaration);
+        translator.fieldsMap.put(field, fieldDeclaration);
+        translateMultiplicities(field);
     }
 
-    private void translateMultiplicities(Sig.Field field, List<Expr> fieldComponentExprs, List<Sort>  fieldSorts)
+    private void translateMultiplicities(Sig.Field field)
     {
-        Expression multExpr = null;
+        // sig signature {field : expr}
+        // all s: signature | s.field in expr
         Expr expr = field.decl().expr;
-
-        if(expr instanceof ExprUnary)
-        {
-            ExprUnary exprUnary = (ExprUnary) expr;
-
-            if(fieldComponentExprs.size() > 1)
-            {
-                throw new UnsupportedOperationException("We currenty do not support multiplicity constraints on nested relations!");
-            }
-            switch (exprUnary.op)
-            {
-                case SOMEOF     : multExpr = translateRelationSomeMultiplicity(field, fieldComponentExprs);break;
-                case LONEOF     : multExpr = translateRelationLoneMultiplicity(field, fieldComponentExprs);break;
-                case ONEOF      : multExpr = translateRelationOneMultiplicity(field, fieldComponentExprs);break;
-                case SETOF      : multExpr = new BoolConstant(true);break; // no assertion needed
-                case EXACTLYOF  : break; //ToDo: review translator case
-                default:
-                {
-                    throw new UnsupportedOperationException("Not supported yet");
-                }
-            }
-        }
-        else if (expr instanceof ExprBinary)
-        {
-            multExpr = translateBinaryMultiplicities((ExprBinary) expr, field, fieldComponentExprs);
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
-        translator.smtProgram.addAssertion(new Assertion("Multiplicities constraint", multExpr));
+        ExprVar s = ExprVar.make(null, "_s", field.sig.type());
+        Expr noopS = ExprUnary.Op.NOOP.make(null, s);
+        Expr noopField = ExprUnary.Op.NOOP.make(null, field);
+        Expr join = ExprBinary.Op.JOIN.make(null, null, noopS, noopField);
+        Expr in = ExprBinary.Op.IN.make(null, null, join, expr);
+        Expr noopSig = ExprUnary.Op.NOOP.make(null, field.sig);
+        Decl decl = new Decl(null, null, null, Collections.singletonList(s), noopSig);
+        Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
+        Expression multiplicity =  translator.exprTranslator.translateExpr(exprQt);
+        translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
+        Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, expr);
+        Expr subsetExpr = ExprBinary.Op.IN.make(null, null, noopField, product);
+        Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
+        translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
     }
 
 
