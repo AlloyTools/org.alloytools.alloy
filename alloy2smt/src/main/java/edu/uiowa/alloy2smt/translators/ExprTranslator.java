@@ -78,7 +78,7 @@ public class ExprTranslator
             return translateExprLet((ExprLet) expr, variablesScope);
         }  
 
-        throw new UnsupportedOperationException(((ExprCall) expr).toString());
+        throw new UnsupportedOperationException(expr.toString());
     }
     
     public Expression translateExprITE(ExprITE expr, Map<String,Expression> variablesScope)

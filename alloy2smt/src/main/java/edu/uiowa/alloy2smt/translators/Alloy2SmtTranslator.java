@@ -34,6 +34,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     final ExprTranslator            exprTranslator;
 
     Set<String> funcNames;
+    //ToDo: it is really important to remove this variable. It is the source of many bugs
     Expression                                      auxExpr;
     Map<Sig, Expr>                                  sigFacts;
     
