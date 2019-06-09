@@ -28,7 +28,7 @@ class ExprLetTranslatorTests
         assertEquals(2, aAtoms.size());
 
         FunctionDefinition a0 = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A0");
-        Set<String> a0Atoms = TranslatorUtils.getAtomSet(a);
+        Set<String> a0Atoms = TranslatorUtils.getAtomSet(a0);
         assertEquals(1, a0Atoms.size());
     }
 }

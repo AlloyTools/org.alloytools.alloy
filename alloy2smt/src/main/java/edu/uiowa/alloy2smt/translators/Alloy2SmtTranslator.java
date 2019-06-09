@@ -215,6 +215,21 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         for (CompModule module: this.alloyModel.getAllReachableModules())
         {
             //ToDo: review the case of integer and % (mod) operator
+            if (module.getModelName().equals("util/integer"))
+            {
+                continue;
+            }
+            for (Func func : module.getAllFunc())
+            {
+                funcNames.add(func.label);
+                this.nameToFuncMap.put(func.label, func);
+                sortFunctionDependency(func.label, func.getBody(), dependency);
+            }
+        }
+
+        for (CompModule module: this.alloyModel.getAllReachableModules())
+        {
+            //ToDo: review the case of integer and % (mod) operator
             if(module.getModelName().equals("util/integer"))
             {
                 continue;
