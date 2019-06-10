@@ -6,12 +6,27 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.cvc4.Cvc4Process;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Cvc4Task
 {
     public Cvc4Process cvc4Process;
+
+    private int timeout;
+
+    public Cvc4Task(int timeout)
+    {
+        this.timeout = timeout;
+    }
+
+    public Cvc4Task()
+    {
+        this.timeout = 30000;
+    }
 
     public List<CommandResult> run(Translation translation, boolean includeScope) throws Exception
     {
@@ -23,7 +38,7 @@ public class Cvc4Task
 
             cvc4Process.sendCommand(smtScript);
 
-            TranslatorUtils.setSolverOptions(cvc4Process);
+            setSolverOptions(cvc4Process);
 
             // surround each command except the last one with (push) and (pop)
             for (int index = 0; index < translation.getCommands().size(); index++)
@@ -38,6 +53,15 @@ public class Cvc4Task
             return commandResults;
         }
         return new ArrayList<>();
+    }
+
+    public String setSolverOptions(Cvc4Process cvc4Process) throws IOException
+    {
+        Map<String, String> options = new HashMap<>();
+        options.put("tlimit", Integer.toString(timeout));
+        String script = TranslatorUtils.translateOptions(options);
+        cvc4Process.sendCommand(script);
+        return script;
     }
 
     private CommandResult solveCommand(int index, boolean includeScope, Translation translation) throws Exception

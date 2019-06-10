@@ -222,6 +222,55 @@ public class BookExamplesTests
     }
 
     @Test
+    public void abstractMemory() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/abstractMemory.als", true);
+
+        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("unsat", results.get(1).satResult);
+    }
+
+    @Test
+    public void cacheMemory() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/cacheMemory.als", true);
+        assertEquals("unsat", results.get(0).satResult);
+    }
+
+    @Test
+    public void checkCache() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkCache.als", true);
+        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("unsat", results.get(1).satResult);
+        assertEquals("unsat", results.get(2).satResult);
+        assertEquals("unsat", results.get(3).satResult);
+    }
+
+    @Test
+    public void checkFixedSize() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkFixedSize.als", true);
+        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("unsat", results.get(1).satResult);
+        assertEquals("unsat", results.get(2).satResult);
+    }
+
+    @Test
+    public void fixedSizeMemory() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/fixedSizeMemory.als", true);
+        assertEquals("sat", results.get(0).satResult);
+    }
+
+    @Test
+    public void fixedSizeMemory_H() throws Exception
+    {
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/fixedSizeMemory.als", true);
+        assertEquals("sat", results.get(0).satResult);
+    }
+
+    @Test
     public void hotel1() throws Exception
     {
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel1.als", true);
@@ -396,6 +445,5 @@ public class BookExamplesTests
         assertEquals("unsat", results.get(0).satResult);
         assertEquals("unsat", results.get(1).satResult);
         assertEquals("unsat", results.get(2).satResult);
-
     }
 }

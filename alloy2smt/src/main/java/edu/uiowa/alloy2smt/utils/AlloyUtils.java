@@ -1,10 +1,8 @@
 package edu.uiowa.alloy2smt.utils;
 
-import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
@@ -27,6 +25,13 @@ public class AlloyUtils
     {
         Translation translation = Utils.translateFromFile(fileName);
         Cvc4Task task = new Cvc4Task();
+        return task.run(translation, includeScope);
+    }
+
+    public static List<CommandResult> runAlloyFile(String fileName, boolean includeScope, int timeout) throws Exception
+    {
+        Translation translation = Utils.translateFromFile(fileName);
+        Cvc4Task task = new Cvc4Task(timeout);
         return task.run(translation, includeScope);
     }
 

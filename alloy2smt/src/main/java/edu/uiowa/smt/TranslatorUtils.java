@@ -8,18 +8,9 @@
 
 package edu.uiowa.smt;
 
-import edu.uiowa.smt.cvc4.Cvc4Process;
-import edu.uiowa.smt.parser.SmtModelVisitor;
-import edu.uiowa.smt.parser.antlr.SmtLexer;
-import edu.uiowa.smt.parser.antlr.SmtParser;
+
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -317,15 +308,6 @@ public class TranslatorUtils
                 .filter(f -> f.getName().equals(name)).findFirst().get();
         definition = smtModel.evaluateUninterpretedInt(definition);
         return definition;
-    }
-
-    public static String setSolverOptions(Cvc4Process cvc4Process) throws IOException
-    {
-        Map<String, String> options = new HashMap<>();
-        options.put("tlimit", "30000");
-        String script = translateOptions(options);
-        cvc4Process.sendCommand(script);
-        return script;
     }
 
     public static String translateOptions(Map<String, String> options)
