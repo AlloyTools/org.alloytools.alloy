@@ -28,13 +28,21 @@ public class MultiArityExpression extends Expression
         {
             throw new RuntimeException("One of the expression is null");
         }
+        checkTypes();
     }
 
     public void checkTypes()
     {
         switch (op)
         {
-            case MKTUPLE:break;
+            case MKTUPLE:
+            {
+                if(exprs.size() == 0)
+                {
+                    throw new RuntimeException("mkTuple operation requires at least one expression");
+                }
+                break;
+            }
             case INSERT:
             {
                 if(exprs.size() <= 1)
@@ -61,11 +69,20 @@ public class MultiArityExpression extends Expression
             } break;
             case DISTINCT:
             {
-                List<Sort> sorts = this.exprs.stream()
-                                .map(Expression::getSort).collect(Collectors.toList());
-                if(sorts.size() > 1)
+                if(exprs.size() <= 1)
                 {
-                    throw new RuntimeException("Not all expressions have of the same type");
+                    throw new RuntimeException("distinct operation requires at least two expressions");
+                }
+
+                List<Sort> sorts = this.exprs.stream()
+                                            .map(Expression::getSort).collect(Collectors.toList());
+                Sort firstSort = sorts.get(0);
+                for (int i = 1; i < sorts.size(); i++)
+                {
+                    if(!sorts.get(i).equals(firstSort))
+                    {
+                        throw new RuntimeException(String.format("Expressions of distinct operation do not have the same type:\n%s", sorts));
+                    }
                 }
             }break;
             default:
