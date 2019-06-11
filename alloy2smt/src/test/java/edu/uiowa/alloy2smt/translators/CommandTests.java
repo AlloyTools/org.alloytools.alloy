@@ -60,25 +60,6 @@ class CommandTests
                 command);
     }
 
-
-    @Test
-    void runCommandWithNewFunctionDeclaration()
-    {
-        String alloy =
-                "sig A0, A1, A2 in Int{}\n" +
-                "run command1 {A0 > A1 + A2}";
-
-        Translation translation = Utils.translate(alloy);
-        String command = translation.translateCommand(0, false);
-
-        assertEquals(
-                "(declare-fun _GT ((Set (Tuple Int))(Set (Tuple Int))) Bool)\n" +
-                        "; command1\n" +
-                        "(assert (_GT this_A0 (union this_A1 this_A2)))\n",
-                command);
-    }
-
-
     @Test
     void checkCommand1()
     {
