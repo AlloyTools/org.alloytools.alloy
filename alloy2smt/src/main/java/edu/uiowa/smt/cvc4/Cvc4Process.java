@@ -1,12 +1,7 @@
 package edu.uiowa.smt.cvc4;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 
 public class Cvc4Process
@@ -19,27 +14,62 @@ public class Cvc4Process
     private Process process;
     private Scanner scanner;
     private OutputStream outputStream;
+    private StringBuilder smtCode;
 
     private Cvc4Process(Process process)
     {
         this.process        = process;
         this.scanner        = new Scanner(process.getInputStream());
         this.outputStream   = process.getOutputStream();
+        this.smtCode        = new StringBuilder();
     }
 
     public static Cvc4Process start() throws Exception
     {
+        ProcessBuilder processBuilder = getProcessBuilder();
+        Process process = processBuilder.start();
+        return new Cvc4Process(process);
+    }
+
+    private String runCVC4() throws Exception
+    {
+        ProcessBuilder processBuilder = getProcessBuilder();
+
+        String tempDirectory        = System.getProperty("java.io.tmpdir");
+        // save the smt file
+        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
+        Formatter formatter = new Formatter(smtFile);
+        formatter.format("%s", smtCode.toString());
+        formatter.close();
+        processBuilder.command().add(smtFile.getAbsolutePath());
+
+        // start the process
+        Process process = processBuilder.start();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null)
+        {
+            stringBuilder.append(line);
+            stringBuilder.append("/n");
+        }
+        process.destroyForcibly();
+        return stringBuilder.toString();
+    }
+
+    private static ProcessBuilder getProcessBuilder() throws Exception
+    {
         String cvc4;
 
-        if(onWindows())
+        if (onWindows())
         {
             cvc4 = BIN_PATH + "cvc4_win64.exe";
         }
-        else if(onMac())
+        else if (onMac())
         {
             cvc4 = BIN_PATH + "cvc4_mac";
         }
-        else if(OS.startsWith("Linux"))
+        else if (OS.startsWith("Linux"))
         {
             cvc4 = BIN_PATH + "cvc4_linux";
         }
@@ -50,17 +80,17 @@ public class Cvc4Process
 
         File cvc4Binary = new File(cvc4);
 
-        if(!cvc4Binary.exists())
+        if (!cvc4Binary.exists())
         {
             throw new Exception("CVC4 binary does not exist at: " + cvc4);
         }
-        if(!cvc4Binary.canExecute())
+        if (!cvc4Binary.canExecute())
         {
             throw new Exception("CVC4 binary cannot be executed at: " + cvc4);
         }
 
-        ProcessBuilder  processBuilder = new ProcessBuilder();
-        List<String> command       = new ArrayList<>();
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        List<String> command = new ArrayList<>();
 
         command.add(cvc4);
 
@@ -70,16 +100,36 @@ public class Cvc4Process
 
         processBuilder.command(command);
         processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
-
-        return new Cvc4Process(process);
+        return processBuilder;
     }
+
 
     public String sendCommand(String command) throws IOException
     {
         outputStream.write((command + "\n").getBytes());
-        System.out.println(command);
-        outputStream.flush();
+        smtCode.append(command + "\n");
+        try
+        {
+            outputStream.flush();
+        }
+        catch (java.io.IOException ioException)
+        {
+            if(ioException.getMessage().toLowerCase().contains("pipe"))
+            {
+                System.out.println(smtCode.toString());
+                try
+                {
+                    String error = runCVC4();
+                    throw new IOException(error);
+                }
+                catch(Exception exception)
+                {
+                    exception.printStackTrace();
+                }
+
+            }
+            throw ioException;
+        }
         return receiveOutput();
     }
 

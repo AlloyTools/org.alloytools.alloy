@@ -3,10 +3,9 @@ package edu.mit.csail.sdg.alloy4whole;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Scanner;
 
@@ -21,15 +20,53 @@ public class Cvc4Process
     private Process process;
     private Scanner scanner;
     private OutputStream outputStream;
+    private StringBuilder smtCode;
 
     private Cvc4Process(Process process)
     {
         this.process        = process;
         this.scanner        = new Scanner(process.getInputStream());
         this.outputStream   = process.getOutputStream();
+        this.smtCode        = new StringBuilder();
     }
 
     public static Cvc4Process start(WorkerEngine.WorkerCallback workerCallback) throws Exception
+    {
+        ProcessBuilder processBuilder = getProcessBuilder();
+
+        workerCallback.callback(new Object[]{"","Executing command: " + String.join(" ", processBuilder.command()) + "\n\n"});
+        Process process = processBuilder.start();
+
+        return new Cvc4Process(process);
+    }
+
+    private String runCVC4() throws Exception
+    {
+        ProcessBuilder processBuilder = getProcessBuilder();
+
+        String tempDirectory        = System.getProperty("java.io.tmpdir");
+        // save the smt file
+        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
+        Formatter formatter = new Formatter(smtFile);
+        formatter.format("%s", smtCode.toString());
+        formatter.close();
+        processBuilder.command().add(smtFile.getAbsolutePath());
+
+        // start the process
+        Process process = processBuilder.start();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null)
+        {
+            stringBuilder.append(line);
+            stringBuilder.append("/n");
+        }
+        process.destroyForcibly();
+        return stringBuilder.toString();
+    }
+
+    private static ProcessBuilder getProcessBuilder() throws Exception
     {
         String cvc4;
 
@@ -73,18 +110,35 @@ public class Cvc4Process
 
         processBuilder.command(command);
 
-        workerCallback.callback(new Object[]{"","Executing command: " + String.join(" ", command) + "\n\n"});
-
         processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
-
-        return new Cvc4Process(process);
+        return processBuilder;
     }
 
     public String sendCommand(String command) throws IOException
     {
         outputStream.write((command + "\n").getBytes());
-        outputStream.flush();
+        smtCode.append(command + "\n");
+        try
+        {
+            outputStream.flush();
+        }
+        catch (java.io.IOException ioException)
+        {
+            if(ioException.getMessage().toLowerCase().contains("pipe"))
+            {
+                System.out.println(smtCode.toString());
+                try
+                {
+                    String error = runCVC4();
+                    throw new IOException(error);
+                }
+                catch(Exception exception)
+                {
+                    exception.printStackTrace();
+                }
+            }
+            throw ioException;
+        }
         return receiveOutput();
     }
 
