@@ -93,7 +93,7 @@ public class ExprQtTranslatorTests
         String alloy =
                 "sig A {}\n" +
                 "sig A0, A1 in A {} \n" +
-                "fact {one x, y: A | x = A0 and y = A1 and x = y}";
+                "fact {one x, y: A | x = A0 and y = A1 and x != y}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");

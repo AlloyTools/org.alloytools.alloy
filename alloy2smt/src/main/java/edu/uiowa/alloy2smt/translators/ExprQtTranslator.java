@@ -3,7 +3,6 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprQt;
-import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -29,8 +28,8 @@ public class ExprQtTranslator
     {
         // create a new scope for quantified variables
         Map<String, Expression> newVariableScope = new HashMap<>(variableScope);
-        Map<String, Expression> ranges = new HashMap<>();
-        for (Decl decl: exprQt.decls)
+        Map<String, Expression> ranges = new LinkedHashMap<>();
+        for (Decl decl : exprQt.decls)
         {
             Expression range = exprTranslator.translateExpr(decl.expr, newVariableScope);
             for (ExprHasName name : decl.names)
@@ -48,26 +47,26 @@ public class ExprQtTranslator
 
         switch (exprQt.op)
         {
-                case ALL:
-                    return translateAllFirstOrderQuantifier(body, ranges, newVariableScope);
-                case NO:
-                    return translateNoFirstOrderQuantifier(body, ranges, newVariableScope);
-                case SOME:
-                    return translateSomeFirstOrderQuantifier(body, ranges, newVariableScope);
-                case ONE:
-//                    return translateOneFirstOrderQuantifier(name, body, ranges, newVariableScope);
-                case LONE:
-//                    return translateLoneFirstOrderQuantifier(name, body, ranges, newVariableScope);
-                case COMPREHENSION:
-                    throw new UnsupportedOperationException();
-                default:
-                    throw new UnsupportedOperationException();
+            case ALL:
+                return translateAllQuantifier(body, ranges, newVariableScope);
+            case NO:
+                return translateNoQuantifier(body, ranges, newVariableScope);
+            case SOME:
+                return translateSomeQuantifier(body, ranges, newVariableScope);
+            case ONE:
+                    return translateOneQuantifier(body, ranges, newVariableScope);
+            case LONE:
+                    return translateLoneQuantifier(body, ranges, newVariableScope);
+            case COMPREHENSION:
+                throw new UnsupportedOperationException();
+            default:
+                throw new UnsupportedOperationException();
         }
 //        throw new UnsupportedOperationException();
     }
 
-    private Expression translateAllFirstOrderQuantifier(Expression body, Map<String, Expression> ranges,
-                                                        Map<String, Expression> variablesScope)
+    private Expression translateAllQuantifier(Expression body, Map<String, Expression> ranges,
+                                              Map<String, Expression> variablesScope)
     {
         // all x: e1, y: e2, ... | f is translated into
         // forall x, y,... (x in e1 and y in e2 and ... implies f)
@@ -75,7 +74,7 @@ public class ExprQtTranslator
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
                                                               .stream()
-                                                              .map(entry -> (VariableDeclaration)((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                              .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
                                                               .collect(Collectors.toList());
 
         Expression and = getMemberOrSubsetExpressions(ranges, variablesScope);
@@ -85,24 +84,24 @@ public class ExprQtTranslator
         return forAll;
     }
 
-    private Expression translateNoFirstOrderQuantifier(Expression body, Map<String, Expression> ranges,
-                                                       Map<String, Expression> variablesScope)
+    private Expression translateNoQuantifier(Expression body, Map<String, Expression> ranges,
+                                             Map<String, Expression> variablesScope)
     {
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
-        return translateAllFirstOrderQuantifier(notBody, ranges, variablesScope);
+        return translateAllQuantifier(notBody, ranges, variablesScope);
     }
 
-    private Expression translateSomeFirstOrderQuantifier(Expression body, Map<String, Expression> ranges,
-                                                         Map<String, Expression> variablesScope)
+    private Expression translateSomeQuantifier(Expression body, Map<String, Expression> ranges,
+                                               Map<String, Expression> variablesScope)
     {
 
         // some x: e1, y: e2, ... | f is translated into
         // exists x, y,... (x in e1 and y in e2 and ... and f)
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
-              .stream()
-              .map(entry -> (VariableDeclaration)((Variable) variablesScope.get(entry.getKey())).getDeclaration())
-              .collect(Collectors.toList());
+                                                              .stream()
+                                                              .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                              .collect(Collectors.toList());
 
         Expression and = getMemberOrSubsetExpressions(ranges, variablesScope);
 
@@ -135,38 +134,76 @@ public class ExprQtTranslator
         return and;
     }
 
-    private Expression translateOneFirstOrderQuantifier(ExprHasName name, Expression body, Map<String, Expression> ranges,
+    private Expression translateOneQuantifier(Expression body, Map<String, Expression> ranges,
                                                         Map<String, Expression> variablesScope)
     {
-        // some x: e | f(x) is translated into
-        // exists x . x in e and f and for all y . y in e and y != x implies not f(y)
-        VariableDeclaration x = (VariableDeclaration)((Variable)variablesScope.get(name.label)).getDeclaration();
-        Expression xMember = new BinaryExpression(x.getVariable(), BinaryExpression.Op.MEMBER, ranges.get(name.label));
+        // one x: e1, y: e2, ... | f(x, y, ...) is translated into
+        // exists x, y, ... ( x in e1 and y in e2 and ... and f(x, y, ...) and
+        //                      for all x', y', ... (x in e1 and y in e2 ...
+        //                              and not (x' = x and y' = y ...) implies not f(x', y', ...)))
 
-        VariableDeclaration y = new VariableDeclaration(TranslatorUtils.getNewAtomName(), x.getSort());
-        Expression yMember = new BinaryExpression(y.getVariable(), BinaryExpression.Op.MEMBER, ranges.get(name.label));
-        Expression yEqualX = new BinaryExpression(y.getVariable(), BinaryExpression.Op.EQ, x.getVariable());
-        Expression notYEqualX = new UnaryExpression(UnaryExpression.Op.NOT, yEqualX);
-        Expression yBody = body.substitute(x.getVariable(), y.getVariable());
-        Expression notYBody = new UnaryExpression(UnaryExpression.Op.NOT, yBody);
-        Expression and1 = new BinaryExpression(yMember,BinaryExpression.Op.AND, notYEqualX);
-        Expression implies = new BinaryExpression(and1,BinaryExpression.Op.IMPLIES, notYBody);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, y);
-        Expression and2 = new BinaryExpression(body, BinaryExpression.Op.AND, forAll);
-        Expression and3 = new BinaryExpression(xMember, BinaryExpression.Op.AND, and2);
-        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3, x);
+        List<VariableDeclaration> oldVariables = ranges.entrySet()
+                                                            .stream()
+                                                            .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                            .collect(Collectors.toList());
+
+        Expression oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, variablesScope);
+
+        Expression existsAnd = new BinaryExpression(oldMemberOrSubset, BinaryExpression.Op.AND, body);
+
+        List<VariableDeclaration> newVariables = new ArrayList<>();
+        Map<String, Expression> newRanges = new LinkedHashMap<>();
+
+        Expression newBody = body;
+        Expression oldEqualNew = new BoolConstant(true);
+        Expression newMemberOrSubset = new BoolConstant(true);
+        for (Map.Entry<String, Expression> entry : ranges.entrySet())
+        {
+            VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration();
+            VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getNewAtomName(), oldVariable.getSort());
+            newRanges.put(newVariable.getName(), entry.getValue());
+            newVariables.add(newVariable);
+            newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
+
+            oldEqualNew = new BinaryExpression(oldEqualNew, BinaryExpression.Op.AND,
+                    new BinaryExpression(oldVariable.getVariable(), BinaryExpression.Op.EQ, newVariable.getVariable()));
+            if (newVariable.getSort() instanceof TupleSort)
+            {
+                newMemberOrSubset = new BinaryExpression(newMemberOrSubset, BinaryExpression.Op.AND,
+                        new BinaryExpression(newVariable.getVariable(), BinaryExpression.Op.MEMBER, entry.getValue()));
+            }
+            else if (newVariable.getSort() instanceof SetSort)
+            {
+                newMemberOrSubset = new BinaryExpression(newMemberOrSubset, BinaryExpression.Op.AND,
+                        new BinaryExpression(newVariable.getVariable(), BinaryExpression.Op.SUBSET, entry.getValue()));
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        newBody = new UnaryExpression(UnaryExpression.Op.NOT, newBody);
+        Expression notOldEqualNew = new UnaryExpression(UnaryExpression.Op.NOT, oldEqualNew);
+
+        Expression forAllAnd = new BinaryExpression(newMemberOrSubset, BinaryExpression.Op.AND, notOldEqualNew);
+
+        Expression implies = new BinaryExpression(forAllAnd, BinaryExpression.Op.IMPLIES, newBody);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, newVariables, implies);
+        existsAnd = new BinaryExpression(existsAnd, BinaryExpression.Op.AND, forAll);
+        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, oldVariables, existsAnd);
         return exists;
     }
 
-    private Expression translateLoneFirstOrderQuantifier(ExprHasName name, Expression body, Map<String, Expression> ranges,
+    private Expression translateLoneQuantifier(Expression body, Map<String, Expression> ranges,
                                                          Map<String, Expression> variablesScope)
     {
-        // lone x: e | f is translated into
-        // (all x: e | not f)  or (one x: e | f)
+        // lone ... | f is translated into
+        // (all ... | not f)  or (one ... | f)
 
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
-        Expression allNot = translateAllFirstOrderQuantifier(notBody, ranges, variablesScope);
-        Expression one = translateOneFirstOrderQuantifier(name, body, ranges, variablesScope);
+        Expression allNot = translateAllQuantifier(notBody, ranges, variablesScope);
+        Expression one = translateOneQuantifier(body, ranges, variablesScope);
         Expression or = new BinaryExpression(allNot, BinaryExpression.Op.OR, one);
         return or;
     }
