@@ -29,4 +29,6 @@ public abstract class Expression extends SmtAst
 
     @Override
     public abstract boolean equals(Object object);
+
+    public abstract Expression substitute(Variable oldVariable, Variable newVariable);
 }

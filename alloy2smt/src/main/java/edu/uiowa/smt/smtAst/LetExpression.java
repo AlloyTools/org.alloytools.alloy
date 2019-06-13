@@ -6,7 +6,10 @@
 package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtAstVisitor;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -84,6 +87,12 @@ public class LetExpression extends Expression
 
     @Override
     public boolean equals(Object object)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
     {
         throw new UnsupportedOperationException();
     }

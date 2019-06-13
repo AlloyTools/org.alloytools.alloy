@@ -59,4 +59,10 @@ public class Sort extends Expression
     {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        return this;
+    }
 }

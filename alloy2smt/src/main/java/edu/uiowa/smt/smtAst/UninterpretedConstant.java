@@ -71,4 +71,10 @@ public class UninterpretedConstant extends Constant
         return name.equals(constant.name) &&
                 sort.equals(constant.sort);
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        return this;
+    }
 }

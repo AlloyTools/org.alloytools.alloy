@@ -377,7 +377,7 @@ check OneEventuallyElected for 7 Op, 2 Msg,
 
 
 // DEFINED VARIABLES
-// Defined variables are uncalled, no-argument functions.
+// Defined declarations are uncalled, no-argument functions.
 // They are helpful for getting good visualization.
 fun queued: State -> Link -> Msg {
   {s: State, L: Link, m: Msg | m in L.(s.queue).slot}

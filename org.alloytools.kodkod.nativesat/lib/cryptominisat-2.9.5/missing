@@ -322,7 +322,7 @@ esac
 
 exit 0
 
-# Local variables:
+# Local declarations:
 # eval: (add-hook 'write-file-hooks 'time-stamp)
 # time-stamp-start: "scriptversion="
 # time-stamp-format: "%:y-%02m-%02d.%02H"

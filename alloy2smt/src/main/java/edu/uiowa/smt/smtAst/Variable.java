@@ -61,4 +61,18 @@ public class Variable extends Expression
         Variable constantObject = (Variable) object;
         return declaration.equals(constantObject.declaration);
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        if(this.equals(newVariable))
+        {
+            throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+        }
+        if(this.equals(oldVariable))
+        {
+            return newVariable;
+        }
+        return  this;
+    }
 }

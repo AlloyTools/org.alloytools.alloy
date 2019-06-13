@@ -207,7 +207,7 @@ run OutOfOrder for 4 expect 1
 
 
 // DEFINED VARIABLES
-// Defined variables are uncalled, no-argument functions.
+// Defined declarations are uncalled, no-argument functions.
 // They are helpful for getting good visualization.
 fun FROM: Msg -> Node {{m: Msg, n: Node | n in m.state.from}}
 fun TO: Msg -> Node {{m: Msg, n: Node | n in m.state.to}}

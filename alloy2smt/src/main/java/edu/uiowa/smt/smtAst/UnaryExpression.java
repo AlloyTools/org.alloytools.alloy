@@ -198,4 +198,16 @@ public class UnaryExpression extends Expression
         return op ==  unaryObject.op &&
                 expr.equals(unaryObject.expr);
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        if(expr.equals(newVariable))
+        {
+            throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+        }
+
+        Expression newExpression = expr.substitute(oldVariable, newVariable);
+        return new UnaryExpression(op, newExpression);
+    }
 }

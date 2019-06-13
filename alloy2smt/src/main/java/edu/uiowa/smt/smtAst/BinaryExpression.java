@@ -380,4 +380,17 @@ public class BinaryExpression extends Expression
         boolean isEqual = leftValue.equals(right);
         return new BoolConstant(isEqual);
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        if(lhsExpr.equals(newVariable) || rhsExpr.equals(newVariable))
+        {
+            throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+        }
+
+        Expression A = lhsExpr.substitute(oldVariable, newVariable);
+        Expression B = rhsExpr.substitute(oldVariable, newVariable);
+        return new BinaryExpression(A, op, B);
+    }
 }

@@ -8,6 +8,7 @@
 
 package edu.uiowa.smt.smtAst;
 
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
@@ -18,18 +19,18 @@ import java.util.Map;
 
 public class QuantifiedExpression extends Expression
 {
-    private final Expression                  expr;
-    private final List<VariableDeclaration>   boundVars;
-    private final Op                          op;
+    private final Expression expr;
+    private final List<VariableDeclaration> declarations;
+    private final Op op;
     
-    public QuantifiedExpression(Op op, List<VariableDeclaration> boundVars, Expression expr)
+    public QuantifiedExpression(Op op, List<VariableDeclaration> declarations, Expression expr)
     {
-        this.boundVars  = new ArrayList<>();        
+        this.declarations = new ArrayList<>();
         this.expr       = expr;
         this.op         = op;
-        for(VariableDeclaration bdVar : boundVars)
+        for(VariableDeclaration bdVar : declarations)
         {
-            this.boundVars.add(bdVar);
+            this.declarations.add(bdVar);
         }
         checkTypes();
     }
@@ -43,16 +44,16 @@ public class QuantifiedExpression extends Expression
         }
     }
 
-    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... boundVars)
+    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... declarations)
     {
-        this.boundVars  = Arrays.asList(boundVars);
+        this.declarations = Arrays.asList(declarations);
         this.expr       = expr;
         this.op         = op;
     }
     
     public List<VariableDeclaration> getBoundVars()
     {
-        return this.boundVars;
+        return this.declarations;
     }
     
     public Expression getExpression()
@@ -114,11 +115,37 @@ public class QuantifiedExpression extends Expression
             return false;
         }
         QuantifiedExpression quantifiedObject = (QuantifiedExpression) object;
-        if(! boundVars.equals(quantifiedObject.boundVars))
+        if(! declarations.equals(quantifiedObject.declarations))
         {
             return false;
         }
         return op ==  quantifiedObject.op &&
                 expr.equals(quantifiedObject.expr);
+    }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        Expression body = expr;
+        List<Declaration> variables = new ArrayList<>(declarations);
+        // check if the new variable is declared
+        for (Declaration declaration: declarations)
+        {
+            if(declaration.getVariable().equals(newVariable))
+            {
+                // choose a new name for the declared variable
+                VariableDeclaration newDeclaration = new VariableDeclaration(TranslatorUtils.getNewSetName(), declaration.getSort());
+                body = expr.substitute(declaration.getVariable(), newDeclaration.getVariable());
+                variables.remove(declaration);
+                variables.add(newDeclaration);
+            }
+        }
+        if(expr.equals(newVariable))
+        {
+            throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+        }
+
+        Expression newExpression = body.substitute(oldVariable, newVariable);
+        return new QuantifiedExpression(op, newExpression);
     }
 }

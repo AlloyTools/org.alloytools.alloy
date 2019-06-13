@@ -10,10 +10,7 @@ package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtAstVisitor;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FunctionCallExpression extends Expression
 {
@@ -114,5 +111,25 @@ public class FunctionCallExpression extends Expression
         FunctionCallExpression functionCall = (FunctionCallExpression) object;
         return function.equals(functionCall.function) &&
                 arguments.equals(functionCall.arguments);
+    }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        if(this.function.getVariable().equals(newVariable))
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        List<Expression> newExpressions = new ArrayList<>();
+        for (Expression expression: arguments)
+        {
+            if (expression.equals(newVariable))
+            {
+                throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+            }
+            newExpressions.add(expression.substitute(oldVariable, newVariable));
+        }
+        return new FunctionCallExpression(function, newExpressions);
     }
 }

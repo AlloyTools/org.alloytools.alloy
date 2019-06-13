@@ -36,7 +36,7 @@ BcnfWriter::BcnfWriter(cchar* output_file)
     if (out == NULL) fprintf(stderr, "ERROR! Could not open file for writing: %s\n", output_file), exit(2);   // <<= Exception handling
     fputc(0, out); fputc(0, out); fputc(0, out); fputc(0, out);     // Room for header: "BCNF"
     fputc(0, out); fputc(0, out); fputc(0, out); fputc(0, out);     // Room for byte-order: 1,2,3,4
-    fputc(0, out); fputc(0, out); fputc(0, out); fputc(0, out);     // Room for #variables
+    fputc(0, out); fputc(0, out); fputc(0, out); fputc(0, out);     // Room for #declarations
     fputc(0, out); fputc(0, out); fputc(0, out); fputc(0, out);     // Room for #clauses
 
     chunk = xmalloc<int>(BCNF_CHUNK_LIMIT);

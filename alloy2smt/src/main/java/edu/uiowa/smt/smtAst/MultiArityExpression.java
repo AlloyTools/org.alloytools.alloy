@@ -195,4 +195,18 @@ public class MultiArityExpression extends Expression
         return op ==  multiArity.op &&
                 exprs.equals(multiArity.exprs);
     }
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        List<Expression> newExpressions = new ArrayList<>();
+        for (Expression expression: exprs)
+        {
+            if (expression.equals(newVariable))
+            {
+                throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+            }
+            newExpressions.add(expression.substitute(oldVariable, newVariable));
+        }
+        return new MultiArityExpression(op, newExpressions);
+    }
 }

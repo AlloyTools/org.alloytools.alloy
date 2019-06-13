@@ -8,6 +8,8 @@ package edu.uiowa.smt.smtAst;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -139,5 +141,18 @@ public class ITEExpression extends Expression
                 condExpr.equals(iteObject.condExpr) &&
                 thenExpr.equals(iteObject.thenExpr) &&
                 elseExpr.equals(iteObject.elseExpr);
+    }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        if (condExpr.equals(newVariable) || thenExpr.equals(newVariable) || elseExpr.equals(newVariable))
+        {
+            throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
+        }
+        Expression newCondition = condExpr.substitute(oldVariable, newVariable);
+        Expression newThen = elseExpr.substitute(oldVariable, newVariable);
+        Expression newElse = elseExpr.substitute(oldVariable, newVariable);
+        return new ITEExpression(newCondition, newThen, newElse);
     }
 }

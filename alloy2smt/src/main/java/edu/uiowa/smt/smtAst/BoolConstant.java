@@ -62,4 +62,10 @@ public class BoolConstant extends Constant
         BoolConstant booleanObject = (BoolConstant) object;
         return value == booleanObject.value;
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        return this;
+    }
 }

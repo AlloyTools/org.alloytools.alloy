@@ -84,4 +84,10 @@ public class IntConstant extends Constant
         IntConstant intConstant = (IntConstant) object;
         return value.equals(intConstant.value);
     }
+
+    @Override
+    public Expression substitute(Variable oldVariable, Variable newVariable)
+    {
+        return this;
+    }
 }
