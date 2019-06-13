@@ -38,6 +38,16 @@ public class ExprQtTranslatorTests
     }
 
     @Test
+    void someQuantifier() throws Exception
+    {
+        String alloy = "abstract sig A {}\n" +
+                "one sig A0, A1 extends A {}\n" +
+                "fact f1{some x : A | x in A}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
+
+    @Test
     void allQuantifierMultipleDeclarations() throws Exception
     {
         String alloy = "abstract sig A {}\n" +
@@ -50,6 +60,21 @@ public class ExprQtTranslatorTests
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
+
+    @Test
+    void someQuantifierMultipleDeclarations() throws Exception
+    {
+        String alloy = "abstract sig A {}\n" +
+                "one sig A0, A1 extends A {}\n" +
+                "fact f1{some x : A, y : A - x | A = x + y}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(2, aAtoms.size());
+    }
+
 
     @Test
     void oneQuantifier() throws Exception
