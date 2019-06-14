@@ -100,4 +100,18 @@ public class ExprQtTranslatorTests
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
+
+    @Test
+    void loneQuantifierMultipleDeclarations() throws Exception
+    {
+        String alloy =
+                "abstract sig A {}\n" +
+                "one sig A0, A1 extends A {} \n" +
+                "fact f1{lone x, y: A | x = A0 and y = A0 and x != y}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(2, aAtoms.size());
+    }
 }
