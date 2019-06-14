@@ -6,10 +6,12 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExprQtTranslatorTests
 {
@@ -23,8 +25,10 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
-        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
-        assertEquals(1, aAtoms.size());
+        Set<Integer> aAtoms = TranslatorUtils.getIntSet(a);
+        assertEquals(2, aAtoms.size());
+        assertTrue(new ArrayList<>(aAtoms).get(0) > 5);
+        assertTrue(new ArrayList<>(aAtoms).get(1) > 5);
     }
 
     @Test
