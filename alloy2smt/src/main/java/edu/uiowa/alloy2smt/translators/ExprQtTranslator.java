@@ -1,8 +1,6 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Decl;
-import edu.mit.csail.sdg.ast.ExprHasName;
-import edu.mit.csail.sdg.ast.ExprQt;
+import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -29,6 +27,10 @@ public class ExprQtTranslator
         // create a new scope for quantified variables
         Map<String, Expression> newVariableScope = new HashMap<>(variableScope);
         Map<String, Expression> ranges = new LinkedHashMap<>();
+
+        // this variable maintains the multiplicity constraints for declared variables
+        // x: [one, lone, some, set] e
+        Expression multiplicityConstraints = new BoolConstant(true);
         for (Decl decl : exprQt.decls)
         {
             Expression range = exprTranslator.translateExpr(decl.expr, newVariableScope);
@@ -37,7 +39,11 @@ public class ExprQtTranslator
                 ranges.put(name.label, range);
                 String sanitizedName = TranslatorUtils.sanitizeName(name.label);
                 SetSort setSort = (SetSort) range.getSort();
-                VariableDeclaration variable = new VariableDeclaration(sanitizedName, setSort.elementSort);
+                VariableDeclaration variable;
+                ExprUnary.Op multiplicityOperator = ((ExprUnary) decl.expr).op;
+                variable = getVariableDeclaration(multiplicityOperator, sanitizedName, setSort);
+                Expression constraint = getMultiplicityConstraint(multiplicityOperator, variable, setSort);
+                multiplicityConstraints = new BinaryExpression(multiplicityConstraints, BinaryExpression.Op.AND, constraint);
                 newVariableScope.put(name.label, variable.getVariable());
             }
         }
@@ -52,7 +58,7 @@ public class ExprQtTranslator
             case NO:
                 return translateNoQuantifier(body, ranges, newVariableScope);
             case SOME:
-                return translateSomeQuantifier(body, ranges, newVariableScope);
+                return translateSomeQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case ONE:
                     return translateOneQuantifier(body, ranges, newVariableScope);
             case LONE:
@@ -63,6 +69,69 @@ public class ExprQtTranslator
                 throw new UnsupportedOperationException();
         }
 //        throw new UnsupportedOperationException();
+    }
+
+    private VariableDeclaration getVariableDeclaration(ExprUnary.Op multiplicityOperator, String variableName, SetSort setSort)
+    {
+        VariableDeclaration variable;
+        switch (multiplicityOperator)
+        {
+            case NOOP: // same as ONEOF
+            case ONEOF:
+            {
+                variable = new VariableDeclaration(variableName, setSort.elementSort);
+                break;
+            }
+            case SOMEOF: // same as SETOF
+            case LONEOF: // same as SETOF
+            case SETOF:
+            {
+                variable = new VariableDeclaration(variableName, setSort);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException();
+        }
+        return variable;
+    }
+
+    private Expression getMultiplicityConstraint(ExprUnary.Op multiplicityOperator, VariableDeclaration variable, SetSort setSort)
+    {
+        Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setSort);
+        switch (multiplicityOperator)
+        {
+            case NOOP: // same as ONEOF
+            case ONEOF:
+            {
+                // variable.getSort() is a tuple sort, so there is no constraint
+                return new BoolConstant(true);
+            }
+            case SOMEOF:
+            {
+                // the set is not empty
+                Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
+                Expression notEmpty = new UnaryExpression(UnaryExpression.Op.NOT, empty);
+                return notEmpty;
+            }
+            case SETOF:
+            {
+                // variable.getSort() is a set, so there is no constraint
+                return new BoolConstant(true);
+            }
+            case LONEOF:
+            {
+                // either the set is empty or a singleton
+                Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
+                VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getNewAtomName(), setSort.elementSort);
+                Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, singleElement.getVariable());
+                Expression isSingleton = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, singleton);
+                Expression emptyOrSingleton = new BinaryExpression(empty, BinaryExpression.Op.OR, isSingleton);
+                Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, emptyOrSingleton, singleElement);
+                return exists;
+            }
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
     private Expression translateAllQuantifier(Expression body, Map<String, Expression> ranges,
@@ -92,11 +161,11 @@ public class ExprQtTranslator
     }
 
     private Expression translateSomeQuantifier(Expression body, Map<String, Expression> ranges,
-                                               Map<String, Expression> variablesScope)
+                                               Map<String, Expression> variablesScope, Expression multiplicityConstraints)
     {
 
         // some x: e1, y: e2, ... | f is translated into
-        // exists x, y,... (x in e1 and y in e2 and ... and f)
+        // exists x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints and f)
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
                                                               .stream()
@@ -104,7 +173,7 @@ public class ExprQtTranslator
                                                               .collect(Collectors.toList());
 
         Expression and = getMemberOrSubsetExpressions(ranges, variablesScope);
-
+        and = new BinaryExpression(and, BinaryExpression.Op.AND, multiplicityConstraints);
         and = new BinaryExpression(and, BinaryExpression.Op.AND, body);
         Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, quantifiedVariables, and);
         return exists;

@@ -114,4 +114,37 @@ public class ExprQtTranslatorTests
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
+
+    @Test
+    void secondOrderSomeSet() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "fact f{some x: set A | x = A and x = none}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(0, aAtoms.size());
+    }
+
+    @Test
+    void secondOrderSomeSome1() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "fact f{some x: some A | x = none}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
+
+    @Test
+    void secondOrderSomeSome2() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                        "fact f{some x: some A | x != none}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
 }
