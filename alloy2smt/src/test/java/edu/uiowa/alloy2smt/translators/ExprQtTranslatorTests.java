@@ -172,6 +172,13 @@ public class ExprQtTranslatorTests
                 "fact f{ A0= {x: A | x not in A1}}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(3, aAtoms.size());
+
+        FunctionDefinition a0 = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A0");
+        Set<String> a0Atoms = TranslatorUtils.getAtomSet(a0);
+        assertEquals(2, a0Atoms.size());
     }
 
 }
