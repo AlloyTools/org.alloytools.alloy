@@ -401,7 +401,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(LetExpression aThis) {
         stringBuilder.append("(" + aThis.getOp() + " (");
-        for(Map.Entry<String, Expression> letVar : aThis.getLetVars().entrySet())
+        for(Map.Entry<String, Expression> letVar : aThis.getLetVariables().entrySet())
         {
             stringBuilder.append("(");
             stringBuilder.append(letVar.getKey()).append(" ");

@@ -161,4 +161,17 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void comprehension() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "sig A0, A1 in A {}\n" +
+                "fact f1 {#A0 = 2 and #A1 = 1}\n" +
+                "fact f{ A0= {x: A | x not in A1}}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
+
 }

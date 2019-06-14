@@ -25,7 +25,7 @@ public class ExprQtTranslator
     Expression translateExprQt(ExprQt exprQt, Map<String, Expression> variableScope)
     {
         // create a new scope for quantified variables
-        Map<String, Expression> newVariableScope = new HashMap<>(variableScope);
+        Map<String, Expression> newVariablesScope = new HashMap<>(variableScope);
         Map<String, Expression> ranges = new LinkedHashMap<>();
 
         // this variable maintains the multiplicity constraints for declared variables
@@ -33,7 +33,7 @@ public class ExprQtTranslator
         Expression multiplicityConstraints = new BoolConstant(true);
         for (Decl decl : exprQt.decls)
         {
-            Expression range = exprTranslator.translateExpr(decl.expr, newVariableScope);
+            Expression range = exprTranslator.translateExpr(decl.expr, newVariablesScope);
             for (ExprHasName name : decl.names)
             {
                 ranges.put(name.label, range);
@@ -44,31 +44,74 @@ public class ExprQtTranslator
                 variable = getVariableDeclaration(multiplicityOperator, sanitizedName, setSort);
                 Expression constraint = getMultiplicityConstraint(multiplicityOperator, variable, setSort);
                 multiplicityConstraints = new BinaryExpression(multiplicityConstraints, BinaryExpression.Op.AND, constraint);
-                newVariableScope.put(name.label, variable.getVariable());
+                newVariablesScope.put(name.label, variable.getVariable());
             }
         }
 
         // translate the body of the quantified expression
-        Expression body = exprTranslator.translateExpr(exprQt.sub, newVariableScope);
+        Expression body = exprTranslator.translateExpr(exprQt.sub, newVariablesScope);
 
         switch (exprQt.op)
         {
             case ALL:
-                return translateAllQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
+                return translateAllQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
             case NO:
-                return translateNoQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
+                return translateNoQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
             case SOME:
-                return translateSomeQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
+                return translateSomeQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
             case ONE:
-                    return translateOneQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
+                    return translateOneQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
             case LONE:
-                    return translateLoneQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
+                    return translateLoneQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
             case COMPREHENSION:
-                throw new UnsupportedOperationException();
+                return translateComprehension(exprQt, body, ranges, newVariablesScope);
             default:
                 throw new UnsupportedOperationException();
         }
 //        throw new UnsupportedOperationException();
+    }
+
+    private Expression translateComprehension(ExprQt exprQt, Expression body, Map<String, Expression> ranges, Map<String, Expression> variablesScope)
+    {
+        // {x: e1, y: e2, ... | f} is translated into
+        // declare-fun comprehension(freeVariables): (e1 x e2 x ...)
+        // assert forall x, y,... (x in e1 and y in e2 ... and f <=>
+        // (x, y, ...) in comprehension(freeVariables))
+
+        List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
+                                                              .stream()
+                                                              .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                              .collect(Collectors.toList());
+
+        List<Sort> elementSorts = quantifiedVariables.stream()
+                .map(v -> ((TupleSort) (v.getSort())).elementSorts.get(0))
+                .collect(Collectors.toList());
+        Sort setSort = new SetSort(new TupleSort(elementSorts));
+        FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), setSort);
+        translator.smtProgram.addFunction(setFunction);
+        Expression membership = getMemberOrSubsetExpressions(ranges, variablesScope);
+
+        List<Expression> quantifiedExpressions = quantifiedVariables.stream()
+                    .map(v -> new BinaryExpression(
+                            IntConstant.getInstance(0),
+                            BinaryExpression.Op.TUPSEL, v.getVariable()))
+                    .collect(Collectors.toList());
+
+        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, quantifiedExpressions);
+
+        Expression tupleMember = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, setFunction.getVariable());
+
+        Expression and = new BinaryExpression(membership, BinaryExpression.Op.AND, body);
+
+        Expression equivalence = new BinaryExpression(tupleMember, BinaryExpression.Op.EQ, and);
+
+
+
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedVariables, equivalence);
+
+        Assertion assertion = new Assertion(exprQt.toString(), forAll);
+        translator.smtProgram.addAssertion(assertion);
+        return setFunction.getVariable();
     }
 
     private VariableDeclaration getVariableDeclaration(ExprUnary.Op multiplicityOperator, String variableName, SetSort setSort)

@@ -7,9 +7,7 @@ package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtAstVisitor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,24 +17,24 @@ import java.util.Map;
 public class LetExpression extends Expression
 {
     private final Expression                  expr;
-    private final Map<String, Expression>     letVars;
+    private final Map<String, Expression> letVariables;
     private final Op                          op;
     
     public LetExpression(Op op, Map<String, Expression> letVars, Expression expr)
     {
-        this.letVars    = new HashMap<>();
+        this.letVariables = new HashMap<>();
         this.expr       = expr;
         this.op         = op;
         for(Map.Entry<String, Expression> var : letVars.entrySet())
         {
-            this.letVars.put(var.getKey(), var.getValue());
+            this.letVariables.put(var.getKey(), var.getValue());
         }
     }
 
     
-    public Map<String, Expression> getLetVars()
+    public Map<String, Expression> getLetVariables()
     {
-        return this.letVars;
+        return this.letVariables;
     }
     
     public Expression getExpression()
@@ -75,7 +73,6 @@ public class LetExpression extends Expression
     @Override
     public Sort getSort()
     {
-        //ToDo: review this case
         return expr.getSort();
     }
 
