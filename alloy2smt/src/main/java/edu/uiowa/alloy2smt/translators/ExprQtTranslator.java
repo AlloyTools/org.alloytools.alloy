@@ -60,7 +60,7 @@ public class ExprQtTranslator
             case SOME:
                 return translateSomeQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case ONE:
-                    return translateOneQuantifier(body, ranges, newVariableScope);
+                    return translateOneQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case LONE:
                     return translateLoneQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case COMPREHENSION:
@@ -204,11 +204,11 @@ public class ExprQtTranslator
     }
 
     private Expression translateOneQuantifier(Expression body, Map<String, Expression> ranges,
-                                                        Map<String, Expression> variablesScope)
+                                              Map<String, Expression> variablesScope, Expression multiplicityConstraints)
     {
         // one x: e1, y: e2, ... | f(x, y, ...) is translated into
-        // exists x, y, ... ( x in e1 and y in e2 and ... and f(x, y, ...) and
-        //                      for all x', y', ... (x in e1 and y in e2 ...
+        // exists x, y, ... ( x in e1 and y in e2 and ... and multiplicityConstraints(x, y, ...) and f(x, y, ...) and
+        //                      for all x', y', ... (x in e1 and y in e2 ... and multiplicityConstraints(x', y', ...)
         //                              and not (x' = x and y' = y ...) implies not f(x', y', ...)))
 
         List<VariableDeclaration> oldVariables = ranges.entrySet()
@@ -218,19 +218,23 @@ public class ExprQtTranslator
 
         Expression oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, variablesScope);
 
-        Expression existsAnd = new BinaryExpression(oldMemberOrSubset, BinaryExpression.Op.AND, body);
+        Expression existsAnd = new BinaryExpression(oldMemberOrSubset, BinaryExpression.Op.AND, multiplicityConstraints);
+
+        existsAnd = new BinaryExpression(existsAnd, BinaryExpression.Op.AND, body);
 
         List<VariableDeclaration> newVariables = new ArrayList<>();
 
         Expression newBody = body;
         Expression oldEqualNew = new BoolConstant(true);
         Expression newMemberOrSubset = new BoolConstant(true);
+        Expression newMultiplicityConstraints = multiplicityConstraints;
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {
             VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration();
             VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getNewAtomName(), oldVariable.getSort());
             newVariables.add(newVariable);
             newBody = newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
+            newMultiplicityConstraints = newMultiplicityConstraints.substitute(oldVariable.getVariable(), newVariable.getVariable());
 
             oldEqualNew = new BinaryExpression(oldEqualNew, BinaryExpression.Op.AND,
                     new BinaryExpression(oldVariable.getVariable(), BinaryExpression.Op.EQ, newVariable.getVariable()));
@@ -250,10 +254,12 @@ public class ExprQtTranslator
             }
         }
 
+
         newBody = new UnaryExpression(UnaryExpression.Op.NOT, newBody);
         Expression notOldEqualNew = new UnaryExpression(UnaryExpression.Op.NOT, oldEqualNew);
 
-        Expression forAllAnd = new BinaryExpression(newMemberOrSubset, BinaryExpression.Op.AND, notOldEqualNew);
+        Expression forAllAnd = new BinaryExpression(newMemberOrSubset, BinaryExpression.Op.AND, newMultiplicityConstraints);
+        forAllAnd = new BinaryExpression(forAllAnd, BinaryExpression.Op.AND, notOldEqualNew);
 
         Expression implies = new BinaryExpression(forAllAnd, BinaryExpression.Op.IMPLIES, newBody);
         Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, newVariables, implies);
@@ -270,7 +276,7 @@ public class ExprQtTranslator
 
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
         Expression allNot = translateAllQuantifier(notBody, ranges, variablesScope, multiplicityConstraints);
-        Expression one = translateOneQuantifier(body, ranges, variablesScope);
+        Expression one = translateOneQuantifier(body, ranges, variablesScope, multiplicityConstraints);
         Expression or = new BinaryExpression(allNot, BinaryExpression.Op.OR, one);
         return or;
     }

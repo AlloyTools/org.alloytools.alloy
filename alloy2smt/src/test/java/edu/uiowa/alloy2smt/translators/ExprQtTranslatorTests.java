@@ -145,8 +145,20 @@ public class ExprQtTranslatorTests
                 "abstract sig A {}\n" +
                 "sig A0, A1 extends A {}\n" +
                 "fact f1 {#A0 = 2 and #A1 = 1}\n" +
-                "fact f{not all x: some A0, y: some A |  x + y != A}";
+                "fact f{not all x: some A0, y: some A1 |  x + y != A}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
+    }
+
+    @Test
+    void secondOrderOneLone() throws Exception
+    {
+        String alloy =
+                "abstract sig A {}\n" +
+                "sig A0, A1 extends A {}\n" +
+                "fact f1 {#A0 = 2 and #A1 = 1}\n" +
+                "fact f{not one x: lone A0, y: lone A1 |  x + y = A}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
     }
 }

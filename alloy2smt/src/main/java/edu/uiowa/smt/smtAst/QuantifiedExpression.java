@@ -127,7 +127,7 @@ public class QuantifiedExpression extends Expression
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {
         Expression body = expr;
-        List<Declaration> variables = new ArrayList<>(declarations);
+        List<VariableDeclaration> variables = new ArrayList<>(declarations);
         // check if the new variable is declared
         for (Declaration declaration: declarations)
         {
@@ -146,6 +146,6 @@ public class QuantifiedExpression extends Expression
         }
 
         Expression newExpression = body.substitute(oldVariable, newVariable);
-        return new QuantifiedExpression(op, newExpression);
+        return new QuantifiedExpression(op, variables, newExpression);
     }
 }
