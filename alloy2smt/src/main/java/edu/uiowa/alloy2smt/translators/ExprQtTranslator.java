@@ -152,7 +152,6 @@ public class ExprQtTranslator
         Expression existsAnd = new BinaryExpression(oldMemberOrSubset, BinaryExpression.Op.AND, body);
 
         List<VariableDeclaration> newVariables = new ArrayList<>();
-        Map<String, Expression> newRanges = new LinkedHashMap<>();
 
         Expression newBody = body;
         Expression oldEqualNew = new BoolConstant(true);
@@ -161,9 +160,8 @@ public class ExprQtTranslator
         {
             VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration();
             VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getNewAtomName(), oldVariable.getSort());
-            newRanges.put(newVariable.getName(), entry.getValue());
             newVariables.add(newVariable);
-            newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
+            newBody = newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
 
             oldEqualNew = new BinaryExpression(oldEqualNew, BinaryExpression.Op.AND,
                     new BinaryExpression(oldVariable.getVariable(), BinaryExpression.Op.EQ, newVariable.getVariable()));
