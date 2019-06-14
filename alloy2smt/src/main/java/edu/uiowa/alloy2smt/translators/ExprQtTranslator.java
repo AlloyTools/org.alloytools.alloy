@@ -40,9 +40,8 @@ public class ExprQtTranslator
                 String sanitizedName = TranslatorUtils.sanitizeName(name.label);
                 SetSort setSort = (SetSort) range.getSort();
                 VariableDeclaration variable;
-                ExprUnary.Op multiplicityOperator = ((ExprUnary) decl.expr).op;
-                variable = getVariableDeclaration(multiplicityOperator, sanitizedName, setSort);
-                Expression constraint = getMultiplicityConstraint(multiplicityOperator, variable, setSort);
+                variable = getVariableDeclaration(decl.expr, sanitizedName, setSort);
+                Expression constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
                 multiplicityConstraints = new BinaryExpression(multiplicityConstraints, BinaryExpression.Op.AND, constraint);
                 newVariablesScope.put(name.label, variable.getVariable());
             }
@@ -114,67 +113,97 @@ public class ExprQtTranslator
         return setFunction.getVariable();
     }
 
-    private VariableDeclaration getVariableDeclaration(ExprUnary.Op multiplicityOperator, String variableName, SetSort setSort)
+    private VariableDeclaration getVariableDeclaration(Expr expr, String variableName, SetSort setSort)
     {
-        VariableDeclaration variable;
-        switch (multiplicityOperator)
+        if(expr instanceof ExprUnary)
         {
-            case NOOP: // same as ONEOF
-            case ONEOF:
+            ExprUnary.Op multiplicityOperator = ((ExprUnary) expr).op;
+            switch (multiplicityOperator)
             {
-                variable = new VariableDeclaration(variableName, setSort.elementSort);
-                break;
+                case NOOP: // same as ONEOF
+                case ONEOF:
+                    return new VariableDeclaration(variableName, setSort.elementSort);
+                case SOMEOF: // same as SETOF
+                case LONEOF: // same as SETOF
+                case SETOF: return new VariableDeclaration(variableName, setSort);
+                default:
+                    throw new UnsupportedOperationException();
             }
-            case SOMEOF: // same as SETOF
-            case LONEOF: // same as SETOF
-            case SETOF:
-            {
-                variable = new VariableDeclaration(variableName, setSort);
-                break;
-            }
-            default:
-                throw new UnsupportedOperationException();
         }
-        return variable;
+        if(expr instanceof ExprBinary)
+        {
+            ExprBinary.Op multiplicityOperator = ((ExprBinary) expr).op;
+            switch (multiplicityOperator)
+            {
+                case ARROW              :
+                case ANY_ARROW_SOME     :
+                case ANY_ARROW_ONE      :
+                case ANY_ARROW_LONE     :
+                case SOME_ARROW_ANY     :
+                case SOME_ARROW_SOME    :
+                case SOME_ARROW_ONE     :
+                case SOME_ARROW_LONE    :
+                case ONE_ARROW_ANY      :
+                case ONE_ARROW_SOME     :
+                case ONE_ARROW_ONE      :
+                case ONE_ARROW_LONE     :
+                case LONE_ARROW_ANY     :
+                case LONE_ARROW_SOME    :
+                case LONE_ARROW_ONE     :
+                case LONE_ARROW_LONE    : return new VariableDeclaration(variableName, setSort);
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+        throw new UnsupportedOperationException();
     }
 
-    private Expression getMultiplicityConstraint(ExprUnary.Op multiplicityOperator, VariableDeclaration variable, SetSort setSort)
+    private Expression getMultiplicityConstraint(Expr expr, VariableDeclaration variable, SetSort setSort)
     {
-        Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setSort);
-        switch (multiplicityOperator)
+        if(expr instanceof ExprUnary)
         {
-            case NOOP: // same as ONEOF
-            case ONEOF:
+            ExprUnary.Op multiplicityOperator = ((ExprUnary) expr).op;
+            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setSort);
+            switch (multiplicityOperator)
             {
-                // variable.getSort() is a tuple sort, so there is no constraint
-                return new BoolConstant(true);
+                case NOOP: // same as ONEOF
+                case ONEOF:
+                {
+                    // variable.getSort() is a tuple sort, so there is no constraint
+                    return new BoolConstant(true);
+                }
+                case SOMEOF:
+                {
+                    // the set is not empty
+                    Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
+                    Expression notEmpty = new UnaryExpression(UnaryExpression.Op.NOT, empty);
+                    return notEmpty;
+                }
+                case SETOF:
+                {
+                    // variable.getSort() is a set, so there is no constraint
+                    return new BoolConstant(true);
+                }
+                case LONEOF:
+                {
+                    // either the set is empty or a singleton
+                    Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
+                    VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getNewAtomName(), setSort.elementSort);
+                    Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, singleElement.getVariable());
+                    Expression isSingleton = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, singleton);
+                    Expression emptyOrSingleton = new BinaryExpression(empty, BinaryExpression.Op.OR, isSingleton);
+                    Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, emptyOrSingleton, singleElement);
+                    return exists;
+                }
+                default:
+                    throw new UnsupportedOperationException();
             }
-            case SOMEOF:
-            {
-                // the set is not empty
-                Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
-                Expression notEmpty = new UnaryExpression(UnaryExpression.Op.NOT, empty);
-                return notEmpty;
-            }
-            case SETOF:
-            {
-                // variable.getSort() is a set, so there is no constraint
-                return new BoolConstant(true);
-            }
-            case LONEOF:
-            {
-                // either the set is empty or a singleton
-                Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
-                VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getNewAtomName(), setSort.elementSort);
-                Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, singleElement.getVariable());
-                Expression isSingleton = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, singleton);
-                Expression emptyOrSingleton = new BinaryExpression(empty, BinaryExpression.Op.OR, isSingleton);
-                Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, emptyOrSingleton, singleElement);
-                return exists;
-            }
-            default:
-                throw new UnsupportedOperationException();
         }
+        if(expr instanceof ExprBinary)
+        {
+            return new BoolConstant(true);
+        }
+        throw new UnsupportedOperationException();
     }
 
     private Expression translateAllQuantifier(Expression body, Map<String, Expression> ranges,
