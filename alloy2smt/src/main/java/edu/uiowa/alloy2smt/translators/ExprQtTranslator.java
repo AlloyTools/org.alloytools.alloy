@@ -54,15 +54,15 @@ public class ExprQtTranslator
         switch (exprQt.op)
         {
             case ALL:
-                return translateAllQuantifier(body, ranges, newVariableScope);
+                return translateAllQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case NO:
-                return translateNoQuantifier(body, ranges, newVariableScope);
+                return translateNoQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case SOME:
                 return translateSomeQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case ONE:
                     return translateOneQuantifier(body, ranges, newVariableScope);
             case LONE:
-                    return translateLoneQuantifier(body, ranges, newVariableScope);
+                    return translateLoneQuantifier(body, ranges, newVariableScope, multiplicityConstraints);
             case COMPREHENSION:
                 throw new UnsupportedOperationException();
             default:
@@ -135,10 +135,10 @@ public class ExprQtTranslator
     }
 
     private Expression translateAllQuantifier(Expression body, Map<String, Expression> ranges,
-                                              Map<String, Expression> variablesScope)
+                                              Map<String, Expression> variablesScope, Expression multiplicityConstraints)
     {
         // all x: e1, y: e2, ... | f is translated into
-        // forall x, y,... (x in e1 and y in e2 and ... implies f)
+        // forall x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints implies f)
 
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
@@ -146,18 +146,18 @@ public class ExprQtTranslator
                                                               .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
                                                               .collect(Collectors.toList());
 
-        Expression and = getMemberOrSubsetExpressions(ranges, variablesScope);
-
+        Expression memberOrSubset = getMemberOrSubsetExpressions(ranges, variablesScope);
+        Expression and = new BinaryExpression(memberOrSubset, BinaryExpression.Op.AND, multiplicityConstraints);
         Expression implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, body);
         Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedVariables, implies);
         return forAll;
     }
 
     private Expression translateNoQuantifier(Expression body, Map<String, Expression> ranges,
-                                             Map<String, Expression> variablesScope)
+                                             Map<String, Expression> variablesScope, Expression multiplicityConstraints)
     {
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
-        return translateAllQuantifier(notBody, ranges, variablesScope);
+        return translateAllQuantifier(notBody, ranges, variablesScope, multiplicityConstraints);
     }
 
     private Expression translateSomeQuantifier(Expression body, Map<String, Expression> ranges,
@@ -263,13 +263,13 @@ public class ExprQtTranslator
     }
 
     private Expression translateLoneQuantifier(Expression body, Map<String, Expression> ranges,
-                                                         Map<String, Expression> variablesScope)
+                                                         Map<String, Expression> variablesScope, Expression multiplicityConstraints)
     {
         // lone ... | f is translated into
         // (all ... | not f)  or (one ... | f)
 
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
-        Expression allNot = translateAllQuantifier(notBody, ranges, variablesScope);
+        Expression allNot = translateAllQuantifier(notBody, ranges, variablesScope, multiplicityConstraints);
         Expression one = translateOneQuantifier(body, ranges, variablesScope);
         Expression or = new BinaryExpression(allNot, BinaryExpression.Op.OR, one);
         return or;

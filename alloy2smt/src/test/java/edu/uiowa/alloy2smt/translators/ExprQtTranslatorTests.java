@@ -139,11 +139,13 @@ public class ExprQtTranslatorTests
     }
 
     @Test
-    void secondOrderSomeSome2() throws Exception
+    void secondOrderAllSome() throws Exception
     {
         String alloy =
-                "sig A {}\n" +
-                        "fact f{some x: some A | x != none}";
+                "abstract sig A {}\n" +
+                "sig A0, A1 extends A {}\n" +
+                "fact f1 {#A0 = 2 and #A1 = 1}\n" +
+                "fact f{not all x: some A0, y: some A |  x + y != A}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
