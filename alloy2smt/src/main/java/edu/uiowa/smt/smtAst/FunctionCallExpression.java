@@ -132,4 +132,19 @@ public class FunctionCallExpression extends Expression
         }
         return new FunctionCallExpression(function, newExpressions);
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        List<Expression> newExpressions = new ArrayList<>();
+        for (Expression expression: arguments)
+        {
+            newExpressions.add(expression.replace(oldExpression, newExpression));
+        }
+        return new FunctionCallExpression(function, newExpressions);
+    }
 }

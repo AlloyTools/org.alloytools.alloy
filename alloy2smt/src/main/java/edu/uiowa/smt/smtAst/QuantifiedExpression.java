@@ -148,4 +148,15 @@ public class QuantifiedExpression extends Expression
         Expression newExpression = body.substitute(oldVariable, newVariable);
         return new QuantifiedExpression(op, variables, newExpression);
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        Expression expression = expr.replace(oldExpression, newExpression);
+        return new QuantifiedExpression(op, declarations, expression);
+    }
 }

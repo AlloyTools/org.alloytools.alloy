@@ -393,4 +393,16 @@ public class BinaryExpression extends Expression
         Expression B = rhsExpr.substitute(oldVariable, newVariable);
         return new BinaryExpression(A, op, B);
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        Expression A = lhsExpr.replace(oldExpression, newExpression);
+        Expression B = rhsExpr.replace(oldExpression, newExpression);
+        return new BinaryExpression(A, op, B);
+    }
 }

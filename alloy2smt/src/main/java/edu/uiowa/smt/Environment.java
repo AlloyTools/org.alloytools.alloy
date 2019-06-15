@@ -1,8 +1,10 @@
 package edu.uiowa.smt;
 
+import edu.mit.csail.sdg.alloy4.Env;
 import edu.uiowa.smt.smtAst.Expression;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Environment
@@ -52,5 +54,27 @@ public class Environment
             currentEnvironment = currentEnvironment.parent;
         }
         return false;
+    }
+
+    public Environment getParent()
+    {
+        return parent;
+    }
+
+    public LinkedHashMap<String, Expression> getVariables()
+    {
+        return getVariablesAuxiliary(this);
+    }
+
+    private LinkedHashMap<String, Expression> getVariablesAuxiliary(Environment environment)
+    {
+        if(environment.parent == null)
+        {
+            return new LinkedHashMap<>(environment.variablesMap);
+        }
+
+        LinkedHashMap<String, Expression> map = getVariablesAuxiliary(environment.parent);
+        map.putAll(environment.variablesMap);
+        return map;
     }
 }

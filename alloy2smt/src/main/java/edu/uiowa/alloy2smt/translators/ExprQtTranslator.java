@@ -81,14 +81,50 @@ public class ExprQtTranslator
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
                                                               .stream()
                                                               .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                              .collect(Collectors.toList());
+                                                             .collect(Collectors.toList());
 
         List<Sort> elementSorts = quantifiedVariables.stream()
                 .map(v -> ((TupleSort) (v.getSort())).elementSorts.get(0))
                 .collect(Collectors.toList());
-        Sort setSort = new SetSort(new TupleSort(elementSorts));
-        FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), setSort);
+
+        Sort returnSort = new SetSort(new TupleSort(elementSorts));
+
+        // add variables in the environment as arguments to the set function
+        LinkedHashMap<String, Expression> argumentsMap = environment.getParent().getVariables();
+        List<Sort> argumentSorts = new ArrayList<>();
+        List<Expression> arguments = new ArrayList<>();
+        List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
+        for (Map.Entry<String, Expression> argument: argumentsMap.entrySet())
+        {
+            arguments.add(argument.getValue());
+            SetSort sort = (SetSort) argument.getValue().getSort();
+            argumentSorts.add(sort);
+
+            // The function accepts singletons as arguments.
+            // To avoid second order quantification over sets, quantify over elements
+            VariableDeclaration tuple = new VariableDeclaration(argument.getKey(), sort.elementSort);
+            quantifiedArguments.add(tuple);
+
+            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
+
+            body = body.replace(argument.getValue(), singleton);
+        }
+        FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, returnSort);
         translator.smtProgram.addFunction(setFunction);
+
+        Expression setFunctionExpression;
+        if(argumentSorts.size() == 0)
+        {
+            setFunctionExpression = setFunction.getVariable();
+        }
+        else
+        {
+            List<Expression> expressions = quantifiedArguments
+                    .stream().map(a -> new UnaryExpression(UnaryExpression.Op.SINGLETON, a.getVariable()))
+                    .collect(Collectors.toList());
+            setFunctionExpression = new FunctionCallExpression(setFunction, expressions);
+        }
+
         Expression membership = getMemberOrSubsetExpressions(ranges, environment);
 
         List<Expression> quantifiedExpressions = quantifiedVariables.stream()
@@ -99,19 +135,27 @@ public class ExprQtTranslator
 
         Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, quantifiedExpressions);
 
-        Expression tupleMember = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, setFunction.getVariable());
+        Expression tupleMember = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, setFunctionExpression);
 
         Expression and = new BinaryExpression(membership, BinaryExpression.Op.AND, body);
 
         Expression equivalence = new BinaryExpression(tupleMember, BinaryExpression.Op.EQ, and);
 
-
-
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedVariables, equivalence);
+        // add variables defined in functions, predicates or let expression to the list of quantifiers
+        quantifiedArguments.addAll(quantifiedVariables);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedArguments, equivalence);
 
         Assertion assertion = new Assertion(exprQt.toString(), forAll);
         translator.smtProgram.addAssertion(assertion);
-        return setFunction.getVariable();
+
+        if(argumentSorts.size() == 0)
+        {
+            return setFunction.getVariable();
+        }
+        else
+        {
+            return new FunctionCallExpression(setFunction, arguments);
+        }
     }
 
     private VariableDeclaration getVariableDeclaration(Expr expr, String variableName, SetSort setSort)

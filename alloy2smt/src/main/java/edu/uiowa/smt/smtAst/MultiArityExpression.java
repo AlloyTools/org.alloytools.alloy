@@ -209,4 +209,20 @@ public class MultiArityExpression extends Expression
         }
         return new MultiArityExpression(op, newExpressions);
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+
+        List<Expression> newExpressions = new ArrayList<>();
+        for (Expression expression: exprs)
+        {
+            newExpressions.add(expression.replace(oldExpression, newExpression));
+        }
+        return new MultiArityExpression(op, newExpressions);
+    }
 }

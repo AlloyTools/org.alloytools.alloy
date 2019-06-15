@@ -20,7 +20,7 @@ class ExprLetTranslatorTests
                 "sig A {}\n" +
                 "one sig A0 extends A{}\n" +
                 "fun different[a: A]: A { let x = { b: A | a != b} |  x}\n" +
-                "run {different[A0] != none}\n";
+                "run {different[A0] != none}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");

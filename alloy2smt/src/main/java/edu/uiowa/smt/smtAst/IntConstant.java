@@ -90,4 +90,14 @@ public class IntConstant extends Constant
     {
         return this;
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        return this;
+    }
 }

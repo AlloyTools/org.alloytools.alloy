@@ -210,4 +210,15 @@ public class UnaryExpression extends Expression
         Expression newExpression = expr.substitute(oldVariable, newVariable);
         return new UnaryExpression(op, newExpression);
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        Expression expression = expr.replace(oldExpression, newExpression);
+        return new UnaryExpression(op, expression);
+    }
 }

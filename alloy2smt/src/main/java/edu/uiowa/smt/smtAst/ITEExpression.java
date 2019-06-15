@@ -155,4 +155,17 @@ public class ITEExpression extends Expression
         Expression newElse = elseExpr.substitute(oldVariable, newVariable);
         return new ITEExpression(newCondition, newThen, newElse);
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        Expression newCondition = condExpr.replace(oldExpression, newExpression);
+        Expression newThen = elseExpr.replace(oldExpression, newExpression);
+        Expression newElse = elseExpr.replace(oldExpression, newExpression);
+        return new ITEExpression(newCondition, newThen, newElse);
+    }
 }

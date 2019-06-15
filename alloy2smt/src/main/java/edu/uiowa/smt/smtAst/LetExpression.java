@@ -93,4 +93,10 @@ public class LetExpression extends Expression
     {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

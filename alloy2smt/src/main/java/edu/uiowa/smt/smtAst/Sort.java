@@ -65,4 +65,14 @@ public class Sort extends Expression
     {
         return this;
     }
+
+    @Override
+    public Expression replace(Expression oldExpression, Expression newExpression)
+    {
+        if(oldExpression.equals(this))
+        {
+            return newExpression;
+        }
+        return this;
+    }
 }
