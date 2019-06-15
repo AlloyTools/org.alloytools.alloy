@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -28,26 +29,26 @@ public class ExprUnaryTranslator
         this.translator = exprTranslator.translator;
     }
 
-    Expression translateExprUnary(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    Expression translateExprUnary(ExprUnary exprUnary, Environment environment)
     {
         switch (exprUnary.op)
         {
-            case NOOP       : return translateNoop(exprUnary, variablesScope);
-            case NO         : return translateNo(exprUnary, variablesScope);
-            case SOME       : return translateSome(exprUnary, variablesScope);
-            case ONE        : return translateOne(exprUnary, variablesScope);
-            case ONEOF      : return translateOneOf(exprUnary, variablesScope);
-            case LONEOF     : return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-            case SOMEOF     : return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-            case SETOF      : return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
-            case LONE       : return translateLone(exprUnary, variablesScope);
+            case NOOP       : return translateNoop(exprUnary, environment);
+            case NO         : return translateNo(exprUnary, environment);
+            case SOME       : return translateSome(exprUnary, environment);
+            case ONE        : return translateOne(exprUnary, environment);
+            case ONEOF      : return translateOneOf(exprUnary, environment);
+            case LONEOF     : return exprTranslator.translateExpr(exprUnary.sub, environment);
+            case SOMEOF     : return exprTranslator.translateExpr(exprUnary.sub, environment);
+            case SETOF      : return exprTranslator.translateExpr(exprUnary.sub, environment);
+            case LONE       : return translateLone(exprUnary, environment);
             case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
-            case TRANSPOSE  : return translateTranspose(exprUnary, variablesScope);
-            case CLOSURE    : return translateClosure(exprUnary, variablesScope);
-            case RCLOSURE   : return translateReflexiveClosure(exprUnary, variablesScope);
-            case NOT        : return translateNot(exprUnary, variablesScope);
-            case CAST2INT   : return translateCAST2INT(exprUnary, variablesScope);
-            case CAST2SIGINT : return translateCAST2SIGINT(exprUnary, variablesScope);
+            case TRANSPOSE  : return translateTranspose(exprUnary, environment);
+            case CLOSURE    : return translateClosure(exprUnary, environment);
+            case RCLOSURE   : return translateReflexiveClosure(exprUnary, environment);
+            case NOT        : return translateNot(exprUnary, environment);
+            case CAST2INT   : return translateCAST2INT(exprUnary, environment);
+            case CAST2SIGINT : return translateCAST2SIGINT(exprUnary, environment);
             default:
             {
                 throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
@@ -55,46 +56,46 @@ public class ExprUnaryTranslator
         }
     }
     
-    private Expression translateCAST2INT(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    private Expression translateCAST2INT(ExprUnary exprUnary, Environment environment)
     {
-        return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        return exprTranslator.translateExpr(exprUnary.sub, environment);
     }
     
-    private Expression translateCAST2SIGINT(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    private Expression translateCAST2SIGINT(ExprUnary exprUnary, Environment environment)
     {
-        return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        return exprTranslator.translateExpr(exprUnary.sub, environment);
     }    
 
-    private Expression translateNot(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    private Expression translateNot(ExprUnary exprUnary, Environment environment)
     {
-        Expression expression   = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression expression   = exprTranslator.translateExpr(exprUnary.sub, environment);
         Expression not          = new UnaryExpression(UnaryExpression.Op.NOT, expression);
         return not;
     }
 
-    private Expression translateClosure(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    private Expression translateClosure(ExprUnary exprUnary, Environment environment)
     {
-        Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, environment);
         UnaryExpression closure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, expression);
         return closure;
     }
 
-    private Expression translateReflexiveClosure(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    private Expression translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
     {
-        Expression          closure             = translateClosure(exprUnary, variablesScope);
+        Expression          closure             = translateClosure(exprUnary, environment);
         BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, AbstractTranslator.atomIdentity.getVariable());
         return reflexiveClosure;
     }
 
-    private Expression translateTranspose(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    private Expression translateTranspose(ExprUnary exprUnary, Environment environment)
     {
-        Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, environment);
         UnaryExpression transpose   = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, expression);
         return transpose;
     }
 
 
-    private Expression translateNoop(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    private Expression translateNoop(ExprUnary exprUnary, Environment environment)
     {
         if(exprUnary.sub instanceof Sig)
         {
@@ -127,9 +128,9 @@ public class ExprUnaryTranslator
         {
             String varName = ((ExprVar)exprUnary.sub).label;
             
-            if(variablesScope.containsKey(varName))
+            if(environment.containsKey(varName))
             {
-                Expression constExpr = variablesScope.get(varName);
+                Expression constExpr = environment.get(varName);
                 
                 if(constExpr instanceof Variable)
                 {
@@ -160,7 +161,7 @@ public class ExprUnaryTranslator
             }            
         }
         
-        return exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        return exprTranslator.translateExpr(exprUnary.sub, environment);
     }
     
     private Expression tryAddingExistentialConstraint(Expression expr)
@@ -179,11 +180,11 @@ public class ExprUnaryTranslator
     }
 
 
-    private Expression translateNo(ExprUnary exprUnary, Map<String, Expression> variablesScope)
+    private Expression translateNo(ExprUnary exprUnary, Environment environment)
     {
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);        
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, environment);        
         
         List<Sort> elementSorts = new ArrayList<>();
 
@@ -196,11 +197,11 @@ public class ExprUnaryTranslator
         return tryAddingExistentialConstraint(eqExpr);
     }
 
-    private Expression translateSome(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    private Expression translateSome(ExprUnary exprUnary, Environment environment)
     {
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression someRel  = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        Expression someRel  = exprTranslator.translateExpr(exprUnary.sub, environment);  
         List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();        
         
@@ -228,11 +229,11 @@ public class ExprUnaryTranslator
         return tryAddingExistentialConstraint(exists);
     }    
 
-    private Expression translateOne(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    private Expression translateOne(ExprUnary exprUnary, Environment environment)
     {
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, environment);  
         List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();
         
@@ -264,18 +265,18 @@ public class ExprUnaryTranslator
         return tryAddingExistentialConstraint(exists);
     }
     
-    private Expression translateOneOf(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    private Expression translateOneOf(ExprUnary exprUnary, Environment environment)
     {
-        Expression set = exprTranslator.translateExpr(exprUnary.sub, variablesScope);
+        Expression set = exprTranslator.translateExpr(exprUnary.sub, environment);
 
         return set;
     }    
 
-    private Expression translateLone(ExprUnary exprUnary, Map<String,Expression> variablesScope)
+    private Expression translateLone(ExprUnary exprUnary, Environment environment)
     {
         int arity           = exprUnary.sub.type().arity();
         List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, variablesScope);  
+        Expression set      = exprTranslator.translateExpr(exprUnary.sub, environment);  
         List<VariableDeclaration>  bdVars      = new ArrayList<>();
         List<Expression>                bdVarExprs  = new ArrayList<>();
         

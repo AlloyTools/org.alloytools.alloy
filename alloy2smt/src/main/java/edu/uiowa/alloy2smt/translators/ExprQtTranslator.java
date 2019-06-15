@@ -1,6 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -22,10 +23,10 @@ public class ExprQtTranslator
         this.translator = exprTranslator.translator;
     }
 
-    Expression translateExprQt(ExprQt exprQt, Map<String, Expression> variableScope)
+    Expression translateExprQt(ExprQt exprQt, Environment environment)
     {
         // create a new scope for quantified variables
-        Map<String, Expression> newVariablesScope = new HashMap<>(variableScope);
+        Environment newEnvironment = new Environment(environment);
         Map<String, Expression> ranges = new LinkedHashMap<>();
 
         // this variable maintains the multiplicity constraints for declared variables
@@ -33,7 +34,7 @@ public class ExprQtTranslator
         Expression multiplicityConstraints = new BoolConstant(true);
         for (Decl decl : exprQt.decls)
         {
-            Expression range = exprTranslator.translateExpr(decl.expr, newVariablesScope);
+            Expression range = exprTranslator.translateExpr(decl.expr, newEnvironment);
             for (ExprHasName name : decl.names)
             {
                 ranges.put(name.label, range);
@@ -43,34 +44,34 @@ public class ExprQtTranslator
                 variable = getVariableDeclaration(decl.expr, sanitizedName, setSort);
                 Expression constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
                 multiplicityConstraints = new BinaryExpression(multiplicityConstraints, BinaryExpression.Op.AND, constraint);
-                newVariablesScope.put(name.label, variable.getVariable());
+                newEnvironment.put(name.label, variable.getVariable());
             }
         }
 
         // translate the body of the quantified expression
-        Expression body = exprTranslator.translateExpr(exprQt.sub, newVariablesScope);
+        Expression body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
 
         switch (exprQt.op)
         {
             case ALL:
-                return translateAllQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
+                return translateAllQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
             case NO:
-                return translateNoQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
+                return translateNoQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
             case SOME:
-                return translateSomeQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
+                return translateSomeQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
             case ONE:
-                    return translateOneQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
+                    return translateOneQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
             case LONE:
-                    return translateLoneQuantifier(body, ranges, newVariablesScope, multiplicityConstraints);
+                    return translateLoneQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
             case COMPREHENSION:
-                return translateComprehension(exprQt, body, ranges, newVariablesScope);
+                return translateComprehension(exprQt, body, ranges, newEnvironment);
             default:
                 throw new UnsupportedOperationException();
         }
 //        throw new UnsupportedOperationException();
     }
 
-    private Expression translateComprehension(ExprQt exprQt, Expression body, Map<String, Expression> ranges, Map<String, Expression> variablesScope)
+    private Expression translateComprehension(ExprQt exprQt, Expression body, Map<String, Expression> ranges, Environment environment)
     {
         // {x: e1, y: e2, ... | f} is translated into
         // declare-fun comprehension(freeVariables): (e1 x e2 x ...)
@@ -79,7 +80,7 @@ public class ExprQtTranslator
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
                                                               .stream()
-                                                              .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                              .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
                                                               .collect(Collectors.toList());
 
         List<Sort> elementSorts = quantifiedVariables.stream()
@@ -88,7 +89,7 @@ public class ExprQtTranslator
         Sort setSort = new SetSort(new TupleSort(elementSorts));
         FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), setSort);
         translator.smtProgram.addFunction(setFunction);
-        Expression membership = getMemberOrSubsetExpressions(ranges, variablesScope);
+        Expression membership = getMemberOrSubsetExpressions(ranges, environment);
 
         List<Expression> quantifiedExpressions = quantifiedVariables.stream()
                     .map(v -> new BinaryExpression(
@@ -207,7 +208,7 @@ public class ExprQtTranslator
     }
 
     private Expression translateAllQuantifier(Expression body, Map<String, Expression> ranges,
-                                              Map<String, Expression> variablesScope, Expression multiplicityConstraints)
+                                              Environment environment, Expression multiplicityConstraints)
     {
         // all x: e1, y: e2, ... | f is translated into
         // forall x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints implies f)
@@ -215,10 +216,10 @@ public class ExprQtTranslator
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
                                                               .stream()
-                                                              .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                              .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
                                                               .collect(Collectors.toList());
 
-        Expression memberOrSubset = getMemberOrSubsetExpressions(ranges, variablesScope);
+        Expression memberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
         Expression and = new BinaryExpression(memberOrSubset, BinaryExpression.Op.AND, multiplicityConstraints);
         Expression implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, body);
         Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedVariables, implies);
@@ -226,14 +227,14 @@ public class ExprQtTranslator
     }
 
     private Expression translateNoQuantifier(Expression body, Map<String, Expression> ranges,
-                                             Map<String, Expression> variablesScope, Expression multiplicityConstraints)
+                                             Environment environment, Expression multiplicityConstraints)
     {
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
-        return translateAllQuantifier(notBody, ranges, variablesScope, multiplicityConstraints);
+        return translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
     }
 
     private Expression translateSomeQuantifier(Expression body, Map<String, Expression> ranges,
-                                               Map<String, Expression> variablesScope, Expression multiplicityConstraints)
+                                               Environment environment, Expression multiplicityConstraints)
     {
 
         // some x: e1, y: e2, ... | f is translated into
@@ -241,22 +242,22 @@ public class ExprQtTranslator
 
         List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
                                                               .stream()
-                                                              .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                              .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
                                                               .collect(Collectors.toList());
 
-        Expression and = getMemberOrSubsetExpressions(ranges, variablesScope);
+        Expression and = getMemberOrSubsetExpressions(ranges, environment);
         and = new BinaryExpression(and, BinaryExpression.Op.AND, multiplicityConstraints);
         and = new BinaryExpression(and, BinaryExpression.Op.AND, body);
         Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, quantifiedVariables, and);
         return exists;
     }
 
-    private Expression getMemberOrSubsetExpressions(Map<String, Expression> ranges, Map<String, Expression> variablesScope)
+    private Expression getMemberOrSubsetExpressions(Map<String, Expression> ranges, Environment environment)
     {
         Expression and = new BoolConstant(true);
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {
-            VariableDeclaration variable = (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration();
+            VariableDeclaration variable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
             Expression memberOrSubset;
             if (variable.getSort() instanceof TupleSort)
             {
@@ -276,7 +277,7 @@ public class ExprQtTranslator
     }
 
     private Expression translateOneQuantifier(Expression body, Map<String, Expression> ranges,
-                                              Map<String, Expression> variablesScope, Expression multiplicityConstraints)
+                                              Environment environment, Expression multiplicityConstraints)
     {
         // one x: e1, y: e2, ... | f(x, y, ...) is translated into
         // exists x, y, ... ( x in e1 and y in e2 and ... and multiplicityConstraints(x, y, ...) and f(x, y, ...) and
@@ -285,10 +286,10 @@ public class ExprQtTranslator
 
         List<VariableDeclaration> oldVariables = ranges.entrySet()
                                                             .stream()
-                                                            .map(entry -> (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration())
+                                                            .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
                                                             .collect(Collectors.toList());
 
-        Expression oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, variablesScope);
+        Expression oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
 
         Expression existsAnd = new BinaryExpression(oldMemberOrSubset, BinaryExpression.Op.AND, multiplicityConstraints);
 
@@ -302,7 +303,7 @@ public class ExprQtTranslator
         Expression newMultiplicityConstraints = multiplicityConstraints;
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {
-            VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) variablesScope.get(entry.getKey())).getDeclaration();
+            VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
             VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getNewAtomName(), oldVariable.getSort());
             newVariables.add(newVariable);
             newBody = newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
@@ -341,14 +342,14 @@ public class ExprQtTranslator
     }
 
     private Expression translateLoneQuantifier(Expression body, Map<String, Expression> ranges,
-                                                         Map<String, Expression> variablesScope, Expression multiplicityConstraints)
+                                                         Environment environment, Expression multiplicityConstraints)
     {
         // lone ... | f is translated into
         // (all ... | not f)  or (one ... | f)
 
         Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
-        Expression allNot = translateAllQuantifier(notBody, ranges, variablesScope, multiplicityConstraints);
-        Expression one = translateOneQuantifier(body, ranges, variablesScope, multiplicityConstraints);
+        Expression allNot = translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
+        Expression one = translateOneQuantifier(body, ranges, environment, multiplicityConstraints);
         Expression or = new BinaryExpression(allNot, BinaryExpression.Op.OR, one);
         return or;
     }

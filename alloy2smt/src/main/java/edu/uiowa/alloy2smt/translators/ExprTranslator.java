@@ -12,6 +12,7 @@ import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -40,56 +41,56 @@ public class ExprTranslator
 
     Expression translateExpr(Expr expr)
     {
-        return translateExpr(expr, new HashMap<>());
+        return translateExpr(expr, new Environment());
     }
 
-    Expression translateExpr(Expr expr, Map<String, Expression> variablesScope)
+    Expression translateExpr(Expr expr, Environment environment)
     {
         if(expr instanceof ExprUnary)
         {
-            return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, variablesScope);
+            return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, environment);
         } 
         else if(expr instanceof ExprBinary)
         {
-            return this.exprBinaryTranslator.translateExprBinary((ExprBinary) expr, variablesScope);
+            return this.exprBinaryTranslator.translateExprBinary((ExprBinary) expr, environment);
         }
         else if(expr instanceof ExprQt)
         {
-            return exprQtTranslator.translateExprQt((ExprQt) expr, variablesScope);
+            return exprQtTranslator.translateExprQt((ExprQt) expr, environment);
         }
         else if(expr instanceof ExprConstant)
         {
-            return translateExprConstant((ExprConstant) expr, variablesScope);
+            return translateExprConstant((ExprConstant) expr, environment);
         }
         else if(expr instanceof ExprList)
         {
-            return translateExprList((ExprList) expr, variablesScope);
+            return translateExprList((ExprList) expr, environment);
         }
         else if(expr instanceof ExprCall)
         {
-            return translateExprCall((ExprCall) expr, variablesScope);
+            return translateExprCall((ExprCall) expr, environment);
         }
         else if(expr instanceof ExprITE)
         {
-            return translateExprITE((ExprITE) expr, variablesScope);
+            return translateExprITE((ExprITE) expr, environment);
         }
         else if(expr instanceof ExprLet)
         {
-            return translateExprLet((ExprLet) expr, variablesScope);
+            return translateExprLet((ExprLet) expr, environment);
         }  
 
         throw new UnsupportedOperationException(expr.toString());
     }
     
-    public Expression translateExprITE(ExprITE expr, Map<String,Expression> variablesScope)
+    public Expression translateExprITE(ExprITE expr, Environment environment)
     {
-        Expression condExpr = translateExpr(expr.cond, variablesScope);
-        Expression thenExpr = translateExpr(expr.left, variablesScope);
-        Expression elseExpr = translateExpr(expr.right, variablesScope);
+        Expression condExpr = translateExpr(expr.cond, environment);
+        Expression thenExpr = translateExpr(expr.left, environment);
+        Expression elseExpr = translateExpr(expr.right, environment);
         return new ITEExpression(condExpr, thenExpr, elseExpr);
     }
 
-    public Expression translateExprConstant(ExprConstant expr, Map<String,Expression> variablesScope)
+    public Expression translateExprConstant(ExprConstant expr, Environment environment)
     {
         switch (expr.op)
         {
@@ -106,25 +107,25 @@ public class ExprTranslator
         }
     }   
 
-    Expression translateExprList(ExprList exprList, Map<String, Expression> variablesScope)
+    Expression translateExprList(ExprList exprList, Environment environment)
     {
         switch (exprList.op)
         {
-            case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, variablesScope);
-            case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, variablesScope);
-            case DISJOINT   : return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, variablesScope);
+            case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, environment);
+            case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, environment);
+            case DISJOINT   : return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, environment);
             case TOTALORDER : throw new UnsupportedOperationException();// total order should be handled before coming here
             default         : throw new UnsupportedOperationException();
         }
     }
 
-    Expression translateExprListToDisjBinaryExpressions(MultiArityExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
+    Expression translateExprListToDisjBinaryExpressions(MultiArityExpression.Op op, ExprList exprList, Environment environment)
     {        
         List<Expression> exprs = new ArrayList<>();
         
         for(Expr e : exprList.args)
         {
-            exprs.add(translateExpr(e, variablesScope));
+            exprs.add(translateExpr(e, environment));
         }
         Expression finalExpr;
         List<Expression> finalExprs = new ArrayList<>();
@@ -149,30 +150,30 @@ public class ExprTranslator
         return finalExpr;
     }
     
-    Expression translateExprLet(ExprLet exprLet, Map<String, Expression> variablesScope)
+    Expression translateExprLet(ExprLet exprLet, Environment environment)
     {
-        Expression              varExpr         = translateExpr(exprLet.expr, variablesScope);
+        Expression              varExpr         = translateExpr(exprLet.expr, environment);
         Map<String, Expression> varToExprMap    = new HashMap<>();
         String                  sanitizeName    = TranslatorUtils.sanitizeName(exprLet.var.label);
         Variable varDeclExpr     = new Variable(new ConstantDeclaration(sanitizeName, varExpr.getSort()));
         
         varToExprMap.put(sanitizeName, varExpr);
-        // make a new variables scope
-        Map<String, Expression> newVariablesScope = new HashMap<>(variablesScope);
-        newVariablesScope.put(exprLet.var.label, varDeclExpr);
+        // make a new environment
+        Environment newEnvironment = new Environment(environment);
+        newEnvironment.put(exprLet.var.label, varDeclExpr);
         
-        Expression letBodyExpr = translateExpr(exprLet.sub, newVariablesScope);
+        Expression letBodyExpr = translateExpr(exprLet.sub, newEnvironment);
         return new LetExpression(LetExpression.Op.LET, varToExprMap, letBodyExpr);
     }    
     
-    Expression translateExprCall(ExprCall exprCall, Map<String, Expression> variablesScope)
+    Expression translateExprCall(ExprCall exprCall, Environment environment)
     {
         String              funcName = exprCall.fun.label;
         List<Expression>    argExprs = new ArrayList<>();
         
         for(Expr e : exprCall.args)
         {
-            argExprs.add(translateExpr(e, variablesScope));
+            argExprs.add(translateExpr(e, environment));
         }
         
         if(this.translator.funcNamesMap.containsKey(funcName))
@@ -185,23 +186,23 @@ public class ExprTranslator
         }
         else if(funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, variablesScope);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
         }
         else if(funcName.equals("integer/minus")|| funcName.equals("integer/sub"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, variablesScope);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
         }
         else if(funcName.equals("integer/mul"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, variablesScope);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
         } 
         else if(funcName.equals("integer/div"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, variablesScope);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
         }
         else if(funcName.equals("integer/rem"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, variablesScope);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
         }
         else if(translator.functionsMap.containsKey(TranslatorUtils.sanitizeName(funcName)))
         {
@@ -243,7 +244,7 @@ public class ExprTranslator
         return setBdVar.getVariable();
     }
     
-    public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Map<String,Expression> variablesScope)
+    public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Environment environment)
     {
 
         A = convertIntConstantToSet(A);
@@ -359,7 +360,7 @@ public class ExprTranslator
         translator.arithmeticOperations.put(op, relation.getVariable());
     }
 
-    private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Map<String, Expression> variablesScope)
+    private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Environment environment)
     {
 
         if(exprList.args.size() == 0 )
@@ -377,20 +378,20 @@ public class ExprTranslator
         }
 
         //ToDo: review the case of nested variable scopes
-        Expression left         = translateExpr(exprList.args.get(0), variablesScope);
+        Expression left         = translateExpr(exprList.args.get(0), environment);
 
         if(exprList.args.size() == 1)
         {
             return left;
         }
 
-        Expression right        = translateExpr(exprList.args.get(1), variablesScope);
+        Expression right        = translateExpr(exprList.args.get(1), environment);
         BinaryExpression result = new BinaryExpression(left, op, right);
 
 
         for(int i = 2; i < exprList.args.size(); i++)
         {
-            Expression expr     = translateExpr(exprList.args.get(i), variablesScope);
+            Expression expr     = translateExpr(exprList.args.get(i), environment);
             result              = new BinaryExpression(result, op, expr);
         }
 

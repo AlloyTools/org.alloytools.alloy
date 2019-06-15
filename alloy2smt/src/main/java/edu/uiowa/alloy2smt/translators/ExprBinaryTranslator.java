@@ -6,6 +6,7 @@ import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import java.util.ArrayList;
@@ -25,62 +26,62 @@ public class ExprBinaryTranslator
         translator = exprTranslator.translator;
     }
 
-    Expression translateExprBinary(ExprBinary expr, Map<String, Expression> variablesScope)
+    Expression translateExprBinary(ExprBinary expr, Environment environment)
     {
         switch (expr.op)
         {
-            case ARROW              : return translateArrow(expr, variablesScope);
-            case ANY_ARROW_SOME     : return translateAnyArrowSome(expr, variablesScope);
-            case ANY_ARROW_ONE      : return translateAnyArrowOne(expr, variablesScope);
-            case ANY_ARROW_LONE     : return translateAnyArrowLone(expr, variablesScope);
-            case SOME_ARROW_ANY     : return translateSomeArrowAny(expr, variablesScope);
-            case SOME_ARROW_SOME    : return translateSomeArrowSome(expr, variablesScope);
-            case SOME_ARROW_ONE     : return translateSomeArrowOne(expr, variablesScope);
-            case SOME_ARROW_LONE    : return translateSomeArrowLone(expr, variablesScope);
-            case ONE_ARROW_ANY      : return translateOneArrowAny(expr, variablesScope);
-            case ONE_ARROW_SOME     : return translateOneArrowSome(expr, variablesScope);
-            case ONE_ARROW_ONE      : return translateOneArrowOne(expr, variablesScope);
-            case ONE_ARROW_LONE     : return translateOneArrowLone(expr, variablesScope);
-            case LONE_ARROW_ANY     : return translateLoneArrowAny(expr, variablesScope);
-            case LONE_ARROW_SOME    : return translateLoneArrowSome(expr, variablesScope);
-            case LONE_ARROW_ONE     : return translateLoneArrowOne(expr, variablesScope);
-            case LONE_ARROW_LONE    : return translateLoneArrowLone(expr, variablesScope);
+            case ARROW              : return translateArrow(expr, environment);
+            case ANY_ARROW_SOME     : return translateAnyArrowSome(expr, environment);
+            case ANY_ARROW_ONE      : return translateAnyArrowOne(expr, environment);
+            case ANY_ARROW_LONE     : return translateAnyArrowLone(expr, environment);
+            case SOME_ARROW_ANY     : return translateSomeArrowAny(expr, environment);
+            case SOME_ARROW_SOME    : return translateSomeArrowSome(expr, environment);
+            case SOME_ARROW_ONE     : return translateSomeArrowOne(expr, environment);
+            case SOME_ARROW_LONE    : return translateSomeArrowLone(expr, environment);
+            case ONE_ARROW_ANY      : return translateOneArrowAny(expr, environment);
+            case ONE_ARROW_SOME     : return translateOneArrowSome(expr, environment);
+            case ONE_ARROW_ONE      : return translateOneArrowOne(expr, environment);
+            case ONE_ARROW_LONE     : return translateOneArrowLone(expr, environment);
+            case LONE_ARROW_ANY     : return translateLoneArrowAny(expr, environment);
+            case LONE_ARROW_SOME    : return translateLoneArrowSome(expr, environment);
+            case LONE_ARROW_ONE     : return translateLoneArrowOne(expr, environment);
+            case LONE_ARROW_LONE    : return translateLoneArrowLone(expr, environment);
             case ISSEQ_ARROW_LONE   : throw new UnsupportedOperationException();
             
             // Relational operators
-            case JOIN               : return translateJoin(expr, variablesScope);
-            case DOMAIN             : return translateDomainRestriction(expr, variablesScope);
-            case RANGE              : return translateRangeRestriction(expr, variablesScope);
-            case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, variablesScope);
-            case PLUSPLUS           : return translatePlusPlus(expr, variablesScope);
-            case EQUALS             : return translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope);
-            case NOT_EQUALS         : return new UnaryExpression(UnaryExpression.Op.NOT, translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope));
+            case JOIN               : return translateJoin(expr, environment);
+            case DOMAIN             : return translateDomainRestriction(expr, environment);
+            case RANGE              : return translateRangeRestriction(expr, environment);
+            case INTERSECT          : return translateSetOperation(expr, BinaryExpression.Op.INTERSECTION, environment);
+            case PLUSPLUS           : return translatePlusPlus(expr, environment);
+            case EQUALS             : return translateEqComparison(expr, BinaryExpression.Op.EQ, environment);
+            case NOT_EQUALS         : return new UnaryExpression(UnaryExpression.Op.NOT, translateEqComparison(expr, BinaryExpression.Op.EQ, environment));
 
             // Set op
-            case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
-            case MINUS              : return translateSetOperation(expr, BinaryExpression.Op.SETMINUS, variablesScope);
+            case PLUS               : return translateSetOperation(expr, BinaryExpression.Op.UNION, environment);
+            case MINUS              : return translateSetOperation(expr, BinaryExpression.Op.SETMINUS, environment);
             
             // Arithmetic operators            
-            case IPLUS              : return translateArithmetic(expr, BinaryExpression.Op.PLUS, variablesScope);
-            case IMINUS             : return translateArithmetic(expr, BinaryExpression.Op.MINUS, variablesScope);
-            case MUL                : return translateArithmetic(expr, BinaryExpression.Op.MULTIPLY, variablesScope);
-            case DIV                : return translateArithmetic(expr, BinaryExpression.Op.DIVIDE, variablesScope);
-            case REM                : return translateArithmetic(expr, BinaryExpression.Op.MOD, variablesScope);
+            case IPLUS              : return translateArithmetic(expr, BinaryExpression.Op.PLUS, environment);
+            case IMINUS             : return translateArithmetic(expr, BinaryExpression.Op.MINUS, environment);
+            case MUL                : return translateArithmetic(expr, BinaryExpression.Op.MULTIPLY, environment);
+            case DIV                : return translateArithmetic(expr, BinaryExpression.Op.DIVIDE, environment);
+            case REM                : return translateArithmetic(expr, BinaryExpression.Op.MOD, environment);
             // Comparison operators
-            case LT                 : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
-            case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
-            case GT                 : return translateComparison(expr, BinaryExpression.Op.GT, variablesScope);
-            case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
-            case IN                 : return translateSubsetOperation(expr, BinaryExpression.Op.SUBSET, variablesScope);
-            case NOT_IN             : return translateSubsetOperation(expr, null, variablesScope);
-            case IMPLIES            : return translateImplies(expr, variablesScope);            
-            case AND                : return translateAnd(expr, variablesScope);
-            case OR                 : return translateOr(expr, variablesScope);
-            case IFF                : return translateEqComparison(expr, BinaryExpression.Op.EQ, variablesScope);
-            case NOT_LT             : return translateComparison(expr, BinaryExpression.Op.GTE, variablesScope);
-            case NOT_LTE            : return translateComparison(expr, BinaryExpression.Op.GT, variablesScope);
-            case NOT_GT             : return translateComparison(expr, BinaryExpression.Op.LTE, variablesScope);
-            case NOT_GTE            : return translateComparison(expr, BinaryExpression.Op.LT, variablesScope);
+            case LT                 : return translateComparison(expr, BinaryExpression.Op.LT, environment);
+            case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, environment);
+            case GT                 : return translateComparison(expr, BinaryExpression.Op.GT, environment);
+            case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, environment);
+            case IN                 : return translateSubsetOperation(expr, BinaryExpression.Op.SUBSET, environment);
+            case NOT_IN             : return translateSubsetOperation(expr, null, environment);
+            case IMPLIES            : return translateImplies(expr, environment);            
+            case AND                : return translateAnd(expr, environment);
+            case OR                 : return translateOr(expr, environment);
+            case IFF                : return translateEqComparison(expr, BinaryExpression.Op.EQ, environment);
+            case NOT_LT             : return translateComparison(expr, BinaryExpression.Op.GTE, environment);
+            case NOT_LTE            : return translateComparison(expr, BinaryExpression.Op.GT, environment);
+            case NOT_GT             : return translateComparison(expr, BinaryExpression.Op.LTE, environment);
+            case NOT_GTE            : return translateComparison(expr, BinaryExpression.Op.LT, environment);
             case SHL                : throw new UnsupportedOperationException();
             case SHA                : throw new UnsupportedOperationException();
             case SHR                : throw new UnsupportedOperationException();            
@@ -88,7 +89,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateOneArrowOne(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateOneArrowOne(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -102,8 +103,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -179,7 +180,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateOneArrowSome(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateOneArrowSome(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -193,8 +194,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -255,7 +256,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateOneArrowAny(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateOneArrowAny(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -269,8 +270,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -322,7 +323,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateSomeArrowOne(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateSomeArrowOne(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -336,8 +337,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -397,7 +398,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateAnyArrowOne(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateAnyArrowOne(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -411,8 +412,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -463,7 +464,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateSomeArrowSome(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateSomeArrowSome(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -477,8 +478,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -519,7 +520,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateSomeArrowAny(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateSomeArrowAny(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -533,8 +534,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -566,7 +567,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateAnyArrowSome(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateAnyArrowSome(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -580,8 +581,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -613,7 +614,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateOneArrowLone(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateOneArrowLone(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -627,8 +628,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -712,7 +713,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateSomeArrowLone(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateSomeArrowLone(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -726,8 +727,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -794,7 +795,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateAnyArrowLone(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateAnyArrowLone(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -808,8 +809,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -866,7 +867,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateLoneArrowLone(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateLoneArrowLone(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -880,8 +881,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -971,7 +972,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateLoneArrowOne(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateLoneArrowOne(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -985,8 +986,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -1071,7 +1072,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateLoneArrowSome(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateLoneArrowSome(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -1085,8 +1086,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -1156,7 +1157,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private Expression translateLoneArrowAny(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateLoneArrowAny(ExprBinary expr, Environment environment)
     {
         FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
 
@@ -1170,8 +1171,8 @@ public class ExprBinaryTranslator
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
 
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         Expression subset = new BinaryExpression(multiplicitySet.getVariable(), BinaryExpression.Op.SUBSET, product);
@@ -1248,53 +1249,53 @@ public class ExprBinaryTranslator
         return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, tupleElements);
     }
 
-    private Expression translateImplies(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translateImplies(ExprBinary expr, Environment environment)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression left     = exprTranslator.translateExpr(expr.left, environment);
+        Expression right    = exprTranslator.translateExpr(expr.right, environment);
         Expression implExpr  = new BinaryExpression(left, BinaryExpression.Op.IMPLIES, right);
 
         return implExpr;
     }
     
-    private Expression translateAnd(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translateAnd(ExprBinary expr, Environment environment)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression left     = exprTranslator.translateExpr(expr.left, environment);
+        Expression right    = exprTranslator.translateExpr(expr.right, environment);
         Expression andExpr  = new BinaryExpression(left, BinaryExpression.Op.AND, right);
 
         return andExpr;
     }
 
-    private Expression translateOr(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translateOr(ExprBinary expr, Environment environment)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression left     = exprTranslator.translateExpr(expr.left, environment);
+        Expression right    = exprTranslator.translateExpr(expr.right, environment);
         Expression orExpr  = new BinaryExpression(left, BinaryExpression.Op.OR, right);
 
         return orExpr;
     }    
     
-    private Expression translateArrow(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translateArrow(ExprBinary expr, Environment environment)
     {
-        Expression A = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression B = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
         Expression product = new BinaryExpression(A, BinaryExpression.Op.PRODUCT, B);
         return product;
     }
 
-    private Expression translatePlusPlus(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translatePlusPlus(ExprBinary expr, Environment environment)
     {
         int rightExprArity  =  expr.right.type().arity();
         if( rightExprArity == 1)
         {
             // ++ is like a single + with arity 1 (i.e. is like a union)
-            return translateSetOperation(expr, BinaryExpression.Op.UNION, variablesScope);
+            return translateSetOperation(expr, BinaryExpression.Op.UNION, environment);
         }
         else 
         {
-            Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-            Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression left     = exprTranslator.translateExpr(expr.left, environment);
+            Expression right    = exprTranslator.translateExpr(expr.right, environment);
             Expression join     = right;            
             
             for(int i = 0; i < rightExprArity-1; ++i)
@@ -1315,7 +1316,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateDomainRestriction(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translateDomainRestriction(ExprBinary expr, Environment environment)
     {
         int arity = expr.right.type().arity();
 
@@ -1326,8 +1327,8 @@ public class ExprBinaryTranslator
         }
         else
         {
-            Expression left = exprTranslator.translateExpr(expr.left, variablesScope);
-            Expression right = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression left = exprTranslator.translateExpr(expr.left, environment);
+            Expression right = exprTranslator.translateExpr(expr.right, environment);
 
             for(int i = 0; i < arity - 1; ++i)
             {
@@ -1338,7 +1339,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateRangeRestriction(ExprBinary expr, Map<String,Expression> variablesScope)
+    private Expression translateRangeRestriction(ExprBinary expr, Environment environment)
     {
         int arity = expr.left.type().arity();
 
@@ -1349,8 +1350,8 @@ public class ExprBinaryTranslator
         }
         else
         {
-            Expression left  = exprTranslator.translateExpr(expr.left, variablesScope);
-            Expression right = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression left  = exprTranslator.translateExpr(expr.left, environment);
+            Expression right = exprTranslator.translateExpr(expr.right, environment);
             
             for(int i = 0; i < arity - 1; ++i)
             {
@@ -1363,10 +1364,10 @@ public class ExprBinaryTranslator
         }
     }
 
-    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
+    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
-        Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);    
+        Expression leftExpr     = exprTranslator.translateExpr(expr.left, environment);
+        Expression rightExpr    = exprTranslator.translateExpr(expr.right, environment);    
         
         //if(!exprTranslator.translator.arithmeticOperations.containsKey(op))
         // {
@@ -1417,7 +1418,7 @@ public class ExprBinaryTranslator
         return result.getVariable();
     }
     
-    private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
+    private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
         Expression comparisonExpr = null;   
         
@@ -1427,7 +1428,7 @@ public class ExprBinaryTranslator
         {            
             int n               = ((ExprConstant)expr.right).num;  
             int arity           = ((ExprUnary)expr.left).sub.type().arity();                                    
-            Expression leftExpr = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, variablesScope);    
+            Expression leftExpr = exprTranslator.translateExpr(((ExprUnary)expr.left).sub, environment);    
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
             List<VariableDeclaration>  existentialBdVars       = new ArrayList<>();
@@ -1638,7 +1639,7 @@ public class ExprBinaryTranslator
         {
             int n               = ((ExprConstant)expr.left).num;  
             int arity           = ((ExprUnary)expr.right).sub.type().arity();                                    
-            Expression rightExpr = exprTranslator.translateExpr(((ExprUnary)expr.right).sub, variablesScope);    
+            Expression rightExpr = exprTranslator.translateExpr(((ExprUnary)expr.right).sub, environment);    
             
             List<Expression>                existentialBdVarExprs   = new ArrayList<>();               
             List<VariableDeclaration>  existentialBdVars       = new ArrayList<>();
@@ -1846,8 +1847,8 @@ public class ExprBinaryTranslator
         }
         else 
         {
-            Expression leftExpr     = exprTranslator.translateExpr(expr.left, variablesScope);
-            Expression rightExpr    = exprTranslator.translateExpr(expr.right, variablesScope);
+            Expression leftExpr     = exprTranslator.translateExpr(expr.left, environment);
+            Expression rightExpr    = exprTranslator.translateExpr(expr.right, environment);
 
 
             comparisonExpr =  getComparison(op, leftExpr, rightExpr);
@@ -1884,7 +1885,7 @@ public class ExprBinaryTranslator
         return exists;
     }
     
-    private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Map<String,Expression> variablesScope)
+    private Expression translateEqComparison(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
 
         if(   (expr.left instanceof ExprUnary &&
@@ -1893,12 +1894,12 @@ public class ExprBinaryTranslator
                 ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY)
             )
         {
-            return translateCardinality(expr, op, variablesScope);
+            return translateCardinality(expr, op, environment);
         }
 
 
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression left     = exprTranslator.translateExpr(expr.left, environment);
+        Expression right    = exprTranslator.translateExpr(expr.right, environment);
 
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
@@ -1948,7 +1949,7 @@ public class ExprBinaryTranslator
         return finalExpr;        
     }
 
-    private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Map<String, Expression> variablesScope)
+    private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op , Environment environment)
     {
         // CVC4 doesn't support comparison  between 2 cardinality expressions
         if
@@ -1984,7 +1985,7 @@ public class ExprBinaryTranslator
             )
         {
             int         n           = ((ExprConstant)expr.right).num;
-            Expression  equality = translateEqCardComparison((ExprUnary) expr.left, n, op, variablesScope);
+            Expression  equality = translateEqCardComparison((ExprUnary) expr.left, n, op, environment);
             return equality;
         }
 
@@ -1994,16 +1995,16 @@ public class ExprBinaryTranslator
             )
         {
             int         n           = ((ExprConstant)expr.left).num;
-            Expression  equality = translateEqCardComparison((ExprUnary) expr.right, n, op, variablesScope);
+            Expression  equality = translateEqCardComparison((ExprUnary) expr.right, n, op, environment);
             return equality;
         }
 
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Map<String, Expression> variablesScope)
+    private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op ,Environment environment)
     {
-        Expression expression = exprTranslator.translateExpr(expr.sub, variablesScope);
+        Expression expression = exprTranslator.translateExpr(expr.sub, environment);
         if(n == 0)
         {
             // the set expression is empty
@@ -2080,10 +2081,10 @@ public class ExprBinaryTranslator
         }
     }
 
-    private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, Expression> variablesScope)
+    private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression left     = exprTranslator.translateExpr(expr.left, environment);
+        Expression right    = exprTranslator.translateExpr(expr.right, environment);
 
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
@@ -2110,10 +2111,10 @@ public class ExprBinaryTranslator
         return operation;
     }
     
-    private Expression translateSubsetOperation(ExprBinary expr, BinaryExpression.Op op, Map<String, Expression> variablesScope)
+    private Expression translateSubsetOperation(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression right    = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression left     = exprTranslator.translateExpr(expr.left, environment);
+        Expression right    = exprTranslator.translateExpr(expr.right, environment);
 
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
@@ -2165,10 +2166,10 @@ public class ExprBinaryTranslator
         return finalExpr;                 
     }
 
-    private Expression translateJoin(ExprBinary expr, Map<String, Expression> variablesScope)
+    private Expression translateJoin(ExprBinary expr, Environment environment)
     {
-        Expression          left    = exprTranslator.translateExpr(expr.left, variablesScope);
-        Expression          right   = exprTranslator.translateExpr(expr.right, variablesScope);
+        Expression          left    = exprTranslator.translateExpr(expr.left, environment);
+        Expression          right   = exprTranslator.translateExpr(expr.right, environment);
 
         if(left instanceof Variable &&
                 (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))

@@ -14,6 +14,7 @@ import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -353,7 +354,7 @@ public class SignatureTranslator
         // Translate facts on signatures
         for (Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
         {
-            Map<String, Expression> variablesScope = new HashMap<>();
+            Environment environment = new Environment();
             Expr expr = sigFact.getValue();
 
             // handle total order operator differently
@@ -361,7 +362,7 @@ public class SignatureTranslator
                     ((ExprUnary) expr).sub instanceof ExprList &&
                     ((ExprList) ((ExprUnary) expr).sub).op == ExprList.Op.TOTALORDER)
             {
-                translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), variablesScope);
+                translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), environment);
                 this.translatedSigFacts.add(sigFact);
             }
         }
@@ -384,17 +385,17 @@ public class SignatureTranslator
             VariableDeclaration bdVar = new VariableDeclaration(bdVarName, translator.atomSort);
             boundVariables.put(bdVar, translator.signaturesMap.get(sigFact.getKey()).getVariable());
             Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
-            Map<String, Expression> variablesScope = new HashMap<>();
+            Environment environment = new Environment();
 
-            variablesScope.put(bdVarName, new Variable(new FunctionDeclaration(bdVarName, translator.atomSort)));
+            environment.put(bdVarName, new Variable(new FunctionDeclaration(bdVarName, translator.atomSort)));
 
-            Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), variablesScope);
+            Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
 
             translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), new BinaryExpression(member, BinaryExpression.Op.IMPLIES, bodyExpr))));
         }
     }
 
-    private void translateTotalOrder(Sig ordSig, ExprList exprList, Map<String, Expression> variablesScope)
+    private void translateTotalOrder(Sig ordSig, ExprList exprList, Environment environment)
     {
         if(exprList.args.size() != 3)
         {
@@ -412,8 +413,8 @@ public class SignatureTranslator
 
         FunctionDeclaration mapping     = defineInjectiveMapping(mappingName, translator.atomSort, translator.intSort);
 
-        Expression setExpression        = translator.exprTranslator.translateExpr(set, variablesScope);
-        Expression firstExpression      = translator.exprTranslator.translateExpr(first, variablesScope);
+        Expression setExpression        = translator.exprTranslator.translateExpr(set, environment);
+        Expression firstExpression      = translator.exprTranslator.translateExpr(first, environment);
 
         // ordering/first
         Expression firstSet             = defineFirstElement(prefix, firstExpression, mapping, setExpression);

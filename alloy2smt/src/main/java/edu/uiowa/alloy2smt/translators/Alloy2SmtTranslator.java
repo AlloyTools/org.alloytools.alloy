@@ -17,6 +17,7 @@ import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -283,7 +284,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private void translateSetComprehensionFunction(Func f)
     {
         String funcName = f.label;
-        Map<String, Expression> variablesScope = new HashMap<>();
+        Environment environment = new Environment();
 
         ExprQt exprQtBody = (ExprQt)(((ExprUnary)f.getBody()).sub);
 
@@ -314,25 +315,25 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
                 
                 inputVarNames.add(sanBdVarName);
-                variablesScope.put(bdVarName, bdVarDecl.getVariable());
+                environment.put(bdVarName, bdVarDecl.getVariable());
             }
         }        
 
         for(Decl decl : exprQtBody.decls)
         {                    
-            Expression declExpr         = exprTranslator.translateExpr(decl.expr, variablesScope);
+            Expression declExpr         = exprTranslator.translateExpr(decl.expr, environment);
             List<Sort> declExprSorts    = AlloyUtils.getExprSorts(decl.expr);
 
             for (ExprHasName name: decl.names)
             {
                 String sanitizedName = TranslatorUtils.sanitizeName(name.label);
                 VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0));
-                variablesScope.put(name.label, bdVar.getVariable());
+                environment.put(name.label, bdVar.getVariable());
                 inputBdVars.put(bdVar, declExpr);                
             }                    
         }
         
-        Expression setCompBodyExpr  = exprTranslator.translateExpr(exprQtBody.sub, variablesScope);
+        Expression setCompBodyExpr  = exprTranslator.translateExpr(exprQtBody.sub, environment);
         Expression membership       = AlloyUtils.getMemberExpression(inputBdVars, 0);
 
         for(int i = 1; i < inputBdVars.size(); ++i)
@@ -365,7 +366,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         Sort    returnSort  = BoolSort.getInstance();
         String  funcName    = TranslatorUtils.sanitizeName(f.label);                
         List<VariableDeclaration>      bdVars          = new ArrayList<>();
-        Map<String, Expression>             variablesScope  = new HashMap<>();
+        Environment environment = new Environment();
                 
         // Save function name
         this.funcNamesMap.put(f.label, funcName);        
@@ -380,7 +381,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
                 
                 bdVars.add(bdVarDecl);
-                variablesScope.put(bdVarName, bdVarDecl.getVariable());
+                environment.put(bdVarName, bdVarDecl.getVariable());
             }
         }
         // If the function is not predicate, we change its returned type.
@@ -390,7 +391,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         }
         
         FunctionDefinition funcDef = new FunctionDefinition(funcName, bdVars, returnSort, 
-                                                            this.exprTranslator.translateExpr(f.getBody(), variablesScope));
+                                                            this.exprTranslator.translateExpr(f.getBody(), environment));
         this.functionsMap.put(funcName, funcDef);
         return funcDef;
     }    
