@@ -219,4 +219,29 @@ class CommandTests
         // default scope is 4, so the formula #a = 5 is unsat
         assertEquals ("unsat", results.get(0).satResult);
     }
+
+    @Test
+    void scope7() throws Exception
+    {
+        String alloy = "abstract sig A {}\n" +
+                "sig A0, A1 extends A{}\n" +
+                "run {#A = 3} for 1 but  exactly 2 A0\n" +
+                "run {#A = 2} for 1 but  exactly 2 A0\n" +
+                "run {#A = 3} for 1 but  exactly 2 A0, exactly 2 A1\n" +
+                "run {#A = 4} for 1 but  exactly 2 A0, exactly 2 A1\n" +
+                "run {#A = 3} for 1 but  2 A0\n" +
+                "run {#A = 2} for 1 but  2 A0\n" +
+                "run {#A = 3} for 1 but  2 A0, 2 A1\n" +
+                "run {#A = 4} for 1 but  2 A0, 2 A1";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals ("unsat", results.get(0).satResult);
+        assertEquals ("sat", results.get(1).satResult);
+        assertEquals ("unsat", results.get(2).satResult);
+        assertEquals ("sat", results.get(3).satResult);
+        assertEquals ("unsat", results.get(4).satResult);
+        assertEquals ("unsat", results.get(5).satResult);
+        assertEquals ("sat", results.get(6).satResult);
+        assertEquals ("sat", results.get(7).satResult);
+    }
 }
