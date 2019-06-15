@@ -6,14 +6,14 @@ model : '(' 'model' sortDeclaration* functionDefinition* ')' ;
 
 sortDeclaration :  '(' 'declare-sort' sortName arity ')' ;
 
-functionDefinition : '(' 'define-fun' functionName '(' argument* ')' ('(' sort ')'| sort)
+functionDefinition : '(' 'define-fun' functionName '(' argument* ')' sort
                         expression ')' ;
 
 argument : '(' argumentName sort ')' ;
 
-sort :  sortName | tupleSort | setSort ;
+sort :  sortName | '(' tupleSort ')' | '(' setSort ')' ;
 
-setSort : 'Set' '(' sort ')' ;
+setSort : 'Set' sort ;
 
 tupleSort : 'Tuple' sort+ ;
 
@@ -55,7 +55,7 @@ integerConstant : '-' Integer | Integer ;
 
 uninterpretedConstant : (AtomPrefix | UninterpretedIntPrefix) Integer;
 
-emptySet : 'as' 'emptyset' '(' 'Set' '(' sort ')' ')' ;
+emptySet : 'as' 'emptyset' '(' 'Set' sort ')' ;
 
 getValue : '(' ('(' expression expression ')' )+ ')';
 
