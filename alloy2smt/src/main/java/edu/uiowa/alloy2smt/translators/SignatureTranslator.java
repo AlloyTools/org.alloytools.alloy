@@ -387,7 +387,7 @@ public class SignatureTranslator
             Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
             Environment environment = new Environment();
 
-            environment.put(bdVarName, new Variable(new FunctionDeclaration(bdVarName, translator.atomSort)));
+            environment.put(bdVarName, new Variable(new VariableDeclaration(bdVarName, translator.atomSort)));
 
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
 

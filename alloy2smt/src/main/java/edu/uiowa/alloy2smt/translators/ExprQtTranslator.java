@@ -109,10 +109,10 @@ public class ExprQtTranslator
                 Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
                 body = body.replace(argument.getValue(), singleton);
             }
-            else if (sort instanceof TupleSort)
+            else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
             {
-                Variable tuple = (Variable) argument.getValue();
-                quantifiedArguments.add((VariableDeclaration) tuple.getDeclaration());
+                Variable variable = (Variable) argument.getValue();
+                quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
             }
             else
             {
