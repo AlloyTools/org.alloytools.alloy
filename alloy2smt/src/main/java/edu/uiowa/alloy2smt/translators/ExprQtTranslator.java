@@ -97,17 +97,27 @@ public class ExprQtTranslator
         for (Map.Entry<String, Expression> argument: argumentsMap.entrySet())
         {
             arguments.add(argument.getValue());
-            SetSort sort = (SetSort) argument.getValue().getSort();
+            Sort sort = argument.getValue().getSort();
             argumentSorts.add(sort);
 
-            // The function accepts singletons as arguments.
-            // To avoid second order quantification over sets, quantify over elements
-            VariableDeclaration tuple = new VariableDeclaration(argument.getKey(), sort.elementSort);
-            quantifiedArguments.add(tuple);
-
-            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
-
-            body = body.replace(argument.getValue(), singleton);
+            // handle set sorts differently to avoid second order quantification
+            if(sort instanceof SetSort)
+            {
+                Sort elementSort = ((SetSort) sort).elementSort;
+                VariableDeclaration tuple = new VariableDeclaration(argument.getKey(), elementSort);
+                quantifiedArguments.add(tuple);
+                Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
+                body = body.replace(argument.getValue(), singleton);
+            }
+            else if (sort instanceof TupleSort)
+            {
+                Variable tuple = (Variable) argument.getValue();
+                quantifiedArguments.add((VariableDeclaration) tuple.getDeclaration());
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
         }
         FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, returnSort);
         translator.smtProgram.addFunction(setFunction);
@@ -119,9 +129,7 @@ public class ExprQtTranslator
         }
         else
         {
-            List<Expression> expressions = quantifiedArguments
-                    .stream().map(a -> new UnaryExpression(UnaryExpression.Op.SINGLETON, a.getVariable()))
-                    .collect(Collectors.toList());
+            List<Expression> expressions = getComprehensionCallArgument(quantifiedArguments, argumentsMap);
             setFunctionExpression = new FunctionCallExpression(setFunction, expressions);
         }
 
@@ -156,6 +164,24 @@ public class ExprQtTranslator
         {
             return new FunctionCallExpression(setFunction, arguments);
         }
+    }
+
+    private List<Expression> getComprehensionCallArgument(List<VariableDeclaration> quantifiedArguments,
+                                                          Map<String, Expression> argumentsMap)
+    {
+        List<Expression> expressions = new ArrayList<>();
+        for (VariableDeclaration declaration: quantifiedArguments)
+        {
+            if(declaration.getSort().equals(argumentsMap.get(declaration.getName()).getSort()))
+            {
+                expressions.add(declaration.getVariable());
+            }
+            else
+            {
+                expressions.add(new UnaryExpression(UnaryExpression.Op.SINGLETON, declaration.getVariable()));
+            }
+        }
+        return expressions;
     }
 
     private VariableDeclaration getVariableDeclaration(Expr expr, String variableName, SetSort setSort)
