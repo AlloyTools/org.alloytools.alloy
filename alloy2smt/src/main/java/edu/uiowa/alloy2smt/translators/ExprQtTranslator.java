@@ -89,6 +89,8 @@ public class ExprQtTranslator
 
         Sort returnSort = new SetSort(new TupleSort(elementSorts));
 
+        Expression membership = getMemberOrSubsetExpressions(ranges, environment);
+
         // add variables in the environment as arguments to the set function
         LinkedHashMap<String, Expression> argumentsMap = environment.getParent().getVariables();
         List<Sort> argumentSorts = new ArrayList<>();
@@ -108,6 +110,7 @@ public class ExprQtTranslator
                 quantifiedArguments.add(tuple);
                 Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
                 body = body.replace(argument.getValue(), singleton);
+                membership = membership.replace(argument.getValue(), singleton);
             }
             else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
             {
@@ -132,8 +135,6 @@ public class ExprQtTranslator
             List<Expression> expressions = getComprehensionCallArgument(quantifiedArguments, argumentsMap);
             setFunctionExpression = new FunctionCallExpression(setFunction, expressions);
         }
-
-        Expression membership = getMemberOrSubsetExpressions(ranges, environment);
 
         List<Expression> quantifiedExpressions = quantifiedVariables.stream()
                     .map(v -> new BinaryExpression(
