@@ -772,6 +772,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         if(includeScope)
         {
+            Map<Sig, Map<Sig, Integer>> childrenScope = new HashMap<>();
             for (Sig signature: reachableSigs)
             {
                 if (signature instanceof Sig.PrimSig)
@@ -780,7 +781,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                             .stream()
                             .filter(s -> s.sig == signature)
                             .findFirst();
-                    int scope;
+                    int scope = 0;
                     BinaryExpression.Op op;
                     if (optional.isPresent())
                     {
@@ -798,19 +799,36 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     else
                     {
                         op = BinaryExpression.Op.SUBSET;
-                        if(signature.isAbstract == null)
+                        if(signature.isTopLevel())
                         {
-                            scope = command.overall;
+                            if(signature.isAbstract == null)
+                            {
+                                // no scope specification is given, default value is used
+                                scope = command.overall;
+                            }
+                            else
+                            {
+                                childrenScope.put(signature, new HashMap<>());
+                                // the scope is the sum of its children
+                                scope = getScope((Sig.PrimSig) signature, command, childrenScope);
+                            }
                         }
                         else
                         {
-                            // the scope is the sum of its children
-                            scope = getScope((Sig.PrimSig) signature, command);
+                            // the signature has no implicit bound
                         }
                     }
 
                     Expression variable = signaturesMap.get(signature).getVariable();
-                    if(scope >= 1)
+
+                    if(scope < 0)
+                    {
+                        expression = new BinaryExpression(expression, BinaryExpression.Op.AND,
+                                new BoolConstant(false));
+                        String comment = command.label + " negative scope for signature" + signature;
+                        return new Assertion(comment, expression);
+                    }
+                    else if(scope >= 1)
                     {
                         List<VariableDeclaration> declarations = new ArrayList<>();
                         Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
@@ -847,9 +865,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         return assertion;
     }
 
-    private int getScope(Sig.PrimSig parent, Command command)
+    private int getScope(Sig.PrimSig parent, Command command,
+                         Map<Sig, Map<Sig, Integer>> childrenScope)
     {
         int scopeSum = 0;
+        Map<Sig, Integer> parentMap = childrenScope.get(parent);
         for (Sig signature: parent.children())
         {
             if(signature.isAbstract == null)
@@ -862,19 +882,24 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 {
                     CommandScope commandScope = optional.get();
                     scopeSum += commandScope.endingScope;
+                    parentMap.put(signature, commandScope.endingScope);
                 }
                 else
                 {
-                    scopeSum += command.overall;
+                    // for some reason, the default is not used here
+                    scopeSum += 0;
                 }
             }
             else
             {
-                scopeSum += getScope((Sig.PrimSig) signature, command);
+                childrenScope.put(signature, new HashMap<>());
+                int scope = getScope((Sig.PrimSig) signature, command, childrenScope);
+                parentMap.put(signature, scope);
+                scopeSum += scope;
             }
         }
 
-        if(scopeSum == 0) // no children yet
+        if(scopeSum == 0) // no explicit scope for children is given
         {
             scopeSum = command.overall;
         }

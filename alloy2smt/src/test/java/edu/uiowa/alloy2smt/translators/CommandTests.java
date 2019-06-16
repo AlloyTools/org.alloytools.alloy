@@ -240,7 +240,7 @@ class CommandTests
         assertEquals ("unsat", results.get(2).satResult);
         assertEquals ("sat", results.get(3).satResult);
         assertEquals ("unsat", results.get(4).satResult);
-        assertEquals ("unsat", results.get(5).satResult);
+        assertEquals ("sat", results.get(5).satResult);
         assertEquals ("sat", results.get(6).satResult);
         assertEquals ("sat", results.get(7).satResult);
     }
