@@ -232,7 +232,9 @@ class CommandTests
                 "run {#A = 3} for 1 but  2 A0\n" +
                 "run {#A = 2} for 1 but  2 A0\n" +
                 "run {#A = 3} for 1 but  2 A0, 2 A1\n" +
-                "run {#A = 4} for 1 but  2 A0, 2 A1";
+                "run {#A = 4} for 1 but  2 A0, 2 A1\n" +
+                "run {#A = 3} \n" +
+                "run {#A = 4}";
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
 
         assertEquals ("unsat", results.get(0).satResult);
@@ -243,5 +245,7 @@ class CommandTests
         assertEquals ("sat", results.get(5).satResult);
         assertEquals ("sat", results.get(6).satResult);
         assertEquals ("sat", results.get(7).satResult);
+        assertEquals ("sat", results.get(8).satResult);
+        assertEquals ("unsat", results.get(9).satResult);
     }
 }

@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 public class Alloy2SmtTranslator extends AbstractTranslator
 {
+    private final static int        DefaultScope = 3;
     final CompModule                alloyModel;
     final List<Sig>                 reachableSigs;
     final List<Sig>                 topLevelSigs;
@@ -804,7 +805,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                             if(signature.isAbstract == null)
                             {
                                 // no scope specification is given, default value is used
-                                scope = command.overall;
+                                scope = command.overall == -1 ? Alloy2SmtTranslator.DefaultScope: command.overall;
                             }
                             else
                             {
@@ -821,14 +822,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
                     Expression variable = signaturesMap.get(signature).getVariable();
 
-                    if(scope < 0)
-                    {
-                        expression = new BinaryExpression(expression, BinaryExpression.Op.AND,
-                                new BoolConstant(false));
-                        String comment = command.label + " negative scope for signature" + signature;
-                        return new Assertion(comment, expression);
-                    }
-                    else if(scope >= 1)
+                    if(scope >= 1)
                     {
                         List<VariableDeclaration> declarations = new ArrayList<>();
                         Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
@@ -901,7 +895,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         if(scopeSum == 0) // no explicit scope for children is given
         {
-            scopeSum = command.overall;
+            scopeSum = command.overall == -1 ? Alloy2SmtTranslator.DefaultScope: command.overall;
         }
         return scopeSum;
     }
