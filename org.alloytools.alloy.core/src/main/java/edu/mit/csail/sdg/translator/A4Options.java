@@ -178,6 +178,7 @@ public final class A4Options implements Serializable {
         public static final SatSolver PLingelingJNI    = new SatSolver("plingeling(jni)", "PLingeling", null, null, true);
         /** Glucose */
         public static final SatSolver GlucoseJNI       = new SatSolver("glucose(jni)", "Glucose", null, null, true);
+        public static final SatSolver Glucose41JNI     = new SatSolver("glucose 4.1(jni)", "Glucose41", null, null, true);
         /** CryptoMiniSat */
         public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true);
         /** SAT4J using native Java */
