@@ -265,13 +265,57 @@ public class ExprTranslator
             B = translator.handleIntConstant(B);
         }
 
+        Expression newA = A;
+        Expression newB = B;
 
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), AbstractTranslator.setOfUninterpretedIntTuple);
+        // add variables in the environment as arguments to the result function
+        LinkedHashMap<String, Expression> argumentsMap = environment.getVariables();
+        List<Sort> argumentSorts = new ArrayList<>();
+        List<Expression> arguments = new ArrayList<>();
+        List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
+        for (Map.Entry<String, Expression> argument: argumentsMap.entrySet())
+        {
+            arguments.add(argument.getValue());
+            Sort sort = argument.getValue().getSort();
+            argumentSorts.add(sort);
+
+            // handle set sorts differently to avoid second order quantification
+            if(sort instanceof SetSort)
+            {
+                Sort elementSort = ((SetSort) sort).elementSort;
+                VariableDeclaration tuple = new VariableDeclaration(argument.getKey(), elementSort);
+                quantifiedArguments.add(tuple);
+                Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
+                newA = newA.replace(argument.getValue(), singleton);
+                newB = newB.replace(argument.getValue(), singleton);
+            }
+            else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
+            {
+                Variable variable = (Variable) argument.getValue();
+                quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts ,AbstractTranslator.setOfUninterpretedIntTuple);
         translator.smtProgram.addFunction(result);
 
-        VariableDeclaration x = new VariableDeclaration("_x", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("_y", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("_z", AbstractTranslator.uninterpretedInt);
+        Expression resultExpression;
+        if(result.getInputSorts().size() > 0)
+        {
+            resultExpression = new FunctionCallExpression(result, arguments);
+        }
+        else
+        {
+            resultExpression = result.getVariable();
+        }
+
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
@@ -283,7 +327,7 @@ public class ExprTranslator
 
         Expression xMember = new BinaryExpression(xTuple, BinaryExpression.Op.MEMBER, A);
         Expression yMember = new BinaryExpression(yTuple, BinaryExpression.Op.MEMBER, B);
-        Expression zMember = new BinaryExpression(zTuple, BinaryExpression.Op.MEMBER, result.getVariable());
+        Expression zMember = new BinaryExpression(zTuple, BinaryExpression.Op.MEMBER, resultExpression);
 
         Expression xyOperation = new BinaryExpression(xValue, op, yValue);
         Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
@@ -292,7 +336,9 @@ public class ExprTranslator
         Expression and2 = new BinaryExpression(equal, BinaryExpression.Op.AND, and1);
         Expression exists1 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and2, x, y);
         Expression implies1 = new BinaryExpression(zMember, BinaryExpression.Op.IMPLIES, exists1);
-        Expression forall1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies1, z);
+        List<VariableDeclaration> quantifiers1 = new ArrayList<>(quantifiedArguments);
+        quantifiers1.add(z);
+        Expression forall1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiers1, implies1);
 
         Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, A, B), forall1);
         translator.smtProgram.addAssertion(assertion1);
@@ -301,12 +347,15 @@ public class ExprTranslator
         Expression exists2 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3, z);
 
         Expression implies2 = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, exists2);
-        Expression forall2 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2, x, y);
+        List<VariableDeclaration> quantifiers2 = new ArrayList<>(quantifiedArguments);
+        quantifiers2.add(x);
+        quantifiers2.add(y);
+        Expression forall2 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiers2,implies2);
 
         Assertion assertion2 = new Assertion(String.format("%1$s %2$s %3$s axiom2", op, A, B), forall2);
         translator.smtProgram.addAssertion(assertion2);
 
-        return result.getVariable();
+        return resultExpression;
     }
 
     private Expression convertIntConstantToSet(Expression A)

@@ -1367,20 +1367,14 @@ public class ExprBinaryTranslator
     public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, environment);
-        Expression rightExpr    = exprTranslator.translateExpr(expr.right, environment);    
-        
-        //if(!exprTranslator.translator.arithmeticOperations.containsKey(op))
-        // {
-            // how about avoiding declaring any arithmetic relation?
-            // exprTranslator.declArithmeticOp(op);
-        // }
+        Expression rightExpr    = exprTranslator.translateExpr(expr.right, environment);
 
         FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), AbstractTranslator.setOfUninterpretedIntTuple);
         exprTranslator.translator.smtProgram.addFunction(result);
 
-        VariableDeclaration x = new VariableDeclaration("_x", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("_y", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("_z", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());

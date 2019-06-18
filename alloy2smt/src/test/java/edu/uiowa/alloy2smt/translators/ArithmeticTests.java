@@ -6,7 +6,6 @@ import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 
 import java.util.*;
 
@@ -174,7 +173,7 @@ public class ArithmeticTests
     public void quantifiers() throws Exception
     {
         String alloy = "sig A in Int {}\n" +
-                "fact {A = Int and all x, y, z: one Int | plus[x, y] = z }";
+                "fact {#A = 3 and all x, y: A | plus[x, y] < 10}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
