@@ -12,9 +12,21 @@ import edu.uiowa.smt.printers.SmtAstVisitor;
 
 public class VariableDeclaration extends Declaration
 {
-    public VariableDeclaration(String name, Sort sort)
+    private Expression constraint;
+
+    public VariableDeclaration(String name, Sort sort, Expression constraint)
     {
         super(name, sort);
+    }
+
+    public void setConstraint(Expression constraint)
+    {
+        this.constraint = constraint;
+    }
+
+    public Expression getConstraint()
+    {
+        return constraint;
     }
 
     @Override

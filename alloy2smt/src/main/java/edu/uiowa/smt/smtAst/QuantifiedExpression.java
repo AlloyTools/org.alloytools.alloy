@@ -134,7 +134,17 @@ public class QuantifiedExpression extends Expression
             if(declaration.getVariable().equals(newVariable))
             {
                 // choose a new name for the declared variable
-                VariableDeclaration newDeclaration = new VariableDeclaration(TranslatorUtils.getNewSetName(), declaration.getSort());
+                VariableDeclaration newDeclaration = new VariableDeclaration(TranslatorUtils.getNewSetName(), declaration.getSort(), null);
+                if(declaration instanceof  VariableDeclaration)
+                {
+                    Expression constraint = ((VariableDeclaration) declaration).getConstraint();
+                    Expression newConstraint = constraint.substitute(oldVariable, newVariable);
+                    newDeclaration.setConstraint(newConstraint);
+                }
+                else
+                {
+                    throw new UnsupportedOperationException();
+                }
                 body = expr.substitute(declaration.getVariable(), newDeclaration.getVariable());
                 variables.remove(declaration);
                 variables.add(newDeclaration);

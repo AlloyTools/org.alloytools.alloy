@@ -380,14 +380,14 @@ public class SignatureTranslator
                 continue;
             }
 
-            String bdVarName = "this";
+            String name = "this";
             Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
-            VariableDeclaration bdVar = new VariableDeclaration(bdVarName, translator.atomSort);
-            boundVariables.put(bdVar, translator.signaturesMap.get(sigFact.getKey()).getVariable());
+            VariableDeclaration declaration = new VariableDeclaration(name, translator.atomSort, null);
+            boundVariables.put(declaration, translator.signaturesMap.get(sigFact.getKey()).getVariable());
             Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
+            declaration.setConstraint(member);
             Environment environment = new Environment();
-
-            environment.put(bdVarName, new Variable(new VariableDeclaration(bdVarName, translator.atomSort)));
+            environment.put(name, declaration.getVariable());
 
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
 
@@ -428,11 +428,11 @@ public class SignatureTranslator
         // prev relation
         FunctionDeclaration ordPrev     = addOrdPrev(prefix, ordNext);
 
-        VariableDeclaration set1   = new VariableDeclaration("s1", translator.setOfUnaryAtomSort);
-        VariableDeclaration set2   = new VariableDeclaration("s2", translator.setOfUnaryAtomSort);
+        VariableDeclaration set1   = new VariableDeclaration("s1", translator.setOfUnaryAtomSort, null);
+        VariableDeclaration set2   = new VariableDeclaration("s2", translator.setOfUnaryAtomSort, null);
 
-        VariableDeclaration element1 = new VariableDeclaration("e1", translator.atomSort);
-        VariableDeclaration element2 = new VariableDeclaration("e2", translator.atomSort);
+        VariableDeclaration element1 = new VariableDeclaration("e1", translator.atomSort, null);
+        VariableDeclaration element2 = new VariableDeclaration("e2", translator.atomSort, null);
 
         // ordering/prevs
         FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
@@ -482,8 +482,8 @@ public class SignatureTranslator
 
         // the mapping is one-to-one(injective)
         // for all x, y (x != y and  implies f(x) != f(y))
-        VariableDeclaration x = new VariableDeclaration("_x", translator.atomSort);
-        VariableDeclaration y = new VariableDeclaration("_y", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
+        VariableDeclaration y = new VariableDeclaration("__y__", translator.atomSort, null);
 
         Expression xEqualsY = new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
 
@@ -527,7 +527,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
-        VariableDeclaration x = new VariableDeclaration("x", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
         Expression member = new BinaryExpression(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()),
                 BinaryExpression.Op.MEMBER, setExpression);
@@ -569,7 +569,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
-        VariableDeclaration x = new VariableDeclaration("x", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
         Expression xMember = new BinaryExpression(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()),
                 BinaryExpression.Op.MEMBER, setExpression);
@@ -625,8 +625,8 @@ public class SignatureTranslator
         FunctionDeclaration mapping     = new FunctionDeclaration(nextMapping, translator.atomSort, translator.atomSort);
         translator.addFunction(mapping);
 
-        VariableDeclaration x = new VariableDeclaration("_x", translator.atomSort);
-        VariableDeclaration y = new VariableDeclaration("_y", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
+        VariableDeclaration y = new VariableDeclaration("__y__", translator.atomSort, null);
 
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member

@@ -155,7 +155,7 @@ public class ExprTranslator
         Expression              varExpr         = translateExpr(exprLet.expr, environment);
         Map<String, Expression> varToExprMap    = new HashMap<>();
         String                  sanitizeName    = TranslatorUtils.sanitizeName(exprLet.var.label);
-        Variable varDeclExpr     = new Variable(new ConstantDeclaration(sanitizeName, varExpr.getSort()));
+        Variable varDeclExpr     = new ConstantDeclaration(sanitizeName, varExpr.getSort()).getVariable();
         
         varToExprMap.put(sanitizeName, varExpr);
         // make a new environment
@@ -276,22 +276,29 @@ public class ExprTranslator
         for (Map.Entry<String, Expression> argument: argumentsMap.entrySet())
         {
             arguments.add(argument.getValue());
-            Sort sort = argument.getValue().getSort();
+            Variable variable = (Variable) argument.getValue();
+            Sort sort = variable.getSort();
             argumentSorts.add(sort);
 
             // handle set sorts differently to avoid second order quantification
             if(sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
-                VariableDeclaration tuple = new VariableDeclaration(argument.getKey(), elementSort);
+                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
+                tuple.setOriginalName(argument.getKey());
                 quantifiedArguments.add(tuple);
                 Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
                 newA = newA.replace(argument.getValue(), singleton);
                 newB = newB.replace(argument.getValue(), singleton);
+                Expression constraint = ((VariableDeclaration)variable.getDeclaration()).getConstraint();
+                if(constraint != null)
+                {
+                    constraint = constraint.replace(variable, singleton);
+                }
+                tuple.setConstraint(constraint);
             }
             else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
             {
-                Variable variable = (Variable) argument.getValue();
                 quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
             }
             else
@@ -313,9 +320,9 @@ public class ExprTranslator
             resultExpression = result.getVariable();
         }
 
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt, null);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt, null);
+        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt, null);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
@@ -335,7 +342,16 @@ public class ExprTranslator
         Expression and1 = new BinaryExpression(xMember, BinaryExpression.Op.AND, yMember);
         Expression and2 = new BinaryExpression(equal, BinaryExpression.Op.AND, and1);
         Expression exists1 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and2, x, y);
-        Expression implies1 = new BinaryExpression(zMember, BinaryExpression.Op.IMPLIES, exists1);
+        Expression argumentConstraints = new BoolConstant(true);
+        for (VariableDeclaration declaration: quantifiedArguments)
+        {
+            if(declaration.getConstraint() != null)
+            {
+                argumentConstraints = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, declaration.getConstraint());
+            }
+        }
+        Expression antecedent1 = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, zMember);
+        Expression implies1 = new BinaryExpression(antecedent1, BinaryExpression.Op.IMPLIES, exists1);
         List<VariableDeclaration> quantifiers1 = new ArrayList<>(quantifiedArguments);
         quantifiers1.add(z);
         Expression forall1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiers1, implies1);
@@ -346,7 +362,9 @@ public class ExprTranslator
         Expression and3 = new BinaryExpression(equal, BinaryExpression.Op.AND,zMember);
         Expression exists2 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3, z);
 
-        Expression implies2 = new BinaryExpression(and1, BinaryExpression.Op.IMPLIES, exists2);
+        Expression antecedent2 = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, and1);
+
+        Expression implies2 = new BinaryExpression(antecedent2, BinaryExpression.Op.IMPLIES, exists2);
         List<VariableDeclaration> quantifiers2 = new ArrayList<>(quantifiedArguments);
         quantifiers2.add(x);
         quantifiers2.add(y);
@@ -371,9 +389,9 @@ public class ExprTranslator
 
     public void declArithmeticOp(BinaryExpression.Op op)
     {
-        VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt);
+        VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt, null);
+        VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt, null);
+        VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt, null);
 
         Expression xValue = new FunctionCallExpression(translator.uninterpretedIntValue, x.getVariable());
         Expression yValue = new FunctionCallExpression(translator.uninterpretedIntValue, y.getVariable());
@@ -457,7 +475,7 @@ public class ExprTranslator
         
         for(int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null));
         }
         return bdVars;
     }
@@ -473,7 +491,7 @@ public class ExprTranslator
         }
         for(int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts)));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts), null));
         }
         return bdVars;
     }    

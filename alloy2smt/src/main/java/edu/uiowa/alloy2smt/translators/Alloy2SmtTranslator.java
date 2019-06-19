@@ -156,11 +156,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private void translateSpecialAssertions()
     {
         // Axiom for identity relation
-        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
+        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort, null);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
         BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniverse.getVariable());
 
-        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort);
+        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort, null);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
         BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniverse.getVariable());
 
@@ -184,8 +184,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function
-        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt);
-        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt);
+        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, null);
+        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, null);
         Expression XEqualsY = new BinaryExpression(X.getVariable(), BinaryExpression.Op.EQ, Y.getVariable());
         Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, XEqualsY);
 
@@ -284,6 +284,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     private void translateSetComprehensionFunction(Func f)
     {
+        //ToDo: refactor this function to use ExprQtTranslator
         String funcName = f.label;
         Environment environment = new Environment();
 
@@ -301,7 +302,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         String              setBdVarName    = TranslatorUtils.getNewSetName();
         SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
-        VariableDeclaration setBdVar   = new VariableDeclaration(setBdVarName, setSort);
+        VariableDeclaration setBdVar   = new VariableDeclaration(setBdVarName, setSort, null);
         LinkedHashMap<VariableDeclaration, Expression> inputBdVars = new LinkedHashMap<>();
         List<String> inputVarNames = new ArrayList<>();
         
@@ -313,7 +314,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 String  bdVarName       = n.label;
                 String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
                 Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
+                VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort, null);
                 
                 inputVarNames.add(sanBdVarName);
                 environment.put(bdVarName, bdVarDecl.getVariable());
@@ -328,7 +329,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             for (ExprHasName name: decl.names)
             {
                 String sanitizedName = TranslatorUtils.sanitizeName(name.label);
-                VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0));
+                VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0), null);
                 environment.put(name.label, bdVar.getVariable());
                 inputBdVars.put(bdVar, declExpr);                
             }                    
@@ -364,25 +365,26 @@ public class Alloy2SmtTranslator extends AbstractTranslator
            throw new RuntimeException("The body of function " + f.label + " is a set comprehension. It should be translated using method Alloy2SmtTranslator.translateSetComprehensionFunction");
         }
 
-        Sort    returnSort  = BoolSort.getInstance();
-        String  funcName    = TranslatorUtils.sanitizeName(f.label);                
-        List<VariableDeclaration>      bdVars          = new ArrayList<>();
+        Sort returnSort = BoolSort.getInstance();
+        String functionName = TranslatorUtils.sanitizeName(f.label);
+        List<VariableDeclaration> arguments = new ArrayList<>();
         Environment environment = new Environment();
                 
         // Save function name
-        this.funcNamesMap.put(f.label, funcName);        
-        // Declare input variables
+        this.funcNamesMap.put(f.label, functionName);
+        // Declare argument variables
         for(int i = 0; i < f.decls.size(); ++i)
         {
             for(ExprHasName n : f.decls.get(i).names)
             {
-                String  bdVarName       = n.label;
-                String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
-                Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort);
-                
-                bdVars.add(bdVarDecl);
-                environment.put(bdVarName, bdVarDecl.getVariable());
+                String  label = n.label;
+                String  argumentName = TranslatorUtils.sanitizeName(n.label);
+                Expression range = this.exprTranslator.translateExpr(f.decls.get(i).expr);
+                VariableDeclaration argument = new VariableDeclaration(argumentName, range.getSort(), null);
+                Expression subset = new BinaryExpression(argument.getVariable(), BinaryExpression.Op.SUBSET, range);
+                argument.setConstraint(subset);
+                arguments.add(argument);
+                environment.put(label, argument.getVariable());
             }
         }
         // If the function is not predicate, we change its returned type.
@@ -391,9 +393,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             returnSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.returnDecl));
         }
         
-        FunctionDefinition funcDef = new FunctionDefinition(funcName, bdVars, returnSort, 
+        FunctionDefinition funcDef = new FunctionDefinition(functionName, arguments, returnSort,
                                                             this.exprTranslator.translateExpr(f.getBody(), environment));
-        this.functionsMap.put(funcName, funcDef);
+        this.functionsMap.put(functionName, funcDef);
         return funcDef;
     }    
     
@@ -826,13 +828,13 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     {
                         List<VariableDeclaration> declarations = new ArrayList<>();
                         Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
-                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
+                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null);
                         declarations.add(firstAtom);
                         Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
                         Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, firstTuple);
                         for (int i = 1; i < scope; i++)
                         {
-                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort);
+                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null);
                             declarations.add(declaration);
                             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
                             Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);

@@ -211,7 +211,7 @@ public class ExprUnaryTranslator
             VariableDeclaration bdVar;
             Expression bdVarExpr;
 
-            bdVar = new VariableDeclaration(name, sort);
+            bdVar = new VariableDeclaration(name, sort, null);
             bdVarExpr = bdVar.getVariable();
 
             bdVars.add(bdVar);
@@ -245,12 +245,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt, null);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort, null);
                 bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
@@ -288,12 +288,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt, null);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort, null);
                 bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);

@@ -132,7 +132,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         String argumentName = ctx.argumentName().getText();
         Sort   argumentSort = (Sort) this.visitSort(ctx.sort());
-        return new VariableDeclaration(argumentName, argumentSort);
+        return new VariableDeclaration(argumentName, argumentSort, null);
     }
 
     public SmtAst visitExpression(SmtParser.ExpressionContext ctx, Map<String, Variable> arguments)

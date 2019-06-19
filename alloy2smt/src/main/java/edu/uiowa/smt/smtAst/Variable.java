@@ -16,7 +16,7 @@ public class Variable extends Expression
 {
     private final Declaration declaration;
 
-    public Variable(Declaration declaration)
+    Variable(Declaration declaration)
     {
         this.declaration = declaration;
     }
