@@ -140,26 +140,68 @@ public class FieldTranslator
 
     private void translateMultiplicities(Sig.Field field)
     {
-        // sig signature {field : expr}
-        // all s: signature | s.field in expr
         Expr expr = field.decl().expr;
-        ExprVar s = ExprVar.make(null, "_s", field.sig.type());
-        Expr noopS = ExprUnary.Op.NOOP.make(null, s);
-        Expr noopField = ExprUnary.Op.NOOP.make(null, field);
-        Expr join = ExprBinary.Op.JOIN.make(null, null, noopS, noopField);
-        Expr in = ExprBinary.Op.IN.make(null, null, join, expr);
-        Expr noopSig = ExprUnary.Op.NOOP.make(null, field.sig);
-        Decl decl = new Decl(null, null, null, Collections.singletonList(s), noopSig);
-        Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
-        Expression multiplicity =  translator.exprTranslator.translateExpr(exprQt);
-        translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
+        if(expr instanceof ExprUnary)
+        {
+            ExprUnary exprUnary = (ExprUnary) expr;
+            Expr A = field.sig;
+            Expr B = exprUnary.sub;
 
-        Expr union = expr.type().toExpr();
-        Expr noopUnion = ExprUnary.Op.NOOP.make(null, union);
-        Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, noopUnion);
-        Expr subsetExpr = ExprBinary.Op.IN.make(null, null, noopField, product);
-        Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
-        translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
+            Expr multiplicity;
+            switch (exprUnary.op)
+            {
+                case SOMEOF:
+                {
+                    multiplicity = ExprBinary.Op.ANY_ARROW_SOME.make(null, null, A, B);
+                }break;
+                case ONEOF:
+                {
+                    multiplicity = ExprBinary.Op.ANY_ARROW_ONE.make(null, null, A, B);
+                }break;
+                case LONEOF:
+                {
+                    multiplicity = ExprBinary.Op.ANY_ARROW_LONE.make(null, null, A, B);
+                }break;
+                case SETOF:
+                {
+                    multiplicity = ExprBinary.Op.ARROW.make(null, null, A, B);
+                }break;
+                default:
+                    throw new UnsupportedOperationException();
+            }
+            Expression set = translator.exprTranslator.translateExpr(multiplicity);
+            FunctionDeclaration fieldFunction =  translator.fieldsMap.get(field);
+            Expression constraint;
+            if(exprUnary.op == ExprUnary.Op.SETOF)
+            {
+                constraint = new BinaryExpression(fieldFunction.getVariable(), BinaryExpression.Op.SUBSET, set);
+            }
+            else
+            {
+                constraint = new BinaryExpression(fieldFunction.getVariable(), BinaryExpression.Op.EQ, set);
+            }
+            translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", constraint));
+        }
+        else
+        {
+            // sig signature {field : expr}
+            // all s: signature | s.field in expr
+
+            ExprVar s = ExprVar.make(null, "_s", field.sig.type());
+            Expr noopS = ExprUnary.Op.NOOP.make(null, s);
+            Expr noopField = ExprUnary.Op.NOOP.make(null, field);
+            Expr join = ExprBinary.Op.JOIN.make(null, null, noopS, noopField);
+            Expr in = ExprBinary.Op.IN.make(null, null, join, expr);
+            Expr noopSig = ExprUnary.Op.NOOP.make(null, field.sig);
+            Decl decl = new Decl(null, null, null, Collections.singletonList(s), noopSig);
+            Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
+            Expression multiplicity =  translator.exprTranslator.translateExpr(exprQt);
+            translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
+            Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, expr);
+            Expr subsetExpr = ExprBinary.Op.IN.make(null, null, noopField, product);
+            Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
+            translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
+        }
     }
 
     public Expression mkTupleOutofAtoms(List<Expression> atomExprs)

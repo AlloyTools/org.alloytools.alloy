@@ -172,6 +172,10 @@ public class ExprQtTranslator
 
     private VariableDeclaration getVariableDeclaration(Expr expr, String variableName, SetSort setSort, Expression range)
     {
+        if(expr instanceof Sig)
+        {
+            return getVariableDeclaration(variableName, setSort, range);
+        }
         if(expr instanceof ExprUnary)
         {
             ExprUnary.Op multiplicityOperator = ((ExprUnary) expr).op;
@@ -180,10 +184,7 @@ public class ExprQtTranslator
                 case NOOP: // same as ONEOF
                 case ONEOF:
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort.elementSort, null);
-                    Expression member = new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.MEMBER, range);
-                    declaration.setConstraint(member);
-                    return declaration;
+                    return getVariableDeclaration(variableName, setSort, range);
                 }
                 case SOMEOF: // same as SETOF
                 case LONEOF: // same as SETOF
@@ -230,6 +231,14 @@ public class ExprQtTranslator
             }
         }
         throw new UnsupportedOperationException();
+    }
+
+    private VariableDeclaration getVariableDeclaration(String variableName, SetSort setSort, Expression range)
+    {
+        VariableDeclaration declaration = new VariableDeclaration(variableName, setSort.elementSort, null);
+        Expression member = new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.MEMBER, range);
+        declaration.setConstraint(member);
+        return declaration;
     }
 
     private Expression getMultiplicityConstraint(Expr expr, VariableDeclaration variable, SetSort setSort)

@@ -274,11 +274,11 @@ public class ExprUnaryTranslator
         return set;
     }    
 
-    private Expression translateLone(ExprUnary exprUnary, Environment environment)
+    private Expression translateLone(ExprUnary expr, Environment environment)
     {
-        Expression expression = exprTranslator.translateExpr(exprUnary.sub, environment);
+        Expression expression = exprTranslator.translateExpr(expr.sub, environment);
 
-        if(exprUnary.type().is_bool)
+        if(expr.type().is_bool)
         {
             SetSort sort = (SetSort) expression.getSort();
             Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
@@ -297,13 +297,23 @@ public class ExprUnaryTranslator
             // (lone e(x, y)) is translated into
             // declare a new set S(x, y)
             // assert forall x, y (x, y constraints) either S(x, y) is singleton or S(x,y) is empty
+//            FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
+//
+//            if(multiplicitySet != null)
+//            {
+//                return multiplicitySet.getVariable();
+//            }
 //            LinkedHashMap<String, Expression> argumentsMap = environment.getVariables();
 //            List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
 //            List<Expression> arguments = new ArrayList<>();
 //            List<Sort> argumentSorts = new ArrayList<>();
+//            Expression constraints = new BoolConstant(true);
 //            for (Map.Entry<String, Expression> argument : argumentsMap.entrySet())
 //            {
 //                Variable variable = (Variable) argument.getValue();
+//
+//                VariableDeclaration declaration = (VariableDeclaration) variable.getDeclaration();
+//
 //                arguments.add(variable);
 //                Sort sort = variable.getSort();
 //                argumentSorts.add(sort);
@@ -315,32 +325,35 @@ public class ExprUnaryTranslator
 //                    VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
 //                    tuple.setOriginalName(argument.getKey());
 //                    quantifiedArguments.add(tuple);
+//                    Expression constraint = declaration.getConstraint().replace(variable, tuple.getVariable());
+//                    constraints = new BinaryExpression(constraints, BinaryExpression.Op.AND, constraint);
 //                }
 //                else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
 //                {
 //                    quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
+//                    constraints = new BinaryExpression(constraints, BinaryExpression.Op.AND, declaration.getConstraint());
 //                }
 //                else
 //                {
 //                    throw new UnsupportedOperationException();
 //                }
 //            }
-//            FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, expression.getSort());
+//             multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, expression.getSort());
 //
-//            translator.smtProgram.addFunction(setFunction);
+//            translator.smtProgram.addFunction(multiplicitySet);
 //            Expression setFunctionExpression;
 //
 //            if (argumentSorts.size() == 0)
 //            {
-//                setFunctionExpression = setFunction.getVariable();
+//                setFunctionExpression = multiplicitySet.getVariable();
 //            }
 //            else
 //            {
 //                List<Expression> expressions = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
-//                setFunctionExpression = new FunctionCallExpression(setFunction, expressions);
+//                setFunctionExpression = new FunctionCallExpression(multiplicitySet, expressions);
 //            }
 //
-//            SetSort sort = (SetSort) setFunction.getSort();
+//            SetSort sort = (SetSort) multiplicitySet.getSort();
 //            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
 //            Expression isEmpty = new BinaryExpression(emptySet, BinaryExpression.Op.EQ, setFunctionExpression);
 //
@@ -350,18 +363,20 @@ public class ExprUnaryTranslator
 //            Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, isSingleon, element);
 //            Expression or = new BinaryExpression(isEmpty, BinaryExpression.Op.OR, exists);
 //
-//            Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedArguments, or);
+//            Expression implies = new BinaryExpression(constraints, BinaryExpression.Op.IMPLIES, or);
 //
-//            Assertion assertion = new Assertion(exprUnary.toString(), forAll);
+//            Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedArguments, implies);
+//
+//            Assertion assertion = new Assertion(expr.toString(), forAll);
 //            translator.smtProgram.addAssertion(assertion);
 //
 //            if (argumentSorts.size() == 0)
 //            {
-//                return setFunction.getVariable();
+//                return multiplicitySet.getVariable();
 //            }
 //            else
 //            {
-//                return new FunctionCallExpression(setFunction, arguments);
+//                return new FunctionCallExpression(multiplicitySet, arguments);
 //            }
         }
     }
