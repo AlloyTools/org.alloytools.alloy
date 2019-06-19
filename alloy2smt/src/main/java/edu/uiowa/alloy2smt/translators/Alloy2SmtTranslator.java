@@ -882,8 +882,15 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 }
                 else
                 {
-                    // for some reason, the default is not used here
-                    scopeSum += 0;
+                    if(signature.isOne != null)
+                    {
+                        scopeSum += 1;
+                    }
+                    else
+                    {
+                        // for some reason, the default scope is not used here
+                        scopeSum += 0;
+                    }
                 }
             }
             else
