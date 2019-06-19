@@ -1,6 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
@@ -133,7 +134,7 @@ public class ExprQtTranslator
         }
         else
         {
-            List<Expression> expressions = getComprehensionCallArgument(quantifiedArguments, argumentsMap);
+            List<Expression> expressions = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
             setFunctionExpression = new FunctionCallExpression(setFunction, expressions);
         }
 
@@ -168,23 +169,6 @@ public class ExprQtTranslator
         }
     }
 
-    private List<Expression> getComprehensionCallArgument(List<VariableDeclaration> quantifiedArguments,
-                                                          Map<String, Expression> argumentsMap)
-    {
-        List<Expression> expressions = new ArrayList<>();
-        for (VariableDeclaration declaration: quantifiedArguments)
-        {
-            if(declaration.getSort().equals(argumentsMap.get(declaration.getOriginalName()).getSort()))
-            {
-                expressions.add(declaration.getVariable());
-            }
-            else
-            {
-                expressions.add(new UnaryExpression(UnaryExpression.Op.SINGLETON, declaration.getVariable()));
-            }
-        }
-        return expressions;
-    }
 
     private VariableDeclaration getVariableDeclaration(Expr expr, String variableName, SetSort setSort, Expression range)
     {

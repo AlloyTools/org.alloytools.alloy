@@ -46,6 +46,10 @@ public class ExprTranslator
 
     Expression translateExpr(Expr expr, Environment environment)
     {
+        if(expr instanceof Sig)
+        {
+            return exprUnaryTranslator.translateExprUnary((ExprUnary)ExprUnary.Op.NOOP.make(null, expr), environment);
+        }
         if(expr instanceof ExprUnary)
         {
             return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, environment);

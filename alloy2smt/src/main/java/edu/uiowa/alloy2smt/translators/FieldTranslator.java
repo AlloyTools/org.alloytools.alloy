@@ -153,7 +153,10 @@ public class FieldTranslator
         Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
         Expression multiplicity =  translator.exprTranslator.translateExpr(exprQt);
         translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
-        Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, expr);
+
+        Expr union = expr.type().toExpr();
+        Expr noopUnion = ExprUnary.Op.NOOP.make(null, union);
+        Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, noopUnion);
         Expr subsetExpr = ExprBinary.Op.IN.make(null, null, noopField, product);
         Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
         translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));

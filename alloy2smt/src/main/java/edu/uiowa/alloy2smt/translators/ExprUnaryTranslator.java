@@ -16,8 +16,10 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExprUnaryTranslator
 {
@@ -38,7 +40,7 @@ public class ExprUnaryTranslator
             case SOME       : return translateSome(exprUnary, environment);
             case ONE        : return translateOne(exprUnary, environment);
             case ONEOF      : return translateOneOf(exprUnary, environment);
-            case LONEOF     : return exprTranslator.translateExpr(exprUnary.sub, environment);
+            case LONEOF     : return translateLone(exprUnary, environment);
             case SOMEOF     : return exprTranslator.translateExpr(exprUnary.sub, environment);
             case SETOF      : return exprTranslator.translateExpr(exprUnary.sub, environment);
             case LONE       : return translateLone(exprUnary, environment);
@@ -274,38 +276,94 @@ public class ExprUnaryTranslator
 
     private Expression translateLone(ExprUnary exprUnary, Environment environment)
     {
-        int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, environment);  
-        List<VariableDeclaration>  bdVars      = new ArrayList<>();
-        List<Expression>                bdVarExprs  = new ArrayList<>();
-        
-        for(Sort sort : sorts)
+        Expression expression = exprTranslator.translateExpr(exprUnary.sub, environment);
+
+        if(exprUnary.type().is_bool)
         {
-            String name = TranslatorUtils.getNewName();
-            VariableDeclaration bdVar;
-            Expression bdVarExpr;
-            
-            if(sort instanceof IntSort)
-            {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt, null);
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
-            }
-            else
-            {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort, null);
-                bdVarExpr = bdVar.getVariable();
-            }
-            bdVars.add(bdVar);
-            bdVarExprs.add(bdVarExpr);
+            SetSort sort = (SetSort) expression.getSort();
+            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
+            Expression isEmpty = new BinaryExpression(emptySet, BinaryExpression.Op.EQ, expression);
+
+            VariableDeclaration element = new VariableDeclaration("__s__", sort.elementSort, null);
+            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, element.getVariable());
+            Expression isSingleon = new BinaryExpression(singleton, BinaryExpression.Op.EQ, expression);
+            Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, isSingleon, element);
+            Expression or = new BinaryExpression(isEmpty, BinaryExpression.Op.OR, exists);
+            return or;
         }
-        Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
-        Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
-        Expression bodyExpr     = new BinaryExpression(set, BinaryExpression.Op.SUBSET, bdVarSetExpr);
-//        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
-        
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
-        return tryAddingExistentialConstraint(exists);
+        else
+        {
+            return expression;
+            // (lone e(x, y)) is translated into
+            // declare a new set S(x, y)
+            // assert forall x, y (x, y constraints) either S(x, y) is singleton or S(x,y) is empty
+//            LinkedHashMap<String, Expression> argumentsMap = environment.getVariables();
+//            List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
+//            List<Expression> arguments = new ArrayList<>();
+//            List<Sort> argumentSorts = new ArrayList<>();
+//            for (Map.Entry<String, Expression> argument : argumentsMap.entrySet())
+//            {
+//                Variable variable = (Variable) argument.getValue();
+//                arguments.add(variable);
+//                Sort sort = variable.getSort();
+//                argumentSorts.add(sort);
+//
+//                // handle set sorts differently to avoid second order quantification
+//                if (sort instanceof SetSort)
+//                {
+//                    Sort elementSort = ((SetSort) sort).elementSort;
+//                    VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
+//                    tuple.setOriginalName(argument.getKey());
+//                    quantifiedArguments.add(tuple);
+//                }
+//                else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
+//                {
+//                    quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
+//                }
+//                else
+//                {
+//                    throw new UnsupportedOperationException();
+//                }
+//            }
+//            FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, expression.getSort());
+//
+//            translator.smtProgram.addFunction(setFunction);
+//            Expression setFunctionExpression;
+//
+//            if (argumentSorts.size() == 0)
+//            {
+//                setFunctionExpression = setFunction.getVariable();
+//            }
+//            else
+//            {
+//                List<Expression> expressions = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
+//                setFunctionExpression = new FunctionCallExpression(setFunction, expressions);
+//            }
+//
+//            SetSort sort = (SetSort) setFunction.getSort();
+//            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
+//            Expression isEmpty = new BinaryExpression(emptySet, BinaryExpression.Op.EQ, setFunctionExpression);
+//
+//            VariableDeclaration element = new VariableDeclaration("__s__", sort.elementSort, null);
+//            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, element.getVariable());
+//            Expression isSingleon = new BinaryExpression(singleton, BinaryExpression.Op.EQ, setFunctionExpression);
+//            Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, isSingleon, element);
+//            Expression or = new BinaryExpression(isEmpty, BinaryExpression.Op.OR, exists);
+//
+//            Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedArguments, or);
+//
+//            Assertion assertion = new Assertion(exprUnary.toString(), forAll);
+//            translator.smtProgram.addAssertion(assertion);
+//
+//            if (argumentSorts.size() == 0)
+//            {
+//                return setFunction.getVariable();
+//            }
+//            else
+//            {
+//                return new FunctionCallExpression(setFunction, arguments);
+//            }
+        }
     }
     
     public MultiArityExpression mkTupleExpr(VariableDeclaration bdVarDecl)

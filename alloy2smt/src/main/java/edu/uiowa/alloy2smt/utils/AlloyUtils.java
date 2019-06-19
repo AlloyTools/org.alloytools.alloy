@@ -112,4 +112,23 @@ public class AlloyUtils
         UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tupleExpr);
         return singleton;
     }
+
+    public static List<Expression> getFunctionCallArguments(List<VariableDeclaration> quantifiedArguments,
+                                                          Map<String, Expression> argumentsMap)
+    {
+        List<Expression> expressions = new ArrayList<>();
+        for (VariableDeclaration declaration: quantifiedArguments)
+        {
+            if(declaration.getSort().equals(argumentsMap.get(declaration.getOriginalName()).getSort()))
+            {
+                expressions.add(declaration.getVariable());
+            }
+            else
+            {
+                expressions.add(new UnaryExpression(UnaryExpression.Op.SINGLETON, declaration.getVariable()));
+            }
+        }
+        return expressions;
+    }
+
 }
