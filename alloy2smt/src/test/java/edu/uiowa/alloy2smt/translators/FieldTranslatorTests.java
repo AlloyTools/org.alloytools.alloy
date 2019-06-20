@@ -136,13 +136,6 @@ class FieldTranslatorTests
         String alloy = "sig A {r: disj A -> A }";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition t = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A_t");
-        Set<List<String>> tElements = TranslatorUtils.getRelation(t);
-        assertEquals(2, tElements.size());
-        for (List<String> element: tElements)
-        {
-            assertEquals(4, element.size());
-        }
     }
 }
 

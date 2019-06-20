@@ -260,7 +260,7 @@ public class SampleModelTests
     @Test
     public void numbering() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/toys/CeilingsAndFloors.als", true);
+        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/toys/numbering.als", true);
 
         assertEquals("unsat", results.get(0).satResult);
         assertEquals("sat", results.get(0).satResult);
