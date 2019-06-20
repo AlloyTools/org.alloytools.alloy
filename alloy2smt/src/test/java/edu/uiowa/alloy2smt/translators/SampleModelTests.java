@@ -251,7 +251,7 @@ public class SampleModelTests
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/toys/CeilingsAndFloors.als", true);
 
         assertEquals("sat", results.get(0).satResult);
-        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("unsat", results.get(1).satResult);
         assertEquals("sat", results.get(2).satResult);
         assertEquals("unsat", results.get(3).satResult);
         assertEquals("unsat", results.get(4).satResult);
