@@ -28,7 +28,7 @@ public class TranslatorUtils
      */
     public static String sanitizeName(String s)
     {
-        return s.replaceAll("/", "_").replaceAll("'", "_").replaceAll("\"", "_");
+        return s.replaceAll("/", "_").replaceAll("'", "_").replaceAll("\"", "__");
     }
 
     public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, AbstractTranslator translator)
