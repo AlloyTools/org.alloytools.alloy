@@ -185,11 +185,6 @@ public class SignatureTranslator
                 translateSignatureSomeMultiplicity(sig);
             }
 
-            // translateExpr signature fields
-            for (Sig.Field field : sig.getFields())
-            {
-                this.fieldTranslator.fields.add(field);
-            }
             for (Expr expr : sig.getFacts())
             {
                 translator.sigFacts.put(sig, expr);

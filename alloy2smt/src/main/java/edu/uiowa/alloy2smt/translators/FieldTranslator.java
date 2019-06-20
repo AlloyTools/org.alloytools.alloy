@@ -13,15 +13,14 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class FieldTranslator
 {
 
     private final Alloy2SmtTranslator translator;
-    public  List<Sig.Field> fields = new ArrayList<>();
 
     public FieldTranslator(Alloy2SmtTranslator translator)
     {
@@ -30,89 +29,49 @@ public class FieldTranslator
 
     void translateFields()
     {
-        for(Sig.Field f : this.fields)
+        for (Sig sig: translator.reachableSigs)
         {
-            translate(f);
+            List<Sig.Field> fields = sig.getFields().makeCopy();
+            for (Sig.Field f : fields)
+            {
+                translate(f);
+            }
+            // translate disjoint fields and elements
+            for (Decl decl: sig.getFieldDecls())
+            {
+                if(decl.disjoint != null && decl.names.size() > 1)
+                {
+                    for (int i = 0; i < decl.names.size() - 1 ; i++)
+                    {
+                        Expression fieldI = getFieldExpression(fields, decl.names.get(i).label);
+                        for(int j = i + 1; j < decl.names.size(); j++)
+                        {
+                            Expression fieldJ = getFieldExpression(fields, decl.names.get(j).label);
+                            Expression intersect = new BinaryExpression(fieldI, BinaryExpression.Op.INTERSECTION, fieldJ);
+                            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, fieldI.getSort());
+                            Expression equal = new BinaryExpression(intersect, BinaryExpression.Op.EQ, emptySet);
+                            Assertion disjoint = new Assertion(String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
+                            translator.smtProgram.addAssertion(disjoint);
+                        }
+                    }
+                }
+            }
         }
     }
-    
-    void collectFieldComponentExprs(Expr expr, List<Expr> fieldComponentExprs)
+
+    private Expression getFieldExpression(List<Sig.Field> fields, String label)
     {
-        if(expr instanceof ExprUnary)
-        {            
-            if(((ExprUnary) expr).sub instanceof Sig)
-            {
-                fieldComponentExprs.add(((ExprUnary) expr).sub);
-            }
-            else if(((ExprUnary) expr).sub instanceof Sig.Field)
-            {
-                collectFieldComponentExprs(((Sig.Field)((ExprUnary) expr).sub).decl().expr, fieldComponentExprs);
-            }
-            else if(((ExprUnary) expr).sub instanceof ExprUnary)
-            {
-                collectFieldComponentExprs((ExprUnary)(((ExprUnary) expr).sub), fieldComponentExprs);
-            }
-            else if(((ExprUnary) expr).sub instanceof ExprVar)
-            {
-                //skip, ((ExprUnary) expr).sub = this
-            }   
-            else if(((ExprUnary) expr).sub instanceof ExprBinary)
-            {
-                collectFieldComponentExprs(((ExprBinary)((ExprUnary) expr).sub).left, fieldComponentExprs);
-                collectFieldComponentExprs(((ExprBinary)((ExprUnary) expr).sub).right, fieldComponentExprs);     
-            }            
-            else
-            {
-                throw new UnsupportedOperationException("Something we have not supported yet: " + ((ExprUnary) expr).sub);
-            }
-        }
-        else if(expr instanceof ExprBinary)
+        Optional<Sig.Field> field =  fields.stream()
+            .filter(f -> f.label.equals(label))
+            .findFirst();
+        if(!field.isPresent())
         {
-            ExprBinary exprBinary = (ExprBinary) expr;
-            switch (exprBinary.op)
-            {
-                case ARROW              :
-                case ANY_ARROW_SOME     :
-                case ANY_ARROW_ONE      :
-                case ANY_ARROW_LONE     :
-                case SOME_ARROW_ANY     :
-                case SOME_ARROW_SOME    :
-                case SOME_ARROW_ONE     :
-                case SOME_ARROW_LONE    :
-                case ONE_ARROW_ANY      :
-                case ONE_ARROW_SOME     :
-                case ONE_ARROW_ONE      :
-                case ONE_ARROW_LONE     :
-                case LONE_ARROW_ANY     :
-                case LONE_ARROW_SOME    :
-                case LONE_ARROW_ONE     :
-                case LONE_ARROW_LONE    :
-                case ISSEQ_ARROW_LONE   :
-                {
-                    collectFieldComponentExprs(((ExprBinary) expr).left, fieldComponentExprs);
-                    collectFieldComponentExprs(((ExprBinary) expr).right, fieldComponentExprs);
-                    break;
-                }
-                case JOIN               :
-                case DOMAIN             :
-                case RANGE              :
-                case INTERSECT          :
-                case PLUSPLUS           :
-                case PLUS               :
-                case MINUS              :
-                {
-                    fieldComponentExprs.add(exprBinary);
-                    break;
-                }
-                default                 : throw new UnsupportedOperationException();
-            }
+            throw new RuntimeException("Can not find field " + label);
         }
-        else 
-        {
-            throw new UnsupportedOperationException();
-        }
+        Expression expression = translator.fieldsMap.get(field.get()).getVariable();
+        return expression;
     }
-    
+
     void translate(Sig.Field field)
     {
 
@@ -202,120 +161,5 @@ public class FieldTranslator
             Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
         }
-    }
-
-    public Expression mkTupleOutofAtoms(List<Expression> atomExprs)
-    {
-        if(atomExprs == null)
-        {
-            throw new RuntimeException();
-        }
-        else 
-        {            
-            List<Expression> exprs = new ArrayList<>();
-            
-            for(int i = 0; i < atomExprs.size(); ++i)
-            {
-                if(atomExprs.get(i) instanceof MultiArityExpression)
-                {
-                    if(((MultiArityExpression)atomExprs.get(i)).getOp() == MultiArityExpression.Op.MKTUPLE)
-                    {
-                        
-                        exprs.addAll(((MultiArityExpression)atomExprs.get(i)).getExpressions());
-                    }
-                    else
-                    {
-                        throw new RuntimeException("Something is wrong here!");
-                    }
-                }
-                else
-                {
-                    exprs.add(atomExprs.get(i));
-                }
-            }
-            return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
-        }        
-    } 
-    
-    
-    public Expression mkTupleOutofAtoms(Expression ... atomExprs)
-    {
-        if(atomExprs == null)
-        {
-            throw new RuntimeException();
-        }
-        else 
-        {   
-            List<Expression> exprs = new ArrayList<>();
-            
-            for(int i = 0; i < atomExprs.length; ++i)
-            {
-                if(atomExprs[i] instanceof MultiArityExpression)
-                {
-                    if(((MultiArityExpression)atomExprs[i]).getOp() == MultiArityExpression.Op.MKTUPLE)
-                    {
-                        
-                        exprs.addAll(((MultiArityExpression)atomExprs[i]).getExpressions());
-                    }
-                    else
-                    {
-                        throw new RuntimeException("Something is wrong here!");
-                    }
-                }
-                else
-                {
-                    exprs.add(atomExprs[i]);
-                }
-            }
-            return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
-        }        
-    } 
-
-    public Expression mkSinletonOutofAtoms(Expression ... atomExprs)
-    {
-        if(atomExprs == null)
-        {
-            throw new RuntimeException();
-        }
-        else 
-        {            
-            return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleOutofAtoms(atomExprs));
-        }        
-    }
-    
-    public Expression mkSinletonOutofAtoms(List<Expression> atomExprs)
-    {
-        if(atomExprs == null)
-        {
-            throw new RuntimeException();
-        }
-        else 
-        {            
-            return new UnaryExpression(UnaryExpression.Op.SINGLETON, mkTupleOutofAtoms(atomExprs));
-        }        
-    } 
-    
-    public Expression mkSinletonOutofTuple(Expression tupleExpr)
-    {
-        if(tupleExpr == null)
-        {
-            throw new RuntimeException();
-        }
-        else 
-        {            
-            return new UnaryExpression(UnaryExpression.Op.SINGLETON, tupleExpr);
-        }        
-    }  
-    
-    public boolean isArrowRelated(ExprBinary bExpr)
-    {
-        return (bExpr.op == ExprBinary.Op.ARROW) || (bExpr.op == ExprBinary.Op.ANY_ARROW_LONE) ||
-               (bExpr.op == ExprBinary.Op.ANY_ARROW_ONE) || (bExpr.op == ExprBinary.Op.ANY_ARROW_SOME) ||
-               (bExpr.op == ExprBinary.Op.SOME_ARROW_ANY) || (bExpr.op == ExprBinary.Op.SOME_ARROW_LONE) ||
-               (bExpr.op == ExprBinary.Op.SOME_ARROW_ONE) || (bExpr.op == ExprBinary.Op.SOME_ARROW_SOME) ||
-               (bExpr.op == ExprBinary.Op.LONE_ARROW_ANY) || (bExpr.op == ExprBinary.Op.LONE_ARROW_LONE) ||
-               (bExpr.op == ExprBinary.Op.LONE_ARROW_ONE) || (bExpr.op == ExprBinary.Op.LONE_ARROW_SOME) ||
-               (bExpr.op == ExprBinary.Op.ONE_ARROW_ANY) || (bExpr.op == ExprBinary.Op.ONE_ARROW_LONE) ||
-               (bExpr.op == ExprBinary.Op.ONE_ARROW_ONE) || (bExpr.op == ExprBinary.Op.ONE_ARROW_SOME);
     }
 }

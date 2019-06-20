@@ -130,6 +130,17 @@ class FieldTranslatorTests
         }
     }
 
+
+    @Test
+    void disjointFields() throws Exception
+    {
+        String alloy = "sig A {disj r, s : A}\n" +
+                "fact f1{#r = 2 and #s = 2}\n" +
+                "fact f2{#(r & s) = 1 }\n";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
+
     @Test
     void fieldDisjSignature() throws Exception
     {
