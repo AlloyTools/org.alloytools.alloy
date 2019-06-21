@@ -29,34 +29,89 @@ public class FieldTranslator
 
     void translateFields()
     {
-        for (Sig sig: translator.reachableSigs)
+        for (Sig sig : translator.reachableSigs)
         {
             List<Sig.Field> fields = sig.getFields().makeCopy();
             for (Sig.Field f : fields)
             {
                 translate(f);
             }
-            // translate disjoint fields and elements
-            for (Decl decl: sig.getFieldDecls())
+
+            translateDisjointFields(sig, fields);
+
+            translateDisjoint2FieldValues(sig, fields);
+        }
+    }
+
+    private void translateDisjointFields(Sig sig, List<Sig.Field> fields)
+    {
+        // translate disjoint fields
+        for (Decl decl: sig.getFieldDecls())
+        {
+            // disjoint fields
+            if (decl.disjoint != null && decl.names.size() > 1)
             {
-                if(decl.disjoint != null && decl.names.size() > 1)
+                for (int i = 0; i < decl.names.size() - 1; i++)
                 {
-                    for (int i = 0; i < decl.names.size() - 1 ; i++)
+                    Expression fieldI = getFieldExpression(fields, decl.names.get(i).label);
+                    for (int j = i + 1; j < decl.names.size(); j++)
                     {
-                        Expression fieldI = getFieldExpression(fields, decl.names.get(i).label);
-                        for(int j = i + 1; j < decl.names.size(); j++)
-                        {
-                            Expression fieldJ = getFieldExpression(fields, decl.names.get(j).label);
-                            Expression intersect = new BinaryExpression(fieldI, BinaryExpression.Op.INTERSECTION, fieldJ);
-                            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, fieldI.getSort());
-                            Expression equal = new BinaryExpression(intersect, BinaryExpression.Op.EQ, emptySet);
-                            Assertion disjoint = new Assertion(String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
-                            translator.smtProgram.addAssertion(disjoint);
-                        }
+                        Expression fieldJ = getFieldExpression(fields, decl.names.get(j).label);
+                        Expression intersect = new BinaryExpression(fieldI, BinaryExpression.Op.INTERSECTION, fieldJ);
+                        Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, fieldI.getSort());
+                        Expression equal = new BinaryExpression(intersect, BinaryExpression.Op.EQ, emptySet);
+                        Assertion disjoint = new Assertion(String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
+                        translator.smtProgram.addAssertion(disjoint);
                     }
                 }
             }
         }
+    }
+
+    private void translateDisjoint2FieldValues(Sig sig, List<Sig.Field> fields)
+    {
+        // translate disjoint field values
+
+        // sig S {f: disj e}
+        // all a, b: S | a != b implies no a.f & b.f
+
+        Expression signature = translator.signaturesMap.get(sig).getVariable();
+        SetSort setSort = (SetSort) signature.getSort();
+        VariableDeclaration a = new VariableDeclaration("__a__", setSort.elementSort, null);
+        VariableDeclaration b = new VariableDeclaration("__b__", setSort.elementSort, null);
+        Expression aMember = new BinaryExpression(a.getVariable(), BinaryExpression.Op.MEMBER, signature);
+        Expression bMember = new BinaryExpression(b.getVariable(), BinaryExpression.Op.MEMBER, signature);
+        Expression aSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, a.getVariable());
+        Expression bSingleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, b.getVariable());
+
+        Expression members = new BinaryExpression(aMember, BinaryExpression.Op.AND, bMember);
+        Expression equal = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, b.getVariable());
+        Expression notEqual = new UnaryExpression(UnaryExpression.Op.NOT, equal);
+        Expression antecedent = new BinaryExpression(members, BinaryExpression.Op.AND, notEqual);
+        Expression consequent = new BoolConstant(true);
+
+        for (Decl decl: sig.getFieldDecls())
+        {
+            if (decl.disjoint2 != null)
+            {
+                for (ExprHasName name: decl.names)
+                {
+                    Expression field = getFieldExpression(fields, name.label);
+                    Expression aJoin = new BinaryExpression(aSingleton, BinaryExpression.Op.JOIN, field);
+                    Expression bJoin = new BinaryExpression(bSingleton, BinaryExpression.Op.JOIN, field);
+                    Expression intersect = new BinaryExpression(aJoin, BinaryExpression.Op.INTERSECTION, bJoin);
+                    Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, intersect.getSort());
+                    Expression isEmpty = new BinaryExpression(intersect, BinaryExpression.Op.EQ, emptySet);
+                    consequent = new BinaryExpression(consequent, BinaryExpression.Op.AND, isEmpty);
+                }
+            }
+        }
+
+        Expression implies = new BinaryExpression(antecedent, BinaryExpression.Op.IMPLIES, consequent);
+        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
+
+        Assertion disjoint2 = new Assertion(sig.label + " disjoint2", forAll);
+        translator.smtProgram.addAssertion(disjoint2);
     }
 
     private Expression getFieldExpression(List<Sig.Field> fields, String label)

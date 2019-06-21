@@ -142,11 +142,14 @@ class FieldTranslatorTests
     }
 
     @Test
-    void fieldDisjSignature() throws Exception
+    void disjoint2Fields() throws Exception
     {
-        String alloy = "sig A {r: disj A -> A }";
+        String alloy =
+                "sig A {r : disj set A}\n" +
+                "-- all possible combinations\n" +
+                "fact f1{#A = 2 and #r = 4}\n";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+        assertEquals("unsat", commandResults.get(0).satResult);
     }
 }
 
