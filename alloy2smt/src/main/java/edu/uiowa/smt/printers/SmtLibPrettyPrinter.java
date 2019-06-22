@@ -451,14 +451,14 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(ITEExpression aThis) 
+    public void visit(ITEExpression ite)
     {
-        stringBuilder.append("(" + aThis.getOp() + " ");
-        this.visit(aThis.getCondExpression());
+        stringBuilder.append("(ite ");
+        this.visit(ite.getCondExpression());
         stringBuilder.append(" ");
-        this.visit(aThis.getThenExpression());
+        this.visit(ite.getThenExpression());
         stringBuilder.append(" ");
-        this.visit(aThis.getElseExpression());
+        this.visit(ite.getElseExpression());
         stringBuilder.append(")");
         
     }

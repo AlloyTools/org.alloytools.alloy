@@ -21,7 +21,6 @@ public class ITEExpression extends Expression
     private final Expression                  condExpr;
     private final Expression                  thenExpr;
     private final Expression                  elseExpr;
-    private final Op                          op = Op.ITE;
     
     public ITEExpression(Expression condExpr, Expression thenExpr, Expression elseExpr)
     {
@@ -73,32 +72,9 @@ public class ITEExpression extends Expression
         return this.elseExpr;
     }        
 
-    public Op getOp()
-    {
-        return this.op;
-    }
-
     @Override
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
-    }
-
-    public enum Op 
-    {        
-        ITE ("ite");    
-
-        private final String opStr;
-
-        private Op(String op) 
-        {
-            this.opStr = op;
-        }
-
-        @Override
-        public String toString() 
-        {
-            return this.opStr;
-        }        
     }
 
     @Override
@@ -137,8 +113,7 @@ public class ITEExpression extends Expression
             return false;
         }
         ITEExpression iteObject = (ITEExpression) object;
-        return op ==  iteObject.op &&
-                condExpr.equals(iteObject.condExpr) &&
+        return  condExpr.equals(iteObject.condExpr) &&
                 thenExpr.equals(iteObject.thenExpr) &&
                 elseExpr.equals(iteObject.elseExpr);
     }
