@@ -11,32 +11,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Paul Meng
  */
 public class LetExpression extends Expression
 {
-    private final Expression                  expr;
+    private final Expression expr;
     private final Map<String, Expression> letVariables;
-    private final Op                          op;
-    
+    private final Op op;
+
     public LetExpression(Op op, Map<String, Expression> letVars, Expression expr)
     {
         this.letVariables = new HashMap<>();
-        this.expr       = expr;
-        this.op         = op;
-        for(Map.Entry<String, Expression> var : letVars.entrySet())
+        this.expr = expr;
+        this.op = op;
+        for (Map.Entry<String, Expression> var : letVars.entrySet())
         {
             this.letVariables.put(var.getKey(), var.getValue());
         }
     }
 
-    
+
     public Map<String, Expression> getLetVariables()
     {
         return this.letVariables;
     }
-    
+
     public Expression getExpression()
     {
         return this.expr;
@@ -48,26 +47,27 @@ public class LetExpression extends Expression
     }
 
     @Override
-    public void accept(SmtAstVisitor visitor) {
+    public void accept(SmtAstVisitor visitor)
+    {
         visitor.visit(this);
     }
 
-    public enum Op 
-    {        
-        LET ("let");    
+    public enum Op
+    {
+        LET("let");
 
         private final String opStr;
 
-        private Op(String op) 
+        private Op(String op)
         {
             this.opStr = op;
         }
 
         @Override
-        public String toString() 
+        public String toString()
         {
             return this.opStr;
-        }        
+        }
     }
 
     @Override

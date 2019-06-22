@@ -413,7 +413,7 @@ public class SignatureTranslator
         // define a new uninterpreted one-to-one mapping from the signature to integers
         String label = ordSig.label;
         // convert ordA/Ord to ordA_
-        String prefix = label.replaceFirst("/Ord", "_");
+        String prefix = label.replaceFirst("/Ord", "/");
         String mappingName = TranslatorUtils.sanitizeName(prefix + "IntMapping");
 
         FunctionDeclaration mapping = defineInjectiveMapping(mappingName, translator.atomSort, translator.intSort);

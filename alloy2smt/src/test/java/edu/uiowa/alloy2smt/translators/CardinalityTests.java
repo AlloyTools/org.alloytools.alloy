@@ -21,11 +21,11 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertTrue(2 <= atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
+        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(2, tuples.size());
     }
@@ -38,11 +38,11 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertTrue(2 <= atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
+        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(2, tuples.size());
     }
@@ -55,11 +55,11 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertTrue(2 <= atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
+        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertTrue(2 < tuples.size());
     }
@@ -73,11 +73,11 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(0, atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
+        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(0, tuples.size());
     }
@@ -91,11 +91,11 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(0, atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
+        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(0, tuples.size());
     }
@@ -109,11 +109,11 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<Integer> atoms = TranslatorUtils.getIntSet(A);
         assertEquals(2, atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A_r");
+        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
         Set<List<String>> tuples = TranslatorUtils.getRelation(r);
         assertEquals(2, tuples.size());
     }
@@ -125,7 +125,7 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(2, atoms.size());
     }
@@ -137,7 +137,7 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(3, atoms.size());
     }
@@ -149,7 +149,7 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(2, atoms.size());
     }
@@ -161,7 +161,7 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(0, atoms.size());
     }
@@ -173,7 +173,7 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals(0, atoms.size());
     }
@@ -185,7 +185,7 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
         Set<Integer> atoms = TranslatorUtils.getIntSet(A);
         assertEquals(2, atoms.size());
     }

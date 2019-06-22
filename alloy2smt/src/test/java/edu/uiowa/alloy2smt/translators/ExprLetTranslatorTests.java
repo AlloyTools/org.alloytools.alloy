@@ -23,11 +23,11 @@ class ExprLetTranslatorTests
                 "run {different[A0] != none}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
 
-        FunctionDefinition a0 = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A0");
+        FunctionDefinition a0 = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A0");
         Set<String> a0Atoms = TranslatorUtils.getAtomSet(a0);
         assertEquals(1, a0Atoms.size());
     }

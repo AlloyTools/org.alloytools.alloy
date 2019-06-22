@@ -24,7 +24,7 @@ public class ExprQtTranslatorTests
                         "fact f1{all x : A | x > 5}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<Integer> aAtoms = TranslatorUtils.getIntSet(a);
         assertEquals(2, aAtoms.size());
         assertTrue(new ArrayList<>(aAtoms).get(0) > 5);
@@ -60,7 +60,7 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
@@ -74,7 +74,7 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
@@ -86,7 +86,7 @@ public class ExprQtTranslatorTests
         String alloy = "sig A {} fact {one x : A | x != none}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(1, aAtoms.size());
     }
@@ -100,7 +100,7 @@ public class ExprQtTranslatorTests
                 "fact {one x, y: A | x = A0 and y = A1 and x != y}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
@@ -114,7 +114,7 @@ public class ExprQtTranslatorTests
                 "fact f1{lone x, y: A | x = A0 and y = A0 and x != y}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(2, aAtoms.size());
     }
@@ -127,7 +127,7 @@ public class ExprQtTranslatorTests
                 "fact f{some x: set A | x = A and x = none}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(0, aAtoms.size());
     }
@@ -176,11 +176,11 @@ public class ExprQtTranslatorTests
                 "fact f{ A0= {x: A | x not in A1}}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(3, aAtoms.size());
 
-        FunctionDefinition a0 = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A0");
+        FunctionDefinition a0 = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A0");
         Set<String> a0Atoms = TranslatorUtils.getAtomSet(a0);
         assertEquals(2, a0Atoms.size());
     }

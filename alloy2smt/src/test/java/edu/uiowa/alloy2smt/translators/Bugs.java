@@ -20,7 +20,7 @@ public class Bugs
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this_a");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/a");
         Set<Integer> atoms = TranslatorUtils.getIntSet(A);
         assertEquals(1, atoms.size());
     }

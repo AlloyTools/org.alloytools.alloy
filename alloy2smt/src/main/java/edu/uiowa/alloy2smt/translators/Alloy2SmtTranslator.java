@@ -668,7 +668,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         MappingSignature signature = new MappingSignature();
 
         signature.label         = sig.label;
-        signature.functionName  = signaturesMap.get(sig).getName();
+        signature.functionName  = TranslatorUtils.getOriginalName(signaturesMap.get(sig).getName());
 
         signature.id            = getSigId(sig);
 
@@ -709,7 +709,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         MappingField mappingField   = new MappingField();
 
         mappingField.label          = field.label;
-        mappingField.functionName   = fieldsMap.get(field).getName();
+        mappingField.functionName   = TranslatorUtils.getOriginalName(fieldsMap.get(field).getName());
         mappingField.id             = getSigId(field);
         mappingField.parentId       = getSigId(field.sig);
         mappingField.isPrivate      = field.isPrivate != null;

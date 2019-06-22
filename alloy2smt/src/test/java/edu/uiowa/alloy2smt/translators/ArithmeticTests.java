@@ -20,7 +20,7 @@ public class ArithmeticTests
         String alloy = "sig a in Int {} fact {a = 6 + 8}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
         Set<Integer> set = TranslatorUtils.getIntSet(a);
         assertEquals(set, new HashSet<>(Arrays.asList(6, 8)));
     }
@@ -40,9 +40,9 @@ public class ArithmeticTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
-        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_b");
-        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_c");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/b");
+        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/c");
 
         int aValue = TranslatorUtils.getInt(a);
         int bValue = TranslatorUtils.getInt(b);
@@ -64,13 +64,13 @@ public class ArithmeticTests
                   List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
         Set<Integer> aSet = TranslatorUtils.getIntSet(a);
         assertEquals(aSet, new HashSet<>(Arrays.asList(1, 2)));
-        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_b");
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/b");
         Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         assertEquals(bSet, new HashSet<>(Arrays.asList(4, 6)));
-        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_c");
+        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/c");
         Set<Integer> cSet = TranslatorUtils.getIntSet(c);
         assertEquals(cSet, new HashSet<>(Arrays.asList(5, 7, 6, 8)));
     }
@@ -87,7 +87,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_b");
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/b");
         Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         assertEquals(bSet, new HashSet<>(Arrays.asList(0)));
     }
@@ -132,15 +132,15 @@ public class ArithmeticTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
         Set<Integer> aSet = TranslatorUtils.getIntSet(a);
         assertEquals(aSet, new HashSet<>(Arrays.asList(1)));
 
-        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_b");
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/b");
         Set<Integer> bSet = TranslatorUtils.getIntSet(b);
         assertEquals(bSet, new HashSet<>(Arrays.asList(2)));
 
-        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_c");
+        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/c");
         Set<Integer> cSet = TranslatorUtils.getIntSet(c);
         assertEquals(cSet, new HashSet<>(Arrays.asList(3)));
     }
@@ -164,7 +164,7 @@ public class ArithmeticTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
         int aValue = TranslatorUtils.getInt(a);
         assertTrue(aValue > 2);
     }

@@ -1,10 +1,18 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.TranslatorUtils;
+import edu.uiowa.smt.smtAst.FunctionDefinition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ModuleTests
 {
@@ -16,56 +24,24 @@ public class ModuleTests
 
 
     @Test
-    public void ordModule1()
+    public void ordModule1() throws Exception
     {
         String alloy =
                 "open util/ordering[A] as ordA\n" +
                 "open util/ordering[B] as ordB\n" +
                 "sig A {}\n" +
                 "sig B {}\n" +
-                "fact f {#A = 3 and #B = 4 and some ordB/prev}\n" +
-                "run {} for 10 but 3 A, 4 B\n";
+                "fact f {#A = 3 and #B = 4}\n" +
+                "run {} for 4 but 3 A, 4 B\n";
 
-        Translation translation = Utils.translate(alloy);
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(results.get(0), "this/A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(3, aAtoms.size());
 
-        String script = translation.getSmtScript();
-
-        Assertions.assertTrue(script.contains("(declare-fun ordA_Ord"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_Ord_First"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_Ord_Next"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_IntMap"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_first"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_last"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_next"));
-        Assertions.assertTrue(script.contains("(declare-fun ordA_prev"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_prevs"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_nexts"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_lt"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_gt"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_lte"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_gte"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_larger"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_smaller"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_max"));
-        Assertions.assertTrue(script.contains("(define-fun ordA_min"));
-
-        Assertions.assertTrue(script.contains("(declare-fun ordB_Ord"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_Ord_First"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_Ord_Next"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_IntMap"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_first"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_last"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_next"));
-        Assertions.assertTrue(script.contains("(declare-fun ordB_prev"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_prevs"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_nexts"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_lt"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_gt"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_lte"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_gte"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_larger"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_smaller"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_max"));
-        Assertions.assertTrue(script.contains("(define-fun ordB_min"));
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(results.get(0), "this/B");
+        Set<String> bAtoms = TranslatorUtils.getAtomSet(b);
+        assertEquals(4, bAtoms.size());
     }
 }

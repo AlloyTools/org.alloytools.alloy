@@ -5,13 +5,13 @@ import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommandTests
 {
@@ -25,43 +25,27 @@ class CommandTests
     }
 
     @Test
-    void runCommand1()
-    {
-        String alloy =
-                "sig A {}\n" +
-                "run command1 {#A = 1 or #A = 2} for 10";
-
-        Translation translation = Utils.translate(alloy);
-
-        String command = translation.translateCommand(0, false);
-        assertEquals(
-                "; command1\n" +
-                "(assert (or (exists ((_a3 Atom)) (and (= this_A (singleton (mkTuple _a3))) true)) (exists ((_a4 Atom)(_a5 Atom)) (and (= this_A (insert (mkTuple _a5) (singleton (mkTuple _a4)))) (distinct _a4 _a5)))))\n",
-                command);
-    }
-
-
-    @Test
-    void runCommand2()
+    void runCommand() throws Exception
     {
         String alloy =
                 "sig A {}\n" +
                 "run command1 {#A = 1 or #A = 2} for 10\n" +
-                // multiple commands can share the same label
-                "run command1 {no A} for 10\n"
-                ;
-        Translation translation = Utils.translate(alloy);
+                "run command1 {no A} for 10";
 
-        String command = translation.translateCommand(1, false);
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/A");
+        Set<String> atoms = TranslatorUtils.getAtomSet(a);
+        assertTrue(1 ==  atoms.size() || 2 == atoms.size());
 
-        assertEquals(
-                "; command1\n" +
-                "(assert (= this_A (as emptyset (Set (Tuple Atom)))))\n",
-                command);
+        assertEquals ("sat", results.get(1).satResult);
+        a = TranslatorUtils.getFunctionDefinition( results.get(1).smtModel, "this/A");
+        atoms = TranslatorUtils.getAtomSet(a);
+        assertTrue(0 ==  atoms.size());
     }
 
     @Test
-    void checkCommand1()
+    void checkCommand() throws Exception
     {
         String alloy =
                 "sig A {}\n" +
@@ -70,30 +54,10 @@ class CommandTests
                 "assert command2 {some A or no A} \n" +
                 "check command2 for 10\n";
 
-        Translation translation = Utils.translate(alloy);
-
-        String command1 = translation.translateCommand(0, false);
-
-        assertEquals(
-                "; command1\n" +
-                        "(assert (not " +
-                                    "(exists ((_x1 Atom)) " +
-                                        "(member (mkTuple _x1) this_A))))\n",
-                command1);
-
-        String command2 = translation.translateCommand(1, false);
-
-        assertEquals(
-                "; command2\n" +
-                        "(assert (not " +
-                                    "(or " +
-                                        "(exists ((_x2 Atom)) " +
-                                            "(member (mkTuple _x2) this_A)) " +
-                                        "(= this_A " +
-                                            "(as emptyset (Set (Tuple Atom)))))))\n",
-                command2);
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+        assertEquals ("unsat", results.get(1).satResult);
     }
-
 
     @Test
     void predicate1 () throws Exception
@@ -101,7 +65,7 @@ class CommandTests
         String alloy = "sig a{} pred p[]{#a > 2} run p for 4";
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
         assertEquals ("sat", results.get(0).satResult);
-        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a");
         Set<String> atoms = TranslatorUtils.getAtomSet(a);
         assertEquals (3, atoms.size());
     }
@@ -112,7 +76,7 @@ class CommandTests
         String alloy = "sig A {} run {} for exactly 3 A";
         List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
         assertEquals ("sat", results.get(0).satResult);
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_A");
+        FunctionDefinition A = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/A");
         Set<String> atoms = TranslatorUtils.getAtomSet(A);
         assertEquals (3, atoms.size());
     }
@@ -127,19 +91,19 @@ class CommandTests
 
         assertEquals ("sat", results.get(0).satResult);
 
-        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a");
         Set<String> atomsA = TranslatorUtils.getAtomSet(a);
         assertEquals (1, atomsA.size());
 
-        FunctionDefinition b = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_b");
+        FunctionDefinition b = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/b");
         Set<String> atomsB = TranslatorUtils.getAtomSet(b);
         assertEquals (2, atomsB.size());
 
-        a = TranslatorUtils.getFunctionDefinition( results.get(1).smtModel, "this_a");
+        a = TranslatorUtils.getFunctionDefinition( results.get(1).smtModel, "this/a");
         atomsA = TranslatorUtils.getAtomSet(a);
         assertEquals (3, atomsA.size());
 
-        b = TranslatorUtils.getFunctionDefinition( results.get(1).smtModel, "this_b");
+        b = TranslatorUtils.getFunctionDefinition( results.get(1).smtModel, "this/b");
         atomsB = TranslatorUtils.getAtomSet(b);
         assertEquals (4, atomsB.size());
     }
@@ -154,11 +118,11 @@ class CommandTests
 
         assertEquals ("sat", results.get(0).satResult);
 
-        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a");
         Set<String> atomsA = TranslatorUtils.getAtomSet(a);
         assertEquals (2, atomsA.size());
 
-        FunctionDefinition b = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_b");
+        FunctionDefinition b = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/b");
         Set<String> atomsB = TranslatorUtils.getAtomSet(b);
         assertEquals (0, atomsB.size());
     }
@@ -174,11 +138,11 @@ class CommandTests
 
         assertEquals ("sat", results.get(0).satResult);
 
-        FunctionDefinition a0 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a0");
+        FunctionDefinition a0 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a0");
         Set<String> atomsA0 = TranslatorUtils.getAtomSet(a0);
         assertEquals (2, atomsA0.size());
 
-        FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a1");
+        FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a1");
         Set<String> atomsA1 = TranslatorUtils.getAtomSet(a1);
         assertEquals (1, atomsA1.size());
     }
@@ -194,19 +158,19 @@ class CommandTests
 
         assertEquals ("sat", results.get(0).satResult);
 
-        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a");
+        FunctionDefinition a = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a");
         Set<String> atomsA = TranslatorUtils.getAtomSet(a);
         assertEquals (5, atomsA.size());
 
-        FunctionDefinition a0 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a0");
+        FunctionDefinition a0 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a0");
         Set<String> atomsA0 = TranslatorUtils.getAtomSet(a0);
         assertEquals (2, atomsA0.size());
 
-        FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a1");
+        FunctionDefinition a1 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a1");
         Set<String> atomsA1 = TranslatorUtils.getAtomSet(a1);
         assertEquals (2, atomsA1.size());
 
-        FunctionDefinition a2 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this_a2");
+        FunctionDefinition a2 = TranslatorUtils.getFunctionDefinition( results.get(0).smtModel, "this/a2");
         Set<String> atomsA2 = TranslatorUtils.getAtomSet(a2);
         assertEquals (1, atomsA2.size());
     }

@@ -19,7 +19,7 @@ class FieldTranslatorTests
     {
         String alloy = "sig a {f: a}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
     }
 
     @Test
@@ -27,7 +27,7 @@ class FieldTranslatorTests
     {
         String alloy = "sig a in Int {f: a}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_a");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/a");
     }
 
     @Test
@@ -82,15 +82,15 @@ class FieldTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition r = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A_r");
+        FunctionDefinition r = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A/r");
         Set<List<String>> rElements = TranslatorUtils.getRelation(r);
         assertEquals(2, rElements.size());
 
-        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A");
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
         Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
         assertEquals(1, aAtoms.size());
 
-        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_B");
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/B");
         Set<List<String>> bElements = TranslatorUtils.getRelation(b);
         assertEquals(1, bElements.size());
     }
@@ -121,7 +121,7 @@ class FieldTranslatorTests
                 "fact {#t = 2}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition t = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this_A_t");
+        FunctionDefinition t = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A/t");
         Set<List<String>> tElements = TranslatorUtils.getRelation(t);
         assertEquals(2, tElements.size());
         for (List<String> element: tElements)

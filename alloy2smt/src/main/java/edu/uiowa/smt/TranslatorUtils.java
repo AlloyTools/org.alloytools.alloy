@@ -28,7 +28,12 @@ public class TranslatorUtils
      */
     public static String sanitizeName(String s)
     {
-        return s.replaceAll("/", "_").replaceAll("'", "_").replaceAll("\"", "__");
+        return s; // handled in SmtLibPrettyPrinter
+    }
+
+    public static String sanitizeWithBars(String s)
+    {
+        return "|" + s + "|";
     }
 
     public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, AbstractTranslator translator)
@@ -325,5 +330,10 @@ public class TranslatorUtils
     public static String getFriendlyAtom(String uninterpretedConstant, String replacement)
     {
         return uninterpretedConstant.replaceFirst("@uc_Atom_", replacement);
+    }
+
+    public static String getOriginalName(String name)
+    {
+        return name.replaceAll("\\|", "");
     }
 }

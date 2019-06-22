@@ -25,7 +25,7 @@ class MapperTests
         Assertions.assertFalse(signature.isAbstract);
         Assertions.assertFalse(signature.id < univSignatureId);
         Assertions.assertEquals(univSignatureId, signature.parents.get(0));
-        Assertions.assertEquals("this_A", signature.functionName);
+        Assertions.assertEquals("this/A", signature.functionName);
     }
 
 
@@ -51,23 +51,23 @@ class MapperTests
         Assertions.assertEquals(univSignatureId, signatureA.parents.get(0));
         Assertions.assertEquals(univSignatureId, signatureB.parents.get(0));
 
-        Assertions.assertEquals("this_A", signatureA.functionName);
-        Assertions.assertEquals("this_B", signatureB.functionName);
+        Assertions.assertEquals("this/A", signatureA.functionName);
+        Assertions.assertEquals("this/B", signatureB.functionName);
 
         MappingField fieldA_f = mapper.fields.stream()
-                .filter(f -> f.parentId == signatureA.id && f.functionName.equals("this_A_f"))
+                .filter(f -> f.parentId == signatureA.id && f.functionName.equals("this/A/f"))
                 .findFirst().get();
 
         MappingField fieldA_g = mapper.fields.stream()
-                .filter(f -> f.parentId == signatureA.id && f.functionName.equals("this_A_g"))
+                .filter(f -> f.parentId == signatureA.id && f.functionName.equals("this/A/g"))
                 .findFirst().get();
 
         MappingField fieldB_f = mapper.fields.stream()
-                .filter(f -> f.parentId == signatureB.id && f.functionName.equals("this_B_f"))
+                .filter(f -> f.parentId == signatureB.id && f.functionName.equals("this/B/f"))
                 .findFirst().get();
 
         MappingField fieldB_g = mapper.fields.stream()
-                .filter(f -> f.parentId == signatureB.id && f.functionName.equals("this_B_g"))
+                .filter(f -> f.parentId == signatureB.id && f.functionName.equals("this/B/g"))
                 .findFirst().get();
 
         Assertions.assertEquals("f",fieldA_f.label);
