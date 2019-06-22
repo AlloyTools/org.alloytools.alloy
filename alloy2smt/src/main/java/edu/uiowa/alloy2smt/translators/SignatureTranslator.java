@@ -52,7 +52,7 @@ public class SignatureTranslator
                 {
                     Expression left = translator.signaturesMap.get(sig).getVariable();
                     Expression right = translator.signaturesMap.get(children.get(0)).getVariable();
-                    BinaryExpression equality = new BinaryExpression(left, BinaryExpression.Op.EQ, right);
+                    BinaryExpression equality = BinaryExpression.Op.EQ.make(left, right);
                     translator.smtProgram.addAssertion(new Assertion(equality));
                 }
                 else if (children.size() > 1)
@@ -60,16 +60,16 @@ public class SignatureTranslator
 
                     Expression left = translator.signaturesMap.get(children.get(0)).getVariable();
                     Expression right = translator.signaturesMap.get(children.get(1)).getVariable();
-                    BinaryExpression union = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
+                    BinaryExpression union = BinaryExpression.Op.UNION.make(left, right);
 
                     for (int i = 2; i < children.size(); i++)
                     {
                         Expression expression = translator.signaturesMap.get(children.get(i)).getVariable();
-                        union = new BinaryExpression(union, BinaryExpression.Op.UNION, expression);
+                        union = BinaryExpression.Op.UNION.make(union, expression);
                     }
 
                     Expression leftExpr = translator.signaturesMap.get(sig).getVariable();
-                    BinaryExpression equality = new BinaryExpression(leftExpr, BinaryExpression.Op.EQ, union);
+                    BinaryExpression equality = BinaryExpression.Op.EQ.make(leftExpr, union);
                     translator.smtProgram.addAssertion(new Assertion(equality));
                 }
             }
@@ -82,9 +82,9 @@ public class SignatureTranslator
 
             for (int i = 1; i < translator.topLevelSigs.size(); ++i)
             {
-                unionTopSigExprs = new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.UNION, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable());
+                unionTopSigExprs = BinaryExpression.Op.UNION.make(unionTopSigExprs, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable());
             }
-            translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(unionTopSigExprs, BinaryExpression.Op.EQ, translator.atomUniverse.getVariable())));
+            translator.smtProgram.addAssertion(new Assertion(BinaryExpression.Op.EQ.make(unionTopSigExprs, translator.atomUniverse.getVariable())));
 
             // Top-level sigs are mutually disjoin
             if (translator.topLevelSigs.size() > 1)
@@ -96,7 +96,7 @@ public class SignatureTranslator
                     for (int j = i + 1; j < translator.topLevelSigs.size(); ++j)
                     {
                         Expression sndSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(j)).getVariable();
-                        translator.smtProgram.addAssertion(new Assertion(new BinaryExpression(new BinaryExpression(fstSigExpr, BinaryExpression.Op.INTERSECTION, sndSigExpr), BinaryExpression.Op.EQ, translator.atomNone.getVariable())));
+                        translator.smtProgram.addAssertion(new Assertion(BinaryExpression.Op.EQ.make(BinaryExpression.Op.INTERSECTION.make(fstSigExpr, sndSigExpr), translator.atomNone.getVariable())));
                     }
                 }
             }
@@ -114,8 +114,8 @@ public class SignatureTranslator
             for (int j = i + 1; j < signatures.size(); j++)
             {
                 Expression right = translator.signaturesMap.get(signatures.get(j)).getVariable();
-                BinaryExpression disjoint = new BinaryExpression(left, BinaryExpression.Op.INTERSECTION, right);
-                BinaryExpression equality = new BinaryExpression(disjoint, BinaryExpression.Op.EQ, translator.atomNone.getVariable());
+                BinaryExpression disjoint = BinaryExpression.Op.INTERSECTION.make(left, right);
+                BinaryExpression equality = BinaryExpression.Op.EQ.make(disjoint, translator.atomNone.getVariable());
 
                 translator.smtProgram.addAssertion(new Assertion("Disjoint signatures", equality));
             }
@@ -215,7 +215,7 @@ public class SignatureTranslator
         expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         translator.smtProgram.addConstantDeclaration(constDecl);
 
-        BinaryExpression subset = new BinaryExpression(signature.getVariable(), BinaryExpression.Op.EQ, expr);
+        BinaryExpression subset = BinaryExpression.Op.EQ.make(signature.getVariable(), expr);
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
@@ -239,7 +239,7 @@ public class SignatureTranslator
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
 
-        BinaryExpression subset = new BinaryExpression(signature.getVariable(), BinaryExpression.Op.SUBSET, expr);
+        BinaryExpression subset = BinaryExpression.Op.SUBSET.make(signature.getVariable(), expr);
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
@@ -263,7 +263,7 @@ public class SignatureTranslator
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
 
-        BinaryExpression subset = new BinaryExpression(expr, BinaryExpression.Op.SUBSET, signature.getVariable());
+        BinaryExpression subset = BinaryExpression.Op.SUBSET.make(expr, signature.getVariable());
         translator.smtProgram.addAssertion(new Assertion(subset));
     }
 
@@ -274,7 +274,7 @@ public class SignatureTranslator
         {
             Sig parent = ((Sig.PrimSig) sig).parent;
             FunctionDeclaration parentDeclaration = translator.signaturesMap.get(parent);
-            BinaryExpression subsetExpression = new BinaryExpression(functionDeclaration.getVariable(), BinaryExpression.Op.SUBSET, parentDeclaration.getVariable());
+            BinaryExpression subsetExpression = BinaryExpression.Op.SUBSET.make(functionDeclaration.getVariable(), parentDeclaration.getVariable());
             translator.smtProgram.addAssertion(new Assertion(subsetExpression));
         }
         else
@@ -293,7 +293,7 @@ public class SignatureTranslator
                 if (parentSig != Sig.SIGINT)
                 {
                     FunctionDeclaration parentDeclaration = translator.signaturesMap.get(parentSig);
-                    BinaryExpression subset = new BinaryExpression(functionDeclaration.getVariable(), BinaryExpression.Op.SUBSET, parentDeclaration.getVariable());
+                    BinaryExpression subset = BinaryExpression.Op.SUBSET.make(functionDeclaration.getVariable(), parentDeclaration.getVariable());
                     translator.smtProgram.addAssertion(new Assertion(subset));
                 }
             }
@@ -301,15 +301,15 @@ public class SignatureTranslator
             {
                 Expression left = translator.signaturesMap.get(parents.get(0)).getVariable();
                 Expression right = translator.signaturesMap.get(parents.get(1)).getVariable();
-                BinaryExpression union = new BinaryExpression(left, BinaryExpression.Op.UNION, right);
+                BinaryExpression union = BinaryExpression.Op.UNION.make(left, right);
 
                 for (int i = 2; i < parents.size(); i++)
                 {
                     Expression expression = translator.signaturesMap.get(parents.get(i)).getVariable();
-                    union = new BinaryExpression(union, BinaryExpression.Op.UNION, expression);
+                    union = BinaryExpression.Op.UNION.make(union, expression);
                 }
 
-                BinaryExpression subset = new BinaryExpression(functionDeclaration.getVariable(), BinaryExpression.Op.SUBSET, union);
+                BinaryExpression subset = BinaryExpression.Op.SUBSET.make(functionDeclaration.getVariable(), union);
                 translator.smtProgram.addAssertion(new Assertion(subset));
             }
         }
@@ -318,7 +318,7 @@ public class SignatureTranslator
     private void declareIntSig()
     {
         translator.signaturesMap.put(Sig.SIGINT, translator.intUniv);
-        BinaryExpression eqExpr = new BinaryExpression(translator.intUnivExpr, BinaryExpression.Op.EQ, translator.intUniv.getVariable());
+        BinaryExpression eqExpr = BinaryExpression.Op.EQ.make(translator.intUnivExpr, translator.intUniv.getVariable());
         translator.smtProgram.addFunction(translator.intUniv);
         translator.smtProgram.addAssertion(new Assertion(eqExpr));
     }
@@ -396,7 +396,7 @@ public class SignatureTranslator
 
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
 
-            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), QuantifiedExpression.Op.FORALL.make(new BinaryExpression(member, BinaryExpression.Op.IMPLIES, bodyExpr), new ArrayList<>(boundVariables.keySet()))));
+            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), QuantifiedExpression.Op.FORALL.make(BinaryExpression.Op.IMPLIES.make(member, bodyExpr), new ArrayList<>(boundVariables.keySet()))));
         }
     }
 
@@ -490,18 +490,15 @@ public class SignatureTranslator
         VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
         VariableDeclaration y = new VariableDeclaration("__y__", translator.atomSort, null);
 
-        Expression xEqualsY = new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
+        Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
 
         Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
 
-        Expression mappingXEqualsMappingY = new BinaryExpression(
-                new FunctionCallExpression(mapping, x.getVariable()),
-                BinaryExpression.Op.EQ,
-                new FunctionCallExpression(mapping, y.getVariable()));
+        Expression mappingXEqualsMappingY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, y.getVariable()));
 
         Expression not = UnaryExpression.Op.NOT.make(mappingXEqualsMappingY);
 
-        Expression implies = new BinaryExpression(notXEqualsY, BinaryExpression.Op.IMPLIES, not);
+        Expression implies = BinaryExpression.Op.IMPLIES.make(notXEqualsY, not);
 
         QuantifiedExpression forAll = QuantifiedExpression.Op.FORALL.make(implies, x, y);
 
@@ -524,23 +521,18 @@ public class SignatureTranslator
 
         // there is only one first element
         // ordering/first = (singleton (mktuple firstAtom))
-        Expression firstSingleton = new BinaryExpression(first.getVariable(), BinaryExpression.Op.EQ, firstSet);
+        Expression firstSingleton = BinaryExpression.Op.EQ.make(first.getVariable(), firstSet);
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple firstAtom))", firstSingleton));
 
         // ordering/first = ordering/Ord.First
-        Expression ordFirstSingleton = new BinaryExpression(first.getVariable(), BinaryExpression.Op.EQ, firstExpression);
+        Expression ordFirstSingleton = BinaryExpression.Op.EQ.make(first.getVariable(), firstExpression);
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
         VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
-        Expression member = new BinaryExpression(
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()),
-                BinaryExpression.Op.MEMBER, setExpression);
-        Expression gte = new BinaryExpression(
-                new FunctionCallExpression(mapping, x.getVariable()),
-                BinaryExpression.Op.GTE,
-                new FunctionCallExpression(mapping, firstAtom.getVariable()));
-        Expression implies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, gte);
+        Expression member = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
+        Expression gte = BinaryExpression.Op.GTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, firstAtom.getVariable()));
+        Expression implies = BinaryExpression.Op.IMPLIES.make(member, gte);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x);
         translator.smtProgram.addAssertion(new Assertion(
                 "each element is greater than or equal to the first element", forAll));
@@ -562,27 +554,19 @@ public class SignatureTranslator
 
 
         // last element is a member of the set
-        Expression lastMember = new BinaryExpression(
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getVariable()),
-                BinaryExpression.Op.MEMBER,
-                setExpression);
+        Expression lastMember = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getVariable()), setExpression);
         translator.smtProgram.addAssertion(new Assertion("last element is a member", lastMember));
 
         // there is only one last element
         // ordering/last = (singleton (mktuple lastAtom))
-        Expression lastSingleton = new BinaryExpression(last.getVariable(), BinaryExpression.Op.EQ, lastSet);
+        Expression lastSingleton = BinaryExpression.Op.EQ.make(last.getVariable(), lastSet);
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
         VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort, null);
-        Expression xMember = new BinaryExpression(
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()),
-                BinaryExpression.Op.MEMBER, setExpression);
-        Expression lte = new BinaryExpression(
-                new FunctionCallExpression(mapping, x.getVariable()),
-                BinaryExpression.Op.LTE,
-                new FunctionCallExpression(mapping, lastAtom.getVariable()));
-        Expression implies = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, lte);
+        Expression xMember = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
+        Expression lte = BinaryExpression.Op.LTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, lastAtom.getVariable()));
+        Expression implies = BinaryExpression.Op.IMPLIES.make(xMember, lte);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x);
         translator.smtProgram.addAssertion(new Assertion(
                 "each element is less than or equal to the last element", forAll));
@@ -594,9 +578,9 @@ public class SignatureTranslator
     {
         Expression tClosure = UnaryExpression.Op.TCLOSURE.make(declaration.getVariable());
 
-        Expression join = new BinaryExpression(set.getVariable(), BinaryExpression.Op.JOIN, tClosure);
+        Expression join = BinaryExpression.Op.JOIN.make(set.getVariable(), tClosure);
 
-        Expression difference = new BinaryExpression(set.getVariable(), BinaryExpression.Op.SETMINUS, join);
+        Expression difference = BinaryExpression.Op.SETMINUS.make(set.getVariable(), join);
 
         return new FunctionDefinition(prefix + suffix, translator.setOfUnaryAtomSort,
                 difference, set);
@@ -605,7 +589,7 @@ public class SignatureTranslator
     private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, FunctionDeclaration ord, String suffix)
     {
         UnaryExpression tClosure = UnaryExpression.Op.TCLOSURE.make(ord.getVariable());
-        BinaryExpression join = new BinaryExpression(set1.getVariable(), BinaryExpression.Op.JOIN, tClosure);
+        BinaryExpression join = BinaryExpression.Op.JOIN.make(set1.getVariable(), tClosure);
         String name = prefix + suffix;
         FunctionDefinition definition = new FunctionDefinition(name, translator.setOfUnaryAtomSort, join, set1);
         return definition;
@@ -636,24 +620,19 @@ public class SignatureTranslator
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member
 
-        BinaryExpression xMember = new BinaryExpression(TranslatorUtils.getTuple(x), BinaryExpression.Op.MEMBER, setExpression);
-        BinaryExpression xLessThanNext = new BinaryExpression(
-                new FunctionCallExpression(intMapping, x.getVariable()),
-                BinaryExpression.Op.LT,
-                new FunctionCallExpression(intMapping,
+        BinaryExpression xMember = BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(x), setExpression);
+        BinaryExpression xLessThanNext = BinaryExpression.Op.LT.make(new FunctionCallExpression(intMapping, x.getVariable()), new FunctionCallExpression(intMapping,
                         new FunctionCallExpression(mapping, x.getVariable())));
 
         Expression notXEqualsLast = UnaryExpression.Op.NOT.make(
-                new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, lastAtom.getVariable()));
-        Expression nextIsMember = new BinaryExpression(
-                TranslatorUtils.getTuple(new FunctionCallExpression(mapping, x.getVariable())),
-                BinaryExpression.Op.MEMBER, setExpression);
+                BinaryExpression.Op.EQ.make(x.getVariable(), lastAtom.getVariable()));
+        Expression nextIsMember = BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(new FunctionCallExpression(mapping, x.getVariable())), setExpression);
 
-        Expression impliesNextIsMember = new BinaryExpression(notXEqualsLast, BinaryExpression.Op.IMPLIES, nextIsMember);
+        Expression impliesNextIsMember = BinaryExpression.Op.IMPLIES.make(notXEqualsLast, nextIsMember);
 
-        Expression xMemberconsequent = new BinaryExpression(xLessThanNext, BinaryExpression.Op.AND, impliesNextIsMember);
+        Expression xMemberconsequent = BinaryExpression.Op.AND.make(xLessThanNext, impliesNextIsMember);
 
-        Expression xMemberImplies = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, xMemberconsequent);
+        Expression xMemberImplies = BinaryExpression.Op.IMPLIES.make(xMember, xMemberconsequent);
 
         Expression forAllX = QuantifiedExpression.Op.FORALL.make(xMemberImplies, x);
         translator.smtProgram.addAssertion(
@@ -662,32 +641,18 @@ public class SignatureTranslator
 
         // the next mapping is one-to-one (injective) members
         // for all x, y (x != y and x, y members) implies (nextMapping(x) != nextMapping(y)))
-        Expression xEqualsY = new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
+        Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
         Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
 
-        Expression xyMembers = new BinaryExpression(
-                new BinaryExpression(
-                        TranslatorUtils.getTuple(x),
-                        BinaryExpression.Op.MEMBER,
-                        setExpression
-                ),
-                BinaryExpression.Op.AND,
-                new BinaryExpression(
-                        TranslatorUtils.getTuple(y),
-                        BinaryExpression.Op.MEMBER,
-                        setExpression
-                ));
+        Expression xyMembers = BinaryExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(x), setExpression), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(y), setExpression));
 
-        Expression antecedent = new BinaryExpression(notXEqualsY, BinaryExpression.Op.AND, xyMembers);
+        Expression antecedent = BinaryExpression.Op.AND.make(notXEqualsY, xyMembers);
 
-        Expression mappingXEqualsMappingY = new BinaryExpression(
-                new FunctionCallExpression(mapping, x.getVariable()),
-                BinaryExpression.Op.EQ,
-                new FunctionCallExpression(mapping, y.getVariable()));
+        Expression mappingXEqualsMappingY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, y.getVariable()));
 
         Expression consequent = UnaryExpression.Op.NOT.make(mappingXEqualsMappingY);
 
-        Expression implies = new BinaryExpression(antecedent, BinaryExpression.Op.IMPLIES, consequent);
+        Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
 
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x, y);
 
@@ -698,21 +663,15 @@ public class SignatureTranslator
 
         // for all x, y (x,y) in the next relation iff x, y are members and nextMapping(x) = y
         Expression xy = TranslatorUtils.getTuple(x, y);
-        Expression xyInNext = new BinaryExpression(xy, BinaryExpression.Op.MEMBER, ordNext.getVariable());
+        Expression xyInNext = BinaryExpression.Op.MEMBER.make(xy, ordNext.getVariable());
 
-        Expression xLessThanY = new BinaryExpression(
-                new FunctionCallExpression(intMapping, x.getVariable()),
-                BinaryExpression.Op.LT,
-                new FunctionCallExpression(intMapping, y.getVariable()));
+        Expression xLessThanY = BinaryExpression.Op.LT.make(new FunctionCallExpression(intMapping, x.getVariable()), new FunctionCallExpression(intMapping, y.getVariable()));
 
-        Expression nextXEqualsY = new BinaryExpression(
-                new FunctionCallExpression(mapping, x.getVariable()),
-                BinaryExpression.Op.EQ,
-                y.getVariable());
+        Expression nextXEqualsY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), y.getVariable());
 
-        Expression and = new BinaryExpression(xyMembers, BinaryExpression.Op.AND, nextXEqualsY);
+        Expression and = BinaryExpression.Op.AND.make(xyMembers, nextXEqualsY);
 
-        BinaryExpression iff = new BinaryExpression(xyInNext, BinaryExpression.Op.EQ, and);
+        BinaryExpression iff = BinaryExpression.Op.EQ.make(xyInNext, and);
 
         QuantifiedExpression forAllXY = QuantifiedExpression.Op.FORALL.make(iff, x, y);
         translator.smtProgram.addAssertion(new Assertion(prefix + "next", forAllXY));
@@ -726,9 +685,9 @@ public class SignatureTranslator
 
         Expression nextFieldExpression = translator.fieldsMap.get(nextField).getVariable();
 
-        Expression join = new BinaryExpression(ordSigExpression, BinaryExpression.Op.JOIN, nextFieldExpression);
+        Expression join = BinaryExpression.Op.JOIN.make(ordSigExpression, nextFieldExpression);
 
-        Expression equality = new BinaryExpression(ordNext.getVariable(), BinaryExpression.Op.EQ, join);
+        Expression equality = BinaryExpression.Op.EQ.make(ordNext.getVariable(), join);
 
         // next = ordSig.Next
         translator.smtProgram.addAssertion(
@@ -736,13 +695,10 @@ public class SignatureTranslator
 
         // either (next is an empty set and the ordered set is a singleton) or next is nonempty
         Expression emptySet = UnaryExpression.Op.EMPTYSET.make(translator.setOfBinaryAtomSort);
-        Expression nextIsEmpty = new BinaryExpression(ordNext.getVariable(), BinaryExpression.Op.EQ, emptySet);
-        Expression setSingleton = new BinaryExpression(setExpression, BinaryExpression.Op.EQ, firstSet);
+        Expression nextIsEmpty = BinaryExpression.Op.EQ.make(ordNext.getVariable(), emptySet);
+        Expression setSingleton = BinaryExpression.Op.EQ.make(setExpression, firstSet);
         Expression nextIsNonempty = UnaryExpression.Op.NOT.make(nextIsEmpty);
-        Expression or = new BinaryExpression(
-                new BinaryExpression(nextIsEmpty, BinaryExpression.Op.AND, setSingleton)
-                , BinaryExpression.Op.OR,
-                nextIsNonempty);
+        Expression or = BinaryExpression.Op.OR.make(BinaryExpression.Op.AND.make(nextIsEmpty, setSingleton), nextIsNonempty);
 
         // either (next is an empty set and the ordered set is a singleton) or next is nonempty
         translator.smtProgram.addAssertion(
@@ -756,8 +712,7 @@ public class SignatureTranslator
 
         UnaryExpression transpose = UnaryExpression.Op.TRANSPOSE.make(ordNext.getVariable());
 
-        BinaryExpression equality = new BinaryExpression(ordPrev.getVariable(),
-                BinaryExpression.Op.EQ, transpose);
+        BinaryExpression equality = BinaryExpression.Op.EQ.make(ordPrev.getVariable(), transpose);
 
         translator.addFunction(ordPrev);
 
@@ -770,32 +725,7 @@ public class SignatureTranslator
     {
         QuantifiedExpression ltExpression =
                         QuantifiedExpression.Op.FORALL.make(
-                                new BinaryExpression
-                                        (
-                                                new BinaryExpression
-                                                        (
-                                                                new BinaryExpression
-                                                                        (
-                                                                                TranslatorUtils.getTuple(element1),
-                                                                                BinaryExpression.Op.MEMBER,
-                                                                                set1.getVariable()
-                                                                        ),
-                                                                BinaryExpression.Op.AND,
-                                                                new BinaryExpression
-                                                                        (
-                                                                                TranslatorUtils.getTuple(element2),
-                                                                                BinaryExpression.Op.MEMBER,
-                                                                                set2.getVariable()
-                                                                        )
-                                                        ),
-                                                BinaryExpression.Op.IMPLIES,
-                                                new BinaryExpression
-                                                        (
-                                                                new FunctionCallExpression(mapping, element1.getVariable()),
-                                                                operator,
-                                                                new FunctionCallExpression(mapping, element1.getVariable())
-                                                        )
-                                        ),
+                                BinaryExpression.Op.IMPLIES.make(BinaryExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element1), set1.getVariable()), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element2), set2.getVariable())), operator.make(new FunctionCallExpression(mapping, element1.getVariable()), new FunctionCallExpression(mapping, element1.getVariable()))),
                                 element1, element2
                         );
 

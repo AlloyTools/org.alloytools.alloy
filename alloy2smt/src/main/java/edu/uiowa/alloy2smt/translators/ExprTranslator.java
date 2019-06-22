@@ -138,13 +138,13 @@ public class ExprTranslator
         {
             for(int i = 0; i < exprs.size()-1; ++i)
             {
-                Expression disjExpr = new BinaryExpression(translator.atomNone.getVariable(), BinaryExpression.Op.EQ, new BinaryExpression(exprs.get(i), BinaryExpression.Op.INTERSECTION, exprs.get(i+1)));
+                Expression disjExpr = BinaryExpression.Op.EQ.make(translator.atomNone.getVariable(), BinaryExpression.Op.INTERSECTION.make(exprs.get(i), exprs.get(i+1)));
                 finalExprs.add(disjExpr);
             }
             finalExpr = finalExprs.get(0);
             for(int i = 1; i < finalExprs.size(); ++i)
             {
-                finalExpr = new BinaryExpression(finalExpr, BinaryExpression.Op.AND, finalExprs.get(i));
+                finalExpr = BinaryExpression.Op.AND.make(finalExpr, finalExprs.get(i));
             }
         }
         else
@@ -238,7 +238,7 @@ public class ExprTranslator
         }
         if(translator.auxExpr != null)
         {
-            translator.auxExpr = new BinaryExpression(translator.auxExpr, BinaryExpression.Op.AND, setCompDef);
+            translator.auxExpr = BinaryExpression.Op.AND.make(translator.auxExpr, setCompDef);
         }
         else
         {
@@ -336,26 +336,26 @@ public class ExprTranslator
         Expression yValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, y.getVariable());
         Expression zValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, z.getVariable());
 
-        Expression xMember = new BinaryExpression(xTuple, BinaryExpression.Op.MEMBER, A);
-        Expression yMember = new BinaryExpression(yTuple, BinaryExpression.Op.MEMBER, B);
-        Expression zMember = new BinaryExpression(zTuple, BinaryExpression.Op.MEMBER, resultExpression);
+        Expression xMember = BinaryExpression.Op.MEMBER.make(xTuple, A);
+        Expression yMember = BinaryExpression.Op.MEMBER.make(yTuple, B);
+        Expression zMember = BinaryExpression.Op.MEMBER.make(zTuple, resultExpression);
 
-        Expression xyOperation = new BinaryExpression(xValue, op, yValue);
-        Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
+        Expression xyOperation = op.make(xValue, yValue);
+        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
 
-        Expression and1 = new BinaryExpression(xMember, BinaryExpression.Op.AND, yMember);
-        Expression and2 = new BinaryExpression(equal, BinaryExpression.Op.AND, and1);
+        Expression and1 = BinaryExpression.Op.AND.make(xMember, yMember);
+        Expression and2 = BinaryExpression.Op.AND.make(equal, and1);
         Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
         Expression argumentConstraints = new BoolConstant(true);
         for (VariableDeclaration declaration: quantifiedArguments)
         {
             if(declaration.getConstraint() != null)
             {
-                argumentConstraints = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, declaration.getConstraint());
+                argumentConstraints = BinaryExpression.Op.AND.make(argumentConstraints, declaration.getConstraint());
             }
         }
-        Expression antecedent1 = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, zMember);
-        Expression implies1 = new BinaryExpression(antecedent1, BinaryExpression.Op.IMPLIES, exists1);
+        Expression antecedent1 = BinaryExpression.Op.AND.make(argumentConstraints, zMember);
+        Expression implies1 = BinaryExpression.Op.IMPLIES.make(antecedent1, exists1);
         List<VariableDeclaration> quantifiers1 = new ArrayList<>(quantifiedArguments);
         quantifiers1.add(z);
         Expression forall1 = QuantifiedExpression.Op.FORALL.make(implies1, quantifiers1);
@@ -363,12 +363,12 @@ public class ExprTranslator
         Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, A, B), forall1);
         translator.smtProgram.addAssertion(assertion1);
 
-        Expression and3 = new BinaryExpression(equal, BinaryExpression.Op.AND,zMember);
+        Expression and3 = BinaryExpression.Op.AND.make(equal, zMember);
         Expression exists2 = QuantifiedExpression.Op.EXISTS.make(and3, z);
 
-        Expression antecedent2 = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, and1);
+        Expression antecedent2 = BinaryExpression.Op.AND.make(argumentConstraints, and1);
 
-        Expression implies2 = new BinaryExpression(antecedent2, BinaryExpression.Op.IMPLIES, exists2);
+        Expression implies2 = BinaryExpression.Op.IMPLIES.make(antecedent2, exists2);
         List<VariableDeclaration> quantifiers2 = new ArrayList<>(quantifiedArguments);
         quantifiers2.add(x);
         quantifiers2.add(y);
@@ -419,12 +419,12 @@ public class ExprTranslator
         }
 
         ConstantDeclaration relation = new ConstantDeclaration(relationName, AbstractTranslator.setOfTernaryIntSort);
-        Expression xyOperation = new BinaryExpression(xValue, op, yValue);
-        Expression equal = new BinaryExpression(xyOperation, BinaryExpression.Op.EQ, zValue);
-        Expression xyzTupleMember = new BinaryExpression(xyzTuple, BinaryExpression.Op.MEMBER, relation.getVariable());
-        Expression implies1 = new BinaryExpression(equal, BinaryExpression.Op.IMPLIES, xyzTupleMember);
-        Expression implies2 = new BinaryExpression(xyzTupleMember, BinaryExpression.Op.IMPLIES, equal);
-        Expression equivalence = new BinaryExpression(implies1, BinaryExpression.Op.AND, implies2);
+        Expression xyOperation = op.make(xValue, yValue);
+        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
+        Expression xyzTupleMember = BinaryExpression.Op.MEMBER.make(xyzTuple, relation.getVariable());
+        Expression implies1 = BinaryExpression.Op.IMPLIES.make(equal, xyzTupleMember);
+        Expression implies2 = BinaryExpression.Op.IMPLIES.make(xyzTupleMember, equal);
+        Expression equivalence = BinaryExpression.Op.AND.make(implies1, implies2);
         Expression axiom = QuantifiedExpression.Op.FORALL.make(implies2, x, y, z);
         translator.smtProgram.addConstantDeclaration(relation);
         translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom));
@@ -457,13 +457,13 @@ public class ExprTranslator
         }
 
         Expression right        = translateExpr(exprList.args.get(1), environment);
-        BinaryExpression result = new BinaryExpression(left, op, right);
+        BinaryExpression result = op.make(left, right);
 
 
         for(int i = 2; i < exprList.args.size(); i++)
         {
             Expression expr     = translateExpr(exprList.args.get(i), environment);
-            result              = new BinaryExpression(result, op, expr);
+            result              = op.make(result, expr);
         }
 
         return result;

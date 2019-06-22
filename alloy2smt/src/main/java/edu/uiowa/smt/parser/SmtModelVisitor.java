@@ -183,7 +183,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         Expression right  = (Expression) this.visitExpression(ctx.expression(1), arguments);
 
         BinaryExpression.Op operator = BinaryExpression.Op.getOp(ctx.BinaryOperator().getText());
-        return new BinaryExpression(left, operator, right);
+        return operator.make(left, right);
     }
 
     public SmtAst visitTernaryExpression(SmtParser.TernaryExpressionContext ctx, Map<String, Variable> arguments)

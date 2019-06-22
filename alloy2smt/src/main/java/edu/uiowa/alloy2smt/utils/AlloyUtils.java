@@ -64,16 +64,16 @@ public class AlloyUtils
         Expression rightSetExpression = variableToSetMap.get(declaration);
         if(declaration.getSort() instanceof SetSort)
         {
-            return new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.SUBSET, rightSetExpression);
+            return BinaryExpression.Op.SUBSET.make(declaration.getVariable(), rightSetExpression);
         }
         if(declaration.getSort() instanceof TupleSort)
         {
-            return new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.MEMBER, rightSetExpression);
+            return BinaryExpression.Op.MEMBER.make(declaration.getVariable(), rightSetExpression);
         }
         if((declaration.getSort() instanceof UninterpretedSort) || (declaration.getSort() instanceof IntSort))
         {
             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
-            return new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, rightSetExpression);
+            return BinaryExpression.Op.MEMBER.make(tuple, rightSetExpression);
         }
 
         throw new UnsupportedOperationException(String.format("%s", declaration.getSort()));

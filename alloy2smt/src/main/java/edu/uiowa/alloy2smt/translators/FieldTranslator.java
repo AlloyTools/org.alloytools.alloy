@@ -57,9 +57,9 @@ public class FieldTranslator
                     for (int j = i + 1; j < decl.names.size(); j++)
                     {
                         Expression fieldJ = getFieldExpression(fields, decl.names.get(j).label);
-                        Expression intersect = new BinaryExpression(fieldI, BinaryExpression.Op.INTERSECTION, fieldJ);
+                        Expression intersect = BinaryExpression.Op.INTERSECTION.make(fieldI, fieldJ);
                         Expression emptySet = UnaryExpression.Op.EMPTYSET.make(fieldI.getSort());
-                        Expression equal = new BinaryExpression(intersect, BinaryExpression.Op.EQ, emptySet);
+                        Expression equal = BinaryExpression.Op.EQ.make(intersect, emptySet);
                         Assertion disjoint = new Assertion(String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
                         translator.smtProgram.addAssertion(disjoint);
                     }
@@ -79,15 +79,15 @@ public class FieldTranslator
         SetSort setSort = (SetSort) signature.getSort();
         VariableDeclaration a = new VariableDeclaration("__a__", setSort.elementSort, null);
         VariableDeclaration b = new VariableDeclaration("__b__", setSort.elementSort, null);
-        Expression aMember = new BinaryExpression(a.getVariable(), BinaryExpression.Op.MEMBER, signature);
-        Expression bMember = new BinaryExpression(b.getVariable(), BinaryExpression.Op.MEMBER, signature);
+        Expression aMember = BinaryExpression.Op.MEMBER.make(a.getVariable(), signature);
+        Expression bMember = BinaryExpression.Op.MEMBER.make(b.getVariable(), signature);
         Expression aSingleton = UnaryExpression.Op.SINGLETON.make(a.getVariable());
         Expression bSingleton = UnaryExpression.Op.SINGLETON.make(b.getVariable());
 
-        Expression members = new BinaryExpression(aMember, BinaryExpression.Op.AND, bMember);
-        Expression equal = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, b.getVariable());
+        Expression members = BinaryExpression.Op.AND.make(aMember, bMember);
+        Expression equal = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
         Expression notEqual = UnaryExpression.Op.NOT.make(equal);
-        Expression antecedent = new BinaryExpression(members, BinaryExpression.Op.AND, notEqual);
+        Expression antecedent = BinaryExpression.Op.AND.make(members, notEqual);
         Expression consequent = new BoolConstant(true);
 
         for (Decl decl: sig.getFieldDecls())
@@ -97,17 +97,17 @@ public class FieldTranslator
                 for (ExprHasName name: decl.names)
                 {
                     Expression field = getFieldExpression(fields, name.label);
-                    Expression aJoin = new BinaryExpression(aSingleton, BinaryExpression.Op.JOIN, field);
-                    Expression bJoin = new BinaryExpression(bSingleton, BinaryExpression.Op.JOIN, field);
-                    Expression intersect = new BinaryExpression(aJoin, BinaryExpression.Op.INTERSECTION, bJoin);
+                    Expression aJoin = BinaryExpression.Op.JOIN.make(aSingleton, field);
+                    Expression bJoin = BinaryExpression.Op.JOIN.make(bSingleton, field);
+                    Expression intersect = BinaryExpression.Op.INTERSECTION.make(aJoin, bJoin);
                     Expression emptySet = UnaryExpression.Op.EMPTYSET.make(intersect.getSort());
-                    Expression isEmpty = new BinaryExpression(intersect, BinaryExpression.Op.EQ, emptySet);
-                    consequent = new BinaryExpression(consequent, BinaryExpression.Op.AND, isEmpty);
+                    Expression isEmpty = BinaryExpression.Op.EQ.make(intersect, emptySet);
+                    consequent = BinaryExpression.Op.AND.make(consequent, isEmpty);
                 }
             }
         }
 
-        Expression implies = new BinaryExpression(antecedent, BinaryExpression.Op.IMPLIES, consequent);
+        Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
         Assertion disjoint2 = new Assertion(sig.label + " disjoint2", forAll);
@@ -188,11 +188,11 @@ public class FieldTranslator
             Expression constraint;
             if(exprUnary.op == ExprUnary.Op.SETOF)
             {
-                constraint = new BinaryExpression(fieldFunction.getVariable(), BinaryExpression.Op.SUBSET, set);
+                constraint = BinaryExpression.Op.SUBSET.make(fieldFunction.getVariable(), set);
             }
             else
             {
-                constraint = new BinaryExpression(fieldFunction.getVariable(), BinaryExpression.Op.EQ, set);
+                constraint = BinaryExpression.Op.EQ.make(fieldFunction.getVariable(), set);
             }
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", constraint));
         }

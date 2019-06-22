@@ -21,7 +21,7 @@ public class BinaryExpression extends Expression
     private Expression    lhsExpr;
     private Expression    rhsExpr;
 
-    public BinaryExpression(Expression lhsExpr, Op op, Expression rhsExpr)
+    private BinaryExpression(Op op, Expression lhsExpr, Expression rhsExpr)
     {
         this.op         = op;
         if(lhsExpr == null)
@@ -211,6 +211,11 @@ public class BinaryExpression extends Expression
 
         private final String opStr;
 
+        public BinaryExpression make(Expression left, Expression right)
+        {
+            return new BinaryExpression(this, left, right);
+        }
+
         Op(String op)
         {
             this.opStr = op;
@@ -346,7 +351,7 @@ public class BinaryExpression extends Expression
             {
                 Expression left = lhsExpr.evaluate(functions);
                 Expression right = rhsExpr.evaluate(functions);
-                return new BinaryExpression(left, Op.UNION, right);
+                return Op.UNION.make(left, right);
             }
         }
         throw new UnsupportedOperationException();
@@ -391,7 +396,7 @@ public class BinaryExpression extends Expression
 
         Expression A = lhsExpr.substitute(oldVariable, newVariable);
         Expression B = rhsExpr.substitute(oldVariable, newVariable);
-        return new BinaryExpression(A, op, B);
+        return op.make(A, B);
     }
 
     @Override
@@ -403,6 +408,6 @@ public class BinaryExpression extends Expression
         }
         Expression A = lhsExpr.replace(oldExpression, newExpression);
         Expression B = rhsExpr.replace(oldExpression, newExpression);
-        return new BinaryExpression(A, op, B);
+        return op.make(A, B);
     }
 }

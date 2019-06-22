@@ -85,7 +85,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
     {
         Expression          closure             = translateClosure(exprUnary, environment);
-        BinaryExpression    reflexiveClosure    = new BinaryExpression(closure, BinaryExpression.Op.UNION, AbstractTranslator.atomIdentity.getVariable());
+        BinaryExpression    reflexiveClosure    = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.atomIdentity.getVariable());
         return reflexiveClosure;
     }
 
@@ -172,7 +172,7 @@ public class ExprUnaryTranslator
         
         if(translator.auxExpr != null)
         {
-            finalExpr = new BinaryExpression(translator.auxExpr, BinaryExpression.Op.AND, finalExpr);
+            finalExpr = BinaryExpression.Op.AND.make(translator.auxExpr, finalExpr);
             finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, translator.existentialBdVars);
             translator.auxExpr = null;
             translator.existentialBdVars.clear();
@@ -194,8 +194,7 @@ public class ExprUnaryTranslator
         {
             elementSorts.add(sorts.get(i));
         }
-        Expression eqExpr = new BinaryExpression(set, BinaryExpression.Op.EQ, 
-                                    UnaryExpression.Op.EMPTYSET.make(new SetSort(new TupleSort(elementSorts))));
+        Expression eqExpr = BinaryExpression.Op.EQ.make(set, UnaryExpression.Op.EMPTYSET.make(new SetSort(new TupleSort(elementSorts))));
         return tryAddingExistentialConstraint(eqExpr);
     }
 
@@ -220,7 +219,7 @@ public class ExprUnaryTranslator
             bdVarExprs.add(bdVarExpr);
         }
         Expression bdVarTupExpr     = ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs);
-        Expression bodyExpr         = new BinaryExpression(bdVarTupExpr, BinaryExpression.Op.MEMBER, someRel);
+        Expression bodyExpr         = BinaryExpression.Op.MEMBER.make(bdVarTupExpr, someRel);
         
         // If the expression is a binary or ternary field, we need to make sure 
         // there exists a var of type binaryIntTup such that the integer tuple equals to the bdVarTupExpr.
@@ -260,7 +259,7 @@ public class ExprUnaryTranslator
         }
         Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
         Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
-        Expression bodyExpr     = new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.EQ, set);
+        Expression bodyExpr     = BinaryExpression.Op.EQ.make(bdVarSetExpr, set);
 //        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
         QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(bodyExpr, bdVars);
@@ -282,13 +281,13 @@ public class ExprUnaryTranslator
         {
             SetSort sort = (SetSort) expression.getSort();
             Expression emptySet = UnaryExpression.Op.EMPTYSET.make(sort);
-            Expression isEmpty = new BinaryExpression(emptySet, BinaryExpression.Op.EQ, expression);
+            Expression isEmpty = BinaryExpression.Op.EQ.make(emptySet, expression);
 
             VariableDeclaration element = new VariableDeclaration("__s__", sort.elementSort, null);
             Expression singleton = UnaryExpression.Op.SINGLETON.make(element.getVariable());
-            Expression isSingleon = new BinaryExpression(singleton, BinaryExpression.Op.EQ, expression);
+            Expression isSingleon = BinaryExpression.Op.EQ.make(singleton, expression);
             Expression exists = QuantifiedExpression.Op.EXISTS.make(isSingleon, element);
-            Expression or = new BinaryExpression(isEmpty, BinaryExpression.Op.OR, exists);
+            Expression or = BinaryExpression.Op.OR.make(isEmpty, exists);
             return or;
         }
         else
@@ -413,7 +412,7 @@ public class ExprUnaryTranslator
     
     public Expression mkTupleSelExpr(Expression expr, int index)
     {
-        return new BinaryExpression(IntConstant.getInstance(index), BinaryExpression.Op.TUPSEL, expr);
+        return BinaryExpression.Op.TUPSEL.make(IntConstant.getInstance(index), expr);
     }
     
     public Expression mkUnaryIntTupValue(Expression expr)

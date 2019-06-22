@@ -65,7 +65,7 @@ public class TranslatorUtils
             set = MultiArityExpression.Op.INSERT.make(atoms);
         }
 
-        BinaryExpression equality = new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.EQ, set);
+        BinaryExpression equality = BinaryExpression.Op.EQ.make(declaration.getVariable(), set);
 
         translator.smtProgram.addAssertion(new Assertion(equality));
 

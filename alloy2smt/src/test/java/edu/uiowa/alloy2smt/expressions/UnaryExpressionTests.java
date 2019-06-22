@@ -31,7 +31,7 @@ public class UnaryExpressionTests
     @Test
     void or()
     {
-        Expression expression = new BinaryExpression(booleanConstant, BinaryExpression.Op.AND, booleanConstant);
+        Expression expression = BinaryExpression.Op.AND.make(booleanConstant, booleanConstant);
         Assertions.assertEquals(AbstractTranslator.boolSort, expression.getSort());
     }
 }

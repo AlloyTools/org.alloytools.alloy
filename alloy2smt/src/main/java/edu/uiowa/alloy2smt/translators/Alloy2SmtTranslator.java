@@ -158,43 +158,43 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         // Axiom for identity relation
         VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort, null);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
-        BinaryExpression            memberA = new BinaryExpression(tupleA, BinaryExpression.Op.MEMBER, this.atomUniverse.getVariable());
+        BinaryExpression            memberA = BinaryExpression.Op.MEMBER.make(tupleA, this.atomUniverse.getVariable());
 
         VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getNewAtomName(), atomSort, null);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
-        BinaryExpression            memberB = new BinaryExpression(tupleB, BinaryExpression.Op.MEMBER, this.atomUniverse.getVariable());
+        BinaryExpression            memberB = BinaryExpression.Op.MEMBER.make(tupleB, this.atomUniverse.getVariable());
 
-        BinaryExpression            and     = new BinaryExpression(memberA, BinaryExpression.Op.AND, memberB);
+        BinaryExpression            and     = BinaryExpression.Op.AND.make(memberA, memberB);
 
         MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
 
-        BinaryExpression            member  = new BinaryExpression(tupleAB, BinaryExpression.Op.MEMBER, this.atomIdentity.getVariable());
+        BinaryExpression            member  = BinaryExpression.Op.MEMBER.make(tupleAB, this.atomIdentity.getVariable());
 
-        BinaryExpression            equals  = new BinaryExpression(a.getVariable(), BinaryExpression.Op.EQ, b.getVariable());
+        BinaryExpression            equals  = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
 
-        BinaryExpression            equiv   = new BinaryExpression(member, BinaryExpression.Op.EQ, equals);
+        BinaryExpression            equiv   = BinaryExpression.Op.EQ.make(member, equals);
 
-        BinaryExpression            implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES , equiv);
+        BinaryExpression            implies = BinaryExpression.Op.IMPLIES.make(and, equiv);
         
         QuantifiedExpression        idenSemantics  = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniverse.getVariable(), BinaryExpression.Op.EQ, UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for UninterpretedInt", new BinaryExpression(intUniv.getVariable(), BinaryExpression.Op.EQ, UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
+        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", BinaryExpression.Op.EQ.make(this.atomUniverse.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(intUniv.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function
         VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, null);
         VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, null);
-        Expression XEqualsY = new BinaryExpression(X.getVariable(), BinaryExpression.Op.EQ, Y.getVariable());
+        Expression XEqualsY = BinaryExpression.Op.EQ.make(X.getVariable(), Y.getVariable());
         Expression notXEqualsY = UnaryExpression.Op.NOT.make(XEqualsY);
 
         Expression XValue = new FunctionCallExpression(uninterpretedIntValue, X.getVariable());
         Expression YValue = new FunctionCallExpression(uninterpretedIntValue, Y.getVariable());
 
-        Expression XValueEqualsYValue = new BinaryExpression(XValue, BinaryExpression.Op.EQ, YValue);
+        Expression XValueEqualsYValue = BinaryExpression.Op.EQ.make(XValue, YValue);
         Expression notXValueEqualsYValue = UnaryExpression.Op.NOT.make(XValueEqualsYValue);
-        Expression implication = new BinaryExpression(notXEqualsY, BinaryExpression.Op.IMPLIES, notXValueEqualsYValue);
+        Expression implication = BinaryExpression.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
 
         smtProgram.addAssertion(new Assertion(uninterpretedIntValueName + " is injective", forAll));
@@ -340,11 +340,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         for(int i = 1; i < inputBdVars.size(); ++i)
         {
-            membership = new BinaryExpression(membership, BinaryExpression.Op.AND, AlloyUtils.getMemberExpression(inputBdVars, i));
+            membership = BinaryExpression.Op.AND.make(membership, AlloyUtils.getMemberExpression(inputBdVars, i));
         }
-        membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
-        Expression setMembership = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getVariable());
-        membership = new BinaryExpression(membership, BinaryExpression.Op.EQ, setMembership);
+        membership = BinaryExpression.Op.AND.make(membership, setCompBodyExpr);
+        Expression setMembership = BinaryExpression.Op.MEMBER.make(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), setBdVar.getVariable());
+        membership = BinaryExpression.Op.EQ.make(membership, setMembership);
         Expression forallExpr = QuantifiedExpression.Op.FORALL.make(membership, new ArrayList<>(inputBdVars.keySet()));
 
         this.setCompFuncNameToBdVarExprMap.put(funcName, setBdVar);
@@ -381,7 +381,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 String  argumentName = TranslatorUtils.sanitizeName(n.label);
                 Expression range = this.exprTranslator.translateExpr(f.decls.get(i).expr);
                 VariableDeclaration argument = new VariableDeclaration(argumentName, range.getSort(), null);
-                Expression subset = new BinaryExpression(argument.getVariable(), BinaryExpression.Op.SUBSET, range);
+                Expression subset = BinaryExpression.Op.SUBSET.make(argument.getVariable(), range);
                 argument.setConstraint(subset);
                 arguments.add(argument);
                 environment.put(label, argument.getVariable());
@@ -838,20 +838,20 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                             declarations.add(declaration);
                             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
                             Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
-                            set = new BinaryExpression(singleton, BinaryExpression.Op.UNION, set);
+                            set = BinaryExpression.Op.UNION.make(singleton, set);
                         }
 
-                        Expression constraint = new BinaryExpression(variable, op, set);
+                        Expression constraint = op.make(variable, set);
                         if(declarations.size() > 1)
                         {
                             List<Expression> expressions = declarations
                                     .stream().map(d -> d.getVariable())
                                     .collect(Collectors.toList());
                             Expression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
-                            constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND, distinct);
+                            constraint = BinaryExpression.Op.AND.make(constraint, distinct);
                         }
                         Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
-                        expression = new BinaryExpression(expression, BinaryExpression.Op.AND, exists);
+                        expression = BinaryExpression.Op.AND.make(expression, exists);
                     }
                 }
             }
