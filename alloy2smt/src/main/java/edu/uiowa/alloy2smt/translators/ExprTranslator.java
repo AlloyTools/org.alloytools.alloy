@@ -167,7 +167,7 @@ public class ExprTranslator
         newEnvironment.put(exprLet.var.label, varDeclExpr);
         
         Expression letBodyExpr = translateExpr(exprLet.sub, newEnvironment);
-        return new LetExpression(LetExpression.Op.LET, varToExprMap, letBodyExpr);
+        return new LetExpression(varToExprMap, letBodyExpr);
     }    
     
     Expression translateExprCall(ExprCall exprCall, Environment environment)
@@ -234,7 +234,7 @@ public class ExprTranslator
         
         if(!letVars.isEmpty())
         {
-            setCompDef = new LetExpression(LetExpression.Op.LET, letVars, setCompDef);
+            setCompDef = new LetExpression(letVars, setCompDef);
         }
         if(translator.auxExpr != null)
         {

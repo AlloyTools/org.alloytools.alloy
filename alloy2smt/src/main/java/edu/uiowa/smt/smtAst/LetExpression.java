@@ -1,8 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This file is part of alloy2smt.
+ * Copyright (C) 2018-2019  The University of Iowa
+ *
+ * @author Mudathir Mohamed, Paul Meng
+ *
  */
+
 package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtAstVisitor;
@@ -10,20 +13,15 @@ import edu.uiowa.smt.printers.SmtAstVisitor;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Paul Meng
- */
 public class LetExpression extends Expression
 {
     private final Expression expr;
     private final Map<String, Expression> letVariables;
-    private final Op op;
 
-    public LetExpression(Op op, Map<String, Expression> letVars, Expression expr)
+    public LetExpression(Map<String, Expression> letVars, Expression expr)
     {
         this.letVariables = new HashMap<>();
         this.expr = expr;
-        this.op = op;
         for (Map.Entry<String, Expression> var : letVars.entrySet())
         {
             this.letVariables.put(var.getKey(), var.getValue());
@@ -41,33 +39,10 @@ public class LetExpression extends Expression
         return this.expr;
     }
 
-    public Op getOp()
-    {
-        return this.op;
-    }
-
     @Override
     public void accept(SmtAstVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    public enum Op
-    {
-        LET("let");
-
-        private final String opStr;
-
-        private Op(String op)
-        {
-            this.opStr = op;
-        }
-
-        @Override
-        public String toString()
-        {
-            return this.opStr;
-        }
     }
 
     @Override

@@ -144,7 +144,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         }
         if(letVariables.size() > 0)
         {
-            Expression let = new LetExpression(LetExpression.Op.LET, letVariables, quantifiedExpression.getExpression());
+            Expression let = new LetExpression(letVariables, quantifiedExpression.getExpression());
             return quantifiedExpression.getOp().make(let, declarations);
         }
         else
@@ -437,7 +437,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
 
     @Override
     public void visit(LetExpression let) {
-        stringBuilder.append("(" + let.getOp() + " (");
+        stringBuilder.append("( let (");
         for(Map.Entry<String, Expression> letVar : let.getLetVariables().entrySet())
         {
             stringBuilder.append("(");
