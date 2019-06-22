@@ -11,8 +11,7 @@ package edu.uiowa.smt.printers;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SmtLibPrettyPrinter implements SmtAstVisitor
 {
@@ -107,14 +106,51 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(QuantifiedExpression quantifiedExpression)
     {
+        quantifiedExpression = optimize(quantifiedExpression);
         stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-        for (VariableDeclaration boundVariable: quantifiedExpression.getBoundVars())
+        for (VariableDeclaration boundVariable: quantifiedExpression.getVariables())
         {
             this.visit(boundVariable);
         }
         stringBuilder.append(") ");
         this.visit(quantifiedExpression.getExpression());
         stringBuilder.append(")");
+    }
+
+    public QuantifiedExpression optimize(QuantifiedExpression quantifiedExpression)
+    {
+        List<VariableDeclaration> declarations = new ArrayList<>();
+        Map<String, Expression> letVariables = new LinkedHashMap<>();
+        for (VariableDeclaration variable: quantifiedExpression.getVariables())
+        {
+            if(variable.getSort() instanceof TupleSort)
+            {
+                List<Expression> tupleExpressions = new ArrayList<>();
+                // convert tuple quantifiers to uninterpreted quantifiers
+                TupleSort tupleSort = (TupleSort) variable.getSort();
+                for (Sort sort: tupleSort.elementSorts)
+                {
+                    VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null);
+                    declarations.add(declaration);
+                    tupleExpressions.add(declaration.getVariable());
+                }
+                Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, tupleExpressions);
+                letVariables.put(variable.getName(), tuple);
+            }
+            else
+            {
+                declarations.add(variable);
+            }
+        }
+        if(letVariables.size() > 0)
+        {
+            Expression let = new LetExpression(LetExpression.Op.LET, letVariables, quantifiedExpression.getExpression());
+            return new QuantifiedExpression(quantifiedExpression.getOp(), declarations, let);
+        }
+        else
+        {
+            return  quantifiedExpression;
+        }
     }
 
     @Override

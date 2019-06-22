@@ -20,17 +20,17 @@ import java.util.Map;
 public class QuantifiedExpression extends Expression
 {
     private final Expression expr;
-    private final List<VariableDeclaration> declarations;
+    private final List<VariableDeclaration> variables;
     private final Op op;
     
-    public QuantifiedExpression(Op op, List<VariableDeclaration> declarations, Expression expr)
+    public QuantifiedExpression(Op op, List<VariableDeclaration> variables, Expression expr)
     {
-        this.declarations = new ArrayList<>();
+        this.variables = new ArrayList<>();
         this.expr       = expr;
         this.op         = op;
-        for(VariableDeclaration bdVar : declarations)
+        for(VariableDeclaration bdVar : variables)
         {
-            this.declarations.add(bdVar);
+            this.variables.add(bdVar);
         }
         checkTypes();
     }
@@ -44,16 +44,16 @@ public class QuantifiedExpression extends Expression
         }
     }
 
-    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... declarations)
+    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... variables)
     {
-        this.declarations = Arrays.asList(declarations);
+        this.variables = Arrays.asList(variables);
         this.expr       = expr;
         this.op         = op;
     }
     
-    public List<VariableDeclaration> getBoundVars()
+    public List<VariableDeclaration> getVariables()
     {
-        return this.declarations;
+        return this.variables;
     }
     
     public Expression getExpression()
@@ -74,8 +74,7 @@ public class QuantifiedExpression extends Expression
     public enum Op 
     {        
         FORALL ("forall"),
-        EXISTS ("exists"),
-        LET ("let");    
+        EXISTS ("exists");
 
         private final String opStr;
 
@@ -115,7 +114,7 @@ public class QuantifiedExpression extends Expression
             return false;
         }
         QuantifiedExpression quantifiedObject = (QuantifiedExpression) object;
-        if(! declarations.equals(quantifiedObject.declarations))
+        if(! variables.equals(quantifiedObject.variables))
         {
             return false;
         }
@@ -127,9 +126,9 @@ public class QuantifiedExpression extends Expression
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {
         Expression body = expr;
-        List<VariableDeclaration> variables = new ArrayList<>(declarations);
+        List<VariableDeclaration> variables = new ArrayList<>(this.variables);
         // check if the new variable is declared
-        for (Declaration declaration: declarations)
+        for (Declaration declaration: this.variables)
         {
             if(declaration.getVariable().equals(newVariable))
             {
@@ -167,6 +166,6 @@ public class QuantifiedExpression extends Expression
             return newExpression;
         }
         Expression expression = expr.replace(oldExpression, newExpression);
-        return new QuantifiedExpression(op, declarations, expression);
+        return new QuantifiedExpression(op, variables, expression);
     }
 }
