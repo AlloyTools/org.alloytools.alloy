@@ -32,7 +32,7 @@ public class IntConstant extends Constant
     {
         Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
                 new IntConstant(value));
-        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
         return singleton;
     }
 
@@ -40,7 +40,7 @@ public class IntConstant extends Constant
     {
         Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
                 intConstant);
-        Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
         return singleton;
     }
     

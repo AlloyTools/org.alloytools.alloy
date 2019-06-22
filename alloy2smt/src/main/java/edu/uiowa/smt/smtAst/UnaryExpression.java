@@ -20,7 +20,7 @@ public class UnaryExpression extends Expression
     private final Op op;
     private final Expression expr;
     
-    public UnaryExpression(Op op, Expression expr)
+    private UnaryExpression(Op op, Expression expr)
     {
         this.op     = op;
         if(expr == null)
@@ -110,6 +110,11 @@ public class UnaryExpression extends Expression
         Op(String str)
         {
             this.opStr = str;
+        }
+
+        public UnaryExpression make(Expression expr)
+        {
+            return new UnaryExpression(this, expr);
         }
 
         public static Op getOp(String operator)

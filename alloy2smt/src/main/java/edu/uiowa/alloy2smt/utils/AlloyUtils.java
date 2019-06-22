@@ -87,11 +87,11 @@ public class AlloyUtils
                 variable.getDeclaration().getSort() instanceof IntSort)
         {
             MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable);
-            singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+            singleton = UnaryExpression.Op.SINGLETON.make(tuple);
         }
         else if(variable.getDeclaration().getSort() instanceof TupleSort)
         {
-            singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, variable);
+            singleton = UnaryExpression.Op.SINGLETON.make(variable);
         }
         else
         {
@@ -103,13 +103,13 @@ public class AlloyUtils
     public static Expression mkSingletonOutOfAtoms(List<Expression> atomExprs)
     {
         MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
-        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        UnaryExpression      singleton  = UnaryExpression.Op.SINGLETON.make(tuple);
         return singleton;
     }
 
     public static Expression mkSingletonOutOfTuple(Expression tupleExpr)
     {
-        UnaryExpression      singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, tupleExpr);
+        UnaryExpression      singleton  = UnaryExpression.Op.SINGLETON.make(tupleExpr);
         return singleton;
     }
 
@@ -125,10 +125,9 @@ public class AlloyUtils
             }
             else
             {
-                expressions.add(new UnaryExpression(UnaryExpression.Op.SINGLETON, declaration.getVariable()));
+                expressions.add(UnaryExpression.Op.SINGLETON.make(declaration.getVariable()));
             }
         }
         return expressions;
     }
-
 }

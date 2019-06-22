@@ -174,7 +174,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         Expression expression       = (Expression) this.visitExpression(ctx.expression(), arguments);
         UnaryExpression.Op operator = UnaryExpression.Op.getOp(ctx.UnaryOperator().getText());
-        return new UnaryExpression(operator, expression);
+        return operator.make(expression);
     }
 
     public SmtAst visitBinaryExpression(SmtParser.BinaryExpressionContext ctx, Map<String, Variable> arguments)
@@ -266,7 +266,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         Sort elementSort = (Sort) this.visitSort(ctx.sort());
         Sort setSort = new SetSort(elementSort);
-        return new UnaryExpression(UnaryExpression.Op.EMPTYSET, setSort);
+        return UnaryExpression.Op.EMPTYSET.make(setSort);
     }
 
     public SmtAst visitVariable(SmtParser.VariableContext ctx, Map<String, Variable> arguments)

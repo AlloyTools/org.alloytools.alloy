@@ -44,7 +44,7 @@ public abstract class AbstractTranslator
     public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort);
     public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniverse", setOfUninterpretedIntTuple);
-    public final static UnaryExpression intUnivExpr = new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple);
+    public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make( setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort);
 
     // non static members
@@ -77,7 +77,7 @@ public abstract class AbstractTranslator
         Expression intConstant = ((MultiArityExpression) ((UnaryExpression) expression).getExpression()).getExpressions().get(0);
         ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
         Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-        expression = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        expression = UnaryExpression.Op.SINGLETON.make(tuple);
         return expression;
     }
 

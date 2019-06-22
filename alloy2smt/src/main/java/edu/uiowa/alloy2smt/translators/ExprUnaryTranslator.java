@@ -71,14 +71,14 @@ public class ExprUnaryTranslator
     private Expression translateNot(ExprUnary exprUnary, Environment environment)
     {
         Expression expression   = exprTranslator.translateExpr(exprUnary.sub, environment);
-        Expression not          = new UnaryExpression(UnaryExpression.Op.NOT, expression);
+        Expression not          = UnaryExpression.Op.NOT.make(expression);
         return not;
     }
 
     private Expression translateClosure(ExprUnary exprUnary, Environment environment)
     {
         Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, environment);
-        UnaryExpression closure     = new UnaryExpression(UnaryExpression.Op.TCLOSURE, expression);
+        UnaryExpression closure     = UnaryExpression.Op.TCLOSURE.make(expression);
         return closure;
     }
 
@@ -92,7 +92,7 @@ public class ExprUnaryTranslator
     private Expression translateTranspose(ExprUnary exprUnary, Environment environment)
     {
         Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, environment);
-        UnaryExpression transpose   = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, expression);
+        UnaryExpression transpose   = UnaryExpression.Op.TRANSPOSE.make(expression);
         return transpose;
     }
 
@@ -138,15 +138,15 @@ public class ExprUnaryTranslator
                 {
                     if(((Variable)constExpr).getDeclaration().getSort() == AbstractTranslator.atomSort)
                     {
-                        return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
+                        return UnaryExpression.Op.SINGLETON.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     }                    
                     else if(((Variable)constExpr).getDeclaration().getSort() == AbstractTranslator.intSort)
                     {
-                        return new UnaryExpression(UnaryExpression.Op.SINGLETON, new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
+                        return UnaryExpression.Op.SINGLETON.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
                     } 
                     else if(((Variable)constExpr).getDeclaration().getSort() instanceof TupleSort)
                     {
-                        return new UnaryExpression(UnaryExpression.Op.SINGLETON, constExpr);
+                        return UnaryExpression.Op.SINGLETON.make(constExpr);
                     }                     
                 }                
                 return constExpr;
@@ -173,7 +173,7 @@ public class ExprUnaryTranslator
         if(translator.auxExpr != null)
         {
             finalExpr = new BinaryExpression(translator.auxExpr, BinaryExpression.Op.AND, finalExpr);
-            finalExpr = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, translator.existentialBdVars, finalExpr);
+            finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, translator.existentialBdVars);
             translator.auxExpr = null;
             translator.existentialBdVars.clear();
             
@@ -195,7 +195,7 @@ public class ExprUnaryTranslator
             elementSorts.add(sorts.get(i));
         }
         Expression eqExpr = new BinaryExpression(set, BinaryExpression.Op.EQ, 
-                                    new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(elementSorts))));         
+                                    UnaryExpression.Op.EMPTYSET.make(new SetSort(new TupleSort(elementSorts))));
         return tryAddingExistentialConstraint(eqExpr);
     }
 
@@ -227,7 +227,7 @@ public class ExprUnaryTranslator
 //        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
 
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
+        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(bodyExpr, bdVars);
         return tryAddingExistentialConstraint(exists);
     }    
 
@@ -263,7 +263,7 @@ public class ExprUnaryTranslator
         Expression bodyExpr     = new BinaryExpression(bdVarSetExpr, BinaryExpression.Op.EQ, set);
 //        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
         
-        QuantifiedExpression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, bdVars, bodyExpr);
+        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(bodyExpr, bdVars);
         return tryAddingExistentialConstraint(exists);
     }
     
@@ -281,13 +281,13 @@ public class ExprUnaryTranslator
         if(expr.type().is_bool)
         {
             SetSort sort = (SetSort) expression.getSort();
-            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
+            Expression emptySet = UnaryExpression.Op.EMPTYSET.make(sort);
             Expression isEmpty = new BinaryExpression(emptySet, BinaryExpression.Op.EQ, expression);
 
             VariableDeclaration element = new VariableDeclaration("__s__", sort.elementSort, null);
-            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, element.getVariable());
+            Expression singleton = UnaryExpression.Op.SINGLETON.make(element.getVariable());
             Expression isSingleon = new BinaryExpression(singleton, BinaryExpression.Op.EQ, expression);
-            Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, isSingleon, element);
+            Expression exists = QuantifiedExpression.Op.EXISTS.make(isSingleon, element);
             Expression or = new BinaryExpression(isEmpty, BinaryExpression.Op.OR, exists);
             return or;
         }
@@ -398,7 +398,7 @@ public class ExprUnaryTranslator
     
     public UnaryExpression mkSingleton(Expression tuple)
     {
-        return new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+        return UnaryExpression.Op.SINGLETON.make(tuple);
     }
     
     public MultiArityExpression mkTupleExpr(List<VariableDeclaration> bdVarDecls)

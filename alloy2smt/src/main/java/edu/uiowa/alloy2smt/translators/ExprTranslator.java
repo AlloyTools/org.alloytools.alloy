@@ -291,7 +291,7 @@ public class ExprTranslator
                 VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
                 tuple.setOriginalName(argument.getKey());
                 quantifiedArguments.add(tuple);
-                Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
+                Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 newA = newA.replace(argument.getValue(), singleton);
                 newB = newB.replace(argument.getValue(), singleton);
                 Expression constraint = ((VariableDeclaration)variable.getDeclaration()).getConstraint();
@@ -345,7 +345,7 @@ public class ExprTranslator
 
         Expression and1 = new BinaryExpression(xMember, BinaryExpression.Op.AND, yMember);
         Expression and2 = new BinaryExpression(equal, BinaryExpression.Op.AND, and1);
-        Expression exists1 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and2, x, y);
+        Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
         Expression argumentConstraints = new BoolConstant(true);
         for (VariableDeclaration declaration: quantifiedArguments)
         {
@@ -358,13 +358,13 @@ public class ExprTranslator
         Expression implies1 = new BinaryExpression(antecedent1, BinaryExpression.Op.IMPLIES, exists1);
         List<VariableDeclaration> quantifiers1 = new ArrayList<>(quantifiedArguments);
         quantifiers1.add(z);
-        Expression forall1 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiers1, implies1);
+        Expression forall1 = QuantifiedExpression.Op.FORALL.make(implies1, quantifiers1);
 
         Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, A, B), forall1);
         translator.smtProgram.addAssertion(assertion1);
 
         Expression and3 = new BinaryExpression(equal, BinaryExpression.Op.AND,zMember);
-        Expression exists2 = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, and3, z);
+        Expression exists2 = QuantifiedExpression.Op.EXISTS.make(and3, z);
 
         Expression antecedent2 = new BinaryExpression(argumentConstraints, BinaryExpression.Op.AND, and1);
 
@@ -372,7 +372,7 @@ public class ExprTranslator
         List<VariableDeclaration> quantifiers2 = new ArrayList<>(quantifiedArguments);
         quantifiers2.add(x);
         quantifiers2.add(y);
-        Expression forall2 = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiers2,implies2);
+        Expression forall2 = QuantifiedExpression.Op.FORALL.make(implies2, quantifiers2);
 
         Assertion assertion2 = new Assertion(String.format("%1$s %2$s %3$s axiom2", op, A, B), forall2);
         translator.smtProgram.addAssertion(assertion2);
@@ -386,7 +386,7 @@ public class ExprTranslator
         {
             ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-            A = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+            A = UnaryExpression.Op.SINGLETON.make(tuple);
         }
         return A;
     }
@@ -425,7 +425,7 @@ public class ExprTranslator
         Expression implies1 = new BinaryExpression(equal, BinaryExpression.Op.IMPLIES, xyzTupleMember);
         Expression implies2 = new BinaryExpression(xyzTupleMember, BinaryExpression.Op.IMPLIES, equal);
         Expression equivalence = new BinaryExpression(implies1, BinaryExpression.Op.AND, implies2);
-        Expression axiom = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies2, x, y, z);
+        Expression axiom = QuantifiedExpression.Op.FORALL.make(implies2, x, y, z);
         translator.smtProgram.addConstantDeclaration(relation);
         translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom));
         translator.arithmeticOperations.put(op, relation.getVariable());
@@ -510,7 +510,7 @@ public class ExprTranslator
                 Logger.getLogger(ExprTranslator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return new UnaryExpression(UnaryExpression.Op.EMPTYSET, new SetSort(new TupleSort(sorts)));
+        return UnaryExpression.Op.EMPTYSET.make(new SetSort(new TupleSort(sorts)));
     }
 
     Expression mkUnaryRelationOutOfAtomsOrTuples(List<Expression> atomOrTupleExprs)
@@ -543,7 +543,7 @@ public class ExprTranslator
         }
         
         
-        UnaryExpression singleton  = new UnaryExpression(UnaryExpression.Op.SINGLETON, atomTupleExprs.get(0));
+        UnaryExpression singleton  = UnaryExpression.Op.SINGLETON.make(atomTupleExprs.get(0));
         
         if(atomTupleExprs.size() > 1)
         {

@@ -49,7 +49,7 @@ public class TranslatorUtils
 
         translator.smtProgram.addFunction(declaration);
 
-        Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, expressions.get(expressions.size() - 1));
+        Expression set = UnaryExpression.Op.SINGLETON.make(expressions.get(expressions.size() - 1));
 
         if (expressions.size() > 1)
         {

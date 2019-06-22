@@ -176,26 +176,26 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         BinaryExpression            implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES , equiv);
         
-        QuantifiedExpression        idenSemantics  = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, a, b);
+        QuantifiedExpression        idenSemantics  = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.EMPTYSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniverse.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for UninterpretedInt", new BinaryExpression(intUniv.getVariable(), BinaryExpression.Op.EQ, new UnaryExpression(UnaryExpression.Op.UNIVSET, setOfUninterpretedIntTuple))));
+        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", new BinaryExpression(this.atomNone.getVariable(), BinaryExpression.Op.EQ, UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", new BinaryExpression(this.atomUniverse.getVariable(), BinaryExpression.Op.EQ, UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("Universe definition for UninterpretedInt", new BinaryExpression(intUniv.getVariable(), BinaryExpression.Op.EQ, UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function
         VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, null);
         VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, null);
         Expression XEqualsY = new BinaryExpression(X.getVariable(), BinaryExpression.Op.EQ, Y.getVariable());
-        Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, XEqualsY);
+        Expression notXEqualsY = UnaryExpression.Op.NOT.make(XEqualsY);
 
         Expression XValue = new FunctionCallExpression(uninterpretedIntValue, X.getVariable());
         Expression YValue = new FunctionCallExpression(uninterpretedIntValue, Y.getVariable());
 
         Expression XValueEqualsYValue = new BinaryExpression(XValue, BinaryExpression.Op.EQ, YValue);
-        Expression notXValueEqualsYValue = new UnaryExpression(UnaryExpression.Op.NOT, XValueEqualsYValue);
+        Expression notXValueEqualsYValue = UnaryExpression.Op.NOT.make(XValueEqualsYValue);
         Expression implication = new BinaryExpression(notXEqualsY, BinaryExpression.Op.IMPLIES, notXValueEqualsYValue);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implication, X, Y);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
 
         smtProgram.addAssertion(new Assertion(uninterpretedIntValueName + " is injective", forAll));
 
@@ -345,7 +345,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         membership = new BinaryExpression(membership, BinaryExpression.Op.AND, setCompBodyExpr);
         Expression setMembership = new BinaryExpression(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), BinaryExpression.Op.MEMBER, setBdVar.getVariable());
         membership = new BinaryExpression(membership, BinaryExpression.Op.EQ, setMembership);
-        Expression forallExpr = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(inputBdVars.keySet()), membership);
+        Expression forallExpr = QuantifiedExpression.Op.FORALL.make(membership, new ArrayList<>(inputBdVars.keySet()));
 
         this.setCompFuncNameToBdVarExprMap.put(funcName, setBdVar);
         this.setCompFuncNameToDefMap.put(funcName, forallExpr); 
@@ -412,7 +412,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private void translateAssertion(String assertionName, Expr assertionExpr)
     {
         Expression expression = this.exprTranslator.translateExpr(assertionExpr);
-        this.smtProgram.addAssertion(new Assertion(assertionName, new UnaryExpression(UnaryExpression.Op.NOT, expression)));
+        this.smtProgram.addAssertion(new Assertion(assertionName, UnaryExpression.Op.NOT.make(expression)));
     }
 
 
@@ -831,13 +831,13 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                         VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null);
                         declarations.add(firstAtom);
                         Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
-                        Expression set = new UnaryExpression(UnaryExpression.Op.SINGLETON, firstTuple);
+                        Expression set = UnaryExpression.Op.SINGLETON.make(firstTuple);
                         for (int i = 1; i < scope; i++)
                         {
                             VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null);
                             declarations.add(declaration);
                             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
-                            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple);
+                            Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
                             set = new BinaryExpression(singleton, BinaryExpression.Op.UNION, set);
                         }
 
@@ -850,7 +850,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                             Expression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
                             constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND, distinct);
                         }
-                        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, declarations, constraint);
+                        Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
                         expression = new BinaryExpression(expression, BinaryExpression.Op.AND, exists);
                     }
                 }

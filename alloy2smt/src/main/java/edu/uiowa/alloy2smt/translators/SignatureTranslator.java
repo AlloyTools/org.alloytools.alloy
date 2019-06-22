@@ -396,7 +396,7 @@ public class SignatureTranslator
 
             Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
 
-            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), new QuantifiedExpression(QuantifiedExpression.Op.FORALL, new ArrayList<>(boundVariables.keySet()), new BinaryExpression(member, BinaryExpression.Op.IMPLIES, bodyExpr))));
+            translator.smtProgram.addAssertion(new Assertion("Fact for sig: " + sigFact.getKey(), QuantifiedExpression.Op.FORALL.make(new BinaryExpression(member, BinaryExpression.Op.IMPLIES, bodyExpr), new ArrayList<>(boundVariables.keySet()))));
         }
     }
 
@@ -492,18 +492,18 @@ public class SignatureTranslator
 
         Expression xEqualsY = new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
 
-        Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, xEqualsY);
+        Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
 
         Expression mappingXEqualsMappingY = new BinaryExpression(
                 new FunctionCallExpression(mapping, x.getVariable()),
                 BinaryExpression.Op.EQ,
                 new FunctionCallExpression(mapping, y.getVariable()));
 
-        Expression not = new UnaryExpression(UnaryExpression.Op.NOT, mappingXEqualsMappingY);
+        Expression not = UnaryExpression.Op.NOT.make(mappingXEqualsMappingY);
 
         Expression implies = new BinaryExpression(notXEqualsY, BinaryExpression.Op.IMPLIES, not);
 
-        QuantifiedExpression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x, y);
+        QuantifiedExpression forAll = QuantifiedExpression.Op.FORALL.make(implies, x, y);
 
         translator.smtProgram.addAssertion(new Assertion(mappingName + " is injective", forAll));
 
@@ -516,7 +516,7 @@ public class SignatureTranslator
         ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", translator.atomSort);
         FunctionDeclaration first = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
 
-        Expression firstSet = new UnaryExpression(UnaryExpression.Op.SINGLETON,
+        Expression firstSet = UnaryExpression.Op.SINGLETON.make(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable()));
 
         translator.smtProgram.addConstantDeclaration(firstAtom);
@@ -541,7 +541,7 @@ public class SignatureTranslator
                 BinaryExpression.Op.GTE,
                 new FunctionCallExpression(mapping, firstAtom.getVariable()));
         Expression implies = new BinaryExpression(member, BinaryExpression.Op.IMPLIES, gte);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x);
         translator.smtProgram.addAssertion(new Assertion(
                 "each element is greater than or equal to the first element", forAll));
 
@@ -554,7 +554,7 @@ public class SignatureTranslator
         ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", translator.atomSort);
         FunctionDeclaration last = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
 
-        Expression lastSet = new UnaryExpression(UnaryExpression.Op.SINGLETON,
+        Expression lastSet = UnaryExpression.Op.SINGLETON.make(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getVariable()));
 
         translator.smtProgram.addConstantDeclaration(lastAtom);
@@ -583,7 +583,7 @@ public class SignatureTranslator
                 BinaryExpression.Op.LTE,
                 new FunctionCallExpression(mapping, lastAtom.getVariable()));
         Expression implies = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, lte);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x);
         translator.smtProgram.addAssertion(new Assertion(
                 "each element is less than or equal to the last element", forAll));
 
@@ -592,7 +592,7 @@ public class SignatureTranslator
 
     private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, VariableDeclaration set, FunctionDeclaration declaration)
     {
-        Expression tClosure = new UnaryExpression(UnaryExpression.Op.TCLOSURE, declaration.getVariable());
+        Expression tClosure = UnaryExpression.Op.TCLOSURE.make(declaration.getVariable());
 
         Expression join = new BinaryExpression(set.getVariable(), BinaryExpression.Op.JOIN, tClosure);
 
@@ -604,7 +604,7 @@ public class SignatureTranslator
 
     private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, FunctionDeclaration ord, String suffix)
     {
-        UnaryExpression tClosure = new UnaryExpression(UnaryExpression.Op.TCLOSURE, ord.getVariable());
+        UnaryExpression tClosure = UnaryExpression.Op.TCLOSURE.make(ord.getVariable());
         BinaryExpression join = new BinaryExpression(set1.getVariable(), BinaryExpression.Op.JOIN, tClosure);
         String name = prefix + suffix;
         FunctionDefinition definition = new FunctionDefinition(name, translator.setOfUnaryAtomSort, join, set1);
@@ -643,7 +643,7 @@ public class SignatureTranslator
                 new FunctionCallExpression(intMapping,
                         new FunctionCallExpression(mapping, x.getVariable())));
 
-        Expression notXEqualsLast = new UnaryExpression(UnaryExpression.Op.NOT,
+        Expression notXEqualsLast = UnaryExpression.Op.NOT.make(
                 new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, lastAtom.getVariable()));
         Expression nextIsMember = new BinaryExpression(
                 TranslatorUtils.getTuple(new FunctionCallExpression(mapping, x.getVariable())),
@@ -655,7 +655,7 @@ public class SignatureTranslator
 
         Expression xMemberImplies = new BinaryExpression(xMember, BinaryExpression.Op.IMPLIES, xMemberconsequent);
 
-        Expression forAllX = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, xMemberImplies, x);
+        Expression forAllX = QuantifiedExpression.Op.FORALL.make(xMemberImplies, x);
         translator.smtProgram.addAssertion(
                 new Assertion("For all x : x is a member implies (intMapping(x) < intMapping (nextMapping(x)) and " +
                         "(x != lastAtom implies nextMapping(x) is a member))", forAllX));
@@ -663,7 +663,7 @@ public class SignatureTranslator
         // the next mapping is one-to-one (injective) members
         // for all x, y (x != y and x, y members) implies (nextMapping(x) != nextMapping(y)))
         Expression xEqualsY = new BinaryExpression(x.getVariable(), BinaryExpression.Op.EQ, y.getVariable());
-        Expression notXEqualsY = new UnaryExpression(UnaryExpression.Op.NOT, xEqualsY);
+        Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
 
         Expression xyMembers = new BinaryExpression(
                 new BinaryExpression(
@@ -685,11 +685,11 @@ public class SignatureTranslator
                 BinaryExpression.Op.EQ,
                 new FunctionCallExpression(mapping, y.getVariable()));
 
-        Expression consequent = new UnaryExpression(UnaryExpression.Op.NOT, mappingXEqualsMappingY);
+        Expression consequent = UnaryExpression.Op.NOT.make(mappingXEqualsMappingY);
 
         Expression implies = new BinaryExpression(antecedent, BinaryExpression.Op.IMPLIES, consequent);
 
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, implies, x, y);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x, y);
 
         translator.smtProgram.addAssertion(new Assertion(nextMapping + " is injective for members", forAll));
 
@@ -714,7 +714,7 @@ public class SignatureTranslator
 
         BinaryExpression iff = new BinaryExpression(xyInNext, BinaryExpression.Op.EQ, and);
 
-        QuantifiedExpression forAllXY = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, iff, x, y);
+        QuantifiedExpression forAllXY = QuantifiedExpression.Op.FORALL.make(iff, x, y);
         translator.smtProgram.addAssertion(new Assertion(prefix + "next", forAllXY));
 
         Expression ordSigExpression = translator.signaturesMap.get(ordSig).getVariable();
@@ -735,10 +735,10 @@ public class SignatureTranslator
                 new Assertion(ordNext.getName() + " = " + ordSig.label + "." + nextField.label, equality));
 
         // either (next is an empty set and the ordered set is a singleton) or next is nonempty
-        Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, translator.setOfBinaryAtomSort);
+        Expression emptySet = UnaryExpression.Op.EMPTYSET.make(translator.setOfBinaryAtomSort);
         Expression nextIsEmpty = new BinaryExpression(ordNext.getVariable(), BinaryExpression.Op.EQ, emptySet);
         Expression setSingleton = new BinaryExpression(setExpression, BinaryExpression.Op.EQ, firstSet);
-        Expression nextIsNonempty = new UnaryExpression(UnaryExpression.Op.NOT, nextIsEmpty);
+        Expression nextIsNonempty = UnaryExpression.Op.NOT.make(nextIsEmpty);
         Expression or = new BinaryExpression(
                 new BinaryExpression(nextIsEmpty, BinaryExpression.Op.AND, setSingleton)
                 , BinaryExpression.Op.OR,
@@ -754,7 +754,7 @@ public class SignatureTranslator
     {
         FunctionDeclaration ordPrev = new FunctionDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
 
-        UnaryExpression transpose = new UnaryExpression(UnaryExpression.Op.TRANSPOSE, ordNext.getVariable());
+        UnaryExpression transpose = UnaryExpression.Op.TRANSPOSE.make(ordNext.getVariable());
 
         BinaryExpression equality = new BinaryExpression(ordPrev.getVariable(),
                 BinaryExpression.Op.EQ, transpose);
@@ -769,9 +769,7 @@ public class SignatureTranslator
     private FunctionDefinition getComparisonDefinition(String prefix, String suffix, FunctionDeclaration mapping, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, BinaryExpression.Op operator)
     {
         QuantifiedExpression ltExpression =
-                new QuantifiedExpression
-                        (
-                                QuantifiedExpression.Op.FORALL,
+                        QuantifiedExpression.Op.FORALL.make(
                                 new BinaryExpression
                                         (
                                                 new BinaryExpression

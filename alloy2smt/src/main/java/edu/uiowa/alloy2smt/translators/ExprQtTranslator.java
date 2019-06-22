@@ -111,7 +111,7 @@ public class ExprQtTranslator
                 VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
                 tuple.setOriginalName(argument.getKey());
                 quantifiedArguments.add(tuple);
-                Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, tuple.getVariable());
+                Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 body = body.replace(variable, singleton);
                 membership = membership.replace(argument.getValue(), singleton);
             }
@@ -154,7 +154,7 @@ public class ExprQtTranslator
 
         // add variables defined in functions, predicates or let expression to the list of quantifiers
         quantifiedArguments.addAll(quantifiedVariables);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedArguments, equivalence);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(equivalence, quantifiedArguments);
 
         Assertion assertion = new Assertion(exprQt.toString(), forAll);
         translator.smtProgram.addAssertion(assertion);
@@ -246,7 +246,7 @@ public class ExprQtTranslator
         if(expr instanceof ExprUnary)
         {
             ExprUnary.Op multiplicityOperator = ((ExprUnary) expr).op;
-            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, setSort);
+            Expression emptySet = UnaryExpression.Op.EMPTYSET.make(setSort);
             switch (multiplicityOperator)
             {
                 case NOOP: // same as ONEOF
@@ -259,7 +259,7 @@ public class ExprQtTranslator
                 {
                     // the set is not empty
                     Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
-                    Expression notEmpty = new UnaryExpression(UnaryExpression.Op.NOT, empty);
+                    Expression notEmpty = UnaryExpression.Op.NOT.make(empty);
                     return notEmpty;
                 }
                 case SETOF:
@@ -272,10 +272,10 @@ public class ExprQtTranslator
                     // either the set is empty or a singleton
                     Expression empty = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, emptySet);
                     VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getNewAtomName(), setSort.elementSort, null);
-                    Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, singleElement.getVariable());
+                    Expression singleton = UnaryExpression.Op.SINGLETON.make(singleElement.getVariable());
                     Expression isSingleton = new BinaryExpression(variable.getVariable(), BinaryExpression.Op.EQ, singleton);
                     Expression emptyOrSingleton = new BinaryExpression(empty, BinaryExpression.Op.OR, isSingleton);
-                    Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, emptyOrSingleton, singleElement);
+                    Expression exists = QuantifiedExpression.Op.EXISTS.make(emptyOrSingleton, singleElement);
                     return exists;
                 }
                 default:
@@ -304,14 +304,14 @@ public class ExprQtTranslator
         Expression memberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
         Expression and = new BinaryExpression(memberOrSubset, BinaryExpression.Op.AND, multiplicityConstraints);
         Expression implies = new BinaryExpression(and, BinaryExpression.Op.IMPLIES, body);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedVariables, implies);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, quantifiedVariables);
         return forAll;
     }
 
     private Expression translateNoQuantifier(Expression body, Map<String, Expression> ranges,
                                              Environment environment, Expression multiplicityConstraints)
     {
-        Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
+        Expression notBody = UnaryExpression.Op.NOT.make(body);
         return translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
     }
 
@@ -330,7 +330,7 @@ public class ExprQtTranslator
         Expression and = getMemberOrSubsetExpressions(ranges, environment);
         and = new BinaryExpression(and, BinaryExpression.Op.AND, multiplicityConstraints);
         and = new BinaryExpression(and, BinaryExpression.Op.AND, body);
-        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, quantifiedVariables, and);
+        Expression exists = QuantifiedExpression.Op.EXISTS.make(and, quantifiedVariables);
         return exists;
     }
 
@@ -416,16 +416,16 @@ public class ExprQtTranslator
         }
 
 
-        newBody = new UnaryExpression(UnaryExpression.Op.NOT, newBody);
-        Expression notOldEqualNew = new UnaryExpression(UnaryExpression.Op.NOT, oldEqualNew);
+        newBody = UnaryExpression.Op.NOT.make(newBody);
+        Expression notOldEqualNew = UnaryExpression.Op.NOT.make(oldEqualNew);
 
         Expression forAllAnd = new BinaryExpression(newMemberOrSubset, BinaryExpression.Op.AND, newMultiplicityConstraints);
         forAllAnd = new BinaryExpression(forAllAnd, BinaryExpression.Op.AND, notOldEqualNew);
 
         Expression implies = new BinaryExpression(forAllAnd, BinaryExpression.Op.IMPLIES, newBody);
-        Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, newVariables, implies);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies,  newVariables);
         existsAnd = new BinaryExpression(existsAnd, BinaryExpression.Op.AND, forAll);
-        Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, oldVariables, existsAnd);
+        Expression exists = QuantifiedExpression.Op.EXISTS.make(existsAnd, oldVariables);
         return exists;
     }
 
@@ -435,7 +435,7 @@ public class ExprQtTranslator
         // lone ... | f is translated into
         // (all ... | not f)  or (one ... | f)
 
-        Expression notBody = new UnaryExpression(UnaryExpression.Op.NOT, body);
+        Expression notBody = UnaryExpression.Op.NOT.make(body);
         Expression allNot = translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
         Expression one = translateOneQuantifier(body, ranges, environment, multiplicityConstraints);
         Expression or = new BinaryExpression(allNot, BinaryExpression.Op.OR, one);

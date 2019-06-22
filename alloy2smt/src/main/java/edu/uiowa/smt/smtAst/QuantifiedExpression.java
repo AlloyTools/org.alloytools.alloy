@@ -23,7 +23,7 @@ public class QuantifiedExpression extends Expression
     private final List<VariableDeclaration> variables;
     private final Op op;
     
-    public QuantifiedExpression(Op op, List<VariableDeclaration> variables, Expression expr)
+    private QuantifiedExpression(Op op, List<VariableDeclaration> variables, Expression expr)
     {
         this.variables = new ArrayList<>();
         this.expr       = expr;
@@ -44,7 +44,7 @@ public class QuantifiedExpression extends Expression
         }
     }
 
-    public QuantifiedExpression(Op op, Expression expr, VariableDeclaration... variables)
+    private QuantifiedExpression(Op op, Expression expr, VariableDeclaration... variables)
     {
         this.variables = Arrays.asList(variables);
         this.expr       = expr;
@@ -78,9 +78,19 @@ public class QuantifiedExpression extends Expression
 
         private final String opStr;
 
-        private Op(String op) 
+        Op(String op)
         {
             this.opStr = op;
+        }
+
+        public QuantifiedExpression make(Expression expr, VariableDeclaration... variables)
+        {
+            return new QuantifiedExpression(this, expr, variables);
+        }
+
+        public QuantifiedExpression make(Expression expr, List<VariableDeclaration> variables)
+        {
+            return new QuantifiedExpression(this, variables, expr);
         }
 
         @Override

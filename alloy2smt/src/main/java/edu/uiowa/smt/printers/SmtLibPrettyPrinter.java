@@ -145,7 +145,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         if(letVariables.size() > 0)
         {
             Expression let = new LetExpression(LetExpression.Op.LET, letVariables, quantifiedExpression.getExpression());
-            return new QuantifiedExpression(quantifiedExpression.getOp(), declarations, let);
+            return quantifiedExpression.getOp().make(let, declarations);
         }
         else
         {
