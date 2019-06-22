@@ -686,6 +686,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     public static SmtModel parseModel(String model)
     {
+        model = model.replaceAll("\\|", "");
         CharStream charStream = CharStreams.fromString(model);
 
         SmtLexer lexer = new SmtLexer(charStream);
