@@ -62,7 +62,7 @@ public class TranslatorUtils
 
             atoms.add(set);
 
-            set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atoms);
+            set = MultiArityExpression.Op.INSERT.make(atoms);
         }
 
         BinaryExpression equality = new BinaryExpression(declaration.getVariable(), BinaryExpression.Op.EQ, set);
@@ -86,7 +86,7 @@ public class TranslatorUtils
 
             if (n > 1)
             {
-                MultiArityExpression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
+                MultiArityExpression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
                 smtProgram.addAssertion(new Assertion(distinct));
             }
         }
@@ -160,7 +160,7 @@ public class TranslatorUtils
         }
         else
         {
-            return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
+            return MultiArityExpression.Op.DISTINCT.make(exprs);
         }
     }
 
@@ -168,7 +168,7 @@ public class TranslatorUtils
     {
         List<Expression> expressions = Arrays.stream(elements)
                                              .map(Declaration::getVariable).collect(Collectors.toList());
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
+        return MultiArityExpression.Op.MKTUPLE.make(expressions);
     }
 
     public static Expression getTuple(Expression... expressions)

@@ -144,7 +144,7 @@ public class ExprQtTranslator
                             BinaryExpression.Op.TUPSEL, v.getVariable()))
                     .collect(Collectors.toList());
 
-        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, quantifiedExpressions);
+        Expression tuple = MultiArityExpression.Op.MKTUPLE.make(quantifiedExpressions);
 
         Expression tupleMember = new BinaryExpression(tuple, BinaryExpression.Op.MEMBER, setFunctionExpression);
 

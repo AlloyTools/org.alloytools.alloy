@@ -549,7 +549,7 @@ public class ExprTranslator
         {
             atomTupleExprs.remove(0);
             atomTupleExprs.add(singleton);
-            MultiArityExpression set = new MultiArityExpression(MultiArityExpression.Op.INSERT, atomTupleExprs);            
+            MultiArityExpression set = MultiArityExpression.Op.INSERT.make(atomTupleExprs);
             return set;
         }
         return singleton;

@@ -1246,7 +1246,7 @@ public class ExprBinaryTranslator
             tupleElements.add(new BinaryExpression(index, BinaryExpression.Op.TUPSEL, y.getVariable()));
         }
 
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, tupleElements);
+        return MultiArityExpression.Op.MKTUPLE.make(tupleElements);
     }
 
     private Expression translateImplies(ExprBinary expr, Environment environment)
@@ -2034,7 +2034,7 @@ public class ExprBinaryTranslator
         }
         else
         {
-            distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, variables);
+            distinct = MultiArityExpression.Op.DISTINCT.make(variables);
         }
         
         //ToDo: review the need of existentialBdVars in AlloyTranslator

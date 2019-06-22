@@ -134,7 +134,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                     declarations.add(declaration);
                     tupleExpressions.add(declaration.getVariable());
                 }
-                Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, tupleExpressions);
+                Expression tuple = MultiArityExpression.Op.MKTUPLE.make(tupleExpressions);
                 letVariables.put(variable.getName(), tuple);
             }
             else

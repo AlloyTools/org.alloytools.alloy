@@ -202,7 +202,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
                                           .collect(Collectors.toList());
 
         MultiArityExpression.Op operator = MultiArityExpression.Op.getOp(ctx.MultiArityOperator().getText());
-        return new MultiArityExpression(operator, expressions);
+        return operator.make(expressions);
     }
 
     @Override

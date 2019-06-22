@@ -847,7 +847,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                             List<Expression> expressions = declarations
                                     .stream().map(d -> d.getVariable())
                                     .collect(Collectors.toList());
-                            Expression distinct = new MultiArityExpression(MultiArityExpression.Op.DISTINCT, expressions);
+                            Expression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
                             constraint = new BinaryExpression(constraint, BinaryExpression.Op.AND, distinct);
                         }
                         Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);

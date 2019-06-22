@@ -393,7 +393,7 @@ public class ExprUnaryTranslator
     
     public MultiArityExpression mkOneTupleExprOutofAtoms(List<Expression> exprs)
     {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
+        return MultiArityExpression.Op.MKTUPLE.make(exprs);
     }
     
     public UnaryExpression mkSingleton(Expression tuple)
@@ -408,7 +408,7 @@ public class ExprUnaryTranslator
         {
             constExprs.add(varDecl.getVariable());
         }
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExprs);
+        return MultiArityExpression.Op.MKTUPLE.make(constExprs);
     }  
     
     public Expression mkTupleSelExpr(Expression expr, int index)

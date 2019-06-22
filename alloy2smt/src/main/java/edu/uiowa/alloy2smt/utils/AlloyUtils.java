@@ -102,7 +102,7 @@ public class AlloyUtils
 
     public static Expression mkSingletonOutOfAtoms(List<Expression> atomExprs)
     {
-        MultiArityExpression tuple      = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, atomExprs);
+        MultiArityExpression tuple      = MultiArityExpression.Op.MKTUPLE.make(atomExprs);
         UnaryExpression      singleton  = UnaryExpression.Op.SINGLETON.make(tuple);
         return singleton;
     }

@@ -19,7 +19,7 @@ public class MultiArityExpression extends Expression
     private final Op op;
     private final List<Expression> exprs;
     
-    public MultiArityExpression(Op op, List<Expression> exprs)
+    private MultiArityExpression(Op op, List<Expression> exprs)
     {
         this.op     = op;
         this.exprs  = exprs;
@@ -116,12 +116,17 @@ public class MultiArityExpression extends Expression
         MKTUPLE ("mkTuple"),
         INSERT ("insert"),
         DISTINCT ("distinct");
-        //ToDo: add other operators like and, or, ...
+
         private final String opStr;
 
         Op(String op)
         {
             this.opStr = op;
+        }
+
+        public MultiArityExpression make(List<Expression> exprs)
+        {
+            return new MultiArityExpression(this, exprs);
         }
 
        public static Op getOp(String operator)
