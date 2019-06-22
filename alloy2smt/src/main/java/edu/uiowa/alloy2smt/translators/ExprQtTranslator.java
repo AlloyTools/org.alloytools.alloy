@@ -109,7 +109,6 @@ public class ExprQtTranslator
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
                 VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
-                tuple.setOriginalName(argument.getKey());
                 quantifiedArguments.add(tuple);
                 Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 body = body.replace(variable, singleton);

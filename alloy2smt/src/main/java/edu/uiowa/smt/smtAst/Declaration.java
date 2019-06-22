@@ -10,8 +10,7 @@ package edu.uiowa.smt.smtAst;
 
 abstract public class Declaration extends SmtAst
 {
-    private final String name; // sanitized name for cvc4
-    private String originalName; // the original name of the declaration
+    private final String name;
     private final Sort sort;
 
     protected Variable variable;
@@ -21,24 +20,12 @@ abstract public class Declaration extends SmtAst
         this.name = name;
         this.sort = sort;
         this.variable = new Variable(this);
-        this.originalName = name; // by default, name and original name are the same
     }
 
     public String getName()
     {
         return this.name;
     }
-
-    public void setOriginalName(String originalName)
-    {
-        this.originalName = originalName;
-    }
-
-    public String getOriginalName()
-    {
-        return originalName;
-    }
-
 
     public Sort getSort()
     {

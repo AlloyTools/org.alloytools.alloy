@@ -119,7 +119,7 @@ public class AlloyUtils
         List<Expression> expressions = new ArrayList<>();
         for (VariableDeclaration declaration: quantifiedArguments)
         {
-            if(declaration.getSort().equals(argumentsMap.get(declaration.getOriginalName()).getSort()))
+            if(declaration.getSort().equals(argumentsMap.get(declaration.getName()).getSort()))
             {
                 expressions.add(declaration.getVariable());
             }
