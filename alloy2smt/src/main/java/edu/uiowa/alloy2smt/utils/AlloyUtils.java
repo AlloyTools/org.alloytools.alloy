@@ -21,6 +21,14 @@ public class AlloyUtils
         return task.run(translation, includeScope);
     }
 
+    public static List<CommandResult> runAlloyFileTimeout(int timeout, String fileName, boolean includeScope) throws Exception
+    {
+        Translation translation = Utils.translateFromFile(fileName);
+        Cvc4Task task = new Cvc4Task(timeout);
+        return task.run(translation, includeScope);
+    }
+
+
     public static List<CommandResult> runAlloyFile(String fileName, boolean includeScope) throws Exception
     {
         Translation translation = Utils.translateFromFile(fileName);
@@ -28,11 +36,18 @@ public class AlloyUtils
         return task.run(translation, includeScope);
     }
 
-    public static List<CommandResult> runAlloyFile(String fileName, boolean includeScope, int timeout) throws Exception
+    public static CommandResult runAlloyFile(String fileName, boolean includeScope, int commandIndex) throws Exception
+    {
+        Translation translation = Utils.translateFromFile(fileName);
+        Cvc4Task task = new Cvc4Task();
+        return task.run(translation, includeScope, commandIndex);
+    }
+
+    public static CommandResult runAlloyFileTimeout(int timeout, String fileName, boolean includeScope, int commandIndex) throws Exception
     {
         Translation translation = Utils.translateFromFile(fileName);
         Cvc4Task task = new Cvc4Task(timeout);
-        return task.run(translation, includeScope);
+        return task.run(translation, includeScope, commandIndex);
     }
 
     public static FunctionDefinition getFunctionDefinition(CommandResult commandResult, String name)

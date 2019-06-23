@@ -201,7 +201,7 @@ public class SampleModelTests
     @Test
     public void file_system() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/systems/file_system.als", true, 60000);
+        List<CommandResult> results = AlloyUtils.runAlloyFileTimeout(60000, "../org.alloytools.alloy.extra/extra/models/examples/systems/file_system.als", true);
 
         assertEquals("sat", results.get(0).satResult);
         assertEquals("unsat", results.get(1).satResult);

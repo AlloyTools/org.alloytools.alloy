@@ -55,6 +55,20 @@ public class Cvc4Task
         return new ArrayList<>();
     }
 
+    public CommandResult run(Translation translation, boolean includeScope, int commandIndex ) throws Exception
+    {
+        String smtScript = translation.getSmtScript();
+        cvc4Process = Cvc4Process.start();
+
+        cvc4Process.sendCommand(smtScript);
+
+        setSolverOptions(cvc4Process);
+
+        CommandResult commandResult = solveCommand(commandIndex, includeScope, translation);
+
+        return commandResult;
+    }
+
     public String setSolverOptions(Cvc4Process cvc4Process) throws IOException
     {
         Map<String, String> options = new HashMap<>();

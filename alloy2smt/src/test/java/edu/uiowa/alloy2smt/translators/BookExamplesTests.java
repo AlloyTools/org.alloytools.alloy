@@ -60,18 +60,52 @@ public class BookExamplesTests
         assertEquals("sat", results.get(0).satResult);
     }
 
+
     @Test
-    public void addressBook1h() throws Exception
+    public void addressBook1h0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true);
-        assertEquals("sat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("unsat", results.get(3).satResult);
-        assertEquals("unsat", results.get(4).satResult);
-        assertEquals("unsat", results.get(5).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true, 0);
+        assertEquals("sat", result.satResult);
     }
 
+    @Test
+    public void addressBook1h1() throws Exception
+    {
+        CommandResult result= AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true, 1);
+
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void addressBook1h2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true,2);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void addressBook1h3() throws Exception
+    {
+        CommandResult results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true, 3);
+
+        assertEquals("unsat", results.satResult);
+    }
+
+    @Test
+    public void addressBook1h4() throws Exception
+    {
+        CommandResult results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true, 4);
+
+        assertEquals("unsat", results.satResult);
+    }
+
+    @Test
+    public void addressBook1h5() throws Exception
+    {
+        CommandResult results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook1h.als", true, 5);
+
+        assertEquals("unsat", results.satResult);
+    }
 
     @Test
     public void addressBook2a() throws Exception
@@ -102,15 +136,33 @@ public class BookExamplesTests
     }
 
     @Test
-    public void addressBook2e() throws Exception
+    public void addressBook2e0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("sat", results.get(2).satResult);
-        assertEquals("sat", results.get(3).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
+    @Test
+    public void addressBook2e1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void addressBook2e2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als", true, 2);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void addressBook2e3() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook2e.als", true, 3);
+        assertEquals("sat", result.satResult);
+    }
 
     @Test
     public void addressBook3a() throws Exception
@@ -120,69 +172,174 @@ public class BookExamplesTests
     }
 
     @Test
-    public void addressBook3b() throws Exception
+    public void addressBook3b0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("sat", results.get(3).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void addressBook3c() throws Exception
+    public void addressBook3b1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("sat", results.get(3).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void addressBook3b2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als", true, 2);
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void addressBook3b3() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3b.als", true, 3);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
-    public void addressBook3d() throws Exception
+    public void addressBook3c0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("unsat", results.get(3).satResult);
-        assertEquals("unsat", results.get(4).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void filesystem() throws Exception
+    public void addressBook3c1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/filesystem.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als", true, 1);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void grandpa1() throws Exception
+    public void addressBook3c2() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa1.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als", true, 2);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void grandpa2() throws Exception
+    public void addressBook3c3() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa2.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3c.als", true, 3);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
-    public void grandpa3() throws Exception
+    public void addressBook3d0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa3.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void addressBook3d1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void addressBook3d2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als", true, 2);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void addressBook3d3() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als", true, 3);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void addressBook3d4() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter2/addressBook3d.als", true, 4);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void filesystem0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/filesystem.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void filesystem1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/filesystem.als", true, 1);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void filesystem2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/filesystem.als", true, 2);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void grandpa1_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa1.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void grandpa1_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa1.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void grandpa1_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa1.als", true, 2);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void grandpa2_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa2.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void grandpa2_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa2.als", true, 1);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void grandpa3_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa3.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void grandpa3_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa3.als", true, 1);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void grandpa3_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter4/grandpa3.als", true, 2);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -193,11 +350,17 @@ public class BookExamplesTests
     }
 
     @Test
-    public void addressBook() throws Exception
+    public void addressBook_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/addressBook.als", true);
-        assertEquals("sat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/addressBook.als", true, 0);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void addressBook_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter5/addressBook.als", true, 1);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
@@ -222,12 +385,19 @@ public class BookExamplesTests
     }
 
     @Test
-    public void abstractMemory() throws Exception
+    public void abstractMemory_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/abstractMemory.als", true);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/abstractMemory.als", true, 0);
 
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void abstractMemory_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/abstractMemory.als", true, 1);
+
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -238,22 +408,53 @@ public class BookExamplesTests
     }
 
     @Test
-    public void checkCache() throws Exception
+    public void checkCache_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkCache.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("unsat", results.get(3).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkCache.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void checkFixedSize() throws Exception
+    public void checkCache_1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkFixedSize.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkCache.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void checkCache_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkCache.als", true, 2);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void checkCache_3() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkCache.als", true, 3);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void checkFixedSize_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkFixedSize.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void checkFixedSize_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkFixedSize.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void checkFixedSize_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/checkFixedSize.als", true, 2);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -276,14 +477,30 @@ public class BookExamplesTests
         List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel1.als", true);
         assertEquals("sat", results.get(0).satResult);
     }
+
     @Test
-    public void hotel2() throws Exception
+    public void hotel2_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel2.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel2.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
+
+
+    @Test
+    public void hotel2_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel2.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void hotel2_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/hotel2.als", true, 2);
+        assertEquals("unsat", result.satResult);
+    }
+
     @Test
     public void hotel3() throws Exception
     {
@@ -301,34 +518,93 @@ public class BookExamplesTests
     }
 
     @Test
-    public void mediaAssets() throws Exception
+    public void mediaAssets_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
-        assertEquals("sat", results.get(2).satResult);
-        assertEquals("unsat", results.get(3).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void ringElection1() throws Exception
+    public void mediaAssets_1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection1.als", true);
-        assertEquals("sat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("sat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als", true, 1);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
-    public void ringElection2() throws Exception
+    public void mediaAssets_2() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als", true);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als", true, 2);
+        assertEquals("sat", result.satResult);
+    }
 
-        assertEquals("sat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
-        assertEquals("sat", results.get(3).satResult);
-        assertEquals("unsat", results.get(4).satResult);
+    @Test
+    public void mediaAssets_3() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/mediaAssets.als", true, 3);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void ringElection1_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection1.als", true, 0);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void ringElection1_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection1.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void ringElection1_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection1.als", true, 2);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void ringElection_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als", true, 0);
+
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void ringElection_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als", true, 1);
+
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void ringElection_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als", true, 2);
+
+        assertEquals("unsat", result.satResult);
+    }
+
+
+    @Test
+    public void ringElection_3() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als", true, 3);
+
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void ringElection_4() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/ringElection2.als", true, 4);
+
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -381,11 +657,17 @@ public class BookExamplesTests
     }
 
     @Test
-    public void properties() throws Exception
+    public void properties_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/properties.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/properties.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void properties_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixA/properties.als", true, 1);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -431,19 +713,37 @@ public class BookExamplesTests
     }
 
     @Test
-    public void p303_hotel() throws Exception
+    public void p303_hotel_0() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p303-hotel.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("sat", results.get(1).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p303-hotel.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
-    public void p306_hotel() throws Exception
+    public void p303_hotel_1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p306-hotel.als", true);
-        assertEquals("unsat", results.get(0).satResult);
-        assertEquals("unsat", results.get(1).satResult);
-        assertEquals("unsat", results.get(2).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p303-hotel.als", true, 1);
+        assertEquals("sat", result.satResult);
+    }
+
+    @Test
+    public void p306_hotel_0() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p306-hotel.als", true, 0);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void p306_hotel_1() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p306-hotel.als", true, 1);
+        assertEquals("unsat", result.satResult);
+    }
+
+    @Test
+    public void p306_hotel_2() throws Exception
+    {
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/appendixE/p306-hotel.als", true, 2);
+        assertEquals("unsat", result.satResult);
     }
 }
