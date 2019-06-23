@@ -789,7 +789,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     if (optional.isPresent())
                     {
                         CommandScope commandScope = optional.get();
-                        if(commandScope.isExact)
+                        if(commandScope.isExact || alloyModel.getExactSigs().contains(signature))
                         {
                             op = BinaryExpression.Op.EQ;
                         }
@@ -801,7 +801,15 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     }
                     else
                     {
-                        op = BinaryExpression.Op.SUBSET;
+                        if(alloyModel.getExactSigs().contains(signature))
+                        {
+                            op = BinaryExpression.Op.EQ;
+                        }
+                        else
+                        {
+                            op = BinaryExpression.Op.SUBSET;
+                        }
+
                         if(signature.isTopLevel())
                         {
                             if(signature.isAbstract == null)
