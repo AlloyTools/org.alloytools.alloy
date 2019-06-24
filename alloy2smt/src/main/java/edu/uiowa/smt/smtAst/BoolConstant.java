@@ -16,8 +16,11 @@ import java.util.Map;
 public class BoolConstant extends Constant
 {
     private final boolean value;
+
+    public static final BoolConstant True = new BoolConstant(true);
+    public static final BoolConstant False = new BoolConstant(false);
     
-    public BoolConstant(boolean value)
+    private BoolConstant(boolean value)
     {
         this.value = value;
     }

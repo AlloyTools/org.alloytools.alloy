@@ -383,7 +383,14 @@ public class BinaryExpression extends Expression
         }
         Expression leftValue = functions.get(variableName).getExpression();
         boolean isEqual = leftValue.equals(right);
-        return new BoolConstant(isEqual);
+        if(isEqual)
+        {
+            return BoolConstant.True;
+        }
+        else
+        {
+            return BoolConstant.False;
+        }
     }
 
     @Override

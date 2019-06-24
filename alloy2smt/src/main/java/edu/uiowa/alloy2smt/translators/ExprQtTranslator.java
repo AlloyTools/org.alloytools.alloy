@@ -32,11 +32,11 @@ public class ExprQtTranslator
 
         // this variable maintains the multiplicity constraints for declared variables
         // x: [one, lone, some, set] e
-        Expression multiplicityConstraints = new BoolConstant(true);
+        Expression multiplicityConstraints = BoolConstant.True;
         multiplicityConstraints = declareQuantifiedVariables(exprQt, newEnvironment, ranges, multiplicityConstraints);
 
         // this variable maintains the disjoint constraints for declared variables
-        Expression disjointConstraints = new BoolConstant(true);
+        Expression disjointConstraints = BoolConstant.True;
         disjointConstraints = getDisjointConstraints(exprQt,  newEnvironment, disjointConstraints);
         
         Expression quantifiersConstraints = BinaryExpression.Op.AND.make(multiplicityConstraints, disjointConstraints);
@@ -299,7 +299,7 @@ public class ExprQtTranslator
                 case ONEOF:
                 {
                     // variable.getSort() is a tuple sort, so there is no constraint
-                    return new BoolConstant(true);
+                    return BoolConstant.True;
                 }
                 case SOMEOF:
                 {
@@ -311,7 +311,7 @@ public class ExprQtTranslator
                 case SETOF:
                 {
                     // variable.getSort() is a set, so there is no constraint
-                    return new BoolConstant(true);
+                    return BoolConstant.True;
                 }
                 case LONEOF:
                 {
@@ -330,7 +330,7 @@ public class ExprQtTranslator
         }
         if(expr instanceof ExprBinary)
         {
-            return new BoolConstant(true);
+            return BoolConstant.True;
         }
         throw new UnsupportedOperationException();
     }
@@ -382,7 +382,7 @@ public class ExprQtTranslator
 
     private Expression getMemberOrSubsetExpressions(Map<String, Expression> ranges, Environment environment)
     {
-        Expression and = new BoolConstant(true);
+        Expression and = BoolConstant.True;
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {
             VariableDeclaration variable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
@@ -426,8 +426,8 @@ public class ExprQtTranslator
         List<VariableDeclaration> newVariables = new ArrayList<>();
 
         Expression newBody = body;
-        Expression oldEqualNew = new BoolConstant(true);
-        Expression newMemberOrSubset = new BoolConstant(true);
+        Expression oldEqualNew = BoolConstant.True;
+        Expression newMemberOrSubset = BoolConstant.True;
         Expression newMultiplicityConstraints = multiplicityConstraints;
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {

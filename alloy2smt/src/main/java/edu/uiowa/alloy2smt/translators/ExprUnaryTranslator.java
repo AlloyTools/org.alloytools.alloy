@@ -306,7 +306,7 @@ public class ExprUnaryTranslator
 //            List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
 //            List<Expression> arguments = new ArrayList<>();
 //            List<Sort> argumentSorts = new ArrayList<>();
-//            Expression constraints = new BoolConstant(true);
+//            Expression constraints = BoolConstant.True;
 //            for (Map.Entry<String, Expression> argument : argumentsMap.entrySet())
 //            {
 //                Variable variable = (Variable) argument.getValue();

@@ -1950,7 +1950,7 @@ public class ExprBinaryTranslator
         if(variables.size() == 1)
         {
             // distinct operator needs at least 2 arguments
-            distinct = new BoolConstant(true);
+            distinct = BoolConstant.True;
         }
         else
         {

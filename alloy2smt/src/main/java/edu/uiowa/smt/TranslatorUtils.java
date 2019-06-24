@@ -148,7 +148,7 @@ public class TranslatorUtils
         }
         else if (exprs.isEmpty() || exprs.size() == 1)
         {
-            return new BoolConstant(true);
+            return BoolConstant.True;
         }
         else
         {

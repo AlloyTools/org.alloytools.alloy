@@ -104,9 +104,9 @@ public class ExprTranslator
             case IDEN:
                 return translator.atomIdentity.getVariable();
             case TRUE:
-                return new BoolConstant(true);
+                return BoolConstant.True;
             case FALSE:
-                return new BoolConstant(false);
+                return BoolConstant.False;
             default:
                 throw new UnsupportedOperationException(expr.op.name());
         }
@@ -351,7 +351,7 @@ public class ExprTranslator
         Expression and1 = BinaryExpression.Op.AND.make(xMember, yMember);
         Expression and2 = BinaryExpression.Op.AND.make(equal, and1);
         Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
-        Expression argumentConstraints = new BoolConstant(true);
+        Expression argumentConstraints = BoolConstant.True;
         for (VariableDeclaration declaration : quantifiedArguments)
         {
             if (declaration.getConstraint() != null)
@@ -453,12 +453,12 @@ public class ExprTranslator
         {
             if (op == BinaryExpression.Op.AND)
             {
-                return new BoolConstant(true);
+                return BoolConstant.True;
             }
 
             if (op == BinaryExpression.Op.OR)
             {
-                return new BoolConstant(false);
+                return BoolConstant.False;
             }
             throw new UnsupportedOperationException();
         }

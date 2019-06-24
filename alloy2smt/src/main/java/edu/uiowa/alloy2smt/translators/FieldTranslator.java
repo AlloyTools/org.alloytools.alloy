@@ -88,7 +88,7 @@ public class FieldTranslator
         Expression equal = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
         Expression notEqual = UnaryExpression.Op.NOT.make(equal);
         Expression antecedent = BinaryExpression.Op.AND.make(members, notEqual);
-        Expression consequent = new BoolConstant(true);
+        Expression consequent = BoolConstant.True;
 
         for (Decl decl: sig.getFieldDecls())
         {

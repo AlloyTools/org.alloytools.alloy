@@ -196,4 +196,29 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void disjointSets1() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "assert distinct {all disj x, y : set A | x != y}\n" +
+                 "check distinct";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(0, aAtoms.size());
+    }
+
+    @Test
+    void disjointSets2() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "assert distinct {all disj x, y : set A | (some x and some y) => x != y}\n" +
+                "check distinct";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }

@@ -232,11 +232,11 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         if(ctx.True() != null)
         {
-            return new BoolConstant(true);
+            return BoolConstant.True;
         }
         else
         {
-            return new BoolConstant(false);
+            return BoolConstant.False;
         }
     }
 
