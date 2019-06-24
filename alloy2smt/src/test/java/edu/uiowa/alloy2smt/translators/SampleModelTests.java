@@ -701,14 +701,14 @@ public class SampleModelTests
     @Test
     public void farmer_0() throws Exception
     {
-        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/tutorial/farmer_0.als", true, 0);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/tutorial/farmer.als", true, 0);
         assertEquals("sat", result.satResult);
     }
 
     @Test
     public void farmer_1() throws Exception
     {
-        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/tutorial/farmer_0.als", true, 1);
+        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/tutorial/farmer.als", true, 1);
         assertEquals("unsat", result.satResult);
     }
 }
