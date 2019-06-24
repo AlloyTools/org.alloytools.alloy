@@ -33,9 +33,13 @@ public class ExprQtTranslator
         // this variable maintains the multiplicity constraints for declared variables
         // x: [one, lone, some, set] e
         Expression multiplicityConstraints = new BoolConstant(true);
+        multiplicityConstraints = declareQuantifiedVariables(exprQt, newEnvironment, ranges, multiplicityConstraints);
+
         // this variable maintains the disjoint constraints for declared variables
         Expression disjointConstraints = new BoolConstant(true);
-        multiplicityConstraints = declareQuantifiedVariables(exprQt, newEnvironment, ranges, multiplicityConstraints);
+        disjointConstraints = getDisjointConstraints(exprQt,  newEnvironment, disjointConstraints);
+        
+        Expression quantifiersConstraints = BinaryExpression.Op.AND.make(multiplicityConstraints, disjointConstraints);
 
         // translate the body of the quantified expression
         Expression body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
@@ -43,15 +47,15 @@ public class ExprQtTranslator
         switch (exprQt.op)
         {
             case ALL:
-                return translateAllQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
+                return translateAllQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
             case NO:
-                return translateNoQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
+                return translateNoQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
             case SOME:
-                return translateSomeQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
+                return translateSomeQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
             case ONE:
-                    return translateOneQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
+                    return translateOneQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
             case LONE:
-                    return translateLoneQuantifier(body, ranges, newEnvironment, multiplicityConstraints);
+                    return translateLoneQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
             case COMPREHENSION:
                 return translateComprehension(exprQt, body, ranges, newEnvironment);
             default:
@@ -80,6 +84,43 @@ public class ExprQtTranslator
         return multiplicityConstraints;
     }
 
+
+    private Expression getDisjointConstraints(ExprQt exprQt, Environment newEnvironment, Expression disjointConstraints)
+    {
+        for (Decl decl : exprQt.decls)
+        {
+            // disjoint fields
+            if (decl.disjoint != null && decl.names.size() > 1)
+            {
+                for (int i = 0; i < decl.names.size() - 1; i++)
+                {
+                    Expression variableI = newEnvironment.get(decl.names.get(i).label);
+                    for (int j = i + 1; j < decl.names.size(); j++)
+                    {
+                        Expression variableJ = newEnvironment.get(decl.names.get(j).label);
+
+                        if(variableJ.getSort() instanceof UninterpretedSort)
+                        {
+                            throw new UnsupportedOperationException();
+                        }
+
+                        if(variableJ.getSort() instanceof TupleSort)
+                        {
+                            variableI = UnaryExpression.Op.SINGLETON.make(variableI);
+                            variableJ = UnaryExpression.Op.SINGLETON.make(variableJ);
+                        }
+
+                        Expression intersect = BinaryExpression.Op.INTERSECTION.make(variableI, variableJ);
+                        Expression emptySet = UnaryExpression.Op.EMPTYSET.make(variableI.getSort());
+                        Expression equal = BinaryExpression.Op.EQ.make(intersect, emptySet);
+                        disjointConstraints = BinaryExpression.Op.AND.make(disjointConstraints, equal);
+                    }
+                }
+            }
+        }
+        return disjointConstraints;
+    }
+    
     private Expression translateComprehension(ExprQt exprQt, Expression body, Map<String, Expression> ranges, Environment environment)
     {
         // {x: e1, y: e2, ... | f} is translated into
