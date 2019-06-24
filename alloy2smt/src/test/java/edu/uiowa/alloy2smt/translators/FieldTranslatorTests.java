@@ -151,6 +151,20 @@ class FieldTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void weird() throws Exception
+    {
+        String alloy =
+                "sig A {\n" +
+                "r: set A,\n" +
+                "s: r->some A\n" +
+                "}\n" +
+                "fact f {#r = 1 and #s = 0}\n";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
+
 }
 
 
