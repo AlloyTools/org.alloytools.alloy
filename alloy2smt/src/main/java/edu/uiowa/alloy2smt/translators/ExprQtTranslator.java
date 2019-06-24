@@ -33,21 +33,9 @@ public class ExprQtTranslator
         // this variable maintains the multiplicity constraints for declared variables
         // x: [one, lone, some, set] e
         Expression multiplicityConstraints = new BoolConstant(true);
-        for (Decl decl : exprQt.decls)
-        {
-            Expression range = exprTranslator.translateExpr(decl.expr, newEnvironment);
-            for (ExprHasName name : decl.names)
-            {
-                ranges.put(name.label, range);
-                String sanitizedName = TranslatorUtils.sanitizeName(name.label);
-                SetSort setSort = (SetSort) range.getSort();
-                VariableDeclaration variable;
-                variable = getVariableDeclaration(decl.expr, sanitizedName, setSort, range);
-                Expression constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
-                multiplicityConstraints = BinaryExpression.Op.AND.make(multiplicityConstraints, constraint);
-                newEnvironment.put(name.label, variable.getVariable());
-            }
-        }
+        // this variable maintains the disjoint constraints for declared variables
+        Expression disjointConstraints = new BoolConstant(true);
+        multiplicityConstraints = declareQuantifiedVariables(exprQt, newEnvironment, ranges, multiplicityConstraints);
 
         // translate the body of the quantified expression
         Expression body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
@@ -70,6 +58,26 @@ public class ExprQtTranslator
                 throw new UnsupportedOperationException();
         }
 //        throw new UnsupportedOperationException();
+    }
+
+    private Expression declareQuantifiedVariables(ExprQt exprQt, Environment newEnvironment, Map<String, Expression> ranges, Expression multiplicityConstraints)
+    {
+        for (Decl decl : exprQt.decls)
+        {
+            Expression range = exprTranslator.translateExpr(decl.expr, newEnvironment);
+            for (ExprHasName name : decl.names)
+            {
+                ranges.put(name.label, range);
+                String label = name.label;
+                SetSort setSort = (SetSort) range.getSort();
+                VariableDeclaration variable;
+                variable = getVariableDeclaration(decl.expr, label, setSort, range);
+                Expression constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
+                multiplicityConstraints = BinaryExpression.Op.AND.make(multiplicityConstraints, constraint);
+                newEnvironment.put(name.label, variable.getVariable());
+            }
+        }
+        return multiplicityConstraints;
     }
 
     private Expression translateComprehension(ExprQt exprQt, Expression body, Map<String, Expression> ranges, Environment environment)

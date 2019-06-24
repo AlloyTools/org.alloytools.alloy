@@ -185,4 +185,15 @@ public class ExprQtTranslatorTests
         assertEquals(2, a0Atoms.size());
     }
 
+
+    @Test
+    void disjointSingletons() throws Exception
+    {
+        String alloy =
+            "sig A {}\n" +
+            "assert distinct {all disj x, y : A | x != y}\n" +
+            "check distinct";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }

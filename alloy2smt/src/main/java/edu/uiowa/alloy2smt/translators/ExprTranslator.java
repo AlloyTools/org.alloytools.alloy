@@ -9,8 +9,6 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
-import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
@@ -19,7 +17,6 @@ import edu.uiowa.smt.smtAst.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class ExprTranslator
 {
@@ -33,10 +30,10 @@ public class ExprTranslator
 
     public ExprTranslator(Alloy2SmtTranslator translator)
     {
-        this.translator             = translator;
-        this.exprUnaryTranslator    = new ExprUnaryTranslator(this);
-        this.exprBinaryTranslator   = new ExprBinaryTranslator(this);
-        this.exprQtTranslator       = new ExprQtTranslator(this);
+        this.translator = translator;
+        this.exprUnaryTranslator = new ExprUnaryTranslator(this);
+        this.exprBinaryTranslator = new ExprBinaryTranslator(this);
+        this.exprQtTranslator = new ExprQtTranslator(this);
     }
 
     Expression translateExpr(Expr expr)
@@ -46,46 +43,46 @@ public class ExprTranslator
 
     Expression translateExpr(Expr expr, Environment environment)
     {
-        if(expr instanceof Sig)
+        if (expr instanceof Sig)
         {
-            return exprUnaryTranslator.translateExprUnary((ExprUnary)ExprUnary.Op.NOOP.make(null, expr), environment);
+            return exprUnaryTranslator.translateExprUnary((ExprUnary) ExprUnary.Op.NOOP.make(null, expr), environment);
         }
-        if(expr instanceof ExprUnary)
+        if (expr instanceof ExprUnary)
         {
             return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, environment);
-        } 
-        else if(expr instanceof ExprBinary)
+        }
+        else if (expr instanceof ExprBinary)
         {
             return this.exprBinaryTranslator.translateExprBinary((ExprBinary) expr, environment);
         }
-        else if(expr instanceof ExprQt)
+        else if (expr instanceof ExprQt)
         {
             return exprQtTranslator.translateExprQt((ExprQt) expr, environment);
         }
-        else if(expr instanceof ExprConstant)
+        else if (expr instanceof ExprConstant)
         {
             return translateExprConstant((ExprConstant) expr, environment);
         }
-        else if(expr instanceof ExprList)
+        else if (expr instanceof ExprList)
         {
             return translateExprList((ExprList) expr, environment);
         }
-        else if(expr instanceof ExprCall)
+        else if (expr instanceof ExprCall)
         {
             return translateExprCall((ExprCall) expr, environment);
         }
-        else if(expr instanceof ExprITE)
+        else if (expr instanceof ExprITE)
         {
             return translateExprITE((ExprITE) expr, environment);
         }
-        else if(expr instanceof ExprLet)
+        else if (expr instanceof ExprLet)
         {
             return translateExprLet((ExprLet) expr, environment);
-        }  
+        }
 
         throw new UnsupportedOperationException(expr.toString());
     }
-    
+
     public Expression translateExprITE(ExprITE expr, Environment environment)
     {
         Expression condExpr = translateExpr(expr.cond, environment);
@@ -99,50 +96,59 @@ public class ExprTranslator
         switch (expr.op)
         {
             // alloy only supports integers
-            case NUMBER :
+            case NUMBER:
             {
                 Expression intConstant = IntConstant.getSingletonTuple(expr.num);
-                return translator.handleIntConstant(intConstant) ;
+                return translator.handleIntConstant(intConstant);
             }
-            case IDEN   : return translator.atomIdentity.getVariable();
-            case TRUE   : return new BoolConstant(true);
-            case FALSE  : return new BoolConstant(false);
-            default: throw new UnsupportedOperationException(expr.op.name());
+            case IDEN:
+                return translator.atomIdentity.getVariable();
+            case TRUE:
+                return new BoolConstant(true);
+            case FALSE:
+                return new BoolConstant(false);
+            default:
+                throw new UnsupportedOperationException(expr.op.name());
         }
-    }   
+    }
 
     Expression translateExprList(ExprList exprList, Environment environment)
     {
         switch (exprList.op)
         {
-            case AND        : return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, environment);
-            case OR         : return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, environment);
-            case DISJOINT   : return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, environment);
-            case TOTALORDER : throw new UnsupportedOperationException();// total order should be handled before coming here
-            default         : throw new UnsupportedOperationException();
+            case AND:
+                return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, environment);
+            case OR:
+                return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, environment);
+            case DISJOINT:
+                return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, environment);
+            case TOTALORDER:
+                throw new UnsupportedOperationException();// total order should be handled before coming here
+            default:
+                throw new UnsupportedOperationException();
         }
     }
 
     Expression translateExprListToDisjBinaryExpressions(MultiArityExpression.Op op, ExprList exprList, Environment environment)
-    {        
+    {
         List<Expression> exprs = new ArrayList<>();
-        
-        for(Expr e : exprList.args)
+
+        for (Expr e : exprList.args)
         {
             exprs.add(translateExpr(e, environment));
         }
         Expression finalExpr;
         List<Expression> finalExprs = new ArrayList<>();
-        
-        if(exprs.size() > 1)
+
+        if (exprs.size() > 1)
         {
-            for(int i = 0; i < exprs.size()-1; ++i)
+            for (int i = 0; i < exprs.size() - 1; ++i)
             {
-                Expression disjExpr = BinaryExpression.Op.EQ.make(translator.atomNone.getVariable(), BinaryExpression.Op.INTERSECTION.make(exprs.get(i), exprs.get(i+1)));
+                Expression disjExpr = BinaryExpression.Op.EQ.make(translator.atomNone.getVariable(), BinaryExpression.Op.INTERSECTION.make(exprs.get(i), exprs.get(i + 1)));
                 finalExprs.add(disjExpr);
             }
             finalExpr = finalExprs.get(0);
-            for(int i = 1; i < finalExprs.size(); ++i)
+            for (int i = 1; i < finalExprs.size(); ++i)
             {
                 finalExpr = BinaryExpression.Op.AND.make(finalExpr, finalExprs.get(i));
             }
@@ -153,64 +159,64 @@ public class ExprTranslator
         }
         return finalExpr;
     }
-    
+
     Expression translateExprLet(ExprLet exprLet, Environment environment)
     {
-        Expression              varExpr         = translateExpr(exprLet.expr, environment);
-        Map<String, Expression> varToExprMap    = new HashMap<>();
-        String                  sanitizeName    = TranslatorUtils.sanitizeName(exprLet.var.label);
-        Variable varDeclExpr     = new ConstantDeclaration(sanitizeName, varExpr.getSort()).getVariable();
-        
-        varToExprMap.put(sanitizeName, varExpr);
+        Expression varExpr = translateExpr(exprLet.expr, environment);
+        Map<String, Expression> varToExprMap = new HashMap<>();
+        String label = exprLet.var.label;
+        Variable varDeclExpr = new ConstantDeclaration(label, varExpr.getSort()).getVariable();
+
+        varToExprMap.put(label, varExpr);
         // make a new environment
         Environment newEnvironment = new Environment(environment);
         newEnvironment.put(exprLet.var.label, varDeclExpr);
-        
+
         Expression letBodyExpr = translateExpr(exprLet.sub, newEnvironment);
         return new LetExpression(varToExprMap, letBodyExpr);
-    }    
-    
+    }
+
     Expression translateExprCall(ExprCall exprCall, Environment environment)
     {
-        String              funcName = exprCall.fun.label;
-        List<Expression>    argExprs = new ArrayList<>();
-        
-        for(Expr e : exprCall.args)
+        String funcName = exprCall.fun.label;
+        List<Expression> argExprs = new ArrayList<>();
+
+        for (Expr e : exprCall.args)
         {
             argExprs.add(translateExpr(e, environment));
         }
-        
-        if(this.translator.funcNamesMap.containsKey(funcName))
+
+        if (this.translator.funcNamesMap.containsKey(funcName))
         {
             return new FunctionCallExpression(translator.getFunctionFromAlloyName(funcName), argExprs);
         }
-        else if(this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
+        else if (this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
         {
             return translateSetComprehensionFuncCallExpr(funcName, argExprs);
         }
-        else if(funcName.equals("integer/plus") || funcName.equals("integer/add"))
+        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
         }
-        else if(funcName.equals("integer/minus")|| funcName.equals("integer/sub"))
+        else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
         }
-        else if(funcName.equals("integer/mul"))
+        else if (funcName.equals("integer/mul"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
-        } 
-        else if(funcName.equals("integer/div"))
+        }
+        else if (funcName.equals("integer/div"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
         }
-        else if(funcName.equals("integer/rem"))
+        else if (funcName.equals("integer/rem"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
         }
-        else if(translator.functionsMap.containsKey(TranslatorUtils.sanitizeName(funcName)))
+        else if (translator.functionsMap.containsKey(funcName))
         {
-            FunctionDeclaration function = translator.getFunction(TranslatorUtils.sanitizeName(funcName));
+            FunctionDeclaration function = translator.getFunction(funcName);
             return new FunctionCallExpression(function, argExprs);
         }
         else
@@ -219,24 +225,24 @@ public class ExprTranslator
             return new FunctionCallExpression(function, argExprs);
         }
     }
-    
+
     public Expression translateSetComprehensionFuncCallExpr(String funcName, List<Expression> argExprs)
     {
         Map<String, Expression> letVars = new HashMap<>();
         List<String> inputs = translator.setComprehensionFuncNameToInputsMap.get(funcName);
         Expression setCompDef = translator.setCompFuncNameToDefMap.get(funcName);
         VariableDeclaration setBdVar = translator.setCompFuncNameToBdVarExprMap.get(funcName);
-        
-        for(int i = 0; i < argExprs.size(); ++i)
+
+        for (int i = 0; i < argExprs.size(); ++i)
         {
             letVars.put(inputs.get(i), argExprs.get(i));
         }
-        
-        if(!letVars.isEmpty())
+
+        if (!letVars.isEmpty())
         {
             setCompDef = new LetExpression(letVars, setCompDef);
         }
-        if(translator.auxExpr != null)
+        if (translator.auxExpr != null)
         {
             translator.auxExpr = BinaryExpression.Op.AND.make(translator.auxExpr, setCompDef);
         }
@@ -247,7 +253,7 @@ public class ExprTranslator
         translator.existentialBdVars.add(setBdVar);
         return setBdVar.getVariable();
     }
-    
+
     public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Environment environment)
     {
 
@@ -259,12 +265,12 @@ public class ExprTranslator
         // exists z :uninterpretedInt. (x, y, z) in operation
 
 
-        if(A.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        if (A.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             A = translator.handleIntConstant(A);
         }
 
-        if(B.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        if (B.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             B = translator.handleIntConstant(B);
         }
@@ -277,7 +283,7 @@ public class ExprTranslator
         List<Sort> argumentSorts = new ArrayList<>();
         List<Expression> arguments = new ArrayList<>();
         List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
-        for (Map.Entry<String, Expression> argument: argumentsMap.entrySet())
+        for (Map.Entry<String, Expression> argument : argumentsMap.entrySet())
         {
             arguments.add(argument.getValue());
             Variable variable = (Variable) argument.getValue();
@@ -285,7 +291,7 @@ public class ExprTranslator
             argumentSorts.add(sort);
 
             // handle set sorts differently to avoid second order quantification
-            if(sort instanceof SetSort)
+            if (sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
                 VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
@@ -293,8 +299,8 @@ public class ExprTranslator
                 Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 newA = newA.replace(argument.getValue(), singleton);
                 newB = newB.replace(argument.getValue(), singleton);
-                Expression constraint = ((VariableDeclaration)variable.getDeclaration()).getConstraint();
-                if(constraint != null)
+                Expression constraint = ((VariableDeclaration) variable.getDeclaration()).getConstraint();
+                if (constraint != null)
                 {
                     constraint = constraint.replace(variable, singleton);
                 }
@@ -310,11 +316,11 @@ public class ExprTranslator
             }
         }
 
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts ,AbstractTranslator.setOfUninterpretedIntTuple);
+        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, AbstractTranslator.setOfUninterpretedIntTuple);
         translator.smtProgram.addFunction(result);
 
         Expression resultExpression;
-        if(result.getInputSorts().size() > 0)
+        if (result.getInputSorts().size() > 0)
         {
             resultExpression = new FunctionCallExpression(result, arguments);
         }
@@ -346,9 +352,9 @@ public class ExprTranslator
         Expression and2 = BinaryExpression.Op.AND.make(equal, and1);
         Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
         Expression argumentConstraints = new BoolConstant(true);
-        for (VariableDeclaration declaration: quantifiedArguments)
+        for (VariableDeclaration declaration : quantifiedArguments)
         {
-            if(declaration.getConstraint() != null)
+            if (declaration.getConstraint() != null)
             {
                 argumentConstraints = BinaryExpression.Op.AND.make(argumentConstraints, declaration.getConstraint());
             }
@@ -381,7 +387,7 @@ public class ExprTranslator
 
     private Expression convertIntConstantToSet(Expression A)
     {
-        if(A instanceof IntConstant)
+        if (A instanceof IntConstant)
         {
             ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
@@ -402,17 +408,27 @@ public class ExprTranslator
 
 
         Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                x.getVariable(),  y.getVariable(), z.getVariable());
+                x.getVariable(), y.getVariable(), z.getVariable());
 
         String relationName;
 
-        switch(op)
+        switch (op)
         {
-            case PLUS: relationName = AbstractTranslator.plus; break;
-            case MINUS: relationName = AbstractTranslator.minus; break;
-            case MULTIPLY: relationName = AbstractTranslator.multiply; break;
-            case DIVIDE: relationName = AbstractTranslator.divide; break;
-            case MOD: relationName = AbstractTranslator.mod; break;
+            case PLUS:
+                relationName = AbstractTranslator.plus;
+                break;
+            case MINUS:
+                relationName = AbstractTranslator.minus;
+                break;
+            case MULTIPLY:
+                relationName = AbstractTranslator.multiply;
+                break;
+            case DIVIDE:
+                relationName = AbstractTranslator.divide;
+                break;
+            case MOD:
+                relationName = AbstractTranslator.mod;
+                break;
             default:
                 throw new UnsupportedOperationException(op.toString());
         }
@@ -433,7 +449,7 @@ public class ExprTranslator
     private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Environment environment)
     {
 
-        if(exprList.args.size() == 0 )
+        if (exprList.args.size() == 0)
         {
             if (op == BinaryExpression.Op.AND)
             {
@@ -448,21 +464,21 @@ public class ExprTranslator
         }
 
         //ToDo: review the case of nested variable scopes
-        Expression left         = translateExpr(exprList.args.get(0), environment);
+        Expression left = translateExpr(exprList.args.get(0), environment);
 
-        if(exprList.args.size() == 1)
+        if (exprList.args.size() == 1)
         {
             return left;
         }
 
-        Expression right        = translateExpr(exprList.args.get(1), environment);
+        Expression right = translateExpr(exprList.args.get(1), environment);
         BinaryExpression result = op.make(left, right);
 
 
-        for(int i = 2; i < exprList.args.size(); i++)
+        for (int i = 2; i < exprList.args.size(); i++)
         {
-            Expression expr     = translateExpr(exprList.args.get(i), environment);
-            result              = op.make(result, expr);
+            Expression expr = translateExpr(exprList.args.get(i), environment);
+            result = op.make(result, expr);
         }
 
         return result;
@@ -471,12 +487,12 @@ public class ExprTranslator
     /**
      * Auxiliary functions
      */
-        
+
     List<VariableDeclaration> getBdVars(Sort sort, int num)
     {
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        
-        for(int i = 0; i < num; i++)
+
+        for (int i = 0; i < num; i++)
         {
             bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null));
         }
@@ -487,25 +503,27 @@ public class ExprTranslator
     {
         List<Sort> elementSorts = new ArrayList<>();
         List<VariableDeclaration> bdVars = new ArrayList<>();
-        
-        for(int i = 0; i < arity; i++)
+
+        for (int i = 0; i < arity; i++)
         {
             elementSorts.add(sorts.get(i));
         }
-        for(int i = 0; i < num; i++)
+        for (int i = 0; i < num; i++)
         {
             bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts), null));
         }
         return bdVars;
-    }    
+    }
 
-    Expression mkEmptyRelationOfSort(List<Sort> sorts) 
+    Expression mkEmptyRelationOfSort(List<Sort> sorts)
     {
-        if(sorts.isEmpty())
+        if (sorts.isEmpty())
         {
-            try {
+            try
+            {
                 throw new Exception("Unexpected: sorts is empty!");
-            } catch (Exception ex) {
+            } catch (Exception ex)
+            {
                 Logger.getLogger(ExprTranslator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -515,18 +533,18 @@ public class ExprTranslator
     Expression mkUnaryRelationOutOfAtomsOrTuples(List<Expression> atomOrTupleExprs)
     {
         List<Expression> atomTupleExprs = new ArrayList<>();
-        
-        for(Expression e : atomOrTupleExprs)
+
+        for (Expression e : atomOrTupleExprs)
         {
-            if(e instanceof Variable)
+            if (e instanceof Variable)
             {
-                if(((Variable)e).getDeclaration().getSort() == translator.atomSort ||
-                        ((Variable)e).getDeclaration().getSort() == translator.uninterpretedInt)
+                if (((Variable) e).getDeclaration().getSort() == translator.atomSort ||
+                        ((Variable) e).getDeclaration().getSort() == translator.uninterpretedInt)
                 {
                     MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
-                    atomTupleExprs.add(tuple);                    
+                    atomTupleExprs.add(tuple);
                 }
-                else if(((Variable)e).getDeclaration().getSort() instanceof TupleSort)
+                else if (((Variable) e).getDeclaration().getSort() instanceof TupleSort)
                 {
                     atomTupleExprs.add(e);
                 }
@@ -540,11 +558,11 @@ public class ExprTranslator
                 atomTupleExprs.add(e);
             }
         }
-        
-        
-        UnaryExpression singleton  = UnaryExpression.Op.SINGLETON.make(atomTupleExprs.get(0));
-        
-        if(atomTupleExprs.size() > 1)
+
+
+        UnaryExpression singleton = UnaryExpression.Op.SINGLETON.make(atomTupleExprs.get(0));
+
+        if (atomTupleExprs.size() > 1)
         {
             atomTupleExprs.remove(0);
             atomTupleExprs.add(singleton);
@@ -552,5 +570,5 @@ public class ExprTranslator
             return set;
         }
         return singleton;
-    }       
+    }
 }

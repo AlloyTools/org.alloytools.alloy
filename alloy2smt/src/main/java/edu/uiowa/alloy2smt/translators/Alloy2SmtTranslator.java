@@ -311,13 +311,12 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         {
             for(ExprHasName n : f.decls.get(i).names)
             {
-                String  bdVarName       = n.label;
-                String  sanBdVarName    = TranslatorUtils.sanitizeName(n.label);
+                String  variableName       = n.label;
                 Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                VariableDeclaration bdVarDecl = new VariableDeclaration(sanBdVarName, bdVarSort, null);
+                VariableDeclaration bdVarDecl = new VariableDeclaration(variableName, bdVarSort, null);
                 
-                inputVarNames.add(sanBdVarName);
-                environment.put(bdVarName, bdVarDecl.getVariable());
+                inputVarNames.add(variableName);
+                environment.put(variableName, bdVarDecl.getVariable());
             }
         }        
 
@@ -328,8 +327,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
             for (ExprHasName name: decl.names)
             {
-                String sanitizedName = TranslatorUtils.sanitizeName(name.label);
-                VariableDeclaration bdVar = new VariableDeclaration(sanitizedName, declExprSorts.get(0), null);
+                String label = name.label;
+                VariableDeclaration bdVar = new VariableDeclaration(label, declExprSorts.get(0), null);
                 environment.put(name.label, bdVar.getVariable());
                 inputBdVars.put(bdVar, declExpr);                
             }                    
@@ -366,7 +365,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         }
 
         Sort returnSort = BoolSort.getInstance();
-        String functionName = TranslatorUtils.sanitizeName(f.label);
+        String functionName = f.label;
         List<VariableDeclaration> arguments = new ArrayList<>();
         Environment environment = new Environment();
                 
@@ -378,9 +377,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             for(ExprHasName n : f.decls.get(i).names)
             {
                 String  label = n.label;
-                String  argumentName = TranslatorUtils.sanitizeName(n.label);
                 Expression range = this.exprTranslator.translateExpr(f.decls.get(i).expr);
-                VariableDeclaration argument = new VariableDeclaration(argumentName, range.getSort(), null);
+                VariableDeclaration argument = new VariableDeclaration(label, range.getSort(), null);
                 Expression subset = BinaryExpression.Op.SUBSET.make(argument.getVariable(), range);
                 argument.setConstraint(subset);
                 arguments.add(argument);

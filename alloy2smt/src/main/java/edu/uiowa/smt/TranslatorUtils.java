@@ -23,14 +23,6 @@ public class TranslatorUtils
 
     private static int setIndex = 0;
 
-    /**
-     * Sanitize string s by replacing "\" with "_".
-     */
-    public static String sanitizeName(String s)
-    {
-        return s; // handled in SmtLibPrettyPrinter
-    }
-
     public static String sanitizeWithBars(String s)
     {
         return "|" + s + "|";

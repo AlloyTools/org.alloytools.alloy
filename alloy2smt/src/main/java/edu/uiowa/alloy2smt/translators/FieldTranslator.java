@@ -130,7 +130,7 @@ public class FieldTranslator
     void translate(Sig.Field field)
     {
 
-        String      fieldName   = TranslatorUtils.sanitizeName(field.sig.label + "/" + field.label);
+        String      fieldName   = field.sig.label + "/" + field.label;
         List<Sort>  fieldSorts  = new ArrayList<>();
 
         for (Sig sig : field.type().fold().get(0))

@@ -152,12 +152,12 @@ public class SignatureTranslator
         {
             if (sig.type().is_int())
             {
-                FunctionDeclaration functionDeclaration = declareUnaryIntFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                FunctionDeclaration functionDeclaration = declareUnaryIntFunction(sig.toString());
                 translator.signaturesMap.put(sig, functionDeclaration);
             }
             else
             {
-                FunctionDeclaration functionDeclaration = declareUnaryAtomFunction(TranslatorUtils.sanitizeName(sig.toString()));
+                FunctionDeclaration functionDeclaration = declareUnaryAtomFunction(sig.toString());
                 translator.signaturesMap.put(sig, functionDeclaration);
             }
         }
@@ -414,7 +414,7 @@ public class SignatureTranslator
         String label = ordSig.label;
         // convert ordA/Ord to ordA_
         String prefix = label.replaceFirst("/Ord", "/");
-        String mappingName = TranslatorUtils.sanitizeName(prefix + "IntMapping");
+        String mappingName = prefix + "IntMapping";
 
         FunctionDeclaration mapping = defineInjectiveMapping(mappingName, translator.atomSort, translator.intSort);
 
