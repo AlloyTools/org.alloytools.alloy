@@ -99,9 +99,9 @@ public class ExprQtTranslator
             {
                 for (int i = 0; i < decl.names.size() - 1; i++)
                 {
-                    Expression variableI = newEnvironment.get(decl.names.get(i).label);
                     for (int j = i + 1; j < decl.names.size(); j++)
                     {
+                        Expression variableI = newEnvironment.get(decl.names.get(i).label);
                         Expression variableJ = newEnvironment.get(decl.names.get(j).label);
 
                         if(variableJ.getSort() instanceof UninterpretedSort)

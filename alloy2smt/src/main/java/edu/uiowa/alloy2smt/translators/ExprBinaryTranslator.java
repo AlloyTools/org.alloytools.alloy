@@ -1888,7 +1888,7 @@ public class ExprBinaryTranslator
                         ((ExprConstant) expr.left).op == ExprConstant.Op.NUMBER)))
             )
         {
-            throw new UnsupportedOperationException("CVC4 only supports cardinality with numbers");
+            throw new UnsupportedOperationException("CVC4 only supports cardinality with constant numbers");
         }
 
 
