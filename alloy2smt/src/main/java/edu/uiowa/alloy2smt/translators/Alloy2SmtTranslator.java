@@ -863,7 +863,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             }
         }
 
-        Assertion assertion = new Assertion(command.label, expression);
+        Assertion assertion = new Assertion(command.toString(), expression);
         return assertion;
     }
 

@@ -108,6 +108,7 @@ public class Cvc4Process
     {
         outputStream.write((command + "\n").getBytes());
         smtCode.append(command + "\n");
+        System.out.println(command);
         try
         {
             outputStream.flush();
@@ -116,7 +117,7 @@ public class Cvc4Process
         {
             if(ioException.getMessage().toLowerCase().contains("pipe"))
             {
-                System.out.println(smtCode.toString());
+//                System.out.println(smtCode.toString());
                 try
                 {
                     String error = runCVC4();

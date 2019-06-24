@@ -41,36 +41,30 @@ public class SignatureTranslator
 
     private void translateSignatureHierarchies()
     {
-        for (Sig sig : translator.topLevelSigs)
+        for (Sig sig : translator.reachableSigs)
         {
-            Sig.PrimSig primSig = (Sig.PrimSig) sig;
-
-            if (primSig.isAbstract != null)
+            if(sig instanceof Sig.PrimSig)
             {
-                SafeList<Sig.PrimSig> children = primSig.children();
-                if (children.size() == 1)
-                {
-                    Expression left = translator.signaturesMap.get(sig).getVariable();
-                    Expression right = translator.signaturesMap.get(children.get(0)).getVariable();
-                    BinaryExpression equality = BinaryExpression.Op.EQ.make(left, right);
-                    translator.smtProgram.addAssertion(new Assertion(equality));
-                }
-                else if (children.size() > 1)
-                {
+                Sig.PrimSig primSig = (Sig.PrimSig) sig;
 
-                    Expression left = translator.signaturesMap.get(children.get(0)).getVariable();
-                    Expression right = translator.signaturesMap.get(children.get(1)).getVariable();
-                    BinaryExpression union = BinaryExpression.Op.UNION.make(left, right);
-
-                    for (int i = 2; i < children.size(); i++)
+                if (primSig.isAbstract != null)
+                {
+                    SafeList<Sig.PrimSig> children = primSig.children();
+                    if (children.size() > 0)
                     {
-                        Expression expression = translator.signaturesMap.get(children.get(i)).getVariable();
-                        union = BinaryExpression.Op.UNION.make(union, expression);
-                    }
+                        Expression left = translator.signaturesMap.get(sig).getVariable();
+                        Expression union = translator.signaturesMap.get(children.get(0)).getVariable();
 
-                    Expression leftExpr = translator.signaturesMap.get(sig).getVariable();
-                    BinaryExpression equality = BinaryExpression.Op.EQ.make(leftExpr, union);
-                    translator.smtProgram.addAssertion(new Assertion(equality));
+                        for (int i = 1; i < children.size(); i++)
+                        {
+                            Expression expression = translator.signaturesMap.get(children.get(i)).getVariable();
+                            union = BinaryExpression.Op.UNION.make(union, expression);
+                        }
+
+                        BinaryExpression equality = BinaryExpression.Op.EQ.make(left, union);
+                        Assertion isAbstract = new Assertion("abstract " + primSig.toString(), equality);
+                        translator.smtProgram.addAssertion(isAbstract);
+                    }
                 }
             }
         }
