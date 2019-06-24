@@ -35,12 +35,15 @@ public class ExprQtTranslator
         Expression multiplicityConstraints = BoolConstant.True;
         multiplicityConstraints = declareQuantifiedVariables(exprQt, newEnvironment, ranges, multiplicityConstraints);
 
-        // this variable maintains the disjoint constraints for declared variables
-        Expression disjointConstraints = BoolConstant.True;
-        disjointConstraints = getDisjointConstraints(exprQt,  newEnvironment, disjointConstraints);
-        
-        Expression quantifiersConstraints = BinaryExpression.Op.AND.make(multiplicityConstraints, disjointConstraints);
+        Expression quantifiersConstraints = multiplicityConstraints;
 
+        Expression disjointConstraints =  getDisjointConstraints(exprQt,  newEnvironment);
+
+        if(!disjointConstraints.equals(BoolConstant.True))
+        {
+            quantifiersConstraints = BinaryExpression.Op.AND.make(quantifiersConstraints, disjointConstraints);
+        }
+        
         // translate the body of the quantified expression
         Expression body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
 
@@ -85,8 +88,10 @@ public class ExprQtTranslator
     }
 
 
-    private Expression getDisjointConstraints(ExprQt exprQt, Environment newEnvironment, Expression disjointConstraints)
+    private Expression getDisjointConstraints(ExprQt exprQt, Environment newEnvironment)
     {
+        Expression disjointConstraints = BoolConstant.True;
+
         for (Decl decl : exprQt.decls)
         {
             // disjoint fields
@@ -120,7 +125,7 @@ public class ExprQtTranslator
         }
         return disjointConstraints;
     }
-    
+
     private Expression translateComprehension(ExprQt exprQt, Expression body, Map<String, Expression> ranges, Environment environment)
     {
         // {x: e1, y: e2, ... | f} is translated into
