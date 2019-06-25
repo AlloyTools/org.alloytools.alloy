@@ -1,0 +1,27 @@
+#! /usr/bin/env python
+# encoding: utf-8
+import sys
+
+def options(opt):
+    opt.load('compiler_cxx')
+    opt.load('java')
+
+def configure(conf):
+    conf.load('compiler_cxx')
+    conf.load('java')
+    conf.check_jni_headers()
+    if sys.platform == 'win32' and conf.env.CXX_NAME == 'gcc' :
+        conf.env.LINKFLAGS = ['-static-libgcc', '-static-libstdc++']
+    conf.env.DEFINES = ['__STDC_LIMIT_MACROS', '__STDC_FORMAT_MACROS', 'Kodkod_JNI']
+    conf.env.INCLUDES = ['.', '..', conf.path.make_node('sources/').abspath()]
+    conf.env.CXXFLAGS = ['-Wall', '-O3', '-fPIC']
+    conf.env.UTILS_SRC = 'sources/utils/*.cc'
+    conf.env.CORE_SRC = 'sources/core/Solver.cc'
+    conf.env.JNI_SRC = 'jni/*.cpp'
+
+def build(bld):
+    bld.objects( source = bld.path.ant_glob(bld.env.UTILS_SRC), target = 'utils' )
+    bld.objects( source = bld.path.ant_glob(bld.env.CORE_SRC), target = 'core', use = 'utils' )
+    bld.shlib( source = bld.path.ant_glob(bld.env.JNI_SRC), uselib = 'JAVA', use = 'core', target = 'glucose41' )
+
+   

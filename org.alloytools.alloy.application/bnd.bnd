@@ -1,0 +1,23 @@
+-includeresource: \
+	src/main/resources
+
+-buildpath: \
+	lib/apple-osx-ui.jar;version=file,\
+	org.alloytools.alloy.core;version=latest,\
+	org.alloytools.kodkod.core;version=latest
+
+-testpath: \
+	osgi.enroute.junit.wrapper, \
+	osgi.enroute.hamcrest.wrapper, \
+    org.sat4j.core, \
+    org.alloytools.kodkod.nativesat.amd64-linux, \
+    org.alloytools.kodkod.nativesat.util, \
+    org.alloytools.kodkod.nativesat.x86-linux, \
+    org.alloytools.kodkod.nativesat.x86-mac, \
+    org.alloytools.kodkod.nativesat.x86-windows
+	
+Private-Package: \
+	edu.mit.csail.sdg.alloy4graph,\
+	edu.mit.csail.sdg.alloy4viz,\
+	edu.mit.csail.sdg.alloy4whole,\
+
