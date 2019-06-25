@@ -370,6 +370,8 @@ public final class A4Solution {
             solver.options().setSolver(SATFactory.plingeling(4, null));
         } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
             solver.options().setSolver(SATFactory.Glucose);
+        } else if (opt.solver.equals(A4Options.SatSolver.Glucose41JNI)) {
+            solver.options().setSolver(SATFactory.Glucose41);
         } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
             solver.options().setSolver(SATFactory.CryptoMiniSat);
         } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {

@@ -168,6 +168,23 @@ public abstract class SATFactory {
                                                  };
 
     /**
+     * The factory that produces instances of G. Audemard and L. Simon's Glucose
+     * solver.
+     */
+    public static final SATFactory Glucose41     = new SATFactory() {
+
+                                                     @Override
+                                                     public SATSolver instance() {
+                                                         return new Glucose41();
+                                                     }
+
+                                                     @Override
+                                                     public String toString() {
+                                                         return "Glucose41";
+                                                     }
+                                                 };
+
+    /**
      * The factory that produces instances of the CryptoMiniSat solver by Mate Soos.
      */
     public static final SATFactory CryptoMiniSat = new SATFactory() {
