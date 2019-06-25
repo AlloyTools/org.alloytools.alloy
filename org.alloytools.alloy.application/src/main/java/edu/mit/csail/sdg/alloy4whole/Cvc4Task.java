@@ -189,10 +189,13 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         callbackBold("Executing " + command.label + "\n");
 
-        ErrorWarning warning = new ErrorWarning(command.pos, "The scope in " + command +
-                " is ignored by cvc4");
+        if(! Cvc4IncludeCommandScope.get())
+        {
+            ErrorWarning warning = new ErrorWarning(command.pos, "The scope in '" + command +
+                    "' is ignored by cvc4");
+            callbackWarning(warning);
+        }
 
-        callbackWarning(warning);
 
         final long startSolve   = System.currentTimeMillis();
 
