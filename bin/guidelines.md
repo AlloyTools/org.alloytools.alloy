@@ -134,8 +134,10 @@ fact {
 4 >= #A 
 }
 ```
-- Fields with arity > 3: e.g. `sig A {r: A -> A -> A }`.
-- Multiplicity in binary or higher-arity relation: e.g. `fact {s -> s in s one -> one s }`
+- univ, iden built-in signatures don not include integers. 
+- No subtyping between normal signatures and integer signatures. Set operations between normal signatures is supported. But set operations between normal signatures and integer signatures would throw typing errors. 
+- Quantifiers and comprehension expressions inside predicates and functions with non-singleton arguments. 
+
 # Examples
 
 See [examples](examples) for a list of simple examples. 

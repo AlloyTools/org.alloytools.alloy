@@ -177,5 +177,15 @@ public class ArithmeticTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
+    }0
+
+    @Test
+    public void bug () throws Exception
+    {
+        String alloy = "sig A in Int {}\n" +
+                "fact {A > 20 and #A  = 2}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertTrue(commandResults.size() == 1);
+        assertEquals("sat", commandResults.get(0).satResult);
     }
 }
