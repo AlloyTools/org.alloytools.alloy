@@ -221,4 +221,22 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void functionComprehension() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "sig A0, A1 in A {}\n" +
+                "fun complement1[x: A]: A {let x' = {y : A | not (y in x)} | x'}\n" +
+                "fun complement2[x: A]: A {A - x}\n" +
+                "fact{\n" +
+                "#A0 = 2 and #A1 = 2 and\n" +
+                "complement1[A0] = A1 and\n" +
+                "complement1[A1] = A0 and\n" +
+                "A0 = A1\n" +
+                "}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }
