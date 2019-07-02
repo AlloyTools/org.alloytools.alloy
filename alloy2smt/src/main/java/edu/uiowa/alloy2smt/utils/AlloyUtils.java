@@ -1,7 +1,7 @@
 package edu.uiowa.alloy2smt.utils;
 
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.smt.AbstractTranslator;
@@ -11,10 +11,7 @@ import edu.uiowa.smt.smtAst.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AlloyUtils
 {
@@ -180,5 +177,142 @@ public class AlloyUtils
             }
         }
         return expressions;
+    }
+
+    public static Expr substituteExpr(Expr body, ExprVar oldExpr, Expr newExpr)
+    {
+        if(body instanceof ExprVar)
+        {
+            if(body.equals(oldExpr))
+            {
+                return newExpr;
+            }
+            else
+            {
+                return body;
+            }
+        }
+
+        if(body instanceof ExprUnary)
+        {
+            ExprUnary unary = (ExprUnary) body;
+            Expr sub = substituteExpr(unary.sub, oldExpr, newExpr);
+            return unary.op.make(unary.pos, sub);
+        }
+
+        if(body instanceof ExprBinary)
+        {
+            ExprBinary binary = (ExprBinary) body;
+            Expr left = substituteExpr(binary.left, oldExpr, newExpr);
+            Expr right = substituteExpr(binary.right, oldExpr, newExpr);
+            return binary.op.make(binary.pos, binary.closingBracket, left, right);
+        }
+
+        if(body instanceof ExprQt)
+        {
+            ExprQt qt = (ExprQt) body;
+            Expr sub = qt.sub;
+            List<Decl> declList = new ArrayList<>();
+
+            for (Decl decl : qt.decls)
+            {
+                List<ExprVar> variables = new ArrayList<>();
+                for (ExprHasName name : decl.names)
+                {
+                    // return the body if the oldExpr is a quantifier
+                    if(oldExpr.label.equals(name.label))
+                    {
+                        return body;
+                    }
+
+                    // change the quantifier name if newExpr is a quantifier
+                    if(containsFreeVaraible((ExprVar) name, newExpr))
+                    {
+                        ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getNewAtomName());
+                        sub = substituteExpr(sub, (ExprVar) name, newName);
+                        variables.add(newName);
+                    }
+                    else
+                    {
+                        variables.add((ExprVar) name);
+                    }
+                }
+                Decl newDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2,
+                        variables, decl.expr);
+                declList.add(newDecl);
+            }
+
+            sub = substituteExpr(sub, oldExpr, newExpr);
+            Expr newQt = qt.op.make(qt.pos, qt.closingBracket, declList, sub);
+            return newQt;
+        }
+
+        if(body instanceof ExprList)
+        {
+            ExprList list = (ExprList) body;
+
+            List<Expr> arguments = new ArrayList<>();
+            for (Expr expr: list.args)
+            {
+                Expr newArgument = substituteExpr(expr, oldExpr, newExpr);
+                arguments.add(newArgument);
+            }
+
+            return ExprList.make(list.pos, list.closingBracket, list.op, arguments);
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
+    private static boolean containsFreeVaraible(ExprVar variable, Expr expr)
+    {
+        if(expr instanceof ExprVar)
+        {
+            return variable.label.equals(((ExprVar) expr).label);
+        }
+
+        if(expr instanceof ExprUnary)
+        {
+            return containsFreeVaraible(variable, ((ExprUnary) expr).sub);
+        }
+
+        if(expr instanceof ExprBinary)
+        {
+            boolean left = containsFreeVaraible(variable, ((ExprBinary) expr).left);
+            boolean right = containsFreeVaraible(variable, ((ExprBinary) expr).right);
+            return left || right;
+        }
+
+        if(expr instanceof ExprQt)
+        {
+            for (Decl decl : ((ExprQt) expr).decls)
+            {
+                for (ExprHasName name : decl.names)
+                {
+                    if(name.label.equals(variable.label))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return containsFreeVaraible(variable, ((ExprQt) expr).sub);
+        }
+
+        if(expr instanceof ExprList)
+        {
+            ExprList list = (ExprList) expr;
+
+            for (Expr argument: list.args)
+            {
+               if(containsFreeVaraible(variable, argument))
+               {
+                   return true;
+               }
+            }
+
+            return false;
+        }
+
+        throw new UnsupportedOperationException();
     }
 }

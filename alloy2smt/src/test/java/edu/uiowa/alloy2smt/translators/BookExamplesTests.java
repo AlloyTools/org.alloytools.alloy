@@ -2,9 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
-import org.junit.Test;
-
-import java.util.List;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

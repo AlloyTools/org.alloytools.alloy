@@ -5,7 +5,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 

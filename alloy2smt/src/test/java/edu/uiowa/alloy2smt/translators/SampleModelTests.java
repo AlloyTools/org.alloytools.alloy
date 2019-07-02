@@ -2,7 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
