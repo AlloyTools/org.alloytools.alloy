@@ -26,8 +26,9 @@ public class AlloyUtilsTests
         ExprVar x = ExprVar.make(null, "x", A.type());
         Expr intersect = ExprBinary.Op.INTERSECT.make(null, null, x, x);
         ExprVar y = ExprVar.make(null, "y", A.type());
-        Expr newIntersect = AlloyUtils.substituteExpr(intersect, x, y);
-        assertEquals("y & y", newIntersect.toString());
+        Expr newExpr = AlloyUtils.substituteExpr(intersect, x, y);
+        assertEquals("x & x", intersect.toString());
+        assertEquals("y & y", newExpr.toString());
     }
 
     @Test
@@ -38,6 +39,7 @@ public class AlloyUtilsTests
         Expr no = ExprUnary.Op.NO.make(null, x);
         ExprVar y = ExprVar.make(null, "y", A.type());
         Expr newExpr = AlloyUtils.substituteExpr(no, x, y);
+        assertEquals("no x", no.toString());
         assertEquals("no y", newExpr.toString());
     }
 
@@ -51,6 +53,7 @@ public class AlloyUtilsTests
         Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), no);
         ExprVar y = ExprVar.make(null, "y", A.type());
         Expr newExpr = AlloyUtils.substituteExpr(exprQt, x, y);
+        assertEquals("(all x | no x)", exprQt.toString());
         assertEquals("(all x | no x)", newExpr.toString());
     }
 
@@ -134,5 +137,20 @@ public class AlloyUtilsTests
         Expr newExpr = AlloyUtils.substituteExpr(let, y, z);
         assertEquals("(let z= y | z & y)", let.toString());
         assertEquals("(let _a1= z | _a1 & z)", newExpr.toString());
+    }
+
+    @Test
+    public void substitute9()
+    {
+        Sig A = new Sig.PrimSig("A", Sig.UNIV);
+        Expr none = ExprConstant.EMPTYNESS;
+        ExprVar x = ExprVar.make(null, "x", A.type());
+        ExprVar y = ExprVar.make(null, "y", A.type());
+
+        Expr equal = ExprBinary.Op.EQUALS.make(null, null, x, none);
+
+        Expr newExpr = AlloyUtils.substituteExpr(equal, x, y);
+        assertEquals("x = none", equal.toString());
+        assertEquals("y = none", newExpr.toString());
     }
 }

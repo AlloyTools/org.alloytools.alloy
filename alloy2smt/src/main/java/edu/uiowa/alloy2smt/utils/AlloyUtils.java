@@ -193,6 +193,11 @@ public class AlloyUtils
             }
         }
 
+        if(body instanceof ExprConstant)
+        {
+            return body;
+        }
+
         if(body instanceof Sig)
         {
             return body;
@@ -302,6 +307,11 @@ public class AlloyUtils
         }
 
         if(expr instanceof Sig)
+        {
+            return false;
+        }
+
+        if(expr instanceof ExprConstant)
         {
             return false;
         }
