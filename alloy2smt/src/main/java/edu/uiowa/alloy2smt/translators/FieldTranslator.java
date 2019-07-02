@@ -32,6 +32,7 @@ public class FieldTranslator
         for (Sig sig : translator.reachableSigs)
         {
             List<Sig.Field> fields = sig.getFields().makeCopy();
+
             for (Sig.Field f : fields)
             {
                 translate(f);
@@ -45,6 +46,11 @@ public class FieldTranslator
 
     private void translateDisjointFields(Sig sig, List<Sig.Field> fields)
     {
+        if(fields.size() == 0)
+        {
+            return;
+        }
+
         // translate disjoint fields
         for (Decl decl: sig.getFieldDecls())
         {
@@ -70,6 +76,11 @@ public class FieldTranslator
 
     private void translateDisjoint2FieldValues(Sig sig, List<Sig.Field> fields)
     {
+        if(fields.size() == 0)
+        {
+            return;
+        }
+
         // translate disjoint field values
 
         // sig S {f: disj e}
