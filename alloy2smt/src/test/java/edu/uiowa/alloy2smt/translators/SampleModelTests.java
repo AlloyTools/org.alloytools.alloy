@@ -5,8 +5,6 @@ import edu.uiowa.alloy2smt.utils.CommandResult;
 import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SampleModelTests
@@ -151,7 +149,7 @@ public class SampleModelTests
     @Test
     public void s_ringlead() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/algorithms/s_ringlead.als", true);
+        CommandResult result= AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/algorithms/s_ringlead.als", true, 0);
     }
 
     @Test
@@ -364,9 +362,9 @@ public class SampleModelTests
     @Test
     public void chord2() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/case_studies/chord2.als", true);
+        CommandResult result= AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/case_studies/chord2.als", true, 0);
 
-        assertEquals("unsat", results.get(0).satResult);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -509,7 +507,7 @@ public class SampleModelTests
     @Test
     public void ins() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/case_studies/ins.als", true);
+        CommandResult result= AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/case_studies/ins.als", true, 0);
     }
 
     @Test
@@ -637,9 +635,9 @@ public class SampleModelTests
     @Test
     public void views() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/systems/views.als", true);
+        CommandResult result= AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/examples/systems/views.als", true, 0);
 
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("sat", result.satResult);
     }
 
     @Test

@@ -66,8 +66,8 @@ public class CourseExamplesTests
     @Test
     public void academia1a() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-1a.als", true);
-        assertEquals("unsat", results.get(0).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/academia-1a.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -94,15 +94,15 @@ public class CourseExamplesTests
     @Test
     public void academia3() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-3.als", true);
-        assertEquals("unsat", results.get(0).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/academia-3.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
     public void academia3a() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/academia-3a.als", true);
-        assertEquals("unsat", results.get(0).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/academia-3a.als", true, 0);
+        assertEquals("unsat", result.satResult);
     }
 
     @Test
@@ -137,16 +137,16 @@ public class CourseExamplesTests
     @Test
     public void family1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/family-1.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/family-1.als", true, 0);
+        assertEquals("sat", result.satResult);
     }
 
 
     @Test
     public void family2() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/family-2.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/family-2.als", true, 0);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
@@ -341,9 +341,9 @@ public class CourseExamplesTests
     @Test
     public void family6() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/family-6.als", true);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/family-6.als", true, 0);
 
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
@@ -424,9 +424,9 @@ public class CourseExamplesTests
     @Test
     public void hotel1() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/hotel1.als", true);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/hotel1.als", true, 0);
 
-        assertEquals("sat", results.get(0).satResult);
+        assertEquals("sat", result.satResult);
     }
 
     @Test
@@ -447,7 +447,7 @@ public class CourseExamplesTests
     @Test
     public void rover() throws Exception
     {
-        List<CommandResult> results = AlloyUtils.runAlloyFile("./test/rover.als", true);
-        assertEquals("sat", results.get(0).satResult);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/rover.als", true, 0);
+        assertEquals("sat", result.satResult);
     }
 }

@@ -25,7 +25,7 @@ public class Cvc4Task
 
     public Cvc4Task()
     {
-        this.timeout = 30000;
+        this.timeout = 25000;
     }
 
     public List<CommandResult> run(Translation translation, boolean includeScope) throws Exception
