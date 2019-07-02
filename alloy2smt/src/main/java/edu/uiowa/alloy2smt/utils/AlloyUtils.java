@@ -193,6 +193,11 @@ public class AlloyUtils
             }
         }
 
+        if(body instanceof Sig)
+        {
+            return body;
+        }
+
         if(body instanceof ExprUnary)
         {
             ExprUnary unary = (ExprUnary) body;
@@ -225,7 +230,7 @@ public class AlloyUtils
                         return body;
                     }
 
-                    // change the quantifier name if newExpr is a quantifier
+                    // change the quantifier name if newExpr contains a free variable with the same name
                     if(containsFreeVaraible((ExprVar) name, newExpr))
                     {
                         ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getNewAtomName());
@@ -261,6 +266,31 @@ public class AlloyUtils
             return ExprList.make(list.pos, list.closingBracket, list.op, arguments);
         }
 
+        if(body instanceof ExprLet)
+        {
+            ExprLet let = (ExprLet) body;
+
+            Expr letBody = let.sub;
+            ExprVar newVariable = let.var;
+
+            // return the body if the oldExpr is the variable
+            if(oldExpr.label.equals(let.var.label))
+            {
+                return body;
+            }
+
+            // change the variable name if newExpr contains a free variable with the same name
+            if(containsFreeVaraible(let.var, newExpr))
+            {
+                newVariable = ExprVar.make(let.var.pos, TranslatorUtils.getNewAtomName());
+                letBody = substituteExpr(letBody, let.var , newVariable);
+            }
+
+            letBody = substituteExpr(letBody, oldExpr, newExpr);
+            Expr variableExpr = substituteExpr(let.expr, oldExpr, newExpr);
+            return ExprLet.make(let.pos,  newVariable, variableExpr, letBody);
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -269,6 +299,11 @@ public class AlloyUtils
         if(expr instanceof ExprVar)
         {
             return variable.label.equals(((ExprVar) expr).label);
+        }
+
+        if(expr instanceof Sig)
+        {
+            return false;
         }
 
         if(expr instanceof ExprUnary)
@@ -311,6 +346,18 @@ public class AlloyUtils
             }
 
             return false;
+        }
+
+        if(expr instanceof ExprLet)
+        {
+            if(((ExprLet) expr).var.label.equals(variable.label))
+            {
+                return false;
+            }
+
+            boolean  exprBoolean = containsFreeVaraible(variable, ((ExprLet) expr).expr);
+            boolean subBoolean = containsFreeVaraible(variable, ((ExprLet) expr).sub);
+            return exprBoolean || subBoolean;
         }
 
         throw new UnsupportedOperationException();
