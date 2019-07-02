@@ -464,12 +464,6 @@ public class BookExamplesTests
         assertEquals("sat", result.satResult);
     }
 
-    @Test
-    public void fixedSizeMemory_H() throws Exception
-    {
-        CommandResult result = AlloyUtils.runAlloyFile("../org.alloytools.alloy.extra/extra/models/book/chapter6/memory/fixedSizeMemory.als", true, 0);
-        assertEquals("sat", result.satResult);
-    }
 
     @Test
     public void hotel1() throws Exception
