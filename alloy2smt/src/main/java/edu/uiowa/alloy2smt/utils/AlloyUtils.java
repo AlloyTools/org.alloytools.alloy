@@ -296,6 +296,15 @@ public class AlloyUtils
             return ExprLet.make(let.pos,  newVariable, variableExpr, letBody);
         }
 
+        if(body instanceof ExprITE)
+        {
+            ExprITE ite = (ExprITE) body;
+            Expr cond = substituteExpr(ite.cond, oldExpr, newExpr);
+            Expr left = substituteExpr(ite.left, oldExpr, newExpr);
+            Expr right = substituteExpr(ite.right, oldExpr, newExpr);
+            return ExprITE.make(ite.pos, cond, left, right);
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -368,6 +377,15 @@ public class AlloyUtils
             boolean  exprBoolean = containsFreeVaraible(variable, ((ExprLet) expr).expr);
             boolean subBoolean = containsFreeVaraible(variable, ((ExprLet) expr).sub);
             return exprBoolean || subBoolean;
+        }
+
+        if(expr instanceof ExprITE)
+        {
+            ExprITE ite = (ExprITE) expr;
+            boolean cond = containsFreeVaraible(variable, ite.cond);
+            boolean left = containsFreeVaraible(variable, ite.left);
+            boolean right = containsFreeVaraible(variable, ite.right);
+            return cond || left || right;
         }
 
         throw new UnsupportedOperationException();

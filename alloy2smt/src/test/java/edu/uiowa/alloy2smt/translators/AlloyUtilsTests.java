@@ -153,4 +153,20 @@ public class AlloyUtilsTests
         assertEquals("x = none", equal.toString());
         assertEquals("y = none", newExpr.toString());
     }
+
+    @Test
+    public void substitute10()
+    {
+        Sig A = new Sig.PrimSig("A", Sig.UNIV);
+        ExprVar x = ExprVar.make(null, "x", A.type());
+        ExprVar y = ExprVar.make(null, "y", A.type());
+        ExprVar z = ExprVar.make(null, "z", A.type());
+
+        Expr xInY = ExprBinary.Op.IN.make(null, null, x, y);
+        Expr ite = ExprITE.make(null, xInY, x, y);
+
+        Expr newExpr = AlloyUtils.substituteExpr(ite, y, z);
+        assertEquals("(x in y => x else y)", ite.toString());
+        assertEquals("(x in z => x else z)", newExpr.toString());
+    }
 }
