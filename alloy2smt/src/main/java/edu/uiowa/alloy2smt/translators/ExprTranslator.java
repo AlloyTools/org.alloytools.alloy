@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
@@ -186,15 +187,15 @@ public class ExprTranslator
             argExprs.add(translateExpr(e, environment));
         }
 
-        if (this.translator.funcNamesMap.containsKey(funcName))
-        {
-            return new FunctionCallExpression(translator.getFunctionFromAlloyName(funcName), argExprs);
-        }
-        else if (this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
-        {
-            return translateSetComprehensionFuncCallExpr(funcName, argExprs);
-        }
-        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
+//        if (this.translator.funcNamesMap.containsKey(funcName))
+//        {
+//            return new FunctionCallExpression(translator.getFunctionFromAlloyName(funcName), argExprs);
+//        }
+//        else if (this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
+//        {
+//            return translateSetComprehensionFuncCallExpr(funcName, argExprs);
+//        }
+        if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
         }
@@ -214,15 +215,21 @@ public class ExprTranslator
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
         }
-        else if (translator.functionsMap.containsKey(funcName))
-        {
-            FunctionDeclaration function = translator.getFunction(funcName);
-            return new FunctionCallExpression(function, argExprs);
-        }
+//        else if (translator.functionsMap.containsKey(funcName))
+//        {
+//            FunctionDeclaration function = translator.getFunction(funcName);
+//            return new FunctionCallExpression(function, argExprs);
+//        }
         else
         {
-            FunctionDeclaration function = translator.translateFunction(translator.nameToFuncMap.get(funcName));
-            return new FunctionCallExpression(function, argExprs);
+            Expr body = exprCall.fun.getBody();
+
+            for (int i = 0; i < exprCall.args.size(); i++)
+            {
+                body = AlloyUtils.substituteExpr(body, exprCall.fun.get(i), exprCall.args.get(i));
+            }
+            Expression callExpression = translateExpr(body);
+            return callExpression;
         }
     }
 

@@ -305,6 +305,20 @@ public class AlloyUtils
             return ExprITE.make(ite.pos, cond, left, right);
         }
 
+        if(body instanceof ExprCall)
+        {
+            ExprCall call = (ExprCall) body;
+
+            List<Expr> arguments = new ArrayList<>();
+            for (Expr expr: call.args)
+            {
+                Expr newArgument = substituteExpr(expr, oldExpr, newExpr);
+                arguments.add(newArgument);
+            }
+
+            return ExprCall.make(call.pos, call.closingBracket, call.fun, arguments, 0);
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -386,6 +400,21 @@ public class AlloyUtils
             boolean left = containsFreeVaraible(variable, ite.left);
             boolean right = containsFreeVaraible(variable, ite.right);
             return cond || left || right;
+        }
+
+        if(expr instanceof ExprCall)
+        {
+            ExprCall call = (ExprCall) expr;
+
+            for (Expr argument: call.args)
+            {
+                if(containsFreeVaraible(variable, argument))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         throw new UnsupportedOperationException();
