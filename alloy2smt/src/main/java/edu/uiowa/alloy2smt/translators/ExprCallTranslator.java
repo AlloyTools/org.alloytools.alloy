@@ -75,7 +75,7 @@ public class ExprCallTranslator
             {
                 body = AlloyUtils.substituteExpr(body, exprCall.fun.get(i), exprCall.args.get(i));
             }
-            Expression callExpression = exprTranslator.translateExpr(body);
+            Expression callExpression = exprTranslator.translateExpr(body, environment);
             return callExpression;
         }
     }
