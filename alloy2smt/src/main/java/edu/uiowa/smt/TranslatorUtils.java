@@ -17,11 +17,7 @@ import java.util.stream.IntStream;
 
 public class TranslatorUtils
 {
-    private static int nameIndex = 0;
-
-    private static int atomIndex = 0;
-
-    private static int setIndex = 0;
+    private static int freshNameIndex = 0;
 
     public static String sanitizeWithBars(String s)
     {
@@ -37,7 +33,7 @@ public class TranslatorUtils
         //ToDo: handle the case when n = 0
         List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
 
-        FunctionDeclaration declaration = new FunctionDeclaration(getNewSetName(), setSort);
+        FunctionDeclaration declaration = new FunctionDeclaration(getFreshName(), setSort);
 
         translator.smtProgram.addFunction(declaration);
 
@@ -71,7 +67,7 @@ public class TranslatorUtils
         {
             for (int i = 0; i < n; i++)
             {
-                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getNewAtomName(), sort);
+                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getFreshName(), sort);
                 expressions.add(constantDeclaration.getVariable());
                 smtProgram.addConstantDeclaration(constantDeclaration);
             }
@@ -89,29 +85,15 @@ public class TranslatorUtils
         return expressions;
     }
 
-    public static String getNewName()
+    public static String getFreshName()
     {
-        nameIndex++;
-        return "_x" + nameIndex;
-    }
-
-    public static String getNewAtomName()
-    {
-        atomIndex++;
-        return "_a" + atomIndex;
-    }
-
-    public static String getNewSetName()
-    {
-        setIndex++;
-        return "_S" + setIndex;
+        freshNameIndex++;
+        return "_" + freshNameIndex + "_";
     }
 
     public static void reset()
     {
-        nameIndex = 0;
-        atomIndex = 0;
-        setIndex = 0;
+        freshNameIndex = 0;
     }
 
     public static Sort getSetSortOfAtomWithArity(int n)

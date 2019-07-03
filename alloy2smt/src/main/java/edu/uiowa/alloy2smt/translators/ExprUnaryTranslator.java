@@ -16,10 +16,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ExprUnaryTranslator
 {
@@ -208,7 +205,7 @@ public class ExprUnaryTranslator
         
         for(Sort sort : sorts)
         {
-            String name = TranslatorUtils.getNewName();
+            String name = TranslatorUtils.getFreshName();
             VariableDeclaration bdVar;
             Expression bdVarExpr;
 
@@ -240,7 +237,7 @@ public class ExprUnaryTranslator
         
         for(Sort sort : sorts)
         {
-            String name = TranslatorUtils.getNewName();
+            String name = TranslatorUtils.getFreshName();
             VariableDeclaration bdVar;
             Expression bdVarExpr;
             
@@ -337,7 +334,7 @@ public class ExprUnaryTranslator
 //                    throw new UnsupportedOperationException();
 //                }
 //            }
-//             multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, expression.getSort());
+//             multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), argumentSorts, expression.getSort());
 //
 //            translator.smtProgram.addFunction(multiplicitySet);
 //            Expression setFunctionExpression;

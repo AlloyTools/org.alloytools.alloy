@@ -177,7 +177,7 @@ public class ExprQtTranslator
                 throw new UnsupportedOperationException();
             }
         }
-        FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, returnSort);
+        FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getFreshName(), argumentSorts, returnSort);
         translator.smtProgram.addFunction(setFunction);
 
         Expression setFunctionExpression;
@@ -322,7 +322,7 @@ public class ExprQtTranslator
                 {
                     // either the set is empty or a singleton
                     Expression empty = BinaryExpression.Op.EQ.make(variable.getVariable(), emptySet);
-                    VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getNewAtomName(), setSort.elementSort, null);
+                    VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getFreshName(), setSort.elementSort, null);
                     Expression singleton = UnaryExpression.Op.SINGLETON.make(singleElement.getVariable());
                     Expression isSingleton = BinaryExpression.Op.EQ.make(variable.getVariable(), singleton);
                     Expression emptyOrSingleton = BinaryExpression.Op.OR.make(empty, isSingleton);
@@ -437,7 +437,7 @@ public class ExprQtTranslator
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {
             VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
-            VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getNewAtomName(), oldVariable.getSort(), null);
+            VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getFreshName(), oldVariable.getSort(), null);
             if(oldVariable.getConstraint() != null)
             {
                 Expression newConstraint = oldVariable.getConstraint().substitute(oldVariable.getVariable(), newVariable.getVariable());

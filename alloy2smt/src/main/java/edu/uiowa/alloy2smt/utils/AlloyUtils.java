@@ -239,7 +239,7 @@ public class AlloyUtils
                     // change the quantifier name if newExpr contains a free variable with the same name
                     if(containsFreeVaraible((ExprVar) name, newExpr))
                     {
-                        ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getNewAtomName());
+                        ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getFreshName());
                         sub = substituteExpr(sub, (ExprVar) name, newName);
                         variables.add(newName);
                     }
@@ -292,7 +292,7 @@ public class AlloyUtils
             // change the variable name if newExpr contains a free variable with the same name
             if(containsFreeVaraible(let.var, newExpr))
             {
-                newVariable = ExprVar.make(let.var.pos, TranslatorUtils.getNewAtomName());
+                newVariable = ExprVar.make(let.var.pos, TranslatorUtils.getFreshName());
                 letBody = substituteExpr(letBody, let.var , newVariable);
             }
 

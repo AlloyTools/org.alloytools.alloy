@@ -9,7 +9,6 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
@@ -307,7 +306,7 @@ public class ExprTranslator
 
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), sort, null));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), sort, null));
         }
         return bdVars;
     }
@@ -323,7 +322,7 @@ public class ExprTranslator
         }
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getNewAtomName(), new TupleSort(elementSorts), null));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), new TupleSort(elementSorts), null));
         }
         return bdVars;
     }

@@ -142,7 +142,7 @@ public class ExprCallTranslator
             }
         }
 
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), argumentSorts, AbstractTranslator.setOfUninterpretedIntTuple);
+        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(), argumentSorts, AbstractTranslator.setOfUninterpretedIntTuple);
         translator.smtProgram.addFunction(result);
 
         Expression resultExpression;

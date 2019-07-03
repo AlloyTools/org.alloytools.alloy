@@ -1,6 +1,5 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -12,8 +11,6 @@ import edu.uiowa.smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import java.util.Map;
 
 public class ExprBinaryTranslator
 {
@@ -99,7 +96,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -182,7 +179,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -254,7 +251,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -317,7 +314,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -388,7 +385,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -450,7 +447,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -506,7 +503,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -553,7 +550,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -600,7 +597,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -689,7 +686,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -765,7 +762,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -831,7 +828,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -924,7 +921,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -1014,7 +1011,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -1093,7 +1090,7 @@ public class ExprBinaryTranslator
         }
 
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getNewSetName(), sort);
+        multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), sort);
         translator.multiplicityVariableMap.put(expr, multiplicitySet);
         translator.smtProgram.addFunction(multiplicitySet);
 
@@ -1289,7 +1286,7 @@ public class ExprBinaryTranslator
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, environment);
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, environment);
 
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getNewSetName(), AbstractTranslator.setOfUninterpretedIntTuple);
+        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(), AbstractTranslator.setOfUninterpretedIntTuple);
         exprTranslator.translator.smtProgram.addFunction(result);
 
         VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt, null);

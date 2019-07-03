@@ -195,7 +195,7 @@ public class SignatureTranslator
         Expression expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
-        String name = TranslatorUtils.getNewName();
+        String name = TranslatorUtils.getFreshName();
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
@@ -218,7 +218,7 @@ public class SignatureTranslator
         Expression expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
-        String name = TranslatorUtils.getNewName();
+        String name = TranslatorUtils.getFreshName();
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
@@ -242,7 +242,7 @@ public class SignatureTranslator
         Expression expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
-        String name = TranslatorUtils.getNewName();
+        String name = TranslatorUtils.getFreshName();
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
