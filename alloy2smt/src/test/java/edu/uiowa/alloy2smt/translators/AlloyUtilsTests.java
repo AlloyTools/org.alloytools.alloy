@@ -68,7 +68,7 @@ public class AlloyUtilsTests
         Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), no);
         Expr newExpr = AlloyUtils.substituteExpr(exprQt, x, y);
         assertEquals("(all y | no x)", exprQt.toString());
-        assertEquals("(all _a1 | no y)", newExpr.toString());
+        assertEquals("(all _1_ | no y)", newExpr.toString());
     }
 
     @Test
@@ -83,7 +83,7 @@ public class AlloyUtilsTests
         Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), no);
         Expr newExpr = AlloyUtils.substituteExpr(exprQt, x, product);
         assertEquals("(all y | no x)", exprQt.toString());
-        assertEquals("(all _a1 | no y -> y)", newExpr.toString());
+        assertEquals("(all _1_ | no y -> y)", newExpr.toString());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class AlloyUtilsTests
         Expr let = ExprLet.make(null, z, comprehension, noZAndY);
         Expr newExpr = AlloyUtils.substituteExpr(let, y, z);
         assertEquals("(let z= {x | x in A} | no z & y)", let.toString());
-        assertEquals("(let _a1= {x | x in A} | no _a1 & z)", newExpr.toString());
+        assertEquals("(let _1_= {x | x in A} | no _1_ & z)", newExpr.toString());
     }
 
     @Test
@@ -136,7 +136,7 @@ public class AlloyUtilsTests
         Expr let = ExprLet.make(null, z, y, zAndY);
         Expr newExpr = AlloyUtils.substituteExpr(let, y, z);
         assertEquals("(let z= y | z & y)", let.toString());
-        assertEquals("(let _a1= z | _a1 & z)", newExpr.toString());
+        assertEquals("(let _1_= z | _1_ & z)", newExpr.toString());
     }
 
     @Test
