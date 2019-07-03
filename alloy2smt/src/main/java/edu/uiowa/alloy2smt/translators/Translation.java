@@ -73,15 +73,16 @@ public class Translation
 
         Alloy2SmtTranslator commandTranslator = new Alloy2SmtTranslator(translator);
 
-        // store old declarations and definitions
+        // store old declarations, definitions, and assertions
         List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtProgram.getSorts());
         List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getConstantDeclarations());
         List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctions());
+        List<Assertion> assertions  = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
 
 
         Assertion           assertion   =  commandTranslator.translateCommand(commandIndex, includeScope);
 
-        // get new declarations and definitions
+        // get new declarations, definitions, and assertions
         List<Sort> newSorts = commandTranslator.smtProgram
                 .getSorts().stream()
                 .filter(((Predicate<Sort>) new HashSet<>(sorts)::contains).negate())
@@ -95,6 +96,11 @@ public class Translation
         List<FunctionDeclaration> newFunctionDeclarations = commandTranslator.smtProgram
                 .getFunctions().stream()
                 .filter(((Predicate<FunctionDeclaration>) new HashSet<>(functionDeclarations)::contains).negate())
+                .collect(Collectors.toList());
+
+        List<Assertion> newAssertions = commandTranslator.smtProgram
+                .getAssertions().stream()
+                .filter(((Predicate<Assertion>) new HashSet<>(assertions)::contains).negate())
                 .collect(Collectors.toList());
 
 
@@ -118,6 +124,13 @@ public class Translation
         {
             SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(declaration);
+            stringBuilder.append(printer.getSmtLib());
+        }
+
+        for (Assertion newAssertion : newAssertions)
+        {
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            printer.visit(newAssertion);
             stringBuilder.append(printer.getSmtLib());
         }
 

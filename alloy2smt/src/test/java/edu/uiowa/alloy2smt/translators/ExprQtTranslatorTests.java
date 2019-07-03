@@ -247,7 +247,6 @@ public class ExprQtTranslatorTests
                 "sig A {}\n" +
                 "sig A0, A1 in A {}\n" +
                 "fun complement1[x: A]: A {let x' = {y : A | not (y in x)} | x'}\n" +
-                "fun complement2[x: A]: A {A - x}\n" +
                 "fact{ #A0 = 2 and #A1 = 2 and A0 = A1}\n" +
                 "run {complement1[A0] = A1}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
