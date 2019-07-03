@@ -198,7 +198,7 @@ public class AlloyUtils
             return body;
         }
 
-        if(body instanceof Sig)
+        if(body instanceof Sig || body instanceof Sig.Field)
         {
             return body;
         }
