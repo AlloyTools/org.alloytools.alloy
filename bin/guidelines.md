@@ -92,7 +92,7 @@ Semantics for comparison operators: <, =<, >, >=  is based on singletons as foll
 - A >= B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x >= y
 - A > B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x > y
 
-This is different than Kodkod semantics which compares between the sum of the two operands. The following examples compares between them:
+This is different than Kodkod semantics which compares between the sum of the two operands. The following examples compare between them:
 ```cmd
 sig A, B in Int {} 
 fact { 

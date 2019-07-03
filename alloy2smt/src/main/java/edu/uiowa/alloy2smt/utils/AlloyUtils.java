@@ -1,6 +1,5 @@
 package edu.uiowa.alloy2smt.utils;
 
-import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
@@ -9,9 +8,11 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
 
 public class AlloyUtils
 {
@@ -247,8 +248,12 @@ public class AlloyUtils
                         variables.add((ExprVar) name);
                     }
                 }
+
+                Expr declaredExpr = decl.expr;
+                declaredExpr = substituteExpr(declaredExpr, oldExpr, newExpr);
+
                 Decl newDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2,
-                        variables, decl.expr);
+                        variables, declaredExpr);
                 declList.add(newDecl);
             }
 
