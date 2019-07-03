@@ -334,7 +334,7 @@ public class AlloyUtils
             return variable.label.equals(((ExprVar) expr).label);
         }
 
-        if(expr instanceof Sig)
+        if(expr instanceof Sig || expr instanceof Sig.Field)
         {
             return false;
         }

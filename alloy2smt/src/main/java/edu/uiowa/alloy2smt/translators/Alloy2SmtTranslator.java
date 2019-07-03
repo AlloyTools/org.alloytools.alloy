@@ -140,7 +140,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.signatureTranslator.translateSpecialSigFacts();
         //translateFunctionsAndPredicates();
         this.signatureTranslator.translateSigFacts();
-        translateFacts();
+        //translateFacts(); // facts are included in commands' formulas
         translateSpecialAssertions();
         return this.smtProgram;
     }
