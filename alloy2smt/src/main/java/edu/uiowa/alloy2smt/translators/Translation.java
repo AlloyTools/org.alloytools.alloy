@@ -77,10 +77,10 @@ public class Translation
         List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtProgram.getSorts());
         List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getConstantDeclarations());
         List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctions());
-        List<Assertion> assertions  = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
+        List<Assertion> assertions = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
 
 
-        Assertion           assertion   =  commandTranslator.translateCommand(commandIndex, includeScope);
+        List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex, includeScope);
 
         // get new declarations, definitions, and assertions
         List<Sort> newSorts = commandTranslator.smtProgram
@@ -136,7 +136,11 @@ public class Translation
 
         // get the translation for the command assertion
         SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
-        printer.visit(assertion);
+        for (Assertion assertion: commandAssertions)
+        {
+            printer.visit(assertion);
+        }
+
         stringBuilder.append(printer.getSmtLib());
         
         return stringBuilder.toString();

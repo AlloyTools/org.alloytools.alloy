@@ -17,6 +17,7 @@ import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 
+import java.util.List;
 import java.util.Map;
 
 public class Utils
@@ -36,10 +37,13 @@ public class Utils
         programPrinter.visit(smtProgram);
 
         String              program         = programPrinter.getSmtLib();
-        Assertion           assertion       = translator.translateCommand(commandIndex, includeScope);
+        List<Assertion> commandAssertions       = translator.translateCommand(commandIndex, includeScope);
         SmtLibPrettyPrinter commandPrinter  = new SmtLibPrettyPrinter();
 
-        commandPrinter.visit(assertion);
+        for (Assertion assertion: commandAssertions)
+        {
+            commandPrinter.visit(assertion);
+        }
 
         String              command         = commandPrinter.getSmtLib();
 

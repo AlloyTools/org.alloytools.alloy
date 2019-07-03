@@ -762,14 +762,14 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     /**
      * @param commandIndex the index of the run command
-     * @return an assertion that represents the translation
+     * @return a list of assertions that represent the translation
      * of the command
      */
-    public Assertion translateCommand(int commandIndex, boolean includeScope)
+    public List<Assertion> translateCommand(int commandIndex, boolean includeScope)
     {
         Command command = this.commands.get(commandIndex);
 
-        Expression expression = this.exprTranslator.translateExpr(command.formula);
+        List<Assertion> assertions = getAssertions(command);
 
         if(includeScope)
         {
@@ -857,14 +857,34 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                             constraint = BinaryExpression.Op.AND.make(constraint, distinct);
                         }
                         Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
-                        expression = BinaryExpression.Op.AND.make(expression, exists);
+                        Assertion scopeAssertion = new Assertion(signature.toString() + " scope", exists);
+                        assertions.add(scopeAssertion);
                     }
                 }
             }
         }
 
-        Assertion assertion = new Assertion(command.toString(), expression);
-        return assertion;
+       return assertions;
+    }
+
+    private List<Assertion> getAssertions(Command command)
+    {
+        assert (command.formula instanceof  ExprList);
+        ExprList list = (ExprList) command.formula;
+        assert (list.op == ExprList.Op.AND);
+        List<Assertion> assertions = new ArrayList<>();
+
+        //ToDo: refactor this line which just prints the command as a comment
+        Assertion comment = new Assertion(command.toString(), BoolConstant.True);
+        assertions.add(comment);
+
+        for (Expr argument: list.args)
+        {
+            Expression expression = exprTranslator.translateExpr(argument);
+            assertions.add(new Assertion(argument.toString(), expression));
+        }
+
+        return assertions;
     }
 
     private int getScope(Sig.PrimSig parent, Command command,
