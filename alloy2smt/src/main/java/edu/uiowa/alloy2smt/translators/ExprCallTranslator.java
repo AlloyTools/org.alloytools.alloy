@@ -8,6 +8,7 @@ import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,7 +43,11 @@ public class ExprCallTranslator
 //        {
 //            return translateSetComprehensionFuncCallExpr(funcName, argExprs);
 //        }
-        if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
+        if(exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
+        {
+            return new FunctionCallExpression(translator.functionsMap.get(funcName), argExprs);
+        }
+        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
             return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
         }
