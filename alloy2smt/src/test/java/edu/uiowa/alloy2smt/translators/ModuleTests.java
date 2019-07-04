@@ -24,7 +24,7 @@ public class ModuleTests
 
 
     @Test
-    public void ordModule1() throws Exception
+    public void orderingModule1() throws Exception
     {
         String alloy =
                 "open util/ordering[A] as ordA\n" +
@@ -43,5 +43,21 @@ public class ModuleTests
         FunctionDefinition b = AlloyUtils.getFunctionDefinition(results.get(0), "this/B");
         Set<String> bAtoms = TranslatorUtils.getAtomSet(b);
         assertEquals(4, bAtoms.size());
+    }
+
+    @Test
+    public void orderingModule2() throws Exception
+    {
+        String alloy =
+                "open util/ordering[A] as ordA\n" +
+                "sig A {}\n" +
+                "one sig A0, A1, A2 extends A{}\n" +
+                "fact {nexts [A0] = A1 + A2}";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("sat", results.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(results.get(0), "this/A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(3, aAtoms.size());
     }
 }
