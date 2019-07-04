@@ -102,7 +102,7 @@ A > B
 run {} for 4 Int, 7 seq
 ```
 
-CVC4  solver returns unsat for this model because when #A = 2, A = {x}  for some x is false which makes A > B always false. However Kodkod solver returns the model
+CVC4  solver returns unsat for this model because (#A = 2 and A = {x}  for some integer x) is false, which makes A > B always false. However Kodkod solver returns the model
 ```cmd
 this/A={-7, 2}
 this/B={-4, -5, -7, -8, 1}
@@ -136,7 +136,7 @@ fact {
 ```
 - univ, iden built-in signatures don not include integers. 
 - No subtyping between normal signatures and integer signatures. Set operations between normal signatures is supported. But set operations between normal signatures and integer signatures would throw typing errors. 
-- Quantifiers and comprehension expressions inside predicates and functions with non-singleton arguments. 
+ 
 
 # Examples
 
