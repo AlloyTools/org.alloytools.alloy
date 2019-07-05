@@ -1,6 +1,5 @@
 package edu.uiowa.smt;
 
-import edu.mit.csail.sdg.alloy4.Env;
 import edu.uiowa.smt.smtAst.Expression;
 
 import java.util.HashMap;

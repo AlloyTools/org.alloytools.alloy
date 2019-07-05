@@ -130,7 +130,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 TupleSort tupleSort = (TupleSort) variable.getSort();
                 for (Sort sort: tupleSort.elementSorts)
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(), sort, null);
+                    VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
                     declarations.add(declaration);
                     tupleExpressions.add(declaration.getVariable());
                 }

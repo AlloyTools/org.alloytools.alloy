@@ -14,7 +14,7 @@ public class VariableDeclaration extends Declaration
 {
     private Expression constraint;
 
-    public VariableDeclaration(String name, Sort sort, Expression constraint)
+    public VariableDeclaration(String name, Sort sort)
     {
         super(name, sort);
     }

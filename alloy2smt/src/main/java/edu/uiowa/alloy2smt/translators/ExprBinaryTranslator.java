@@ -111,13 +111,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
@@ -194,12 +194,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A one -> some B
@@ -266,12 +266,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A one -> set B
@@ -329,12 +329,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A some -> one B
@@ -400,12 +400,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A set -> one B
@@ -462,8 +462,8 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
@@ -518,8 +518,8 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
@@ -565,8 +565,8 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
@@ -612,13 +612,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
@@ -701,12 +701,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A some -> lone B
@@ -777,12 +777,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A set -> lone B
@@ -843,13 +843,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
@@ -936,13 +936,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
-        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
+        VariableDeclaration v = new VariableDeclaration("__v__", BSort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
         Expression vMemberB = BinaryExpression.Op.MEMBER.make(v.getVariable(), B);
 
@@ -1026,12 +1026,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A lone -> some B
@@ -1105,12 +1105,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", ASort.elementSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", BSort.elementSort);
         Expression xMemberA = BinaryExpression.Op.MEMBER.make(x.getVariable(), A);
         Expression yMemberB = BinaryExpression.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort, null);
+        VariableDeclaration u = new VariableDeclaration("__u__", ASort.elementSort);
         Expression uMemberA = BinaryExpression.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A lone -> set B
@@ -1289,9 +1289,9 @@ public class ExprBinaryTranslator
         FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(), AbstractTranslator.setOfUninterpretedIntTuple);
         exprTranslator.translator.smtProgram.addFunction(result);
 
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt, null);
-        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
@@ -1773,8 +1773,8 @@ public class ExprBinaryTranslator
     
     private Expression getComparison(BinaryExpression.Op op, Expression left, Expression right)
     {
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
         Expression xTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple     = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
         Expression xSingleton = UnaryExpression.Op.SINGLETON.make(xTuple);

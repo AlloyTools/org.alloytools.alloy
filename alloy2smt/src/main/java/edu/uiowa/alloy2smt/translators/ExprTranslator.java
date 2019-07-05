@@ -210,9 +210,9 @@ public class ExprTranslator
 
     public void declArithmeticOp(BinaryExpression.Op op)
     {
-        VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt, null);
-        VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt, null);
-        VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt, null);
+        VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt);
 
         Expression xValue = new FunctionCallExpression(translator.uninterpretedIntValue, x.getVariable());
         Expression yValue = new FunctionCallExpression(translator.uninterpretedIntValue, y.getVariable());
@@ -306,7 +306,7 @@ public class ExprTranslator
 
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), sort, null));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), sort));
         }
         return bdVars;
     }
@@ -322,7 +322,7 @@ public class ExprTranslator
         }
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), new TupleSort(elementSorts), null));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), new TupleSort(elementSorts)));
         }
         return bdVars;
     }

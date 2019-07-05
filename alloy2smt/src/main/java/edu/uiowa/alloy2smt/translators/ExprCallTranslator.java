@@ -125,7 +125,7 @@ public class ExprCallTranslator
             if (sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
-                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
+                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort);
                 quantifiedArguments.add(tuple);
                 Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 newA = newA.replace(argument.getValue(), singleton);
@@ -160,9 +160,9 @@ public class ExprCallTranslator
             resultExpression = result.getVariable();
         }
 
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt, null);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt, null);
-        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt, null);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());

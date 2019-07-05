@@ -162,7 +162,7 @@ public class ExprQtTranslator
             if(sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
-                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
+                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort);
                 quantifiedArguments.add(tuple);
                 Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 body = body.replace(variable, singleton);
@@ -241,7 +241,7 @@ public class ExprQtTranslator
                 case LONEOF: // same as SETOF
                 case SETOF:
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort, null);
+                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort);
                     Expression subset = BinaryExpression.Op.SUBSET.make(declaration.getVariable(), range);
                     declaration.setConstraint(subset);
                     return declaration;
@@ -272,7 +272,7 @@ public class ExprQtTranslator
                 case LONE_ARROW_ONE     :
                 case LONE_ARROW_LONE    :
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort, null);
+                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort);
                     Expression subset = BinaryExpression.Op.SUBSET.make(declaration.getVariable(), range);
                     declaration.setConstraint(subset);
                     return declaration;
@@ -286,7 +286,7 @@ public class ExprQtTranslator
 
     private VariableDeclaration getVariableDeclaration(String variableName, SetSort setSort, Expression range)
     {
-        VariableDeclaration declaration = new VariableDeclaration(variableName, setSort.elementSort, null);
+        VariableDeclaration declaration = new VariableDeclaration(variableName, setSort.elementSort);
         Expression member = BinaryExpression.Op.MEMBER.make(declaration.getVariable(), range);
         declaration.setConstraint(member);
         return declaration;
@@ -322,7 +322,7 @@ public class ExprQtTranslator
                 {
                     // either the set is empty or a singleton
                     Expression empty = BinaryExpression.Op.EQ.make(variable.getVariable(), emptySet);
-                    VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getFreshName(), setSort.elementSort, null);
+                    VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getFreshName(), setSort.elementSort);
                     Expression singleton = UnaryExpression.Op.SINGLETON.make(singleElement.getVariable());
                     Expression isSingleton = BinaryExpression.Op.EQ.make(variable.getVariable(), singleton);
                     Expression emptyOrSingleton = BinaryExpression.Op.OR.make(empty, isSingleton);
@@ -437,7 +437,7 @@ public class ExprQtTranslator
         for (Map.Entry<String, Expression> entry : ranges.entrySet())
         {
             VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
-            VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getFreshName(), oldVariable.getSort(), null);
+            VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getFreshName(), oldVariable.getSort());
             if(oldVariable.getConstraint() != null)
             {
                 Expression newConstraint = oldVariable.getConstraint().substitute(oldVariable.getVariable(), newVariable.getVariable());
