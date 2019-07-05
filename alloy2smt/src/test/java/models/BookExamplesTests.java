@@ -1,4 +1,4 @@
-package edu.uiowa.alloy2smt.translators;
+package models;
 
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
