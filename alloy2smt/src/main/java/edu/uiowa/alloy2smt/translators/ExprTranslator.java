@@ -30,6 +30,8 @@ public class ExprTranslator
 
     final ExprCallTranslator exprCallTranslator;
 
+    final ExprLetTranslator exprLetTranslator;
+
     public ExprTranslator(Alloy2SmtTranslator translator)
     {
         this.translator = translator;
@@ -37,6 +39,7 @@ public class ExprTranslator
         this.exprBinaryTranslator = new ExprBinaryTranslator(this);
         this.exprQtTranslator = new ExprQtTranslator(this);
         this.exprCallTranslator = new ExprCallTranslator(this);
+        this.exprLetTranslator = new ExprLetTranslator(this);
     }
 
     Expression translateExpr(Expr expr)
@@ -80,7 +83,7 @@ public class ExprTranslator
         }
         else if (expr instanceof ExprLet)
         {
-            return translateExprLet((ExprLet) expr, environment);
+            return exprLetTranslator.translateExprLet((ExprLet) expr, environment);
         }
 
         throw new UnsupportedOperationException(expr.toString());
@@ -161,22 +164,6 @@ public class ExprTranslator
             finalExpr = exprs.get(0);
         }
         return finalExpr;
-    }
-
-    Expression translateExprLet(ExprLet exprLet, Environment environment)
-    {
-        Expression varExpr = translateExpr(exprLet.expr, environment);
-        Map<String, Expression> varToExprMap = new HashMap<>();
-        String label = exprLet.var.label;
-        Variable varDeclExpr = new VariableDeclaration(label, varExpr.getSort()).getVariable();
-
-        varToExprMap.put(label, varExpr);
-        // make a new environment
-        Environment newEnvironment = new Environment(environment);
-        newEnvironment.put(exprLet.var.label, varDeclExpr);
-
-        Expression letBodyExpr = translateExpr(exprLet.sub, newEnvironment);
-        return new LetExpression(varToExprMap, letBodyExpr);
     }
 
     public Expression translateSetComprehensionFuncCallExpr(String funcName, List<Expression> argExprs)

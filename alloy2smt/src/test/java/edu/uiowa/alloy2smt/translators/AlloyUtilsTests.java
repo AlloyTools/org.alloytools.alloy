@@ -103,7 +103,7 @@ public class AlloyUtilsTests
         Expr let = ExprLet.make(null, z, comprehension, noZAndY);
         Expr newExpr = AlloyUtils.substituteExpr(let, y, w);
         assertEquals("(let z= {x | x in A} | no z & y)", let.toString());
-        assertEquals("(let z= {x | x in A} | no z & w)", newExpr.toString());
+        assertEquals("no {x | x in A} & w", newExpr.toString());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class AlloyUtilsTests
         Expr let = ExprLet.make(null, z, comprehension, noZAndY);
         Expr newExpr = AlloyUtils.substituteExpr(let, y, z);
         assertEquals("(let z= {x | x in A} | no z & y)", let.toString());
-        assertEquals("(let _1_= {x | x in A} | no _1_ & z)", newExpr.toString());
+        assertEquals("no {x | x in A} & z", newExpr.toString());
     }
 
     @Test
@@ -136,7 +136,7 @@ public class AlloyUtilsTests
         Expr let = ExprLet.make(null, z, y, zAndY);
         Expr newExpr = AlloyUtils.substituteExpr(let, y, z);
         assertEquals("(let z= y | z & y)", let.toString());
-        assertEquals("(let _1_= z | _1_ & z)", newExpr.toString());
+        assertEquals("z & z", newExpr.toString());
     }
 
     @Test
