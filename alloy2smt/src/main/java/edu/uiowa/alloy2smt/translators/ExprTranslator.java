@@ -168,7 +168,7 @@ public class ExprTranslator
         Expression varExpr = translateExpr(exprLet.expr, environment);
         Map<String, Expression> varToExprMap = new HashMap<>();
         String label = exprLet.var.label;
-        Variable varDeclExpr = new ConstantDeclaration(label, varExpr.getSort()).getVariable();
+        Variable varDeclExpr = new VariableDeclaration(label, varExpr.getSort()).getVariable();
 
         varToExprMap.put(label, varExpr);
         // make a new environment

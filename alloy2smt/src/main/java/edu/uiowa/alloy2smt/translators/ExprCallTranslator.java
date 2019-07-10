@@ -121,7 +121,7 @@ public class ExprCallTranslator
             Sort sort = variable.getSort();
             argumentSorts.add(sort);
 
-            // handle set sorts differently to avoid second order quantification
+            // handle set sorts differently to avoid sets quantifiers
             if (sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;

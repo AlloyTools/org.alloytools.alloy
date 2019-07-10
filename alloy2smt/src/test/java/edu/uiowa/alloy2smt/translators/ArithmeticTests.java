@@ -188,4 +188,18 @@ public class ArithmeticTests
         assertTrue(commandResults.size() == 1);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    public void let () throws Exception
+    {
+        String alloy = "sig A in Int{}\n" +
+                "sig A0, A1 in A {}\n" +
+                "pred plusTwo[a, b : A]\n" +
+                "{let t' = plus[a, 1] | {a = plus[t', 1]}}\n" +
+                "fact {plusTwo[A0, A1]} ";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertTrue(commandResults.size() == 1);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
+
 }
