@@ -278,27 +278,13 @@ public class AlloyUtils
 
         if(body instanceof ExprLet)
         {
+            // first expand the let body
+
             ExprLet let = (ExprLet) body;
 
-            Expr letBody = let.sub;
-            ExprVar newVariable = let.var;
-
-            // return the body if the oldExpr is the variable
-            if(oldExpr.label.equals(let.var.label))
-            {
-                return body;
-            }
-
-            // change the variable name if newExpr contains a free variable with the same name
-            if(containsFreeVaraible(let.var, newExpr))
-            {
-                newVariable = ExprVar.make(let.var.pos, TranslatorUtils.getFreshName());
-                letBody = substituteExpr(letBody, let.var , newVariable);
-            }
-
-            letBody = substituteExpr(letBody, oldExpr, newExpr);
-            Expr variableExpr = substituteExpr(let.expr, oldExpr, newExpr);
-            return ExprLet.make(let.pos,  newVariable, variableExpr, letBody);
+            Expr letExpanded = substituteExpr(let.sub, let.var, let.expr);
+            Expr newLet = substituteExpr(letExpanded, oldExpr, newExpr);
+            return newLet;
         }
 
         if(body instanceof ExprITE)

@@ -26,6 +26,8 @@ public class LetExpression extends Expression
         {
             this.letVariables.put(var.getKey(), var.getValue());
         }
+        // check there is no typing error within this let expression
+        expr.checkTypes();
     }
 
 

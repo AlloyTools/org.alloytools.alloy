@@ -155,7 +155,7 @@ public class ExprQtTranslatorTests
     }
 
     @Test
-    void secondOrderOneLone() throws Exception
+    void setQuantifiersOneLone() throws Exception
     {
         String alloy =
                 "abstract sig A {}\n" +
@@ -249,6 +249,17 @@ public class ExprQtTranslatorTests
                 "fun complement1[x: A]: A {let x' = {y : A | not (y in x)} | x'}\n" +
                 "fact{ #A0 = 2 and #A1 = 2 and A0 = A1}\n" +
                 "run {complement1[A0] = A1}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
+
+    @Test
+    void functionComprehension3() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "fun identity [B: A] : A { let C= {x:A | x in B} | C}\n" +
+                "fact {some D:set A | all x: lone identity[D]| x != none}";
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
