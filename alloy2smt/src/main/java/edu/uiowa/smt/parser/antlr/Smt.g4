@@ -83,7 +83,7 @@ UninterpretedIntPrefix : '@uc_UninterpretedInt_' ;
 
 Identifier : IdentifierLetter (IdentifierLetter | Digit)* | ('|' .*? '|');
 
-IdentifierLetter : 'a'..'z'|'A'..'Z'|'_'|'/' | '\'' | '"';
+IdentifierLetter : 'a'..'z'|'A'..'Z'|'_'|'/' | '\'' | '"' | '$';
 
 Integer : Digit+ ;
 

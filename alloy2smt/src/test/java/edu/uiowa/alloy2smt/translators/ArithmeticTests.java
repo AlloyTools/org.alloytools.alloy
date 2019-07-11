@@ -202,4 +202,20 @@ public class ArithmeticTests
         assertEquals("sat", commandResults.get(0).satResult);
     }
 
+    @Test
+    public void quantifiers1() throws Exception
+    {
+        String alloy =
+                "sig A in Int {}\n" +
+                "fact {all x, y : A | plus[x, y] > 5}\n" +
+                "run {#A = 2} ";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertTrue(commandResults.size() == 1);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
+        Set<Integer> set = TranslatorUtils.getIntSet(a);
+        assertEquals(new HashSet<>(Arrays.asList(5, 10)), set);
+    }
+
 }
