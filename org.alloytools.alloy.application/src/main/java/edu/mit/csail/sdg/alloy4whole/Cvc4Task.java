@@ -312,11 +312,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         for(FunctionDeclaration function: model.getFunctions())
         {
             FunctionDefinition definition = (FunctionDefinition) function;
-            if(function.getSort().equals(AbstractTranslator.setOfUninterpretedIntTuple) ||
-                    function.getSort().equals(AbstractTranslator.setOfTernaryIntSort))
-            {
-                definition = model.evaluateUninterpretedInt((FunctionDefinition) function);
-            }
             functionsMap.put(function.getName(), definition);
         }
 
@@ -327,7 +322,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             Signature signature = getSignature(functionsMap, mappingSignature);
             signatures.add(signature);
         }
-
 
 
         List<Field> fields = new ArrayList<>();
