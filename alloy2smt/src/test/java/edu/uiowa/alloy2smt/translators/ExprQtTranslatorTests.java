@@ -263,4 +263,14 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void nestedMultiplicities() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "fact {all x: A | some y : x one -> one x | some y}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
 }
