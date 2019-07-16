@@ -1,0 +1,30 @@
+Version 4.1
+ - Adaptative (activated by default) strategies. See SAT 2016 paper.
+
+Version 4.0
+ - Add a Multithread version, called syrup (many glucose ;-)
+   See SAT14 paper: Lazy Clause Exchange Policy for parallel SAT solvers.
+
+ - Can work indepentently in sequential or with many cores
+
+Version 3.0 (2013)
+ - Add incremental features. 
+    See SAT13 paper: Improving Glucose for Incremental SAT Solving with Assumptions: Application to MUS Extraction
+
+ - Add certified UNSAT proof.
+
+Version 2.3 (2012)
+ - Add new restart strategy 
+    See CP12 paper: Refining Restarts Strategies For SAT and UNSAT
+
+ - Add additionnal features to speed the search
+
+Version 2.0 (2011) 
+ - Add additionnal features (freeze potential good clauses for one turn)
+
+ - Based on Minisat 2.2
+
+Version 1.0 (2009)
+ - Based on Minisat 2.0
+    First release of glucose.
+    See ijcai 2009 paper: Predicting Learnt Clauses Quality in Modern SAT Solver

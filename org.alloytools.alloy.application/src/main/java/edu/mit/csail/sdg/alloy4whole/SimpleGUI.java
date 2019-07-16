@@ -1917,8 +1917,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
         if (Util.onMac()) {
-            macUtil = new MacUtil();
-            macUtil.tryAddMenus(this);
+            try {
+                macUtil = new MacUtil();
+                macUtil.addMenus(this);
+            } catch (NoClassDefFoundError e) {
+                // ignore
+            }
         }
 
         doLookAndFeel();
