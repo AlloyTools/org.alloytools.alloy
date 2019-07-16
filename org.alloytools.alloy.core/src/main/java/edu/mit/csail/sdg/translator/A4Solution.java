@@ -1453,6 +1453,9 @@ public final class A4Solution {
         }
         instances.add(inst);
 
+        if (loop >= instances.size())
+            loop = instances.size() - 1;
+
         // create temporal instance
         TemporalInstance prev = new TemporalInstance(instances, loop, 1);
         eval = new Evaluator(prev, solver.options());
