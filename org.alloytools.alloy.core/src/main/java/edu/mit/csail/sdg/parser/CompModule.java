@@ -26,7 +26,6 @@ import static edu.mit.csail.sdg.ast.Attr.AttrType.WHERE;
 import static edu.mit.csail.sdg.ast.Sig.NONE;
 import static edu.mit.csail.sdg.ast.Sig.SEQIDX;
 import static edu.mit.csail.sdg.ast.Sig.SIGINT;
-import static edu.mit.csail.sdg.ast.Sig.SIGTIME;
 import static edu.mit.csail.sdg.ast.Sig.STRING;
 import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
@@ -95,7 +94,7 @@ import edu.mit.csail.sdg.ast.VisitReturn;
  * Mutable; this class represents an Alloy module; equals() uses object
  * identity.
  *
- * @modified: Nuno Macedo // [HASLab] temporal solving
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class CompModule extends Browsable implements Module {
@@ -1165,8 +1164,6 @@ public final class CompModule extends Browsable implements Module {
             return STRING;
         if (name.equals("none"))
             return NONE;
-        if (name.equals("Time")) // [HASLab]
-            return SIGTIME;
         if (name.indexOf('/') < 0) {
             s = getRawNQS(this, 1, name);
             s2 = params.get(name);
@@ -1492,6 +1489,9 @@ public final class CompModule extends Browsable implements Module {
     /** The given Sig will now point to a nonnull Sig. */
     // [HASLab] variable constructs warnings
     private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS, final List<ErrorWarning> warns) throws Err {
+        // When typechecking each sig:
+        // * a static sig is NOT allowed to be included in a variable sig // [HASLab]
+        // * a static sig is NOT allowed to extended a variable sig // [HASLab]
         if (res.new2old.containsKey(oldS))
             return oldS;
         Sig realSig;
@@ -1512,7 +1512,7 @@ public final class CompModule extends Browsable implements Module {
             realSig = new SubsetSig(fullname, parents, oldS.attributes.toArray(new Attr[0]));
             for (Sig n : parents)
                 if (n.isVariable != null && realSig.isVariable == null) // [HASLab]
-                    warns.add(new ErrorWarning(realSig.isSubset, "Static sub-sig in variable sig.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
+                    warns.add(new ErrorWarning(realSig.isSubset, "Part of " + n.label + " is static.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
         } else {
             Sig sup = ((PrimSig) oldS).parent;
             Sig parentAST = u.getRawSIG(sup.pos, sup.label);
@@ -1524,7 +1524,9 @@ public final class CompModule extends Browsable implements Module {
             PrimSig p = (PrimSig) parent;
             realSig = new PrimSig(fullname, p, oldS.attributes.toArray(new Attr[0]));
             if (parent.isVariable != null && realSig.isVariable == null) // [HASLab]
-                warns.add(new ErrorWarning(realSig.isSubsig, "Static sig extends variable sig.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
+                warns.add(new ErrorWarning(realSig.isSubsig, "Part of " + parent.label + " is static.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
+            if (parent.isVariable == null && realSig.isVariable != null) // [HASLab]
+                warns.add(new ErrorWarning(realSig.isSubsig, "Variable sig " + realSig.label + " is redundant.\n" + "Sig " + realSig.label + " is variable but " + parent.label + " is static."));
         }
         res.new2old.put(realSig, oldS);
         res.sig2module.put(realSig, u);
@@ -1877,7 +1879,6 @@ public final class CompModule extends Browsable implements Module {
             commands.add(newcommand);
     }
 
-    // [HASLab] TODO: see this
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);

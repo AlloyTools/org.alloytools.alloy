@@ -48,7 +48,6 @@ import org.alloytools.alloy.core.AlloyCore;
  * reported to the parent process via callback, and if we try to execute another
  * task, then a new subprocess will be spawned automatically.
  */
-
 public final class WorkerEngine {
 
     /**
@@ -179,8 +178,9 @@ public final class WorkerEngine {
     public static void stop() {
         synchronized (WorkerEngine.class) {
             try {
-                if (latest_sub != null)
+                if (latest_sub != null) {
                     latest_sub.destroy();
+                }
             } finally {
                 latest_manager = null;
                 latest_sub = null;

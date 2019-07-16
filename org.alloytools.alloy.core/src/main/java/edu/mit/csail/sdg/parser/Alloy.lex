@@ -86,7 +86,7 @@ import java_cup.runtime.*;
           i++;
           if (i>=txt.length()) throw new ErrorSyntax(p, "String literal cannot end with a single \\");
           c = txt.charAt(i);
-          if (c=='n') c='\n'; else if (c!='\"' && c!='\\') throw new ErrorSyntax(p, "String literal currently only supports\nthree escape sequences: \\\\, \\n, and \\\""); // [HASLab]
+          if (c=='n') c='\n'; else if (c!='\"' && c!='\\') throw new ErrorSyntax(p, "String literal currently only supports\nthree escape sequences: \\\\, \\n, and \\\""); // [HASLab] protect primes
        }
        sb.append(c);
     }
@@ -221,29 +221,29 @@ import java_cup.runtime.*;
 "sum"                 { return alloy_sym(yytext(), CompSym.SUM         );}
 "this"                { return alloy_sym(yytext(), CompSym.THIS        );}
 "univ"                { return alloy_sym(yytext(), CompSym.UNIV        );}
-"always"              { return alloy_sym(yytext(), CompSym.ALWAYS      );} // [HASLab] ltl tokens
-"after"               { return alloy_sym(yytext(), CompSym.AFTER       );} // [HASLab] ltl tokens
-"eventually"          { return alloy_sym(yytext(), CompSym.EVENTUALLY  );} // [HASLab] ltl tokens
-"historically"        { return alloy_sym(yytext(), CompSym.HISTORICALLY);} // [HASLab] ltl tokens
-"previous"            { return alloy_sym(yytext(), CompSym.PREVIOUS    );} // [HASLab] ltl tokens
-"once"                { return alloy_sym(yytext(), CompSym.ONCE        );} // [HASLab] ltl tokens
-"release"             { return alloy_sym(yytext(), CompSym.RELEASE     );} // [HASLab] ltl tokens
-"until"               { return alloy_sym(yytext(), CompSym.UNTIL       );} // [HASLab] ltl tokens
-"since"               { return alloy_sym(yytext(), CompSym.SINCE       );} // [HASLab] ltl tokens
-"trigger"             { return alloy_sym(yytext(), CompSym.TRIGGER     );} // [HASLab] ltl tokens
-";"                   { return alloy_sym(yytext(), CompSym.TRCSEQ      );} // [HASLab] ltl tokens
-"var"                 { return alloy_sym(yytext(), CompSym.VAR         );} // [HASLab] ltl tokens
-"Time"                { return alloy_sym(yytext(), CompSym.TIME        );} // [HASLab] ltl tokens
-"'"                   { return alloy_sym(yytext(), CompSym.PRIME       );} // [HASLab] ltl tokens
+"always"              { return alloy_sym(yytext(), CompSym.ALWAYS      );} // [HASLab] temporal tokens
+"after"               { return alloy_sym(yytext(), CompSym.AFTER       );} // [HASLab] temporal tokens
+"eventually"          { return alloy_sym(yytext(), CompSym.EVENTUALLY  );} // [HASLab] temporal tokens
+"historically"        { return alloy_sym(yytext(), CompSym.HISTORICALLY);} // [HASLab] temporal tokens
+"before"              { return alloy_sym(yytext(), CompSym.BEFORE      );} // [HASLab] temporal tokens
+"once"                { return alloy_sym(yytext(), CompSym.ONCE        );} // [HASLab] temporal tokens
+"releases"            { return alloy_sym(yytext(), CompSym.RELEASES    );} // [HASLab] temporal tokens
+"until"               { return alloy_sym(yytext(), CompSym.UNTIL       );} // [HASLab] temporal tokens
+"since"               { return alloy_sym(yytext(), CompSym.SINCE       );} // [HASLab] temporal tokens
+"triggered"           { return alloy_sym(yytext(), CompSym.TRIGGERED   );} // [HASLab] temporal tokens
+";"                   { return alloy_sym(yytext(), CompSym.TRCSEQ      );} // [HASLab] temporal tokens
+"var"                 { return alloy_sym(yytext(), CompSym.VAR         );} // [HASLab] temporal tokens
+"Time"                { return alloy_sym(yytext(), CompSym.TIME        );} // [HASLab] temporal tokens
+"'"                   { return alloy_sym(yytext(), CompSym.PRIME       );} // [HASLab] temporal tokens
 
-[\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\"] [\$0-9a-zA-Z_\"]* 	   { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }  // [HASLab]
+[\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\"] [\$0-9a-zA-Z_\"]* 	   { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }  // [HASLab] protect primes
 [\"] ([^\\\"] | ("\\" .))* [\"]                                        { return alloy_string(yytext()); }
 [\"] ([^\\\"] | ("\\" .))*                                             { throw new ErrorSyntax(alloy_here(yytext()),"String literal is missing its closing \" character"); }
 [0]"x"([_]|([0-9A-Fa-f][0-9A-Fa-f]))+                                  { return alloy_hexnum (yytext()); }
 [0]"b"[01_]+                                                           { return alloy_binarynum (yytext()); }
-[0-9][0-9]*[\$a-zA-Z_\"][\$0-9a-zA-Z_\"]*                              { throw new ErrorSyntax(alloy_here(yytext()),"Name cannot start with a number."); } // [HASLab]
+[0-9][0-9]*[\$a-zA-Z_\"][\$0-9a-zA-Z_\"]*                              { throw new ErrorSyntax(alloy_here(yytext()),"Name cannot start with a number."); } // [HASLab] protect primes
 [0-9][0-9_]*                                                           { return alloy_num (yytext()); }
-[:jletter:][[:jletterdigit:]\"]*                                       { return alloy_id  (yytext()); } // [HASLab]
+[:jletter:][[:jletterdigit:]\"]*                                       { return alloy_id  (yytext()); } // [HASLab] protect primes
 
 
 "/**" ~"*/"                  { }

@@ -49,8 +49,7 @@ import kodkod.instance.TupleSet;
  * (2) When it sees "A = B", it will try to simplify A assuming "A in B", and
  * then simplify B assuming "B in A".
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal [HASLab] TODO: symbolic
- *           bound extraction should probably be done at this level
+ * @modified Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public class Simplifier {

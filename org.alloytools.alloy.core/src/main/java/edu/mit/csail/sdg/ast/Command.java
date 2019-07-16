@@ -40,6 +40,10 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <b>Invariant:</b> maxseq >= -1
  * <p>
  * <b>Invariant:</b> maxstring >= -1
+ * <p>
+ * <b>Invariant:</b> mintime == -1 or >= 1
+ * <p>
+ * <b>Invariant:</b> maxtime == -1 or >= 1
  *
  * @modified Nuno Macedo // [HASLab] electrum-temporal
  */

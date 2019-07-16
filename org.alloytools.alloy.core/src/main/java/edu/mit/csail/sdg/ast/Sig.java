@@ -46,27 +46,22 @@ import edu.mit.csail.sdg.ast.Attr.AttrType;
 public abstract class Sig extends Expr implements Clause {
 
     /** The built-in "univ" signature. */
-    public static final PrimSig UNIV    = new PrimSig("univ", null, false);
+    public static final PrimSig UNIV   = new PrimSig("univ", null, false, false); // [HASLab]
 
     /** The built-in "Int" signature. */
-    public static final PrimSig SIGINT  = new PrimSig("Int", UNIV, false);
+    public static final PrimSig SIGINT = new PrimSig("Int", UNIV, false, false); // [HASLab]
 
     /** The built-in "seq/Int" signature. */
-    public static final PrimSig SEQIDX  = new PrimSig("seq/Int", SIGINT, true);
+    public static final PrimSig SEQIDX = new PrimSig("seq/Int", SIGINT, false, true); // [HASLab]
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING  = new PrimSig("String", UNIV, true);
+    public static final PrimSig STRING = new PrimSig("String", UNIV, false, true); // [HASLab]
 
     /** The built-in "none" signature. */
-    public static final PrimSig NONE    = new PrimSig("none", null, false);
-
-    /** The built-in "Time" signature. */
-    // [HASLab]
-    public static final PrimSig SIGTIME = new PrimSig("Time", UNIV, false);
-
+    public static final PrimSig NONE   = new PrimSig("none", null, false, false); // [HASLab]
 
     /** The built-in "none" signature. */
-    public static final PrimSig GHOST   = mkGhostSig();
+    public static final PrimSig GHOST  = mkGhostSig();
 
     private static final PrimSig mkGhostSig() {
         try {
@@ -258,8 +253,8 @@ public abstract class Sig extends Expr implements Clause {
     }
 
     /** Constructs a new builtin PrimSig. */
-    // [HASLab] extended with variable sigs.
-    private Sig(String label) {
+    // [HASLab]
+    private Sig(String label, boolean var) {
         super(Pos.UNKNOWN, null);
         Expr oneof = ExprUnary.Op.ONEOF.make(null, this);
         ExprVar v = ExprVar.make(null, "this", oneof.type);
@@ -275,12 +270,11 @@ public abstract class Sig extends Expr implements Clause {
         this.isPrivate = null;
         this.isMeta = null;
         this.isEnum = null;
-        this.isVariable = null; // [HASLab]
+        this.isVariable = var ? Pos.UNKNOWN : null; // [HASLab]
         this.attributes = ConstList.make();
     }
 
     /** Constructs a new PrimSig or SubsetSig. */
-    // [HASLab] extended with variable attribute
     private Sig(Type type, String label, Attr... attributes) throws Err {
         super(AttrType.WHERE.find(attributes), type);
         this.attributes = Util.asList(attributes);
@@ -479,8 +473,9 @@ public abstract class Sig extends Expr implements Clause {
         public final PrimSig parent;
 
         /** Constructs a builtin PrimSig. */
-        private PrimSig(String label, PrimSig parent, boolean add) {
-            super(label);
+        // [HASLab]
+        private PrimSig(String label, PrimSig parent, boolean var, boolean add) {
+            super(label, var); // [HASLab]
             this.parent = parent;
             if (add)
                 this.parent.children.add(this);
@@ -726,7 +721,7 @@ public abstract class Sig extends Expr implements Clause {
                 throw new ErrorType(pos, "Cannot bind field " + label + " to the empty set or empty relation.");
             this.isPrivate = (isPrivate != null ? isPrivate : sig.isPrivate);
             this.isMeta = (isMeta != null ? isMeta : sig.isMeta);
-            this.isVariable = (isVar != null ? isVar : null); // [HASLab]
+            this.isVariable = isVar; // [HASLab]
             this.sig = sig;
         }
 

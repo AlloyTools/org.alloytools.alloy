@@ -152,9 +152,9 @@ public final class A4SolutionReader {
     /** Parse sig/set. */
     private Sig parseSig(String id, int depth) throws IOException, Err {
         Sig ans = id2sig.get(id);
-        // [HASLab] if created in previous steps of the trace re-use sig but must still calculate current atoms
-        // if (ans != null)
-        //  return ans;
+        // [HASLab] identify that has not been processed in this step (ans may be != null from previous steps)
+        if (ans != null && expr2ts.get(ans) != null)
+            return ans;
         XMLNode node = nmap.get(id);
         if (node == null)
             throw new IOException("Unknown SigID " + id + " encountered.");
@@ -226,17 +226,9 @@ public final class A4SolutionReader {
                     ans = (Sig) choice;
                     choices.remove(choice);
                     break;
-                } else if (choice instanceof PrimSig && ((Sig) choice).label.equals(label)  // [HASLab] variable sigs are subsigs except when top
-                           && parents.size() == 1 && parents.get(0).equals(((PrimSig) choice).parent)) {
-                    ans = (Sig) choice;
-                    choices.remove(choice);
-                    break;
                 }
             if (ans == null) {
-                if (isVar != null && parents.get(0) == UNIV) // [HASLab] variable sigs are subsigs except when top
-                    ans = new PrimSig(label, (PrimSig) parents.get(0), isAbstract, isLone, isOne, isSome, isPrivate, isMeta, isEnum, isVar); // [HASLab]
-                else
-                    ans = new SubsetSig(label, parents, isExact, isLone, isOne, isSome, isPrivate, isMeta, isVar); // [HASLab]
+                ans = new SubsetSig(label, parents, isExact, isLone, isOne, isSome, isPrivate, isMeta, isVar); // [HASLab]
                 allsigs.add(ans);
             }
         }
@@ -245,18 +237,6 @@ public final class A4SolutionReader {
         if (ans instanceof PrimSig) {
             // Add the atoms in this SIG into all parent sigs
             for (PrimSig ans2 = ((PrimSig) ans).parent; ans2 != null && !ans2.builtin; ans2 = ans2.parent) {
-                TupleSet ts2 = expr2ts.get(ans2);
-                if (ts2 == null)
-                    ts2 = ts.clone();
-                else {
-                    ts2 = ts2.clone();
-                    ts2.addAll(ts);
-                }
-                expr2ts.put(ans2, ts2);
-            }
-        } else if (ans instanceof SubsetSig && ans.isVariable != null && parents == null) { // [HASLab] variable sigs are subsigs except when top
-            // Add the atoms in this SIG into all parent sigs
-            for (Sig ans2 = ((SubsetSig) ans).parents.get(0); ans2 != null && !ans2.builtin; ans2 = (ans2 instanceof PrimSig) ? ((PrimSig) ans2).parent : ((SubsetSig) ans2).parents.get(0)) {
                 TupleSet ts2 = expr2ts.get(ans2);
                 if (ts2 == null)
                     ts2 = ts.clone();
@@ -384,8 +364,16 @@ public final class A4SolutionReader {
         // set up the basic values of the A4Solution object
         final int bitwidth = Integer.parseInt(inst.getAttribute("bitwidth"));
         final int maxseq = Integer.parseInt(inst.getAttribute("maxseq"));
-        final int tracelength = Integer.parseInt(inst.getAttribute("tracelength"));  // [HASLab]
-        final int backloop = Integer.parseInt(inst.getAttribute("backloop"));        // [HASLab]
+        final int mintrace = Integer.parseInt(inst.getAttribute("mintrace"));
+        final int maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));
+        final int tracelength;
+        final int backloop;
+        try {
+            tracelength = Integer.parseInt(inst.getAttribute("tracelength"));  // [HASLab]
+            backloop = Integer.parseInt(inst.getAttribute("backloop"));        // [HASLab]
+        } catch (Exception ex) {
+            throw new ErrorSyntax("Missing trace attributes.");
+        }
         final int max = Util.max(bitwidth), min = Util.min(bitwidth);
         if (bitwidth >= 1 && bitwidth <= 30)
             for (int i = min; i <= max; i++) {
@@ -440,7 +428,7 @@ public final class A4SolutionReader {
                 // create the A4Solution object
                 A4Options opt = new A4Options();
                 opt.originalFilename = inst.getAttribute("filename");
-                sol = new A4Solution(inst.getAttribute("command"), bitwidth, tracelength, tracelength, maxseq, strings, atoms, null, opt, 1); // [HASLab]
+                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace, maxtrace, maxseq, strings, atoms, null, opt, 1); // [HASLab]
                 factory = sol.getFactory();
                 // parse all the sigs, fields, and skolems
                 for (Map.Entry<String,XMLNode> e : nmap.entrySet())

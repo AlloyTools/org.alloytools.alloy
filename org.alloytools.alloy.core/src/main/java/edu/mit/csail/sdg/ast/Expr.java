@@ -1184,13 +1184,13 @@ public abstract class Expr extends Browsable {
     }
 
     /**
-     * Returns the formula (previous this)
+     * Returns the formula (before this)
      * <p>
      * this must be a formula
      */
     // [HASLab]
-    public final Expr previous() {
-        return ExprUnary.Op.PREVIOUS.make(span(), this);
+    public final Expr before() {
+        return ExprUnary.Op.BEFORE.make(span(), this);
     }
 
     /**
@@ -1227,7 +1227,7 @@ public abstract class Expr extends Browsable {
     }
 
     /**
-     * Returns the formula (this release x)
+     * Returns the formula (this releases x)
      * <p>
      * this and x must both be formulas
      * <p>
@@ -1235,8 +1235,8 @@ public abstract class Expr extends Browsable {
      * Expr object as-is.
      */
     // [HASLab]
-    public final Expr release(Expr x) {
-        return (x == null) ? this : ExprBinary.Op.RELEASE.make(span().merge(x.span()), null, this, x);
+    public final Expr releases(Expr x) {
+        return (x == null) ? this : ExprBinary.Op.RELEASES.make(span().merge(x.span()), null, this, x);
     }
 
     /**
@@ -1253,7 +1253,7 @@ public abstract class Expr extends Browsable {
     }
 
     /**
-     * Returns the formula (this trigger x)
+     * Returns the formula (this triggered x)
      * <p>
      * this and x must both be formulas
      * <p>
@@ -1261,8 +1261,8 @@ public abstract class Expr extends Browsable {
      * Expr object as-is.
      */
     // [HASLab]
-    public final Expr trigger(Expr x) {
-        return (x == null) ? this : ExprBinary.Op.TRIGGER.make(span().merge(x.span()), null, this, x);
+    public final Expr triggered(Expr x) {
+        return (x == null) ? this : ExprBinary.Op.TRIGGERED.make(span().merge(x.span()), null, this, x);
     }
 
     /**

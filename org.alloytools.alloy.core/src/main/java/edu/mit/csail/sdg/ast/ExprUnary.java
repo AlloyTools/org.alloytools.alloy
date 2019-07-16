@@ -167,8 +167,8 @@ public final class ExprUnary extends Expr {
                     ALWAYS("always"), // [HASLab]
                     /** eventually f (where f is a formula) */
                     EVENTUALLY("eventually"), // [HASLab]
-                    /** previous f (where f is a formula) */
-                    PREVIOUS("previous"), // [HASLab]
+                    /** before f (where f is a formula) */
+                    BEFORE("before"), // [HASLab]
                     /** historically f (where f is a formula) */
                     HISTORICALLY("historically"), // [HASLab]
                     /** once f (where f is a formula) */
@@ -273,11 +273,11 @@ public final class ExprUnary extends Expr {
                 case NOOP :
                     break;
                 case NOT :
-                case AFTER :        // [HASLab]
-                case ALWAYS :       // [HASLab]
-                case EVENTUALLY :   // [HASLab]
-                case PREVIOUS :     // [HASLab]
-                case HISTORICALLY : // [HASLab]
+                case AFTER :
+                case ALWAYS :
+                case EVENTUALLY :
+                case BEFORE :
+                case HISTORICALLY :
                 case ONCE :         // [HASLab]
                     sub = sub.typecheck_as_formula();
                     break;
@@ -321,11 +321,11 @@ public final class ExprUnary extends Expr {
                     case SOME :
                     case LONE :
                     case ONE :
-                    case AFTER :        // [HASLab]
-                    case ALWAYS :       // [HASLab]
-                    case EVENTUALLY :   // [HASLab]
-                    case PREVIOUS :     // [HASLab]
-                    case HISTORICALLY : // [HASLab]
+                    case AFTER :
+                    case ALWAYS :
+                    case EVENTUALLY :
+                    case BEFORE :
+                    case HISTORICALLY :
                     case ONCE :         // [HASLab]
                         type = Type.FORMULA;
                         break;
@@ -389,7 +389,7 @@ public final class ExprUnary extends Expr {
             case AFTER :
             case ALWAYS :
             case EVENTUALLY :
-            case PREVIOUS :
+            case BEFORE :
             case HISTORICALLY :
             case ONCE : // [HASLab]
                 s = Type.FORMULA;

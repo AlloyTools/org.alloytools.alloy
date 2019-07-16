@@ -39,7 +39,9 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprUnary.Op;
@@ -120,7 +122,7 @@ public final class CompUtil {
                 for (int i = 0; i < moduleA.length(); i++)
                     if (moduleA.charAt(i) == '/')
                         numberOfSlash++;
-                return up(fileA, numberOfSlash + 1) + File.separatorChar + moduleB.replace('/', File.separatorChar) + ".ele"; // [HASLab] ele extension for local modules
+                return up(fileA, numberOfSlash + 1) + File.separatorChar + moduleB.replace('/', File.separatorChar) + (fileA.substring(fileA.length() - 4, fileA.length())); // [HASLab] use extension of local module
             }
             moduleA = moduleA.substring(a + 1);
             moduleB = moduleB.substring(b + 1);
@@ -178,6 +180,42 @@ public final class CompUtil {
 
         return false;
     }
+
+    // [HASLab]
+    public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
+        for (Sig sig : sigs) {
+            if (sig.isVariable != null)
+                return true;
+            else {
+                for (Decl dec : sig.getFieldDecls()) {
+                    if (dec.isVar != null)
+                        return true;
+                }
+            }
+        }
+        Object varTriggerNode;
+        varTriggerNode = cmd.formula.accept(new VisitQueryOnce<Object>() {
+
+            @Override
+            public Object visit(ExprUnary x) throws Err {
+                if (x.op == Op.AFTER || x.op == Op.BEFORE || x.op == Op.PRIME || x.op == Op.HISTORICALLY || x.op == Op.ALWAYS || x.op == Op.ONCE || x.op == Op.EVENTUALLY)
+                    return x;
+                return super.visit(x);
+            }
+
+            @Override
+            public Object visit(ExprBinary x) throws Err {
+                if (x.op == ExprBinary.Op.UNTIL || x.op == ExprBinary.Op.SINCE || x.op == ExprBinary.Op.TRIGGERED || x.op == ExprBinary.Op.RELEASES)
+                    return x;
+                return super.visit(x);
+            }
+        });
+        if (varTriggerNode != null)
+            return true;
+
+        return false;
+    }
+
 
     // =============================================================================================================//
 
@@ -241,7 +279,7 @@ public final class CompUtil {
             } catch (IOException ex1) {
                 try {
                     String newCp = cp.replaceAll("\\.als$", ".md");
-                    try { // [HASLab] ele extension for built-ins, but must still support als utils (integer, ordering)
+                    try { // [HASLab] try .als built-ins and then .ele built-ins
                         content = Util.readAll(newCp);
                     } catch (IOException e) {
                         newCp = (Util.jarPrefix() + "models/" + x.filename + ".ele").replace('/', File.separatorChar);
@@ -455,7 +493,6 @@ public final class CompUtil {
         }
     }
 
-    // [HASLab] NOTE: see this
     static CompModule parse(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, CompModule root, int lineOffset, String filename, String prefix, int initialResolutionMode) throws Err, FileNotFoundException, IOException {
         CompModule module = CompParser.alloy_parseStream(seenDollar, loaded, fc, root, lineOffset, filename, prefix, initialResolutionMode);
         module.addDefaultCommand();

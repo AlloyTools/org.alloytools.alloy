@@ -48,7 +48,7 @@ public final class Decl {
     public final Pos                               disjoint2;
 
     /**
-     * Nonnull if this sig is a Variable.
+     * Nonnull if this decl is variable (to be used for fields).
      */
     // [HASLab]
     public final Pos                               isVar;

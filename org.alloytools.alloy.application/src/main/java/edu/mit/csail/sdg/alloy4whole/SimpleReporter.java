@@ -63,7 +63,8 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 /**
  * This helper method is used by SimpleGUI.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base,
+ *            electrum-temporal
  */
 
 final class SimpleReporter extends A4Reporter {
@@ -363,18 +364,17 @@ final class SimpleReporter extends A4Reporter {
     }
 
     /** {@inheritDoc} */
-    // [HASLab] solving strategy
     @Override
-    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
         lastTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Mode=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n'); // [HASLab]
+        cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
     }
 
     /** {@inheritDoc} */
     @Override
     public void solve(final int primaryVars, final int totalVars, final int clauses) {
         minimized = 0;
-        StringBuilder sb = new StringBuilder(); // [HASLab]
+        StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
         if (totalVars >= 0)
             sb.append("" + totalVars + " vars. ");
         if (primaryVars >= 0)
@@ -386,13 +386,6 @@ final class SimpleReporter extends A4Reporter {
         sb.append((System.currentTimeMillis() - lastTime) + "ms.\n");
         cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
-    }
-
-    /** {@inheritDoc} */
-    // [HASLab]
-    @Override
-    public void configs(final int configs) {
-        cb("bold", "   Warning, " + configs + "+ configs...\n");
     }
 
     /** {@inheritDoc} */
@@ -703,8 +696,6 @@ final class SimpleReporter extends A4Reporter {
                         final String tempCNF = tempdir + File.separatorChar + i + ".cnf";
                         final Command cmd = cmds.get(i);
                         rep.tempfile = tempCNF;
-                        if (cmd.maxtime != -1 && options.solver.external() != null && options.solver.external().equals("electrod"))
-                            rep.warning(new ErrorWarning("Complete solver selected, Time scope will be ignored.")); // [HASLab]
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
                         A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
                         if (ai == null)

@@ -261,7 +261,7 @@ public final class StaticInstanceReader {
                 PrimSig t = ps.get(0);
                 AlloySet set = makeSet(label, isPrivate, isMeta, isVar, sig(t)); // [HASLab]
                 sets.add(set);
-                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t)))) {
+                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t), state))) { // [HASLab]
                     atom2sets.get(string2atom.get(tp.atom(0))).add(set);
                 }
             } else {
@@ -276,7 +276,7 @@ public final class StaticInstanceReader {
                 }
                 AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, types); // [HASLab]
                 Set<AlloyTuple> ts = new LinkedHashSet<AlloyTuple>();
-                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(mask)))) {
+                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(mask), state))) { // [HASLab]
                     AlloyAtom[] atoms = new AlloyAtom[tp.arity()];
                     for (int i = 0; i < tp.arity(); i++) {
                         atoms[i] = string2atom.get(tp.atom(i));

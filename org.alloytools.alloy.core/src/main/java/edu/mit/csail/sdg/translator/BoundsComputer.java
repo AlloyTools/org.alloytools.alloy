@@ -24,7 +24,6 @@ import java.util.Map;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
@@ -49,8 +48,7 @@ import kodkod.instance.Universe;
  * Immutable; this class assigns each sig and field to some Kodkod relation or
  * expression, then set the bounds.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-symbolic
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
  */
 
 final class BoundsComputer {
@@ -142,17 +140,30 @@ final class BoundsComputer {
         // Recursively allocate all children expressions, and form the union of
         // them
         Expression sum = null;
+        boolean all_static = true;
+        Formula f = null;
+        Variable v = Variable.unary("v");
         for (PrimSig child : sig.children()) {
+            if (child.isVariable != null)
+                all_static = false;
             Expression childexpr = allocatePrimSig(child);
             if (sum == null) {
                 sum = childexpr;
                 continue;
             }
             // subsigs are disjoint
-            sol.addFormula(sum.intersection(childexpr).no().always(), child.isSubsig); // [HASLab]
+            if (!all_static) { // [HASLab] disjointness when variable sigs
+                Expression c = sol.a2k(child);
+                // eventually v in sig => always v not in parent - sig
+                Formula ff = (v.in(c).eventually()).implies(((v.in(sum)).not().always()));
+                f = f == null ? ff : f.and(ff);
+            } else {
+                sol.addFormula(sum.intersection(childexpr).no(), child.isSubsig); // [HASLab]
+            }
             sum = sum.union(childexpr);
         }
         TupleSet lower = lb.get(sig).clone(), upper = ub.get(sig).clone();
+        Relation rem = null;
         if (sum == null) {
             // If sig doesn't have children, then sig should make a fresh
             // relation for itself
@@ -172,11 +183,17 @@ final class BoundsComputer {
                 lower.removeAll(childTS);
                 upper.removeAll(childTS);
             }
-            sum = sum.union(sol.addRel(sig.label + "_remainder", lower, upper, sig.isVariable != null)); // [HASLab]
+            rem = sol.addRel(sig.label + "_remainder", lower, upper, sig.isVariable != null);
+            // [HASLab] disjointness when variable sigs
+            if (!all_static) {
+                Formula ff = (v.in(sum).eventually()).implies(((v.in(rem)).not().always()));
+                f = f == null ? ff : f.and(ff);
+            }
+            sum = sum.union(rem);
         }
-        if (sig.isOne != null) // [HASLab]
-            sol.addFormula(sum.one().always(), sig.isOne);
-        if (sig.isVariable == null && !sig.children().isEmpty()) // [HASLab]
+        if (f != null) // [HASLab] disjointness when variable sigs
+            sol.addFormula(f.forAll(v.oneOf(Expression.UNIV)), sig.pos); // always all v : parent | f
+        if (sig.isVariable == null && f != null) // [HASLab]
             sol.addFormula((sum.prime().eq(sum)).always(), sig.isVariable);
         sol.addSig(sig, sum);
         return sum;
@@ -193,7 +210,10 @@ final class BoundsComputer {
             return sum;
         // Recursively form the union of all parent expressions
         TupleSet ts = factory.noneOf(1);
+        boolean hasVarParent = false; // [HASLab]
         for (Sig parent : sig.parents) {
+            if (parent.isVariable != null)
+                hasVarParent = true;
             Expression p = (parent instanceof PrimSig) ? sol.a2k(parent) : allocateSubsetSig((SubsetSig) parent);
             ts.addAll(sol.query(true, p, false));
             if (sum == null)
@@ -212,7 +232,10 @@ final class BoundsComputer {
         sol.addSig(sig, r);
         // Add a constraint that it is INDEED a subset of the union of its
         // parents
-        sol.addFormula(r.in(sum).always(), sig.isSubset); // [HASLab]
+        if (sig.isVariable != null || hasVarParent) // [HASLab]
+            sol.addFormula(r.in(sum).always(), sig.isSubset);
+        else
+            sol.addFormula(r.in(sum), sig.isSubset);
         return r;
     }
 
@@ -234,7 +257,7 @@ final class BoundsComputer {
         while (n > 0) {
             n--;
             Variable v = Variable.unary("v" + Integer.toString(TranslateAlloyToKodkod.cnt++));
-            kodkod.ast.Decl dd = v.oneOf(a);
+            kodkod.ast.Decl dd = v.oneOf(sig.isVariable == null ? a : Expression.UNIV); // [HASLab]
             if (d == null)
                 d = dd;
             else
@@ -249,8 +272,10 @@ final class BoundsComputer {
         }
         if (f != null)
             return sum.eq(a).and(f).forSome(d);
-        else
+        else if (sig.isVariable == null)
             return a.no().or(sum.eq(a).forSome(d));
+        else
+            return Expression.UNIV.no().or(a.in(sum).always().forSome(d)); // [HASLab]
     }
 
     // ==============================================================================================================//
@@ -415,13 +440,6 @@ final class BoundsComputer {
                 sol.addField(f, isOne && !isVar ? sol.a2k(s).product(r) : r);
             }
         }
-        // [HASLab] Add possible symbolic bounds
-        if (Version.experimental)
-            for (Sig s : sigs) {
-                sol.addSymbolicBound(s);
-                for (Field f : s.getFields())
-                    sol.addSymbolicBound(f);
-            }
         // Add any additional SIZE constraints
         for (Sig s : sigs)
             if (!s.builtin) {
@@ -430,25 +448,25 @@ final class BoundsComputer {
                 final int n = sc.sig2scope(s);
                 if (s.isOne != null && (lower.size() != 1 || upper.size() != 1)) {
                     rep.bound("Sig " + s + " in " + upper + " with size==1\n");
-                    sol.addFormula(exp.one().always(), s.isOne); // [HASLab]
+                    sol.addFormula(s.isVariable != null ? exp.one().always() : exp.one(), s.isOne); // [HASLab]
                     continue;
                 }
                 if (s.isSome != null && lower.size() < 1)
-                    sol.addFormula(exp.some().always(), s.isSome); // [HASLab]
+                    sol.addFormula(s.isVariable != null ? exp.some().always() : exp.one(), s.isSome); // [HASLab]
                 if (s.isLone != null && upper.size() > 1)
-                    sol.addFormula(exp.lone().always(), s.isLone); // [HASLab]
+                    sol.addFormula(s.isVariable != null ? exp.lone().always() : exp.one(), s.isLone); // [HASLab]
                 if (n < 0)
                     continue; // This means no scope was specified
                 if (lower.size() == n && upper.size() == n && sc.isExact(s)) {
                     rep.bound("Sig " + s + " == " + upper + "\n");
                 } else if (sc.isExact(s)) {
                     rep.bound("Sig " + s + " in " + upper + " with size==" + n + "\n");
-                    sol.addFormula(size(s, n, true).always(), Pos.UNKNOWN); // [HASLab]
+                    sol.addFormula(size(s, n, true), Pos.UNKNOWN);
                 } else if (upper.size() <= n) {
                     rep.bound("Sig " + s + " in " + upper + "\n");
                 } else {
                     rep.bound("Sig " + s + " in " + upper + " with size<=" + n + "\n");
-                    sol.addFormula(size(s, n, false).always(), Pos.UNKNOWN); // [HASLab]
+                    sol.addFormula(size(s, n, false), Pos.UNKNOWN);
                 }
             }
     }

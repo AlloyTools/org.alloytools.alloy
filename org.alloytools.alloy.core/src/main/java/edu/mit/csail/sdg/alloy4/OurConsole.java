@@ -121,7 +121,11 @@ public final class OurConsole extends JScrollPane {
     /**
      * The position in this.history that is currently showing.
      */
-    private int browse = 0;
+    private int browse  = 0;
+
+    /** The current state under which to evaluate the expressions. */
+    // [HASLab]
+    private int current = 0;
 
     /*
      * Helper method that construct a mutable style with the given font name, font
@@ -379,7 +383,9 @@ public final class OurConsole extends JScrollPane {
         boolean isBad = false;
         Object result;
         try {
-            result = computer.compute(cmd);
+            result = computer.compute(new String[] { // [HASLab] state arg
+                                                    cmd, current + ""
+            });
         } catch (Throwable ex) {
             result = ex.toString();
             isBad = true;
@@ -429,5 +435,11 @@ public final class OurConsole extends JScrollPane {
             } else
                 doc.insertString(where >= 0 ? where : doc.getLength(), text, style);
         } catch (BadLocationException ex) {}
+    }
+
+    /** Set the current state under which to evaluate expressions. */
+    // [HASLab]
+    public void setCurrent(int selectedIndex) {
+        current = selectedIndex;
     }
 }

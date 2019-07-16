@@ -792,7 +792,11 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(false, null, ".ele", ".ele files"); // [HASLab] ele extension
+            File f = OurDialog.askFile(false, null, new String[] {
+                                                                  ".ele", ".als"
+            }, ".als and .ele files");
+            if (f == null)
+                return false;  // [HASLab] ele extension
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());

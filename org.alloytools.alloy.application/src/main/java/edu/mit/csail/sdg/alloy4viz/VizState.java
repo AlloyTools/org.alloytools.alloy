@@ -157,18 +157,27 @@ public final class VizState {
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
-        for (AlloyType r : currentModel.getTypes()) // [HASLab] paint variable sigs differently
-            if (r.isVar)
-                nodeStyle.put(r, DotStyle.DASHED);
-        for (AlloyRelation r : currentModel.getRelations()) // [HASLab] paint variable fields differently
-            if (r.isVar)
-                edgeStyle.put(r, DotStyle.DASHED);
-        for (AlloySet r : currentModel.getSets()) // [HASLab] paint variable sets differently
-            if (r.isVar)
-                nodeStyle.put(r, DotStyle.DASHED);
+        applyDefaultVar(); // [HASLab] dashed variable elements
         // Done
         cache.clear();
         changedSinceLastSave = false;
+    }
+
+    /**
+     * Paints variable items as dashed if no other style has been set by the user.
+     * Must be run every time since new elements may have been introduced.
+     */
+    // [HASLab]
+    void applyDefaultVar() {
+        for (AlloyType r : currentModel.getTypes()) // [HASLab] paint variable sigs differently
+            if (nodeStyle.get(r) == null)
+                nodeStyle.put(r, r.isVar ? DotStyle.DASHED : null);
+        for (AlloyRelation r : currentModel.getRelations()) // [HASLab] paint variable fields differently
+            if (edgeStyle.get(r) == null)
+                edgeStyle.put(r, r.isVar ? DotStyle.DASHED : null);
+        for (AlloySet r : currentModel.getSets()) // [HASLab] paint variable sets differently
+            if (nodeStyle.get(r) == null)
+                nodeStyle.put(r, r.isVar ? DotStyle.DASHED : null);
     }
 
     /**

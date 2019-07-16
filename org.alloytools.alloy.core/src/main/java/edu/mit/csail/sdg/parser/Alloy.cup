@@ -225,20 +225,20 @@ parser code {:
     ch.put(CompSym.ID, "NAME");
     ch.put(CompSym.NUMBER, "NUMBER");
     ch.put(CompSym.STR, "STRING");
-    ch.put(CompSym.VAR, "var");                       // [HASLab] ltl tokens
-    ch.put(CompSym.ALWAYS, "always");                 // [HASLab] ltl tokens
-    ch.put(CompSym.EVENTUALLY, "eventually");         // [HASLab] ltl tokens
-    ch.put(CompSym.AFTER, "after");                   // [HASLab] ltl tokens
-    ch.put(CompSym.PREVIOUS, "previous");             // [HASLab] ltl tokens
-    ch.put(CompSym.HISTORICALLY, "historically");     // [HASLab] ltl tokens
-    ch.put(CompSym.ONCE, "once");                     // [HASLab] ltl tokens
-    ch.put(CompSym.RELEASE, "release");               // [HASLab] ltl tokens
-    ch.put(CompSym.UNTIL, "until");                   // [HASLab] ltl tokens
-    ch.put(CompSym.SINCE, "since");                   // [HASLab] ltl tokens
-    ch.put(CompSym.TRIGGER, "trigger");               // [HASLab] ltl tokens
-    ch.put(CompSym.TRCSEQ, ";");	   	              // [HASLab] ltl tokens
-    ch.put(CompSym.PRIME, "'"); 					  // [HASLab] ltl tokens
-    ch.put(CompSym.TIME, "Time"); 					  // [HASLab] ltl tokens
+    ch.put(CompSym.VAR, "var");                       // [HASLab] temporal tokens
+    ch.put(CompSym.ALWAYS, "always");                 // [HASLab] temporal tokens
+    ch.put(CompSym.EVENTUALLY, "eventually");         // [HASLab] temporal tokens
+    ch.put(CompSym.AFTER, "after");                   // [HASLab] temporal tokens
+    ch.put(CompSym.BEFORE, "before");                 // [HASLab] temporal tokens
+    ch.put(CompSym.HISTORICALLY, "historically");     // [HASLab] temporal tokens
+    ch.put(CompSym.ONCE, "once");                     // [HASLab] temporal tokens
+    ch.put(CompSym.RELEASES, "releases");             // [HASLab] temporal tokens
+    ch.put(CompSym.UNTIL, "until");                   // [HASLab] temporal tokens
+    ch.put(CompSym.SINCE, "since");                   // [HASLab] temporal tokens
+    ch.put(CompSym.TRIGGERED, "triggered");           // [HASLab] temporal tokens
+    ch.put(CompSym.TRCSEQ, ";");	   	              // [HASLab] temporal tokens
+    ch.put(CompSym.PRIME, "'"); 					  // [HASLab] temporal tokens
+    ch.put(CompSym.TIME, "Time"); 					  // [HASLab] temporal tokens
     TreeSet<String> list = new TreeSet<String>();
     Pos p=Pos.UNKNOWN;
     if (x!=null && x.value instanceof Pos) p=(Pos)(x.value);
@@ -358,7 +358,7 @@ action code {:
           if (j.label.equals("univ")) { overall=k; s.remove(i); continue; }
           if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
-          if (j.label.equals("Time")) { // [HASLab]
+          if (j.label.equals("Time")) { // [HASLab] process time scopes
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "The time cannot be specified more than once."); 
         	  maxtime=k; 
         	  if (s.get(i).isExact) mintime = k; 
@@ -508,11 +508,11 @@ terminal Pos EVENTUALLY;       //  eventually  	 // [HASLab] ltl tokens
 terminal Pos AFTER;            //  after  	  	 // [HASLab] ltl tokens
 terminal Pos ONCE;             //  once   	 	 // [HASLab] ltl tokens
 terminal Pos HISTORICALLY;     //  historically	 // [HASLab] ltl tokens
-terminal Pos PREVIOUS;         //  previous		 // [HASLab] ltl tokens
-terminal Pos RELEASE;          //  release		 // [HASLab] ltl tokens
+terminal Pos BEFORE;           //  before		 // [HASLab] ltl tokens
+terminal Pos RELEASES;         //  releases		 // [HASLab] ltl tokens
 terminal Pos UNTIL;            //  until		 // [HASLab] ltl tokens
 terminal Pos SINCE;            //  since		 // [HASLab] ltl tokens
-terminal Pos TRIGGER;          //  trigger   	 // [HASLab] ltl tokens
+terminal Pos TRIGGERED;        //  triggered   	 // [HASLab] ltl tokens
 terminal Pos TRCSEQ;           //  trace seq     // [HASLab] ltl tokens
 terminal Pos TIME;         	   //  Time		 	 // [HASLab] ltl tokens
 terminal Pos PRIME; 	   	   // '		 		 // [HASLab] ltl tokens
@@ -609,6 +609,8 @@ nonterminal Expr                       TempUnaryA;  // [HASLab]
 nonterminal Expr                       TempUnaryB;  // [HASLab]
 nonterminal Expr                       TempBinaryA; // [HASLab]
 nonterminal Expr                       TempBinaryB; // [HASLab]
+nonterminal Expr                       TraceExprA; // [HASLab]
+nonterminal Expr                       TraceExprB; // [HASLab]
 
 precedence left PRIME;      // [HASLab]
 precedence right TRCSEQ;    // [HASLab]
@@ -692,7 +694,7 @@ Typescope  ::= TypeNumber:e UNIV:f    {: if (1==1) throw new ErrorSyntax(e.pos.m
 
 Typescope  ::= TypeNumber:a STRING:b  {: RESULT = new CommandScope(a.pos.merge(b), new PrimSig("String", AttrType.WHERE.make(a.pos.merge(b))), a.isExact, a.startingScope, a.endingScope, a.increment); :};
 
-// [HASLab]
+// [HASLab] scope on Time
 Typescope  ::= TypeNumber:a TIME:b    {:
     Pos p = a.pos.merge(b);
 	RESULT = new CommandScope(p, new PrimSig("Time", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
@@ -802,10 +804,10 @@ Namex ::= Namex:a COMMA EXACTLY Name:b {: nod(b); a.add(null); a.add(b); RESULT=
 
 Decla ::=           PART:k Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, null, a, mult(b)); :}; // [HASLab] 
-Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, null, a, mult(b)); :}; // [HASLab] 
-Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, null, a, mult(b)); :}; // [HASLab] 
-Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :}; // [HASLab] 
+Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :}; // [HASLab] variable decls
 
 Decla ::= VAR:v 		  DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, v, a, mult(b)); :}; // [HASLab] variable decls
 Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, v, a, mult(b)); :}; // [HASLab] variable decls
@@ -814,10 +816,10 @@ Decla ::= VAR:v                  Names:a COLON                 Expr:b  {: RESULT
 
 Decla ::=           PART:k Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, null, a, mult(b)); :}; // [HASLab] 
-Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, null, a, mult(b)); :}; // [HASLab] 
-Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, null, a, mult(b)); :}; // [HASLab] 
-Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, null, a, mult(b)); :}; // [HASLab] 
+Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, null, a, mult(b)); :}; // [HASLab] variable decls
 
 Decla ::= VAR:v           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, v, a, mult(b)); :}; // [HASLab] variable decls
 Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, v, a, mult(b)); :}; // [HASLab] variable decls
@@ -830,8 +832,8 @@ Declb ::=           PART:k Names   EQUALS          Expr    {: if (1==1) throw Co
 Declb ::=           EXH:k  Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                       :};
 Declb ::=           DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
 Declb ::= PRIVATE   DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
-Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
-Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab]
+Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab] variable decls
+Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab] variable decls
 
 Declb ::=           PART:k Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "part");                                   :};
 Declb ::=           EXH:k  Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                    :};
@@ -882,8 +884,8 @@ Exprp ::= Exprp:a COMMA Expr:b  {: a.add(b); RESULT=a;                          
 
 //=============================================================================
 
-Expr ::= OrExprA:x                    {: RESULT = x;                                  :};
-Expr ::= OrExprB:x                    {: RESULT = x;                                  :};
+Expr ::= TraceExprA:x                 {: RESULT = x;                                  :}; // [HASLab] temporal seq
+Expr ::= TraceExprB:x                 {: RESULT = x;                                  :}; // [HASLab] temporal seq
 Expr ::= Bind:x                       {: RESULT = x;                                  :};
 Bind ::= LET     Let:x                {: RESULT = x;                                  :};
 Bind ::= ALL2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ALL .make(o, null, a, b); :};
@@ -892,6 +894,12 @@ Bind ::= SOME2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SOME.make(o, null, a
 Bind ::= LONE2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.LONE.make(o, null, a, b); :};
 Bind ::= ONE2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ONE .make(o, null, a, b); :};
 Bind ::= SUM2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SUM .make(o, null, a, b); :};
+
+// [HASLab] temporal seq
+TraceExprA ::=                    OrExprA:a    {: RESULT=a;                                                                 :};
+TraceExprA ::= OrExprB:a TRCSEQ:o Bind:b       {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
+TraceExprB ::=                    OrExprB:b    {: RESULT=b;                                                                 :};
+TraceExprB ::= OrExprB:a TRCSEQ:o TraceExprB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
 
 OrExprA ::=                EquivExprA:a  {: RESULT=a;                                    :};
 OrExprA ::= OrExprB:a OR:o Bind:b        {: RESULT=ExprBinary.Op.OR.make(o, null, a, b); :};
@@ -920,46 +928,44 @@ ImpliesExprCloseB ::= AndExprB:a IMPLIES:o ImpliesExprCloseB:b ELSE ImpliesExprC
 ImpliesExprOpenB  ::= AndExprB:a IMPLIES:o ImpliesExprCloseB:b ELSE ImpliesExprOpenB:c  {: RESULT = ExprITE.make(o,a,b,c);                     :};
 ImpliesExprOpenB  ::= AndExprB:a IMPLIES:o ImpliesExprB:b                               {: RESULT = ExprBinary.Op.IMPLIES.make(o, null, a, b); :};
 
-AndExprA ::= TempBinaryA:a                  {: RESULT=a;                                     :}; // [HASLab]
+AndExprA ::= TempBinaryA:a                  {: RESULT=a;                                     :}; // [HASLab] temporal expressions
 AndExprA ::= AndExprB:a AND:o Bind:b        {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :};
-AndExprB ::=                  TempBinaryB:b {: RESULT=b;                                     :}; // [HASLab]
-AndExprB ::= AndExprB:a AND:o TempBinaryB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :}; // [HASLab]
+AndExprB ::=                  TempBinaryB:b {: RESULT=b;                                     :}; // [HASLab] temporal expressions
+AndExprB ::= AndExprB:a AND:o TempBinaryB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :}; // [HASLab] temporal expressions
 
-// [HASLab]
-TempBinaryA ::=                         TempUnaryA:a  {: RESULT=a;                                                                       :};
-TempBinaryA ::= TempBinaryB:a UNTIL:o   Bind:b        {: RESULT = ExprBinary.Op.UNTIL  .make(o, null, a, b);                             :};
-TempBinaryA ::= TempBinaryB:a SINCE:o   Bind:b        {: RESULT = ExprBinary.Op.SINCE  .make(o, null, a, b);                             :};
-TempBinaryA ::= TempBinaryB:a TRIGGER:o Bind:b        {: RESULT = ExprBinary.Op.TRIGGER.make(o, null, a, b);                             :};
-TempBinaryA ::= TempBinaryB:a RELEASE:o Bind:b        {: RESULT = ExprBinary.Op.RELEASE.make(o, null, a, b);                             :};
-TempBinaryA ::= Bind:b        TRCSEQ:o  TempBinaryB:a {: RESULT = ExprBinary.Op.AND    .make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
-TempBinaryB ::=                         TempUnaryB:b  {: RESULT=b;                                                                       :};
-TempBinaryB ::= TempBinaryB:a UNTIL:o   TempUnaryB:b  {: RESULT = ExprBinary.Op.UNTIL  .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a SINCE:o   TempUnaryB:b  {: RESULT = ExprBinary.Op.SINCE  .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a RELEASE:o TempUnaryB:b  {: RESULT = ExprBinary.Op.RELEASE.make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a TRIGGER:o TempUnaryB:b  {: RESULT = ExprBinary.Op.TRIGGER.make(o, null, a, b);                             :};
-TempBinaryB ::= TempUnaryB:a  TRCSEQ:o  TempBinaryB:b {: RESULT = ExprBinary.Op.AND    .make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
+// [HASLab] temporal expressions
+TempBinaryA ::=                           TempUnaryA:a  {: RESULT=a;                                                                       :};
+TempBinaryA ::= TempBinaryB:a UNTIL:o     Bind:b        {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
+TempBinaryA ::= TempBinaryB:a SINCE:o     Bind:b        {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
+TempBinaryA ::= TempBinaryB:a TRIGGERED:o Bind:b        {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
+TempBinaryA ::= TempBinaryB:a RELEASES:o  Bind:b        {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
+TempBinaryB ::=                           TempUnaryB:b  {: RESULT=b;                                                                       :};
+TempBinaryB ::= TempBinaryB:a UNTIL:o     TempUnaryB:b  {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a SINCE:o     TempUnaryB:b  {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a RELEASES:o  TempUnaryB:b  {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a TRIGGERED:o TempUnaryB:b  {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
 
-// [HASLab]
+// [HASLab] temporal expressions
 TempUnaryA ::=                NegExprA:a     {: RESULT=a; 										:};
-TempUnaryA ::= ALWAYS:o       Bind:a         {: RESULT = ExprUnary.Op.ALWAYS      .make(o, a); 	:};
-TempUnaryA ::= EVENTUALLY:o   Bind:a         {: RESULT = ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
-TempUnaryA ::= AFTER:o        Bind:a         {: RESULT = ExprUnary.Op.AFTER  	  .make(o, a); 	:};
-TempUnaryA ::= HISTORICALLY:o Bind:a         {: RESULT = ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
-TempUnaryA ::= ONCE:o         Bind:a         {: RESULT = ExprUnary.Op.ONCE        .make(o, a); 	:};
-TempUnaryA ::= PREVIOUS:o     Bind:a         {: RESULT = ExprUnary.Op.PREVIOUS    .make(o, a); 	:};
-TempUnaryA ::= ALWAYS:o       TempUnaryA:a   {: RESULT = ExprUnary.Op.ALWAYS      .make(o, a); 	:};
-TempUnaryA ::= EVENTUALLY:o   TempUnaryA:a   {: RESULT = ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
-TempUnaryA ::= AFTER:o        TempUnaryA:a   {: RESULT = ExprUnary.Op.AFTER       .make(o, a); 	:};
-TempUnaryA ::= HISTORICALLY:o TempUnaryA:a   {: RESULT = ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
-TempUnaryA ::= ONCE:o         TempUnaryA:a   {: RESULT = ExprUnary.Op.ONCE        .make(o, a); 	:};
-TempUnaryA ::= PREVIOUS:o     TempUnaryA:a   {: RESULT = ExprUnary.Op.PREVIOUS    .make(o, a); 	:};
+TempUnaryA ::= ALWAYS:o       Bind:a         {: RESULT=ExprUnary.Op.ALWAYS      .make(o, a); 	:};
+TempUnaryA ::= EVENTUALLY:o   Bind:a         {: RESULT=ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
+TempUnaryA ::= AFTER:o        Bind:a         {: RESULT=ExprUnary.Op.AFTER       .make(o, a); 	:};
+TempUnaryA ::= HISTORICALLY:o Bind:a         {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
+TempUnaryA ::= ONCE:o         Bind:a         {: RESULT=ExprUnary.Op.ONCE        .make(o, a); 	:};
+TempUnaryA ::= BEFORE:o       Bind:a         {: RESULT=ExprUnary.Op.BEFORE      .make(o, a); 	:};
+TempUnaryA ::= ALWAYS:o       TempUnaryA:a   {: RESULT=ExprUnary.Op.ALWAYS      .make(o, a); 	:};
+TempUnaryA ::= EVENTUALLY:o   TempUnaryA:a   {: RESULT=ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
+TempUnaryA ::= AFTER:o        TempUnaryA:a   {: RESULT=ExprUnary.Op.AFTER       .make(o, a); 	:};
+TempUnaryA ::= HISTORICALLY:o TempUnaryA:a   {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
+TempUnaryA ::= ONCE:o         TempUnaryA:a   {: RESULT=ExprUnary.Op.ONCE        .make(o, a); 	:};
+TempUnaryA ::= BEFORE:o       TempUnaryA:a   {: RESULT=ExprUnary.Op.BEFORE      .make(o, a); 	:};
 TempUnaryB ::=                NegExprB:a     {: RESULT=a; 										:};
-TempUnaryB ::= ALWAYS:o       TempUnaryB:a   {: RESULT = ExprUnary.Op.ALWAYS      .make(o, a); 	:};
-TempUnaryB ::= EVENTUALLY:o   TempUnaryB:a 	 {: RESULT = ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
-TempUnaryB ::= AFTER:o        TempUnaryB:a 	 {: RESULT = ExprUnary.Op.AFTER       .make(o, a); 	:};
-TempUnaryB ::= HISTORICALLY:o TempUnaryB:a 	 {: RESULT = ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
-TempUnaryB ::= ONCE:o         TempUnaryB:a   {: RESULT = ExprUnary.Op.ONCE        .make(o, a); 	:};
-TempUnaryB ::= PREVIOUS:o     TempUnaryB:a   {: RESULT = ExprUnary.Op.PREVIOUS    .make(o, a); 	:};
+TempUnaryB ::= ALWAYS:o       TempUnaryB:a   {: RESULT=ExprUnary.Op.ALWAYS      .make(o, a); 	:};
+TempUnaryB ::= EVENTUALLY:o   TempUnaryB:a 	 {: RESULT=ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
+TempUnaryB ::= AFTER:o        TempUnaryB:a 	 {: RESULT=ExprUnary.Op.AFTER       .make(o, a); 	:};
+TempUnaryB ::= HISTORICALLY:o TempUnaryB:a 	 {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
+TempUnaryB ::= ONCE:o         TempUnaryB:a   {: RESULT=ExprUnary.Op.ONCE        .make(o, a); 	:};
+TempUnaryB ::= BEFORE:o       TempUnaryB:a   {: RESULT=ExprUnary.Op.BEFORE      .make(o, a); 	:};
 
 NegExprA ::=         CompareExprA:b         {: RESULT=b;                           :};
 NegExprA ::= NOT:o   Bind:b                 {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
@@ -1009,15 +1015,14 @@ CompareExprB ::= SET:o  ShiftExprB:b                        {: RESULT=ExprUnary.
 CompareExprB ::= SEQ:o  ShiftExprB:b                        {: RESULT=ExprBinary.Op.ISSEQ_ARROW_LONE.make(o, null, ExprVar.make(o,"seq/Int"), b); parser.alloymodule.addSeq(o); :};
 CompareExprB ::=        ShiftExprB:b                        {: RESULT=b;                               :};
 
-// [HASLab] temporarily disabled to allow the generation of parser under java byte limit
 ShiftExprA ::=                    UnionDiffExprA:b        {: RESULT=b;                                     :};
-//ShiftExprA ::= ShiftExprB:a SHL:o Bind:b                  {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
-//ShiftExprA ::= ShiftExprB:a SHR:o Bind:b                  {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
-//ShiftExprA ::= ShiftExprB:a SHA:o Bind:b                  {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
+ShiftExprA ::= ShiftExprB:a SHL:o Bind:b                  {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
+ShiftExprA ::= ShiftExprB:a SHR:o Bind:b                  {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
+ShiftExprA ::= ShiftExprB:a SHA:o Bind:b                  {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
 ShiftExprB ::=                    UnionDiffExprB:b        {: RESULT=b;                                     :};
-//ShiftExprB ::= ShiftExprB:a SHL:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
-//ShiftExprB ::= ShiftExprB:a SHR:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
-//ShiftExprB ::= ShiftExprB:a SHA:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
+ShiftExprB ::= ShiftExprB:a SHL:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHL.make(o, null, a, b); :};
+ShiftExprB ::= ShiftExprB:a SHR:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHR.make(o, null, a, b); :};
+ShiftExprB ::= ShiftExprB:a SHA:o UnionDiffExprB:b        {: RESULT=ExprBinary.Op.SHA.make(o, null, a, b); :};
 
 UnionDiffExprA ::=                           MulExprA:b    {: RESULT=b;                                       :};
 UnionDiffExprA ::= UnionDiffExprB:a PLUS:o   Bind:b        {: RESULT=ExprBinary.Op.PLUS .make(o, null, a, b); :};
@@ -1125,9 +1130,9 @@ UnopExprB ::=          BaseExpr:b   {: RESULT=b;                                
 UnopExprB ::= TILDE:o  UnopExprB:b  {: RESULT=ExprUnary.Op.TRANSPOSE.make(o,b); :};
 UnopExprB ::= STAR:o   UnopExprB:b  {: RESULT=ExprUnary.Op.RCLOSURE .make(o,b); :};
 UnopExprB ::= CARET:o  UnopExprB:b  {: RESULT=ExprUnary.Op.CLOSURE  .make(o,b); :};
-UnopExprA ::= Bind:b PRIME:o        {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab]
-UnopExprA ::= UnopExprA:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab]
-UnopExprB ::= UnopExprB:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab]
+UnopExprA ::= Bind:b PRIME:o        {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab] temporal expressions
+UnopExprA ::= UnopExprA:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab] temporal expressions
+UnopExprB ::= UnopExprB:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab] temporal expressions
 
 BaseExpr ::= NUMBER:x                               {: RESULT = x;                                                        :};
 BaseExpr ::= STR:x                                  {: RESULT = x;                                                        :};

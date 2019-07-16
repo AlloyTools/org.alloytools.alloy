@@ -24,7 +24,6 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposedPref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
@@ -42,7 +41,6 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Unbounded;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
@@ -184,8 +182,7 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  * (2) the run() method in the instance watcher (in constructor) is launched
  * from a fresh thread
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-decomposed, electrum-base
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -400,7 +397,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Helper method that returns a hopefully very short name for a file name.
      */
     public static String slightlyShorterFilename(String name) {
-        if (name.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] ele extension
+        if (name.toLowerCase(Locale.US).endsWith(".als") || name.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] .ele extension
             int i = name.lastIndexOf('/');
             if (i >= 0)
                 name = name.substring(i + 1);
@@ -1174,8 +1171,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.coreGranularity = CoreGranularity.get();
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.solver = Solver.get();
-        opt.decomposed_mode = DecomposedPref.get().ordinal(); // [HASLab]
-        opt.run_unbounded = Unbounded.get(); // [HASLab]
         task.bundleIndex = i;
         task.bundleWarningNonFatal = WarningNonfatal.get();
         task.map = text.takeSnapshot();
@@ -1429,7 +1424,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
             if (Version.experimental) {
                 addToMenu(optmenu, Unrolls);
-                addToMenu(optmenu, DecomposedPref); // [HASLab]
                 addToMenu(optmenu, ImplicitThis, NoOverflow, InferPartialInstance);
             }
 
@@ -1773,10 +1767,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 filename = ((File) input).getAbsolutePath();
                 return "";
             }
-            if (!(input instanceof String))
+            if (!(input instanceof String[]))
                 return "";
-            final String str = (String) input;
-            if (str.trim().length() == 0)
+            final String[] strs = (String[]) input; // [HASLab] state arg
+            if (strs[0].trim().length() == 0)
                 return ""; // Empty line
             Module root = null;
             A4Solution ans = null;
@@ -1811,13 +1805,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 throw new ErrorFatal("Failed to read or parse the XML file.");
             }
             try {
-                Expr e = CompUtil.parseOneExpression_fromString(root, str);
+                Expr e = CompUtil.parseOneExpression_fromString(root, strs[0]); // [HASLab]
                 if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
                     SimInstance simInst = convert(root, ans);
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
-                return ans.eval(e);
+                return ans.eval(e, Integer.valueOf(strs[1])).toString(); // [HASLab] eval state
             } catch (HigherOrderDeclException ex) {
                 throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
             }
@@ -1868,7 +1862,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                         break;
 
                     default :
-                        if (cmd.endsWith(".als"))
+                        if (cmd.endsWith(".als") || cmd.endsWith(".ele")) // [HASLab] .ele extension
                             remainingArgs.add(cmd);
                         else {
                             System.out.println("Unknown cmd " + cmd);
@@ -2206,7 +2200,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // Open the given file, if a filename is given in the command line
         for (String f : args)
-            if (f.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] ele extension
+            if (f.toLowerCase(Locale.US).endsWith(".als") || f.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] ele extension
                 File file = new File(f);
                 if (file.exists() && file.isFile())
                     doOpenFile(file.getPath());

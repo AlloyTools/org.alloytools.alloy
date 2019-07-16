@@ -19,7 +19,6 @@ package edu.mit.csail.sdg.translator;
 import static edu.mit.csail.sdg.ast.Sig.NONE;
 import static edu.mit.csail.sdg.ast.Sig.SEQIDX;
 import static edu.mit.csail.sdg.ast.Sig.SIGINT;
-import static edu.mit.csail.sdg.ast.Sig.SIGTIME;
 import static edu.mit.csail.sdg.ast.Sig.STRING;
 import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
@@ -41,6 +40,7 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.parser.CompUtil;
 
 /**
  * Immutable; this class computes the scopes for each sig and computes the
@@ -137,8 +137,6 @@ final class ScopeComputer {
             return maxseq;
         if (sig == STRING)
             return maxstring;
-        if (sig == SIGTIME)  // [HASLab]
-            return maxtrace;
         Integer y = sig2scope.get(sig);
         return (y == null) ? (-1) : y;
     }
@@ -165,7 +163,7 @@ final class ScopeComputer {
 
     /** Returns whether the scope of a sig is exact or not. */
     public boolean isExact(Sig sig) {
-        return sig == SIGINT || sig == SEQIDX || sig == STRING || ((sig instanceof PrimSig) && exact.containsKey(sig)) || sig == SIGTIME; // [HASLab]
+        return sig == SIGINT || sig == SEQIDX || sig == STRING || ((sig instanceof PrimSig) && exact.containsKey(sig));
     }
 
     /** Make the given sig "exact". */
@@ -194,16 +192,16 @@ final class ScopeComputer {
     /** Modifies the maximum trace length of this solution's model. */
     // [HASLab]
     private void setMaxTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
-        if (newTracelength < 0)
-            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
+        //        if (newTracelength < 0)
+        //            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
         maxtrace = newTracelength;
     }
 
     /** Modifies the minimum trace length of this solution's model. */
     // [HASLab]
     private void setMinTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
-        if (newTracelength < 0)
-            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
+        //        if (newTracelength < 0)
+        //            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
         mintrace = newTracelength;
     }
 
@@ -384,6 +382,8 @@ final class ScopeComputer {
         this.rep = rep;
         this.cmd = cmd;
         boolean shouldUseInts = true; // TODO CompUtil.areIntsUsed(sigs, cmd);
+        boolean isVar = CompUtil.isTemporalModel(sigs, cmd);
+
         // Process each sig listed in the command
         for (CommandScope entry : cmd.scope) {
             Sig s = entry.sig;
@@ -407,9 +407,11 @@ final class ScopeComputer {
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"none\".");
             if (s.isEnum != null)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on the enum \"" + s.label + "\"");
-            if (s.isOne != null && scope != 1)
+            if (s.isOne != null && s.isVariable == null && scope != 1) // [HASLab] if var, the atom may change
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1, and cannot be " + scope);
-            if (s.isLone != null && scope > 1)
+            if (s.isOne != null && s.isVariable != null && scope < 1)
+                throw new ErrorSyntax(cmd.pos, "Var sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1 or above, and cannot be " + scope); // [HASLab] if var, the atom may change
+            if (s.isLone != null && s.isVariable == null && scope > 1) // [HASLab] if var, the atom may change
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"lone\", so its scope must 0 or 1, and cannot be " + scope);
             if (s.isSome != null && scope < 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"some\", so its scope must 1 or above, and cannot be " + scope);
@@ -420,13 +422,10 @@ final class ScopeComputer {
         // Force "one" sigs to be exactly one, and "lone" to be at most one
         for (Sig s : sigs)
             if (s instanceof PrimSig) {
-                if (s.isOne != null && s.isVariable == null) { // [HASLab]
+                if (s.isOne != null && s.isVariable == null) { // [HASLab] variables may vary
                     makeExact(cmd.pos, s);
                     sig2scope(s, 1);
-                }
-                if (s.isOne != null && s.isVariable != null) { // [HASLab]
-                    sig2scope(s, 1);
-                } else if (s.isLone != null && sig2scope(s) != 0)
+                } else if (s.isLone != null && s.isVariable == null && sig2scope(s) != 0)
                     sig2scope(s, 1);
             }
         // Derive the implicit scopes
@@ -474,16 +473,22 @@ final class ScopeComputer {
                 atoms.add("" + i);
         // [HASLab] handle trace lengths
         int tracelength = cmd.maxtime;
-        if (tracelength < 1) {
+        if (!isVar) {
+            if (tracelength > 0)
+                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"Time\" in static models.");
+            tracelength = -1;
+        } else if (tracelength < 1)
             tracelength = 10;
-        }
         setMaxTraceLength(cmd.pos, tracelength);
         tracelength = cmd.mintime;
-        if (tracelength > cmd.maxtime) {
+        if (!isVar) {
+            if (tracelength > 0)
+                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"Time\" in static models.");
+            tracelength = -1;
+        } else if (tracelength > cmd.maxtime)
             tracelength = cmd.maxtime;
-        } else if (tracelength < 1) {
+        else if (tracelength < 1)
             tracelength = 1;
-        }
         setMinTraceLength(cmd.pos, tracelength);
 
     }
@@ -525,7 +530,7 @@ final class ScopeComputer {
         for (int i = 0; set.size() < sc.maxstring; i++)
             set.add("\"String" + i + "\"");
         sc.atoms.addAll(set);
-        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
+        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects); // [HASLab]
         return new Pair<A4Solution,ScopeComputer>(sol, sc);
     }
 }

@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 
 import org.alloytools.util.table.Table;
 
-import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -78,7 +77,6 @@ import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
@@ -87,13 +85,13 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
-import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
 import kodkod.engine.ucore.RCEStrategy;
@@ -111,6 +109,8 @@ import kodkod.util.ints.IndexedEntry;
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
  * a staging area for the solver before generating the solution. Once solve()
  * has been called, then this object becomes immutable after that.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
  */
 
 public final class A4Solution {
@@ -170,6 +170,18 @@ public final class A4Solution {
      * The maximum allowed sequence length; always between 0 and 2^(bitwidth-1)-1.
      */
     private final int               maxseq;
+
+    /**
+     * The maximum allowed trace length; -1 if static model.
+     */
+    // [HASLab]
+    private final int               maxtrace;
+
+    /**
+     * The minimum allowed trace length; -1 if static model.
+     */
+    // [HASLab]
+    private final int               mintrace;
 
     /**
      * The maximum allowed number of loop unrolling and recursion level.
@@ -305,6 +317,8 @@ public final class A4Solution {
         this.originalCommand = (originalCommand == null ? "" : originalCommand);
         this.bitwidth = bitwidth;
         this.maxseq = maxseq;
+        this.maxtrace = maxtrace; // [HASLab]
+        this.mintrace = mintrace; // [HASLab]
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0");
         if (bitwidth > 30)
@@ -361,39 +375,14 @@ public final class A4Solution {
         int sym = (expected == 1 ? 0 : opt.symmetry);
         ExtendedOptions solver_opts = new ExtendedOptions(); // [HASLab] extended options
         solver_opts.setReporter(new SLF4JReporter()); // [HASLab] reporter
-        solver_opts.setRunTemporal(true); // [HASLab] extended options
+        solver_opts.setRunTemporal(maxtrace > 0); // [HASLab] extended options
         solver_opts.setNoOverflow(opt.noOverflow);
         solver_opts.setMaxTraceLength(maxtrace); // [HASLab] propagate options
         solver_opts.setMinTraceLength(mintrace); // [HASLab] propagate options
-        if (opt.decomposed_mode > 0) { // [HASLab] propagate options
-            solver_opts.setRunDecomposed(true);
-            if (opt.decomposed_mode == 1)
-                solver_opts.setDecomposedMode(DMode.HYBRID);
-            else
-                solver_opts.setDecomposedMode(DMode.PARALLEL);
-            if (opt.decomposed_threads > 0)
-                solver_opts.setThreads(opt.decomposed_threads);
-        } else {
-            solver_opts.setRunDecomposed(false);
-        }
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
         // [HASLab] pushed solver creation further below as solver choice is needed for initialization
-        if (opt.solver.id().equals(A4Options.SatSolver.ElectrodS.id())) { // [HASLab]
-            String[] nopts = new String[opt.solver.options().length + 2];
-            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
-            nopts[0] = "-t";
-            nopts[1] = "NuSMV";
-            solver_opts.setSolver(SATFactory.electrod(nopts));
-            solver_opts.setRunUnbounded(true);
-        } else if (opt.solver.id().equals(A4Options.SatSolver.ElectrodX.id())) { // [HASLab]
-            String[] nopts = new String[opt.solver.options().length + 2];
-            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
-            nopts[0] = "-t";
-            nopts[1] = "nuXmv";
-            solver_opts.setSolver(SATFactory.electrod(nopts));
-            solver_opts.setRunUnbounded(true);
-        } else if (opt.solver.external() != null) {
+        if (opt.solver.external() != null) {
             String ext = opt.solver.external();
             if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
                 ext = opt.solverDirectory + File.separatorChar + ext;
@@ -450,11 +439,15 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst = old.kEnumerator.next().instance();
+        if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
+            inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
         originalOptions = old.originalOptions;
         originalCommand = old.originalCommand;
         bitwidth = old.bitwidth;
         maxseq = old.maxseq;
+        maxtrace = old.maxtrace; // [HASLab]
+        mintrace = old.mintrace; // [HASLab]
         kAtoms = old.kAtoms;
         factory = old.factory;
         sigintBounds = old.sigintBounds;
@@ -521,6 +514,20 @@ public final class A4Solution {
      */
     public int getMaxSeq() {
         return maxseq;
+    }
+
+    /**
+     * Returns the maximum allowed trace length; -1 if static model.
+     */
+    public int getMaxTrace() {
+        return maxtrace;
+    }
+
+    /**
+     * Returns the minimum allowed trace length; -1 if static model.
+     */
+    public int getMinTrace() {
+        return mintrace;
     }
 
     /**
@@ -606,7 +613,7 @@ public final class A4Solution {
             throw new ErrorFatal("Cannot add a Kodkod relation since solve() has completed.");
         Relation rel;
         if (var)
-            rel = VarRelation.nary(label, upper.arity());
+            rel = Relation.variable(label, upper.arity());
         else
             rel = Relation.nary(label, upper.arity());
 
@@ -846,16 +853,16 @@ public final class A4Solution {
         }
     }
 
-    /** Returns the back loop instance of this instance (should alwas exist). */
+    /** Returns the back loop instance of this instance (should always exist). */
     // [HASLab]
     public int getLoopState() {
         return ((TemporalInstance) eval.instance()).loop;
     }
 
-    /** Returns the index of the last state of the finite prefix. */
+    /** Returns the length of the finite prefix. */
     // [HASLab]
-    public int getLastState() {
-        return ((TemporalInstance) eval.instance()).states.size() - 1;
+    public int getTraceLength() {
+        return ((TemporalInstance) eval.instance()).prefixLength();
     }
 
     // ===================================================================================================//
@@ -1009,7 +1016,7 @@ public final class A4Solution {
             if (result instanceof IntExpression)
                 return eval.evaluate((IntExpression) result, state) + (eval.wasOverflow() ? " (OF)" : ""); // [HASLab]
             if (result instanceof Formula)
-                return eval.evaluate((Formula) result);
+                return eval.evaluate((Formula) result, state); // [HASLab]
             if (result instanceof Expression)
                 return new A4TupleSet(eval.evaluate((Expression) result, state), this); // [HASLab]
             throw new ErrorFatal("Unknown internal error encountered in the evaluator.");
@@ -1383,13 +1390,11 @@ public final class A4Solution {
             }
             return;
         }
-        if (s.isVariable != null && s.parent != UNIV)
-            return; // [HASLab] do not rename variable sigs unless top
         for (PrimSig c : s.children())
             rename(frame, c, nexts, un);
         String signame = un.make(s.label.startsWith("this/") ? s.label.substring(5) : s.label);
         List<Tuple> list = new ArrayList<Tuple>();
-        for (int i = 0; i <= frame.getLastState(); i++) // [HASLab] collect from every state
+        for (int i = 0; i < frame.getTraceLength(); i++) // [HASLab] collect from every state
             for (Tuple t : frame.eval.evaluate(frame.a2k(s), i))
                 list.add(t);
         List<Tuple> order = nexts.get(s);
@@ -1400,8 +1405,7 @@ public final class A4Solution {
         for (Tuple t : list) {
             if (frame.atom2sig.containsKey(t.atom(0)))
                 continue; // This means one of the subsig has already claimed this atom.
-            // String x = signame + "$" + i;  // [HASLab] do not renumber from 0 due to different states
-            String x = t.atom(0) + ""; // [HASLab]
+            String x = signame + "$" + i;
             i++;
             frame.atom2sig.put(t.atom(0), s);
             frame.atom2name.put(t.atom(0), x);
@@ -1425,25 +1429,30 @@ public final class A4Solution {
     // [HASLab]
     A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int loop) throws Err, IOException {
         // construct the instance from the current state
-        Instance inst = new Instance(bounds.universe());
+        Universe static_uni;
+        if (pre_sol != null)
+            static_uni = ((TemporalInstance) pre_sol.eval.instance()).staticUniverse();
+        else
+            static_uni = bounds.universe();
+        Instance inst = new Instance(static_uni);
         for (int max = max(), i = min(); i <= max; i++) {
-            Tuple it = factory.tuple("" + i);
-            inst.add(i, factory.range(it, it));
+            Tuple it = static_uni.factory().tuple("" + i);
+            inst.add(i, static_uni.factory().range(it, it));
         }
         for (Relation r : bounds.relations())
-            inst.add(r, bounds.lowerBound(r));
+            inst.add(r, TemporalBoundsExpander.convertToUniv(bounds.lowerBound(r), static_uni));
 
         // retrieve previous steps of the trace
-        List<Instance> instances;
-        if (pre_sol != null)
-            instances = ((TemporalInstance) pre_sol.eval.instance()).states;
-        else
-            instances = new ArrayList<Instance>();
+        List<Instance> instances = new ArrayList<Instance>();
+        if (pre_sol != null) {
+            for (int i = 0; i < ((TemporalInstance) pre_sol.eval.instance()).prefixLength(); i++)
+                instances.add(((TemporalInstance) pre_sol.eval.instance()).state(i));
+        }
         instances.add(inst);
 
         // create temporal instance
-        TemporalInstance prev = new TemporalInstance(instances, loop);
-        eval = new Evaluator(prev);
+        TemporalInstance prev = new TemporalInstance(instances, loop, 1);
+        eval = new Evaluator(prev, solver.options());
         rename(this, null, null, new UniqueNameGenerator());
         toStringCache = null;
         evalCache = new HashMap<>();
@@ -1471,7 +1480,7 @@ public final class A4Solution {
         rep.debug("Simplifying the bounds...\n");
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
-        rep.translate(opt.solver.id(), A4Preferences.Decomposed.values()[opt.decomposed_mode].toString(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking());
+        rep.translate(opt.solver.id(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking());
         Formula fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
@@ -1483,8 +1492,6 @@ public final class A4Solution {
         // [HASLab] sl4j reporter
         solver.options().setReporter(new SLF4JReporter() { // Set up a reporter to catch the type+pos of skolems
             // [HASLab]
-
-            boolean config_done = !solver.options().decomposed();
 
             @Override
             public void skolemizing(Decl decl, Relation skolem, List<Decl> predecl) {
@@ -1513,20 +1520,7 @@ public final class A4Solution {
                     rep.solve(primaryVars, vars, clauses);
             }
 
-            @Override
-            public void reportConfigs(int configs, int primaryVars, int vars, int clauses) { // [HASLab] propagate found configs
-                if (config_done)
-                    return;
-                config_done = true;
-                if (rep != null) {
-                    rep.solve(primaryVars, vars, clauses);
-                    if (configs >= 50)
-                        rep.configs(configs);
-                }
-            }
-
         });
-        solver.options().configOptions().setReporter(solver.options().reporter()); // [HASLab]
         // [HASLab] TODO: how to handle non-temporal examples?
         //      if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples && !isTemporal) { // try book examples
         //          A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
@@ -1565,25 +1559,21 @@ public final class A4Solution {
             rep.resultCNF(out);
             return null;
         }
-        // [HASLab] decomposed is incremental
-        if (/* solver.options().solver()==SATFactory.ZChaffMincost || */ !solver.options().solver().incremental() && !solver.options().decomposed()) {
+        if (/* solver.options().solver()==SATFactory.ZChaffMincost || */ !solver.options().solver().incremental()) {
             sol = solver.solve(fgoal, bounds);
         } else {
-            PardinusBounds b;
-            if (solver.options().decomposed())
-                b = new PardinusBounds(bounds, true); // [HASLab] support for decomposed
-            else
-                b = bounds;
+            PardinusBounds b = bounds;
             kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
             if (sol == null)
                 sol = kEnumerator.next();
         }
         if (!solved[0])
             rep.solve(0, 0, 0);
-        final TemporalInstance inst = (TemporalInstance) sol.instance(); // [HASLab]
+        Instance inst = sol.instance(); // [HASLab]
+        if (inst != null && !(inst instanceof TemporalInstance))
+            inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         // To ensure no more output during SolutionEnumeration
         solver.options().setReporter(oldReporter);
-        solver.options().configOptions().setReporter(oldReporter); // [HASLab]
         // If unsatisfiable, then retreive the unsat core if desired
         if (inst == null && solver.options().solver() == SATFactory.MiniSatProver) {
             try {
@@ -1651,9 +1641,9 @@ public final class A4Solution {
         sb.append("---INSTANCE---");
         if (sol instanceof TemporalInstance) {
             sb.append("\nloop=");
-            sb.append(((TemporalInstance) sol).loop);
+            sb.append(getLoopState());
             sb.append("\nend=");
-            sb.append(((TemporalInstance) sol).states.size() - 1);
+            sb.append(getTraceLength() - 1);
         }
         sb.append("\nintegers={");
         boolean firstTuple = true;
@@ -1670,7 +1660,7 @@ public final class A4Solution {
         sb.append("}\n");
         try {
             if (sol instanceof TemporalInstance) {
-                for (int i = 0; i <= ((TemporalInstance) sol).states.size() - 1; i++) { // [HASLab]
+                for (int i = 0; i < getTraceLength(); i++) { // [HASLab]
                     sb.append("------State " + i + "-------\n");
                     for (Sig s : sigs) {
                         sb.append(s.label).append("=").append(eval(s, i)).append("\n");

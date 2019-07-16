@@ -880,6 +880,7 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values.\nFor example, ", true, "univ", false, " shows the list of all atoms.\n(You can press UP and DOWN to recall old inputs).\n");
             try {
                 evaluator.compute(new File(xmlFileName));
+                myEvaluatorPanel.setCurrent(comboTime.getSelectedIndex()); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -936,7 +937,9 @@ public final class VizGUI implements ComponentListener {
         if (i >= 0)
             filename = filename.substring(i + 1);
         int n = filename.length();
-        if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] ele extension
+        if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".als"))
+            filename = filename.substring(0, n - 4);
+        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] .ele extension
             filename = filename.substring(0, n - 4);
         if (filename.length() > 0)
             return "(" + filename + ") " + commandname;
@@ -1596,7 +1599,7 @@ public final class VizGUI implements ComponentListener {
         rightTime.addActionListener(new ActionListener() {
 
             public final void actionPerformed(ActionEvent e) {
-                if (comboTime.getSelectedIndex() == getVizState().getOriginalInstance().originalA4.getLastState())
+                if (comboTime.getSelectedIndex() == getVizState().getOriginalInstance().originalA4.getTraceLength() - 1)
                     comboTime.setSelectedIndex(backindex);
                 else {
                     int curIndex = comboTime.getSelectedIndex();
@@ -1611,12 +1614,12 @@ public final class VizGUI implements ComponentListener {
 
             public final void actionPerformed(ActionEvent e) {
                 int loop = getVizState().getOriginalInstance().originalA4.getLoopState();
-                int leng = getVizState().getOriginalInstance().originalA4.getLastState();
+                int leng = getVizState().getOriginalInstance().originalA4.getTraceLength();
 
                 leftTime.setEnabled(comboTime.getSelectedIndex() > 0);
                 rightTime.setEnabled(comboTime.getSelectedIndex() < comboTime.getItemCount() - 1 || backindex != -1);
                 // change button when looping
-                if (comboTime.getSelectedIndex() == leng && loop != -1) {
+                if (comboTime.getSelectedIndex() == leng - 1 && loop != -1) {
                     rightTime.setText(">" + loop);
                     comboTime.setFont(comboTime.getFont().deriveFont(Font.BOLD));
                     comboTime.setForeground(Color.BLUE);
@@ -1639,11 +1642,12 @@ public final class VizGUI implements ComponentListener {
                 }
 
                 xmlLoaded.remove(getXMLfilename());
-                if (comboTime.getSelectedIndex() >= 0) {
+                if (comboTime.getSelectedIndex() >= 0)
                     loadXML(getXMLfilename(), true, comboTime.getSelectedIndex());
-                    if (thmFileName != "")
-                        loadThemeFile(thmFileName);
-                }
+
+                // set the base state for the evaluator
+                if (myEvaluatorPanel != null)
+                    myEvaluatorPanel.setCurrent(comboTime.getSelectedIndex());
             }
 
         });
@@ -1662,16 +1666,29 @@ public final class VizGUI implements ComponentListener {
      */
     // [HASLab]
     private final void repopulateTemporalPanel() {
-        int last = getVizState().getOriginalInstance().originalA4.getLastState();
-        final String[] atomnames = this.createTimeAtoms(last + 1);
-        comboTime.removeAllItems();
-        for (String s : atomnames)
-            comboTime.addItem(s);
+        if (getVizState().getOriginalInstance().originalA4.getMaxTrace() < 0) {
+            comboTime.setVisible(false);
+            rightTime.setVisible(false);
+            leftTime.setVisible(false);
+            tempMsg.setVisible(false);
+        } else {
+            int leng = getVizState().getOriginalInstance().originalA4.getTraceLength();
+            final String[] atomnames = this.createTimeAtoms(leng);
+            comboTime.removeAllItems();
+            for (String s : atomnames)
+                comboTime.addItem(s);
 
-        backindex = getVizState().getOriginalInstance().originalA4.getLoopState();
+            backindex = getVizState().getOriginalInstance().originalA4.getLoopState();
 
-        leftTime.setEnabled(false);
-        rightTime.setEnabled(atomnames.length > 1 || backindex == 0);
+            leftTime.setEnabled(false);
+            rightTime.setEnabled(atomnames.length > 1 || backindex == 0);
+
+            comboTime.setVisible(true);
+            rightTime.setVisible(true);
+            leftTime.setVisible(true);
+            tempMsg.setVisible(true);
+
+        }
     }
 
     /**
@@ -1724,6 +1741,5 @@ public final class VizGUI implements ComponentListener {
             return this;
         }
     }
-
 
 }

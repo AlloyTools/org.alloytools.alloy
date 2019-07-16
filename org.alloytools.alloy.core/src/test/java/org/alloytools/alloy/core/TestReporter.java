@@ -67,10 +67,9 @@ public class TestReporter extends A4Reporter {
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
-    // [HASLab]
     @Override
-    public void translate(String solver, String mode, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, mode, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
+    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
     }
 
     /**
