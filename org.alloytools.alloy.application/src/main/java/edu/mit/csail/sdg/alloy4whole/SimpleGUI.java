@@ -2079,7 +2079,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
 
         // Pre-load the visualizer
-        viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator);
+        viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator, 2); // [HASLab]
         viz.doSetFontSize(FontSize.get());
 
         // Create the toolbar
