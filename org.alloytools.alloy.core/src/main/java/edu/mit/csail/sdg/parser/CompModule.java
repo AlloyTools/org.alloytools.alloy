@@ -1526,7 +1526,7 @@ public final class CompModule extends Browsable implements Module {
             if (parent.isVariable != null && realSig.isVariable == null) // [HASLab]
                 warns.add(new ErrorWarning(realSig.isSubsig, "Part of " + parent.label + " is static.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
             if (parent != UNIV && parent.isVariable == null && realSig.isVariable != null) // [HASLab]
-                warns.add(new ErrorWarning(realSig.isSubsig, "Variable sig " + realSig.label + " is redundant.\n" + "Sig " + realSig.label + " is variable but " + parent.label + " is static."));
+                warns.add(new ErrorWarning(realSig.isSubsig, "Marking sig " + realSig.label + " as var is redundant.\n" + "Sig " + realSig.label + " is variable but " + parent.label + " is static."));
         }
         res.new2old.put(realSig, oldS);
         res.sig2module.put(realSig, u);
