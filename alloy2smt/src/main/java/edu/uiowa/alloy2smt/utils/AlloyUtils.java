@@ -410,4 +410,40 @@ public class AlloyUtils
 
         throw new UnsupportedOperationException();
     }
+
+    public static Expr removeMultiplicity(Decl decl)
+    {
+        return removeMultiplicity(decl.expr);
+    }
+
+    private static Expr removeMultiplicity(Expr expr)
+    {
+        if(expr instanceof ExprVar)
+        {
+            return expr;
+        }
+
+        if(expr instanceof Sig || expr instanceof Sig.Field)
+        {
+            return expr;
+        }
+
+        if(expr instanceof ExprConstant)
+        {
+            return expr;
+        }
+
+        if(expr instanceof ExprUnary)
+        {
+            return ((ExprUnary) expr).sub;
+        }
+
+        if(expr instanceof ExprBinary)
+        {
+            Expr left = ((ExprBinary) expr).left;
+            Expr right = ((ExprBinary) expr).right;
+            return ExprBinary.Op.ARROW.make(expr.pos, expr.closingBracket, left, right);
+        }
+        throw new UnsupportedOperationException();
+    }
 }

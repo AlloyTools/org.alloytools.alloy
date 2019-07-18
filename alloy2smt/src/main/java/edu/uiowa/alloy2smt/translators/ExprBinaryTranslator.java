@@ -1139,9 +1139,20 @@ public class ExprBinaryTranslator
             Expression left = exprTranslator.translateExpr(expr.left, environment);
             Expression right = exprTranslator.translateExpr(expr.right, environment);
 
-            for(int i = 0; i < arity - 1; ++i)
+            // right type should be a set of tuples
+            SetSort rightSort = (SetSort) right.getSort();
+            TupleSort tuple = (TupleSort) rightSort.elementSort;
+            for(int i = 1; i < arity ; i++)
             {
-                left = BinaryExpression.Op.PRODUCT.make(left, exprTranslator.translator.atomUniverse.getVariable());
+                UninterpretedSort sort = (UninterpretedSort) tuple.elementSorts.get(i);
+                if(sort.equals(AbstractTranslator.atomSort))
+                {
+                    left = BinaryExpression.Op.PRODUCT.make(left, translator.atomUniverse.getVariable());
+                }
+                else
+                {
+                    left = BinaryExpression.Op.PRODUCT.make(left, translator.intUniv.getVariable());
+                }
             }
             BinaryExpression    intersection    = BinaryExpression.Op.INTERSECTION.make(left, right);
             return intersection;
@@ -1161,11 +1172,22 @@ public class ExprBinaryTranslator
         {
             Expression left  = exprTranslator.translateExpr(expr.left, environment);
             Expression right = exprTranslator.translateExpr(expr.right, environment);
-            
-            for(int i = 0; i < arity - 1; ++i)
+
+            // left type should be a set of tuples
+            SetSort leftSort = (SetSort) left.getSort();
+            TupleSort tuple = (TupleSort) leftSort.elementSort;
+            for(int i = 0; i < arity - 1; i++)
             {
-                right = BinaryExpression.Op.PRODUCT.make(exprTranslator.translator.atomUniverse.getVariable(), right);
-            }            
+                UninterpretedSort sort = (UninterpretedSort) tuple.elementSorts.get(i);
+                if(sort.equals(AbstractTranslator.atomSort))
+                {
+                    right = BinaryExpression.Op.PRODUCT.make(translator.atomUniverse.getVariable(), right);
+                }
+                else
+                {
+                    right = BinaryExpression.Op.PRODUCT.make(translator.intUniv.getVariable(), right);
+                }
+            }
 
             BinaryExpression    intersection    = BinaryExpression.Op.INTERSECTION.make(left, right);
 

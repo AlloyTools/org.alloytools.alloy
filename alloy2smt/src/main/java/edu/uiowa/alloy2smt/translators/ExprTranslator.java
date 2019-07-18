@@ -32,9 +32,12 @@ public class ExprTranslator
 
     final ExprLetTranslator exprLetTranslator;
 
+    final ExprVarTranslator exprVarTranslator;
+
     public ExprTranslator(Alloy2SmtTranslator translator)
     {
         this.translator = translator;
+        this.exprVarTranslator = new ExprVarTranslator(this);
         this.exprUnaryTranslator = new ExprUnaryTranslator(this);
         this.exprBinaryTranslator = new ExprBinaryTranslator(this);
         this.exprQtTranslator = new ExprQtTranslator(this);
@@ -49,9 +52,14 @@ public class ExprTranslator
 
     Expression translateExpr(Expr expr, Environment environment)
     {
-        if (expr instanceof Sig)
+        if (expr instanceof Sig || expr instanceof Sig.Field)
         {
+            //ToDo: refactor this
             return exprUnaryTranslator.translateExprUnary((ExprUnary) ExprUnary.Op.NOOP.make(null, expr), environment);
+        }
+        if (expr instanceof ExprVar)
+        {
+            return exprVarTranslator.translateExprVar((ExprVar) expr, environment);
         }
         if (expr instanceof ExprUnary)
         {

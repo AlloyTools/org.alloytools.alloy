@@ -9,13 +9,12 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 
 public class FieldTranslator
 {
@@ -166,70 +165,74 @@ public class FieldTranslator
     private void translateMultiplicities(Sig.Field field)
     {
         Expr expr = field.decl().expr;
-        if(expr instanceof ExprUnary)
+//        if(expr instanceof ExprUnary)
+//        {
+//            ExprUnary exprUnary = (ExprUnary) expr;
+//            Expr A = field.sig;
+//            Expr B = exprUnary.sub;
+//
+//            Expr multiplicity;
+//            switch (exprUnary.op)
+//            {
+//                case SOMEOF:
+//                {
+//                    multiplicity = ExprBinary.Op.ANY_ARROW_SOME.make(null, null, A, B);
+//                }break;
+//                case ONEOF:
+//                {
+//                    multiplicity = ExprBinary.Op.ANY_ARROW_ONE.make(null, null, A, B);
+//                }break;
+//                case LONEOF:
+//                {
+//                    multiplicity = ExprBinary.Op.ANY_ARROW_LONE.make(null, null, A, B);
+//                }break;
+//                case SETOF:
+//                {
+//                    multiplicity = ExprBinary.Op.ARROW.make(null, null, A, B);
+//                }break;
+//                default:
+//                    throw new UnsupportedOperationException();
+//            }
+//            Expression set = translator.exprTranslator.translateExpr(multiplicity);
+//            FunctionDeclaration fieldFunction =  translator.fieldsMap.get(field);
+//            Expression constraint;
+//            if(exprUnary.op == ExprUnary.Op.SETOF)
+//            {
+//                constraint = BinaryExpression.Op.SUBSET.make(fieldFunction.getVariable(), set);
+//            }
+//            else
+//            {
+//                constraint = BinaryExpression.Op.EQ.make(fieldFunction.getVariable(), set);
+//            }
+//            translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", constraint));
+//        }
+//        else
         {
-            ExprUnary exprUnary = (ExprUnary) expr;
-            Expr A = field.sig;
-            Expr B = exprUnary.sub;
+            // sig A {field : expr} is translated into
+            // all this: A | some s: expr|
+            //      (this <: field) = (this -> s)
 
-            Expr multiplicity;
-            switch (exprUnary.op)
-            {
-                case SOMEOF:
-                {
-                    multiplicity = ExprBinary.Op.ANY_ARROW_SOME.make(null, null, A, B);
-                }break;
-                case ONEOF:
-                {
-                    multiplicity = ExprBinary.Op.ANY_ARROW_ONE.make(null, null, A, B);
-                }break;
-                case LONEOF:
-                {
-                    multiplicity = ExprBinary.Op.ANY_ARROW_LONE.make(null, null, A, B);
-                }break;
-                case SETOF:
-                {
-                    multiplicity = ExprBinary.Op.ARROW.make(null, null, A, B);
-                }break;
-                default:
-                    throw new UnsupportedOperationException();
-            }
-            Expression set = translator.exprTranslator.translateExpr(multiplicity);
-            FunctionDeclaration fieldFunction =  translator.fieldsMap.get(field);
-            Expression constraint;
-            if(exprUnary.op == ExprUnary.Op.SETOF)
-            {
-                constraint = BinaryExpression.Op.SUBSET.make(fieldFunction.getVariable(), set);
-            }
-            else
-            {
-                constraint = BinaryExpression.Op.EQ.make(fieldFunction.getVariable(), set);
-            }
-            translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", constraint));
-        }
-        else
-        {
-            // sig A {field : expr}
-            // Set is a subset of expr
-            // all z: A | z.field in Set
-            // and A.field = Set
-            // and A x field in A x Set
+            ExprVar zis = ExprVar.make(null, "this", field.sig.type());
+            ExprVar s = ExprVar.make(null, "_s_", expr.type());
 
-            ExprVar z = ExprVar.make(null, "this", field.sig.type());
-            Expr noopZ = ExprUnary.Op.NOOP.make(null, z);
-            Expr noopField = ExprUnary.Op.NOOP.make(null, field);
-            Expr join = ExprBinary.Op.JOIN.make(null, null, noopZ, noopField);
-            Expr in = ExprBinary.Op.IN.make(null, null, join, expr);
-            Expr noopSig = ExprUnary.Op.NOOP.make(null, field.sig);
-            Decl decl = new Decl(null, null, null, Collections.singletonList(z), noopSig);
-            Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
-            Expression multiplicity =  translator.exprTranslator.translateExpr(exprQt);
+//            Expr join = ExprBinary.Op.JOIN.make(null, null, zis, field);
+//            Expr eq = ExprBinary.Op.EQUALS.make(null, null, join, s);
+//            Expr product = ExprBinary.Op.ARROW.make(null, null, zis, s);
+//            Expr in = ExprBinary.Op.IN.make(null, null, product, field);
+
+            Expr productZis = ExprBinary.Op.ARROW.make(null, null, zis, s);
+            Expr domain = ExprBinary.Op.DOMAIN.make(null, null, zis, field);
+            Expr equal = ExprBinary.Op.EQUALS.make(null, null, domain, productZis);
+
+//            Expr and = ExprList.make(null, null, ExprList.Op.AND, Arrays.asList(eq, in, subset));
+
+            Decl someDecl = new Decl(null, null, null, Collections.singletonList(s), expr);
+            Expr some = ExprQt.Op.SOME.make(null, null, Collections.singletonList(someDecl), equal);
+            Expr oneOfSig = ExprUnary.Op.ONEOF.make(null, field.sig);
+            Decl decl = new Decl(null, null, null, Collections.singletonList(zis), oneOfSig);
+            Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), some);
+            Expression multiplicity =  translator.exprTranslator.translateExpr(all);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
-
-            Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, expr);
-            Expr subsetExpr = ExprBinary.Op.IN.make(null, null, noopField, product);
-            Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
-            translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
 
             // no set is generated for AnyArrowAny constraint
 //            if(translator.multiplicityVariableMap.containsKey(expr))

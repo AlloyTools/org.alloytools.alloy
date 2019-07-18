@@ -22,10 +22,13 @@ public class ExprUnaryTranslator
 {
     final ExprTranslator exprTranslator;
     final Alloy2SmtTranslator translator;
+    final ExprVarTranslator exprVarTranslator;
+
     public ExprUnaryTranslator(ExprTranslator exprTranslator)
     {
         this.exprTranslator = exprTranslator;
         this.translator = exprTranslator.translator;
+        this.exprVarTranslator = exprTranslator.exprVarTranslator;
     }
 
     Expression translateExprUnary(ExprUnary exprUnary, Environment environment)
@@ -125,44 +128,12 @@ public class ExprUnaryTranslator
 
         if(exprUnary.sub instanceof ExprVar)
         {
-            String varName = ((ExprVar)exprUnary.sub).label;
-            
-            if(environment.containsKey(varName))
-            {
-                Expression constExpr = environment.get(varName);
-                
-                if(constExpr instanceof Variable)
-                {
-                    if(((Variable)constExpr).getDeclaration().getSort() == AbstractTranslator.atomSort)
-                    {
-                        return UnaryExpression.Op.SINGLETON.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
-                    }                    
-                    else if(((Variable)constExpr).getDeclaration().getSort() == AbstractTranslator.intSort)
-                    {
-                        return UnaryExpression.Op.SINGLETON.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constExpr));
-                    } 
-                    else if(((Variable)constExpr).getDeclaration().getSort() instanceof TupleSort)
-                    {
-                        return UnaryExpression.Op.SINGLETON.make(constExpr);
-                    }                     
-                }                
-                return constExpr;
-            }
-            else
-            {
-                //ToDo: review the semantics of "this" keyword
-                if(exprUnary.toString().equals("this"))
-                {
-                    Sig sig = exprUnary.type().fold().get(0).get(0);
-                    return translator.signaturesMap.get(sig).getVariable();
-                }
-                throw new RuntimeException("Something is wrong: we do not have variable in scope - " + varName);
-            }            
+            return exprVarTranslator.translateExprVar((ExprVar) exprUnary.sub, environment);
         }
         
         return exprTranslator.translateExpr(exprUnary.sub, environment);
     }
-    
+
     private Expression tryAddingExistentialConstraint(Expression expr)
     {
         Expression finalExpr = expr;
