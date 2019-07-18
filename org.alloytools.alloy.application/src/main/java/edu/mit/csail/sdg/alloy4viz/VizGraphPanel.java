@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -59,7 +60,7 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal, electrum-vizualizer
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-vizualizer
  */
 
 public final class VizGraphPanel extends JPanel {

@@ -19,18 +19,28 @@ package edu.mit.csail.sdg.alloy4viz;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -45,11 +55,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -59,11 +66,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
-import javax.swing.ListCellRenderer;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
@@ -72,7 +76,6 @@ import edu.mit.csail.sdg.alloy4.Computer;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.OurBorder;
 import edu.mit.csail.sdg.alloy4.OurCheckbox;
-import edu.mit.csail.sdg.alloy4.OurCombobox;
 import edu.mit.csail.sdg.alloy4.OurConsole;
 import edu.mit.csail.sdg.alloy4.OurDialog;
 import edu.mit.csail.sdg.alloy4.OurUtil;
@@ -125,7 +128,7 @@ public final class VizGUI implements ComponentListener {
     private final JButton       projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
                     loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
                     openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
-                    txtButton, tableButton/* , dotButton, xmlButton */; // [HASLab]
+                    txtButton, tableButton/* , dotButton, xmlButton */;
 
     /**
      * This list must contain all the display mode buttons (that is, vizButton,
@@ -141,6 +144,10 @@ public final class VizGUI implements ComponentListener {
 
     /** The "show next" menu item. */
     private final JMenuItem     enumerateMenu;
+
+    /** The trace navigation menu items. */
+    // [HASLab]
+    private final JMenuItem     rightNavMenu, leftNavMenu;
 
     /** Current font size. */
     private int                 fontSize        = 12;
@@ -179,10 +186,15 @@ public final class VizGUI implements ComponentListener {
     private OurConsole            myEvaluatorPanel = null;
 
     /**
-     * The graphical panel to the right; null if it is not yet loaded.
+     * The graphical panel at the upper-side of the the right panel; null if it is
+     * not yet loaded.
      */
     private VizGraphPanel         myGraphPanel     = null;
 
+    /**
+     * The panel to the right, containing the graph and the temporal navigation
+     * panels; null if it is not yet loaded.
+     */
     // [HASLab]
     private JSplitPane            mySplitTemporal  = null;
 
@@ -528,6 +540,7 @@ public final class VizGUI implements ComponentListener {
      * @param enumerator - if it's not null, it provides solution enumeration
      *            ability
      * @param evaluator - if it's not null, it provides solution evaluation ability
+     * @param panes - the number of states that will be shown
      *            <p>
      *            Note: if standalone==false and xmlFileName.length()==0, then we
      *            will initially hide the window.
@@ -552,6 +565,7 @@ public final class VizGUI implements ComponentListener {
      * @param evaluator - if it's not null, it provides solution evaluation ability
      * @param makeWindow - if false, then we will only construct the JSplitPane,
      *            without making the window
+     * @param panes - the number of states that will be shown
      *            <p>
      *            Note: if standalone==false and xmlFileName.length()==0 and
      *            makeWindow==true, then we will initially hide the window.
@@ -604,6 +618,8 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
+            leftNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener);
+            rightNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener);
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
@@ -660,7 +676,6 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
             toolbar.add(saveAsSettingsButton = OurUtil.button("Save As", "Save the current theme customization as a new theme file", "images/24_save.gif", doSaveThemeAs()));
             toolbar.add(resetSettingsButton = OurUtil.button("Reset", "Reset the theme customization", "images/24_settings_close2.gif", doResetTheme()));
-            addTemporalJPanel(); // [HASLab] the JPanel for trace navigation
         } finally {
             wrap = false;
         }
@@ -738,7 +753,7 @@ public final class VizGUI implements ComponentListener {
     public void componentHidden(ComponentEvent e) {}
 
     /**
-     * Helper method that repopulates the Porjection popup menu.
+     * Helper method that repopulates the Projection popup menu.
      */
     private void repopulateProjectionPopup() {
         int num = 0;
@@ -829,7 +844,7 @@ public final class VizGUI implements ComponentListener {
             frame.setTitle(makeVizTitle());
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myStates.get(0).getOriginalInstance().originalA4, makeVizTitle(), fontSize); // [HASLab]
+                final VizTree t = new VizTree(myStates.get(0).getOriginalInstance().originalA4, makeVizTitle(), fontSize); // [HASLab] only graph shows multiple
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -845,12 +860,12 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myStates.get(0).getOriginalInstance().originalA4.toString(); // [HASLab]
+                String textualOutput = myStates.get(0).getOriginalInstance().originalA4.toString(); // [HASLab] only graph shows multiple
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myStates.get(0).getOriginalInstance().originalA4.format(); // [HASLab]
+                String textualOutput = myStates.get(0).getOriginalInstance().originalA4.format(); // [HASLab] only graph shows multiple
                 content = getTextComponent(textualOutput);
                 break;
             }
@@ -861,14 +876,13 @@ public final class VizGUI implements ComponentListener {
             default : {
                 if (myGraphPanel == null) {
                     myGraphPanel = new VizGraphPanel(myStates, false); // [HASLab]
-                    JPanel diagramsScrollPanel2 = createTempPanel(); // [HASLab]
-                    mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, diagramsScrollPanel2, 0); // [HASLab]
+                    JPanel tmpNavScrollPanel = createTempNavPanel(); // [HASLab]
+                    mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, 0); // [HASLab]
                     mySplitTemporal.setLayout(new BoxLayout(mySplitTemporal, BoxLayout.PAGE_AXIS));
                     mySplitTemporal.setResizeWeight(1.0);
                     mySplitTemporal.setDividerSize(0);
-                    updateTmps(); // [HASLab]
                 } else {
-                    updateTmps(); // [HASLab]
+                    updateTempPanel(); // [HASLab]
                     myGraphPanel.seeDot(false);
                     myGraphPanel.remakeAll();
                 }
@@ -905,7 +919,7 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values.\nFor example, ", true, "univ", false, " shows the list of all atoms.\n(You can press UP and DOWN to recall old inputs).\n");
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrent(comboTime.getSelectedIndex()); // [HASLab] set evaluator state
+                myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -1038,12 +1052,12 @@ public final class VizGUI implements ComponentListener {
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
         loadXML(fileName, forcefully, 0); // [HASLab] first state
-        repopulateTemporalPanel(); // [HASLab] must only be initially and not whenever the state changes
     }
 
     /** Load the XML instance. */
     // [HASLab] considers particular state
     public void loadXML(final String fileName, boolean forcefully, int state) {
+        current = state; // [HASLab]
         final String xmlFileName = Util.canon(fileName);
         File f = new File(xmlFileName);
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
@@ -1595,244 +1609,175 @@ public final class VizGUI implements ComponentListener {
 
     // ========================================TRACES=====================================================//
 
-    /** Trace navigation combo box. */
-    // [HASLab]
-    private JComboBox<String> comboTime;
-
     /** Trace navigation buttons. */
-    private JButton           leftTime, rightTime;
-
-    /** Index of the back loop, or -1 if none. */
     // [HASLab]
-    private int               backindex = -1;
+    private JButton leftNavButton, rightNavButton;
 
-    /** Optional message to be displayed. */
     // [HASLab]
-    private JLabel            tempMsg;
+    private int     current          = 0;
+
+    ActionListener  leftNavListener  = new ActionListener() {
+
+                                         public final void actionPerformed(ActionEvent e) {
+                                             if (current > 0) {
+                                                 current--;
+                                                 updateDisplay();
+                                             }
+                                         }
+                                     };
+
+    ActionListener  rightNavListener = new ActionListener() {
+
+                                         public final void actionPerformed(ActionEvent e) {
+                                             int lst = getVizState().get(0).getOriginalInstance().originalA4.getTraceLength();
+                                             int lop = getVizState().get(0).getOriginalInstance().originalA4.getLoopState();
+                                             int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
+                                             int lox = lmx - (lst - lop);
+                                             current = normalize(current + 1, lmx, lox);
+                                             updateDisplay();
+                                         }
+                                     };
 
     /**
-     * Populates the JPanel with the objects for trace navigation.
-     */
-    // [HASLab]
-    private final void addTemporalJPanel() {
-
-        tempMsg = new JLabel();
-        leftTime = new JButton("<<");
-        rightTime = new JButton(">>");
-        final String[] atomnames = this.createTimeAtoms(0);
-        comboTime = new OurCombobox(atomnames.length < 1 ? new String[] {
-                                                                         " "
-        } : atomnames);
-
-        comboTime.setRenderer(new TimePainter()); // color back loop and last time differently
-
-        leftTime.setEnabled(false);
-        rightTime.setEnabled(false);
-
-        leftTime.addActionListener(new ActionListener() {
-
-            public final void actionPerformed(ActionEvent e) {
-                int curIndex = comboTime.getSelectedIndex();
-                if (curIndex > 0)
-                    comboTime.setSelectedIndex(curIndex - 1);
-            }
-        });
-        rightTime.addActionListener(new ActionListener() {
-
-            public final void actionPerformed(ActionEvent e) {
-                if (comboTime.getSelectedIndex() == getVizState().get(0).getOriginalInstance().originalA4.getTraceLength() - 1)
-                    comboTime.setSelectedIndex(backindex);
-                else {
-                    int curIndex = comboTime.getSelectedIndex();
-                    if (curIndex < comboTime.getItemCount() - 1)
-                        comboTime.setSelectedIndex(curIndex + 1);
-                    else if (backindex >= 0)
-                        comboTime.setSelectedIndex(backindex);
-                }
-            }
-        });
-        comboTime.addActionListener(new ActionListener() {
-
-            public final void actionPerformed(ActionEvent e) {
-                int loop = getVizState().get(0).getOriginalInstance().originalA4.getLoopState();
-                int leng = getVizState().get(0).getOriginalInstance().originalA4.getTraceLength();
-
-                leftTime.setEnabled(comboTime.getSelectedIndex() > 0);
-                rightTime.setEnabled(comboTime.getSelectedIndex() < comboTime.getItemCount() - 1 || backindex != -1);
-                // change button when looping
-                if (comboTime.getSelectedIndex() == leng - 1 && loop != -1) {
-                    rightTime.setText(">" + loop);
-                    comboTime.setFont(comboTime.getFont().deriveFont(Font.BOLD));
-                    comboTime.setForeground(Color.BLUE);
-                    if (comboTime.getSelectedIndex() == loop)
-                        tempMsg.setText("Loop starts and ends here.");
-                    else
-                        tempMsg.setText("Last state before looping.");
-                } else {
-                    rightTime.setText(">>");
-                    // change text when loop state
-                    if (comboTime.getSelectedIndex() == loop) {
-                        comboTime.setFont(comboTime.getFont().deriveFont(Font.BOLD));
-                        comboTime.setForeground(Color.GREEN);
-                        tempMsg.setText("Loop starts here.");
-                    } else {
-                        comboTime.setFont(comboTime.getFont().deriveFont(Font.PLAIN));
-                        comboTime.setForeground(Color.BLACK);
-                        tempMsg.setText("");
-                    }
-                }
-
-                xmlLoaded.remove(getXMLfilename());
-                if (comboTime.getSelectedIndex() >= 0)
-                    loadXML(getXMLfilename(), true, comboTime.getSelectedIndex());
-
-                // set the base state for the evaluator
-                if (myEvaluatorPanel != null)
-                    myEvaluatorPanel.setCurrent(comboTime.getSelectedIndex());
-            }
-
-        });
-        comboTime.setMaximumSize(comboTime.getPreferredSize());
-        toolbar.add(Box.createHorizontalGlue());
-        toolbar.add(tempMsg);
-        toolbar.add(Box.createHorizontalStrut(15));
-        toolbar.add(leftTime);
-        toolbar.add(comboTime);
-        toolbar.add(rightTime);
-        toolbar.setBorder(new EmptyBorder(0, 0, 0, 10));
-    }
-
-    /**
-     * Updates the state of trace navigation pane given a new trace length.
-     */
-    // [HASLab]
-    private final void repopulateTemporalPanel() {
-        if (getVizState().get(0).getOriginalInstance().originalA4.getMaxTrace() < 0) {
-            comboTime.setVisible(false);
-            rightTime.setVisible(false);
-            leftTime.setVisible(false);
-            tempMsg.setVisible(false);
-        } else {
-            int leng = getVizState().get(0).getOriginalInstance().originalA4.getTraceLength();
-            final String[] atomnames = this.createTimeAtoms(leng);
-            comboTime.removeAllItems();
-            for (String s : atomnames)
-                comboTime.addItem(s);
-
-            backindex = getVizState().get(0).getOriginalInstance().originalA4.getLoopState();
-
-            leftTime.setEnabled(false);
-            rightTime.setEnabled(atomnames.length > 1 || backindex == 0);
-
-            comboTime.setVisible(true);
-            rightTime.setVisible(true);
-            leftTime.setVisible(true);
-            tempMsg.setVisible(true);
-
-        }
-    }
-
-    /**
-     * Creates a list with n times with the purpose of adding it to the trace
-     * navigation panel.
+     * Creates the panel for navigating the trace, in the lower side of the right
+     * panel.
      *
-     * @param n number of states
+     * @return
      */
     // [HASLab]
-    private String[] createTimeAtoms(int n) {
-        String[] times = new String[n];
-        for (int i = 0; i < n; i++)
-            times[i] = "Time " + i;
-        return times;
-    }
+    private JPanel createTempNavPanel() {
+        leftNavButton = new JButton(new String(Character.toChars(0x2190)));
+        rightNavButton = new JButton(new String(Character.toChars(0x2192)));
 
-    // [HASLab]
-    private int current = 0;
+        leftNavButton.setEnabled(false);
+        rightNavButton.setEnabled(false);
 
-    // [HASLab]
-    private JPanel createTempPanel() {
-        JPanel diagramsScrollPanel2 = new JPanel();
-        diagramsScrollPanel2.add(Box.createHorizontalGlue());
-        diagramsScrollPanel2.setLayout(new BoxLayout(diagramsScrollPanel2, BoxLayout.LINE_AXIS));
-        for (int i = 0; i < getVizState().size(); i++) {
+        leftNavButton.addActionListener(leftNavListener);
+        rightNavButton.addActionListener(rightNavListener);
 
-            JPanel split2_ = createTempState(i);
-            diagramsScrollPanel2.add(split2_);
 
-            AlloyModel model = getVizState().get(0).getOriginalModel();
-        }
-        diagramsScrollPanel2.add(Box.createHorizontalGlue());
-        return diagramsScrollPanel2;
-    }
+        JPanel tmpNavPanel = new JPanel();
+        tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.LINE_AXIS));
+        tmpNavPanel.add(leftNavButton);
+        tmpNavPanel.add(Box.createHorizontalGlue());
 
-    // [HASLab]
-    private JPanel createTempState(int i) {
-        JPanel tmpPanel = new JPanel();
-        tmpPanel.setLayout(new BoxLayout(tmpPanel, BoxLayout.LINE_AXIS));
+        List<Ellipse2D> states = new ArrayList<Ellipse2D>();
 
-        JButton leftTime = new JButton(new String(Character.toChars(0x2190)));
-        this.leftTime.add(leftTime);
-        JButton rightTime = new JButton(new String(Character.toChars(0x2192)));
-        this.rightTime.add(rightTime);
-        leftTime.setEnabled(false);
-        rightTime.setEnabled(false);
-        rightTime.setMaximumSize(new Dimension(1, 1));
-        leftTime.setMaximumSize(new Dimension(1, 1));
-        rightTime.setMinimumSize(new Dimension(1, 1));
-        leftTime.setMinimumSize(new Dimension(1, 1));
-        JLabel timeLabel = new JLabel("State 99 (99) 999", SwingConstants.CENTER);
-        timeLabel.setFont(timeLabel.getFont().deriveFont(Font.BOLD));
-        timeLabel.setMinimumSize(timeLabel.getPreferredSize());
-        timeLabel.setMaximumSize(timeLabel.getPreferredSize());
-        timeLabel.setPreferredSize(timeLabel.getPreferredSize());
 
-        leftTime.addActionListener(new ActionListener() {
+        JPanel trace = new JPanel() {
 
-            public final void actionPerformed(ActionEvent e) {
-                if (current > 0) {
-                    current--;
-                    updateDisplay();
-                }
-            }
-        });
-        rightTime.addActionListener(new ActionListener() {
+            @Override
+            public void paintComponent(Graphics g) {
+                states.clear();
 
-            public final void actionPerformed(ActionEvent e) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int radius = 12;
+                int dist = 45;
+                int offsety = 2 + tmpNavPanel.getHeight() / 2;
+                // center and apply offset according to current state
+                int offsetx = this.getWidth() / 2 + ((dist - 2 * radius) / 2) - (dist * (current + 1));
                 int lst = getVizState().get(0).getOriginalInstance().originalA4.getTraceLength();
                 int lop = getVizState().get(0).getOriginalInstance().originalA4.getLoopState();
-                int lmx = getVizState().get(0).getOriginalInstance().originalA4.getMaxTrace();
+                int lmx = current + statepanes > lst ? current + statepanes : lst;
                 int lox = lmx - (lst - lop);
-                current = normalize(current + 1, lmx, lox);
-                updateDisplay();
+                Ellipse2D loop = null, last = null;
+                for (int i = 0; i < lmx; i++) {
+                    g2.setStroke(new BasicStroke(2));
+                    Ellipse2D circl = new Ellipse2D.Double(i * dist + offsetx, offsety - radius, 2.0 * radius, 2.0 * radius);
+                    if (i == lmx - 1)
+                        last = circl;
+                    if (i == lox)
+                        loop = circl;
+                    Color tmp = g2.getColor();
+                    int max = normalize(current + statepanes - 1, lmx, lox);
+                    int min = normalize(current, lmx, lox);
+                    if ((min <= max && i >= min && i <= max) || (min > max && (i >= min || (i <= max && i >= lox)))) {
+                        g2.setColor(new Color(255, 255, 255));
+                    } else {
+                        g2.setColor(new Color(120, 120, 120));
+                    }
+                    g2.fill(circl);
+                    g2.setColor(tmp);
+                    g2.draw(circl);
+                    FontMetrics mets = g2.getFontMetrics();
+                    String lbl = normalize(i, lst, lop) + "";
+                    g2.drawString(lbl, i * dist + radius + offsetx - (mets.stringWidth(lbl) / 2), offsety + (mets.getAscent() / 2));
+                    states.add(circl);
+                    g2.setStroke(new BasicStroke(1));
+                    g2.setColor(new Color(0, 0, 0));
+                }
+
+                Polygon arrowHead = new Polygon();
+                arrowHead.addPoint(0, 4);
+                arrowHead.addPoint(-4, -4);
+                arrowHead.addPoint(4, -4);
+
+                for (int i = 0; i < lmx - 1; i++) {
+                    Path2D path = new Path2D.Double();
+                    path.moveTo(states.get(i).getMaxX(), states.get(i).getCenterY());
+                    path.lineTo(states.get(i + 1).getMinX(), states.get(i + 1).getCenterY());
+                    g2.draw(path);
+
+                    AffineTransform tx = new AffineTransform();
+                    tx.setToIdentity();
+                    double angle = Math.atan2(0, 1);
+                    tx.translate(states.get(i + 1).getMinX(), states.get(i + 1).getCenterY());
+                    tx.rotate((angle - Math.PI / 2d));
+                    g2.fill(tx.createTransformedShape(arrowHead));
+
+                }
+
+                Path2D path = new Path2D.Double();
+                path.moveTo(states.get(states.size() - 1).getCenterX(), states.get(states.size() - 1).getMinY());
+                path.curveTo(last.getCenterX() - 25, 0, loop.getCenterX() + 25, 0, loop.getCenterX(), loop.getMinY());
+                g2.draw(path);
+
+                AffineTransform tx = new AffineTransform();
+                tx.setToIdentity();
+                double angle = Math.atan2(loop.getMinY(), -dist / 2);
+                tx.translate(loop.getCenterX(), loop.getMinY());
+                tx.rotate(angle - Math.PI / 2d);
+                g2.fill(tx.createTransformedShape(arrowHead));
             }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return tmpNavPanel.getSize();
+            }
+
+        };
+        trace.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                for (int i = 0; i < states.size(); i++)
+                    if (e.getButton() == 1 && states.get(i).contains(e.getX(), e.getY())) {
+                        current = i;
+                        updateDisplay();
+                        break;
+                    }
+            }
+
         });
 
-        JPanel aux = new JPanel();
-        aux.setLayout(new GridLayout());
-        aux.add(leftTime);
-        aux.setPreferredSize(new Dimension(60, 30));
-        aux.setMaximumSize(new Dimension(60, 30));
-        tmpPanel.add(aux);
-        tmpPanel.add(timeLabel);
-        aux = new JPanel();
-        aux.setLayout(new GridLayout());
-        aux.add(rightTime);
-        aux.setPreferredSize(new Dimension(60, 30));
-        aux.setMaximumSize(new Dimension(60, 30));
-        tmpPanel.add(aux);
+        tmpNavPanel.add(trace);
 
-        if (i != getVizState().size() - 1)
-            rightTime.setVisible(false);
-        if (i != 0)
-            leftTime.setVisible(false);
+        tmpNavPanel.add(Box.createHorizontalGlue());
+        tmpNavPanel.add(rightNavButton);
 
-        return tmpPanel;
+        updateTempPanel();
+        return tmpNavPanel;
     }
 
     // [HASLab]
-    private void updateTmps() {
+    private void updateTempPanel() {
         AlloyModel model = null;
         AlloyType event = null;
+        leftNavButton.setEnabled(current > 0);
+        leftNavButton.setText(new String(current > 0 ? Character.toChars(0x2190) : Character.toChars(0x21e4)));
+        rightNavButton.setEnabled(true);
 
         for (int i = 0; i < statepanes; i++) {
             AlloyInstance myInstance;
@@ -1848,10 +1793,6 @@ public final class VizGUI implements ComponentListener {
                 return;
             }
 
-            if (i == 0) {
-                model = getVizState().get(0).getOriginalModel();
-            }
-
         }
 
     }
@@ -1860,43 +1801,6 @@ public final class VizGUI implements ComponentListener {
     private int normalize(int idx, int length, int loop) {
         int lln = length - loop;
         return idx > loop ? (((idx - loop) % lln) + loop) : idx;
-    }
-
-    /** Paints the label of the loop and last states differently. */
-    // [HASLab]
-    private class TimePainter extends JLabel implements ListCellRenderer<Object> {
-
-        private static final long serialVersionUID = -7905186538514458958L;
-
-        private TimePainter() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList< ? > list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
-            if (value != null)
-                setText(value.toString());
-
-            int bold;
-            Color color;
-
-            if (index == list.getModel().getSize() - 1 && backindex > 0) {
-                bold = Font.BOLD;
-                color = Color.BLUE;
-            } else if (index == backindex) {
-                bold = Font.BOLD;
-                color = Color.GREEN;
-            } else {
-                bold = Font.PLAIN;
-                color = Color.BLACK;
-            }
-
-            setFont(getFont().deriveFont(bold));
-            setForeground(color);
-            setBackground(Color.WHITE);
-
-            return this;
-        }
     }
 
 }
