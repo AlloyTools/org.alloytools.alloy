@@ -618,8 +618,8 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
-            leftNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener);
-            rightNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener);
+            leftNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
+            rightNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
@@ -877,8 +877,7 @@ public final class VizGUI implements ComponentListener {
                 if (myGraphPanel == null) {
                     myGraphPanel = new VizGraphPanel(myStates, false); // [HASLab]
                     JPanel tmpNavScrollPanel = createTempNavPanel(); // [HASLab]
-                    mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, 0); // [HASLab]
-                    mySplitTemporal.setLayout(new BoxLayout(mySplitTemporal, BoxLayout.PAGE_AXIS));
+                    mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, myGraphPanel.getHeight() - 50); // [HASLab]
                     mySplitTemporal.setResizeWeight(1.0);
                     mySplitTemporal.setDividerSize(0);
                 } else {
@@ -1761,11 +1760,12 @@ public final class VizGUI implements ComponentListener {
             }
 
         });
-
         tmpNavPanel.add(trace);
 
         tmpNavPanel.add(Box.createHorizontalGlue());
         tmpNavPanel.add(rightNavButton);
+        tmpNavPanel.setMinimumSize(new Dimension(0, 50));
+        tmpNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
         updateTempPanel();
         return tmpNavPanel;
