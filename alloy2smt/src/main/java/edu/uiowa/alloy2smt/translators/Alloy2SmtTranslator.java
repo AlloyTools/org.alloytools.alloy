@@ -49,8 +49,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Map<Sig.Field, FunctionDeclaration>             fieldsMap;
     Map<String, Func> nameToFuncMap;
     Map<Expr, Integer>  sigToIdMap;
-    Map<Expr, FunctionDeclaration> multiplicityVariableMap;
-
 
     public Alloy2SmtTranslator(CompModule alloyModel)
     {
@@ -75,7 +73,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.funcNames              = new HashSet<>();
         this.integerConstants       = new HashMap<>();
         this.sigToIdMap             = new HashMap<>();
-        this.multiplicityVariableMap = new HashMap<>();
 
         this.signaturesMap.put(Sig.UNIV, atomUniverse);
         this.signaturesMap.put(Sig.SIGINT, intUniv);
@@ -113,7 +110,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.sigFacts               = new HashMap<>(translator.sigFacts);
         this.existentialBdVars      = new ArrayList<>(translator.existentialBdVars);
         this.funcNames              = new HashSet<>(translator.funcNames);
-        this.multiplicityVariableMap = new HashMap<>(translator.multiplicityVariableMap);
 
         this.setComprehensionFuncNameToInputsMap = new HashMap<>(translator.setComprehensionFuncNameToInputsMap);
         this.setCompFuncNameToDefMap        = new HashMap<>(translator.setCompFuncNameToDefMap);
@@ -164,7 +160,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
         BinaryExpression            memberB = BinaryExpression.Op.MEMBER.make(tupleB, this.atomUniverse.getVariable());
 
-        BinaryExpression            and     = BinaryExpression.Op.AND.make(memberA, memberB);
+        Expression            and     = MultiArityExpression.Op.AND.make(memberA, memberB);
 
         MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
 
@@ -339,9 +335,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         for(int i = 1; i < inputBdVars.size(); ++i)
         {
-            membership = BinaryExpression.Op.AND.make(membership, AlloyUtils.getMemberExpression(inputBdVars, i));
+            membership = MultiArityExpression.Op.AND.make(membership, AlloyUtils.getMemberExpression(inputBdVars, i));
         }
-        membership = BinaryExpression.Op.AND.make(membership, setCompBodyExpr);
+        membership = MultiArityExpression.Op.AND.make(membership, setCompBodyExpr);
         Expression setMembership = BinaryExpression.Op.MEMBER.make(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), setBdVar.getVariable());
         membership = BinaryExpression.Op.EQ.make(membership, setMembership);
         Expression forallExpr = QuantifiedExpression.Op.FORALL.make(membership, new ArrayList<>(inputBdVars.keySet()));
@@ -854,7 +850,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                                     .stream().map(d -> d.getVariable())
                                     .collect(Collectors.toList());
                             Expression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
-                            constraint = BinaryExpression.Op.AND.make(constraint, distinct);
+                            constraint = MultiArityExpression.Op.AND.make(constraint, distinct);
                         }
                         Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
                         Assertion scopeAssertion = new Assertion(signature.toString() + " scope", exists);

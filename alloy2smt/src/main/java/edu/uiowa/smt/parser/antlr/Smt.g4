@@ -69,13 +69,13 @@ UnaryOperator : 'not' | 'singleton' | 'complement' | 'transpose' | 'tclosure' ;
 
 BinaryOperator : '=' | '>' | '>=' | '<' | '<='
                 | '+' | '-' | '*' | '/' | 'mod'
-                | 'or' | 'and' | '=>'
+                | '=>'
                 | 'union' | 'intersection' | 'setminus' | 'member' | 'subset'
                 | 'join' | 'product' ;
 
 TernaryOperator : 'ite' ;
 
-MultiArityOperator : 'mkTuple' | 'insert' | 'distinct' ;
+MultiArityOperator : 'mkTuple' | 'insert' | 'distinct' | 'or' | 'and' ;
 
 AtomPrefix : '@uc_Atom_';
 

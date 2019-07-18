@@ -624,7 +624,7 @@ public class SignatureTranslator
 
         Expression impliesNextIsMember = BinaryExpression.Op.IMPLIES.make(notXEqualsLast, nextIsMember);
 
-        Expression xMemberconsequent = BinaryExpression.Op.AND.make(xLessThanNext, impliesNextIsMember);
+        Expression xMemberconsequent = MultiArityExpression.Op.AND.make(xLessThanNext, impliesNextIsMember);
 
         Expression xMemberImplies = BinaryExpression.Op.IMPLIES.make(xMember, xMemberconsequent);
 
@@ -638,9 +638,9 @@ public class SignatureTranslator
         Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
         Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
 
-        Expression xyMembers = BinaryExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(x), setExpression), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(y), setExpression));
+        Expression xyMembers = MultiArityExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(x), setExpression), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(y), setExpression));
 
-        Expression antecedent = BinaryExpression.Op.AND.make(notXEqualsY, xyMembers);
+        Expression antecedent = MultiArityExpression.Op.AND.make(notXEqualsY, xyMembers);
 
         Expression mappingXEqualsMappingY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, y.getVariable()));
 
@@ -663,7 +663,7 @@ public class SignatureTranslator
 
         Expression nextXEqualsY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), y.getVariable());
 
-        Expression and = BinaryExpression.Op.AND.make(xyMembers, nextXEqualsY);
+        Expression and = MultiArityExpression.Op.AND.make(xyMembers, nextXEqualsY);
 
         BinaryExpression iff = BinaryExpression.Op.EQ.make(xyInNext, and);
 
@@ -692,7 +692,7 @@ public class SignatureTranslator
         Expression nextIsEmpty = BinaryExpression.Op.EQ.make(ordNext.getVariable(), emptySet);
         Expression setSingleton = BinaryExpression.Op.EQ.make(setExpression, firstSet);
         Expression nextIsNonempty = UnaryExpression.Op.NOT.make(nextIsEmpty);
-        Expression or = BinaryExpression.Op.OR.make(BinaryExpression.Op.AND.make(nextIsEmpty, setSingleton), nextIsNonempty);
+        Expression or = MultiArityExpression.Op.OR.make(MultiArityExpression.Op.AND.make(nextIsEmpty, setSingleton), nextIsNonempty);
 
         // either (next is an empty set and the ordered set is a singleton) or next is nonempty
         translator.smtProgram.addAssertion(
@@ -719,7 +719,7 @@ public class SignatureTranslator
     {
         QuantifiedExpression ltExpression =
                         QuantifiedExpression.Op.FORALL.make(
-                                BinaryExpression.Op.IMPLIES.make(BinaryExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element1), set1.getVariable()), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element2), set2.getVariable())), operator.make(new FunctionCallExpression(mapping, element1.getVariable()), new FunctionCallExpression(mapping, element1.getVariable()))),
+                                BinaryExpression.Op.IMPLIES.make(MultiArityExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element1), set1.getVariable()), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element2), set2.getVariable())), operator.make(new FunctionCallExpression(mapping, element1.getVariable()), new FunctionCallExpression(mapping, element1.getVariable()))),
                                 element1, element2
                         );
 

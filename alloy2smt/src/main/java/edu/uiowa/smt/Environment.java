@@ -1,15 +1,21 @@
 package edu.uiowa.smt;
 
 import edu.uiowa.smt.smtAst.Expression;
+import edu.uiowa.smt.smtAst.MultiArityExpression;
+import edu.uiowa.smt.smtAst.QuantifiedExpression;
+import edu.uiowa.smt.smtAst.VariableDeclaration;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Environment
 {
     private Map<String, Expression> variablesMap = new HashMap<>();
     private Environment parent;
+    //ToDo: review making this auxiliary formula more general
+    private QuantifiedExpression auxiliaryFormula = null;
 
     // top level environment
     public Environment()
@@ -75,5 +81,30 @@ public class Environment
         LinkedHashMap<String, Expression> map = getVariablesAuxiliary(environment.parent);
         map.putAll(environment.variablesMap);
         return map;
+    }
+
+    public void addAuxiliaryFormula(QuantifiedExpression expression)
+    {
+        if(expression.getOp() != QuantifiedExpression.Op.EXISTS)
+        {
+            throw new UnsupportedOperationException();
+        }
+        if(auxiliaryFormula == null)
+        {
+            auxiliaryFormula = expression;
+        }
+        else
+        {
+            List<VariableDeclaration> variables = auxiliaryFormula.getVariables();
+            variables.addAll(expression.getVariables());
+
+            Expression and = MultiArityExpression.Op.AND.make(auxiliaryFormula.getExpression(), expression);
+            auxiliaryFormula = QuantifiedExpression.Op.EXISTS.make(and, variables);
+        }
+    }
+
+    public QuantifiedExpression getAuxiliaryFormula()
+    {
+        return auxiliaryFormula;
     }
 }

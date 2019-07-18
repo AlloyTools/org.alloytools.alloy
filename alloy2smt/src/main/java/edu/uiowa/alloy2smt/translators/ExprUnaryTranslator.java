@@ -169,7 +169,7 @@ public class ExprUnaryTranslator
         
         if(translator.auxExpr != null)
         {
-            finalExpr = BinaryExpression.Op.AND.make(translator.auxExpr, finalExpr);
+            finalExpr = MultiArityExpression.Op.AND.make(translator.auxExpr, finalExpr);
             finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, translator.existentialBdVars);
             translator.auxExpr = null;
             translator.existentialBdVars.clear();
@@ -284,7 +284,7 @@ public class ExprUnaryTranslator
             Expression singleton = UnaryExpression.Op.SINGLETON.make(element.getVariable());
             Expression isSingleon = BinaryExpression.Op.EQ.make(singleton, expression);
             Expression exists = QuantifiedExpression.Op.EXISTS.make(isSingleon, element);
-            Expression or = BinaryExpression.Op.OR.make(isEmpty, exists);
+            Expression or = MultiArityExpression.Op.OR.make(isEmpty, exists);
             return or;
         }
         else

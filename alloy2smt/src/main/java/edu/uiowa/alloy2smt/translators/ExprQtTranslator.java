@@ -41,12 +41,11 @@ public class ExprQtTranslator
 
         if(!disjointConstraints.equals(BoolConstant.True))
         {
-            quantifiersConstraints = BinaryExpression.Op.AND.make(quantifiersConstraints, disjointConstraints);
+            quantifiersConstraints = MultiArityExpression.Op.AND.make(quantifiersConstraints, disjointConstraints);
         }
         
         // translate the body of the quantified expression
         Expression body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
-
         switch (exprQt.op)
         {
             case ALL:
@@ -80,7 +79,7 @@ public class ExprQtTranslator
                 VariableDeclaration variable;
                 variable = getVariableDeclaration(decl.expr, label, setSort, range);
                 Expression constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
-                multiplicityConstraints = BinaryExpression.Op.AND.make(multiplicityConstraints, constraint);
+                multiplicityConstraints = MultiArityExpression.Op.AND.make(multiplicityConstraints, constraint);
                 newEnvironment.put(name.label, variable.getVariable());
             }
         }
@@ -118,7 +117,7 @@ public class ExprQtTranslator
                         Expression intersect = BinaryExpression.Op.INTERSECTION.make(variableI, variableJ);
                         Expression emptySet = UnaryExpression.Op.EMPTYSET.make(variableI.getSort());
                         Expression equal = BinaryExpression.Op.EQ.make(intersect, emptySet);
-                        disjointConstraints = BinaryExpression.Op.AND.make(disjointConstraints, equal);
+                        disjointConstraints = MultiArityExpression.Op.AND.make(disjointConstraints, equal);
                     }
                 }
             }
@@ -199,7 +198,7 @@ public class ExprQtTranslator
 
         Expression tupleMember = BinaryExpression.Op.MEMBER.make(tuple, setFunctionExpression);
 
-        Expression and = BinaryExpression.Op.AND.make(membership, body);
+        Expression and = MultiArityExpression.Op.AND.make(membership, body);
 
         Expression equivalence = BinaryExpression.Op.EQ.make(tupleMember, and);
 
@@ -325,7 +324,7 @@ public class ExprQtTranslator
                     VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getFreshName(), setSort.elementSort);
                     Expression singleton = UnaryExpression.Op.SINGLETON.make(singleElement.getVariable());
                     Expression isSingleton = BinaryExpression.Op.EQ.make(variable.getVariable(), singleton);
-                    Expression emptyOrSingleton = BinaryExpression.Op.OR.make(empty, isSingleton);
+                    Expression emptyOrSingleton = MultiArityExpression.Op.OR.make(empty, isSingleton);
                     Expression exists = QuantifiedExpression.Op.EXISTS.make(emptyOrSingleton, singleElement);
                     return exists;
                 }
@@ -353,9 +352,17 @@ public class ExprQtTranslator
                                                               .collect(Collectors.toList());
 
         Expression memberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
-        Expression and = BinaryExpression.Op.AND.make(memberOrSubset, multiplicityConstraints);
-        Expression implies = BinaryExpression.Op.IMPLIES.make(and, body);
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, quantifiedVariables);
+        Expression and = MultiArityExpression.Op.AND.make(memberOrSubset, multiplicityConstraints);
+        body = BinaryExpression.Op.IMPLIES.make(and, body);
+        QuantifiedExpression existsSet = environment.getAuxiliaryFormula();
+
+        if(existsSet != null)
+        {
+            body = BinaryExpression.Op.IMPLIES.make(existsSet.getExpression(), body);
+
+            body = QuantifiedExpression.Op.EXISTS.make(body, existsSet.getVariables());
+        }
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(body, quantifiedVariables);
         return forAll;
     }
 
@@ -378,11 +385,24 @@ public class ExprQtTranslator
                                                               .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
                                                               .collect(Collectors.toList());
 
-        Expression and = getMemberOrSubsetExpressions(ranges, environment);
-        and = BinaryExpression.Op.AND.make(and, multiplicityConstraints);
-        and = BinaryExpression.Op.AND.make(and, body);
-        Expression exists = QuantifiedExpression.Op.EXISTS.make(and, quantifiedVariables);
-        return exists;
+        MultiArityExpression and = MultiArityExpression.Op.AND.make(
+                getMemberOrSubsetExpressions(ranges, environment),
+                multiplicityConstraints, body);
+
+        QuantifiedExpression existsSet = environment.getAuxiliaryFormula();
+        if(existsSet != null)
+        {
+            List<Expression> expressions = new ArrayList<>(and.getExpressions());
+            expressions.add(existsSet.getExpression());
+            and = MultiArityExpression.Op.AND.make(expressions);
+            Expression exists = QuantifiedExpression.Op.EXISTS.make(and, existsSet.getVariables());
+            return QuantifiedExpression.Op.EXISTS.make(exists, quantifiedVariables);
+        }
+        else
+        {
+            Expression exists = QuantifiedExpression.Op.EXISTS.make(and, quantifiedVariables);
+            return exists;
+        }
     }
 
     private Expression getMemberOrSubsetExpressions(Map<String, Expression> ranges, Environment environment)
@@ -404,7 +424,7 @@ public class ExprQtTranslator
             {
                 throw new UnsupportedOperationException(variable.getSort().toString());
             }
-            and = BinaryExpression.Op.AND.make(and, memberOrSubset);
+            and = MultiArityExpression.Op.AND.make(and, memberOrSubset);
         }
         return and;
     }
@@ -424,9 +444,9 @@ public class ExprQtTranslator
 
         Expression oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
 
-        Expression existsAnd = BinaryExpression.Op.AND.make(oldMemberOrSubset, multiplicityConstraints);
+        Expression existsAnd = MultiArityExpression.Op.AND.make(oldMemberOrSubset, multiplicityConstraints);
 
-        existsAnd = BinaryExpression.Op.AND.make(existsAnd, body);
+        existsAnd = MultiArityExpression.Op.AND.make(existsAnd, body);
 
         List<VariableDeclaration> newVariables = new ArrayList<>();
 
@@ -448,14 +468,14 @@ public class ExprQtTranslator
             newBody = newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
             newMultiplicityConstraints = newMultiplicityConstraints.substitute(oldVariable.getVariable(), newVariable.getVariable());
 
-            oldEqualNew = BinaryExpression.Op.AND.make(oldEqualNew, BinaryExpression.Op.EQ.make(oldVariable.getVariable(), newVariable.getVariable()));
+            oldEqualNew = MultiArityExpression.Op.AND.make(oldEqualNew, BinaryExpression.Op.EQ.make(oldVariable.getVariable(), newVariable.getVariable()));
             if (newVariable.getSort() instanceof TupleSort)
             {
-                newMemberOrSubset = BinaryExpression.Op.AND.make(newMemberOrSubset, BinaryExpression.Op.MEMBER.make(newVariable.getVariable(), entry.getValue()));
+                newMemberOrSubset = MultiArityExpression.Op.AND.make(newMemberOrSubset, BinaryExpression.Op.MEMBER.make(newVariable.getVariable(), entry.getValue()));
             }
             else if (newVariable.getSort() instanceof SetSort)
             {
-                newMemberOrSubset = BinaryExpression.Op.AND.make(newMemberOrSubset, BinaryExpression.Op.SUBSET.make(newVariable.getVariable(), entry.getValue()));
+                newMemberOrSubset = MultiArityExpression.Op.AND.make(newMemberOrSubset, BinaryExpression.Op.SUBSET.make(newVariable.getVariable(), entry.getValue()));
             }
             else
             {
@@ -467,12 +487,12 @@ public class ExprQtTranslator
         newBody = UnaryExpression.Op.NOT.make(newBody);
         Expression notOldEqualNew = UnaryExpression.Op.NOT.make(oldEqualNew);
 
-        Expression forAllAnd = BinaryExpression.Op.AND.make(newMemberOrSubset, newMultiplicityConstraints);
-        forAllAnd = BinaryExpression.Op.AND.make(forAllAnd, notOldEqualNew);
+        Expression forAllAnd = MultiArityExpression.Op.AND.make(newMemberOrSubset, newMultiplicityConstraints);
+        forAllAnd = MultiArityExpression.Op.AND.make(forAllAnd, notOldEqualNew);
 
         Expression implies = BinaryExpression.Op.IMPLIES.make(forAllAnd, newBody);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implies,  newVariables);
-        existsAnd = BinaryExpression.Op.AND.make(existsAnd, forAll);
+        existsAnd = MultiArityExpression.Op.AND.make(existsAnd, forAll);
         Expression exists = QuantifiedExpression.Op.EXISTS.make(existsAnd, oldVariables);
         return exists;
     }
@@ -486,7 +506,7 @@ public class ExprQtTranslator
         Expression notBody = UnaryExpression.Op.NOT.make(body);
         Expression allNot = translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
         Expression one = translateOneQuantifier(body, ranges, environment, multiplicityConstraints);
-        Expression or = BinaryExpression.Op.OR.make(allNot, one);
+        Expression or = MultiArityExpression.Op.OR.make(allNot, one);
         return or;
     }
 }

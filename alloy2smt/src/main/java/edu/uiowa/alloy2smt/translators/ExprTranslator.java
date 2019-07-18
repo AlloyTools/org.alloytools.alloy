@@ -123,9 +123,9 @@ public class ExprTranslator
         switch (exprList.op)
         {
             case AND:
-                return translateExprListToBinaryExpressions(BinaryExpression.Op.AND, exprList, environment);
+                return translateExprListAndOr(MultiArityExpression.Op.AND, exprList, environment);
             case OR:
-                return translateExprListToBinaryExpressions(BinaryExpression.Op.OR, exprList, environment);
+                return translateExprListAndOr(MultiArityExpression.Op.OR, exprList, environment);
             case DISJOINT:
                 return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, environment);
             case TOTALORDER:
@@ -156,7 +156,7 @@ public class ExprTranslator
             finalExpr = finalExprs.get(0);
             for (int i = 1; i < finalExprs.size(); ++i)
             {
-                finalExpr = BinaryExpression.Op.AND.make(finalExpr, finalExprs.get(i));
+                finalExpr = MultiArityExpression.Op.AND.make(finalExpr, finalExprs.get(i));
             }
         }
         else
@@ -184,7 +184,7 @@ public class ExprTranslator
         }
         if (translator.auxExpr != null)
         {
-            translator.auxExpr = BinaryExpression.Op.AND.make(translator.auxExpr, setCompDef);
+            translator.auxExpr = MultiArityExpression.Op.AND.make(translator.auxExpr, setCompDef);
         }
         else
         {
@@ -238,49 +238,42 @@ public class ExprTranslator
         Expression xyzTupleMember = BinaryExpression.Op.MEMBER.make(xyzTuple, relation.getVariable());
         Expression implies1 = BinaryExpression.Op.IMPLIES.make(equal, xyzTupleMember);
         Expression implies2 = BinaryExpression.Op.IMPLIES.make(xyzTupleMember, equal);
-        Expression equivalence = BinaryExpression.Op.AND.make(implies1, implies2);
+        Expression equivalence = MultiArityExpression.Op.AND.make(implies1, implies2);
         Expression axiom = QuantifiedExpression.Op.FORALL.make(implies2, x, y, z);
         translator.smtProgram.addConstantDeclaration(relation);
         translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom));
         translator.arithmeticOperations.put(op, relation.getVariable());
     }
 
-    private Expression translateExprListToBinaryExpressions(BinaryExpression.Op op, ExprList exprList, Environment environment)
+    private Expression translateExprListAndOr(MultiArityExpression.Op op, ExprList exprList, Environment environment)
     {
+        if(op != MultiArityExpression.Op.AND && op != MultiArityExpression.Op.OR)
+        {
+            throw new UnsupportedOperationException(op.toString());
+        }
 
         if (exprList.args.size() == 0)
         {
-            if (op == BinaryExpression.Op.AND)
+            if (op == MultiArityExpression.Op.AND)
             {
                 return BoolConstant.True;
             }
 
-            if (op == BinaryExpression.Op.OR)
+            if (op == MultiArityExpression.Op.OR)
             {
                 return BoolConstant.False;
             }
-            throw new UnsupportedOperationException();
         }
 
-        //ToDo: review the case of nested variable scopes
-        Expression left = translateExpr(exprList.args.get(0), environment);
+        List<Expression> expressions = new ArrayList<>();
 
-        if (exprList.args.size() == 1)
+        for (Expr expr: exprList.args)
         {
-            return left;
+            Expression expression = translateExpr(expr, environment);
+            expressions.add(expression);
         }
 
-        Expression right = translateExpr(exprList.args.get(1), environment);
-        BinaryExpression result = op.make(left, right);
-
-
-        for (int i = 2; i < exprList.args.size(); i++)
-        {
-            Expression expr = translateExpr(exprList.args.get(i), environment);
-            result = op.make(result, expr);
-        }
-
-        return result;
+        return op.make(expressions);
     }
 
     /**

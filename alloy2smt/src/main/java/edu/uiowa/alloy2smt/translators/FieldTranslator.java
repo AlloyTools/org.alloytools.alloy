@@ -95,10 +95,10 @@ public class FieldTranslator
         Expression aSingleton = UnaryExpression.Op.SINGLETON.make(a.getVariable());
         Expression bSingleton = UnaryExpression.Op.SINGLETON.make(b.getVariable());
 
-        Expression members = BinaryExpression.Op.AND.make(aMember, bMember);
+        Expression members = MultiArityExpression.Op.AND.make(aMember, bMember);
         Expression equal = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
         Expression notEqual = UnaryExpression.Op.NOT.make(equal);
-        Expression antecedent = BinaryExpression.Op.AND.make(members, notEqual);
+        Expression antecedent = MultiArityExpression.Op.AND.make(members, notEqual);
         Expression consequent = BoolConstant.True;
 
         for (Decl decl: sig.getFieldDecls())
@@ -113,7 +113,7 @@ public class FieldTranslator
                     Expression intersect = BinaryExpression.Op.INTERSECTION.make(aJoin, bJoin);
                     Expression emptySet = UnaryExpression.Op.EMPTYSET.make(intersect.getSort());
                     Expression isEmpty = BinaryExpression.Op.EQ.make(intersect, emptySet);
-                    consequent = BinaryExpression.Op.AND.make(consequent, isEmpty);
+                    consequent = MultiArityExpression.Op.AND.make(consequent, isEmpty);
                 }
             }
         }
@@ -215,7 +215,7 @@ public class FieldTranslator
             // and A.field = Set
             // and A x field in A x Set
 
-            ExprVar z = ExprVar.make(null, "__z__", field.sig.type());
+            ExprVar z = ExprVar.make(null, "this", field.sig.type());
             Expr noopZ = ExprUnary.Op.NOOP.make(null, z);
             Expr noopField = ExprUnary.Op.NOOP.make(null, field);
             Expr join = ExprBinary.Op.JOIN.make(null, null, noopZ, noopField);
@@ -225,21 +225,22 @@ public class FieldTranslator
             Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), in);
             Expression multiplicity =  translator.exprTranslator.translateExpr(exprQt);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
+
             Expr product = ExprBinary.Op.ARROW.make(null, null, noopSig, expr);
             Expr subsetExpr = ExprBinary.Op.IN.make(null, null, noopField, product);
             Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
 
             // no set is generated for AnyArrowAny constraint
-            if(translator.multiplicityVariableMap.containsKey(expr))
-            {
-                Expr joinSigField = ExprBinary.Op.JOIN.make(null, null, noopSig, noopField);
-                Expression joinExpression = translator.exprTranslator.translateExpr(joinSigField);
-                Expression set = translator.multiplicityVariableMap.get(expr).getVariable();
-                Expression equality = BinaryExpression.Op.EQ.make(joinExpression, set);
-                translator.smtProgram.addAssertion(new Assertion(field.toString() + " auxiliary set", equality));
-                translator.multiplicityVariableMap.remove(expr);
-            }
+//            if(translator.multiplicityVariableMap.containsKey(expr))
+//            {
+//                Expr joinSigField = ExprBinary.Op.JOIN.make(null, null, noopSig, noopField);
+//                Expression joinExpression = translator.exprTranslator.translateExpr(joinSigField);
+//                Expression set = translator.multiplicityVariableMap.get(expr).getVariable();
+//                Expression equality = BinaryExpression.Op.EQ.make(joinExpression, set);
+//                translator.smtProgram.addAssertion(new Assertion(field.toString() + " auxiliary set", equality));
+//                translator.multiplicityVariableMap.remove(expr);
+//            }
         }
     }
 }

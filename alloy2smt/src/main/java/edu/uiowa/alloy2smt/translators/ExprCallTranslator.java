@@ -179,18 +179,18 @@ public class ExprCallTranslator
         Expression xyOperation = op.make(xValue, yValue);
         Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
 
-        Expression and1 = BinaryExpression.Op.AND.make(xMember, yMember);
-        Expression and2 = BinaryExpression.Op.AND.make(equal, and1);
+        Expression and1 = MultiArityExpression.Op.AND.make(xMember, yMember);
+        Expression and2 = MultiArityExpression.Op.AND.make(equal, and1);
         Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
         Expression argumentConstraints = BoolConstant.True;
         for (VariableDeclaration declaration : quantifiedArguments)
         {
             if (declaration.getConstraint() != null)
             {
-                argumentConstraints = BinaryExpression.Op.AND.make(argumentConstraints, declaration.getConstraint());
+                argumentConstraints = MultiArityExpression.Op.AND.make(argumentConstraints, declaration.getConstraint());
             }
         }
-        Expression antecedent1 = BinaryExpression.Op.AND.make(argumentConstraints, zMember);
+        Expression antecedent1 = MultiArityExpression.Op.AND.make(argumentConstraints, zMember);
         Expression implies1 = BinaryExpression.Op.IMPLIES.make(antecedent1, exists1);
         List<VariableDeclaration> quantifiers1 = new ArrayList<>(quantifiedArguments);
         quantifiers1.add(z);
@@ -199,10 +199,10 @@ public class ExprCallTranslator
         Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, A, B), forall1);
         translator.smtProgram.addAssertion(assertion1);
 
-        Expression and3 = BinaryExpression.Op.AND.make(equal, zMember);
+        Expression and3 = MultiArityExpression.Op.AND.make(equal, zMember);
         Expression exists2 = QuantifiedExpression.Op.EXISTS.make(and3, z);
 
-        Expression antecedent2 = BinaryExpression.Op.AND.make(argumentConstraints, and1);
+        Expression antecedent2 = MultiArityExpression.Op.AND.make(argumentConstraints, and1);
 
         Expression implies2 = BinaryExpression.Op.IMPLIES.make(antecedent2, exists2);
         List<VariableDeclaration> quantifiers2 = new ArrayList<>(quantifiedArguments);

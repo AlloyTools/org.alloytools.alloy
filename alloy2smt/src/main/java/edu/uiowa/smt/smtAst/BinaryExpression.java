@@ -43,8 +43,6 @@ public class BinaryExpression extends Expression
     {
         switch (op)
         {
-            case OR:
-            case AND:
             case IMPLIES:
             {
                 if (lhsExpr.getSort() != AbstractTranslator.boolSort)
@@ -187,8 +185,6 @@ public class BinaryExpression extends Expression
 
     public enum Op
     {
-        OR ("or"),
-        AND ("and"),
         IMPLIES ("=>"),
         PLUS ("+"),
         MINUS ("-"),
@@ -225,8 +221,6 @@ public class BinaryExpression extends Expression
         {
             switch (operator)
             {
-                case"or"            : return OR;
-                case "and"          : return AND;
                 case "=>"           : return IMPLIES;
                 case "+"            : return PLUS;
                 case "-"            : return MINUS;
@@ -263,8 +257,6 @@ public class BinaryExpression extends Expression
     {
         switch (op)
         {
-            case OR: return AbstractTranslator.boolSort;
-            case AND: return AbstractTranslator.boolSort ;
             case IMPLIES: return AbstractTranslator.boolSort;
             case PLUS: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
             case MINUS: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;

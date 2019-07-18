@@ -85,8 +85,33 @@ public class MultiArityExpression extends Expression
                     }
                 }
             }break;
+            case OR:
+            {
+                checkBoolType(Op.OR);
+            } break;
+            case AND:
+            {
+                checkBoolType(Op.AND);
+            } break;
             default:
                 throw new UnsupportedOperationException();
+        }
+    }
+
+    private void checkBoolType(Op op)
+    {
+        if(exprs.size() == 0)
+        {
+            throw new RuntimeException(op + " operation requires at least one expression");
+        }
+
+        // all expressions should have boolean sort
+        for (Expression expression: exprs)
+        {
+            if(!(expression.getSort().equals(AbstractTranslator.boolSort)))
+            {
+                throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not boolean", expression.getSort(), expression));
+            }
         }
     }
 
@@ -115,7 +140,9 @@ public class MultiArityExpression extends Expression
     {        
         MKTUPLE ("mkTuple"),
         INSERT ("insert"),
-        DISTINCT ("distinct");
+        DISTINCT ("distinct"),
+        OR("or"),
+        AND("and");
 
         private final String opStr;
 
@@ -129,6 +156,11 @@ public class MultiArityExpression extends Expression
             return new MultiArityExpression(this, exprs);
         }
 
+        public MultiArityExpression make(Expression ...exprs)
+        {
+            return new MultiArityExpression(this, exprs);
+        }
+
        public static Op getOp(String operator)
        {
            switch (operator)
@@ -136,6 +168,8 @@ public class MultiArityExpression extends Expression
                case "mkTuple"   : return MKTUPLE;
                case "insert"    : return INSERT;
                case "distinct"  : return DISTINCT;
+               case "or": return OR;
+               case "and": return AND;
                default:
                    throw new UnsupportedOperationException("Operator " + operator + " is not defined");
            }
@@ -169,7 +203,9 @@ public class MultiArityExpression extends Expression
                 // return the sort of the last element
                 return exprs.get(exprs.size() - 1).getSort();
             }
-            case DISTINCT: return AbstractTranslator.boolSort;
+            case DISTINCT:
+            case OR:
+            case AND: return AbstractTranslator.boolSort;
             default:
                 throw new UnsupportedOperationException();
         }
