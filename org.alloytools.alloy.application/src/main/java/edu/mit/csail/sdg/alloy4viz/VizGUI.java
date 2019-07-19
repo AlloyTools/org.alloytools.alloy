@@ -90,7 +90,7 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
  * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-base
+ *            electrum-base, electrum-simulator
  */
 
 public final class VizGUI implements ComponentListener {
@@ -128,7 +128,7 @@ public final class VizGUI implements ComponentListener {
     private final JButton       projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
                     loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
                     openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
-                    txtButton, tableButton, leftNavButton, rightNavButton/* , dotButton, xmlButton */; // [HASLab]
+                    txtButton, tableButton, leftNavButton, rightNavButton, forkButton/* , dotButton, xmlButton */; // [HASLab]
 
     /**
      * This list must contain all the display mode buttons (that is, vizButton,
@@ -144,6 +144,10 @@ public final class VizGUI implements ComponentListener {
 
     /** The "show next" menu item. */
     private final JMenuItem     enumerateMenu;
+
+    /** The "fork next" menu item. */
+    // [HASLab]
+    private final JMenuItem     forkMenu;
 
     /** The trace navigation menu items. */
     // [HASLab]
@@ -618,8 +622,9 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
-            leftNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
-            rightNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
+            forkMenu = menuItem(instanceMenu, "Fork Next State", 'F', 'F', doFork());
+            leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
+            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
@@ -671,6 +676,7 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
             toolbar.add(enumerateButton = OurUtil.button("Next", "Show the next solution", "images/24_history.gif", doNext()));
+            toolbar.add(forkButton = OurUtil.button("Fork", "Fork the next state", "images/24_history.gif", doFork()));
             toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
             toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the previous state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);
@@ -822,8 +828,8 @@ public final class VizGUI implements ComponentListener {
             default :
                 vizButton.setEnabled(false);
         }
-        final boolean isMeta = myStates.get(statepanes - 1).getOriginalInstance().isMetamodel; // [HASLab]
-        final boolean isTrace = myStates.get(statepanes - 1).getOriginalInstance().originalA4.getMaxTrace() >= 0; // [HASLab]
+        final boolean isMeta = myStates.get(statepanes - 1).getOriginalInstance().isMetamodel; // [HASLab]
+        final boolean isTrace = myStates.get(statepanes - 1).getOriginalInstance().originalA4.getMaxTrace() >= 0; // [HASLab]
         vizButton.setVisible(frame != null);
         treeButton.setVisible(frame != null);
         txtButton.setVisible(frame != null);
@@ -842,6 +848,8 @@ public final class VizGUI implements ComponentListener {
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
+        forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         leftNavButton.setEnabled(current > 0); // [HASLab]
         leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
@@ -889,7 +897,7 @@ public final class VizGUI implements ComponentListener {
                     if (isTrace && !isMeta) { // [HASLab]
                         myGraphPanel = new VizGraphPanel(myStates, false);
                         JPanel tmpNavScrollPanel = createTempNavPanel();
-                        mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, myGraphPanel.getHeight() - 50); // [HASLab]
+                        mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, myGraphPanel.getHeight() - 50); // [HASLab]
                         mySplitTemporal.setResizeWeight(1.0);
                         mySplitTemporal.setDividerSize(0);
                     } else {
@@ -1075,7 +1083,7 @@ public final class VizGUI implements ComponentListener {
 
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
-        loadXML(fileName, forcefully, 0); // [HASLab] first state
+        loadXML(fileName, forcefully, current); // [HASLab] first state
     }
 
     /** Load the XML instance. */
@@ -1214,7 +1222,7 @@ public final class VizGUI implements ComponentListener {
         if (file == null)
             return null;
         Util.setCurrentDirectory(file.getParentFile());
-        loadXML(file.getPath(), true);
+        loadXML(file.getPath(), true, 0); // [HASLab]
         return null;
     }
 
@@ -1510,7 +1518,32 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
-                enumerator.compute(xmlFileName);
+                enumerator.compute(new String[] {
+                                                 xmlFileName, -1 + ""
+                });
+            } catch (Throwable ex) {
+                OurDialog.alert(ex.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /** This method attempts to derive the next satisfying instance. */
+    // [HASLab] simulator
+    private Runner doFork() {
+        if (wrap)
+            return wrapMe();
+        if (settingsOpen != 0)
+            return null;
+        if (xmlFileName.length() == 0) {
+            OurDialog.alert("Cannot display the next solution since no instance is currently loaded.");
+        } else if (enumerator == null) {
+            OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
+        } else {
+            try {
+                enumerator.compute(new String[] {
+                                                 xmlFileName, current + ""
+                });
             } catch (Throwable ex) {
                 OurDialog.alert(ex.getMessage());
             }

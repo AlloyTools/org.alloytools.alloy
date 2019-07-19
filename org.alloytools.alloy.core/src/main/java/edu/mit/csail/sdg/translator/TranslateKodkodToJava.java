@@ -608,7 +608,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         String left = make(temporalFormula.left());
         String right = make(temporalFormula.right());
         switch (temporalFormula.op()) {
-            case RELEASE :
+            case RELEASES :
                 file.printf("Expression %s=%s.releases(%s);%n", newname, left, right);
                 break;
             case UNTIL :
@@ -617,7 +617,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             case SINCE :
                 file.printf("Expression %s=%s.since(%s);%n", newname, left, right);
                 break;
-            case TRIGGER :
+            case TRIGGERED :
                 file.printf("Expression %s=%s.triggered(%s);%n", newname, left, right);
                 break;
             default :
@@ -789,11 +789,11 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             case ONCE :
                 file.printf("Formula %s=%s.once();%n", newname, sub);
                 break;
-            case PREVIOUS :
-                file.printf("Formula %s=%s.before();%n", newname, sub);
+            case PREVIOUSLY :
+                file.printf("Formula %s=%s.previously();%n", newname, sub);
                 break;
-            case NEXT :
-                file.printf("Formula %s=%s.next();%n", newname, sub);
+            case AFTER :
+                file.printf("Formula %s=%s.after();%n", newname, sub);
                 break;
             default :
                 throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalFormula.op() + "\" encountered");
