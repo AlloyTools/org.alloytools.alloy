@@ -18,7 +18,9 @@ cd bin
 chmod +x cvc4_linux
 java -jar alloy_cvc4.jar     
 ```
-The build process for Windows and macOS is analogous [check].
+The build process for macOS is analogous.
+
+[MM: add windows instructions].
 
 # CVC4 options 
 
@@ -26,7 +28,7 @@ The CVC4 relational solver can be chosen from the the options menu.
 
 ![Dependency graph](doc/options.png)
 
-**CVC4 timeout** can also be set there, in minutes or fractions thereof. This is the time alloted to CVC4 to solve a particular Alloy query (run or check) [check: how about models with multiple queries?]. The default timeout is 0.5 minutes.  
+**CVC4 timeout** can also be set there, in seconds. This is the time alloted to CVC4 to solve a particular Alloy command (run, check, or execute all). The default timeout is 30 seconds.  
 
 **CVC4 include scope** specifies whether to consider or ignore the scope constraints in all commands. By default the scope is disabled. 
 In the following example, the CVC4 relational solver returns the empty set for signature `A` when the scope option is disabled. 
@@ -45,13 +47,24 @@ run {#A = 3}
 
 The CVC4 relational solver returns 3 elements for signature A. 
 
-**Note:** Cardinality constraints are supported only for unary relations (subsets of signatures). Applying the operator `#` to a relation of greater arity produces an error [check].
+**Note:** Cardinality constraints are supported only as atomic constraints of the form 
+```
+#r op n
+```
+
+where `r` is a relational expression, `n` is a numeral and `op` is an builtin arithmetic relational operator (`<`, `>`, `>=`, `=<`, `=`, `!=`)
 
 # Integer signatures 
 
+_[CT: rewrite this part.
+The quantifier discipline will be the following
+  Int is allowed in quantifier restrictions only if the polarity of the quantifier is existential or the whole restriction is a finite relation.
+  (the finiteness computation is approximated because it is not computable precisely)]_
+
 With the CVC4 relational solver the builtin signature `Int` is interpreted as the set of all  integers. Since the solver can only reason about finite sets, it is not possible to universally quantify directly over `Int`. For instance, the following assertion will be rejected 
 ````
-assertion all x : Int | x > 1 implies x > 0  // generates error
+// generates error
+assert a1 { all x : A & Int | x > 1 implies x > 0 }  
 ````
 However, universally quantifying over a user-defined subset of `Int` is allowed since such subsets are implicitly considered to be finite:
 ````
@@ -68,7 +81,7 @@ Existential quantification over `Int` is instead allowed.
 More precisely, in a fact, existential quantification over `Int` is allowed if, and only, the quantified formula has positive polarity. Dually, universal quantification over `Int` is allowed if, and only, the quantified formula has negative polarity. The other quantifiers are treated similarly. In an assertion, the same rule apply but with respect to the negation of the assertion. 
 -->
 
-Another limitation is that it is not possible to write expressions denoting a set that contains both integers and non-integers (i.e., atoms included in a user-defined signature). [check] Such expressions are rejected by the relational solver as ill-typed. 
+Another limitation is that it is not possible to write expressions denoting a set that contains both integers and non-integers (i.e., atoms included in a user-defined signature). Such expressions are rejected by the relational solver as ill-typed. 
 Example:
 ````
 sig A {}
@@ -77,20 +90,19 @@ sig B {
 }
 ````
 
-[check] In fact, because of the limitations above the restriction on the use of `Int` is pretty draconian: it can only occur in signature declarations of the form
-````
-sig A { ... } in Int
-sig B { n: Int, ... }
-````
-that introduce a finite subset of `Int` or declare a field of type `Int` [check, it looks like more cases are allowed].
-
-Note that currently something like `A + Int` is well-typed and allowed in Alloy. _The restrictions above are specific to the CVC4 relational solver._ One consequence of these restrictions is that _`univ` is considered to consists of all non-integer atoms only_. [check] Similarly, `ident` ranges over pairs of atoms only. For integers, the new builtin constants `int_univ` and `int_ident` denote respectively the (finite) universal set and the identity relation over that set. 
+Note that currently something like `A + Int` is well-typed and allowed in Alloy. _The restrictions above are specific to the CVC4 relational solver._ One consequence of these restrictions is that _`univ` is considered to consists of all non-integer atoms only_. Similarly, `ident` ranges over pairs of atoms only. 
+[CT: univ is _not_ the set of all atoms. It is just the union of the top level non-integer signatures.
+]
+[Note: For integers, we will need the Alloy developers to add two new builtin constants: `int_univ` and `int_ident` denoting respectively 
+1. a finite set that includes all the integer signatures and builtin constants (0,1,...) occurring in the model
+2. the identity relation over `int_univ`. 
+]
 
 ## Semantics of functions plus, minus, mul, div, rem
 
 The CVC4 relational solver interprets the builtin relational constants `plus`, `minus`, `mul`, `div`, and `rem` differently from the standard Alloy, and more consistently with the use of square brackets as syntactic sugar for relational join. Specifically, it uses the following semantics where, because of the restrictions above, `A` and `B` can only be expressions denoting finite sets:
 
-| Syntax        | Alt. Syntax [check] | Meaning                      |
+| Syntax        | Alt. Syntax | Meaning                      |
 |---------------|----------|-----------------------------------------|
 | `plus[A, B]`  | `B.A.plus`v | { z \| ∃ x ∈ A, y ∈ B. x + y = z }   |
 | `minus[A, B]` | `B.A.minus` | { z \| ∃ x ∈ A, y ∈ B. x - y = z }   |
@@ -203,7 +215,7 @@ fact {
 4 >= #A 
 }
 ```
-- univ, iden built-in signatures don not include integers. 
+- `univ`, `iden` built-in signatures do not include integers. 
 - No subtyping between normal signatures and integer signatures. Set operations between normal signatures is supported. But set operations between normal signatures and integer signatures would throw typing errors. 
  
 
