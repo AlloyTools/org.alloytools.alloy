@@ -45,7 +45,7 @@ run {#A = 3}
 
 The CVC4 relational solver returns 3 elements for signature A. 
 
-**Note:** Cardinality constraints are supported only for unary relations (subsets of signatures). Applying the operator `#` to a relation of greater arity produces an error.
+**Note:** Cardinality constraints are supported only for unary relations (subsets of signatures). Applying the operator `#` to a relation of greater arity produces an error [check].
 
 # Integer signatures 
 
@@ -57,7 +57,9 @@ However, universally quantifying over a user-defined subset of `Int` is allowed 
 ````
 sig A {} in Int
 
-assertion all x : A | x > 1 implies x > 0  // allowed
+assert a1 {all x : A | x > 1 implies x > 0}  // allowed
+
+check a1
 ````
 
 <!-- 
@@ -78,8 +80,9 @@ sig B {
 [check] In fact, because of the limitations above the restriction on the use of `Int` is pretty draconian: it can only occur in signature declarations of the form
 ````
 sig A { ... } in Int
+sig B { n: Int, ... }
 ````
-that introduce a finite subset of `Int`.
+that introduce a finite subset of `Int` or declare a field of type `Int` [check, it looks like more cases are allowed].
 
 Note that currently something like `A + Int` is well-typed and allowed in Alloy. _The restrictions above are specific to the CVC4 relational solver._ One consequence of these restrictions is that _`univ` is considered to consists of all non-integer atoms only_. [check] Similarly, `ident` ranges over pairs of atoms only. For integers, the new builtin constants `int_univ` and `int_ident` denote respectively the (finite) universal set and the identity relation over that set. 
 
@@ -144,7 +147,7 @@ this/A={4}
 this/B={2}
 ```
 
-**Note:** Despite supporting the application of the arithmetic operators to arbitrary integer sets the CVC4 relation solver targets the case when the arguments are singletons. Performance degrades significantly as the cardinality af the argument sets increases.
+**Note:** Despite supporting the application of the arithmetic operators to arbitrary integer sets the CVC4 relation solver targets the case when the arguments are singletons. Performance degrades significantly as the cardinality of the argument sets increases.
 
 
 ## Comparisons
@@ -175,7 +178,7 @@ this/B={-4, -5, -7, -8, 1}
 ``` 
  which satisfies the model because [-7 + 2]<sub>8</sub> = [3]<sub>8</sub> >  = [1]<sub>8</sub> = [-4 + -5 + -7 + -8 + 1]<sub>8</sub> which satisfies 3 > 4. 
  
-When both operands are singletons, the semantics is similar. Both solvers return sat for this model
+When both operands are singletons, the two semantics are effectively the same. Both solvers return sat for this model
 ```cmd
 sig A, B in Int {} 
 fact { 
