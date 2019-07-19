@@ -234,6 +234,13 @@ public class FieldTranslator
             Expression multiplicity =  translator.exprTranslator.translateExpr(all);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
 
+            Expr newExpr = AlloyUtils.substituteExpr(expr, zis, field.sig);
+
+            Expr product = ExprBinary.Op.ARROW.make(null, null, field.sig, newExpr);
+            Expr subsetExpr = ExprBinary.Op.IN.make(null, null, field, product);
+            Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
+            translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
+
             // no set is generated for AnyArrowAny constraint
 //            if(translator.multiplicityVariableMap.containsKey(expr))
 //            {
