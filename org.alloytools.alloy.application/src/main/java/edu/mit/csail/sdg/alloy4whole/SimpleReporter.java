@@ -64,7 +64,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * This helper method is used by SimpleGUI.
  *
  * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base,
- *            electrum-temporal
+ *            electrum-temporal, electrum-simulator
  */
 
 final class SimpleReporter extends A4Reporter {
@@ -571,6 +571,7 @@ final class SimpleReporter extends A4Reporter {
     static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
+        public int                      index            = -1; // [HASLab] simulator
         public String                   filename         = "";
         public transient WorkerCallback out              = null;
 
@@ -610,7 +611,11 @@ final class SimpleReporter extends A4Reporter {
             }
             int tries = 0;
             while (true) {
-                sol = sol.next();
+                if (this.index >= 0) {
+                    latestKodkods.clear();
+                    sol = sol.fork(this.index); // [HASLab] simulator
+                } else
+                    sol = sol.next();
                 if (!sol.satisfiable()) {
                     cb("pop", "There are no more satisfying instances.\n\n" + "Note: due to symmetry breaking and other optimizations,\n" + "some equivalent solutions may have been omitted.");
                     return;

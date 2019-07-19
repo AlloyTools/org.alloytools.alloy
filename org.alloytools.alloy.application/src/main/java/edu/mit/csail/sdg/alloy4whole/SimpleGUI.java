@@ -182,7 +182,8 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  * (2) the run() method in the instance watcher (in constructor) is launched
  * from a fresh thread
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base,
+ *            electrum-simulator
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -1225,6 +1226,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             String f = latestAutoInstance;
             latestAutoInstance = "";
             if (subrunningTask == 2)
+                viz.loadXML(f, true, 0);
+            else if (subrunningTask == 3) // [HASLab]
                 viz.loadXML(f, true);
             else if (AutoVisualize.get() || subrunningTask == 1)
                 doVisualize("XML: " + f);
@@ -1691,13 +1694,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         @Override
         public String compute(Object input) {
-            final String arg = (String) input;
+            final String[] arg = (String[]) input; // [HASLab] simulator
             OurUtil.show(frame);
             if (WorkerEngine.isBusy())
                 throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
             SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
             SimpleTask2 task = new SimpleTask2();
-            task.filename = arg;
+            task.filename = arg[0]; // [HASLab] simulator
+            task.index = Integer.valueOf(arg[1]); // [HASLab] simulator
             try {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
@@ -1710,14 +1714,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 log.logDivider();
                 log.flush();
                 doStop(2);
-                return arg;
+                return arg[0]; // [HASLab]
             }
-            subrunningTask = 2;
+            subrunningTask = task.index < 0 ? 3 : 2; // [HASLab]
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
             stopbutton.setVisible(true);
-            return arg;
+            return arg[0]; // [HASLab]
         }
     };
 
