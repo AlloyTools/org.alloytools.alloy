@@ -576,7 +576,7 @@ public final class VizGUI implements ComponentListener {
      */
     // [HASLab]
     public VizGUI(boolean standalone, String xmlFileName, JMenu windowmenu, Computer enumerator, Computer evaluator, boolean makeWindow, int panes) {
-        this.statepanes = panes; // [HASLab]
+        this.statepanes = panes == 0 ? 1 : panes; // [HASLab]
         this.enumerator = enumerator;
         this.standalone = standalone;
         this.evaluator = evaluator;
@@ -829,6 +829,7 @@ public final class VizGUI implements ComponentListener {
                 vizButton.setEnabled(false);
         }
         final boolean isMeta = myStates.get(statepanes - 1).getOriginalInstance().isMetamodel; // [HASLab]
+        final boolean isTrace = myStates.get(statepanes - 1).getOriginalInstance().originalA4.getMaxTrace() >= 0; // [HASLab]
         vizButton.setVisible(frame != null);
         treeButton.setVisible(frame != null);
         txtButton.setVisible(frame != null);
@@ -848,11 +849,11 @@ public final class VizGUI implements ComponentListener {
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        leftNavButton.setVisible(!isMeta); // [HASLab]
+        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
+        leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         leftNavButton.setEnabled(current > 0); // [HASLab]
-        rightNavButton.setVisible(!isMeta); // [HASLab]
         leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
+        rightNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         rightNavMenu.setEnabled(!isMeta); // [HASLab]
         toolbar.setVisible(true);
         // Now, generate the graph or tree or textarea that we want to display
@@ -891,19 +892,34 @@ public final class VizGUI implements ComponentListener {
             // break;
             // }
             default : {
-                if (myGraphPanel == null) {
-                    myGraphPanel = new VizGraphPanel(myStates, false); // [HASLab]
-                    JPanel tmpNavScrollPanel = createTempNavPanel(); // [HASLab]
-                    mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, myGraphPanel.getHeight() - 50); // [HASLab]
-                    mySplitTemporal.setResizeWeight(1.0);
-                    mySplitTemporal.setDividerSize(0);
+                List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
+                if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanes()) { // [HASLab]
+                    if (isTrace && !isMeta) { // [HASLab]
+                        myGraphPanel = new VizGraphPanel(myStates, false);
+                        JPanel tmpNavScrollPanel = createTempNavPanel();
+                        mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, myGraphPanel.getHeight() - 50); // [HASLab]
+                        mySplitTemporal.setResizeWeight(1.0);
+                        mySplitTemporal.setDividerSize(0);
+                    } else {
+                        mySplitTemporal = null;
+                        myGraphPanel = new VizGraphPanel(myStates.subList(statepanes - 1, statepanes), false); // [HASLab]                        
+                    }
                 } else {
-                    updateTempPanel(); // [HASLab]
-                    myGraphPanel.seeDot(false);
-                    myGraphPanel.remakeAll();
+                    if (isTrace && !isMeta) { // [HASLab]
+                        updateTempPanel();
+                        myGraphPanel.seeDot(false);
+                        myGraphPanel.remakeAll();
+                    } else {
+                        mySplitTemporal = null;
+                        myGraphPanel.seeDot(false);
+                        myGraphPanel.remakeAll();
+                    }
                 }
             }
-                content = mySplitTemporal; // [HASLab]
+                if (isTrace && !isMeta) // [HASLab]
+                    content = mySplitTemporal;
+                else
+                    content = myGraphPanel;
         }
         // Now that we've re-constructed "content", let's set its font size
         if (currentMode != VisualizerMode.Tree) {
@@ -1087,6 +1103,13 @@ public final class VizGUI implements ComponentListener {
                         } else {
                             AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state - (statepanes - 1) + i); // [HASLab] state
                             myStates.add(new VizState(myInstance));
+                        }
+                    } else {
+                        if (state - (statepanes - 1) + i < 0) {
+                            myStates.set(i, null);
+                        } else {
+                            AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state - (statepanes - 1) + i); // [HASLab] state
+                            myStates.set(i, new VizState(myInstance));
                         }
                     }
                 } catch (Throwable e) {
@@ -1510,7 +1533,7 @@ public final class VizGUI implements ComponentListener {
         if (!myStates.isEmpty()) { // [HASLab]
             for (int i = 0; i < myStates.size() - 1; i++) {
                 VizState ss = myStates.get(statepanes - 1);
-                myStates.set(i, new VizState(ss);
+                myStates.set(i, new VizState(ss));
                 myStates.get(i).loadInstance(ss.getOriginalInstance());
             }
         }

@@ -430,4 +430,9 @@ public final class VizGraphPanel extends JPanel {
                 e.getValue().atomCombo.setSelectedIndex(0);
         }
     }
+
+    // [HASLab]
+    public int numPanes() {
+        return vizState.size();
+    }
 }
