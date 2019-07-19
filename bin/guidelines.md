@@ -1,7 +1,14 @@
 # CVC4 relational solver 
-CVC4 relational solver extends Alloy with proving unsatisfiable models and supporting mathematical integers. It is not restricted by **signatures scope**, **integer bit width**, or **integer sequence**. 
-The relational solver uses the relation theory of the SMT solver [CVC4](https://cvc4.github.io).
-CVC4 binaries for Windows, macOS and Linux are included in the release [alloy_cvc4.zip](https://github.com/CVC4/org.alloytools.alloy/releases/download/v5.0.0.4/alloy_cvc4.zip). The latest version of CVC4 can be downloaded from [here](https://cvc4.github.io/downloads.html). To build the latest version of alloy_cvc4 run the commands:
+
+This Alloy Analyzer plugin provides an alternative relational solver that extends the capabilities of the Analyzer with 
+* the ability to prove an Alloy model inconsistent or an assertion valid _regardless signature scope_;
+* support for constraints over _unbound_ (i.e., mathematical) integers. 
+
+With this relational solver, signatures have by default *unbounded scope* and integers are not bound by any particular bit width.
+
+The relational solver uses as backend the SMT solver [CVC4](https://cvc4.cs.stanford.edu/web) through CVC4's direct support for the theory of finite relations. Because of that the relational solver assumes that all user-defined signatures in an Alloy model are finite. The only builtin signature that is currently supported is `Int` which is interpreted as the (infinite) set of mathematical integers. A later extension may include the builtin signature `String`, interpreted as the set of all strings of Unicode characters.
+
+CVC4 binaries for Windows, macOS and Linux are included in the release [alloy_cvc4.zip](https://github.com/CVC4/org.alloytools.alloy/releases/download/v5.0.0.4/alloy_cvc4.zip). The latest version of CVC4 can be downloaded from [here](https://cvc4.github.io/downloads.html). To build the latest version of alloy_cvc4 in Linux run the commands:
 ```cmd
 git clone https://github.com/CVC4/org.alloytools.alloy
 cd org.alloytools.alloy     
@@ -11,62 +18,116 @@ cd bin
 chmod +x cvc4_linux
 java -jar alloy_cvc4.jar     
 ```
+The build process for Windows and macOS is analogous [check].
+
 # CVC4 options 
+
+The CVC4 relational solver can be chosen from the the options menu. 
 
 ![Dependency graph](doc/options.png)
 
-The *relational solver* CVC4 can be chosen from the the options menu. 
-**CVC4 timeout** can also be set there (default is 0.5 minutes).  
-**CVC4 include scope** specifies whether to translate or ignore the scope constraints in all commands. 
-By default the scope is disabled. 
-In the following example, cvc4 relational solver returns the empty set for signature A when the scope option is disabled. 
+**CVC4 timeout** can also be set there, in minutes or fractions thereof. This is the time alloted to CVC4 to solve a particular Alloy query (run or check) [check: how about models with multiple queries?]. The default timeout is 0.5 minutes.  
+
+**CVC4 include scope** specifies whether to consider or ignore the scope constraints in all commands. By default the scope is disabled. 
+In the following example, the CVC4 relational solver returns the empty set for signature `A` when the scope option is disabled. 
 
 ```cmd
 sig A {}
 run {} for exactly 3 A
 ```
-Scope constraints can be written as cardinality constraints. The following example is equivalent to the previous one, 
-and cvc4 relational solver returns 3 elements for signature A. 
+
+If the model itself or a run scenario requires a signature's size to be bounded, one should express that with cardinality constraints. The following example has the same effect that the previous one when analyzed with the KodKod relational solver. 
 
 ```cmd
 sig A {}
 run {#A = 3} 
 ```
 
-# Integer signatures 
-## Semantics of functions plus, minus, mul, div, rem
- CVC4 relational solver interprets integer signatures as sets of mathematical integers. It uses different semantics for functions plus, minus, mul, div, and rem as follows: 
+The CVC4 relational solver returns 3 elements for signature A. 
 
-- plus[A, B] = {z | ∃ x ∈ A, y ∈ B. x + y = z}
-- minus[A, B] = {z | ∃ x ∈ A, y ∈ B. x - y = z}
-- mul[A, B] = {z | ∃ x ∈ A, y ∈ B. x * y = z}
-- div[A, B] = {z | ∃ x ∈ A, y ∈ B. x / y = z}
-- rem[A, B] = {z | ∃ x ∈ A, y ∈ B. x mod y = z}
+**Note:** Cardinality constraints are supported only for unary relations (subsets of signatures). Applying the operator `#` to a relation of greater arity produces an error.
+
+# Integer signatures 
+
+With the CVC4 relational solver the builtin signature `Int` is interpreted as the set of all  integers. Since the solver can only reason about finite sets, it is not possible to universally quantify directly over `Int`. For instance, the following assertion will be rejected 
+````
+assertion all x : Int | x > 1 implies x > 0  // generates error
+````
+However, universally quantifying over a user-defined subset of `Int` is allowed since such subsets are implicitly considered to be finite:
+````
+sig A {} in Int
+
+assertion all x : A | x > 1 implies x > 0  // allowed
+````
+
+<!-- 
+[check] 
+Existential quantification over `Int` is instead allowed. 
+More precisely, in a fact, existential quantification over `Int` is allowed if, and only, the quantified formula has positive polarity. Dually, universal quantification over `Int` is allowed if, and only, the quantified formula has negative polarity. The other quantifiers are treated similarly. In an assertion, the same rule apply but with respect to the negation of the assertion. 
+-->
+
+Another limitation is that it is not possible to write expressions denoting a set that contains both integers and non-integers (i.e., atoms included in a user-defined signature). [check] Such expressions are rejected by the relational solver as ill-typed. 
+Example:
+````
+sig A {}
+sig B {
+    f: A + Int  //  A + Int is considered ill-typed
+}
+````
+
+[check] In fact, because of the limitations above the restriction on the use of `Int` is pretty draconian: it can only occur in signature declarations of the form
+````
+sig A { ... } in Int
+````
+that introduce a finite subset of `Int`.
+
+Note that currently something like `A + Int` is well-typed and allowed in Alloy. _The restrictions above are specific to the CVC4 relational solver._ One consequence of these restrictions is that _`univ` is considered to consists of all non-integer atoms only_. [check] Similarly, `ident` ranges over pairs of atoms only. For integers, the new builtin constants `int_univ` and `int_ident` denote respectively the (finite) universal set and the identity relation over that set. 
+
+## Semantics of functions plus, minus, mul, div, rem
+
+The CVC4 relational solver interprets the builtin relational constants `plus`, `minus`, `mul`, `div`, and `rem` differently from the standard Alloy, and more consistently with the use of square brackets as syntactic sugar for relational join. Specifically, it uses the following semantics where, because of the restrictions above, `A` and `B` can only be expressions denoting finite sets:
+
+| Syntax        | Alt. Syntax [check] | Meaning                      |
+|---------------|----------|-----------------------------------------|
+| `plus[A, B]`  | `B.A.plus`v | { z \| ∃ x ∈ A, y ∈ B. x + y = z }   |
+| `minus[A, B]` | `B.A.minus` | { z \| ∃ x ∈ A, y ∈ B. x - y = z }   |
+| `mul[A, B]`   | `B.A.mul`   | { z \| ∃ x ∈ A, y ∈ B. x * y = z }   |
+| `div[A, B]`   | `B.A.div`   | { z \| ∃ x ∈ A, y ∈ B. x / y = z }   |
+| `rem[A, B]`   | `B.A.rem`   | { z \| ∃ x ∈ A, y ∈ B. x mod y = z } |
  
  **Example**
  ```cmd
  sig A, B, C in Int {} 
  fact { 
-     A = 1 + 2
+     A = 1 + 2   // A is the union of singleton sets 1 and 2
      B = 4 + 5
      C = plus[A, B]
  } 
 run {} for 5 Int, 12 seq
 ```
+
 The result returned from CVC4 relational solver is 
 ```cmd
 this/A={1, 2}
 this/B={4, 5}
 this/C={5, 6, 7}
 ```
-In this example `C = plus[A, B]` acts like there exists a relation `plus={1->4->5, 1->5->6, 2->4->6, 2->5->7}` where `C = B.(A.plus)`.
-Compare this with the result returned from Kodkod solver which interprets an integer signature as the sum of its elements. 
+
+**Note:** Because of the restriction to finite relations, the operators above must be fully applied. In other words, expressions like `plus[A]` or `x in A.plus` are not allowed. This guarantees that an expression like `plus[A, B]` denotes a finite set.
+In the last example, in effect it is as if `plus` was the relation 
+
+{ (1, 4, 5), (1, 5, 6), (2, 4, 6), (2, 5, 7) }
+
+Then `C` is just the relation `B.A.plus`, that is, {5, 6, 7}.
+
+
+Compare this with the result returned by the Kodkod solver which, in accordance with the Alloy reference document, interprets `plus[A, B]` as the result of adding the sum (3) of all the elements of `A` with the sum (9) of all the elements of `B`. 
 ```cmd
 this/A={1, 2}
 this/B={4, 5}
 this/C={12}
 ```
-When the operands are singletons, the the semantics of CVC4 relational solver is similar to the Kodkod solver (modulo bitwidth) as shown in the following example:
+When the operands are singletons, the semantics of CVC4 relational solver is similar to the Kodkod solver (modulo the bit width) as shown in the following example:
 ```cmd
 sig A, B in Int {} 
 fact { 
@@ -83,32 +144,36 @@ this/A={4}
 this/B={2}
 ```
 
-To avoid performance issues, it is recommended to use only singletons for integer signatures by restricting their cardinality to be 1. Otherwise, the performance would degrade significantly as the cardinality increases.     
+**Note:** Despite supporting the application of the arithmetic operators to arbitrary integer sets the CVC4 relation solver targets the case when the arguments are singletons. Performance degrades significantly as the cardinality af the argument sets increases.
+
 
 ## Comparisons
-Semantics for comparison operators: <, =<, >, >=  is based on singletons as follows:
-- A =< B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x <= y
-- A < B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x < y
-- A >= B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x >= y
-- A > B ≡ ∃ x, y ∈ Z. A = {x} and B = {y} and x > y
 
-This is different than Kodkod semantics which compares between the sum of the two operands. The following examples compare between them:
+Semantics for comparison operators: <, =<, >, >=  is based on singletons as follows:
+
+| Syntax | Meaning |
+|--------|---------|
+| A =< B | ∃ x, y ∈ Z. A = {x}, B = {y}, and x <= y |
+| A < B  | ∃ x, y ∈ Z. A = {x}, B = {y}, and x < y |
+| A >= B | ∃ x, y ∈ Z. A = {x}, B = {y}, and x >= y |
+| A > B  | ∃ x, y ∈ Z. A = {x}, B = {y}, and x > y |
+
+This is different from the standard Alloy semantics which compares between the sum of the two operands. The following examples compare between them:
 ```cmd
 sig A, B in Int {} 
 fact { 
-A > B
-#A = 2   
+  A > B
+  #A = 2   
 }
 run {} for 4 Int, 7 seq
 ```
 
-CVC4  solver returns unsat for this model because (#A = 2 and A = {x}  for some integer x) is false, which makes A > B always false. However Kodkod solver returns the model
+The CVC4 relational solver finds this model inconsistent because it is not possible for `A` to be simultaneously a singleton and have cardinality 2. In contrast, the Kodkod solver returns the model
 ```cmd
 this/A={-7, 2}
 this/B={-4, -5, -7, -8, 1}
 ``` 
- Which means A = [-7 + 2]<sub>8</sub> = [3]<sub>8</sub> 
- and B = [-4 + -5 + -7 + -8 + 1]<sub>8</sub> = [1]<sub>8</sub> which satisfies 3 > 4. 
+ which satisfies the model because [-7 + 2]<sub>8</sub> = [3]<sub>8</sub> >  = [1]<sub>8</sub> = [-4 + -5 + -7 + -8 + 1]<sub>8</sub> which satisfies 3 > 4. 
  
 When both operands are singletons, the semantics is similar. Both solvers return sat for this model
 ```cmd
@@ -123,6 +188,7 @@ run {} for 4 Int, 7 seq
 # Unsupported features
 Currently the following alloy features are not supported by CVC4 solver:
 - Cardinality operator in expressions: e.g. `sig A,B {r: A} fact {#A + 2 = 3 and #B < #A}`. However it is supported when it is one side of the comparison operator and the other side is a constant integer. 
+
 ```cmd
 sig A {r: A} 
 fact {
