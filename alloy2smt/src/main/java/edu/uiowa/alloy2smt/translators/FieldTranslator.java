@@ -234,9 +234,10 @@ public class FieldTranslator
             Expression multiplicity =  translator.exprTranslator.translateExpr(all);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
 
-            Expr newExpr = AlloyUtils.substituteExpr(expr, zis, field.sig);
+            Expr noMultiplicity = AlloyUtils.removeMultiplicity(field.decl());
+            Expr substituteExpr = AlloyUtils.substituteExpr(noMultiplicity, zis, field.sig);
 
-            Expr product = ExprBinary.Op.ARROW.make(null, null, field.sig, newExpr);
+            Expr product = ExprBinary.Op.ARROW.make(null, null, field.sig, substituteExpr);
             Expr subsetExpr = ExprBinary.Op.IN.make(null, null, field, product);
             Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
