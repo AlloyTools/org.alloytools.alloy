@@ -212,4 +212,18 @@ class CommandTests
         assertEquals ("sat", results.get(8).satResult);
         assertEquals ("unsat", results.get(9).satResult);
     }
+
+    @Test
+    void factsAndCommands() throws Exception
+    {
+        String alloy = "abstract sig A {}\n" +
+                "sig A0, A1 extends A{}\n" +
+                "fact {#A0 = 2}\n" +
+                "fact {#A1 = 2}\n" +
+                "run {#A = 3} for 5\n";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals ("unsat", results.get(0).satResult);
+    }
 }

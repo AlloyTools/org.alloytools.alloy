@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.alloy4.Pair;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.uiowa.alloy2smt.mapping.Mapper;
@@ -136,7 +137,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.signatureTranslator.translateSpecialSigFacts();
         //translateFunctionsAndPredicates();
         this.signatureTranslator.translateSigFacts();
-        //translateFacts(); // facts are included in commands' formulas
+        translateFacts();
         translateSpecialAssertions();
         return this.smtProgram;
     }
@@ -876,11 +877,30 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         for (Expr argument: list.args)
         {
-            Expression expression = exprTranslator.translateExpr(argument);
-            assertions.add(new Assertion(argument.toString(), expression));
+            // translate only the formulas added by the command and ignore facts
+            if(!isFactFormula(argument))
+            {
+                Expression expression = exprTranslator.translateExpr(argument);
+                assertions.add(new Assertion(argument.toString(), expression));
+            }
         }
 
         return assertions;
+    }
+
+    //ToDo: refactor this function by storing positions outside
+    private boolean isFactFormula(Expr argument)
+    {
+        List<Pos> positions = alloyModel.getAllFacts().makeConstList()
+                .stream().map(p -> p.b.pos).collect(Collectors.toList());
+        for (Pos pos: positions)
+        {
+            if(pos.contains(argument.pos))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int getScope(Sig.PrimSig parent, Command command,
