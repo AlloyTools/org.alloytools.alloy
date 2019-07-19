@@ -3,6 +3,7 @@
 generated/
 bin/
 bin_test/
+build/
 target/
 enroute.zip
 .metadata
@@ -36,4 +37,3 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.exe
 *.out
 *.app
-
