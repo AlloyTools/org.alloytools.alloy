@@ -849,10 +849,11 @@ public final class VizGUI implements ComponentListener {
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        leftNavButton.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
-        rightNavButton.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
-        leftNavMenu.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
-        rightNavMenu.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
+        leftNavButton.setVisible(!isMeta); // [HASLab]
+        leftNavButton.setEnabled(current > 0); // [HASLab]
+        rightNavButton.setVisible(!isMeta); // [HASLab]
+        leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
+        rightNavMenu.setEnabled(!isMeta); // [HASLab]
         toolbar.setVisible(true);
         // Now, generate the graph or tree or textarea that we want to display
         // on the right
@@ -1507,9 +1508,9 @@ public final class VizGUI implements ComponentListener {
      */
     private Runner doApply() {
         if (!myStates.isEmpty()) { // [HASLab]
-            for (int i = 1; i < myStates.size(); i++) {
-                VizState ss = myStates.get(i);
-                myStates.set(i, new VizState(myStates.get(statepanes - 1)));
+            for (int i = 0; i < myStates.size() - 1; i++) {
+                VizState ss = myStates.get(statepanes - 1);
+                myStates.set(i, new VizState(ss);
                 myStates.get(i).loadInstance(ss.getOriginalInstance());
             }
         }
@@ -1786,9 +1787,7 @@ public final class VizGUI implements ComponentListener {
     private void updateTempPanel() {
         AlloyModel model = null;
         AlloyType event = null;
-        leftNavButton.setEnabled(current > 0);
         leftNavButton.setText(new String(current > 0 ? Character.toChars(0x2190) : Character.toChars(0x21e4)));
-        rightNavButton.setEnabled(true);
 
         for (int i = 0; i < statepanes; i++) {
             AlloyInstance myInstance;
@@ -1803,8 +1802,10 @@ public final class VizGUI implements ComponentListener {
                     myInstance = StaticInstanceReader.parseInstance(f, current - (statepanes - 1) + i);
                     if (getVizState().get(i) != null)
                         getVizState().get(i).loadInstance(myInstance);
-                    else
-                        getVizState().set(i, new VizState(myInstance));
+                    else {
+                        getVizState().set(i, new VizState(getVizState().get(statepanes - 1))); // [HASLab] get the theme
+                        getVizState().get(i).loadInstance(myInstance);
+                    }
                 }
             } catch (Throwable e) {
                 OurDialog.alert("Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
