@@ -1669,7 +1669,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
         }
         if (arg.startsWith("XML: ")) { // XML: filename
-            viz.loadXML(Util.canon(arg.substring(5)), false);
+            viz.loadXML(Util.canon(arg.substring(5)), false, 0); // [HASLab]
         }
         return null;
     }
@@ -1716,7 +1716,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 doStop(2);
                 return arg[0]; // [HASLab]
             }
-            subrunningTask = task.index < 0 ? 3 : 2; // [HASLab]
+            subrunningTask = task.index < 0 ? 2 : 3; // [HASLab]
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
