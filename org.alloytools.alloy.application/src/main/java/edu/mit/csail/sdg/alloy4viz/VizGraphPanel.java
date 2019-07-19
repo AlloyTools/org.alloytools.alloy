@@ -338,40 +338,51 @@ public final class VizGraphPanel extends JPanel {
     public void remakeAll() {
         Map<AlloyType,AlloyAtom> map = new LinkedHashMap<AlloyType,AlloyAtom>();
         navPanel.removeAll();
-        for (int i = 0; i < vizState.size(); i++) {
-            for (AlloyType type : vizState.get(i).getProjectedTypes()) {
-                List<AlloyAtom> atoms = vizState.get(i).getOriginalInstance().type2atoms(type);
-                TypePanel tp = type2panel.get(type);
-                if (tp != null && tp.getAlloyAtom() != null && !atoms.contains(tp.getAlloyAtom()))
-                    tp = null;
-                if (tp != null && tp.getAlloyAtom() == null && atoms.size() > 0)
-                    tp = null;
-                if (tp != null && !tp.upToDate(type, atoms))
-                    tp = null;
-                if (tp == null)
-                    type2panel.put(type, tp = new TypePanel(type, atoms, null));
-                navPanel.add(tp);
-                map.put(tp.getAlloyType(), tp.getAlloyAtom());
-            }
-            currentProjection = new AlloyProjection(map);
-            JPanel graph = vizState.get(i).getGraph(currentProjection);
-            if (seeDot && (graph instanceof GraphViewer)) {
-                viewer = null;
-                JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
-                diagramScrollPanels.get(i).setViewportView(txt);
-            } else {
-                if (graph instanceof GraphViewer)
-                    viewer = (GraphViewer) graph;
-                else
+        for (int i = 0; i < vizState.size(); i++) { // [HASLab]
+            if (vizState.get(i) != null) { // [HASLab]
+                for (AlloyType type : vizState.get(i).getProjectedTypes()) {
+                    List<AlloyAtom> atoms = vizState.get(i).getOriginalInstance().type2atoms(type);
+                    TypePanel tp = type2panel.get(type);
+                    if (tp != null && tp.getAlloyAtom() != null && !atoms.contains(tp.getAlloyAtom()))
+                        tp = null;
+                    if (tp != null && tp.getAlloyAtom() == null && atoms.size() > 0)
+                        tp = null;
+                    if (tp != null && !tp.upToDate(type, atoms))
+                        tp = null;
+                    if (tp == null)
+                        type2panel.put(type, tp = new TypePanel(type, atoms, null));
+                    navPanel.add(tp);
+                    map.put(tp.getAlloyType(), tp.getAlloyAtom());
+                }
+                currentProjection = new AlloyProjection(map);
+                JPanel graph = vizState.get(i).getGraph(currentProjection);
+                if (seeDot && (graph instanceof GraphViewer)) {
                     viewer = null;
+                    JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
+                    diagramScrollPanels.get(i).setViewportView(txt);
+                } else {
+                    if (graph instanceof GraphViewer)
+                        viewer = (GraphViewer) graph;
+                    else
+                        viewer = null;
+                    graphPanels.get(i).removeAll();
+                    graphPanels.get(i).add(graph);
+                    graphPanels.get(i).setBackground(Color.WHITE); // [HASLab]
+                    diagramScrollPanels.get(i).setViewportView(graphPanels.get(i));
+                    diagramScrollPanels.get(i).invalidate();
+                    diagramScrollPanels.get(i).repaint();
+                    diagramScrollPanels.get(i).validate();
+                }
+                vizState.get(i).applyDefaultVar(); // [HASLab] dashed variable elements
+            } else { // [HASLab]
+                viewer = null;
                 graphPanels.get(i).removeAll();
-                graphPanels.get(i).add(graph);
+                graphPanels.get(i).setBackground(new Color(210, 210, 210));
                 diagramScrollPanels.get(i).setViewportView(graphPanels.get(i));
                 diagramScrollPanels.get(i).invalidate();
                 diagramScrollPanels.get(i).repaint();
                 diagramScrollPanels.get(i).validate();
             }
-            vizState.get(i).applyDefaultVar(); // [HASLab] dashed variable elements
         }
     }
 
@@ -418,5 +429,10 @@ public final class VizGraphPanel extends JPanel {
             if (e.getValue().atomCombo != null)
                 e.getValue().atomCombo.setSelectedIndex(0);
         }
+    }
+
+    // [HASLab]
+    public int numPanes() {
+        return vizState.size();
     }
 }
