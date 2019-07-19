@@ -244,8 +244,8 @@ public final class StaticInstanceReader {
             } catch (NumberFormatException ex) {
                 i = Integer.MAX_VALUE;
             }
-            // [HASLab] do not hide singleton atoms, important for traces
-            AlloyAtom at = new AlloyAtom(sig(s), /* ts.size()==1 ? Integer.MAX_VALUE : */ i, atom);
+            // [HASLab] do not hide singleton variable atoms ids, important for traces
+            AlloyAtom at = new AlloyAtom(sig(s), ts.size() == 1 && s.isVariable == null ? Integer.MAX_VALUE : i, atom);
             atom2sets.put(at, new LinkedHashSet<AlloySet>());
             string2atom.put(atom, at);
         }
