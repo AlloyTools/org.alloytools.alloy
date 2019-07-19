@@ -176,8 +176,6 @@ public class ExprBinaryTranslator
         Expression product = BinaryExpression.Op.PRODUCT.make(A, B);
         Expression subset = BinaryExpression.Op.SUBSET.make(multiplicitySet.getVariable(), product);
 
-        translator.smtProgram.addAssertion(new Assertion(expr.toString() + " subset constraint", subset));
-
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
