@@ -128,7 +128,7 @@ public final class VizGUI implements ComponentListener {
     private final JButton       projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
                     loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
                     openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
-                    txtButton, tableButton/* , dotButton, xmlButton */;
+                    txtButton, tableButton, leftNavButton, rightNavButton, forkButton/* , dotButton, xmlButton */; // [HASLab]
 
     /**
      * This list must contain all the display mode buttons (that is, vizButton,
@@ -144,6 +144,10 @@ public final class VizGUI implements ComponentListener {
 
     /** The "show next" menu item. */
     private final JMenuItem     enumerateMenu;
+
+    /** The "fork next" menu item. */
+    // [HASLab]
+    private final JMenuItem     forkMenu;
 
     /** The trace navigation menu items. */
     // [HASLab]
@@ -618,6 +622,7 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
+            forkMenu = menuItem(instanceMenu, "Fork Next State", 'F', 'F', doNext());
             leftNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
             rightNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
@@ -671,6 +676,9 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
             toolbar.add(enumerateButton = OurUtil.button("Next", "Show the next solution", "images/24_history.gif", doNext()));
+            toolbar.add(forkButton = OurUtil.button("Fork", "Fork the next state", "images/24_history.gif", doNext()));
+            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
+            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the previous state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);
             toolbar.add(loadSettingsButton = OurUtil.button("Load", "Load the theme customization from a theme file", "images/24_open.gif", doLoadTheme()));
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
@@ -839,6 +847,12 @@ public final class VizGUI implements ComponentListener {
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
+        forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        leftNavButton.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
+        rightNavButton.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
+        leftNavMenu.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
+        rightNavMenu.setEnabled(!isMeta && settingsOpen == 0); // [HASLab]
         toolbar.setVisible(true);
         // Now, generate the graph or tree or textarea that we want to display
         // on the right
@@ -1614,36 +1628,32 @@ public final class VizGUI implements ComponentListener {
 
     // ========================================TRACES=====================================================//
 
-    /** Trace navigation buttons. */
     // [HASLab]
-    private JButton leftNavButton, rightNavButton;
-
-    // [HASLab]
-    private int     current          = 0;
+    private int    current          = 0;
 
     // [HASLab]
-    ActionListener  leftNavListener  = new ActionListener() {
+    ActionListener leftNavListener  = new ActionListener() {
 
-                                         public final void actionPerformed(ActionEvent e) {
-                                             if (current > 0) {
-                                                 current--;
-                                                 updateDisplay();
-                                             }
-                                         }
-                                     };
+                                        public final void actionPerformed(ActionEvent e) {
+                                            if (current > 0) {
+                                                current--;
+                                                updateDisplay();
+                                            }
+                                        }
+                                    };
 
     // [HASLab]
-    ActionListener  rightNavListener = new ActionListener() {
+    ActionListener rightNavListener = new ActionListener() {
 
-                                         public final void actionPerformed(ActionEvent e) {
-                                             int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-                                             int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-                                             int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
-                                             int lox = lmx - (lst - lop);
-                                             current = normalize(current + 1, lmx, lox);
-                                             updateDisplay();
-                                         }
-                                     };
+                                        public final void actionPerformed(ActionEvent e) {
+                                            int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
+                                            int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
+                                            int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
+                                            int lox = lmx - (lst - lop);
+                                            current = normalize(current + 1, lmx, lox);
+                                            updateDisplay();
+                                        }
+                                    };
 
     /**
      * Creates the panel for navigating the trace, in the lower side of the right
@@ -1653,24 +1663,12 @@ public final class VizGUI implements ComponentListener {
      */
     // [HASLab]
     private JPanel createTempNavPanel() {
-        leftNavButton = new JButton(new String(Character.toChars(0x2190)));
-        rightNavButton = new JButton(new String(Character.toChars(0x2192)));
-
-        leftNavButton.setEnabled(false);
-        rightNavButton.setEnabled(false);
-
-        leftNavButton.addActionListener(leftNavListener);
-        rightNavButton.addActionListener(rightNavListener);
 
         JPanel tmpNavPanel = new JPanel();
         tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.LINE_AXIS));
-        tmpNavPanel.add(leftNavButton);
-        tmpNavPanel.add(Box.createHorizontalGlue());
 
         tmpNavPanel.add(traceGraph(tmpNavPanel));
 
-        tmpNavPanel.add(Box.createHorizontalGlue());
-        tmpNavPanel.add(rightNavButton);
         tmpNavPanel.setMinimumSize(new Dimension(0, 50));
         tmpNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
