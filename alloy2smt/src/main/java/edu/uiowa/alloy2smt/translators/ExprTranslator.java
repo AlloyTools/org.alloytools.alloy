@@ -294,7 +294,7 @@ public class ExprTranslator
 
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), sort));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort));
         }
         return bdVars;
     }
@@ -310,7 +310,8 @@ public class ExprTranslator
         }
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(), new TupleSort(elementSorts)));
+            Sort sort = new TupleSort(elementSorts);
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort));
         }
         return bdVars;
     }

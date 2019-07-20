@@ -176,7 +176,7 @@ public class ExprUnaryTranslator
         
         for(Sort sort : sorts)
         {
-            String name = TranslatorUtils.getFreshName();
+            String name = TranslatorUtils.getFreshName(sort);
             VariableDeclaration bdVar;
             Expression bdVarExpr;
 
@@ -208,7 +208,7 @@ public class ExprUnaryTranslator
         
         for(Sort sort : sorts)
         {
-            String name = TranslatorUtils.getFreshName();
+            String name = TranslatorUtils.getFreshName(sort);
             VariableDeclaration bdVar;
             Expression bdVarExpr;
             

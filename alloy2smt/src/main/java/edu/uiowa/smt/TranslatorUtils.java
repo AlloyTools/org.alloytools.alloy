@@ -33,7 +33,7 @@ public class TranslatorUtils
         //ToDo: handle the case when n = 0
         List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
 
-        FunctionDeclaration declaration = new FunctionDeclaration(getFreshName(), setSort);
+        FunctionDeclaration declaration = new FunctionDeclaration(getFreshName(setSort), setSort);
 
         translator.smtProgram.addFunction(declaration);
 
@@ -67,7 +67,7 @@ public class TranslatorUtils
         {
             for (int i = 0; i < n; i++)
             {
-                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getFreshName(), sort);
+                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getFreshName(sort), sort);
                 expressions.add(constantDeclaration.getVariable());
                 smtProgram.addConstantDeclaration(constantDeclaration);
             }
@@ -85,10 +85,66 @@ public class TranslatorUtils
         return expressions;
     }
 
-    public static String getFreshName()
+    public static String getFreshName(Sort sort)
     {
         freshNameIndex++;
-        return "_" + freshNameIndex + "_";
+        if(sort != null)
+        {
+            if (sort instanceof SetSort)
+            {
+                Sort elementSort = ((SetSort) sort).elementSort;
+                if (elementSort instanceof TupleSort)
+                {
+                    int arity = ((TupleSort) elementSort).elementSorts.size();
+                    if (arity > 1)
+                    {
+                        return "S" + arity + "." + freshNameIndex;
+                    }
+                }
+                return "S" + "." + freshNameIndex;
+            }
+
+            if (sort instanceof TupleSort)
+            {
+                int arity = ((TupleSort) sort).elementSorts.size();
+                if (arity > 1)
+                {
+                    return "t" + arity + "." + freshNameIndex;
+                }
+                Sort tupleSort = ((TupleSort) sort).elementSorts.get(0);
+                if (tupleSort instanceof UninterpretedSort)
+                {
+                    UninterpretedSort uninterpretedSort = (UninterpretedSort) tupleSort;
+
+                    if (uninterpretedSort.equals(AbstractTranslator.atomSort))
+                    {
+                        return "tA." + freshNameIndex;
+                    }
+
+                    if (uninterpretedSort.equals(AbstractTranslator.uninterpretedInt))
+                    {
+                        return "tU." + freshNameIndex;
+                    }
+                }
+                return "t" + "." + freshNameIndex;
+            }
+
+            if (sort instanceof UninterpretedSort)
+            {
+                UninterpretedSort uninterpretedSort = (UninterpretedSort) sort;
+
+                if (uninterpretedSort.equals(AbstractTranslator.atomSort))
+                {
+                    return "a." + freshNameIndex;
+                }
+
+                if (uninterpretedSort.equals(AbstractTranslator.uninterpretedInt))
+                {
+                    return "u." + freshNameIndex;
+                }
+            }
+        }
+        return "x." + freshNameIndex;
     }
 
     public static void reset()

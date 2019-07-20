@@ -14,6 +14,7 @@ import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
@@ -195,16 +196,18 @@ public class SignatureTranslator
         Expression expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
-        String name = TranslatorUtils.getFreshName();
+
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.uninterpretedInt);
+            String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt);
         }
         else
         {
-            constDecl = new ConstantDeclaration(name, translator.atomSort);
+            String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort);
         }
         expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         translator.smtProgram.addConstantDeclaration(constDecl);
@@ -218,17 +221,18 @@ public class SignatureTranslator
         Expression expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
-        String name = TranslatorUtils.getFreshName();
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.uninterpretedInt);
-            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
+            String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt);
+            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
-            constDecl = new ConstantDeclaration(name, translator.atomSort);
+            String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort);
             expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
@@ -241,18 +245,19 @@ public class SignatureTranslator
     {
         Expression expr;
         ConstantDeclaration constDecl;
-        Boolean isInt = sig.type().is_int();
-        String name = TranslatorUtils.getFreshName();
+        Boolean isInt = sig.type().is_int();        
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
         {
-            constDecl = new ConstantDeclaration(name, translator.uninterpretedInt);
-            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(translator.uninterpretedIntValue, constDecl.getVariable()));
+            String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt);
+            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
-            constDecl = new ConstantDeclaration(name, translator.atomSort);
+            String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort);
             expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
@@ -381,7 +386,7 @@ public class SignatureTranslator
 
             String name = "this";
             Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
-            VariableDeclaration declaration = new VariableDeclaration(name, translator.atomSort);
+            VariableDeclaration declaration = new VariableDeclaration(name, AbstractTranslator.atomSort);
             boundVariables.put(declaration, translator.signaturesMap.get(sigFact.getKey()).getVariable());
             Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
             declaration.setConstraint(member);
@@ -410,7 +415,7 @@ public class SignatureTranslator
         String prefix = label.replaceFirst("/Ord", "/");
         String mappingName = prefix + "IntMapping";
 
-        FunctionDeclaration mapping = defineInjectiveMapping(mappingName, translator.atomSort, translator.intSort);
+        FunctionDeclaration mapping = defineInjectiveMapping(mappingName, AbstractTranslator.atomSort, translator.intSort);
 
         Expression setExpression = translator.exprTranslator.translateExpr(set, environment);
         Expression firstExpression = translator.exprTranslator.translateExpr(first, environment);
@@ -430,8 +435,8 @@ public class SignatureTranslator
         VariableDeclaration set1 = new VariableDeclaration("s1", translator.setOfUnaryAtomSort);
         VariableDeclaration set2 = new VariableDeclaration("s2", translator.setOfUnaryAtomSort);
 
-        VariableDeclaration element1 = new VariableDeclaration("e1", translator.atomSort);
-        VariableDeclaration element2 = new VariableDeclaration("e2", translator.atomSort);
+        VariableDeclaration element1 = new VariableDeclaration("e1", AbstractTranslator.atomSort);
+        VariableDeclaration element2 = new VariableDeclaration("e2", AbstractTranslator.atomSort);
 
         // ordering/prevs
         FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
@@ -481,8 +486,8 @@ public class SignatureTranslator
 
         // the mapping is one-to-one(injective)
         // for all x, y (x != y and  implies f(x) != f(y))
-        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort);
-        VariableDeclaration y = new VariableDeclaration("__y__", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.atomSort);
 
         Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
 
@@ -504,7 +509,7 @@ public class SignatureTranslator
     private Expression defineFirstElement(String prefix, Expression firstExpression, FunctionDeclaration mapping, Expression setExpression)
     {
         final String suffix = "first";
-        ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", translator.atomSort);
+        ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", AbstractTranslator.atomSort);
         FunctionDeclaration first = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
 
         Expression firstSet = UnaryExpression.Op.SINGLETON.make(
@@ -523,7 +528,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
-        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
         Expression member = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
         Expression gte = BinaryExpression.Op.GTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, firstAtom.getVariable()));
         Expression implies = BinaryExpression.Op.IMPLIES.make(member, gte);
@@ -537,7 +542,7 @@ public class SignatureTranslator
     private ConstantDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, Expression setExpression)
     {
         final String suffix = "last";
-        ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", translator.atomSort);
+        ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", AbstractTranslator.atomSort);
         FunctionDeclaration last = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
 
         Expression lastSet = UnaryExpression.Op.SINGLETON.make(
@@ -557,7 +562,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
-        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
         Expression xMember = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
         Expression lte = BinaryExpression.Op.LTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, lastAtom.getVariable()));
         Expression implies = BinaryExpression.Op.IMPLIES.make(xMember, lte);
@@ -605,11 +610,11 @@ public class SignatureTranslator
     {
         String nextMapping = prefix + "nextMapping";
 
-        FunctionDeclaration mapping = new FunctionDeclaration(nextMapping, translator.atomSort, translator.atomSort);
+        FunctionDeclaration mapping = new FunctionDeclaration(nextMapping, AbstractTranslator.atomSort, AbstractTranslator.atomSort);
         translator.addFunction(mapping);
 
-        VariableDeclaration x = new VariableDeclaration("__x__", translator.atomSort);
-        VariableDeclaration y = new VariableDeclaration("__y__", translator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
+        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.atomSort);
 
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member

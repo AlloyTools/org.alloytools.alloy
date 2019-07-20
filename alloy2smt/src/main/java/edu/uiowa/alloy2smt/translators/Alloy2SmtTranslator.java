@@ -153,11 +153,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private void translateSpecialAssertions()
     {
         // Axiom for identity relation
-        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(), atomSort);
+        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
         BinaryExpression            memberA = BinaryExpression.Op.MEMBER.make(tupleA, this.atomUniverse.getVariable());
 
-        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(), atomSort);
+        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
         BinaryExpression            memberB = BinaryExpression.Op.MEMBER.make(tupleB, this.atomUniverse.getVariable());
 
@@ -297,8 +297,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             }                    
         }
 
-        String              setBdVarName    = TranslatorUtils.getFreshName();
         SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
+        String              setBdVarName    = TranslatorUtils.getFreshName(setSort);
         VariableDeclaration setBdVar   = new VariableDeclaration(setBdVarName, setSort);
         LinkedHashMap<VariableDeclaration, Expression> inputBdVars = new LinkedHashMap<>();
         List<String> inputVarNames = new ArrayList<>();
@@ -831,13 +831,13 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     {
                         List<VariableDeclaration> declarations = new ArrayList<>();
                         Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
-                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
                         declarations.add(firstAtom);
                         Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
                         Expression set = UnaryExpression.Op.SINGLETON.make(firstTuple);
                         for (int i = 1; i < scope; i++)
                         {
-                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
                             declarations.add(declaration);
                             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
                             Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);

@@ -239,7 +239,7 @@ public class AlloyUtils
                     // change the quantifier name if newExpr contains a free variable with the same name
                     if(containsFreeVaraible((ExprVar) name, newExpr))
                     {
-                        ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getFreshName());
+                        ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getFreshName(null));
                         sub = substituteExpr(sub, (ExprVar) name, newName);
                         variables.add(newName);
                     }

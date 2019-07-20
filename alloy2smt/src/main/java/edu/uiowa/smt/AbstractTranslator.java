@@ -89,7 +89,7 @@ public abstract class AbstractTranslator
             return integerConstants.get(value);
         }
 
-        ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getFreshName(), AbstractTranslator.uninterpretedInt);
+        ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt), AbstractTranslator.uninterpretedInt);
         integerConstants.put(value, uninterpretedInt);
         smtProgram.addConstantDeclaration(uninterpretedInt);
         Expression callExpression = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());

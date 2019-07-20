@@ -90,7 +90,7 @@ public class ExprBinaryTranslator
     private Expression translateOneArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -167,7 +167,7 @@ public class ExprBinaryTranslator
     private Expression translateOneArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
@@ -232,7 +232,7 @@ public class ExprBinaryTranslator
     private Expression translateOneArrowAny(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -288,7 +288,7 @@ public class ExprBinaryTranslator
     private Expression translateSomeArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -351,7 +351,7 @@ public class ExprBinaryTranslator
     private Expression translateAnyArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -405,7 +405,7 @@ public class ExprBinaryTranslator
     private Expression translateSomeArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -452,7 +452,7 @@ public class ExprBinaryTranslator
     private Expression translateSomeArrowAny(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -492,7 +492,7 @@ public class ExprBinaryTranslator
     private Expression translateAnyArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -530,7 +530,7 @@ public class ExprBinaryTranslator
     private Expression translateOneArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
@@ -612,7 +612,7 @@ public class ExprBinaryTranslator
     private Expression translateSomeArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
@@ -681,7 +681,7 @@ public class ExprBinaryTranslator
     private Expression translateAnyArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -742,7 +742,7 @@ public class ExprBinaryTranslator
     private Expression translateLoneArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -827,7 +827,7 @@ public class ExprBinaryTranslator
     private Expression translateLoneArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -909,7 +909,7 @@ public class ExprBinaryTranslator
     private Expression translateLoneArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -981,7 +981,7 @@ public class ExprBinaryTranslator
     private Expression translateLoneArrowAny(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(), sort);
+        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
 
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
@@ -1198,7 +1198,7 @@ public class ExprBinaryTranslator
         Expression leftExpr     = exprTranslator.translateExpr(expr.left, environment);
         Expression rightExpr    = exprTranslator.translateExpr(expr.right, environment);
 
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(), AbstractTranslator.setOfUninterpretedIntTuple);
+        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple), AbstractTranslator.setOfUninterpretedIntTuple);
         exprTranslator.translator.smtProgram.addFunction(result);
 
         VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);

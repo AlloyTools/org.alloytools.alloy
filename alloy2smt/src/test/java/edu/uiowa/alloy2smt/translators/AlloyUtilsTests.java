@@ -68,7 +68,7 @@ public class AlloyUtilsTests
         Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), no);
         Expr newExpr = AlloyUtils.substituteExpr(exprQt, x, y);
         assertEquals("(all y | no x)", exprQt.toString());
-        assertEquals("(all _1_ | no y)", newExpr.toString());
+        assertEquals("(all x.1 | no y)", newExpr.toString());
     }
 
     @Test
@@ -83,7 +83,7 @@ public class AlloyUtilsTests
         Expr exprQt = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), no);
         Expr newExpr = AlloyUtils.substituteExpr(exprQt, x, product);
         assertEquals("(all y | no x)", exprQt.toString());
-        assertEquals("(all _1_ | no y -> y)", newExpr.toString());
+        assertEquals("(all x.1 | no y -> y)", newExpr.toString());
     }
 
     @Test
