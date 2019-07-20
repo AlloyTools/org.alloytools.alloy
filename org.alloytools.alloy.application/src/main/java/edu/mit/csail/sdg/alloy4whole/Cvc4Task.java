@@ -296,7 +296,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         String  satResult           = "sat";
 
-        Object[] message            = new Object []{satResult, command.check, command.expects, xmlFilePath, command.toString(), duration};
+        Object[] message            = new Object []{satResult, command.check, command.expects, xmlFilePath, null, duration};
         workerCallback.callback(message);
 
         return xmlFilePath;
