@@ -18,7 +18,16 @@ cd bin
 chmod +x cvc4_linux
 java -jar alloy_cvc4.jar     
 ```
-The build process for macOS is analogous.
+The build process for macOS is analogous. For Windows
+
+```cmd
+git clone https://github.com/CVC4/org.alloytools.alloy
+cd org.alloytools.alloy     
+git checkout cvc4
+gradlew.bat alloyCVC4
+cd bin
+java -jar alloy_cvc4.jar     
+```
 
 [MM: add windows instructions].
 

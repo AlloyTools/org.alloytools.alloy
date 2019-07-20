@@ -6,7 +6,7 @@ dependencies {
 
 task alloyCVC4(type: Jar) {
     manifest {
-        attributes 'Main-Class': 'edu.mit.csail.sdg.alloy4whole.SimpleGUI'
+        attributes 'Main-Class': 'edu.mit.csail.sdg.alloy4whole.AlloyTools'
     }
     baseName = 'alloy_cvc4'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
