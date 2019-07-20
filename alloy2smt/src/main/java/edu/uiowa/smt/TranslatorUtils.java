@@ -98,10 +98,10 @@ public class TranslatorUtils
                     int arity = ((TupleSort) elementSort).elementSorts.size();
                     if (arity > 1)
                     {
-                        return "S" + arity + "." + freshNameIndex;
+                        return "r" + arity + "." + freshNameIndex;
                     }
                 }
-                return "S" + "." + freshNameIndex;
+                return "s" + "." + freshNameIndex;
             }
 
             if (sort instanceof TupleSort)
