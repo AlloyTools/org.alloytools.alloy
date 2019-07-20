@@ -18,8 +18,8 @@ public abstract class AbstractTranslator
     // static members
     public final static String intSortName = "Int";
     public final static String atom = "Atom";
-    public final static String uninterpretedIntName = "UninterpretedInt";
-    public final static String uninterpretedIntValueName = "uninterpretedIntValue";
+    public final static String uninterpretedIntName = "UInt";
+    public final static String uninterpretedIntValueName = "intValue";
     public final static String plus = "PLUS";
     public final static String minus = "MINUS";
     public final static String multiply = "MUL";
@@ -40,10 +40,10 @@ public abstract class AbstractTranslator
     public final static SetSort setOfUnaryAtomSort = new SetSort(unaryAtomSort);
     public final static SetSort setOfBinaryAtomSort = new SetSort(binaryAtomSort);
     public final static SetSort setOfTernaryIntSort = new SetSort(ternaryIntSort);
-    public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniverse", setOfUnaryAtomSort);
+    public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
     public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort);
-    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniverse", setOfUninterpretedIntTuple);
+    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple);
     public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make( setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort);
 
