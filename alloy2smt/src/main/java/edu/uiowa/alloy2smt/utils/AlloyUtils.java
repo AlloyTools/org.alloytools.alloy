@@ -184,7 +184,8 @@ public class AlloyUtils
     {
         if(body instanceof ExprVar)
         {
-            if(body.equals(oldExpr))
+            if(((ExprVar) body).label.equals(oldExpr.label) &&
+                    body.type().equals(oldExpr.type()))
             {
                 return newExpr;
             }
