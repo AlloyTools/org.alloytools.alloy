@@ -68,7 +68,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
             final long endTranslate = System.currentTimeMillis();
 
-            callbackBold("Translation time: " + (endTranslate - startTranslate) + " ms\n");
+//            callbackBold("Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
             String smtScript = translation.getSmtScript();
 
@@ -80,7 +80,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
                 String options =  setSolverOptions(cvc4Process, translation);
 
-                callbackPlain(options);
+//                callbackPlain(options);
 
                 CommandResult commandResult;
 
@@ -188,12 +188,11 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         Command command = translation.getCommands().get(index);
 
-        callbackBold("Executing " + command.label + "\n");
+        callbackBold("Executing " + command + "\n");
 
         if(! Cvc4IncludeCommandScope.get())
         {
-            ErrorWarning warning = new ErrorWarning(command.pos, "The scope in '" + command +
-                    "' is ignored by cvc4");
+            ErrorWarning warning = new ErrorWarning(command.pos, "The scope is ignored by cvc4");
             callbackWarning(warning);
         }
 
@@ -201,14 +200,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         final long startSolve   = System.currentTimeMillis();
 
         // (check-sat)
-        callbackPlain( commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
+//        callbackPlain( commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
         String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
-        callbackBold("Solving time: " + duration + " ms\n");
+//        callbackBold("Solving time: " + duration + " ms\n");
 
-        callbackBold("Satisfiability: " + result + "\n");
+        callbackPlain("Satisfiability: " + result + "\n");
 
         CommandResult commandResult = new CommandResult();
         commandResult.index         = index;
@@ -225,15 +224,15 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                 case "unsat":
                     if(translation.getCommands().get(index).check)
                     {
-                        callbackPlain("The assertion is valid\n");
+//                        callbackPlain("The assertion is valid\n");
                     }
                     else
                     {
-                        callbackPlain("The satResult is unsat\n");
+//                        callbackPlain("The satResult is unsat\n");
                     }
                     break;
                 default:
-                    callbackPlain("The satResult is unknown\n");
+//                    callbackPlain("The satResult is unknown\n");
             }
         }
         else
@@ -281,8 +280,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     {
         String smtModel = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
 
-        callbackPlain("A model has been found\n");
-        callbackPlain(smtModel + "\n");
+        callbackPlain("CVC4 found a ");
+        Object[] modelMessage = new Object []{"link", "model", "MSG: " + smtModel};
+        workerCallback.callback(modelMessage);
+        callbackPlain("\n");
+
+//        callbackPlain(smtModel + "\n");
 
         Command command = translation.getCommands().get(commandIndex);
         SmtModel model = parseModel(smtModel);
@@ -293,7 +296,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         Instance instance = writeModelToAlloyXmlFile(translation, model, xmlFilePath, originalFileName, command, alloyFiles);
 
-        callbackPlain("\nGenerated xml instance file: " + xmlFilePath +"\n");
+        callbackPlain("\nGenerated xml instance file: ");
+
+        Object[] xmlMessage = new Object []{"link", xmlFilePath, "CNF: " + xmlFilePath};
+        workerCallback.callback(xmlMessage);
+        callbackPlain("\n");
+
 
         // generate alloy code that restricts the model to be the instance found
         String alloyCode = instance.generateAlloyCode();
@@ -302,15 +310,15 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         formatter.format("%s", alloyCode);
         formatter.close();
 
-        callbackPlain("Generated als instance file: " + alloyFile.getAbsolutePath() +"\n\n");
+        callbackPlain("Generated als instance file: ");
+        Object[] alsMessage = new Object []{"link", alloyFile.getAbsolutePath(), "CNF: " + alloyFile.getAbsolutePath()};
+        workerCallback.callback(alsMessage);
+        callbackPlain("\n\n");
 
         String  satResult = "sat";
         Object[] message = new Object []{satResult, command.check, command.expects, xmlFilePath, null, duration};
         workerCallback.callback(message);
 
-        Object[] modelConstraint = new Object []{"link", "Instance constraints", "MSG: "+ alloyCode};
-        workerCallback.callback(modelConstraint);
-        callbackPlain("\n");
         return xmlFilePath;
     }
 
@@ -672,8 +680,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     {
         Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode);
 
-        callbackBold("Translation output");
-        callbackPlain(translation.getSmtScript());
+        // callbackBold("Translation output");
+        // callbackPlain(translation.getSmtScript());
 
         // output the smt file
         File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
@@ -688,9 +696,15 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         // output the mapping
         translation.getMapper().writeToJson(jsonFile.getPath());
 
-        callbackPlain("\nGenerated smt2 file: " + smtFile.getAbsolutePath() +"\n");
-        callbackPlain("\nGenerated json mapping file: " + jsonFile.getAbsolutePath() +"\n");
+        callbackPlain("\nGenerated smt2 file: ");
 
+        Object[] smtMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ smtFile.getAbsolutePath()};
+        workerCallback.callback(smtMessage);
+
+        callbackPlain("\nGenerated json mapping file: ");
+        Object[] jsonMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ jsonFile.getAbsolutePath()};
+        workerCallback.callback(jsonMessage);
+        callbackPlain("\n");
         return translation;
     }
 
