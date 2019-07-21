@@ -152,6 +152,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                         callbackPlain(commandResult.command.label + " ");
 
                         callbackPlain(commandResult.command.check ? "is invalid" : "is consistent");
+
                         break;
                     case "unsat":
 
@@ -290,19 +291,30 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
-        writeModelToAlloyXmlFile(translation, model, xmlFilePath, originalFileName, command, alloyFiles);
+        Instance instance = writeModelToAlloyXmlFile(translation, model, xmlFilePath, originalFileName, command, alloyFiles);
 
-        callbackBold("Generated alloy instance file: " + xmlFilePath +"\n");
+        callbackPlain("\nGenerated xml instance file: " + xmlFilePath +"\n");
 
-        String  satResult           = "sat";
+        // generate alloy code that restricts the model to be the instance found
+        String alloyCode = instance.generateAlloyCode();
+        File alloyFile = File.createTempFile("tmp", ".als", new File(tempDirectory));
+        Formatter formatter = new Formatter(alloyFile);
+        formatter.format("%s", alloyCode);
+        formatter.close();
 
-        Object[] message            = new Object []{satResult, command.check, command.expects, xmlFilePath, null, duration};
+        callbackPlain("Generated als instance file: " + alloyFile.getAbsolutePath() +"\n\n");
+
+        String  satResult = "sat";
+        Object[] message = new Object []{satResult, command.check, command.expects, xmlFilePath, null, duration};
         workerCallback.callback(message);
 
+        Object[] modelConstraint = new Object []{"link", "Instance constraints", "MSG: "+ alloyCode};
+        workerCallback.callback(modelConstraint);
+        callbackPlain("\n");
         return xmlFilePath;
     }
 
-    public static void writeModelToAlloyXmlFile(Translation translation, SmtModel model, String xmlFileName,
+    public static Instance writeModelToAlloyXmlFile(Translation translation, SmtModel model, String xmlFileName,
               String originalFileName, Command command, Map<String, String> alloyFiles) throws Exception
     {
         Mapper mapper = translation.getMapper();
@@ -355,6 +367,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
 
         alloy.writeToXml(xmlFileName);
+        return instance;
     }
 
     private static void addSpecialSignatures(Translation translation, Map<String, FunctionDefinition> functionsMap, List<Signature> signatures, List<Field> fields) throws Exception
@@ -675,8 +688,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         // output the mapping
         translation.getMapper().writeToJson(jsonFile.getPath());
 
-        callbackPlain("\nGenerated a smt2 file: " + smtFile.getAbsolutePath() +"\n");
-        callbackPlain("\nGenerated a mapping file: " + jsonFile.getAbsolutePath() +"\n");
+        callbackPlain("\nGenerated smt2 file: " + smtFile.getAbsolutePath() +"\n");
+        callbackPlain("\nGenerated json mapping file: " + jsonFile.getAbsolutePath() +"\n");
 
         return translation;
     }

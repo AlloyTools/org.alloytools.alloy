@@ -447,4 +447,9 @@ public class AlloyUtils
         }
         throw new UnsupportedOperationException();
     }
+
+    public static String sanitizeAtom(String atom)
+    {
+        return atom.replace("@uc_", "");
+    }
 }

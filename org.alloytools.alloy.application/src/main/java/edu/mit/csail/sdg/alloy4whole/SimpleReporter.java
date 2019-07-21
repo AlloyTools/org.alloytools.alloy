@@ -247,7 +247,7 @@ final class SimpleReporter extends A4Reporter {
                 results.add(filename);
                 (new File(filename)).deleteOnExit();
                 gui.doSetLatest(filename);
-                span.setLength(len3);
+                //span.setLength(len3);
                 span.log("   ");
                 span.logLink(chk ? "Counterexample" : "Instance", "XML: " + filename);
                 span.log(" found. ");

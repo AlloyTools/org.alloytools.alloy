@@ -44,7 +44,7 @@ public class SmtParser extends Parser {
 		return new String[] {
 			null, "'('", "'model'", "')'", "'declare-sort'", "'define-fun'", "'Set'", 
 			"'Tuple'", "'-'", "'as'", "'emptyset'", "'true'", "'false'", null, null, 
-			"'ite'", null, "'@uc_Atom_'", "'@uc_UninterpretedInt_'"
+			"'ite'", null, "'@uc_Atom_'", "'@uc_UInt_'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();

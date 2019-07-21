@@ -2,6 +2,9 @@ package edu.mit.csail.sdg.alloy4whole.instances;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import edu.mit.csail.sdg.ast.Sig;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -33,4 +36,52 @@ public class Instance
     @XmlAttribute(name = "filename")
     @JsonProperty("fileName")
     public String fileName;
+
+    public String generateAlloyCode()
+    {
+        StringBuilder code = new StringBuilder();
+        for (Signature signature: signatures)
+        {
+            code.append(generateSignatureCode(signature));
+        }
+
+        return code.toString();
+    }
+
+    private String generateSignatureCode(Signature signature)
+    {
+        if(signature.atoms != null && signature.atoms.size() > 0)
+        {
+            StringBuilder code = new StringBuilder();
+            if(signature.builtIn.equals("yes"))
+            {
+                if(signature.label.equals(Sig.UNIV.label))
+                {
+                    // generate singleton signatures for each atom
+                    code.append("one sig ");
+                    code.append(AlloyUtils.sanitizeAtom(signature.atoms.get(0).label));
+                    for (int i = 1; i < signature.atoms.size(); i++)
+                    {
+                        code.append(", " + AlloyUtils.sanitizeAtom(signature.atoms.get(i).label));
+                    }
+                    code.append(" in " + signature.label + " {}\n");
+
+                    return code.toString();
+                }
+            }
+            else
+            {
+                // the signature is equal to the union of all atoms
+                code.append("fact { " + signature.label.replace("this/", "") + " = " +
+                        AlloyUtils.sanitizeAtom(signature.atoms.get(0).label));
+                for (int i = 1; i < signature.atoms.size(); i++)
+                {
+                    code.append(" + " + AlloyUtils.sanitizeAtom(signature.atoms.get(i).label));
+                }
+                code.append(" }\n");
+            }
+            return code.toString();
+        }
+        return "";
+    }
 }

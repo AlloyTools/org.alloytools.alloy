@@ -64,4 +64,10 @@ public class Signature
     @XmlAttribute(name = "enum")
     @JsonProperty("isEnum")
     public String isEnum; // yes/no
+
+    @Override
+    public String toString()
+    {
+        return label;
+    }
 }
