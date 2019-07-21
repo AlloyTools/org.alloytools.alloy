@@ -1,6 +1,7 @@
 package edu.uiowa.alloy2smt.utils;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.smt.AbstractTranslator;
@@ -436,14 +437,38 @@ public class AlloyUtils
 
         if(expr instanceof ExprUnary)
         {
-            return ((ExprUnary) expr).sub;
+            return removeMultiplicity(((ExprUnary) expr).sub);
         }
 
         if(expr instanceof ExprBinary)
         {
-            Expr left = ((ExprBinary) expr).left;
-            Expr right = ((ExprBinary) expr).right;
-            return ExprBinary.Op.ARROW.make(expr.pos, expr.closingBracket, left, right);
+            Expr left = removeMultiplicity(((ExprBinary) expr).left);
+            Expr right = removeMultiplicity(((ExprBinary) expr).right);
+            ExprBinary.Op op = ((ExprBinary) expr).op;
+
+            switch (op)
+            {
+                case ARROW              :
+                case ANY_ARROW_SOME     :
+                case ANY_ARROW_ONE      :
+                case ANY_ARROW_LONE     :
+                case SOME_ARROW_ANY     :
+                case SOME_ARROW_SOME    :
+                case SOME_ARROW_ONE     :
+                case SOME_ARROW_LONE    :
+                case ONE_ARROW_ANY      :
+                case ONE_ARROW_SOME     :
+                case ONE_ARROW_ONE      :
+                case ONE_ARROW_LONE     :
+                case LONE_ARROW_ANY     :
+                case LONE_ARROW_SOME    :
+                case LONE_ARROW_ONE     :
+                case LONE_ARROW_LONE    :
+                case ISSEQ_ARROW_LONE   : return ExprBinary.Op.ARROW.make(expr.pos, expr.closingBracket, left, right);
+                default                 : return op.make(expr.pos, expr.closingBracket, left, right);
+            }
+
+
         }
         throw new UnsupportedOperationException();
     }
