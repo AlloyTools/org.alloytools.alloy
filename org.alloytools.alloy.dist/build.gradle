@@ -8,12 +8,14 @@ task macos( dependsOn: jar, type: JavaExec ) {
 
 	args( 
 		'-deploy', 
+			'-BappVersion=5.1.0',
 			'-native', 'pkg',
 				'-srcfiles', 'target/org.alloytools.alloy.dist.jar', 
-				'-appclass', 'edu.mit.csail.sdg.alloy4whole.SimpleGUI', 
+				'-appclass', 'edu.mit.csail.sdg.alloy4whole.AlloyTools', 
 				'-name', 'Alloy',
 	 			'-outdir', 'target', 
-	 			'-outfile', 'alloy', 
+				'-outfile', 'alloy',
+				'-Bmac.CFBundleVersion=5.1.0',
 	 			'-v'	)
 	
 }
