@@ -45,6 +45,11 @@ public class Instance
             code.append(generateSignatureCode(signature));
         }
 
+        for (Field field: fields)
+        {
+            code.append(generateFieldCode(field));
+        }
+
         return code.toString();
     }
 
@@ -83,5 +88,34 @@ public class Instance
             return code.toString();
         }
         return "";
+    }
+
+    private String generateFieldCode(Field field)
+    {
+        if(field.tuples != null && field.tuples.size() > 0)
+        {
+            StringBuilder code = new StringBuilder();
+            // the field is equal to the union of all tuples
+
+            code.append("fact { " + field.label + " = " + generateTupleCode(field.tuples.get(0)));
+            for (int i = 1; i < field.tuples.size(); i++)
+            {
+                code.append(" + " + generateTupleCode(field.tuples.get(i)));
+            }
+            code.append(" }\n");
+            return code.toString();
+        }
+        return "";
+    }
+
+    private String generateTupleCode(Tuple tuple)
+    {
+        StringBuilder code = new StringBuilder();
+        code.append(AlloyUtils.sanitizeAtom(tuple.atoms.get(0).label));
+        for(int i = 1; i < tuple.atoms.size(); i++)
+        {
+            code.append(" -> " + AlloyUtils.sanitizeAtom(tuple.atoms.get(i).label));
+        }
+        return code.toString();
     }
 }
