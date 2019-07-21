@@ -352,7 +352,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             fields.add(field);
         }
 
-        addSpecialSignatures(translation, functionsMap, signatures ,fields);
+        // addSpecialSignatures(translation, functionsMap, signatures ,fields);
 
         Instance instance   = new Instance();
         instance.signatures = signatures;

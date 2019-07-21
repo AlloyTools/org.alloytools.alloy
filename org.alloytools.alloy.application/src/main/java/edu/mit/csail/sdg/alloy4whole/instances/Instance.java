@@ -55,28 +55,30 @@ public class Instance
 
     private String generateSignatureCode(Signature signature)
     {
-        if(signature.atoms != null && signature.atoms.size() > 0)
+        if(signature.builtIn.equals("yes"))
         {
-            StringBuilder code = new StringBuilder();
-            if(signature.builtIn.equals("yes"))
+            if(signature.label.equals(Sig.UNIV.label))
             {
-                if(signature.label.equals(Sig.UNIV.label))
+                // generate singleton signatures for each atom
+                StringBuilder code = new StringBuilder();
+                code.append("one sig ");
+                code.append(AlloyUtils.sanitizeAtom(signature.atoms.get(0).label));
+                for (int i = 1; i < signature.atoms.size(); i++)
                 {
-                    // generate singleton signatures for each atom
-                    code.append("one sig ");
-                    code.append(AlloyUtils.sanitizeAtom(signature.atoms.get(0).label));
-                    for (int i = 1; i < signature.atoms.size(); i++)
-                    {
-                        code.append(", " + AlloyUtils.sanitizeAtom(signature.atoms.get(i).label));
-                    }
-                    code.append(" in " + signature.label + " {}\n");
-
-                    return code.toString();
+                    code.append(", " + AlloyUtils.sanitizeAtom(signature.atoms.get(i).label));
                 }
+                code.append(" in " + signature.label + " {}\n");
+
+                return code.toString();
             }
-            else
+            return "";
+        }
+        else
+        {
+            if(signature.atoms != null && signature.atoms.size() > 0)
             {
                 // the signature is equal to the union of all atoms
+                StringBuilder code = new StringBuilder();
                 code.append("fact { " + signature.label.replace("this/", "") + " = " +
                         AlloyUtils.sanitizeAtom(signature.atoms.get(0).label));
                 for (int i = 1; i < signature.atoms.size(); i++)
@@ -84,10 +86,11 @@ public class Instance
                     code.append(" + " + AlloyUtils.sanitizeAtom(signature.atoms.get(i).label));
                 }
                 code.append(" }\n");
+                return code.toString();
             }
-            return code.toString();
+            // no atoms means cardinality is zero
+            return "fact { #" + signature.label.replace("this/", "") + " = 0 }";
         }
-        return "";
     }
 
     private String generateFieldCode(Field field)
@@ -105,7 +108,11 @@ public class Instance
             code.append(" }\n");
             return code.toString();
         }
-        return "";
+        else
+        {
+            // no atoms means cardinality is zero
+            return "fact { #" + field.label+ " = 0 }";
+        }
     }
 
     private String generateTupleCode(Tuple tuple)
