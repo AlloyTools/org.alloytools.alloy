@@ -451,7 +451,7 @@ public class CourseExamplesTests
     @Test
     public void bank_accounts() throws Exception
     {
-        CommandResult result = AlloyUtils.runAlloyFile("./test/course/bank_accounts.als", true, 0);
+        CommandResult result = AlloyUtils.runAlloyFile("./test/course/bank_account.als", true, 0);
         assertEquals("sat", result.satResult);
     }
 }
