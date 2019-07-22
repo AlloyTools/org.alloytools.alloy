@@ -45,9 +45,32 @@ public class ExprTranslator
         this.exprLetTranslator = new ExprLetTranslator(this);
     }
 
-    Expression translateExpr(Expr expr)
+    public Expression translateFormula(String label, Expr expr)
     {
-        return translateExpr(expr, new Environment());
+        assert(expr.type() == Type.FORMULA);
+        Environment environment = new Environment();
+        Expression formula = translateExpr(expr, environment);
+        // if there is a multiplicity constraint,
+        if(environment.getAuxiliaryFormula() != null)
+        {
+            QuantifiedExpression quantifiedExpression = environment.getAuxiliaryFormula();
+            if(quantifiedExpression.getOp() == QuantifiedExpression.Op.EXISTS)
+            {
+                Expression body = MultiArityExpression.Op.AND.make(quantifiedExpression.getExpression(), formula);
+                formula = QuantifiedExpression.Op.EXISTS.make(body, quantifiedExpression.getVariables());
+            }
+            else if(quantifiedExpression.getOp() == QuantifiedExpression.Op.FORALL)
+            {
+                Expression body = BinaryExpression.Op.IMPLIES.make(quantifiedExpression.getExpression(), formula);
+                formula = QuantifiedExpression.Op.FORALL.make(body, quantifiedExpression.getVariables());
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+        translator.smtProgram.addAssertion(new Assertion(label, formula));
+        return formula;
     }
 
     Expression translateExpr(Expr expr, Environment environment)

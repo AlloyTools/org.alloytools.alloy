@@ -202,7 +202,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     {
         for (Pair<String, Expr> pair :this.alloyModel.getAllFacts() )
         {
-            translateFact(pair.a, pair.b);
+           exprTranslator.translateFormula(pair.a, pair.b);
         }
     }
 
@@ -374,7 +374,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             for(ExprHasName n : f.decls.get(i).names)
             {
                 String  label = n.label;
-                Expression range = this.exprTranslator.translateExpr(f.decls.get(i).expr);
+
+                Expression range = this.exprTranslator.translateExpr(f.decls.get(i).expr, new Environment());
                 VariableDeclaration argument = new VariableDeclaration(label, range.getSort());
                 Expression subset = BinaryExpression.Op.SUBSET.make(argument.getVariable(), range);
                 argument.setConstraint(subset);
@@ -398,21 +399,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     {
         return expr.type().arity();    
     }
-
-    private void translateFact(String factName, Expr factExpr)
-    {
-        this.smtProgram.addAssertion(new Assertion(factName, this.exprTranslator.translateExpr(factExpr)));
-    }
-
-    private void translateAssertion(String assertionName, Expr assertionExpr)
-    {
-        Expression expression = this.exprTranslator.translateExpr(assertionExpr);
-        this.smtProgram.addAssertion(new Assertion(assertionName, UnaryExpression.Op.NOT.make(expression)));
-    }
-
-
-
-
 
 
     /**
@@ -880,11 +866,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             // translate only the formulas added by the command and ignore facts
             if(!isFactFormula(argument))
             {
-                Expression expression = exprTranslator.translateExpr(argument);
-                assertions.add(new Assertion(argument.toString(), expression));
+                exprTranslator.translateFormula(argument.toString(), argument);
             }
         }
-
         return assertions;
     }
 

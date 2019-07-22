@@ -11,6 +11,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
+import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -231,7 +232,8 @@ public class FieldTranslator
             Expr oneOfSig = ExprUnary.Op.ONEOF.make(null, field.sig);
             Decl decl = new Decl(null, null, null, Collections.singletonList(zis), oneOfSig);
             Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), some);
-            Expression multiplicity =  translator.exprTranslator.translateExpr(all);
+
+            Expression multiplicity =  translator.exprTranslator.translateExpr(all, new Environment());
             translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
 
             Expr noMultiplicity = AlloyUtils.removeMultiplicity(field.decl());
@@ -239,8 +241,7 @@ public class FieldTranslator
 
             Expr product = ExprBinary.Op.ARROW.make(null, null, field.sig, substituteExpr);
             Expr subsetExpr = ExprBinary.Op.IN.make(null, null, field, product);
-            Expression subsetExpression = translator.exprTranslator.translateExpr(subsetExpr);
-            translator.smtProgram.addAssertion(new Assertion(field.toString() + " subset", subsetExpression));
+            translator.exprTranslator.translateFormula(field.toString() + " subset", subsetExpr);
 
             // no set is generated for AnyArrowAny constraint
 //            if(translator.multiplicityVariableMap.containsKey(expr))
