@@ -85,4 +85,9 @@ public class Variable extends Expression
         }
         return  this;
     }
+
+    public boolean isOriginal()
+    {
+        return declaration.isOriginal();
+    }
 }

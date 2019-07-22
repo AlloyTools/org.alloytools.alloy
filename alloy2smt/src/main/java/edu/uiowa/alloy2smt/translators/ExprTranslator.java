@@ -197,85 +197,6 @@ public class ExprTranslator
         return finalExpr;
     }
 
-    public Expression translateSetComprehensionFuncCallExpr(String funcName, List<Expression> argExprs)
-    {
-        Map<String, Expression> letVars = new HashMap<>();
-        List<String> inputs = translator.setComprehensionFuncNameToInputsMap.get(funcName);
-        Expression setCompDef = translator.setCompFuncNameToDefMap.get(funcName);
-        VariableDeclaration setBdVar = translator.setCompFuncNameToBdVarExprMap.get(funcName);
-
-        for (int i = 0; i < argExprs.size(); ++i)
-        {
-            letVars.put(inputs.get(i), argExprs.get(i));
-        }
-
-        if (!letVars.isEmpty())
-        {
-            setCompDef = new LetExpression(letVars, setCompDef);
-        }
-        if (translator.auxExpr != null)
-        {
-            translator.auxExpr = MultiArityExpression.Op.AND.make(translator.auxExpr, setCompDef);
-        }
-        else
-        {
-            translator.auxExpr = setCompDef;
-        }
-        translator.existentialBdVars.add(setBdVar);
-        return setBdVar.getVariable();
-    }
-
-
-    public void declArithmeticOp(BinaryExpression.Op op)
-    {
-        VariableDeclaration x = new VariableDeclaration("_x", translator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("_y", translator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("_z", translator.uninterpretedInt);
-
-        Expression xValue = new FunctionCallExpression(translator.uninterpretedIntValue, x.getVariable());
-        Expression yValue = new FunctionCallExpression(translator.uninterpretedIntValue, y.getVariable());
-        Expression zValue = new FunctionCallExpression(translator.uninterpretedIntValue, z.getVariable());
-
-
-        Expression xyzTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
-                x.getVariable(), y.getVariable(), z.getVariable());
-
-        String relationName;
-
-        switch (op)
-        {
-            case PLUS:
-                relationName = AbstractTranslator.plus;
-                break;
-            case MINUS:
-                relationName = AbstractTranslator.minus;
-                break;
-            case MULTIPLY:
-                relationName = AbstractTranslator.multiply;
-                break;
-            case DIVIDE:
-                relationName = AbstractTranslator.divide;
-                break;
-            case MOD:
-                relationName = AbstractTranslator.mod;
-                break;
-            default:
-                throw new UnsupportedOperationException(op.toString());
-        }
-
-        ConstantDeclaration relation = new ConstantDeclaration(relationName, AbstractTranslator.setOfTernaryIntSort);
-        Expression xyOperation = op.make(xValue, yValue);
-        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
-        Expression xyzTupleMember = BinaryExpression.Op.MEMBER.make(xyzTuple, relation.getVariable());
-        Expression implies1 = BinaryExpression.Op.IMPLIES.make(equal, xyzTupleMember);
-        Expression implies2 = BinaryExpression.Op.IMPLIES.make(xyzTupleMember, equal);
-        Expression equivalence = MultiArityExpression.Op.AND.make(implies1, implies2);
-        Expression axiom = QuantifiedExpression.Op.FORALL.make(implies2, x, y, z);
-        translator.smtProgram.addConstantDeclaration(relation);
-        translator.smtProgram.addAssertion(new Assertion(relationName + " relation axiom", axiom));
-        translator.arithmeticOperations.put(op, relation.getVariable());
-    }
-
     private Expression translateExprListAndOr(MultiArityExpression.Op op, ExprList exprList, Environment environment)
     {
         if(op != MultiArityExpression.Op.AND && op != MultiArityExpression.Op.OR)
@@ -317,7 +238,7 @@ public class ExprTranslator
 
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false));
         }
         return bdVars;
     }
@@ -334,7 +255,7 @@ public class ExprTranslator
         for (int i = 0; i < num; i++)
         {
             Sort sort = new TupleSort(elementSorts);
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort));
+            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false));
         }
         return bdVars;
     }

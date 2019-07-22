@@ -120,7 +120,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public QuantifiedExpression optimize(QuantifiedExpression quantifiedExpression)
     {
         List<VariableDeclaration> declarations = new ArrayList<>();
-        Map<String, Expression> letVariables = new LinkedHashMap<>();
+        Map<VariableDeclaration, Expression> letVariables = new LinkedHashMap<>();
         for (VariableDeclaration variable: quantifiedExpression.getVariables())
         {
             if(variable.getSort() instanceof TupleSort)
@@ -130,12 +130,12 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 TupleSort tupleSort = (TupleSort) variable.getSort();
                 for (Sort sort: tupleSort.elementSorts)
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
+                    VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
                     declarations.add(declaration);
                     tupleExpressions.add(declaration.getVariable());
                 }
                 Expression tuple = MultiArityExpression.Op.MKTUPLE.make(tupleExpressions);
-                letVariables.put(variable.getName(), tuple);
+                letVariables.put(variable, tuple);
             }
             else
             {
@@ -216,14 +216,14 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(Variable variable)
     {
-        stringBuilder.append(TranslatorUtils.sanitizeWithBars(variable.getName()));
+        stringBuilder.append(TranslatorUtils.sanitizeWithBars(variable.getDeclaration()));
     }
 
     @Override
     public void visit(FunctionDeclaration functionDeclaration)
     {
         stringBuilder.append("(declare-fun ");
-        stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionDeclaration.getName()) + " (");
+        stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionDeclaration) + " (");
 
         List<Sort> inputSorts  = functionDeclaration.getInputSorts();
         for(int i = 0 ; i < inputSorts.size(); i++)
@@ -238,7 +238,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(FunctionDefinition definition)
     {
-        stringBuilder.append("(define-fun ").append(TranslatorUtils.sanitizeWithBars(definition.getName())).append(" (");
+        stringBuilder.append("(define-fun ").append(TranslatorUtils.sanitizeWithBars(definition)).append(" (");
         for(VariableDeclaration bdVar : definition.inputVariables)
         {
             this.visit(bdVar);
@@ -255,7 +255,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public void visit(ConstantDeclaration constantDeclaration)
     {
         stringBuilder.append("(declare-const ");
-        stringBuilder.append(TranslatorUtils.sanitizeWithBars(constantDeclaration.getName()) + " ");
+        stringBuilder.append(TranslatorUtils.sanitizeWithBars(constantDeclaration) + " ");
         this.visit(constantDeclaration.getSort());
         stringBuilder.append(")\n");
     }
@@ -309,7 +309,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         if(functionCallExpression.getArguments().size() > 0)
         {
             stringBuilder.append("(");
-            stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionCallExpression.getFunctionName()));
+            stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionCallExpression.getFunction()));
             stringBuilder.append(" ");
             for(int i = 0; i < functionCallExpression.getArguments().size()-1; ++i)
             {
@@ -328,7 +328,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(VariableDeclaration variable)
     {
-        stringBuilder.append("(" + TranslatorUtils.sanitizeWithBars(variable.getName()) + " ");
+        stringBuilder.append("(" + TranslatorUtils.sanitizeWithBars(variable) + " ");
         this.visit(variable.getSort());
         stringBuilder.append(")");
     }
@@ -438,7 +438,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(LetExpression let) {
         stringBuilder.append("( let (");
-        for(Map.Entry<String, Expression> letVar : let.getLetVariables().entrySet())
+        for(Map.Entry<VariableDeclaration, Expression> letVar : let.getLetVariables().entrySet())
         {
             stringBuilder.append("(");
             stringBuilder.append(TranslatorUtils.sanitizeWithBars(letVar.getKey())).append(" ");

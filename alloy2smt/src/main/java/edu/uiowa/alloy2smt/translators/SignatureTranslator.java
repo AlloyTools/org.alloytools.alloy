@@ -147,12 +147,12 @@ public class SignatureTranslator
         {
             if (sig.type().is_int())
             {
-                FunctionDeclaration functionDeclaration = declareUnaryIntFunction(sig.toString());
+                FunctionDeclaration functionDeclaration = declareUnaryIntFunction(sig.toString(), true);
                 translator.signaturesMap.put(sig, functionDeclaration);
             }
             else
             {
-                FunctionDeclaration functionDeclaration = declareUnaryAtomFunction(sig.toString());
+                FunctionDeclaration functionDeclaration = declareUnaryAtomFunction(sig.toString(), true);
                 translator.signaturesMap.put(sig, functionDeclaration);
             }
         }
@@ -582,7 +582,7 @@ public class SignatureTranslator
         Expression difference = BinaryExpression.Op.SETMINUS.make(set.getVariable(), join);
 
         return new FunctionDefinition(prefix + suffix, translator.setOfUnaryAtomSort,
-                difference, set);
+                difference, true, set);
     }
 
     private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, FunctionDeclaration ord, String suffix)
@@ -590,7 +590,7 @@ public class SignatureTranslator
         UnaryExpression tClosure = UnaryExpression.Op.TCLOSURE.make(ord.getVariable());
         BinaryExpression join = BinaryExpression.Op.JOIN.make(set1.getVariable(), tClosure);
         String name = prefix + suffix;
-        FunctionDefinition definition = new FunctionDefinition(name, translator.setOfUnaryAtomSort, join, set1);
+        FunctionDefinition definition = new FunctionDefinition(name, translator.setOfUnaryAtomSort, join, true, set1);
         return definition;
     }
 
@@ -601,7 +601,7 @@ public class SignatureTranslator
                 set2.getVariable());
         return new FunctionDefinition(prefix + suffix,
                 translator.setOfUnaryAtomSort,
-                ite,
+                ite,true, 
                 set1, set2
         );
     }
@@ -610,11 +610,11 @@ public class SignatureTranslator
     {
         String nextMapping = prefix + "nextMapping";
 
-        FunctionDeclaration mapping = new FunctionDeclaration(nextMapping, AbstractTranslator.atomSort, AbstractTranslator.atomSort);
+        FunctionDeclaration mapping = new FunctionDeclaration(nextMapping, AbstractTranslator.atomSort, AbstractTranslator.atomSort, true);
         translator.addFunction(mapping);
 
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
+        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.atomSort, false);
 
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member
@@ -657,7 +657,7 @@ public class SignatureTranslator
 
         translator.smtProgram.addAssertion(new Assertion(nextMapping + " is injective for members", forAll));
 
-        FunctionDeclaration ordNext = new FunctionDeclaration(prefix + "next", translator.setOfBinaryAtomSort);
+        FunctionDeclaration ordNext = new FunctionDeclaration(prefix + "next", translator.setOfBinaryAtomSort, true);
         translator.addFunction(ordNext);
 
         // for all x, y (x,y) in the next relation iff x, y are members and nextMapping(x) = y
@@ -707,7 +707,7 @@ public class SignatureTranslator
 
     private FunctionDeclaration addOrdPrev(String prefix, FunctionDeclaration ordNext)
     {
-        FunctionDeclaration ordPrev = new FunctionDeclaration(prefix + "prev", translator.setOfBinaryAtomSort);
+        FunctionDeclaration ordPrev = new FunctionDeclaration(prefix + "prev", translator.setOfBinaryAtomSort, true);
 
         UnaryExpression transpose = UnaryExpression.Op.TRANSPOSE.make(ordNext.getVariable());
 
@@ -730,7 +730,7 @@ public class SignatureTranslator
 
         return new FunctionDefinition(prefix + suffix,
                 BoolSort.getInstance(),
-                ltExpression,
+                ltExpression, true,
                 set1, set2
         );
     }

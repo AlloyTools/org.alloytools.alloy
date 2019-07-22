@@ -12,9 +12,9 @@ import edu.uiowa.smt.printers.SmtAstVisitor;
 
 public class ConstantDefinition extends FunctionDefinition
 {
-    public ConstantDefinition(String name,  Sort outputSort, Expression expression)
+    public ConstantDefinition(String name,  Sort outputSort, Expression expression, boolean isOriginal)
     {
-        super(name, outputSort, expression);
+        super(name, outputSort, expression, isOriginal);
     }
 
     @Override

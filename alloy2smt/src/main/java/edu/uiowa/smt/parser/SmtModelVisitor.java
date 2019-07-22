@@ -122,7 +122,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 
         Expression expression = (Expression) this.visitExpression(ctx.expression(), functionArguments);
 
-        FunctionDefinition definition   = new FunctionDefinition(name, arguments, returnSort,  expression);
+        FunctionDefinition definition   = new FunctionDefinition(name, arguments, returnSort,  expression, true);
 
         return definition;
     }
@@ -132,7 +132,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         String argumentName = ctx.argumentName().getText();
         Sort   argumentSort = (Sort) this.visitSort(ctx.sort());
-        return new VariableDeclaration(argumentName, argumentSort);
+        return new VariableDeclaration(argumentName, argumentSort, true);
     }
 
     public SmtAst visitExpression(SmtParser.ExpressionContext ctx, Map<String, Variable> arguments)

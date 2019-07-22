@@ -153,11 +153,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private void translateSpecialAssertions()
     {
         // Axiom for identity relation
-        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort);
+        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort, false);
         MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
         BinaryExpression            memberA = BinaryExpression.Op.MEMBER.make(tupleA, this.atomUniverse.getVariable());
 
-        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort);
+        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort, false);
         MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
         BinaryExpression            memberB = BinaryExpression.Op.MEMBER.make(tupleB, this.atomUniverse.getVariable());
 
@@ -181,8 +181,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function
-        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt);
-        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt);
+        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
+        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, false);
         Expression XEqualsY = BinaryExpression.Op.EQ.make(X.getVariable(), Y.getVariable());
         Expression notXEqualsY = UnaryExpression.Op.NOT.make(XEqualsY);
 
@@ -204,362 +204,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         {
            exprTranslator.translateFormula(pair.a, pair.b);
         }
-    }
-
-    private void translateFunctionsAndPredicates()
-    {        
-        List<String> funcOrder = new ArrayList<>();
-        Map<String, List<String>> dependency = new HashMap<>();
-
-        for (CompModule module: this.alloyModel.getAllReachableModules())
-        {
-            //ToDo: review the case of integer and % (mod) operator
-            if (module.getModelName().equals("util/integer"))
-            {
-                continue;
-            }
-            for (Func func : module.getAllFunc())
-            {
-                funcNames.add(func.label);
-                this.nameToFuncMap.put(func.label, func);
-                sortFunctionDependency(func.label, func.getBody(), dependency);
-            }
-        }
-
-        for (CompModule module: this.alloyModel.getAllReachableModules())
-        {
-            //ToDo: review the case of integer and % (mod) operator
-            if(module.getModelName().equals("util/integer"))
-            {
-                continue;
-            }
-            for (Func func : module.getAllFunc())
-            {
-                funcNames.add(func.label);
-                this.nameToFuncMap.put(func.label, func);
-            }
-
-            // translate functions in ordering module differently
-            // these functions are defined in SignatureTranslator.java
-            if(module.getModelName().equals("util/ordering"))
-            {
-                continue;
-            }
-
-            for (Func f : module.getAllFunc())
-            {
-                //ignore  private functions like $$Default and run$1 etc
-                // run functions are handled in commands translation
-                if (f.isPrivate != null)
-                {
-                    continue;
-                }
-
-                if(isSetComprehension(f.getBody()))
-                {
-                    translateSetComprehensionFunction(f);
-                }
-                else
-                {
-                    translateFunction(f);
-                }
-                sortFunctionDependency(f.label, f.getBody(), dependency);
-            }
-        }
-                
-        // Organize the order of dependency
-        organizeDependency(dependency, funcOrder);
-        
-        for(int i = 0; i < funcOrder.size(); ++i)
-        {
-            if(!this.setCompFuncNameToDefMap.containsKey(funcOrder.get(i)))
-            {
-                this.smtProgram.addFunction(this.functionsMap.get(this.funcNamesMap.get(funcOrder.get(i))));
-            }            
-        }
-    }
-
-    private void translateSetComprehensionFunction(Func f)
-    {
-        //ToDo: refactor this function to use ExprQtTranslator
-        String funcName = f.label;
-        Environment environment = new Environment();
-
-        ExprQt exprQtBody = (ExprQt)(((ExprUnary)f.getBody()).sub);
-
-        List<Sort> elementSorts = new ArrayList<>();
-
-        for(int i = 0; i < exprQtBody.decls.size(); ++i)
-        {                    
-            for(int j = 0; j < exprQtBody.decls.get(i).names.size(); ++j)
-            {
-                elementSorts.addAll(AlloyUtils.getExprSorts(exprQtBody.decls.get(i).expr));
-            }                    
-        }
-
-        SetSort             setSort         = new SetSort(new TupleSort(elementSorts));
-        String              setBdVarName    = TranslatorUtils.getFreshName(setSort);
-        VariableDeclaration setBdVar   = new VariableDeclaration(setBdVarName, setSort);
-        LinkedHashMap<VariableDeclaration, Expression> inputBdVars = new LinkedHashMap<>();
-        List<String> inputVarNames = new ArrayList<>();
-        
-        // Declare input variables
-        for(int i = 0; i < f.decls.size(); ++i)
-        {
-            for(ExprHasName n : f.decls.get(i).names)
-            {
-                String  variableName       = n.label;
-                Sort    bdVarSort       = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.decls.get(i).expr));
-                VariableDeclaration bdVarDecl = new VariableDeclaration(variableName, bdVarSort);
-                
-                inputVarNames.add(variableName);
-                environment.put(variableName, bdVarDecl.getVariable());
-            }
-        }        
-
-        for(Decl decl : exprQtBody.decls)
-        {                    
-            Expression declExpr         = exprTranslator.translateExpr(decl.expr, environment);
-            List<Sort> declExprSorts    = AlloyUtils.getExprSorts(decl.expr);
-
-            for (ExprHasName name: decl.names)
-            {
-                String label = name.label;
-                VariableDeclaration bdVar = new VariableDeclaration(label, declExprSorts.get(0));
-                environment.put(name.label, bdVar.getVariable());
-                inputBdVars.put(bdVar, declExpr);                
-            }                    
-        }
-        
-        Expression setCompBodyExpr  = exprTranslator.translateExpr(exprQtBody.sub, environment);
-        Expression membership       = AlloyUtils.getMemberExpression(inputBdVars, 0);
-
-        for(int i = 1; i < inputBdVars.size(); ++i)
-        {
-            membership = MultiArityExpression.Op.AND.make(membership, AlloyUtils.getMemberExpression(inputBdVars, i));
-        }
-        membership = MultiArityExpression.Op.AND.make(membership, setCompBodyExpr);
-        Expression setMembership = BinaryExpression.Op.MEMBER.make(exprTranslator.exprUnaryTranslator.mkTupleExpr(new ArrayList<>(inputBdVars.keySet())), setBdVar.getVariable());
-        membership = BinaryExpression.Op.EQ.make(membership, setMembership);
-        Expression forallExpr = QuantifiedExpression.Op.FORALL.make(membership, new ArrayList<>(inputBdVars.keySet()));
-
-        this.setCompFuncNameToBdVarExprMap.put(funcName, setBdVar);
-        this.setCompFuncNameToDefMap.put(funcName, forallExpr); 
-        this.setComprehensionFuncNameToInputsMap.put(funcName, inputVarNames);
-    }    
-         
-    
-    public FunctionDefinition translateFunction(Func f)
-    {
-        if(f == null)
-        {
-            //ToDo: fix the null issue with  examples/case_studies/firewire.als
-            throw new RuntimeException("Null argument");
-        }
-        if(isSetComprehension(f.getBody()))
-        {
-           throw new RuntimeException("The body of function " + f.label + " is a set comprehension. It should be translated using method Alloy2SmtTranslator.translateSetComprehensionFunction");
-        }
-
-        Sort returnSort = BoolSort.getInstance();
-        String functionName = f.label;
-        List<VariableDeclaration> arguments = new ArrayList<>();
-        Environment environment = new Environment();
-                
-        // Save function name
-        this.funcNamesMap.put(f.label, functionName);
-        // Declare argument variables
-        for(int i = 0; i < f.decls.size(); ++i)
-        {
-            for(ExprHasName n : f.decls.get(i).names)
-            {
-                String  label = n.label;
-
-                Expression range = this.exprTranslator.translateExpr(f.decls.get(i).expr, new Environment());
-                VariableDeclaration argument = new VariableDeclaration(label, range.getSort());
-                Expression subset = BinaryExpression.Op.SUBSET.make(argument.getVariable(), range);
-                argument.setConstraint(subset);
-                arguments.add(argument);
-                environment.put(label, argument.getVariable());
-            }
-        }
-        // If the function is not predicate, we change its returned type.
-        if(!f.isPred)
-        {
-            returnSort = TranslatorUtils.getSetSortOfAtomWithArity(getArityofExpr(f.returnDecl));
-        }
-        
-        FunctionDefinition funcDef = new FunctionDefinition(functionName, arguments, returnSort,
-                                                            this.exprTranslator.translateExpr(f.getBody(), environment));
-        this.functionsMap.put(functionName, funcDef);
-        return funcDef;
-    }    
-    
-    private int getArityofExpr(Expr expr)
-    {
-        return expr.type().arity();    
-    }
-
-
-    /**
-     * This is to sort out the function dependencies so that 
-     * we can print them in the right order
-     */
-    private void sortFunctionDependency(String callingFuncName, Expr expr, Map<String, List<String>> dependency)
-    {
-        if(expr instanceof ExprUnary)
-        {
-            ExprUnary exprUnary = (ExprUnary)expr;
-            switch (exprUnary.op)
-            {
-                case NOOP       :
-                case NO         : 
-                case SOME       : 
-                case ONE        : 
-                case LONE       : 
-                case TRANSPOSE  : 
-                case CLOSURE    :
-                case RCLOSURE   : 
-                case ONEOF      :
-                case LONEOF     :
-                case SOMEOF     : 
-                case SETOF      :
-                case CARDINALITY:
-                case NOT        : sortFunctionDependency(callingFuncName, exprUnary.sub, dependency); break;
-                case CAST2INT   :
-                case CAST2SIGINT : return;
-                default:
-                {
-                    throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
-                }
-            }            
-        } 
-        else if(expr instanceof ExprBinary)
-        {
-            sortFunctionDependency(callingFuncName, ((ExprBinary)expr).left, dependency);
-            sortFunctionDependency(callingFuncName, ((ExprBinary)expr).right, dependency);
-        }
-        else if(expr instanceof ExprQt)
-        {
-            for (Decl decl: ((ExprQt)expr).decls)
-            {
-                sortFunctionDependency(callingFuncName, decl.expr, dependency);
-            }            
-            sortFunctionDependency(callingFuncName, ((ExprQt)expr).sub, dependency);
-        }
-        else if(expr instanceof ExprList)
-        {
-            for(Expr argExpr : ((ExprList)expr).args)
-            {
-                sortFunctionDependency(callingFuncName, argExpr, dependency);
-            }            
-        }
-        else if(expr instanceof ExprCall)
-        {
-            for(Expr e : ((ExprCall)expr).args)
-            {
-                sortFunctionDependency(callingFuncName, e, dependency);
-            }
-            addToDependency(callingFuncName, ((ExprCall)expr).fun.label, dependency);
-        }
-        else if(expr instanceof ExprLet)
-        {
-            sortFunctionDependency(callingFuncName, ((ExprLet)expr).expr, dependency);
-            sortFunctionDependency(callingFuncName, ((ExprLet)expr).sub, dependency);
-        }
-        else if(expr instanceof ExprITE)
-        {
-            sortFunctionDependency(callingFuncName, ((ExprITE)expr).cond, dependency);
-            sortFunctionDependency(callingFuncName, ((ExprITE)expr).left, dependency);
-            sortFunctionDependency(callingFuncName, ((ExprITE)expr).right, dependency);
-        }        
-        else if((expr instanceof ExprConstant) || (expr instanceof Sig.Field) || (expr instanceof Sig)
-                || (expr instanceof ExprVar))
-        {
-            return;
-        }
-        else 
-        {
-            throw new UnsupportedOperationException();
-        }
-    }    
-    
-    private void addToDependency(String key, String value, Map<String, List<String>> dependency)
-    {
-        if(dependency.containsKey(key))        
-        {
-            dependency.get(key).add(value);
-        }
-        else
-        {
-            List<String> values = new ArrayList<>();
-            values.add(value);
-            dependency.put(key, values);
-        }
-    }
-    
-    private void organizeDependency(Map<String, List<String>> dependency, List<String> orderedFunctions)
-    {
-        for(Map.Entry<String, List<String>> entry : dependency.entrySet())
-        {
-            for(String dFuncName : entry.getValue())
-            {
-                if(dependency.containsKey(dFuncName))
-                {
-                    organizeDependency(dFuncName, dependency, orderedFunctions);                   
-                }
-                else if(!orderedFunctions.contains(dFuncName))
-                {
-                    orderedFunctions.add(dFuncName);
-                }
-            }
-            if(!orderedFunctions.contains(entry.getKey()))
-            {
-                orderedFunctions.add(entry.getKey());
-            }            
-        }
-        for (CompModule module: this.alloyModel.getAllReachableModules())
-        {
-            for (Func f : module.getAllFunc())
-            {
-                if (!orderedFunctions.contains(f.label) && f.isPrivate == null)
-                {
-                    orderedFunctions.add(f.label);
-                }
-            }
-        }
-    }
-    
-    private void organizeDependency(String dFuncName, Map<String, List<String>> dependency, List<String> orderedFunctions)
-    {
-        for(String funcName : dependency.get(dFuncName))
-        {
-            if(dependency.containsKey(funcName))
-            {
-                organizeDependency(funcName, dependency, orderedFunctions);
-            }
-            else if(!orderedFunctions.contains(funcName))             
-            {
-                orderedFunctions.add(funcName);
-            }
-        }
-        if(!orderedFunctions.contains(dFuncName))
-        {
-            orderedFunctions.add(dFuncName);
-        }         
-    }
-    
-    
-    private boolean isSetComprehension(Expr expr)
-    {
-        if(expr instanceof ExprUnary)
-        {
-            if(((ExprUnary)expr).op == ExprUnary.Op.NOOP) 
-            {
-                return (((ExprUnary)expr).sub instanceof ExprQt) && ((ExprQt)((ExprUnary)expr).sub).op == ExprQt.Op.COMPREHENSION;
-            }
-        }
-        return false;
     }
 
     /**
@@ -817,13 +461,13 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     {
                         List<VariableDeclaration> declarations = new ArrayList<>();
                         Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
-                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
+                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
                         declarations.add(firstAtom);
                         Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
                         Expression set = UnaryExpression.Op.SINGLETON.make(firstTuple);
                         for (int i = 1; i < scope; i++)
                         {
-                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort);
+                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
                             declarations.add(declaration);
                             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
                             Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);

@@ -88,8 +88,8 @@ public class FieldTranslator
 
         Expression signature = translator.signaturesMap.get(sig).getVariable();
         SetSort setSort = (SetSort) signature.getSort();
-        VariableDeclaration a = new VariableDeclaration("__a__", setSort.elementSort);
-        VariableDeclaration b = new VariableDeclaration("__b__", setSort.elementSort);
+        VariableDeclaration a = new VariableDeclaration("a", setSort.elementSort, false);
+        VariableDeclaration b = new VariableDeclaration("b", setSort.elementSort, false);
         Expression aMember = BinaryExpression.Op.MEMBER.make(a.getVariable(), signature);
         Expression bMember = BinaryExpression.Op.MEMBER.make(b.getVariable(), signature);
         Expression aSingleton = UnaryExpression.Op.SINGLETON.make(a.getVariable());
@@ -156,7 +156,8 @@ public class FieldTranslator
             }
         }
 
-        FunctionDeclaration fieldDeclaration = new FunctionDeclaration(fieldName, new SetSort(new TupleSort(fieldSorts)));
+        Sort sort = new SetSort(new TupleSort(fieldSorts));
+        FunctionDeclaration fieldDeclaration = new FunctionDeclaration(fieldName, sort, true);
         // declare a variable for the field
         translator.smtProgram.addFunction(fieldDeclaration);
         translator.fieldsMap.put(field, fieldDeclaration);

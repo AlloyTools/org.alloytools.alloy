@@ -87,7 +87,7 @@ public class FunctionCallExpression extends Expression
                 String argumentName = definition.inputVariables.get(i).getName();
                 // ToDo: refactor this
                 // for now generate a new constant with the passed parameter;
-                ConstantDefinition constant = new ConstantDefinition(argumentName, uninterpretedConstant.getSort(), uninterpretedConstant);
+                ConstantDefinition constant = new ConstantDefinition(argumentName, uninterpretedConstant.getSort(), uninterpretedConstant, true);
                 newScope.put(constant.getName(), constant);
             }
             else
@@ -146,5 +146,10 @@ public class FunctionCallExpression extends Expression
             newExpressions.add(expression.replace(oldExpression, newExpression));
         }
         return new FunctionCallExpression(function, newExpressions);
+    }
+
+    public FunctionDeclaration getFunction()
+    {
+        return function;
     }
 }

@@ -125,7 +125,7 @@ public class ExprCallTranslator
             if (sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
-                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort);
+                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, variable.isOriginal());
                 quantifiedArguments.add(tuple);
                 Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
                 newA = newA.replace(argument.getValue(), singleton);
@@ -147,7 +147,9 @@ public class ExprCallTranslator
             }
         }
 
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple), argumentSorts, AbstractTranslator.setOfUninterpretedIntTuple);
+        String freshName = TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple);
+        FunctionDeclaration result = new FunctionDeclaration(freshName, argumentSorts,
+                AbstractTranslator.setOfUninterpretedIntTuple, false);
         translator.smtProgram.addFunction(result);
 
         Expression resultExpression;
@@ -160,9 +162,9 @@ public class ExprCallTranslator
             resultExpression = result.getVariable();
         }
 
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.uninterpretedInt);
-        VariableDeclaration z = new VariableDeclaration("__z__", AbstractTranslator.uninterpretedInt);
+        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.uninterpretedInt, false);
+        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.uninterpretedInt, false);
+        VariableDeclaration z = new VariableDeclaration("z", AbstractTranslator.uninterpretedInt, false);
 
         Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
         Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());

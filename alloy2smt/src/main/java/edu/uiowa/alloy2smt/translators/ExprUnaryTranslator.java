@@ -180,7 +180,7 @@ public class ExprUnaryTranslator
             VariableDeclaration bdVar;
             Expression bdVarExpr;
 
-            bdVar = new VariableDeclaration(name, sort);
+            bdVar = new VariableDeclaration(name, sort, false);
             bdVarExpr = bdVar.getVariable();
 
             bdVars.add(bdVar);
@@ -214,12 +214,12 @@ public class ExprUnaryTranslator
             
             if(sort instanceof IntSort)
             {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt,false);
                 bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
             }
             else
             {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort);
+                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort, false);
                 bdVarExpr = bdVar.getVariable();
             }
             bdVars.add(bdVar);
@@ -251,7 +251,7 @@ public class ExprUnaryTranslator
             Expression emptySet = UnaryExpression.Op.EMPTYSET.make(sort);
             Expression isEmpty = BinaryExpression.Op.EQ.make(emptySet, expression);
 
-            VariableDeclaration element = new VariableDeclaration("__s__", sort.elementSort);
+            VariableDeclaration element = new VariableDeclaration("s", sort.elementSort, false);
             Expression singleton = UnaryExpression.Op.SINGLETON.make(element.getVariable());
             Expression isSingleon = BinaryExpression.Op.EQ.make(singleton, expression);
             Expression exists = QuantifiedExpression.Op.EXISTS.make(isSingleon, element);

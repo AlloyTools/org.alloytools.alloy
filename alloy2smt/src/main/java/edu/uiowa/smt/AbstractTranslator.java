@@ -40,12 +40,12 @@ public abstract class AbstractTranslator
     public final static SetSort setOfUnaryAtomSort = new SetSort(unaryAtomSort);
     public final static SetSort setOfBinaryAtomSort = new SetSort(binaryAtomSort);
     public final static SetSort setOfTernaryIntSort = new SetSort(ternaryIntSort);
-    public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort);
-    public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort);
-    public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort);
-    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple);
-    public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make( setOfUninterpretedIntTuple);
-    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort);
+    public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort, false);
+    public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort, false);
+    public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort, false);
+    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple, false);
+    public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple);
+    public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort, false);
 
     // non static members
     public SmtProgram smtProgram;
@@ -89,7 +89,7 @@ public abstract class AbstractTranslator
             return integerConstants.get(value);
         }
 
-        ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt), AbstractTranslator.uninterpretedInt);
+        ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt), AbstractTranslator.uninterpretedInt, false);
         integerConstants.put(value, uninterpretedInt);
         smtProgram.addConstantDeclaration(uninterpretedInt);
         Expression callExpression = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());

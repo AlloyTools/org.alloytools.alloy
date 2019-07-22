@@ -19,9 +19,14 @@ public class TranslatorUtils
 {
     private static int freshNameIndex = 0;
 
-    public static String sanitizeWithBars(String s)
+    public static String sanitizeWithBars(Declaration declaration)
     {
-        return "|" + s + "|";
+        if(declaration.isOriginal())
+        {
+            // add extra space to separate original variables from generated ones
+            return "|" + declaration.getName() + " |";
+        }
+        return declaration.getName();
     }
 
     public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, AbstractTranslator translator)
@@ -33,7 +38,7 @@ public class TranslatorUtils
         //ToDo: handle the case when n = 0
         List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
 
-        FunctionDeclaration declaration = new FunctionDeclaration(getFreshName(setSort), setSort);
+        FunctionDeclaration declaration = new FunctionDeclaration(getFreshName(setSort), setSort, false);
 
         translator.smtProgram.addFunction(declaration);
 
@@ -67,7 +72,7 @@ public class TranslatorUtils
         {
             for (int i = 0; i < n; i++)
             {
-                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getFreshName(sort), sort);
+                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getFreshName(sort), sort, false);
                 expressions.add(constantDeclaration.getVariable());
                 smtProgram.addConstantDeclaration(constantDeclaration);
             }

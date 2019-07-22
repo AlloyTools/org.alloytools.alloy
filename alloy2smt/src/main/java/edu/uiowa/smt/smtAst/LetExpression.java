@@ -16,13 +16,13 @@ import java.util.Map;
 public class LetExpression extends Expression
 {
     private final Expression expr;
-    private final Map<String, Expression> letVariables;
+    private final Map<VariableDeclaration, Expression> letVariables;
 
-    public LetExpression(Map<String, Expression> letVars, Expression expr)
+    public LetExpression(Map<VariableDeclaration, Expression> letVars, Expression expr)
     {
         this.letVariables = new HashMap<>();
         this.expr = expr;
-        for (Map.Entry<String, Expression> var : letVars.entrySet())
+        for (Map.Entry<VariableDeclaration, Expression> var : letVars.entrySet())
         {
             this.letVariables.put(var.getKey(), var.getValue());
         }
@@ -31,7 +31,7 @@ public class LetExpression extends Expression
     }
 
 
-    public Map<String, Expression> getLetVariables()
+    public Map<VariableDeclaration, Expression> getLetVariables()
     {
         return this.letVariables;
     }
