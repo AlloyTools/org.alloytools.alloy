@@ -8,18 +8,21 @@
 
 package edu.uiowa.smt.smtAst;
 
+//ToDo: refactor Declaration into only Function and Variable and make them expressions
 abstract public class Declaration extends SmtAst
 {
     private final String name;
     private final Sort sort;
+    private final boolean isOriginal;
 
     protected Variable variable;
 
-    protected Declaration(String name, Sort sort)
+    protected Declaration(String name, Sort sort, boolean isOriginal)
     {
         this.name = name;
         this.sort = sort;
         this.variable = new Variable(this);
+        this.isOriginal = isOriginal;
     }
 
     public String getName()
@@ -35,5 +38,10 @@ abstract public class Declaration extends SmtAst
     public Variable getVariable()
     {
         return this.variable;
+    }
+
+    public boolean isOriginal()
+    {
+        return isOriginal;
     }
 }

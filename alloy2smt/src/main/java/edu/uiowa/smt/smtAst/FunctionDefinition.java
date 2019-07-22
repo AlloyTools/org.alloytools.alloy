@@ -20,22 +20,22 @@ public class FunctionDefinition extends FunctionDeclaration
     public final Expression                 expression;
     public final List<VariableDeclaration>  inputVariables;
     
-    public FunctionDefinition(String name, List<VariableDeclaration> inputVariables, Sort outputSort, Expression expression)
+    public FunctionDefinition(String name, List<VariableDeclaration> inputVariables, Sort outputSort, Expression expression, boolean isOriginal)
     {
-        super(name, inputVariables.stream().map(v -> v.getSort()).collect(Collectors.toList()), outputSort);
+        super(name, inputVariables.stream().map(v -> v.getSort()).collect(Collectors.toList()), outputSort, isOriginal);
         this.inputVariables = inputVariables;
         this.expression = expression;
     }
     
-    public FunctionDefinition(String name, VariableDeclaration inputVariable, Sort outputSort, Expression expression)
+    public FunctionDefinition(String name, VariableDeclaration inputVariable, Sort outputSort, Expression expression, boolean isOriginal)
     {
-        super(name, inputVariable.getSort(), outputSort);
+        super(name, inputVariable.getSort(), outputSort, isOriginal);
         this.inputVariables = Collections.singletonList(inputVariable);
         this.expression = expression;
     }
-    public FunctionDefinition(String name, Sort outputSort, Expression expression, VariableDeclaration... inputVariables)
+    public FunctionDefinition(String name, Sort outputSort, Expression expression, boolean isOriginal, VariableDeclaration... inputVariables)
     {
-        super(name, Arrays.stream(inputVariables).map(v -> v.getSort()).collect(Collectors.toList()), outputSort);
+        super(name, Arrays.stream(inputVariables).map(v -> v.getSort()).collect(Collectors.toList()), outputSort, isOriginal);
         this.inputVariables = Arrays.asList(inputVariables);
         this.expression = expression;
     }      

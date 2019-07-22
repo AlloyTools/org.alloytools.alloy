@@ -17,9 +17,9 @@ public class FunctionDeclaration extends Declaration
 {
     private final List<Sort>            inputSorts;
 
-    public FunctionDeclaration(String name, List<Sort> inputSort, Sort outputSort)
+    public FunctionDeclaration(String name, List<Sort> inputSort, Sort outputSort, boolean isOriginal)
     {
-        super(name, outputSort);
+        super(name, outputSort, isOriginal);
 
         this.inputSorts = inputSort;
 
@@ -33,9 +33,9 @@ public class FunctionDeclaration extends Declaration
         }
     }
 
-    public FunctionDeclaration(String name, Sort inputSort, Sort outputSort)
+    public FunctionDeclaration(String name, Sort inputSort, Sort outputSort, boolean isOriginal)
     {
-        super(name, outputSort);
+        super(name, outputSort, isOriginal);
         this.inputSorts = Arrays.asList(inputSort);
 
         if(this.inputSorts.isEmpty())
@@ -48,16 +48,16 @@ public class FunctionDeclaration extends Declaration
         }
     }
 
-    public FunctionDeclaration(String name, Sort outputSort)
+    public FunctionDeclaration(String name, Sort outputSort, boolean isOriginal)
     {
-        super(name, outputSort);
+        super(name, outputSort, isOriginal);
         this.inputSorts         = new ArrayList<>();
         this.variable = new Variable(this);
     } 
     
-    public FunctionDeclaration(String name, Sort outputSort, Sort ... inputSorts)
+    public FunctionDeclaration(String name, boolean isOriginal,  Sort outputSort, Sort ... inputSorts)
     {
-        super(name, outputSort);
+        super(name, outputSort, isOriginal);
         this.inputSorts = Arrays.asList(inputSorts);
 
         if(this.inputSorts.isEmpty())

@@ -202,12 +202,12 @@ public class SignatureTranslator
         if (isInt)
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort, false);
         }
         expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         translator.smtProgram.addConstantDeclaration(constDecl);
@@ -226,13 +226,13 @@ public class SignatureTranslator
         if (isInt)
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort,false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
@@ -251,13 +251,13 @@ public class SignatureTranslator
         if (isInt)
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort);
+            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort, false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtProgram.addConstantDeclaration(constDecl);
@@ -323,23 +323,23 @@ public class SignatureTranslator
     }
 
 
-    private FunctionDeclaration declareUnaryAtomFunction(String varName)
+    private FunctionDeclaration declareUnaryAtomFunction(String varName, boolean isOriginal)
     {
         FunctionDeclaration declaration = null;
         if (varName != null)
         {
-            declaration = new FunctionDeclaration(varName, translator.setOfUnaryAtomSort);
+            declaration = new FunctionDeclaration(varName, translator.setOfUnaryAtomSort, isOriginal);
             translator.smtProgram.addFunction(declaration);
         }
         return declaration;
     }
 
-    private FunctionDeclaration declareUnaryIntFunction(String varName)
+    private FunctionDeclaration declareUnaryIntFunction(String varName, boolean isOriginal)
     {
         FunctionDeclaration declaration = null;
         if (varName != null)
         {
-            declaration = new FunctionDeclaration(varName, translator.setOfUninterpretedIntTuple);
+            declaration = new FunctionDeclaration(varName, translator.setOfUninterpretedIntTuple, isOriginal);
             translator.smtProgram.addFunction(declaration);
         }
         return declaration;
@@ -386,7 +386,7 @@ public class SignatureTranslator
 
             String name = "this";
             Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
-            VariableDeclaration declaration = new VariableDeclaration(name, AbstractTranslator.atomSort);
+            VariableDeclaration declaration = new VariableDeclaration(name, AbstractTranslator.atomSort, true);
             boundVariables.put(declaration, translator.signaturesMap.get(sigFact.getKey()).getVariable());
             Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
             declaration.setConstraint(member);
@@ -432,11 +432,11 @@ public class SignatureTranslator
         // prev relation
         FunctionDeclaration ordPrev = addOrdPrev(prefix, ordNext);
 
-        VariableDeclaration set1 = new VariableDeclaration("s1", translator.setOfUnaryAtomSort);
-        VariableDeclaration set2 = new VariableDeclaration("s2", translator.setOfUnaryAtomSort);
+        VariableDeclaration set1 = new VariableDeclaration("s1", translator.setOfUnaryAtomSort, false);
+        VariableDeclaration set2 = new VariableDeclaration("s2", translator.setOfUnaryAtomSort, false);
 
-        VariableDeclaration element1 = new VariableDeclaration("e1", AbstractTranslator.atomSort);
-        VariableDeclaration element2 = new VariableDeclaration("e2", AbstractTranslator.atomSort);
+        VariableDeclaration element1 = new VariableDeclaration("e1", AbstractTranslator.atomSort, false);
+        VariableDeclaration element2 = new VariableDeclaration("e2", AbstractTranslator.atomSort, false);
 
         // ordering/prevs
         FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
@@ -481,13 +481,13 @@ public class SignatureTranslator
 
     private FunctionDeclaration defineInjectiveMapping(String mappingName, Sort inputSort, Sort outputSort)
     {
-        FunctionDeclaration mapping = new FunctionDeclaration(mappingName, inputSort, outputSort);
+        FunctionDeclaration mapping = new FunctionDeclaration(mappingName, inputSort, outputSort, true);
         translator.addFunction(mapping);
 
         // the mapping is one-to-one(injective)
         // for all x, y (x != y and  implies f(x) != f(y))
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
-        VariableDeclaration y = new VariableDeclaration("__y__", AbstractTranslator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
+        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.atomSort, false);
 
         Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
 
@@ -509,8 +509,8 @@ public class SignatureTranslator
     private Expression defineFirstElement(String prefix, Expression firstExpression, FunctionDeclaration mapping, Expression setExpression)
     {
         final String suffix = "first";
-        ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", AbstractTranslator.atomSort);
-        FunctionDeclaration first = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+        ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", AbstractTranslator.atomSort, true);
+        FunctionDeclaration first = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort, true);
 
         Expression firstSet = UnaryExpression.Op.SINGLETON.make(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable()));
@@ -528,7 +528,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
         Expression member = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
         Expression gte = BinaryExpression.Op.GTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, firstAtom.getVariable()));
         Expression implies = BinaryExpression.Op.IMPLIES.make(member, gte);
@@ -542,8 +542,8 @@ public class SignatureTranslator
     private ConstantDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, Expression setExpression)
     {
         final String suffix = "last";
-        ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", AbstractTranslator.atomSort);
-        FunctionDeclaration last = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort);
+        ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", AbstractTranslator.atomSort, true);
+        FunctionDeclaration last = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort, true);
 
         Expression lastSet = UnaryExpression.Op.SINGLETON.make(
                 new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getVariable()));
@@ -562,7 +562,7 @@ public class SignatureTranslator
         translator.smtProgram.addAssertion(new Assertion(prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
-        VariableDeclaration x = new VariableDeclaration("__x__", AbstractTranslator.atomSort);
+        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
         Expression xMember = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
         Expression lte = BinaryExpression.Op.LTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, lastAtom.getVariable()));
         Expression implies = BinaryExpression.Op.IMPLIES.make(xMember, lte);

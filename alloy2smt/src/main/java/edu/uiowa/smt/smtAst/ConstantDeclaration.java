@@ -13,9 +13,9 @@ import edu.uiowa.smt.printers.SmtAstVisitor;
 //ToDo: review whether the name VariableDeclaration is better
 public class ConstantDeclaration extends Declaration
 {
-    public ConstantDeclaration(String name, Sort sort)
+    public ConstantDeclaration(String name, Sort sort, boolean isOriginal)
     {
-        super(name, sort);
+        super(name, sort, isOriginal);
     }
 
     @Override

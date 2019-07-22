@@ -86,6 +86,6 @@ public class SmtModel extends SmtAst
         Expression body = function.expression.evaluate(functions);
 
         return new FunctionDefinition(function.getName(), function.inputVariables,
-                    function.getSort(), body);
+                    function.getSort(), body, function.isOriginal());
     }
 }

@@ -14,9 +14,9 @@ public class VariableDeclaration extends Declaration
 {
     private Expression constraint;
 
-    public VariableDeclaration(String name, Sort sort)
+    public VariableDeclaration(String name, Sort sort, boolean isOriginal)
     {
-        super(name, sort);
+        super(name, sort, isOriginal);
     }
 
     public void setConstraint(Expression constraint)
