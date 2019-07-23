@@ -475,6 +475,7 @@ public class AlloyUtils
 
     public static String sanitizeAtom(String atom)
     {
-        return atom.replace("@uc_", "");
+        return atom.replace("@uc_", "")
+                   .replace("$", "");
     }
 }
