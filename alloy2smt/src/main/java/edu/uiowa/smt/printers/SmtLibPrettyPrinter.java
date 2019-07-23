@@ -321,7 +321,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         }
         else
         {
-            stringBuilder.append(functionCallExpression.getFunctionName());
+            stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionCallExpression.getFunction()));
         }     
     }
 
