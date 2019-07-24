@@ -113,7 +113,7 @@ The CVC4 relational solver interprets the builtin relational constants `plus`, `
 
 | Syntax        | Alt. Syntax | Meaning                      |
 |---------------|----------|-----------------------------------------|
-| `plus[A, B]`  | `B.A.plus`v | { z \| ∃ x ∈ A, y ∈ B. x + y = z }   |
+| `plus[A, B]`  | `B.A.plus` | { z \| ∃ x ∈ A, y ∈ B. x + y = z }   |
 | `minus[A, B]` | `B.A.minus` | { z \| ∃ x ∈ A, y ∈ B. x - y = z }   |
 | `mul[A, B]`   | `B.A.mul`   | { z \| ∃ x ∈ A, y ∈ B. x * y = z }   |
 | `div[A, B]`   | `B.A.div`   | { z \| ∃ x ∈ A, y ∈ B. x / y = z }   |
