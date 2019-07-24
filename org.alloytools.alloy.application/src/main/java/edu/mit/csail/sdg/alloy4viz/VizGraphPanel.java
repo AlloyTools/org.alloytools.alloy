@@ -282,7 +282,7 @@ public final class VizGraphPanel extends JPanel {
         split = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, diagramsScrollPanels, navscroll, 0); // [HASLab]
         split.setResizeWeight(1.0);
         split.setDividerSize(0);
-        split.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)); // [HASLab] preferred maximal
+        //        split.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)); // [HASLab] preferred maximal
         add(split);
         remakeAll();
     }

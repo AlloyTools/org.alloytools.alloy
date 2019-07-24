@@ -201,7 +201,7 @@ public final class VizGUI implements ComponentListener {
      * panels; null if it is not yet loaded.
      */
     // [HASLab]
-    private JSplitPane            mySplitTemporal  = null;
+    private JPanel                mySplitTemporal  = null;
 
     /**
      * The splitpane between the customization panel and the graph panel.
@@ -895,9 +895,12 @@ public final class VizGUI implements ComponentListener {
                     if (isTrace && !isMeta) { // [HASLab]
                         myGraphPanel = new VizGraphPanel(myStates, false);
                         JPanel tmpNavScrollPanel = createTempNavPanel();
-                        mySplitTemporal = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, myGraphPanel, tmpNavScrollPanel, myGraphPanel.getHeight() - 50); // [HASLab]
-                        mySplitTemporal.setResizeWeight(1.0);
-                        mySplitTemporal.setDividerSize(0);
+                        final Box instanceTopBox = Box.createHorizontalBox();
+                        instanceTopBox.add(tmpNavScrollPanel);
+                        mySplitTemporal = new JPanel(new BorderLayout());
+                        mySplitTemporal.add(instanceTopBox, BorderLayout.NORTH);
+                        mySplitTemporal.add(myGraphPanel, BorderLayout.CENTER);
+                        mySplitTemporal.setVisible(true);
                     } else {
                         mySplitTemporal = null;
                         myGraphPanel = new VizGraphPanel(myStates.subList(statepanes - 1, statepanes), false); // [HASLab]                        
@@ -1705,22 +1708,19 @@ public final class VizGUI implements ComponentListener {
 
         JPanel tmpNavPanel = new JPanel();
         tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.LINE_AXIS));
-
-        tmpNavPanel.add(traceGraph(tmpNavPanel));
-
-        tmpNavPanel.setMinimumSize(new Dimension(0, 50));
-        tmpNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-
+        tmpNavPanel.add(traceGraph());
         updateTempPanel();
         return tmpNavPanel;
     }
 
     // [HASLab]
-    private JPanel traceGraph(JPanel tmpNavPanel) {
+    private JPanel traceGraph() {
 
         List<Ellipse2D> states = new ArrayList<Ellipse2D>();
 
         JPanel trace = new JPanel() {
+
+            int heighti = 50;
 
             @Override
             public void paintComponent(Graphics g) {
@@ -1731,7 +1731,7 @@ public final class VizGUI implements ComponentListener {
 
                 int radius = 12;
                 int dist = 45;
-                int offsety = 2 + tmpNavPanel.getHeight() / 2;
+                int offsety = 2 + heighti / 2;
                 // center and apply offset according to current state
                 int offsetx = this.getWidth() / 2 + ((dist - 2 * radius) / 2) - (dist * (current + 1));
                 int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
@@ -1800,7 +1800,7 @@ public final class VizGUI implements ComponentListener {
 
             @Override
             public Dimension getPreferredSize() {
-                return tmpNavPanel.getSize();
+                return new Dimension(Integer.MAX_VALUE, heighti);
             }
 
         };
@@ -1817,7 +1817,6 @@ public final class VizGUI implements ComponentListener {
             }
 
         });
-
         return trace;
     }
 
