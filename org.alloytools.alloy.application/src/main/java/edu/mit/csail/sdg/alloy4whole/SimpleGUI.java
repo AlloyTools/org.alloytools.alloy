@@ -1226,7 +1226,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             String f = latestAutoInstance;
             latestAutoInstance = "";
             if (subrunningTask == 2)
-                viz.loadXML(f, true, 0);
+                viz.loadXML(f, true, 1);
             else if (subrunningTask == 3) // [HASLab]
                 viz.loadXML(f, true);
             else if (AutoVisualize.get() || subrunningTask == 1)
@@ -1669,7 +1669,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
         }
         if (arg.startsWith("XML: ")) { // XML: filename
-            viz.loadXML(Util.canon(arg.substring(5)), false, 0); // [HASLab]
+            viz.loadXML(Util.canon(arg.substring(5)), false, 1); // [HASLab]
         }
         return null;
     }

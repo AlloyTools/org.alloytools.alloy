@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,10 @@ import edu.mit.csail.sdg.alloy4.Runner;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4graph.GraphViewer;
+import kodkod.ast.Formula;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
+import kodkod.util.nodes.PrettyPrinter;
 
 /**
  * GUI main window for the visualizer.
@@ -614,6 +619,7 @@ public final class VizGUI implements ComponentListener {
             JMenu exportMenu = menu(null, "&Export To", null);
             menuItem(exportMenu, "Dot...", 'D', 'D', doExportDot());
             menuItem(exportMenu, "XML...", 'X', 'X', doExportXml());
+            menuItem(exportMenu, "LTL", 'T', 'T', doExportLTL());
             fileMenu.add(exportMenu);
             menuItem(fileMenu, "Close", 'W', 'W', doClose());
             if (standalone)
@@ -772,33 +778,32 @@ public final class VizGUI implements ComponentListener {
         }
         projectionButton.setEnabled(true);
         projectionPopup.removeAll();
-        for (VizState myState : myStates) { // [HASLab]
-            if (myState != null) { // [HASLab]
-                final Set<AlloyType> projected = myState.getProjectedTypes();
-                for (final AlloyType t : myState.getOriginalModel().getTypes())
-                    if (myState.canProject(t)) {
-                        final boolean on = projected.contains(t);
-                        final JMenuItem m = new JMenuItem(t.getName(), on ? OurCheckbox.ON : OurCheckbox.OFF);
-                        m.addActionListener(new ActionListener() {
+        VizState myState = myStates.get(statepanes - 1); // [HASLab]
+        final Set<AlloyType> projected = myState.getProjectedTypes();
+        for (final AlloyType t : myState.getOriginalModel().getTypes())
+            if (myState.canProject(t)) {
+                final boolean on = projected.contains(t);
+                final JMenuItem m = new JMenuItem(t.getName(), on ? OurCheckbox.ON : OurCheckbox.OFF);
+                m.addActionListener(new ActionListener() {
 
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        for (VizState myState : myStates) // [HASLab]
+                            if (myState != null)
                                 if (on)
                                     myState.deproject(t);
                                 else
                                     myState.project(t);
-                                updateDisplay();
-                            }
-                        });
-                        projectionPopup.add(m);
-                        if (on) {
-                            num++;
-                            if (num == 1)
-                                label = "Projected over " + t.getName();
-                        }
+                        updateDisplay();
                     }
+                });
+                projectionPopup.add(m);
+                if (on) {
+                    num++;
+                    if (num == 1)
+                        label = "Projected over " + t.getName();
+                }
             }
-        }
         projectionButton.setText(num > 1 ? ("Projected over " + num + " sigs") : label);
     }
 
@@ -845,13 +850,14 @@ public final class VizGUI implements ComponentListener {
         closeSettingsButton.setVisible(settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         updateSettingsButton.setVisible(settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         openEvaluatorButton.setVisible(!isMeta && settingsOpen == 0 && evaluator != null);
+        openEvaluatorButton.setEnabled(current != 0); // [HASLab]
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        leftNavButton.setEnabled(current > 0); // [HASLab]
+        leftNavButton.setEnabled(current > (settingsOpen == 0 ? 0 : 1)); // [HASLab]
         leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
         rightNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         rightNavMenu.setEnabled(!isMeta); // [HASLab]
@@ -951,7 +957,7 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values.\nFor example, ", true, "univ", false, " shows the list of all atoms.\n(You can press UP and DOWN to recall old inputs).\n");
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
+                myEvaluatorPanel.setCurrent(current - 1); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -1108,8 +1114,13 @@ public final class VizGUI implements ComponentListener {
                         if (state - (statepanes - 1) + i < 0) {
                             myStates.set(i, null);
                         } else {
+                            VizState vstate = myStates.get(i);
                             AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state - (statepanes - 1) + i); // [HASLab] state
-                            myStates.set(i, new VizState(myInstance));
+                            if (vstate == null)
+                                vstate = new VizState(myInstance);
+                            else
+                                vstate.loadInstance(myInstance);
+                            myStates.set(i, vstate);
                         }
                     }
                 } catch (Throwable e) {
@@ -1222,7 +1233,7 @@ public final class VizGUI implements ComponentListener {
         if (file == null)
             return null;
         Util.setCurrentDirectory(file.getParentFile());
-        loadXML(file.getPath(), true, 0); // [HASLab]
+        loadXML(file.getPath(), true, 1); // [HASLab]
         return null;
     }
 
@@ -1407,6 +1418,18 @@ public final class VizGUI implements ComponentListener {
         } catch (Throwable er) {
             OurDialog.alert("Error saving XML instance.\n\nError: " + er.getMessage());
         }
+        return null;
+    }
+
+    // [HASLab]
+    private Runner doExportLTL() {
+        if (wrap)
+            return wrapMe();
+        if (myStates.isEmpty())
+            return null;
+        TemporalInstance inst = (TemporalInstance) myStates.get(myStates.size() - 1).getOriginalInstance().originalA4.debugExtractKInstance();
+        Formula form = inst.formulate(new PardinusBounds(inst.universe()), new HashMap(), Formula.TRUE);
+        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4));
         return null;
     }
 
