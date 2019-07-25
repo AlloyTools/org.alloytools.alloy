@@ -400,98 +400,124 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         if(includeScope)
         {
-            Map<Sig, Map<Sig, Integer>> childrenScope = new HashMap<>();
-            for (Sig signature: reachableSigs)
-            {
-                if (signature instanceof Sig.PrimSig)
-                {
-                    Optional<CommandScope> optional = command.scope
-                            .stream()
-                            .filter(s -> s.sig == signature)
-                            .findFirst();
-                    int scope = 0;
-                    BinaryExpression.Op op;
-                    if (optional.isPresent())
-                    {
-                        CommandScope commandScope = optional.get();
-                        if(commandScope.isExact || alloyModel.getExactSigs().contains(signature))
-                        {
-                            op = BinaryExpression.Op.EQ;
-                        }
-                        else
-                        {
-                            op = BinaryExpression.Op.SUBSET;
-                        }
-                        scope = commandScope.endingScope;
-                    }
-                    else
-                    {
-                        if(alloyModel.getExactSigs().contains(signature))
-                        {
-                            op = BinaryExpression.Op.EQ;
-                        }
-                        else
-                        {
-                            op = BinaryExpression.Op.SUBSET;
-                        }
-
-                        if(signature.isTopLevel())
-                        {
-                            if(signature.isAbstract == null)
-                            {
-                                // no scope specification is given, default value is used
-                                scope = command.overall == -1 ? Alloy2SmtTranslator.DefaultScope: command.overall;
-                            }
-                            else
-                            {
-                                childrenScope.put(signature, new HashMap<>());
-                                // the scope is the sum of its children
-                                scope = getScope((Sig.PrimSig) signature, command, childrenScope);
-                            }
-                        }
-                        else
-                        {
-                            // the signature has no implicit bound
-                        }
-                    }
-
-                    Expression variable = signaturesMap.get(signature).getVariable();
-
-                    if(scope >= 1)
-                    {
-                        List<VariableDeclaration> declarations = new ArrayList<>();
-                        Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
-                        VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
-                        declarations.add(firstAtom);
-                        Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
-                        Expression set = UnaryExpression.Op.SINGLETON.make(firstTuple);
-                        for (int i = 1; i < scope; i++)
-                        {
-                            VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
-                            declarations.add(declaration);
-                            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
-                            Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
-                            set = BinaryExpression.Op.UNION.make(singleton, set);
-                        }
-
-                        Expression constraint = op.make(variable, set);
-                        if(declarations.size() > 1)
-                        {
-                            List<Expression> expressions = declarations
-                                    .stream().map(d -> d.getVariable())
-                                    .collect(Collectors.toList());
-                            Expression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
-                            constraint = MultiArityExpression.Op.AND.make(constraint, distinct);
-                        }
-                        Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
-                        Assertion scopeAssertion = new Assertion(signature.toString() + " scope", exists);
-                        assertions.add(scopeAssertion);
-                    }
-                }
-            }
+            assertions.addAll(translateSignaturesScope(command));
+            assertions.addAll(translateIntScope(command));
         }
 
        return assertions;
+    }
+
+    private List<Assertion> translateIntScope(Command command)
+    {
+        List<Assertion> assertions = new ArrayList<>();
+        int minInteger = - (int) Math.pow(2, command.bitwidth - 1);
+        int maxInteger = - minInteger - 1;
+        ExprVar x = ExprVar.make(command.pos, "x", Sig.SIGINT.type());
+        Expr gte = ExprBinary.Op.GTE.make(command.formula.pos, command.formula.closingBracket, x, ExprConstant.makeNUMBER(minInteger));
+        Expr lte = ExprBinary.Op.LTE.make(command.formula.pos, command.formula.closingBracket, x, ExprConstant.makeNUMBER(maxInteger));
+        Expr and = ExprList.make(command.formula.pos, command.formula.closingBracket, ExprList.Op.AND, Arrays.asList(gte, lte));
+        Expr oneOfInt = ExprUnary.Op.ONEOF.make(null, Sig.SIGINT);
+        Decl decl = new Decl(null, null, null, Collections.singletonList(x), oneOfInt);
+        Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
+        Expression expression = exprTranslator.translateExpr(all, new Environment());
+        Assertion assertion = new Assertion( command.bitwidth +  "Int", expression);
+        assertions.add(assertion);
+        return assertions;
+    }
+
+    private List<Assertion> translateSignaturesScope(Command command)
+    {
+        List<Assertion> assertions = new ArrayList<>();
+        Map<Sig, Map<Sig, Integer>> childrenScope = new HashMap<>();
+        for (Sig signature: reachableSigs)
+        {
+            if (signature instanceof Sig.PrimSig)
+            {
+                Optional<CommandScope> optional = command.scope
+                        .stream()
+                        .filter(s -> s.sig == signature)
+                        .findFirst();
+                int scope = 0;
+                BinaryExpression.Op op;
+                if (optional.isPresent())
+                {
+                    CommandScope commandScope = optional.get();
+                    if(commandScope.isExact || alloyModel.getExactSigs().contains(signature))
+                    {
+                        op = BinaryExpression.Op.EQ;
+                    }
+                    else
+                    {
+                        op = BinaryExpression.Op.SUBSET;
+                    }
+                    scope = commandScope.endingScope;
+                }
+                else
+                {
+                    if(alloyModel.getExactSigs().contains(signature))
+                    {
+                        op = BinaryExpression.Op.EQ;
+                    }
+                    else
+                    {
+                        op = BinaryExpression.Op.SUBSET;
+                    }
+
+                    if(signature.isTopLevel())
+                    {
+                        if(signature.isAbstract == null)
+                        {
+                            // no scope specification is given, default value is used
+                            scope = command.overall == -1 ? Alloy2SmtTranslator.DefaultScope: command.overall;
+                        }
+                        else
+                        {
+                            childrenScope.put(signature, new HashMap<>());
+                            // the scope is the sum of its children
+                            scope = getScope((Sig.PrimSig) signature, command, childrenScope);
+                        }
+                    }
+                    else
+                    {
+                        // the signature has no implicit bound
+                    }
+                }
+
+                Expression variable = signaturesMap.get(signature).getVariable();
+
+                if(scope >= 1)
+                {
+                    List<VariableDeclaration> declarations = new ArrayList<>();
+                    Sort sort = signature.type().is_int()? AbstractTranslator.uninterpretedInt: AbstractTranslator.atomSort;
+                    VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+                    declarations.add(firstAtom);
+                    Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
+                    Expression set = UnaryExpression.Op.SINGLETON.make(firstTuple);
+                    for (int i = 1; i < scope; i++)
+                    {
+                        VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+                        declarations.add(declaration);
+                        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
+                        Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
+                        set = BinaryExpression.Op.UNION.make(singleton, set);
+                    }
+
+                    Expression constraint = op.make(variable, set);
+                    if(declarations.size() > 1)
+                    {
+                        List<Expression> expressions = declarations
+                                .stream().map(d -> d.getVariable())
+                                .collect(Collectors.toList());
+                        Expression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
+                        constraint = MultiArityExpression.Op.AND.make(constraint, distinct);
+                    }
+                    Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
+                    Assertion scopeAssertion = new Assertion(signature.toString() + " scope", exists);
+                    assertions.add(scopeAssertion);
+                }
+            }
+        }
+        return assertions;
     }
 
     private List<Assertion> getAssertions(Command command)

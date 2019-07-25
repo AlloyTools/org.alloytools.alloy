@@ -218,4 +218,25 @@ public class ArithmeticTests
         assertEquals(new HashSet<>(Arrays.asList(5, 10)), set);
     }
 
+
+    @Test
+    public void intScope() throws Exception
+    {
+        String alloy =
+                "sig A, B, C in Int {} \n" +
+                        "fact { \n" +
+                        "A = 1 + 2\n" +
+                        "B = 4 + 5\n" +
+                        "C = plus[A, B]" +
+                        "} \n" +
+                        "run {} for 6 Int\n" +
+                        "run {} for 3 Int";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition c = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/C");
+        Set<Integer> set = TranslatorUtils.getIntSet(c);
+        assertEquals(new HashSet<>(Arrays.asList(5, 6, 7)), set);
+        assertEquals("unsat", commandResults.get(1).satResult);
+    }
 }
