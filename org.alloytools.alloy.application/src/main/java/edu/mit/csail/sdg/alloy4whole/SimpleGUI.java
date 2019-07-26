@@ -1488,7 +1488,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         
         OurDialog.showmsg(
             "About Alloy Analyzer " + Version.version(),
-            OurUtil.loadIcon("images/logo.gif"),
+//            OurUtil.loadIcon("images/logo.gif"),
             "Alloy Analyzer " + Version.version(),
             "Build Date: " + Version.buildDate(),
             "Git Commit: " + Version.commit,
@@ -1517,7 +1517,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             "(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence",
             "Community Information Assurance Research (NICIAR) Program; and by the Nokia",
             "Corporation as part of a collaboration between Nokia Research and MIT CSAIL."
-            )
+            );
             
         return null;
     }
