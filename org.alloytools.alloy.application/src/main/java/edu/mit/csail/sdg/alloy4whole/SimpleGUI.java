@@ -1482,7 +1482,43 @@ public final class SimpleGUI implements ComponentListener, Listener {
     public Runner doAbout() {
         if (wrap)
             return wrapMe();
-        OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+        
+        // Old about message
+        // OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+        
+        OurDialog.showmsg(
+            "About Alloy Analyzer " + Version.version(),
+            OurUtil.loadIcon("images/logo.gif"),
+            "Alloy Analyzer " + Version.version(),
+            "Build Date: " + Version.buildDate(),
+            "Git Commit: " + Version.commit,
+            " ",
+            "Project Lead: Daniel Jackson", 
+            "Chief Developer: Aleksandar Milicevic", 
+            "Kodkod Engine: Emina Torlak", 
+            "Open Source: Peter Kriens", 
+            " ",
+            "For more information about Alloy, visit http://alloytools.org",
+            " ",
+            "Questions and comments about Alloy are welcome at the community forum:", 
+            "Alloy Community Forum: https://groups.google.com/forum/#!forum/alloytools", 
+            " ",
+            "Alloy experts also respond to StackOverflow questions tagged #alloy.", 
+            " ",
+            "Major contributions to earlier versions of Alloy were made by: Felix Chang (v4);",
+            "Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater, Derek Rayside, Greg Dennis,",
+            "Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz Khurshid (v3); Manu Sridharan",
+            "(v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,",
+            "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, Uriel",
+            "Schafer (v1).",
+            " ",
+            "The development of Alloy was funded by part by the National Science Foundation under",
+            "Grant Nos. 0325283, 0541183, 0438897 and 0707612; by the Air Force Research Laboratory",
+            "(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence",
+            "Community Information Assurance Research (NICIAR) Program; and by the Nokia",
+            "Corporation as part of a collaboration between Nokia Research and MIT CSAIL."
+            )
+            
         return null;
     }
 
