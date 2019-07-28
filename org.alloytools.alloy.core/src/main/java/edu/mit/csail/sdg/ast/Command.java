@@ -74,6 +74,11 @@ public final class Command extends Browsable {
     public final int                     bitwidth;
 
     /**
+     * Showing whether the integer values inside the inst-block was set and passed into kodkod.
+     */
+    public final boolean                 isSparse;
+
+    /**
      * The maximum sequence length (0 or higher) (Or -1 if it was not specified).
      */
     public final int                     maxseq;
@@ -152,7 +157,7 @@ public final class Command extends Browsable {
      * @param formula - the formula that must be satisfied by this command
      */
     public Command(boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
-        this(null, null, "", check, overall, bitwidth, maxseq, -1, null, null, formula, null);
+        this(null, null, "", check, overall, bitwidth, maxseq, -1, null, null, formula, null, false);
     }
 
     /**
@@ -174,8 +179,9 @@ public final class Command extends Browsable {
      * @param additionalExactSig - a list of sigs whose scope shall be considered
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
+     * @param isSparse - the inst block sparsity
      */
-    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
+    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent, boolean isSparse) {
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.nameExpr = e;
@@ -191,6 +197,7 @@ public final class Command extends Browsable {
         this.scope = ConstList.make(scope);
         this.additionalExactScopes = ConstList.make(additionalExactSig);
         this.parent = parent;
+        this.isSparse = isSparse;
     }
 
     /**
@@ -198,7 +205,7 @@ public final class Command extends Browsable {
      * except with a different formula.
      */
     public Command change(Expr newFormula) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent, isSparse);
     }
 
     /**
@@ -206,7 +213,7 @@ public final class Command extends Browsable {
      * except with a different scope.
      */
     public Command change(ConstList<CommandScope> scope) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent, isSparse);
     }
 
     /**
@@ -214,7 +221,7 @@ public final class Command extends Browsable {
      * except with a different list of "additional exact sigs".
      */
     public Command change(Sig... additionalExactScopes) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent, isSparse);
     }
 
     /**

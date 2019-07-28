@@ -15,7 +15,11 @@
 
 package edu.mit.csail.sdg.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
+import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 
@@ -32,33 +36,63 @@ import edu.mit.csail.sdg.alloy4.Util;
 public class CommandScope {
 
     /**
-     * The position in the original source file where this scope was declared; can
-     * be Pos.UNKNOWN if unknown.
+     * The position in the original source file where this scope was declared;
+     * can be Pos.UNKNOWN if unknown.
      */
-    public final Pos     pos;
+    public final Pos              pos;
 
     /**
      * The sig whose scope is being given by this CommandScope object.
      */
-    public final Sig     sig;
+    public final Sig              sig;
 
     /** True iff the scope is an exact scope. */
-    public final boolean isExact;
+    public final boolean          isExact;
 
     /** The starting scope. */
-    public final int     startingScope;
+    public final int              startingScope;
 
     /**
      * The ending scope; if this sig is not a growing sig, then
      * this.startingScope==this.endingScope.
      */
-    public final int     endingScope;
+    public final int              endingScope;
 
     /**
-     * The scope increment; if this sig is not a growing sig, then this.increment is
-     * ignored.
+     * The scope increment; if this sig is not a growing sig, then
+     * this.increment is ignored.
      */
-    public final int     increment;
+    public final int              increment;
+
+    /** The atoms for upper-bound */
+    public final List<ExprVar>    pAtoms;
+
+    /** The index to show the last index of lower-bound */
+    public final int              pAtomsLowerLastIndex;
+
+    /** list of tuples set in a partial instance block. */
+    public final List<List<Expr>> pFields;
+
+    /** Indicating if the scope is set in a partial instance block. */
+    public final boolean          isPartial;
+
+    /**
+     * if true, the entity has lower-bound determined in a partial instance
+     * block.
+     */
+    public final boolean          hasLower;
+
+    /**
+     * if true, the entity has upper-bound determined in a partial instance
+     * block.
+     */
+    public final boolean          hasUpper;
+
+    /**
+     * if true, the Integer has sparse integer atoms determined in a partial
+     * instance block.
+     */
+    public final boolean          isSparse;
 
     /**
      * Construct a new CommandScope object.
@@ -83,11 +117,145 @@ public class CommandScope {
      *            growable, then startingScope should equal endingScope)
      * @param increment - the scope increment (if this sig is not intended to be
      *            growable, then this field is ignored)
+     * @param pAtoms - list of atoms for a sig in the partial instance block
+     * @param pAtomsLowerLastIndex - index of the last atom declared to be in
+     *            the sig lowerbound
+     * @param pFields - list of tuples for a field in the partial instance block
+     * @param isPartial - the scope is defined in a partial instance block
+     * @param hasLower - the scope is defined to have the lower-bound
+     * @param hasUpper - the scope is defined to have the upper-bound
+     * @param isSparse - the scope includes sparse integers
+     * @throws ErrorSyntax if startingScope is less than zero
+     * @throws ErrorSyntax if endingScope is less than startingScope
+     * @throws ErrorSyntax if increment is less than one
+     */
+    public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope,
+                        int endingScope, int increment, List<ExprVar> pAtoms,
+                        int pAtomsLowerLastIndex, List<List<Expr>> pFields,
+                        boolean isPartial, boolean hasLower, boolean hasUpper,
+                        boolean isSparse) {
+        super();
+        this.pos = pos;
+        this.sig = sig;
+        this.isExact = isExact;
+        this.startingScope = startingScope;
+        this.endingScope = endingScope;
+        this.increment = increment;
+        this.pAtoms = pAtoms;
+        this.pAtomsLowerLastIndex = pAtomsLowerLastIndex;
+        this.pFields = pFields;
+        this.isPartial = isPartial;
+        this.hasLower = hasLower;
+        this.hasUpper = hasUpper;
+        this.isSparse = isSparse;
+    }
+
+    /**
+     * The sig is still shallow copy.
+     *
+     * @return
+     */
+    @Override
+    public Object clone() {
+        return new CommandScope(this.pos, this.sig, this.isExact, this.startingScope,
+                                this.endingScope, this.increment, new ArrayList<ExprVar>(this.pAtoms),
+                                this.pAtomsLowerLastIndex, new ArrayList<List<Expr>>(this.pFields),
+                                this.isPartial, this.hasLower, this.hasUpper,
+                                this.isSparse);
+    }
+
+    /**
+     * Construct a new CommandScope object.
+     *
+     * @param pos - the position where this scope is given
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param startingScope - the starting scope
+     * @param endingScope - the ending scope (if this sig is not intended to be
+     *            growable, then startingScope should equal endingScope)
+     * @param increment - the scope increment (if this sig is not intended to be
+     *            growable, then this field is ignored)
      * @throws ErrorSyntax if startingScope is less than zero
      * @throws ErrorSyntax if endingScope is less than startingScope
      * @throws ErrorSyntax if increment is less than one
      */
     public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment) throws ErrorSyntax {
+        this(pos, sig, isExact, startingScope, endingScope, increment, false);
+    }
+
+    /**
+     * Constructs a new CommandScope that includes sparse integers defined in a
+     * partial instance block if isSparse is true
+     *
+     * @param pos - the position where this scope is given
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param startingScope - the starting scope
+     * @param endingScope - the ending scope (if this sig is not intended to be
+     *            growable, then startingScope should equal endingScope)
+     * @param increment - the scope increment (if this sig is not intended to be
+     *            growable, then this field is ignored)
+     * @param isSparse - if true the integer numbers in a partial instance block
+     *            are added in the Int set in universe, otherwise only the range
+     *            is generated.
+     * @throws ErrorSyntax if startingScope is less than zero
+     * @throws ErrorSyntax if endingScope is less than startingScope
+     * @throws ErrorSyntax if increment is less than one
+     */
+    public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment, boolean isSparse) throws ErrorSyntax {
+        this(pos, sig, isExact, startingScope, endingScope, increment, new ArrayList<>(), 0, isSparse);
+    }
+
+    /**
+     * Create a commandscope for entities given a atoms enclosed in a partial
+     * instance block.
+     *
+     * @param pos - the position where this scope is given
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param startingScope - the starting scope
+     * @param endingScope - the ending scope (if this sig is not intended to be
+     *            growable, then startingScope should equal endingScope)
+     * @param increment - the scope increment (if this sig is not intended to be
+     *            growable, then this field is ignored)
+     * @param atoms - the list of atoms given in the partial instance block
+     * @param lIndex - the indicator of lower-bound. See description above.
+     * @throws ErrorSyntax if startingScope is less than zero
+     * @throws ErrorSyntax if endingScope is less than startingScope
+     * @throws ErrorSyntax if increment is less than one
+     */
+    public CommandScope(Pos pos, Sig sig, boolean isExact, int startingScope, int endingScope, int increment, List atoms, int lIndex) throws ErrorSyntax {
+        this(pos, sig, isExact, startingScope, endingScope, increment, atoms, lIndex, false);
+    }
+
+    /**
+     * Create a commandscope for a sig. If the atoms list is empty, it no sig
+     * should be created. If not isExact and LIndex = 0 and atoms.size() > 0
+     * then hasUpper and notLower If not isExact and LIndex > 0 and atoms.size()
+     * = LIndex then HasLower If not isExact and LIndex > 0 and atoms.size() >
+     * LIndex the hasLower and hasUpper, means a range. If isExact then LIndex =
+     * atoms.size() = LIndex
+     *
+     * @param pos - the position where this scope is given
+     * @param sig - the sig for this scope
+     * @param isExact - true iff the scope is intended to be exact
+     * @param startingScope - the starting scope
+     * @param endingScope - the ending scope (if this sig is not intended to be
+     *            growable, then startingScope should equal endingScope)
+     * @param increment - the scope increment (if this sig is not intended to be
+     *            growable, then this field is ignored)
+     * @param atoms - the list of atmos given in the partial instance block
+     * @param lIndex - the indicator of lower-bound. See description above.
+     * @param isSparse - if true the integer numbers in a partial instance block
+     *            are added in the Int set in universe, otherwise only the range
+     *            is generated.
+     * @throws ErrorSyntax if startingScope is less than zero
+     * @throws ErrorSyntax if endingScope is less than startingScope
+     * @throws ErrorSyntax if increment is less than one
+     */
+    public CommandScope(Pos pos, Sig sig, boolean isExact,
+                        int startingScope, int endingScope, int increment,
+                        List atoms, int lIndex, boolean isSparse) throws ErrorSyntax {
         if (pos == null)
             pos = Pos.UNKNOWN;
         if (sig == null)
@@ -105,14 +273,81 @@ public class CommandScope {
         this.pos = pos;
         this.sig = sig;
         this.isExact = isExact;
-        this.startingScope = startingScope;
-        this.endingScope = endingScope;
+        this.hasUpper = !isExact & lIndex < atoms.size();
+        this.hasLower = !isExact & lIndex > 0;
+        this.pAtomsLowerLastIndex = lIndex;
         this.increment = increment;
+        this.pFields = new ArrayList<List<Expr>>();
+        this.isSparse = isSparse;
+        boolean isRelation = false;
+
+        List<List<Expr>> tmpPField = new ArrayList<List<Expr>>();
+        if (atoms != null && atoms.size() > 0) {
+            this.isPartial = true;
+            int m = 0;
+            for (Object atom : atoms) {
+                if (atom instanceof Pair) {
+                    List<Expr> list = extractRels((Pair) atom);
+                    m = Math.max(m, list.size());
+                    //Pas One to detect the most arity number
+                    tmpPField.add(list);
+                    isRelation = true;
+                }
+            }
+            if (!isRelation) {
+                this.pAtoms = new ArrayList<ExprVar>(atoms);
+            } else {
+                for (int i = 0; i < tmpPField.size(); i++) {
+                    if (tmpPField.get(i).size() == m) {
+                        this.pFields.add(tmpPField.get(i));
+                    }
+                }
+                this.pAtoms = new ArrayList<ExprVar>();
+            }
+
+        } else {
+            this.isPartial = false;
+            this.pAtoms = new ArrayList<ExprVar>();
+        }
+
+        if (isRelation) {
+            this.startingScope = startingScope / 2;
+            this.endingScope = endingScope / 2;
+        } else {
+            this.startingScope = startingScope;
+            this.endingScope = endingScope;
+        }
+    }
+
+    /**
+     * Extract a list of atoms compounding a tuple from the input tuple encoded
+     * as a pair of atom and list
+     *
+     * @param pair - a tuple represented of <atom, list<pair>>
+     * @return
+     */
+    private List<Expr> extractRels(Pair pair) {
+        List<Expr> tmp = new ArrayList<Expr>();
+
+        if (pair.a instanceof List && ((List) pair.a).size() > 0) {
+            Object p = ((List) pair.a).get(0);
+            if (p instanceof Pair)
+                tmp.addAll(extractRels((Pair) p));
+            else
+                tmp.add((Expr) p);
+        }
+        tmp.add((Expr) pair.b);
+        return tmp;
     }
 
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        return (isExact ? "exactly " : "") + startingScope + (endingScope != startingScope ? (".." + endingScope) : "") + (increment > 1 ? (":" + increment) : "") + " " + Util.tail(sig.label);
+        return (isExact ? "exactly " : "") + (isPartial ? " partial " : "")
+               + startingScope
+               + (endingScope != startingScope ? (".." + endingScope) : "")
+               + (increment > 1 ? (":" + increment) : "")
+               + " "
+               + Util.tail(sig.label);
     }
 }

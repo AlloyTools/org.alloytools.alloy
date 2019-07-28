@@ -186,6 +186,13 @@ public final class A4SolutionWriter {
         if (x instanceof SubsetSig)
             for (Sig p : ((SubsetSig) x).parents)
                 Util.encodeXMLs(out, "   <type ID=\"", map(p), "\"/>\n");
+       // Include the extra integers
+        if (sol != null && x == Sig.SIGINT && sol.isExceededInt()) {
+            for (Integer i : sol.getExceededInts()) {
+                out.print("<int value=\""+i+"\"/>");
+            }
+            out.println();
+        }
         out.print("</sig>\n");
         for (Field field : x.getFields())
             writeField(field);
