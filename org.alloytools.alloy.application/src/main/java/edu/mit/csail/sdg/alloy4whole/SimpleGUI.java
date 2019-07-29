@@ -1666,7 +1666,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
         }
         if (arg.startsWith("XML: ")) { // XML: filename
-            viz.loadXML(Util.canon(arg.substring(5)), false, 1); // [HASLab]
+            viz.loadXML(Util.canon(arg.substring(5)), false, 0); // [HASLab]
         }
         return null;
     }

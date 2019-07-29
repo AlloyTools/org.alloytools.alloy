@@ -85,6 +85,7 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4graph.GraphViewer;
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.util.nodes.PrettyPrinter;
@@ -783,11 +784,10 @@ public final class VizGUI implements ComponentListener {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         for (VizState myState : myStates) // [HASLab]
-                            if (myState != null)
-                                if (on)
-                                    myState.deproject(t);
-                                else
-                                    myState.project(t);
+                            if (on)
+                                myState.deproject(t);
+                            else
+                                myState.project(t);
                         updateDisplay();
                     }
                 });
@@ -844,12 +844,11 @@ public final class VizGUI implements ComponentListener {
         closeSettingsButton.setVisible(settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         updateSettingsButton.setVisible(settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         openEvaluatorButton.setVisible(!isMeta && settingsOpen == 0 && evaluator != null);
-        openEvaluatorButton.setEnabled(current != 0); // [HASLab]
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
         leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        leftNavButton.setEnabled(current > (settingsOpen == 0 ? 0 : 1)); // [HASLab]
+        leftNavButton.setEnabled(current > 0); // [HASLab]
         leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
         rightNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         rightNavMenu.setEnabled(!isMeta); // [HASLab]
@@ -895,7 +894,7 @@ public final class VizGUI implements ComponentListener {
                     if (isTrace && !isMeta) { // [HASLab]
                         myGraphPanel = new VizGraphPanel(myStates, false);
                         JPanel tmpNavScrollPanel = createTempNavPanel();
-                        final Box instanceTopBox = Box.createHorizontalBox();
+                        final Box instanceTopBox = Box.createVerticalBox();
                         instanceTopBox.add(tmpNavScrollPanel);
                         mySplitTemporal = new JPanel(new BorderLayout());
                         mySplitTemporal.add(instanceTopBox, BorderLayout.NORTH);
@@ -949,10 +948,10 @@ public final class VizGUI implements ComponentListener {
             left = myCustomPanel;
         } else if (settingsOpen > 1) {
             if (myEvaluatorPanel == null)
-                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values.\nFor example, ", true, "univ", false, " shows the list of all atoms.\n(You can press UP and DOWN to recall old inputs).\n");
+                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab] 
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrent(current - 1); // [HASLab] set evaluator state
+                myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -1099,31 +1098,23 @@ public final class VizGUI implements ComponentListener {
                     if (!f.exists())
                         throw new IOException("File " + xmlFileName + " does not exist.");
                     if (i >= myStates.size()) { // [HASLab]
-                        if (state - (statepanes - 1) + i < 0) {
-                            myStates.add(null);
-                        } else {
-                            AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state - (statepanes - 1) + i); // [HASLab] state
-                            myStates.add(new VizState(myInstance));
-                        }
+                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i); // [HASLab] state
+                        myStates.add(new VizState(myInstance));
                     } else {
-                        if (state - (statepanes - 1) + i < 0) {
-                            myStates.set(i, null);
-                        } else {
-                            VizState vstate = myStates.get(i);
-                            AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state - (statepanes - 1) + i); // [HASLab] state
-                            if (vstate == null)
-                                vstate = new VizState(myInstance);
-                            else
-                                vstate.loadInstance(myInstance);
-                            myStates.set(i, vstate);
-                        }
+                        VizState vstate = myStates.get(i);
+                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i); // [HASLab] state
+                        if (vstate == null)
+                            vstate = new VizState(myInstance);
+                        else
+                            vstate.loadInstance(myInstance);
+                        myStates.set(i, vstate);
                     }
                 } catch (Throwable e) {
                     xmlLoaded.remove(fileName);
                     xmlLoaded.remove(xmlFileName);
                     OurDialog.alert("Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
                     if (xmlLoaded.size() > 0) {
-                        loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state - (statepanes - 1) + i); // [HASLab] state
+                        loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state + i); // [HASLab] state
                         return;
                     }
                     doCloseAll();
@@ -1228,7 +1219,7 @@ public final class VizGUI implements ComponentListener {
         if (file == null)
             return null;
         Util.setCurrentDirectory(file.getParentFile());
-        loadXML(file.getPath(), true, 1); // [HASLab]
+        loadXML(file.getPath(), true, 0); // [HASLab]
         return null;
     }
 
@@ -1423,7 +1414,10 @@ public final class VizGUI implements ComponentListener {
         if (myStates.isEmpty())
             return null;
         TemporalInstance inst = (TemporalInstance) myStates.get(myStates.size() - 1).getOriginalInstance().originalA4.debugExtractKInstance();
-        Formula form = inst.formulate(new PardinusBounds(inst.universe()), new HashMap(), Formula.TRUE);
+        Formula rels = Formula.TRUE;
+        for (Relation r : inst.state(0).relations())
+            rels = rels.and(r.eq(r));
+        Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap(), rels);
         OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4));
         return null;
     }
@@ -1707,7 +1701,7 @@ public final class VizGUI implements ComponentListener {
     private JPanel createTempNavPanel() {
 
         JPanel tmpNavPanel = new JPanel();
-        tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.LINE_AXIS));
+        tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.PAGE_AXIS));
         tmpNavPanel.add(traceGraph());
         updateTempPanel();
         return tmpNavPanel;
@@ -1736,19 +1730,19 @@ public final class VizGUI implements ComponentListener {
                 int offsetx = this.getWidth() / 2 + ((dist - 2 * radius) / 2) - (dist * (current + 1));
                 int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
                 int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-                int lmx = current + 1 > lst ? current + 1 : lst;
+                int lmx = current + statepanes > lst ? current + statepanes : lst;
                 int lox = lmx - (lst - lop);
                 Ellipse2D loop = null, last = null;
                 for (int i = 0; i < lmx; i++) {
                     g2.setStroke(new BasicStroke(2));
-                    Ellipse2D circl = new Ellipse2D.Double((i + 1) * dist + offsetx, offsety - radius, 2.0 * radius, 2.0 * radius);
+                    Ellipse2D circl = new Ellipse2D.Double(i * dist + offsetx, offsety - radius, 2.0 * radius, 2.0 * radius);
                     if (i == lmx - 1)
                         last = circl;
                     if (i == lox)
                         loop = circl;
                     Color tmp = g2.getColor();
-                    int max = normalize(current, lmx, lox);
-                    int min = normalize(current - (statepanes - 1), lmx, lox);
+                    int max = normalize(current + statepanes - 1, lmx, lox);
+                    int min = normalize(current, lmx, lox);
                     if ((min <= max && i >= min && i <= max) || (min > max && (i >= min || (i <= max && i >= lox)))) {
                         g2.setColor(new Color(255, 255, 255));
                     } else {
@@ -1759,7 +1753,7 @@ public final class VizGUI implements ComponentListener {
                     g2.draw(circl);
                     FontMetrics mets = g2.getFontMetrics();
                     String lbl = normalize(i, lst, lop) + "";
-                    g2.drawString(lbl, (i + 1) * dist + radius + offsetx - (mets.stringWidth(lbl) / 2), offsety + (mets.getAscent() / 2));
+                    g2.drawString(lbl, i * dist + radius + offsetx - (mets.stringWidth(lbl) / 2), offsety + (mets.getAscent() / 2));
                     states.add(circl);
                     g2.setStroke(new BasicStroke(1));
                     g2.setColor(new Color(0, 0, 0));
@@ -1810,7 +1804,7 @@ public final class VizGUI implements ComponentListener {
             public void mouseClicked(MouseEvent e) {
                 for (int i = 0; i < states.size(); i++)
                     if (e.getButton() == 1 && states.get(i).contains(e.getX(), e.getY())) {
-                        current = i + 1;
+                        current = i;
                         updateDisplay();
                         break;
                     }
@@ -1833,10 +1827,10 @@ public final class VizGUI implements ComponentListener {
                 if (!f.exists())
                     throw new IOException("File " + getXMLfilename() + " does not exist.");
 
-                if (current - (statepanes - 1) + i < 0) {
+                if (current + i < 0) {
                     getVizState().set(i, null);
                 } else {
-                    myInstance = StaticInstanceReader.parseInstance(f, current - (statepanes - 1) + i);
+                    myInstance = StaticInstanceReader.parseInstance(f, current + i);
                     if (getVizState().get(i) != null)
                         getVizState().get(i).loadInstance(myInstance);
                     else {

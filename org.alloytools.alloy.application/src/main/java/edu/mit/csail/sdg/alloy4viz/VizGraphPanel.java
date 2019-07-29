@@ -282,7 +282,6 @@ public final class VizGraphPanel extends JPanel {
         split = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, diagramsScrollPanels, navscroll, 0); // [HASLab]
         split.setResizeWeight(1.0);
         split.setDividerSize(0);
-        //        split.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)); // [HASLab] preferred maximal
         add(split);
         remakeAll();
     }
@@ -354,35 +353,25 @@ public final class VizGraphPanel extends JPanel {
         }
         currentProjection = new AlloyProjection(map);
         for (int i = 0; i < vizState.size(); i++) { // [HASLab]
-            if (vizState.get(i) != null) { // [HASLab]
-                JPanel graph = vizState.get(i).getGraph(currentProjection);
-                if (seeDot && (graph instanceof GraphViewer)) {
-                    viewer = null;
-                    JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
-                    diagramScrollPanels.get(i).setViewportView(txt);
-                } else {
-                    if (graph instanceof GraphViewer)
-                        viewer = (GraphViewer) graph;
-                    else
-                        viewer = null;
-                    graphPanels.get(i).removeAll();
-                    graphPanels.get(i).add(graph);
-                    graphPanels.get(i).setBackground(Color.WHITE); // [HASLab]
-                    diagramScrollPanels.get(i).setViewportView(graphPanels.get(i));
-                    diagramScrollPanels.get(i).invalidate();
-                    diagramScrollPanels.get(i).repaint();
-                    diagramScrollPanels.get(i).validate();
-                }
-                vizState.get(i).applyDefaultVar(); // [HASLab] dashed variable elements
-            } else { // [HASLab]
+            JPanel graph = vizState.get(i).getGraph(currentProjection);
+            if (seeDot && (graph instanceof GraphViewer)) {
                 viewer = null;
+                JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
+                diagramScrollPanels.get(i).setViewportView(txt);
+            } else {
+                if (graph instanceof GraphViewer)
+                    viewer = (GraphViewer) graph;
+                else
+                    viewer = null;
                 graphPanels.get(i).removeAll();
-                graphPanels.get(i).setBackground(new Color(210, 210, 210));
+                graphPanels.get(i).add(graph);
+                graphPanels.get(i).setBackground(Color.WHITE); // [HASLab]
                 diagramScrollPanels.get(i).setViewportView(graphPanels.get(i));
                 diagramScrollPanels.get(i).invalidate();
                 diagramScrollPanels.get(i).repaint();
                 diagramScrollPanels.get(i).validate();
             }
+            vizState.get(i).applyDefaultVar(); // [HASLab] dashed variable elements
         }
     }
 
