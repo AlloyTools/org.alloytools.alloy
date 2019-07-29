@@ -282,7 +282,7 @@ public final class VizGraphPanel extends JPanel {
         split = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, diagramsScrollPanels, navscroll, 0); // [HASLab]
         split.setResizeWeight(1.0);
         split.setDividerSize(0);
-        split.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)); // [HASLab] preferred maximal
+        //        split.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)); // [HASLab] preferred maximal
         add(split);
         remakeAll();
     }
@@ -338,23 +338,23 @@ public final class VizGraphPanel extends JPanel {
     public void remakeAll() {
         Map<AlloyType,AlloyAtom> map = new LinkedHashMap<AlloyType,AlloyAtom>();
         navPanel.removeAll();
+        for (AlloyType type : vizState.get(vizState.size() - 1).getProjectedTypes()) { // [HASLab]
+            List<AlloyAtom> atoms = vizState.get(vizState.size() - 1).getOriginalInstance().type2atoms(type);
+            TypePanel tp = type2panel.get(type);
+            if (tp != null && tp.getAlloyAtom() != null && !atoms.contains(tp.getAlloyAtom()))
+                tp = null;
+            if (tp != null && tp.getAlloyAtom() == null && atoms.size() > 0)
+                tp = null;
+            if (tp != null && !tp.upToDate(type, atoms))
+                tp = null;
+            if (tp == null)
+                type2panel.put(type, tp = new TypePanel(type, atoms, null));
+            navPanel.add(tp);
+            map.put(tp.getAlloyType(), tp.getAlloyAtom());
+        }
+        currentProjection = new AlloyProjection(map);
         for (int i = 0; i < vizState.size(); i++) { // [HASLab]
             if (vizState.get(i) != null) { // [HASLab]
-                for (AlloyType type : vizState.get(i).getProjectedTypes()) {
-                    List<AlloyAtom> atoms = vizState.get(i).getOriginalInstance().type2atoms(type);
-                    TypePanel tp = type2panel.get(type);
-                    if (tp != null && tp.getAlloyAtom() != null && !atoms.contains(tp.getAlloyAtom()))
-                        tp = null;
-                    if (tp != null && tp.getAlloyAtom() == null && atoms.size() > 0)
-                        tp = null;
-                    if (tp != null && !tp.upToDate(type, atoms))
-                        tp = null;
-                    if (tp == null)
-                        type2panel.put(type, tp = new TypePanel(type, atoms, null));
-                    navPanel.add(tp);
-                    map.put(tp.getAlloyType(), tp.getAlloyAtom());
-                }
-                currentProjection = new AlloyProjection(map);
                 JPanel graph = vizState.get(i).getGraph(currentProjection);
                 if (seeDot && (graph instanceof GraphViewer)) {
                     viewer = null;
