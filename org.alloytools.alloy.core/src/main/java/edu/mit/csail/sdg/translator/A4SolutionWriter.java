@@ -30,6 +30,7 @@ import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
@@ -37,7 +38,6 @@ import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
-import kodkod.ast.Relation;
 
 /**
  * This helper class contains helper routines for writing an A4Solution object
@@ -106,14 +106,10 @@ public final class A4SolutionWriter {
             while (true) {
                 A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum), state)); // [HASLab]
                 int n = ts.size();
-                if (n <= 0)
+                if (n <= 0 || expr instanceof ExprCall) // [HASLab] hack to allow temporal skolems that refer to atoms outside the current state
                     break;
                 if (lastSize > 0 && lastSize <= n)
-                    if (!(sol.a2k(expr) instanceof Relation) && // [HASLab] hack to support skolems that may not exist in every state
-                        !((Relation) sol.a2k(expr)).isSkolem())
-                        throw new ErrorFatal("An internal error occurred in the evaluator.");
-                    else
-                        break;
+                    throw new ErrorFatal("An internal error occurred in the evaluator.");
                 lastSize = n;
                 Type extra = ts.iterator().next().type();
                 type = type.merge(extra);
