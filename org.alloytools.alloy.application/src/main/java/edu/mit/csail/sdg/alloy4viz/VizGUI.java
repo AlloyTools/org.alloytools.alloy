@@ -1236,7 +1236,7 @@ public final class VizGUI implements ComponentListener {
         if (file == null)
             return null;
         Util.setCurrentDirectory(file.getParentFile());
-        loadXML(file.getPath(), true, 1); // [HASLab]
+        loadXML(file.getPath(), true, 0); // [HASLab]
         return null;
     }
 
