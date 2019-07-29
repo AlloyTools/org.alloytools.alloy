@@ -1225,8 +1225,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (latestAutoInstance.length() > 0) {
             String f = latestAutoInstance;
             latestAutoInstance = "";
-            if (subrunningTask == 2)
-                viz.loadXML(f, true, 1);
+            if (subrunningTask == 2) // [HASLab] move to first state
+                viz.loadXML(f, true, 0);
             else if (subrunningTask == 3) // [HASLab]
                 viz.loadXML(f, true);
             else if (AutoVisualize.get() || subrunningTask == 1)
@@ -1716,7 +1716,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 doStop(2);
                 return arg[0]; // [HASLab]
             }
-            subrunningTask = task.index < 0 ? 2 : 3; // [HASLab]
+            subrunningTask = task.index < 1 ? 2 : 3; // [HASLab]
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);

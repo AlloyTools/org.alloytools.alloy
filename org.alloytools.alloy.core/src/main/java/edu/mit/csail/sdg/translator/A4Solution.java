@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -446,10 +447,18 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
-        if (state >= 0) // [HASLab] simulator
-            inst = old.kEnumerator.branch(state, Collections.emptySet(), true).instance();
-        else
-            inst = old.kEnumerator.next().instance();
+        if (state >= 0) { // [HASLab] simulator, this is a fork
+            Set<Relation> stas = new HashSet<Relation>();
+            Map<Relation,TupleSet> cfgs = new HashMap<Relation,TupleSet>();
+            for (Relation r : ((TemporalInstance) old.eval.instance()).state(0).relations()) {
+                if (!r.isVariable()) {
+                    stas.add(r);
+                    cfgs.put(r, ((TemporalInstance) old.eval.instance()).state(0).tuples(r));
+                }
+            }
+            inst = old.kEnumerator.branch(state, stas, cfgs, true).instance();
+        } else // [HASLab] simulator, this is a next config
+            inst = old.kEnumerator.branch(state, ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(s -> s.isVariable()).collect(Collectors.toSet()), new HashMap<Relation,TupleSet>(), true).instance();
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
@@ -1236,20 +1245,8 @@ public final class A4Solution {
 
         /** {@inheritDoc} */
         // [HASLab] simulator
-        public T branch(int i, Set<Relation> except, boolean exclude) {
-            return iterator.branch(i, except, exclude);
-        }
-
-        /** {@inheritDoc} */
-        // [HASLab] simulator
-        public T branch(int i, Map<Relation,TupleSet> force, boolean exclude) {
-            return iterator.branch(i, force, exclude);
-        }
-
-        /** {@inheritDoc} */
-        // [HASLab] simulator
-        public boolean hasBranch(int i, Map<Relation,TupleSet> force) {
-            return iterator.hasBranch(i, force);
+        public T branch(int i, Set<Relation> except, Map<Relation,TupleSet> force, boolean exclude) {
+            return iterator.branch(i, except, force, exclude);
         }
 
         /** {@inheritDoc} */
