@@ -84,6 +84,7 @@ import edu.mit.csail.sdg.alloy4.Runner;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4graph.GraphViewer;
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.instance.PardinusBounds;
@@ -856,7 +857,6 @@ public final class VizGUI implements ComponentListener {
         closeSettingsButton.setVisible(settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         updateSettingsButton.setVisible(settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         openEvaluatorButton.setVisible(!isMeta && settingsOpen == 0 && evaluator != null);
-        openEvaluatorButton.setEnabled(current != 0); // [HASLab]
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
@@ -865,7 +865,7 @@ public final class VizGUI implements ComponentListener {
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        leftNavButton.setEnabled(current > (settingsOpen == 0 ? 0 : 1)); // [HASLab]
+        leftNavButton.setEnabled(current > 0); // [HASLab]
         leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
         rightNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         rightNavMenu.setEnabled(!isMeta); // [HASLab]
@@ -968,7 +968,7 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab] 
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrent(current - 1); // [HASLab] set evaluator state
+                myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -1434,7 +1434,7 @@ public final class VizGUI implements ComponentListener {
         Formula rels = Formula.TRUE;
         for (Relation r : inst.state(0).relations())
             rels = rels.and(r.eq(r));
-        Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap(), rels);
+        Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap<Object,Expression>(), rels);
         OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4));
         return null;
     }
