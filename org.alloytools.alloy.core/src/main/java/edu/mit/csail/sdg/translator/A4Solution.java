@@ -447,9 +447,9 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
         if (state >= 0) // [HASLab] simulator
-            inst = old.kEnumerator.branch(state, Collections.emptySet(), true).instance();
+            inst = old.kEnumerator.branch(state, ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(s -> !s.isVariable()).collect(Collectors.toSet()), true).instance();
         else
-            inst = old.kEnumerator.next().instance();
+            inst = old.kEnumerator.branch(state, ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(s -> s.isVariable()).collect(Collectors.toSet()), true).instance();
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;

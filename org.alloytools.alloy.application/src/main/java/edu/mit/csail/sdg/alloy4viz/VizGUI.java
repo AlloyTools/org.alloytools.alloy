@@ -128,7 +128,7 @@ public final class VizGUI implements ComponentListener {
     private final JButton       projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
                     loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
                     openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
-                    txtButton, tableButton, leftNavButton, rightNavButton, forkButton/* , dotButton, xmlButton */; // [HASLab]
+                    txtButton, tableButton, leftNavButton, rightNavButton, forkButton, initButton/* , dotButton, xmlButton */; // [HASLab]
 
     /**
      * This list must contain all the display mode buttons (that is, vizButton,
@@ -148,6 +148,10 @@ public final class VizGUI implements ComponentListener {
     /** The "fork next" menu item. */
     // [HASLab]
     private final JMenuItem     forkMenu;
+
+    /** The "fork next" menu item. */
+    // [HASLab]
+    private final JMenuItem     initMenu;
 
     /** The trace navigation menu items. */
     // [HASLab]
@@ -621,8 +625,9 @@ public final class VizGUI implements ComponentListener {
             else
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
-            enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
-            forkMenu = menuItem(instanceMenu, "Fork Next State", 'F', 'F', doFork());
+            enumerateMenu = menuItem(instanceMenu, "Show Next Configuration", 'N', 'N', doNext()); // [HASLab]
+            initMenu = menuItem(instanceMenu, "Show Next Initial State", 'I', 'I', doFork()); // [HASLab]
+            forkMenu = menuItem(instanceMenu, "Fork Next State", 'F', 'F', doFork()); // [HASLab]
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
             rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
@@ -675,8 +680,9 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(magicLayout = OurUtil.button("Magic Layout", "Automatic theme customization (will reset current theme)", "images/24_settings_apply2.gif", doMagicLayout()));
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
-            toolbar.add(enumerateButton = OurUtil.button("Next", "Show the next solution", "images/24_history.gif", doNext()));
-            toolbar.add(forkButton = OurUtil.button("Fork", "Fork the next state", "images/24_history.gif", doFork()));
+            toolbar.add(enumerateButton = OurUtil.button("Next Config", "Show the next solution", "images/24_history.gif", doNext()));
+            toolbar.add(initButton = OurUtil.button("Next Init", "Fork the next state", "images/24_history.gif", doFork())); // [HASLab]
+            toolbar.add(forkButton = OurUtil.button("Fork", "Fork the next state", "images/24_history.gif", doFork())); // [HASLab]
             toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
             toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the previous state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);
@@ -848,6 +854,8 @@ public final class VizGUI implements ComponentListener {
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
+        initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]

@@ -611,7 +611,7 @@ final class SimpleReporter extends A4Reporter {
             }
             int tries = 0;
             while (true) {
-                if (this.index >= 0) {
+                if (this.index >= -1) {
                     latestKodkods.clear();
                     sol = sol.fork(this.index); // [HASLab] simulator
                 } else
