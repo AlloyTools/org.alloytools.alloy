@@ -113,11 +113,11 @@ public final class MacUtil {
         //        for (Method m : Application.class.getMethods()) {
         //            System.out.println(m);
         //        }
-        try {
-            Application.getApplication().addAboutMenuItem();
-        } catch (Throwable e) {
-            System.err.println("cannot add about menus");
-        }
+        //        try {
+        //            //Application.getApplication().addAboutMenuItem();
+        //        } catch (Throwable e) {
+        //            System.err.println("cannot add about menus");
+        //        }
         try {
             Application.getApplication().addPreferencesMenuItem();
         } catch (Throwable e) {
@@ -127,19 +127,10 @@ public final class MacUtil {
             Application.getApplication().addApplicationListener(new ApplicationAdapter() {
 
                 @Override
-                public void handleAbout(ApplicationEvent ae) {
-                    simpleGUI.doAbout();
-                }
-
-                @Override
                 public void handlePreferences(ApplicationEvent ae) {
                     simpleGUI.doPreferences();
                 }
 
-                @Override
-                public void handleQuit(ApplicationEvent arg0) {
-                    simpleGUI.doQuit();
-                }
             });
         } catch (Throwable e) {
             System.err.println("cannot add app listener");
