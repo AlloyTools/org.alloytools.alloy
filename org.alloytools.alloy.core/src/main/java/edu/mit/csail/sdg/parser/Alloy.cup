@@ -359,10 +359,10 @@ action code {:
           if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
           if (j.label.equals("Time")) { // [HASLab] process time scopes
+              if (s.get(i).endingScope == Integer.MAX_VALUE && s.get(i).startingScope != 1) throw new ErrorSyntax(j.pos, "Unbounded time scope must start at 1.");
+        	  if (s.get(i).increment != 1) throw new ErrorSyntax(j.pos, "Unbounded time must increment by 1."); 
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "The time cannot be specified more than once."); 
         	  maxtime=k; 
-        	  if (maxtime == Integer.MAX_VALUE && s.get(i).startingScope != 1) throw new ErrorSyntax(j.pos, "Unbounded time scope must start at 1."); 
-        	  if (s.get(i).increment != 1) throw new ErrorSyntax(j.pos, "Unbounded time must increment by 1."); 
         	  if (s.get(i).isExact) mintime = k; 
         	  else if (s.get(i).endingScope == s.get(i).startingScope) mintime = 1;
         	  else { maxtime = s.get(i).endingScope; mintime = s.get(i).startingScope; }
