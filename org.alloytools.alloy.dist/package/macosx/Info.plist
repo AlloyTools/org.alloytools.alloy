@@ -37,7 +37,7 @@
   <key>JVMRuntime</key>
   <string>jdk1.8.0_144.jdk</string>
   <key>JVMMainClassName</key>
-  <string>edu.mit.csail.sdg.alloy4whole.AlloyTools</string>
+  <string>edu.mit.csail.sdg.alloy4whole.Alloy</string>
   <key>JVMAppClasspath</key>
   <string></string>
   <key>JVMMainJarName</key>

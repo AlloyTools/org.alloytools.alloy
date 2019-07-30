@@ -11,7 +11,7 @@ task macos( dependsOn: jar, type: JavaExec ) {
 			'-BappVersion=5.1.0',
 			'-native', 'pkg',
 				'-srcfiles', 'target/org.alloytools.alloy.dist.jar', 
-				'-appclass', 'edu.mit.csail.sdg.alloy4whole.AlloyTools', 
+				'-appclass', 'edu.mit.csail.sdg.alloy4whole.Alloy', 
 				'-name', 'Alloy',
 	 			'-outdir', 'target', 
 				'-outfile', 'alloy',
