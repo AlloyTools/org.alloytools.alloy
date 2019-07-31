@@ -457,8 +457,10 @@ public final class A4Solution {
                 }
             }
             inst = old.kEnumerator.branch(state, stas, cfgs, true).instance();
-        } else // [HASLab] simulator, this is a next config
+        } else if (state == -1) // [HASLab] simulator, this is a next config
             inst = old.kEnumerator.branch(state, ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(s -> s.isVariable()).collect(Collectors.toSet()), new HashMap<Relation,TupleSet>(), true).instance();
+        else
+            inst = old.kEnumerator.next().instance();
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
@@ -1734,7 +1736,7 @@ public final class A4Solution {
         if (eval == null)
             return this;
         if (nextCache == null)
-            nextCache = new A4Solution(this, -1);
+            nextCache = new A4Solution(this, -2);
         return nextCache;
     }
 

@@ -135,7 +135,7 @@ public final class VizGUI implements ComponentListener {
     private final JButton       projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
                     loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
                     openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
-                    txtButton, tableButton, leftNavButton, rightNavButton, forkButton, initButton/* , dotButton, xmlButton */; // [HASLab]
+                    txtButton, tableButton, leftNavButton, rightNavButton, cnfgButton, forkButton, initButton/* , dotButton, xmlButton */; // [HASLab]
 
     /**
      * This list must contain all the display mode buttons (that is, vizButton,
@@ -151,6 +151,10 @@ public final class VizGUI implements ComponentListener {
 
     /** The "show next" menu item. */
     private final JMenuItem     enumerateMenu;
+
+    /** The "fork next" menu item. */
+    // [HASLab]
+    private final JMenuItem     cnfgMenu;
 
     /** The "fork next" menu item. */
     // [HASLab]
@@ -633,7 +637,8 @@ public final class VizGUI implements ComponentListener {
             else
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
-            enumerateMenu = menuItem(instanceMenu, "Show Next Configuration", 'N', 'N', doNext()); // [HASLab]
+            enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
+            cnfgMenu = menuItem(instanceMenu, "Show Next Configuration", 'C', 'C', doConfig()); // [HASLab]
             initMenu = menuItem(instanceMenu, "Show Next Initial State", 'I', 'I', doInit()); // [HASLab]
             forkMenu = menuItem(instanceMenu, "Fork Next State", 'F', 'F', doFork()); // [HASLab]
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
@@ -688,7 +693,8 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(magicLayout = OurUtil.button("Magic Layout", "Automatic theme customization (will reset current theme)", "images/24_settings_apply2.gif", doMagicLayout()));
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
-            toolbar.add(enumerateButton = OurUtil.button("Next Config", "Show the next configuration", "images/24_history.gif", doNext())); // [HASLab]
+            toolbar.add(enumerateButton = OurUtil.button("Next", "Show the next solution", "images/24_history.gif", doNext()));
+            toolbar.add(cnfgButton = OurUtil.button("Next Config", "Show the next initial state", "images/24_history.gif", doConfig())); // [HASLab]
             toolbar.add(initButton = OurUtil.button("Next Init", "Show the next initial state", "images/24_history.gif", doInit())); // [HASLab]
             toolbar.add(forkButton = OurUtil.button("Fork", "Show the next state", "images/24_history.gif", doFork())); // [HASLab]
             toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
@@ -859,10 +865,16 @@ public final class VizGUI implements ComponentListener {
         openEvaluatorButton.setVisible(!isMeta && settingsOpen == 0 && evaluator != null);
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
-        enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null);
+        enumerateMenu.setVisible(!isTrace); // [HASLab]
+        enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && !isTrace); // [HASLab]
         initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        initMenu.setVisible(isTrace); // [HASLab]
         initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
+        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        cnfgMenu.setVisible(isTrace); // [HASLab]
+        cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        forkMenu.setVisible(isTrace); // [HASLab]
         forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
         leftNavButton.setEnabled(current > 0); // [HASLab]
@@ -1537,6 +1549,31 @@ public final class VizGUI implements ComponentListener {
      * This method attempts to derive the next satisfying instance.
      */
     private Runner doNext() {
+        if (wrap)
+            return wrapMe();
+        if (settingsOpen != 0)
+            return null;
+        if (xmlFileName.length() == 0) {
+            OurDialog.alert("Cannot display the next solution since no instance is currently loaded.");
+        } else if (enumerator == null) {
+            OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
+        } else {
+            try {
+                enumerator.compute(new String[] { // [HASLab]
+                                                 xmlFileName, -2 + ""
+                });
+            } catch (Throwable ex) {
+                OurDialog.alert(ex.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This method attempts to derive the next satisfying instance.
+     */
+    // [HASLab]
+    private Runner doConfig() {
         if (wrap)
             return wrapMe();
         if (settingsOpen != 0)
