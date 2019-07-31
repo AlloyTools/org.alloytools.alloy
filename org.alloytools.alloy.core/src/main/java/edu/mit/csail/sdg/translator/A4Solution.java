@@ -110,7 +110,8 @@ import kodkod.util.ints.IndexedEntry;
  * a staging area for the solver before generating the solution. Once solve()
  * has been called, then this object becomes immutable after that.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-unbounded
  */
 
 public final class A4Solution {
