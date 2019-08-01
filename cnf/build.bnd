@@ -1,0 +1,76 @@
+#
+# This file is left open for you to define your macros
+#
+
+src:          			src/main/java
+bin:          			target/classes
+testsrc:      			src/test/java
+testbin:      			target/test-classes
+target-dir:   			target
+
+javac.source:           1.8
+javac.target:           ${javac.source}
+javac.compliance:       ${javac.source}
+javac.debug:            on
+
+Git-Descriptor:         	${system-allow-fail;git describe --dirty --always}
+Git-SHA:                	${system-allow-fail;git rev-list -1 HEAD}
+
+Bundle-Copyright: 		MIT
+Bundle-Vendor:			AlloyTools at Github
+Bundle-DocURL: 			http://alloytools.org
+Bundle-License:			MIT
+
+base.version:           5.1.0
+Bundle-Version:         ${base.version}.${tstamp}
+
+# Remove -SNAPSHOT for release version
+-pom:                   version=${base.version}-SNAPSHOT
+-groupid:               org.alloytools
+
+
+#
+# Access Maven Central + OSGi snapshots
+#
+
+-plugin.4.Central:  \
+	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+		snapshotUrls=https://oss.sonatype.org/content/groups/osgi; \
+		releaseUrls=https://repo1.maven.org/maven2/; \
+		pom=${build}/central.xml; \
+		name=Central; \
+		location=${build}/cache/enroute-central.xml
+	        
+#
+# Release to Nexus
+#
+
+-plugin.8.nexus: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		snapshotUrl=https://oss.sonatype.org/content/repositories/snapshots/; \
+		releaseUrl= 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'; \
+		index=${.}/osgi-nexus.maven; \
+		name="Nexus"
+
+-releaserepo: Nexus
+
+# On Travis, you can set the secret as follows
+# travis encrypt REPOSITORY_USERNAME=<user> REPOSITORY_PASSWORD=<passwd> and add to env: \  secure:  
+
+pwd = ${env;REPOSITORY_PASSWORD;}
+usr = ${env;REPOSITORY_USERNAME;}
+
+-connection-settings: ${if;${pwd};server;-dummy};id=https://oss.sonatype.org;username=${usr};password=${pwd}, -bnd
+
+
+# 
+# Install a copy in the local Maven repository (~/.m2/repository)
+#
+
+-plugin.A.local: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name='Local';\
+        noupdateOnRelease=true
+
+-buildrepo: Local
+
