@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "alloy")
-public class Alloy
+public class AlloySolution
 {
     @XmlElement(name = "instance")
     @JsonProperty("instances")
@@ -48,18 +48,18 @@ public class Alloy
 
     public void writeToXml(String xmlFile) throws JAXBException
     {
-        JAXBContext context = JAXBContext.newInstance(Alloy.class);
+        JAXBContext context = JAXBContext.newInstance(AlloySolution.class);
         Marshaller marshaller = context.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         marshaller.marshal(this, new File(xmlFile));
     }
 
-    public static Alloy readFromXml(String xmlFile) throws JAXBException
+    public static AlloySolution readFromXml(String xmlFile) throws JAXBException
     {
-        JAXBContext context = JAXBContext.newInstance(Alloy.class);
+        JAXBContext context = JAXBContext.newInstance(AlloySolution.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
-        Alloy alloy = (Alloy) unmarshaller.unmarshal(new File(xmlFile));
-        return alloy;
+        AlloySolution alloySolution = (AlloySolution) unmarshaller.unmarshal(new File(xmlFile));
+        return alloySolution;
     }
 
     public void writeToJson(String jsonFile) throws IOException
@@ -68,10 +68,10 @@ public class Alloy
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(jsonFile), this);
     }
 
-    public static Alloy readFromJson(String jsonFile) throws IOException
+    public static AlloySolution readFromJson(String jsonFile) throws IOException
     {
         ObjectMapper objectMapper = new ObjectMapper();
-        Alloy alloy = objectMapper.readValue(new File(jsonFile), Alloy.class);
-        return alloy;
+        AlloySolution alloySolution = objectMapper.readValue(new File(jsonFile), AlloySolution.class);
+        return alloySolution;
     }
 }

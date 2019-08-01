@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.mit.csail.sdg.alloy4whole.instances.Alloy;
+import edu.mit.csail.sdg.alloy4whole.instances.AlloySolution;
 import org.alloytools.alloy.core.AlloyCore;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -260,8 +260,8 @@ final class SimpleReporter extends A4Reporter {
                 // generate model constraints
                 try
                 {
-                    Alloy alloy = Alloy.readFromXml(filename);
-                    String constraints = alloy.instances.get(0).generateAlloyCode();
+                    AlloySolution alloySolution = AlloySolution.readFromXml(filename);
+                    String constraints = alloySolution.instances.get(0).generateAlloyCode();
                     span.log("Generated " + (chk ? "Counterexample" : "Instance"));
 
                     span.logLink(" constraints", "MSG: " + constraints);

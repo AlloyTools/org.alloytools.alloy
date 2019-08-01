@@ -2,10 +2,9 @@ package edu.mit.csail.sdg.alloy4whole;
 
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4.WorkerEngine;
-import edu.mit.csail.sdg.alloy4whole.instances.Alloy;
+import edu.mit.csail.sdg.alloy4whole.instances.AlloySolution;
 import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.Utils;
-import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.SmtModel;
 import edu.uiowa.alloy2smt.translators.Translation;
@@ -23,7 +22,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
 {
     private final String xmlFileName;
     private Translation translation;
-    private Alloy alloy;
+    private AlloySolution alloySolution;
     private Map<String, String> alloyFiles;
     private int commandIndex;
     private String originalFileName;
@@ -45,15 +44,15 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
             }
 
             // read the solution from the xml file
-            alloy = Alloy.readFromXml(xmlFileName);
-            alloyFiles = alloy.getAlloyFiles();
-            if (alloy.instances.size() == 0)
+            alloySolution = AlloySolution.readFromXml(xmlFileName);
+            alloyFiles = alloySolution.getAlloyFiles();
+            if (alloySolution.instances.size() == 0)
             {
                 throw new Exception("No instance found in the file " + xmlFileName);
             }
             // read the command from the only instance in the file
-            String command      = alloy.instances.get(0).command;
-            originalFileName    = alloy.instances.get(0).fileName;
+            String command      = alloySolution.instances.get(0).command;
+            originalFileName    = alloySolution.instances.get(0).fileName;
 
             translation = translateToSMT();
 
@@ -76,7 +75,7 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
                     case "sat":
                         // get a new model and save it
                         prepareInstance(commandIndex);
-                        // tell alloy user interface that the last instance has changed
+                        // tell alloySolution user interface that the last instance has changed
                         workerCallback.callback(new Object[]{"declare", xmlFileName});
                         break;
                     case "unsat":
@@ -114,6 +113,6 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
         String xmlFilePath  = xmlFile.getAbsolutePath();
 
         Cvc4Task.writeModelToAlloyXmlFile(translation, model, xmlFilePath,
-                originalFileName, command, alloy.getAlloyFiles());
+                originalFileName, command, alloySolution.getAlloyFiles());
     }
 }

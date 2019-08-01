@@ -363,18 +363,18 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         instance.fileName = originalFileName;
 
-        Alloy alloy = new Alloy();
-        alloy.instances = new ArrayList<>();
-        alloy.instances.add(instance);
-        alloy.buildDate = java.time.Instant.now().toString();
-        alloy.alloyFiles = new ArrayList<>();
+        AlloySolution alloySolution = new AlloySolution();
+        alloySolution.instances = new ArrayList<>();
+        alloySolution.instances.add(instance);
+        alloySolution.buildDate = java.time.Instant.now().toString();
+        alloySolution.alloyFiles = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : alloyFiles.entrySet())
         {
-            alloy.alloyFiles.add(new AlloyFile(entry.getKey(), entry.getValue()));
+            alloySolution.alloyFiles.add(new AlloyFile(entry.getKey(), entry.getValue()));
         }
 
-        alloy.writeToXml(xmlFileName);
+        alloySolution.writeToXml(xmlFileName);
         return instance;
     }
 
