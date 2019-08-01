@@ -261,6 +261,13 @@ final class SimpleReporter extends A4Reporter {
                 try
                 {
                     AlloySolution alloySolution = AlloySolution.readFromXml(filename);
+
+                    span.log("Generated xml instance file: ");
+
+                    span.logLink(filename, "CNF: " + filename);
+
+                    span.log("\n");
+
                     String constraints = alloySolution.instances.get(0).generateAlloyCode();
                     span.log("Generated " + (chk ? "Counterexample" : "Instance"));
 
