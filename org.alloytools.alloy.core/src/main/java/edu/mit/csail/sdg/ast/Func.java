@@ -286,6 +286,11 @@ public final class Func extends Browsable implements Clause {
 
     @Override
     public String explain() {
+        if (clean(label).contains("run$")) {
+            return null;
+        }
+
+
         StringBuilder sb = new StringBuilder();
         if (isPred)
             sb.append("pred ");

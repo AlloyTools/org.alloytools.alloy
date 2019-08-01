@@ -472,11 +472,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     /** Called when this window is shown. */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Called when this window is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Wraps the calling method into a Runnable whose run() will call the calling
@@ -590,7 +592,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             };
             try {
                 Runtime.getRuntime().exec(args).waitFor();
-            } catch (Throwable ex) {} // We only intend to make a best effort.
+            } catch (Throwable ex) {
+            } // We only intend to make a best effort.
         }
         return alloyHome = ans;
     }
@@ -975,7 +978,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             SwingUtilities.updateComponentTreeUI(frame);
             SwingUtilities.updateComponentTreeUI(prefDialog);
             SwingUtilities.updateComponentTreeUI(viz.getFrame());
-        } catch (Throwable e) {}
+        } catch (Throwable e) {
+        }
         return null;
     }
 
@@ -1482,7 +1486,46 @@ public final class SimpleGUI implements ComponentListener, Listener {
     public Runner doAbout() {
         if (wrap)
             return wrapMe();
-        OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+
+        // Old about message
+        // OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+
+        OurDialog.showmsg(
+        // @formatter:off
+            "About Alloy Analyzer " + Version.version(),
+            // OurUtil.loadIcon("images/logo.gif"),
+            "<html><b>Alloy Analyzer " + Version.version() + "</b>",
+            "",
+            "Project Lead: Daniel Jackson",
+            "Chief Developer: Aleksandar Milicevic",
+            "Kodkod Engine: Emina Torlak",
+            "Open Source: Peter Kriens",
+            " ",
+            "<html>For more information about Alloy, visit <a href=\"http://alloytools.org\">http://alloytools.org</a></html>",
+            " ",
+            "Questions and comments about Alloy are welcome at the community forum:",
+            "<html>Alloy Community Forum: <a href=\"https://groups.google.com/forum/#!forum/alloytools\">https://groups.google.com/forum/#!forum/alloytools</a>",
+            " ",
+            "<html>Alloy experts also respond to <a href=\"www.stackoverflow.com\">StackOverflow</a> questions tagged <code>#alloy</code>.</html>",
+            " ",
+            "Major contributions to earlier versions of Alloy were made by: Felix Chang (v4);",
+            "Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater, Derek Rayside, Greg Dennis,",
+            "Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz Khurshid (v3); Manu Sridharan",
+            "(v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,",
+            "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, Uriel",
+            "Schafer (v1).",
+            " ",
+            "The development of Alloy was funded by part by the National Science Foundation under",
+            "Grant Nos. 0325283, 0541183, 0438897 and 0707612; by the Air Force Research Laboratory",
+            "(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence",
+            "Community Information Assurance Research (NICIAR) Program; and by the Nokia",
+            "Corporation as part of a collaboration between Nokia Research and MIT CSAIL.",
+            " ",
+            "Build Date: " + Version.buildDate(),
+            "Git Commit: " + Version.commit
+            // @formatter:on
+        );
+
         return null;
     }
 
@@ -1520,7 +1563,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
                                                             // occur
                         html2.setPage(e.getURL());
                         html2.requestFocusInWindow();
-                    } catch (Throwable ex) {}
+                    } catch (Throwable ex) {
+                    }
                 }
             };
             html1.setEditable(false);
@@ -2064,8 +2108,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             windowmenu = menu(bar, "&Window", doRefreshWindow(false));
             windowmenu2 = menu(null, "&Window", doRefreshWindow(true));
             helpmenu = menu(bar, "&Help", null);
-            if (!Util.onMac())
-                menuItem(helpmenu, "About Alloy...", 'A', doAbout());
+            menuItem(helpmenu, "About Alloy...", 'A', doAbout());
             menuItem(helpmenu, "Quick Guide", 'Q', doHelp());
             menuItem(helpmenu, "See the Copyright Notices...", 'L', doLicense());
         } finally {
@@ -2128,7 +2171,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold("Alloy Analyzer " + Version.version() + " (build date: " + Version.buildDate() + " git " + Version.commit + ")\n\n");
+        log.logBold("Alloy Analyzer " + Version.version() + " git " + Version.commit + ")\n\n");
 
         // If on Mac, then register an application listener
         try {
@@ -2155,7 +2198,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             java.lang.reflect.Field old = ClassLoader.class.getDeclaredField("usr_paths");
             old.setAccessible(true);
             old.set(null, newarray);
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
 
         // Pre-load the preferences dialog
         prefDialog = new PreferencesDialog(log, binary);
