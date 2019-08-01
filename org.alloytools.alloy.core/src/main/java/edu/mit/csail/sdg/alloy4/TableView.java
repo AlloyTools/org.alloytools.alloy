@@ -144,6 +144,8 @@ public class TableView {
 
         Map<String,Table> map = new HashMap<String,Table>();
 
+        Map<String, String> atomToName = solution.getAtomToName();
+
         for (Sig s : sigs) {
 
             if (!s.label.startsWith("this/"))
@@ -152,7 +154,7 @@ public class TableView {
             TupleSet instanceTuples = instance.tuples(s.label);
             if (instanceTuples != null) {
 
-                SimTupleset sigInstances = toSimTupleset(instanceTuples);
+                SimTupleset sigInstances = toSimTupleset(instanceTuples, atomToName);
                 Table table = new Table(sigInstances.size() + 1, s.getFields().size() + 1, 1);
                 table.set(0, 0, s.label);
 
@@ -255,18 +257,27 @@ public class TableView {
         return SimTuple.make(atoms);
     }
 
-    private static SimTupleset toSimTupleset(TupleSet tupleSet) {
+    private static SimTupleset toSimTupleset(TupleSet tupleSet, Map<String, String> atomToName) {
         List<SimTuple> l = new ArrayList<>();
         for (Tuple tuple : tupleSet) {
-            l.add(toSimTuple(tuple));
+            l.add(toSimTuple(tuple, atomToName));
         }
         return SimTupleset.make(l);
     }
 
-    private static SimTuple toSimTuple(Tuple tuple) {
+    private static SimTuple toSimTuple(Tuple tuple, Map<String, String> atomToName)
+    {
         List<SimAtom> atoms = new ArrayList<>();
-        for (int i = 0; i < tuple.arity(); i++) {
-            SimAtom atom = SimAtom.make(tuple.atom(i).toString());
+        for (int i = 0; i < tuple.arity(); i++)
+        {
+            String atomName = tuple.atom(i).toString();
+
+            if(atomToName.containsKey(atomName))
+            {
+                atomName = atomToName.get(tuple.atom(i).toString());
+            }
+
+            SimAtom atom = SimAtom.make(atomName);
             atoms.add(atom);
         }
         return SimTuple.make(atoms);

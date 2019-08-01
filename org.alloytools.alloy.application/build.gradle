@@ -1,0 +1,30 @@
+dependencies {
+    compile project(':org.alloytools.alloy.core'), fileTree(dir: 'lib', include: ['*.jar'])
+    compile project(':org.alloytools.alloy.extra')
+    compile project(':alloy2smt')
+}
+
+task alloyCVC4(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'edu.mit.csail.sdg.alloy4whole.AlloyTools'
+    }
+    baseName = 'alloy_cvc4'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+compileJava.finalizedBy alloyCVC4
+
+// copy the application jar to bin
+task copyAlloyCVC4(type: Copy) {
+    from "${buildDir}/libs/alloy_cvc4.jar"
+    into "${rootProject.projectDir}/bin"
+}
+
+alloyCVC4.finalizedBy copyAlloyCVC4
+
+task removeAlloyCVC4(type: Delete) {
+    delete "${rootProject.projectDir}/bin/alloy_cvc4.jar"
+}
+
+clean.finalizedBy removeAlloyCVC4

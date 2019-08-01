@@ -1,0 +1,50 @@
+apply plugin: "java"
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile project(':org.alloytools.alloy.core')
+    
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+
+    // https://mvnrepository.com/artifact/org.antlr/antlr4-runtime
+    compile group: 'org.antlr', name: 'antlr4-runtime', version: '4.7.2'
+
+    // https://mvnrepository.com/artifact/javax.activation/activation
+    compile group: 'javax.activation', name: 'activation', version: '1.1.1'
+
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
+    // https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl
+    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1'
+
+    // https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-core
+    compile group: 'org.glassfish.jaxb', name: 'jaxb-core', version: '2.3.0.1'
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.4.0-M1'
+}
+
+task alloy2smtWithDependencies(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'edu.uiowa.alloy2smt.Main'
+    }
+    baseName = 'alloy2smt_with_dependencies'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+compileJava.finalizedBy alloy2smtWithDependencies

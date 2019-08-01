@@ -298,7 +298,7 @@ distclean-libtool:
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
-# To change the values of `make' variables: instead of editing Makefiles,
+# To change the values of `make' declarations: instead of editing Makefiles,
 # (1) if the variable is set in `config.status', edit `config.status'
 #     (which will cause the Makefiles to be regenerated when you run `make');
 # (2) otherwise, pass the desired values on the `make' command line.
@@ -750,6 +750,6 @@ uninstall-am:
 all-local: cmsat
 	cp cmsat/cryptominisat .
 
-# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Tell versions [3.59,3.63) of GNU make to not export all declarations.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

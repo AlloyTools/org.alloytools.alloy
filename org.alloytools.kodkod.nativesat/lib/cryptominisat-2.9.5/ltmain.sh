@@ -32,7 +32,7 @@
 #
 # Provide generalized library-building support services.
 #
-#       --config             show all configuration variables
+#       --config             show all configuration declarations
 #       --debug              enable verbose shell tracing
 #   -n, --dry-run            display commands without modifying any files
 #       --features           display basic configuration information and exit
@@ -42,7 +42,7 @@
 #       --no-quiet, --no-silent
 #                            print informational messages (default)
 #       --no-warn            don't display warning messages
-#       --tag=TAG            use configuration variables from tag TAG
+#       --tag=TAG            use configuration declarations from tag TAG
 #   -v, --verbose            print more informational messages than default
 #       --no-verbose         don't print the extra informational messages
 #       --version            print version information
@@ -144,7 +144,7 @@ test "${ECHO+set}" = set || ECHO=${as_echo-'printf %s\n'}
 : ${SHELL="${CONFIG_SHELL-/bin/sh}"}
 : ${Xsed="$SED -e 1s/^X//"}
 
-# Global variables:
+# Global declarations:
 EXIT_SUCCESS=0
 EXIT_FAILURE=1
 EXIT_MISMATCH=63  # $? = 63 is used to indicate version mismatch to missing.
@@ -795,7 +795,7 @@ func_missing_arg ()
 
 # func_split_short_opt shortopt
 # Set func_split_short_opt_name and func_split_short_opt_arg shell
-# variables after splitting SHORTOPT after the 2nd character.
+# declarations after splitting SHORTOPT after the 2nd character.
 func_split_short_opt ()
 {
     my_sed_short_opt='1s/^\(..\).*$/\1/;q'
@@ -808,7 +808,7 @@ func_split_short_opt ()
 
 # func_split_long_opt longopt
 # Set func_split_long_opt_name and func_split_long_opt_arg shell
-# variables after splitting LONGOPT at the `=' sign.
+# declarations after splitting LONGOPT at the `=' sign.
 func_split_long_opt ()
 {
     my_sed_long_opt='1s/^\(--[^=]*\)=.*/\1/;q'
@@ -827,7 +827,7 @@ exit_cmd=:
 magic="%%%MAGIC variable%%%"
 magic_exe="%%%MAGIC EXE variable%%%"
 
-# Global variables.
+# Global declarations.
 nonopt=
 preserve_args=
 lo2o="s/\\.lo\$/.${objext}/"
@@ -2620,7 +2620,7 @@ func_mode_execute ()
 	eval "export $shlibpath_var"
       fi
 
-      # Restore saved environment variables
+      # Restore saved environment declarations
       for lt_var in LANG LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES
       do
 	eval "if test \"\${save_$lt_var+set}\" = set; then
@@ -2906,7 +2906,7 @@ func_mode_install ()
       ;;
     esac
 
-    # This variable tells wrapper scripts just to set variables rather
+    # This variable tells wrapper scripts just to set declarations rather
     # than running their programs.
     libtool_install_magic="$magic"
 
@@ -3117,7 +3117,7 @@ func_mode_install ()
 
 	  func_source "$wrapper"
 
-	  # Check the variables that should have been set.
+	  # Check the declarations that should have been set.
 	  test -z "$generated_by_libtool_version" && \
 	    func_fatal_error "invalid libtool wrapper script \`$wrapper'"
 
@@ -3825,7 +3825,7 @@ func_extract_archives ()
 # Don't directly open a file because we may want to
 # incorporate the script contents within a cygwin/mingw
 # wrapper executable.  Must ONLY be called from within
-# func_mode_link because it depends on a number of variables
+# func_mode_link because it depends on a number of declarations
 # set therein.
 #
 # ARG is the value that the WRAPPER_SCRIPT_BELONGS_IN_OBJDIR
@@ -3875,7 +3875,7 @@ relink_command=\"$relink_command\"
 
 # This environment variable determines our operation mode.
 if test \"\$libtool_install_magic\" = \"$magic\"; then
-  # install mode needs the following variables:
+  # install mode needs the following declarations:
   generated_by_libtool_version='$macro_version'
   notinst_deplibs='$notinst_deplibs'
 else
@@ -6410,7 +6410,7 @@ func_mode_link ()
 	old_library=
 	inherited_linker_flags=
 	# If the library was installed with an old release of libtool,
-	# it will not redefine variables installed, or shouldnotlink
+	# it will not redefine declarations installed, or shouldnotlink
 	installed=yes
 	shouldnotlink=no
 	avoidtemprpath=
@@ -6792,7 +6792,7 @@ func_mode_link ()
 	      func_verbose "generating import library for \`$soname'"
 	      func_execute_cmds "$old_archive_from_expsyms_cmds" 'exit $?'
 	    fi
-	    # make sure the library variables are pointing to the new library
+	    # make sure the library declarations are pointing to the new library
 	    dir=$output_objdir
 	    linklib=$newlib
 	  fi # test -n "$old_archive_from_expsyms_cmds"
@@ -7235,7 +7235,7 @@ func_mode_link ()
       test -n "$export_symbols$export_symbols_regex" && \
 	func_warning "\`-export-symbols' is ignored for archives"
 
-      # Now set the variables for building old libraries.
+      # Now set the declarations for building old libraries.
       build_libtool_libs=no
       oldlibs="$output"
       func_append objs "$old_deplibs"
@@ -7394,7 +7394,7 @@ func_mode_link ()
 	  func_fatal_error "\`$vinfo' is not valid version information"
 	fi
 
-	# Calculate the version variables.
+	# Calculate the version declarations.
 	major=
 	versuffix=
 	verstring=
@@ -7572,7 +7572,7 @@ func_mode_link ()
 	  func_show_eval "${RM}r \$removelist"
       fi
 
-      # Now set the variables for building old libraries.
+      # Now set the declarations for building old libraries.
       if test "$build_old_libs" = yes && test "$build_libtool_libs" != convenience ; then
 	func_append oldlibs " $output_objdir/$libname.$libext"
 
@@ -8034,7 +8034,7 @@ EOF
       done
       deplibs="$new_libs"
 
-      # All the library-specific variables (install_libdir is set above).
+      # All the library-specific declarations (install_libdir is set above).
       library_names=
       old_library=
       dlname=
@@ -8235,7 +8235,7 @@ EOF
 	  # FIXME: $output_objdir/$libname.filter potentially contains lots of
 	  # 's' commands which not all seds can handle. GNU sed should be fine
 	  # though. Also, the filter scales superlinearly with the number of
-	  # global variables. join(1) would be nice here, but unfortunately
+	  # global declarations. join(1) would be nice here, but unfortunately
 	  # isn't a blessed tool.
 	  $opt_dry_run || $SED -e '/[ ,]DATA/!d;s,\(.*\)\([ \,].*\),s|^\1$|\1\2|,' < $export_symbols > $output_objdir/$libname.filter
 	  func_append delfiles " $export_symbols $output_objdir/$libname.filter"
@@ -8484,7 +8484,7 @@ EOF
 	      # FIXME: $output_objdir/$libname.filter potentially contains lots of
 	      # 's' commands which not all seds can handle. GNU sed should be fine
 	      # though. Also, the filter scales superlinearly with the number of
-	      # global variables. join(1) would be nice here, but unfortunately
+	      # global declarations. join(1) would be nice here, but unfortunately
 	      # isn't a blessed tool.
 	      $opt_dry_run || $SED -e '/[ ,]DATA/!d;s,\(.*\)\([ \,].*\),s|^\1$|\1\2|,' < $export_symbols > $output_objdir/$libname.filter
 	      func_append delfiles " $export_symbols $output_objdir/$libname.filter"
@@ -9009,7 +9009,7 @@ EOF
 
       # Quote the relink command for shipping.
       if test -n "$relink_command"; then
-	# Preserve any variables that may affect compiler behavior
+	# Preserve any declarations that may affect compiler behavior
 	for var in $variables_saved_for_relink; do
 	  if eval test -z \"\${$var+set}\"; then
 	    relink_command="{ test -z \"\${$var+set}\" || $lt_unset $var || { $var=; export $var; }; }; $relink_command"
@@ -9252,7 +9252,7 @@ EOF
       test "$build_old_libs" = yes && old_library="$libname.$libext"
       func_verbose "creating $output"
 
-      # Preserve any variables that may affect compiler behavior
+      # Preserve any declarations that may affect compiler behavior
       for var in $variables_saved_for_relink; do
 	if eval test -z \"\${$var+set}\"; then
 	  relink_command="{ test -z \"\${$var+set}\" || $lt_unset $var || { $var=; export $var; }; }; $relink_command"
@@ -9365,7 +9365,7 @@ EOF
 	  # systems that can't hard-code library paths into their executables
 	  # and that have no shared library path variable independent of PATH,
 	  # but it turns out we can't easily determine that from inspecting
-	  # libtool variables, so we have to hard-code the OSs to which it
+	  # libtool declarations, so we have to hard-code the OSs to which it
 	  # applies here; at the moment, that means platforms that use the PE
 	  # object format with DLL files.  See the long comment at the top of
 	  # tests/bindir.at for full details.
@@ -9453,7 +9453,7 @@ func_mode_uninstall ()
     rmforce=
     exit_status=0
 
-    # This variable tells wrapper scripts just to set variables rather
+    # This variable tells wrapper scripts just to set declarations rather
     # than running their programs.
     libtool_install_magic="$magic"
 

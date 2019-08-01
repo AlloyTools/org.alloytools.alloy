@@ -15,35 +15,7 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerHeight;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerWidth;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerX;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerY;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model0;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model1;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model2;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model3;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Welcome;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
 import static java.awt.event.KeyEvent.VK_A;
@@ -63,11 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
@@ -565,7 +533,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /**
-     * This variable caches the result of alloyHome() function call.
+     * This variable caches the satResult of alloyHome() function call.
      */
     private static String alloyHome = null;
 
@@ -1158,7 +1126,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (i >= commands.size())
             i = commands.size() - 1;
         SimpleCallback1 cb = new SimpleCallback1(this, null, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
-        SimpleTask1 task = new SimpleTask1();
+
         A4Options opt = new A4Options();
         opt.tempDirectory = alloyHome() + fs + "tmp";
         opt.solverDirectory = alloyHome() + fs + "binary";
@@ -1171,12 +1139,24 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.coreGranularity = CoreGranularity.get();
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.solver = Solver.get();
-        task.bundleIndex = i;
-        task.bundleWarningNonFatal = WarningNonfatal.get();
-        task.map = text.takeSnapshot();
-        task.options = opt.dup();
-        task.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
-        task.tempdir = maketemp();
+
+        WorkerEngine.WorkerTask task;
+
+        Map<String, String > alloyFiles = text.takeSnapshot();
+        int resolutionMode              = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
+        if(RelationalSolver.get().equals(KODKOD)) {
+            SimpleTask1 kodkodTask = new SimpleTask1();
+            kodkodTask.bundleIndex = i;
+            kodkodTask.bundleWarningNonFatal = WarningNonfatal.get();
+            kodkodTask.map = alloyFiles;
+            kodkodTask.options = opt.dup();
+            kodkodTask.resolutionMode = resolutionMode;
+            kodkodTask.tempdir = maketemp();
+            task = kodkodTask;
+        }
+        else{
+            task = new Cvc4Task(alloyFiles, opt.originalFilename, resolutionMode, i);
+        }
         try {
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
@@ -1413,6 +1393,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
             optmenu.addSeparator();
 
+            addToMenu(optmenu, RelationalSolver);
+            addToMenu(optmenu, Cvc4Timeout);
+            addToMenu(optmenu, Cvc4IncludeCommandScope);
             addToMenu(optmenu, Solver);
             addToMenu(optmenu, SkolemDepth);
             JMenu cmMenu = addToMenu(optmenu, CoreMinimization);
@@ -1734,8 +1717,26 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (WorkerEngine.isBusy())
                 throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
             SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
-            SimpleTask2 task = new SimpleTask2();
-            task.filename = arg;
+
+            WorkerEngine.WorkerTask task;
+            if(RelationalSolver.get().equals(KODKOD)) {
+                SimpleTask2 task2   = new SimpleTask2();
+                task2.filename      = arg;
+                task                = task2;
+            }
+            else{
+                try {
+                    task = new Cvc4EnumerationTask(arg);
+                } catch (Exception exception) {
+                    StringWriter stringWriter = new StringWriter();
+                    exception.printStackTrace(new PrintWriter(stringWriter));
+                    log.logBold(stringWriter.toString());
+                    log.logDivider();
+                    log.flush();
+                    return arg;
+                }
+            }
+
             try {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);

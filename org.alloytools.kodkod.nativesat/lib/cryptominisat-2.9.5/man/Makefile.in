@@ -443,6 +443,6 @@ uninstall-man: uninstall-man1
 	uninstall uninstall-am uninstall-man uninstall-man1
 
 
-# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Tell versions [3.59,3.63) of GNU make to not export all declarations.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

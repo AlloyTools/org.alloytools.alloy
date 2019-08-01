@@ -15,13 +15,7 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -29,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.mit.csail.sdg.alloy4whole.instances.AlloySolution;
 import org.alloytools.alloy.core.AlloyCore;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -58,6 +53,9 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
+
+import javax.swing.*;
+import javax.xml.bind.JAXBException;
 
 /** This helper method is used by SimpleGUI. */
 
@@ -247,8 +245,8 @@ final class SimpleReporter extends A4Reporter {
                 results.add(filename);
                 (new File(filename)).deleteOnExit();
                 gui.doSetLatest(filename);
-                span.setLength(len3);
-                span.log("   ");
+                //span.setLength(len3);
+                span.log("\n   ");
                 span.logLink(chk ? "Counterexample" : "Instance", "XML: " + filename);
                 span.log(" found. ");
                 span.logLink(chk ? "Assertion" : "Predicate", formula);
@@ -258,6 +256,25 @@ final class SimpleReporter extends A4Reporter {
                 else if (expects == 1)
                     span.log(", as expected");
                 span.log(". " + array[5] + "ms.\n\n");
+
+                // generate model constraints
+                try
+                {
+                    AlloySolution alloySolution = AlloySolution.readFromXml(filename);
+                    String constraints = alloySolution.instances.get(0).generateAlloyCode();
+                    span.log("Generated " + (chk ? "Counterexample" : "Instance"));
+
+                    span.logLink(" constraints", "MSG: " + constraints);
+                    span.log("\n");
+
+                } catch (Exception e)
+                {
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    OurDialog.showtext("Error", sw.toString());
+                }
+
             }
             if (array[0].equals("metamodel")) {
                 String outf = (String) (array[1]);

@@ -38,7 +38,7 @@ Usage: depcomp [--help] [--version] PROGRAM [ARGS]
 Run PROGRAMS ARGS to compile a file, generating dependencies
 as side-effects.
 
-Environment variables:
+Environment declarations:
   depmode     Dependency tracking mode.
   source      Source file read by `PROGRAMS ARGS'.
   object      Object file output by `PROGRAMS ARGS'.
