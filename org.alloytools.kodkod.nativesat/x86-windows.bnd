@@ -1,0 +1,19 @@
+
+Bundle-NativeCode: \
+	x86-windows/cygglucose.dll; \
+		osname=Win32; \
+		processor=x86, \
+	x86-windows/cygminisat.dll; \
+		osname=Win32; \
+		processor=x86, \
+	x86-windows/cygminisatprover.dll; \
+		osname=Win32; \
+		processor=x86,\
+	x86-windows/minisat.dll; \
+		osname=Win32; \
+		processor=x86, \
+	x86-windows/minisatprover.dll; \
+		osname=Win32; \
+		processor=x86
+
+-includeresource: x86-windows=jni/x86-windows

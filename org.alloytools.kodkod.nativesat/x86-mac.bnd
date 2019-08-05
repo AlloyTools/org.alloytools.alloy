@@ -1,0 +1,16 @@
+
+Bundle-NativeCode: \
+	x86-mac/libglucose.dylib; \
+		osname=MacOSX; \
+		processor=x86, \
+	x86-mac/liblingeling.dylib; \
+		osname=MacOSX; \
+		processor=x86, \
+	x86-mac/libminisat.dylib; \
+		osname=MacOSX; \
+		processor=x86, \
+	x86-mac/libminisatprover.dylib; \
+		osname=MacOSX; \
+		processor=x86
+
+-includeresource: x86-mac=jni/x86-mac

@@ -1,0 +1,30 @@
+
+-includeresource: \
+    src/main/resources
+    
+-buildpath: \
+	org.alloytools.kodkod.core;version=latest, \
+	org.sat4j.core,\
+	org.alloytools.kodkod.nativesat.util;version=latest,\
+	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-windows;version=latest, \
+	org.eclipse.jdt.annotation
+
+-testpath: \
+	osgi.enroute.junit.wrapper, \
+	osgi.enroute.hamcrest.wrapper, \
+    src/main/resources;version=file
+	
+
+Export-Package: \
+	edu.mit.csail.sdg.alloy4,\
+	edu.mit.csail.sdg.ast,\
+	org.alloytools.graphics.util,\
+	edu.mit.csail.sdg.parser,\
+	edu.mit.csail.sdg.sim,\
+	edu.mit.csail.sdg.translator,\
+	org.alloytools.util.table,\
+	org.alloytools.alloy.core
+Private-Package: java_cup.runtime
