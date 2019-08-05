@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -23,6 +24,8 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 /**
  * Mutable; this class encapsulates the customizable options of the
  * Alloy-to-Kodkod translator.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-unbounded
  */
 
 public final class A4Options implements Serializable {
@@ -183,10 +186,28 @@ public final class A4Options implements Serializable {
         public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true);
         /** SAT4J using native Java */
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
+        /** Electrod through NuSMV */
+        // [HASLab]
+        public static final SatSolver ElectrodS        = new SatSolver("electrodS", "Electrod/NuSMV", "electrod", null, true);
+
+        // [HASLab]
+        public static final SatSolver electrodS(String... args) {
+            return new SatSolver("electrodS", "Electrod_NuSMV", "electrod", args, false);
+        }
+
+        /** Electrod through nuXmv */
+        // [HASLab]
+        public static final SatSolver ElectrodX = new SatSolver("electrodX", "Electrod/nuXmv", "electrod", null, true);
+
+        // [HASLab]
+        public static final SatSolver electrodX(String... args) {
+            return new SatSolver("electrodX", "Electrod_nuXmv", "electrod", args, false);
+        }
+
         /** Outputs the raw CNF file only */
-        public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true);
         /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK               = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
+        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
 
     }
 

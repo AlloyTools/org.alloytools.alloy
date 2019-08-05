@@ -364,11 +364,13 @@ public final class A4SolutionReader {
         // set up the basic values of the A4Solution object
         final int bitwidth = Integer.parseInt(inst.getAttribute("bitwidth"));
         final int maxseq = Integer.parseInt(inst.getAttribute("maxseq"));
-        final int mintrace = Integer.parseInt(inst.getAttribute("mintrace"));
-        final int maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));
         final int tracelength;
         final int backloop;
+        final int maxtrace;
+        final int mintrace;
         try {
+            mintrace = Integer.parseInt(inst.getAttribute("mintrace"));        // [HASLab]
+            maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));        // [HASLab]
             tracelength = Integer.parseInt(inst.getAttribute("tracelength"));  // [HASLab]
             backloop = Integer.parseInt(inst.getAttribute("backloop"));        // [HASLab]
         } catch (Exception ex) {
@@ -428,7 +430,8 @@ public final class A4SolutionReader {
                 // create the A4Solution object
                 A4Options opt = new A4Options();
                 opt.originalFilename = inst.getAttribute("filename");
-                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace, maxtrace, maxseq, strings, atoms, null, opt, 1); // [HASLab]
+                // [HASLab] do not use actual max trace, would flag as unbounded and the used solver is unknown
+                sol = new A4Solution(inst.getAttribute("command"), bitwidth, tracelength, tracelength, maxseq, strings, atoms, null, opt, 1); // [HASLab]
                 factory = sol.getFactory();
                 // parse all the sigs, fields, and skolems
                 for (Map.Entry<String,XMLNode> e : nmap.entrySet())
