@@ -1,0 +1,20 @@
+#
+# -ENROUTE-
+# 
+# This file contains the setup for OSGi enRoute
+#
+
+
+javac.source: 			1.8
+javac.target: 			1.8
+-runee:					JavaSE-1.8
+
+-dsannotations: 		*
+-metatypeannotations:	*
+-contract:				*
+
+
+test-cases: 			${classes;NAMED;*Test}
+-resolve.effective:		resolve, active
+-releaserepo:           Release
+
