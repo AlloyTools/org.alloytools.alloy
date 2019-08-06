@@ -245,24 +245,13 @@ final class SimpleReporter extends A4Reporter {
                 results.add(filename);
                 (new File(filename)).deleteOnExit();
                 gui.doSetLatest(filename);
-                //span.setLength(len3);
-                span.log("\n   ");
-                span.logLink(chk ? "Counterexample" : "Instance", "XML: " + filename);
-                span.log(" found. ");
-                span.logLink(chk ? "Assertion" : "Predicate", formula);
-                span.log(chk ? " is invalid" : " is consistent");
-                if (expects == 0)
-                    span.log(", contrary to expectation");
-                else if (expects == 1)
-                    span.log(", as expected");
-                span.log(". " + array[5] + "ms.\n\n");
 
                 // generate model constraints
                 try
                 {
                     AlloySolution alloySolution = AlloySolution.readFromXml(filename);
 
-                    span.log("Generated xml instance file: ");
+                    span.log("\nGenerated xml instance file: ");
 
                     span.logLink(filename, "CNF: " + filename);
 
@@ -282,6 +271,17 @@ final class SimpleReporter extends A4Reporter {
                     OurDialog.showtext("Error", sw.toString());
                 }
 
+                //span.setLength(len3);
+                span.log("\n   ");
+                span.logLink(chk ? "Counterexample" : "Instance", "XML: " + filename);
+                span.log(" found. ");
+                span.logLink(chk ? "Assertion" : "Predicate", formula);
+                span.log(chk ? " is invalid" : " is consistent");
+                if (expects == 0)
+                    span.log(", contrary to expectation");
+                else if (expects == 1)
+                    span.log(", as expected");
+                span.log(". " + array[5] + "ms.\n\n");
             }
             if (array[0].equals("metamodel")) {
                 String outf = (String) (array[1]);

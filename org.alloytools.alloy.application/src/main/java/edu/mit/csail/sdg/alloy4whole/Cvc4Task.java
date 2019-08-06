@@ -296,24 +296,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         Instance instance = writeModelToAlloyXmlFile(translation, model, xmlFilePath, originalFileName, command, alloyFiles);
 
-        callbackPlain("\nGenerated xml instance file: ");
-
-        Object[] xmlMessage = new Object []{"link", xmlFilePath, "CNF: " + xmlFilePath};
-        workerCallback.callback(xmlMessage);
-        callbackPlain("\n");
-
-
         // generate alloy code that restricts the model to be the instance found
         String alloyCode = instance.generateAlloyCode();
         File alloyFile = File.createTempFile("tmp", ".als", new File(tempDirectory));
         Formatter formatter = new Formatter(alloyFile);
         formatter.format("%s", alloyCode);
         formatter.close();
-
-        callbackPlain("Generated als instance file: ");
-        Object[] alsMessage = new Object []{"link", alloyFile.getAbsolutePath(), "CNF: " + alloyFile.getAbsolutePath()};
-        workerCallback.callback(alsMessage);
-        callbackPlain("\n\n");
 
         String  satResult = "sat";
         Object[] message = new Object []{satResult, command.check, command.expects, xmlFilePath, null, duration};
