@@ -93,7 +93,7 @@ public class Instance
                     code.append(" + " + atom);
                 }
                 code.append(" }\n");
-                if(signature.isPrivate != null && ! signature.isPrivate.equals("yes"))
+                if(signature.isPrivate == null || !signature.isPrivate.equals("yes"))
                 {
                     return code.toString();
                 }
@@ -120,7 +120,14 @@ public class Instance
                 code.append(" + " + generateTupleCode(field.tuples.get(i)));
             }
             code.append(" }\n");
-            return code.toString();
+            if(field.isPrivate == null || !field.isPrivate.equals("yes"))
+            {
+                return code.toString();
+            }
+            else
+            {
+                return "";
+            }
         }
         else
         {
