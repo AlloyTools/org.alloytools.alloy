@@ -258,12 +258,13 @@ final class SimpleReporter extends A4Reporter {
                     span.log("\n");
 
                     String constraints = alloySolution.instances.get(0).generateAlloyCode();
-                    span.log("Generated " + (chk ? "Counterexample" : "Instance"));
+                    span.log("Generated " + (chk ? "counterexample" : "instance"));
 
                     span.logLink(" constraints", "MSG: " + constraints);
                     span.log("\n");
 
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);

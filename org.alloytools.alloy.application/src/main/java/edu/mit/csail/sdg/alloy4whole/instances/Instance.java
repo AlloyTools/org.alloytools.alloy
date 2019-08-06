@@ -93,7 +93,14 @@ public class Instance
                     code.append(" + " + atom);
                 }
                 code.append(" }\n");
-                return code.toString();
+                if(signature.isPrivate != null && ! signature.isPrivate.equals("yes"))
+                {
+                    return code.toString();
+                }
+                else
+                {
+                    return "";
+                }
             }
             // no atoms means cardinality is zero
             return "fact { #" + signature.label.replace("this/", "") + " = 0 }\n";
