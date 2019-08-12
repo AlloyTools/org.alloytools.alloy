@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt.utils;
 
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.uiowa.alloy2smt.Utils;
@@ -478,4 +479,17 @@ public class AlloyUtils
         return atom.replace("@uc_", "")
                    .replace("$", "");
     }
+
+    public static Assertion getAssertion(List<Pos> positions, String comment, Expression expression)
+    {
+        return new Assertion(positions.toString() + getFreshSymbol(), comment, expression);
+    }
+
+    private static int symbolIndex = 0;
+    private static int getFreshSymbol()
+    {
+        symbolIndex ++;
+        return symbolIndex;
+    }
+
 }

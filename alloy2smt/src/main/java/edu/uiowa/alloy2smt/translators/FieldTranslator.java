@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
@@ -66,7 +67,9 @@ public class FieldTranslator
                         Expression intersect = BinaryExpression.Op.INTERSECTION.make(fieldI, fieldJ);
                         Expression emptySet = UnaryExpression.Op.EMPTYSET.make(fieldI.getSort());
                         Expression equal = BinaryExpression.Op.EQ.make(intersect, emptySet);
-                        Assertion disjoint = new Assertion(String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
+                        List<Pos> positions = Arrays.asList(decl.names.get(i).pos, decl.names.get(j).pos);
+                        Assertion disjoint = AlloyUtils.getAssertion(positions,
+                                String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
                         translator.smtProgram.addAssertion(disjoint);
                     }
                 }
@@ -101,6 +104,8 @@ public class FieldTranslator
         Expression antecedent = MultiArityExpression.Op.AND.make(members, notEqual);
         Expression consequent = BoolConstant.True;
 
+        //ToDo: refactor for unsat core
+        List<Pos> positions = new ArrayList<>();
         for (Decl decl: sig.getFieldDecls())
         {
             if (decl.disjoint2 != null)
@@ -114,6 +119,7 @@ public class FieldTranslator
                     Expression emptySet = UnaryExpression.Op.EMPTYSET.make(intersect.getSort());
                     Expression isEmpty = BinaryExpression.Op.EQ.make(intersect, emptySet);
                     consequent = MultiArityExpression.Op.AND.make(consequent, isEmpty);
+                    positions.add(name.pos);
                 }
             }
         }
@@ -121,7 +127,7 @@ public class FieldTranslator
         Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
-        Assertion disjoint2 = new Assertion(sig.label + " disjoint2", forAll);
+        Assertion disjoint2 = AlloyUtils.getAssertion(positions, sig.label + " disjoint2", forAll);
         translator.smtProgram.addAssertion(disjoint2);
     }
 
@@ -235,7 +241,8 @@ public class FieldTranslator
             Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), some);
 
             Expression multiplicity =  translator.exprTranslator.translateExpr(all, new Environment());
-            translator.smtProgram.addAssertion(new Assertion(field.toString() + " multiplicity", multiplicity));
+            Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(field.pos),field.toString() + " multiplicity", multiplicity);
+            translator.smtProgram.addAssertion(assertion);
 
             Expr noMultiplicity = AlloyUtils.removeMultiplicity(field.decl());
             Expr substituteExpr = AlloyUtils.substituteExpr(noMultiplicity, zis, field.sig);

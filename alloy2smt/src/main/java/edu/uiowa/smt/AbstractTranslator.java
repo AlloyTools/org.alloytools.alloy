@@ -94,7 +94,7 @@ public abstract class AbstractTranslator
         smtProgram.addConstantDeclaration(uninterpretedInt);
         Expression callExpression = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
         Expression equality = BinaryExpression.Op.EQ.make(callExpression, intConstant);
-        Assertion assertion = new Assertion("constant integer", equality);
+        Assertion assertion = new Assertion("", "constant integer", equality);
         smtProgram.addAssertion(assertion);
         return uninterpretedInt;
     }

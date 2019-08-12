@@ -175,10 +175,10 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         
         QuantifiedExpression        idenSemantics  = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
-        this.smtProgram.addAssertion(new Assertion("Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for Atom", BinaryExpression.Op.EQ.make(this.atomUniverse.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(intUniv.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
-        this.smtProgram.addAssertion(new Assertion("Identity relation definition for Atom", idenSemantics));
+        this.smtProgram.addAssertion(new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.atomUniverse.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(intUniv.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
+        this.smtProgram.addAssertion(new Assertion("", "Identity relation definition for Atom", idenSemantics));
 
         // uninterpretedIntValue is injective function
         VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
@@ -194,7 +194,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         Expression implication = BinaryExpression.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
 
-        smtProgram.addAssertion(new Assertion(uninterpretedIntValueName + " is injective", forAll));
+        smtProgram.addAssertion(new Assertion("", uninterpretedIntValueName + " is injective", forAll));
 
     }
 
@@ -420,7 +420,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         Decl decl = new Decl(null, null, null, Collections.singletonList(x), oneOfInt);
         Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
         Expression expression = exprTranslator.translateExpr(all, new Environment());
-        Assertion assertion = new Assertion( command.bitwidth +  "Int", expression);
+        Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
+                command.bitwidth +  "Int", expression);
         assertions.add(assertion);
         return assertions;
     }
@@ -512,7 +513,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                         constraint = MultiArityExpression.Op.AND.make(constraint, distinct);
                     }
                     Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
-                    Assertion scopeAssertion = new Assertion(signature.toString() + " scope", exists);
+                    Assertion scopeAssertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
+                            signature.toString() + " scope", exists);
                     assertions.add(scopeAssertion);
                 }
             }
@@ -528,7 +530,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         List<Assertion> assertions = new ArrayList<>();
 
         //ToDo: refactor this line which just prints the command as a comment
-        Assertion comment = new Assertion(command.toString(), BoolConstant.True);
+        Assertion comment = new Assertion("", command.toString(), BoolConstant.True);
         assertions.add(comment);
 
         for (Expr argument: list.args)

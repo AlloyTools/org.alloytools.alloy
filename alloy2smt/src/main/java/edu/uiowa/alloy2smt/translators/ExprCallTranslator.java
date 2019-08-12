@@ -9,10 +9,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExprCallTranslator
 {
@@ -49,23 +46,23 @@ public class ExprCallTranslator
         }
         else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
+            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
         }
         else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
+            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
         }
         else if (funcName.equals("integer/mul"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
+            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
         }
         else if (funcName.equals("integer/div"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
+            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
         }
         else if (funcName.equals("integer/rem"))
         {
-            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
+            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
         }
 //        else if (translator.functionsMap.containsKey(funcName))
 //        {
@@ -85,7 +82,7 @@ public class ExprCallTranslator
         }
     }
 
-    public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Environment environment)
+    public Expression translateArithmetic(ExprCall exprCall, Expression A, Expression B, BinaryExpression.Op op, Environment environment)
     {
 
         A = convertIntConstantToSet(A);
@@ -198,7 +195,8 @@ public class ExprCallTranslator
         quantifiers1.add(z);
         Expression forall1 = QuantifiedExpression.Op.FORALL.make(implies1, quantifiers1);
 
-        Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, A, B), forall1);
+        Assertion assertion1 = AlloyUtils.getAssertion(Collections.singletonList(exprCall.pos),
+                String.format("%1$s %2$s %3$s axiom1", op, A, B), forall1);
         translator.smtProgram.addAssertion(assertion1);
 
         Expression and3 = MultiArityExpression.Op.AND.make(equal, zMember);
@@ -212,7 +210,8 @@ public class ExprCallTranslator
         quantifiers2.add(y);
         Expression forall2 = QuantifiedExpression.Op.FORALL.make(implies2, quantifiers2);
 
-        Assertion assertion2 = new Assertion(String.format("%1$s %2$s %3$s axiom2", op, A, B), forall2);
+        Assertion assertion2 = AlloyUtils.getAssertion(Collections.singletonList(exprCall.pos),
+                String.format("%1$s %2$s %3$s axiom2", op, A, B), forall2);
         translator.smtProgram.addAssertion(assertion2);
 
         return resultExpression;

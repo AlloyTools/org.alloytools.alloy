@@ -16,14 +16,11 @@ public class Assertion extends SmtAst
 
     private final String comment;
 
-    public Assertion(Expression expression)
-    {
-        this.comment = "";
-        this.expression = expression;
-    }
+    private final String symbolicName;
 
-    public Assertion(String comment, Expression expression)
+    public Assertion(String symbolicName, String comment, Expression expression)
     {
+        this.symbolicName = symbolicName;
         this.comment = comment;
         this.expression = expression;
     }
@@ -36,6 +33,11 @@ public class Assertion extends SmtAst
     public Expression getExpression()
     {
         return this.expression;
+    }
+
+    public String getSymbolicName()
+    {
+        return symbolicName;
     }
 
     @Override

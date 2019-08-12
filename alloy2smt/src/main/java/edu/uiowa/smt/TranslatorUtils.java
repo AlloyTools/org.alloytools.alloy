@@ -29,67 +29,6 @@ public class TranslatorUtils
         return declaration.getName();
     }
 
-    public static FunctionDeclaration generateAuxiliarySetNAtoms(int arity, int n, AbstractTranslator translator)
-    {
-        List<Sort> sorts = IntStream.range(1, arity + 1).boxed().map(x -> translator.atomSort).collect(Collectors.toList());
-        Sort tupleSort = new TupleSort(sorts);
-        Sort setSort = new SetSort(tupleSort);
-
-        //ToDo: handle the case when n = 0
-        List<Expression> expressions = declareNDistinctConstants(tupleSort, n, translator.smtProgram);
-
-        FunctionDeclaration declaration = new FunctionDeclaration(getFreshName(setSort), setSort, false);
-
-        translator.smtProgram.addFunction(declaration);
-
-        Expression set = UnaryExpression.Op.SINGLETON.make(expressions.get(expressions.size() - 1));
-
-        if (expressions.size() > 1)
-        {
-            List<Expression> atoms = new ArrayList<>();
-
-            for (int i = 0; i < expressions.size() - 1; i++)
-            {
-                atoms.add(expressions.get(i));
-            }
-
-            atoms.add(set);
-
-            set = MultiArityExpression.Op.INSERT.make(atoms);
-        }
-
-        BinaryExpression equality = BinaryExpression.Op.EQ.make(declaration.getVariable(), set);
-
-        translator.smtProgram.addAssertion(new Assertion(equality));
-
-        return declaration;
-    }
-
-    public static List<Expression> declareNDistinctConstants(Sort sort, int n, SmtProgram smtProgram)
-    {
-        List<Expression> expressions = new ArrayList<>();
-        if (n > 0)
-        {
-            for (int i = 0; i < n; i++)
-            {
-                ConstantDeclaration constantDeclaration = new ConstantDeclaration(getFreshName(sort), sort, false);
-                expressions.add(constantDeclaration.getVariable());
-                smtProgram.addConstantDeclaration(constantDeclaration);
-            }
-
-            if (n > 1)
-            {
-                MultiArityExpression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
-                smtProgram.addAssertion(new Assertion(distinct));
-            }
-        }
-        else
-        {
-            throw new UnsupportedOperationException("Argument n should be greater than 0");
-        }
-        return expressions;
-    }
-
     public static String getFreshName(Sort sort)
     {
         freshNameIndex++;

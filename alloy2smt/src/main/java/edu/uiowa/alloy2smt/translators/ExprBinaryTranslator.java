@@ -11,6 +11,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ExprBinaryTranslator
@@ -1226,7 +1227,8 @@ public class ExprBinaryTranslator
         Expression implies1 = BinaryExpression.Op.IMPLIES.make(zMember, exists1);
         Expression forall1 = QuantifiedExpression.Op.FORALL.make(implies1, z);
 
-        Assertion assertion1 = new Assertion(String.format("%1$s %2$s %3$s axiom1", op, leftExpr, rightExpr), forall1);
+        Assertion assertion1 = AlloyUtils.getAssertion(Collections.singletonList(expr.pos),
+                String.format("%1$s %2$s %3$s axiom1", op, leftExpr, rightExpr), forall1);
         exprTranslator.translator.smtProgram.addAssertion(assertion1);
 
         Expression and3 = BinaryExpression.Op.MEMBER.make(equal, zMember);
@@ -1235,7 +1237,8 @@ public class ExprBinaryTranslator
         Expression implies2 = BinaryExpression.Op.IMPLIES.make(and1, exists2);
         Expression forall2 = QuantifiedExpression.Op.FORALL.make(implies2, x, y);
 
-        Assertion assertion2 = new Assertion(String.format("%1$s %2$s %3$s axiom2", op, leftExpr, rightExpr), forall2);
+        Assertion assertion2 = AlloyUtils.getAssertion(Collections.singletonList(expr.pos),
+                String.format("%1$s %2$s %3$s axiom2", op, leftExpr, rightExpr), forall2);
         exprTranslator.translator.smtProgram.addAssertion(assertion2);
 
         return result.getVariable();

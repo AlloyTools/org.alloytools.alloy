@@ -9,6 +9,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
@@ -69,7 +70,8 @@ public class ExprTranslator
                 throw new UnsupportedOperationException();
             }
         }
-        translator.smtProgram.addAssertion(new Assertion(label, formula));
+        Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
+        translator.smtProgram.addAssertion(assertion);
         return formula;
     }
 

@@ -205,7 +205,8 @@ public class ExprQtTranslator
         quantifiedArguments.addAll(quantifiedVariables);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(equivalence, quantifiedArguments);
 
-        Assertion assertion = new Assertion(exprQt.toString(), forAll);
+        Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprQt.pos),
+                exprQt.toString(), forAll);
         translator.smtProgram.addAssertion(assertion);
 
         if(argumentSorts.size() == 0)

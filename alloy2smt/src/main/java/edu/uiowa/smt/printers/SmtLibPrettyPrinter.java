@@ -50,7 +50,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
             if(sort instanceof UninterpretedSort)
             {
                 stringBuilder.append("(declare-sort ");
-                stringBuilder.append(((UninterpretedSort) sort).getName());
+                stringBuilder.append(sort.getName());
                 stringBuilder.append(" 0)\n");
             }
         }
@@ -269,15 +269,28 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(Assertion assertion)
     {
-
         if(! assertion.getComment().isEmpty())
         {
             // print comment
             stringBuilder.append("; " + assertion.getComment() + "\n");
         }
+
         stringBuilder.append("(assert ");
+        if(! assertion.getSymbolicName().isEmpty())
+        {
+            stringBuilder.append("(! ");
+        }
         this.visit(assertion.getExpression());
-        stringBuilder.append(")\n");
+        if(assertion.getSymbolicName().isEmpty())
+        {
+            stringBuilder.append(")\n");
+        }
+        else
+        {
+            stringBuilder.append("\n :named |" +
+                    assertion.getSymbolicName().replace("\\", "/")
+                    + "|))\n");
+        }
     }
 
     @Override
