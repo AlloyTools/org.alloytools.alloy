@@ -9,6 +9,7 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -482,7 +483,21 @@ public class AlloyUtils
 
     public static Assertion getAssertion(List<Pos> positions, String comment, Expression expression)
     {
-        return new Assertion(positions.toString() + getFreshSymbol(), comment, expression);
+        try
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Pos position : positions)
+            {
+                Range range = new Range(position);
+                range.symbolIndex = getFreshSymbol();
+                stringBuilder.append(range.toJson());
+            }
+            return new Assertion(stringBuilder.toString(), comment, expression);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     private static int symbolIndex = 0;
@@ -491,5 +506,5 @@ public class AlloyUtils
         symbolIndex ++;
         return symbolIndex;
     }
-
 }
+
