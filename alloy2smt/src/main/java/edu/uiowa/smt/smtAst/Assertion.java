@@ -14,23 +14,23 @@ public class Assertion extends SmtAst
 {
     private final Expression  expression;
 
-    private final String      name;
+    private final String comment;
 
     public Assertion(Expression expression)
     {
-        this.name       = "";
+        this.comment = "";
         this.expression = expression;
     }
 
     public Assertion(String name, Expression expression)
     {
-        this.name       = name;
+        this.comment = name;
         this.expression = expression;
     }
 
-    public String getName()
+    public String getComment()
     {
-        return this.name;
+        return this.comment;
     }
 
     public Expression getExpression()

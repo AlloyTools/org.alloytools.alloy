@@ -289,7 +289,7 @@ public class ExprUnaryTranslator
 //                if (sort instanceof SetSort)
 //                {
 //                    Sort elementSort = ((SetSort) sort).elementSort;
-//                    VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, null);
+//                    VariableDeclaration tuple = new VariableDeclaration(variable.getComment(), elementSort, null);
 //                    tuple.setOriginalName(argument.getKey());
 //                    quantifiedArguments.add(tuple);
 //                    Expression constraint = declaration.getConstraint().replace(variable, tuple.getVariable());

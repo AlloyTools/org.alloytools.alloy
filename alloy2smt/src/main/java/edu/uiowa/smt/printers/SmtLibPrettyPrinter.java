@@ -37,7 +37,8 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 "(set-option :block-models true)\n" +
 //                "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
-                "(set-option :sets-ext true)\n");
+                "(set-option :sets-ext true)\n" +
+                "(set-option :produce-unsat-cores true)\n");
     }
 
     public void visit(SmtProgram program)
@@ -269,10 +270,10 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public void visit(Assertion assertion)
     {
 
-        if(! assertion.getName().isEmpty())
+        if(! assertion.getComment().isEmpty())
         {
             // print comment
-            stringBuilder.append("; " + assertion.getName() + "\n");
+            stringBuilder.append("; " + assertion.getComment() + "\n");
         }
         stringBuilder.append("(assert ");
         this.visit(assertion.getExpression());
