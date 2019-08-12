@@ -22,9 +22,9 @@ public class Assertion extends SmtAst
         this.expression = expression;
     }
 
-    public Assertion(String name, Expression expression)
+    public Assertion(String comment, Expression expression)
     {
-        this.comment = name;
+        this.comment = comment;
         this.expression = expression;
     }
 
