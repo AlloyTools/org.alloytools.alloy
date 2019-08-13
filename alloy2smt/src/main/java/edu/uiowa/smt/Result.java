@@ -30,7 +30,6 @@ public class Result
 
     public SmtModel parseModel(String model)
     {
-        model = model.replaceAll("\\|", "");
         SmtParser parser = getSmtParser(model);
 
         ParseTree tree = parser.model();

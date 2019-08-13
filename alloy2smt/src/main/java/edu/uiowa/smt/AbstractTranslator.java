@@ -17,6 +17,7 @@ public abstract class AbstractTranslator
 {
     // static members
     public final static String intSortName = "Int";
+    public final static String boolSortName = "Bool";
     public final static String atom = "Atom";
     public final static String uninterpretedIntName = "UInt";
     public final static String uninterpretedIntValueName = "intValue";

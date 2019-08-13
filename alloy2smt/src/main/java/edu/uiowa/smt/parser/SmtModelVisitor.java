@@ -66,6 +66,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
                 case AbstractTranslator.atom: return AbstractTranslator.atomSort;
                 case AbstractTranslator.intSortName: return AbstractTranslator.intSort;
                 case AbstractTranslator.uninterpretedIntName: return AbstractTranslator.uninterpretedInt;
+                case AbstractTranslator.boolSortName: return AbstractTranslator.boolSort;
                 default:
                     throw new UnsupportedOperationException(String.format("Unknown sort '%s'", ctx.sortName().getText()));
             }
@@ -108,7 +109,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     public SmtAst visitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx)
     {
         String name = ctx.functionName().getText();
-
+        name = name.replaceAll("\\|", "").trim();
         List<VariableDeclaration> arguments   = ctx.argument().stream()
                                                    .map(argument -> (VariableDeclaration) this.visitArgument(argument))
                                                    .collect(Collectors.toList());
