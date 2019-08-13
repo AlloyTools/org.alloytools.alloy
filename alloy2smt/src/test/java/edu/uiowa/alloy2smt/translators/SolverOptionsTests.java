@@ -13,9 +13,6 @@ public class SolverOptionsTests
     @Test
     void options()
     {
-        String alloy = "";
-        Translation translation = Utils.translate(alloy);
-
         Map<String, String> options = new HashMap<>();
         options.put("tlimit", "30000");
         options.put("produce-unsat-cores", "true");

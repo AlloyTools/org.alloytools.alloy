@@ -83,6 +83,17 @@ public class QuantifiedExpression extends Expression
             this.opStr = op;
         }
 
+        public static Op getOp(String operator)
+        {
+            switch (operator)
+            {
+                case "forall": return FORALL;
+                case "exists": return EXISTS;
+                default:
+                    throw new UnsupportedOperationException("Operator " + operator + " is not defined");
+            }
+        }
+
         public QuantifiedExpression make(Expression expr, VariableDeclaration... variables)
         {
             return new QuantifiedExpression(this, expr, variables);

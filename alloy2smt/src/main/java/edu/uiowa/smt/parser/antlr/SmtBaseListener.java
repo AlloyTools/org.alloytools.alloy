@@ -52,13 +52,13 @@ public class SmtBaseListener implements SmtListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArgument(SmtParser.ArgumentContext ctx) { }
+	@Override public void enterVariableDeclaration(SmtParser.VariableDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArgument(SmtParser.ArgumentContext ctx) { }
+	@Override public void exitVariableDeclaration(SmtParser.VariableDeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -136,13 +136,13 @@ public class SmtBaseListener implements SmtListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArgumentName(SmtParser.ArgumentNameContext ctx) { }
+	@Override public void enterVariableName(SmtParser.VariableNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArgumentName(SmtParser.ArgumentNameContext ctx) { }
+	@Override public void exitVariableName(SmtParser.VariableNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -203,6 +203,30 @@ public class SmtBaseListener implements SmtListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

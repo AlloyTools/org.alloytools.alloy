@@ -27,9 +27,18 @@ public class Environment
     {
         this.parent = parent;
     }
+
     public void put(String key, Expression value)
     {
         variablesMap.put(key, value);
+    }
+
+    public void putAll(Map<String, Expression> map)
+    {
+        for(Map.Entry<String, Expression> entry: map.entrySet())
+        {
+            put(entry.getKey(), entry.getValue());
+        }
     }
 
     public Expression get(String key)

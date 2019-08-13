@@ -38,15 +38,15 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#argument}.
+	 * Enter a parse tree produced by {@link SmtParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterArgument(SmtParser.ArgumentContext ctx);
+	void enterVariableDeclaration(SmtParser.VariableDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#argument}.
+	 * Exit a parse tree produced by {@link SmtParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitArgument(SmtParser.ArgumentContext ctx);
+	void exitVariableDeclaration(SmtParser.VariableDeclarationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#sort}.
 	 * @param ctx the parse tree
@@ -108,15 +108,15 @@ public interface SmtListener extends ParseTreeListener {
 	 */
 	void exitFunctionName(SmtParser.FunctionNameContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SmtParser#argumentName}.
+	 * Enter a parse tree produced by {@link SmtParser#variableName}.
 	 * @param ctx the parse tree
 	 */
-	void enterArgumentName(SmtParser.ArgumentNameContext ctx);
+	void enterVariableName(SmtParser.VariableNameContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SmtParser#argumentName}.
+	 * Exit a parse tree produced by {@link SmtParser#variableName}.
 	 * @param ctx the parse tree
 	 */
-	void exitArgumentName(SmtParser.ArgumentNameContext ctx);
+	void exitVariableName(SmtParser.VariableNameContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#expression}.
 	 * @param ctx the parse tree
@@ -167,6 +167,26 @@ public interface SmtListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#quantifiedExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#quantifiedExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#functionCallExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#functionCallExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SmtParser#variable}.
 	 * @param ctx the parse tree

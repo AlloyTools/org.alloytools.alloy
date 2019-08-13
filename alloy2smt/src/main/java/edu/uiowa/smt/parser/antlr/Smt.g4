@@ -6,10 +6,10 @@ model : '(' 'model' sortDeclaration* functionDefinition* ')' ;
 
 sortDeclaration :  '(' 'declare-sort' sortName arity ')' ;
 
-functionDefinition : '(' 'define-fun' functionName '(' argument* ')' sort
+functionDefinition : '(' 'define-fun' functionName '(' variableDeclaration* ')' sort
                         expression ')' ;
 
-argument : '(' argumentName sort ')' ;
+variableDeclaration : '(' variableName sort ')' ;
 
 sort :  sortName | '(' tupleSort ')' | '(' setSort ')' ;
 
@@ -23,7 +23,7 @@ arity : Integer ;
 
 functionName : Identifier ;
 
-argumentName : Identifier ;
+variableName : Identifier ;
 
 expression :    constant
                 | variable
@@ -31,6 +31,8 @@ expression :    constant
                 | binaryExpression
                 | ternaryExpression
                 | multiArityExpression
+                | quantifiedExpression
+                | functionCallExpression
                 | '(' expression ')';
 
 
@@ -41,6 +43,10 @@ binaryExpression : BinaryOperator expression expression ;
 ternaryExpression : TernaryOperator expression expression expression ;
 
 multiArityExpression :  MultiArityOperator expression+ ;
+
+quantifiedExpression : Quantifier '(' variableDeclaration+ ')' '(' expression ')' ;
+
+functionCallExpression : Identifier expression+ ;
 
 variable : Identifier;
 
@@ -61,9 +67,11 @@ getValue : '(' ('(' expression expression ')' )+ ')';
 
 // lexer rules
 
-True: 'true' ;
+True : 'true' ;
 
-False: 'false' ;
+False : 'false' ;
+
+Quantifier : 'forall' | 'exists' ;
 
 UnaryOperator : 'not' | 'singleton' | 'complement' | 'transpose' | 'tclosure' ;
 

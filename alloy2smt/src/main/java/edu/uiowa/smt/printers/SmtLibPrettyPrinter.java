@@ -37,8 +37,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 "(set-option :block-models true)\n" +
 //                "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
-                "(set-option :sets-ext true)\n" +
-                "(set-option :produce-unsat-cores true)\n");
+                "(set-option :sets-ext true)\n");
     }
 
     public void visit(SmtProgram program)

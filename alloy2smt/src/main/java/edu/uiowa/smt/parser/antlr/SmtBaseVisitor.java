@@ -38,7 +38,7 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArgument(SmtParser.ArgumentContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableDeclaration(SmtParser.VariableDeclarationContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -87,7 +87,7 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArgumentName(SmtParser.ArgumentNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVariableName(SmtParser.VariableNameContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -123,6 +123,20 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

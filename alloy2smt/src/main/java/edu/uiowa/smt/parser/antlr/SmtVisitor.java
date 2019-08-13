@@ -29,11 +29,11 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunctionDefinition(SmtParser.FunctionDefinitionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#argument}.
+	 * Visit a parse tree produced by {@link SmtParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArgument(SmtParser.ArgumentContext ctx);
+	T visitVariableDeclaration(SmtParser.VariableDeclarationContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#sort}.
 	 * @param ctx the parse tree
@@ -71,11 +71,11 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunctionName(SmtParser.FunctionNameContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SmtParser#argumentName}.
+	 * Visit a parse tree produced by {@link SmtParser#variableName}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArgumentName(SmtParser.ArgumentNameContext ctx);
+	T visitVariableName(SmtParser.VariableNameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#expression}.
 	 * @param ctx the parse tree
@@ -106,6 +106,18 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitMultiArityExpression(SmtParser.MultiArityExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#quantifiedExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#functionCallExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SmtParser#variable}.
 	 * @param ctx the parse tree
