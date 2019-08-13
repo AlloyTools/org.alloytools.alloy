@@ -337,16 +337,16 @@ public class PreferencesDialog extends JFrame {
             final File file = new File(dirs[i] + File.separator + name);
             if (file.canExecute()) {
                 if ("yes".equals(System.getProperty("debug")))
-                    System.out.println("Loaded: " + name);
+                    System.out.println("Loaded: " + name + " at " + file);
                 return true;
             }
         }
         // check if in system path
-        for (String str : (System.getenv("PATH") + ":/usr/local/bin").split(Pattern.quote(File.pathSeparator))) {
+        for (String str : (System.getenv("PATH")).split(Pattern.quote(File.pathSeparator))) {
             Path pth = Paths.get(str);
             if (Files.exists(pth.resolve(name))) {
                 if ("yes".equals(System.getProperty("debug")))
-                    System.out.println("Loaded: " + name);
+                    System.out.println("Loaded: " + name + " at " + pth);
                 return true;
             }
         }
