@@ -1486,8 +1486,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     public Runner doAbout() {
         if (wrap)
             return wrapMe();
-        OurDialog.showmsg("About Electrum Analyzer" + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Electrum Analyzer " + Version.version(), // [HASLab]
-                          "Build date: " + " git: " + Version.commit, " ", "Lead developer: Nuno Macedo", "Project lead: Alcino Cunha", "Thanks to: David Chemouil, Julien Brunel, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães.", " ", "Electrum is based on Alloy Analyzer " + Version.version(), " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, " + "Manu Sridharan, " + "Derek Rayside, " + "Jonathan Edwards, " + "Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+        OurDialog.showmsg("About Electrum Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), Version.aa_version(), // [HASLab]
+                          "Build date: " + Version.buildDate(), "git: " + Version.commit, " ", "Lead developer: Nuno Macedo", "Project lead: Alcino Cunha", "Thanks to: David Chemouil, Julien Brunel, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães.", " ", "Electrum is based on Alloy Analyzer", " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, " + "Manu Sridharan, " + "Derek Rayside, " + "Jonathan Edwards, " + "Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
 
         return null;
     }
@@ -2135,8 +2135,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold("Alloy Analyzer " + Version.version() + " (build date: " + Version.buildDate() + " git " + Version.commit + ")\n\n");
-        log.logBold("Electrum Analyzer " + Version.version() + " (build date: " + Version.buildDate() + " git " + Version.commit + ")\n\n"); // [HASLab]
+        log.logBold(Version.aa_version() + " (build date: " + Version.buildDate() + " git " + Version.commit + ")\n\n"); // [HASLab]
 
         // If on Mac, then register an application listener
         try {
