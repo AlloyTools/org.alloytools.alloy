@@ -62,11 +62,13 @@ public final class MacUtil {
      * @param quit - when the user clicks on Quit, we'll call quit.run() using
      *            SwingUtilities.invokeAndWait
      */
-    public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runner open, final Runnable quit) {
+    // [HASLab]
+    public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runnable prefs, final Runner open, final Runnable quit) {
         if (app == null)
             app = new Application();
         else if (listener != null)
             app.removeApplicationListener(listener);
+        app.addPreferencesMenuItem();
         listener = new ApplicationAdapter() {
 
             @Override
@@ -78,6 +80,12 @@ public final class MacUtil {
             public void handleAbout(ApplicationEvent arg) {
                 arg.setHandled(true);
                 SwingUtilities.invokeLater(about);
+            }
+
+            @Override
+            // [HASLab]
+            public void handlePreferences(ApplicationEvent arg) {
+                SwingUtilities.invokeLater(prefs);
             }
 
             @Override
@@ -108,6 +116,7 @@ public final class MacUtil {
         app.addApplicationListener(listener);
     }
 
+    // [HASLab] duplicated listeners
     public void addMenus(SimpleGUI simpleGUI) {
         Application.getApplication().addPreferencesMenuItem();
         Application.getApplication().addAboutMenuItem();

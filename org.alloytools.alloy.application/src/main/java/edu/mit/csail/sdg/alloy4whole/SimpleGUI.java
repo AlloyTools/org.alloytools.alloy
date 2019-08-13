@@ -1916,14 +1916,15 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.setProperty("com.apple.macos.useScreenMenuBar", "true");
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
-        if (Util.onMac()) {
-            try {
-                macUtil = new MacUtil();
-                macUtil.addMenus(this);
-            } catch (NoClassDefFoundError e) {
-                // ignore
-            }
-        }
+        // [HASLab] duplicated listeners
+        //        if (Util.onMac()) {
+        //            try {
+        //                macUtil = new MacUtil();
+        //                macUtil.addMenus(this);
+        //            } catch (NoClassDefFoundError e) {
+        //                // ignore
+        //            }
+        //        }
 
         doLookAndFeel();
 
@@ -2141,7 +2142,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             if (Util.onMac()) {
-                macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
+                new MacUtil().registerApplicationListener(doShow(), doAbout(), doPreferences(), doOpenFile(""), doQuit()); // [HASLab]
             }
         } catch (Throwable t) {
             System.out.println("Mac classes not there");
