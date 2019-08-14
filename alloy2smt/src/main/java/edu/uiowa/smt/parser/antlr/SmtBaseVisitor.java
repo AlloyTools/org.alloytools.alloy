@@ -186,4 +186,11 @@ public class SmtBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements Sm
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitGetValue(SmtParser.GetValueContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitGetUnsatCore(SmtParser.GetUnsatCoreContext ctx) { return visitChildren(ctx); }
 }

@@ -160,4 +160,10 @@ public interface SmtVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitGetValue(SmtParser.GetValueContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SmtParser#getUnsatCore}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGetUnsatCore(SmtParser.GetUnsatCoreContext ctx);
 }

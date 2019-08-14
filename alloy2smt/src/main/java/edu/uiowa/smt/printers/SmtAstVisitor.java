@@ -71,4 +71,6 @@ public interface SmtAstVisitor
     void visit(SmtValues smtValues);
 
     void visit(ExpressionValue expressionValue);
+
+    void visit(UnsatCore unsatCore);
 }

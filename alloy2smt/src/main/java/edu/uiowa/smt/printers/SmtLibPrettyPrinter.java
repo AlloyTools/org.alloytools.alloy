@@ -17,6 +17,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
 {
     public final static String CHECK_SAT = "(check-sat)";
     public final static String GET_MODEL = "(get-model)";
+    public final static String GET_UNSAT_CORE = "(get-unsat-core)";
     public final static String PUSH = "(push 1)";
     public final static String POP = "(pop 1)";
     private Map<String, String> options;
@@ -537,6 +538,17 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         visit(expressionValue.getExpression());
         stringBuilder.append(" ");
         visit(expressionValue.getValue());
+        stringBuilder.append(")");
+    }
+
+    @Override
+    public void visit(UnsatCore unsatCore)
+    {
+        stringBuilder.append("(\n");
+        for (String formula: unsatCore.getCore())
+        {
+            stringBuilder.append(formula + "\n");
+        }
         stringBuilder.append(")");
     }
 }

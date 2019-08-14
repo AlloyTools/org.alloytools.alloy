@@ -65,6 +65,8 @@ emptySet : 'as' 'emptyset' '(' 'Set' sort ')' ;
 
 getValue : '(' ('(' expression expression ')' )+ ')';
 
+getUnsatCore : '(' Identifier* ')';
+
 // lexer rules
 
 True : 'true' ;

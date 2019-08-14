@@ -342,6 +342,16 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     }
 
     @Override
+    public SmtAst visitGetUnsatCore(SmtParser.GetUnsatCoreContext ctx)
+    {
+        List<String> core = ctx.Identifier().stream()
+                               .map(i -> processName(i.getText()))
+                               .collect(Collectors.toList());
+
+        return new UnsatCore(core);
+    }
+
+    @Override
     public SmtAst visitExpression(SmtParser.ExpressionContext ctx)
     {
         throw new UnsupportedOperationException("Use the overloaded method visitExpression(SmtParser.ExpressionContext ctx, Map<String, Variable> arguments)");

@@ -311,6 +311,18 @@ public class SmtBaseListener implements SmtListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitGetValue(SmtParser.GetValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGetUnsatCore(SmtParser.GetUnsatCoreContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGetUnsatCore(SmtParser.GetUnsatCoreContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

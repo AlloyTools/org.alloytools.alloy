@@ -216,13 +216,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     commandResult.xmlFileName = prepareInstance(index, duration);
                     break;
                 case "unsat":
-                    if(translation.getCommands().get(index).check)
+                    if(Cvc4ProduceUnsatCores.get())
                     {
-//                        callbackPlain("The assertion is valid\n");
-                    }
-                    else
-                    {
-//                        callbackPlain("The satResult is unsat\n");
+                        commandResult.unsatCore = prepareUnsatCore(index, duration);
                     }
                     break;
                 default:
@@ -236,6 +232,19 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
 
         return commandResult;
+    }
+
+    private Set<Pos> prepareUnsatCore(int index, long duration) throws Exception
+    {
+        String smtCore = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_UNSAT_CORE);
+
+        callbackPlain("CVC4 found an ");
+        Object[] modelMessage = new Object []{"link", "unsat core", "MSG: " + smtCore};
+        workerCallback.callback(modelMessage);
+        callbackPlain("\n");
+
+        UnsatCore unsatCore = parseUnsatCore(smtCore);
+        return null;
     }
 
     private void callbackLink(String log, String link)
@@ -692,9 +701,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return translation;
     }
 
+    //ToDo: replace this with a call edu.uiowa.smt.Result.parseModel
     public static SmtModel parseModel(String model)
     {
-        model = model.replaceAll("\\|", "");
         CharStream charStream = CharStreams.fromString(model);
 
         SmtLexer lexer = new SmtLexer(charStream);
@@ -709,11 +718,28 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return  smtModel;
     }
 
+    //ToDo: replace this with a call edu.uiowa.smt.Result.parseUnsatCore
+    public static UnsatCore parseUnsatCore(String smtCore)
+    {
+        CharStream charStream = CharStreams.fromString(smtCore);
+
+        SmtLexer lexer = new SmtLexer(charStream);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        SmtParser parser = new SmtParser(tokenStream);
+
+        ParseTree tree =  parser.getUnsatCore();
+        SmtModelVisitor visitor = new SmtModelVisitor();
+
+        UnsatCore unsatCore = (UnsatCore) visitor.visit(tree);
+        return  unsatCore;
+    }
+
     private class CommandResult
     {
         public int index;
         public Command command;
         public String result;
         public String xmlFileName;
+        public Set<Pos> unsatCore;
     }
 }

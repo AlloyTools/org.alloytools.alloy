@@ -257,4 +257,14 @@ public interface SmtListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitGetValue(SmtParser.GetValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SmtParser#getUnsatCore}.
+	 * @param ctx the parse tree
+	 */
+	void enterGetUnsatCore(SmtParser.GetUnsatCoreContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SmtParser#getUnsatCore}.
+	 * @param ctx the parse tree
+	 */
+	void exitGetUnsatCore(SmtParser.GetUnsatCoreContext ctx);
 }

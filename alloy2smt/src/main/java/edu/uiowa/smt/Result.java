@@ -5,10 +5,13 @@ import edu.uiowa.smt.parser.antlr.SmtLexer;
 import edu.uiowa.smt.parser.antlr.SmtParser;
 import edu.uiowa.smt.smtAst.SmtModel;
 import edu.uiowa.smt.smtAst.SmtValues;
+import edu.uiowa.smt.smtAst.UnsatCore;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+
+import java.util.List;
 
 public class Result
 {
@@ -50,6 +53,15 @@ public class Result
         ParseTree tree = parser.getValue();
         SmtValues smtValues = (SmtValues) this.visitor.visit(tree);
         return smtValues;
+    }
+
+    public UnsatCore parseUnsatCore(String core)
+    {
+        SmtParser parser = getSmtParser(core);
+        ParseTree tree = parser.getUnsatCore();
+        SmtModelVisitor visitor = new SmtModelVisitor();
+        UnsatCore unsatCore = (UnsatCore) visitor.visit(tree);
+        return unsatCore;
     }
 
     private SmtParser getSmtParser(String values)
