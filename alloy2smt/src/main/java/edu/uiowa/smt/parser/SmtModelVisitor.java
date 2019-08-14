@@ -348,7 +348,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
                                .map(i -> processName(i.getText()))
                                .collect(Collectors.toList());
 
-        return new UnsatCore(core);
+        return new SmtUnsatCore(core);
     }
 
     @Override

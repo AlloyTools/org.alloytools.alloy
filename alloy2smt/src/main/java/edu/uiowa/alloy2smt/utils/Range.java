@@ -48,6 +48,11 @@ public class Range
     @JsonProperty("symbolIndex")
     int symbolIndex;
 
+    public Pos toPos()
+    {
+        return new Pos(filename, x1, y1, x2, y2);
+    }
+
     public String toJson() throws IOException
     {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -72,5 +72,5 @@ public interface SmtAstVisitor
 
     void visit(ExpressionValue expressionValue);
 
-    void visit(UnsatCore unsatCore);
+    void visit(SmtUnsatCore smtUnsatCore);
 }

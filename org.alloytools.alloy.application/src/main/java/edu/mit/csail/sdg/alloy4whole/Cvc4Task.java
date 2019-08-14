@@ -9,6 +9,7 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
+import edu.uiowa.alloy2smt.utils.AlloyUnsatCore;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
@@ -26,8 +27,6 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import edu.mit.csail.sdg.alloy4whole.instances.*;
-
-import javax.swing.*;
 
 import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
 
@@ -243,8 +242,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         workerCallback.callback(modelMessage);
         callbackPlain("\n");
 
-        UnsatCore unsatCore = parseUnsatCore(smtCore);
-        return null;
+        SmtUnsatCore smtUnsatCore = parseUnsatCore(smtCore);
+        AlloyUnsatCore alloyUnsatCore = AlloyUnsatCore.fromSmtUnsatCore(smtUnsatCore);
+        return alloyUnsatCore.getPositions();
     }
 
     private void callbackLink(String log, String link)
@@ -719,7 +719,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     }
 
     //ToDo: replace this with a call edu.uiowa.smt.Result.parseUnsatCore
-    public static UnsatCore parseUnsatCore(String smtCore)
+    public static SmtUnsatCore parseUnsatCore(String smtCore)
     {
         CharStream charStream = CharStreams.fromString(smtCore);
 
@@ -730,8 +730,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         ParseTree tree =  parser.getUnsatCore();
         SmtModelVisitor visitor = new SmtModelVisitor();
 
-        UnsatCore unsatCore = (UnsatCore) visitor.visit(tree);
-        return  unsatCore;
+        SmtUnsatCore smtUnsatCore = (SmtUnsatCore) visitor.visit(tree);
+        return smtUnsatCore;
     }
 
     private class CommandResult

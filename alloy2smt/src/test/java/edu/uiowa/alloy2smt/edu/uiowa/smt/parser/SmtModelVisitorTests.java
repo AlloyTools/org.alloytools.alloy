@@ -1,15 +1,10 @@
 package edu.uiowa.alloy2smt.edu.uiowa.smt.parser;
 
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
-import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.Result;
-import edu.uiowa.smt.TranslatorUtils;
-import edu.uiowa.smt.smtAst.FunctionDefinition;
-import edu.uiowa.smt.smtAst.UnsatCore;
+import edu.uiowa.smt.smtAst.SmtUnsatCore;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -23,8 +18,8 @@ public class SmtModelVisitorTests
                 "|{\"filename\":\"file.als\",\"x1\":1,\"y1\":3,\"x2\":13,\"y2\":3,\"symbolIndex\":4}|\n" +
                 ")";
         Result result = new Result();
-        UnsatCore unsatCore = result.parseUnsatCore(smt);
-        List<String> core = unsatCore.getCore();
+        SmtUnsatCore smtUnsatCore = result.parseUnsatCore(smt);
+        List<String> core = smtUnsatCore.getCore();
         assertEquals("{\"filename\":\"file.als\",\"x1\":1,\"y1\":4,\"x2\":13,\"y2\":4,\"symbolIndex\":5}", core.get(0));
         assertEquals("{\"filename\":\"file.als\",\"x1\":1,\"y1\":3,\"x2\":13,\"y2\":3,\"symbolIndex\":4}", core.get(1));
     }

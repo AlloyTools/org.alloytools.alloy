@@ -542,10 +542,10 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(UnsatCore unsatCore)
+    public void visit(SmtUnsatCore smtUnsatCore)
     {
         stringBuilder.append("(\n");
-        for (String formula: unsatCore.getCore())
+        for (String formula: smtUnsatCore.getCore())
         {
             stringBuilder.append(formula + "\n");
         }
