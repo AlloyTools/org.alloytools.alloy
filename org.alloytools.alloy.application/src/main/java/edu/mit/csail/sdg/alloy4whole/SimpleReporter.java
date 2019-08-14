@@ -696,6 +696,7 @@ final class SimpleReporter extends A4Reporter {
                         final String tempCNF = tempdir + File.separatorChar + i + ".cnf";
                         final Command cmd = cmds.get(i);
                         rep.tempfile = tempCNF;
+                        cb(out, "debug", "PATH: " + System.getenv("PATH"));
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
                         A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
                         if (ai == null)
