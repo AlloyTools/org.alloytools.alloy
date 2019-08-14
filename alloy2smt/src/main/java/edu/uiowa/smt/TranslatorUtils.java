@@ -9,11 +9,10 @@
 package edu.uiowa.smt;
 
 
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
+
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class TranslatorUtils
 {

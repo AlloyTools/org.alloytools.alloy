@@ -67,6 +67,8 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
                 }
             }
 
+            // (block-model)
+            Cvc4Task.cvc4Process.sendCommand(SmtLibPrettyPrinter.BLOCK_MODEL);
             // (check-sat)
             String result = Cvc4Task.cvc4Process.sendCommand(SmtLibPrettyPrinter.CHECK_SAT);
             if(result != null)

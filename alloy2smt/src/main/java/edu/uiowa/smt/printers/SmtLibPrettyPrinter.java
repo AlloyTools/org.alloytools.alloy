@@ -18,6 +18,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public final static String CHECK_SAT = "(check-sat)";
     public final static String GET_MODEL = "(get-model)";
     public final static String GET_UNSAT_CORE = "(get-unsat-core)";
+    public final static String BLOCK_MODEL = "(block-model)";
     public final static String PUSH = "(push 1)";
     public final static String POP = "(pop 1)";
     private Map<String, String> options;
@@ -46,7 +47,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
                 "(set-logic ALL)\n" +
                 "(set-option :produce-models true)\n" +
                 "(set-option :incremental true)\n" +
-                "(set-option :block-models true)\n" +
+                "(set-option :block-models literals)\n" +
 //                "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
                 "(set-option :sets-ext true)\n");
