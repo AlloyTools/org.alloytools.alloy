@@ -248,13 +248,17 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         String coreMessage = getCoreMessage(positions);
 
-        Command command = translation.getCommands().get(commandIndex);
-
-        String  satResult = "unsat";
-        int minimizedBefore = 0;
-        int minimizedAfter = 1;
-        Object[] message = new Object []{satResult, command.check, command.expects, duration, null, coreMessage, minimizedBefore, minimizedAfter,  duration};
+        Object[] message = new Object []{"link", "Core", coreMessage};
         workerCallback.callback(message);
+        callbackPlain(" contains " + positions.size() + " top-level formulas. "
+                + duration + "ms.\n");
+        
+//        Command command = translation.getCommands().get(commandIndex);
+//        String  satResult = "unsat";
+//        int minimizedBefore = 0;
+//        int minimizedAfter = positions.size();
+//        Object[] message = new Object []{satResult, command.check, command.expects, duration, null, coreMessage, minimizedBefore, minimizedAfter,  duration};
+//        workerCallback.callback(message);
 
         return positions;
     }
