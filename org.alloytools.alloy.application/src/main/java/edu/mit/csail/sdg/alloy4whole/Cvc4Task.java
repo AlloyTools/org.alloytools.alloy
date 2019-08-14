@@ -233,7 +233,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return commandResult;
     }
 
-    private Set<Pos> prepareUnsatCore(int index, long duration) throws Exception
+    private Set<Pos> prepareUnsatCore(int commandIndex, long duration) throws Exception
     {
         String smtCore = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_UNSAT_CORE);
 
@@ -244,7 +244,48 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         SmtUnsatCore smtUnsatCore = parseUnsatCore(smtCore);
         AlloyUnsatCore alloyUnsatCore = AlloyUnsatCore.fromSmtUnsatCore(smtUnsatCore);
-        return alloyUnsatCore.getPositions();
+        Set<Pos> positions = alloyUnsatCore.getPositions();
+
+        String coreMessage = getCoreMessage(positions);
+
+        Command command = translation.getCommands().get(commandIndex);
+
+        String  satResult = "unsat";
+        int minimizedBefore = 0;
+        int minimizedAfter = 1;
+        Object[] message = new Object []{satResult, command.check, command.expects, duration, null, coreMessage, minimizedBefore, minimizedAfter,  duration};
+        workerCallback.callback(message);
+
+        return positions;
+    }
+
+    private String getCoreMessage(Set<Pos> positions)
+    {
+        Pair<Set<Pos>,Set<Pos>> core = new Pair<>(positions, Collections.emptySet());
+
+        String coreMessage;
+        OutputStream fs = null;
+        ObjectOutputStream os = null;
+        try
+        {
+            // generate unsat core file
+            File coreFile = File.createTempFile("tmp", ".core", new File(tempDirectory));
+            fs = new FileOutputStream(coreFile);
+            os = new ObjectOutputStream(fs);
+            os.writeObject(core);
+            os.writeObject(positions);
+            coreMessage = "CORE: " + coreFile.getAbsolutePath();
+        }
+        catch (Throwable ex)
+        {
+            coreMessage = "";
+        }
+        finally
+        {
+            Util.close(os);
+            Util.close(fs);
+        }
+        return coreMessage;
     }
 
     private void callbackLink(String log, String link)

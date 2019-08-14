@@ -312,7 +312,7 @@ final class SimpleReporter extends A4Reporter {
                 boolean chk = Boolean.TRUE.equals(array[1]);
                 int expects = (Integer) (array[2]);
                 String formula = (String) (array[4]);
-                span.setLength(len3);
+                // span.setLength(len3);
                 span.log(chk ? "   No counterexample found. " : "   No instance found. ");
                 span.logLink(chk ? "Assertion" : "Predicate", formula);
                 span.log(chk ? " may be valid" : " may be inconsistent");
