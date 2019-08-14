@@ -31,10 +31,7 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.event.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -73,10 +70,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+import javax.swing.event.*;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.html.HTMLDocument;
 
@@ -1393,10 +1387,29 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
             optmenu.addSeparator();
             // CVC4 options
-            addToMenu(optmenu, RelationalSolver);
-            addToMenu(optmenu, Cvc4Timeout);
-            addToMenu(optmenu, Cvc4IncludeCommandScope);
-            addToMenu(optmenu, Cvc4ProduceUnsatCores);
+            JMenu relationalSolverMenu = addToMenu(optmenu, RelationalSolver);
+
+            JMenu cvc4TimeoutMenu = addToMenu(optmenu, Cvc4Timeout);
+            List<JMenuItem> cvc4BooleanPreferences = addToMenu(optmenu,
+                    Cvc4IncludeCommandScope,
+                    Cvc4ProduceUnsatCores);
+
+            if(RelationalSolver.get().equals(KODKOD))
+            {
+                cvc4TimeoutMenu.setEnabled(false);
+                for(JMenuItem item: cvc4BooleanPreferences)
+                {
+                    item.setEnabled(false);
+                }
+            }
+            else
+            {
+                cvc4TimeoutMenu.setEnabled(true);
+                for(JMenuItem item: cvc4BooleanPreferences)
+                {
+                    item.setEnabled(true);
+                }
+            }
             optmenu.addSeparator();
 
             addToMenu(optmenu, Solver);
@@ -2324,12 +2337,15 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Creates menu items from boolean preferences (<code>prefs</code>) and adds
      * them to a given parent menu (<code>parent</code>).
      */
-    private void addToMenu(JMenu parent, BooleanPref... prefs) {
+    private List<JMenuItem> addToMenu(JMenu parent, BooleanPref... prefs) {
+        List<JMenuItem> menuItems = new ArrayList<>();
         for (BooleanPref pref : prefs) {
             Action action = pref.getTitleAction();
             Object name = action.getValue(Action.NAME);
-            menuItem(parent, name + ": " + (pref.get() ? "Yes" : "No"), action);
+            JMenuItem item = menuItem(parent, name + ": " + (pref.get() ? "Yes" : "No"), action);
+            menuItems.add(item);
         }
+        return menuItems;
     }
 
     /**
