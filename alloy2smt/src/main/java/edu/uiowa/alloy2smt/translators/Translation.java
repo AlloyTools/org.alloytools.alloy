@@ -109,34 +109,34 @@ public class Translation
         StringBuilder stringBuilder = new StringBuilder();
         for (Sort sort : newSorts)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(sort);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (ConstantDeclaration declaration : newConstantDeclarations)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(declaration);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (FunctionDeclaration declaration : newFunctionDeclarations)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(declaration);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (Assertion newAssertion : newAssertions)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(newAssertion);
             stringBuilder.append(printer.getSmtLib());
         }
 
         // get the translation for the command assertion
-        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter(Collections.emptyMap());
+        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
         for (Assertion assertion: commandAssertions)
         {
             printer.visit(assertion);

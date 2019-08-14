@@ -33,7 +33,7 @@ public class Sort extends Expression
     @Override
     public String toString()
     {
-        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
         printer.visit(this);
         return printer.getSmtLib();
     }
