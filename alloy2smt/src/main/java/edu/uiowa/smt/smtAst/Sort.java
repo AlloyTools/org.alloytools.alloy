@@ -11,6 +11,7 @@ package edu.uiowa.smt.smtAst;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class Sort extends Expression
@@ -32,7 +33,7 @@ public class Sort extends Expression
     @Override
     public String toString()
     {
-        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
         printer.visit(this);
         return printer.getSmtLib();
     }

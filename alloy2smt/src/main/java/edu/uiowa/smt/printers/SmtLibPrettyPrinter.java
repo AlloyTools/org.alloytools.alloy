@@ -19,6 +19,11 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public final static String GET_MODEL = "(get-model)";
     public final static String PUSH = "(push 1)";
     public final static String POP = "(pop 1)";
+    private Map<String, String> options;
+    public SmtLibPrettyPrinter(Map<String, String> options)
+    {
+        this.options = options;
+    }
 
     private StringBuilder stringBuilder = new StringBuilder();
 
@@ -38,6 +43,15 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
 //                "(set-option :fmf-bound true)\n" +
                 "(set-option :finite-model-find true)\n" +
                 "(set-option :sets-ext true)\n");
+        
+        if(options != null && options.size() > 0)
+        {
+            for (Map.Entry<String, String> entry : options.entrySet())
+            {
+                SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
+                visit(option);
+            }
+        }
     }
 
     public void visit(SmtProgram program)

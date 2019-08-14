@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.Scanner;
 
@@ -77,7 +78,7 @@ public class Main
                 if (isValidInputFilePath(inputFile))
                 {
                     String alloy      = new String(Files.readAllBytes(Paths.get(inputFile)), StandardCharsets.UTF_8);
-                    translation       = Utils.translate(alloy);
+                    translation       = Utils.translate(alloy, Collections.emptyMap());
                     defaultOutputFile = OUTPUT_DIR + SEP + new File(inputFile).getName() + ".smt2";
                 } else
                 {
@@ -94,7 +95,7 @@ public class Main
                     stringBuilder.append(scanner.nextLine()).append("\n");
                 }
 
-                translation         = Utils.translate(stringBuilder.toString());
+                translation         = Utils.translate(stringBuilder.toString(), Collections.emptyMap());
                 defaultOutputFile   = DEFAULT_OUTPUT_FILE + ".smt2";
             }
 

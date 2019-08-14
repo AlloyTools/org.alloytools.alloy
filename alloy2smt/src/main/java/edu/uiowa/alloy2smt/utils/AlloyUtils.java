@@ -12,38 +12,26 @@ import edu.uiowa.smt.smtAst.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AlloyUtils
 {
+    public static int timeout = 30000;
+
     public static List<CommandResult> runAlloyString(String alloy, boolean includeScope) throws Exception
     {
-        Translation translation = Utils.translate(alloy);
-        Cvc4Task task = new Cvc4Task();
-        return task.run(translation, includeScope);
-    }
-
-    public static List<CommandResult> runAlloyFileTimeout(int timeout, String fileName, boolean includeScope) throws Exception
-    {
-        Translation translation = Utils.translateFromFile(fileName);
-        Cvc4Task task = new Cvc4Task(timeout);
-        return task.run(translation, includeScope);
-    }
-
-
-    public static List<CommandResult> runAlloyFile(String fileName, boolean includeScope) throws Exception
-    {
-        Translation translation = Utils.translateFromFile(fileName);
+        Map<String, String> options = new HashMap<>();
+        options.put(TranslatorUtils.TIMEOUT_OPTION, Integer.toString(timeout));
+        Translation translation = Utils.translate(alloy, options);
         Cvc4Task task = new Cvc4Task();
         return task.run(translation, includeScope);
     }
 
     public synchronized static CommandResult runAlloyFile(String fileName, boolean includeScope, int commandIndex) throws Exception
     {
-        Translation translation = Utils.translateFromFile(fileName);
+        Map<String, String> options = new HashMap<>();
+        options.put(TranslatorUtils.TIMEOUT_OPTION, Integer.toString(timeout));
+        Translation translation = Utils.translateFromFile(fileName, options);
         Cvc4Task task = new Cvc4Task();
         CommandResult result =  task.run(translation, includeScope, commandIndex);
             /*
@@ -82,8 +70,10 @@ public class AlloyUtils
 
     public static CommandResult runAlloyFileTimeout(int timeout, String fileName, boolean includeScope, int commandIndex) throws Exception
     {
-        Translation translation = Utils.translateFromFile(fileName);
-        Cvc4Task task = new Cvc4Task(timeout);
+        Map<String, String> options = new HashMap<>();
+        options.put(TranslatorUtils.TIMEOUT_OPTION, Integer.toString(timeout));
+        Translation translation = Utils.translateFromFile(fileName, options);
+        Cvc4Task task = new Cvc4Task();
         return task.run(translation, includeScope, commandIndex);
     }
 

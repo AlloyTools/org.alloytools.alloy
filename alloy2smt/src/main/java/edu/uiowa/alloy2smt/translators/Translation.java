@@ -8,6 +8,7 @@ import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
@@ -108,34 +109,34 @@ public class Translation
         StringBuilder stringBuilder = new StringBuilder();
         for (Sort sort : newSorts)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
             printer.visit(sort);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (ConstantDeclaration declaration : newConstantDeclarations)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
             printer.visit(declaration);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (FunctionDeclaration declaration : newFunctionDeclarations)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
             printer.visit(declaration);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (Assertion newAssertion : newAssertions)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(Collections.emptyMap());
             printer.visit(newAssertion);
             stringBuilder.append(printer.getSmtLib());
         }
 
         // get the translation for the command assertion
-        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
+        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter(Collections.emptyMap());
         for (Assertion assertion: commandAssertions)
         {
             printer.visit(assertion);

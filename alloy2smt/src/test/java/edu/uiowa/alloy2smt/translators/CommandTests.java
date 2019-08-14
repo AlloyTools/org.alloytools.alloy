@@ -7,6 +7,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ class CommandTests
     void defaultCommand()
     {
         String alloy = "sig A {}\n";
-        Translation translation = Utils.translate(alloy);
+        Translation translation = Utils.translate(alloy, Collections.emptyMap());
         assertEquals(1, translation.getCommands().size());
     }
 

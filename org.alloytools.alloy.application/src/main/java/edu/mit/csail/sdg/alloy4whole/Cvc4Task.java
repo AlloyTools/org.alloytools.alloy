@@ -27,13 +27,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 import edu.mit.csail.sdg.alloy4whole.instances.*;
 
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4IncludeCommandScope;
+import javax.swing.*;
+
+import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
 
 public class Cvc4Task implements WorkerEngine.WorkerTask
 {
     public static final String tempDirectory        = System.getProperty("java.io.tmpdir");
-    private static final String TIMEOUT_OPTION      = "tlimit" ;
 
     private final Map<String, String>   alloyFiles;
     private final String                originalFileName;
@@ -46,6 +46,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     public static Cvc4Process cvc4Process;
     private WorkerEngine.WorkerCallback workerCallback;
     private Translation translation;
+    private Map<String, String> options;
     public static String lastXmlFile;
 
     Cvc4Task(Map<String, String> alloyFiles, String originalFileName, int resolutionMode, int targetCommandIndex)
@@ -77,10 +78,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                 cvc4Process = Cvc4Process.start(workerCallback);
 
                 cvc4Process.sendCommand(smtScript);
-
-                String options =  setSolverOptions(cvc4Process, translation);
-
-//                callbackPlain(options);
 
                 CommandResult commandResult;
 
@@ -169,17 +166,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
     }
 
-    public static String setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
+    public void setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
     {
-        Map<String, String> options = new HashMap<>();
+        options = new HashMap<>();
 
         // (set-option :tlimit 30000)
-        options.put(TIMEOUT_OPTION, Cvc4Timeout.get().toString());
-
-        String script = TranslatorUtils.translateOptions(options);
-        cvc4Process.sendCommand(script);
-
-        return script;
+        options.put(TranslatorUtils.TIMEOUT_OPTION, Cvc4Timeout.get().toString());
+        //(set-option :produce-unsat-cores false)
+        options.put(TranslatorUtils.PRODUCE_UNSAT_CORES_OPTION, Cvc4ProduceUnsatCores.get().toString());
     }
 
     private CommandResult solveCommand(int index) throws Exception
@@ -666,7 +660,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private Translation translateToSMT() throws IOException
     {
-        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode);
+        setSolverOptions(cvc4Process, translation);
+
+        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode, options);
 
         // callbackBold("Translation output");
         // callbackPlain(translation.getSmtScript());

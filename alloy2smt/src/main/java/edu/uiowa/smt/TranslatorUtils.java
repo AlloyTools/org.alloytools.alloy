@@ -19,6 +19,9 @@ public class TranslatorUtils
 {
     private static int freshNameIndex = 0;
 
+    public static final String TIMEOUT_OPTION = "tlimit";
+    public static final String PRODUCE_UNSAT_CORES_OPTION = "produce-unsat-cores";
+
     public static String sanitizeWithBars(Declaration declaration)
     {
         if(declaration.isOriginal())
@@ -287,18 +290,6 @@ public class TranslatorUtils
                 .filter(f -> f.getName().equals(name)).findFirst().get();
         definition = smtModel.evaluateUninterpretedInt(definition);
         return definition;
-    }
-
-    public static String translateOptions(Map<String, String> options)
-    {
-        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
-
-        for (Map.Entry<String, String> entry : options.entrySet())
-        {
-            SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
-            printer.visit(option);
-        }
-        return printer.getSmtLib();
     }
 
     public static String getFriendlyAtom(String uninterpretedConstant, String replacement)

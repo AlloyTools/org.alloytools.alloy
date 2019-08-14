@@ -5,6 +5,8 @@ import edu.uiowa.alloy2smt.utils.CommandResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SampleModelTests

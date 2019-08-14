@@ -1392,10 +1392,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
             addToMenu(optmenu, A4Preferences.LAF);
 
             optmenu.addSeparator();
-
+            // CVC4 options
             addToMenu(optmenu, RelationalSolver);
             addToMenu(optmenu, Cvc4Timeout);
             addToMenu(optmenu, Cvc4IncludeCommandScope);
+            addToMenu(optmenu, Cvc4ProduceUnsatCores);
+            optmenu.addSeparator();
+
             addToMenu(optmenu, Solver);
             addToMenu(optmenu, SkolemDepth);
             JMenu cmMenu = addToMenu(optmenu, CoreMinimization);

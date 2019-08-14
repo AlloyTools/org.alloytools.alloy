@@ -16,17 +16,7 @@ public class Cvc4Task
 {
     public Cvc4Process cvc4Process;
 
-    private int timeout;
-
-    public Cvc4Task(int timeout)
-    {
-        this.timeout = timeout;
-    }
-
-    public Cvc4Task()
-    {
-        this.timeout = 25000;
-    }
+    public Cvc4Task() {}
 
     public List<CommandResult> run(Translation translation, boolean includeScope) throws Exception
     {
@@ -37,8 +27,6 @@ public class Cvc4Task
             cvc4Process = Cvc4Process.start();
 
             cvc4Process.sendCommand(smtScript);
-
-            setSolverOptions(cvc4Process);
 
             // surround each command except the last one with (push) and (pop)
             for (int index = 0; index < translation.getCommands().size(); index++)
@@ -62,20 +50,9 @@ public class Cvc4Task
 
         cvc4Process.sendCommand(smtScript);
 
-        setSolverOptions(cvc4Process);
-
         CommandResult commandResult = solveCommand(commandIndex, includeScope, translation);
 
         return commandResult;
-    }
-
-    public String setSolverOptions(Cvc4Process cvc4Process) throws IOException
-    {
-        Map<String, String> options = new HashMap<>();
-        options.put("tlimit", Integer.toString(timeout));
-        String script = TranslatorUtils.translateOptions(options);
-        cvc4Process.sendCommand(script);
-        return script;
     }
 
     private CommandResult solveCommand(int index, boolean includeScope, Translation translation) throws Exception
