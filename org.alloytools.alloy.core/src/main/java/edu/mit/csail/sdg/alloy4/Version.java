@@ -33,21 +33,30 @@ public final class Version {
     /**
      * The constructor is private, since this class never needs to be instantiated.
      */
-    private Version() {}
+    private Version() {
+    }
 
     public static String  version      = "unknown";
     public static long    buildnumber  = -1;
     public static Instant builddate    = Instant.ofEpochMilli(0);
     public static String  commit       = "unknown";
     public static boolean experimental = true;
+    private static String shortversion = "";
 
     static {
         Manifest manifest = getManifest();
         if (manifest != null) {
 
             String version = manifest.getMainAttributes().getValue("Bundle-Version");
-            if (version != null)
+            if (version != null) {
                 Version.version = version;
+                int lastIndexOf = version.lastIndexOf('.');
+                if (lastIndexOf > 0) {
+                    Version.shortversion = version.substring(0, lastIndexOf);
+                } else {
+                    Version.shortversion = version;
+                }
+            }
 
             String commit = manifest.getMainAttributes().getValue("Git-SHA");
             if (commit != null)
@@ -98,6 +107,10 @@ public final class Version {
     /** Returns the build date. */
     public static String buildDate() {
         return builddate.toString();
+    }
+
+    public static String getShortversion() {
+        return shortversion;
     }
 
 }

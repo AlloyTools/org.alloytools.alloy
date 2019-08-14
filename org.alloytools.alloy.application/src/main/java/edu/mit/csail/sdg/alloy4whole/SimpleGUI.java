@@ -56,6 +56,7 @@ import static java.awt.event.KeyEvent.VK_SHIFT;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
@@ -69,6 +70,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -97,6 +99,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -108,9 +111,12 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
 import org.alloytools.alloy.core.AlloyCore;
 
@@ -381,7 +387,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (t.isFile())
             frame.setTitle(t.getFilename());
         else
-            frame.setTitle("Alloy Analyzer " + Version.version());
+            frame.setTitle("Alloy Analyzer " + Version.getShortversion());
         toolbar.setBorder(new OurBorder(false, false, text.count() <= 1, false));
         int c = t.getCaret();
         int y = t.getLineOfOffset(c) + 1;
@@ -472,11 +478,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     /** Called when this window is shown. */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Called when this window is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Wraps the calling method into a Runnable whose run() will call the calling
@@ -590,7 +598,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             };
             try {
                 Runtime.getRuntime().exec(args).waitFor();
-            } catch (Throwable ex) {} // We only intend to make a best effort.
+            } catch (Throwable ex) {
+            } // We only intend to make a best effort.
         }
         return alloyHome = ans;
     }
@@ -975,7 +984,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             SwingUtilities.updateComponentTreeUI(frame);
             SwingUtilities.updateComponentTreeUI(prefDialog);
             SwingUtilities.updateComponentTreeUI(viz.getFrame());
-        } catch (Throwable e) {}
+        } catch (Throwable e) {
+        }
         return null;
     }
 
@@ -1482,7 +1492,67 @@ public final class SimpleGUI implements ComponentListener, Listener {
     public Runner doAbout() {
         if (wrap)
             return wrapMe();
-        OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+
+        // Old about message
+        // OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+
+        HTMLEditorKit kit = new HTMLEditorKit();
+        StyleSheet styleSheet = kit.getStyleSheet();
+        styleSheet.addRule("body {color:#000; font-family:Verdana, Trebuchet MS,Geneva, sans-serif; font-size: 10px; margin: 4px; }");
+        styleSheet.addRule("h1 {color: blue;}");
+        styleSheet.addRule("h2 {color: #ff0000;}");
+        styleSheet.addRule("pre {font : 10px monaco; color : black; background-color: #C0C0C0; padding: 4px; margin: 4px; }");
+        styleSheet.addRule("th {text-align:left;}");
+
+        JTextPane ta = new JTextPane();
+        ta.setEditorKit(kit);
+        ta.setContentType("text/html");
+        ta.setBackground(null);
+        ta.setBorder(null);
+        ta.setFont(new JLabel().getFont());
+        // @formatter:off
+        ta.setText("<html><h1>Alloy Analyzer " + Version.getShortversion() + "</h1>"
+        +"<br/>"
+        +"<html>"
+        + "<tr><th>Project Lead</th><td>Daniel Jackson</td></tr>"
+        + "<tr><th>Chief Developer</th><td>Aleksandar Milicevic</td></tr>"
+        + "<tr><th>Kodkod Engine</th><td>Emina Torlak</td></tr>"
+        + "<tr><th>Open Source</th><td>Peter Kriens</td></tr>"
+        + "</table><br/>"
+        +"<p>For more information about Alloy, <a href='http://alloytools.org'>http://alloytools.org</a></p>"
+        +"<p>Questions and comments about Alloy are welcome at the community forum:</p>"
+        +"<p>Alloy Community Forum: <a href='https://groups.google.com/forum/#!forum/alloytools'>https://groups.google.com/forum/#!forum/alloytools</a></p>"
+        +"<p>Alloy experts also respond to <a href='https://stackoverflow.com/questions/tagged/alloy'>https://stackoverflow.com</a> questions tagged <code>alloy</code>.</p>"
+        +"<p>Major contributions to earlier versions of Alloy were made by: Felix Chang (v4);<br/>"
+        +"Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater, Derek Rayside, Greg Dennis,<br/>"
+        +"Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz Khurshid (v3); Manu Sridharan<br/>"
+        +"(v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,<br/>"
+        +"Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, Uriel<br/>"
+        +"Schafer (v1).</p>"
+        +"<p>The development of Alloy was funded by part by the National Science Foundation under<br/>"
+        +"Grant Nos. 0325283, 0541183, 0438897 and 0707612; by the Air Force Research Laboratory<br/>"
+        +"(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence<br/>"
+        +"Community Information Assurance Research (NICIAR) Program; and by the Nokia<br/>"
+        +"Corporation as part of a collaboration between Nokia Research and MIT CSAIL.</p>"
+        +"<br/><pre>"
+        +"Build Date: " + Version.buildDate()+"<br/>"
+        +"Git Commit: " + Version.commit
+        +"</pre>");
+        // @formatter:on
+        ta.setEditable(false);
+        ta.addHyperlinkListener((e) -> {
+            if (e.getEventType() == EventType.ACTIVATED) {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (IOException | URISyntaxException e1) {
+                        // ignore
+                    }
+                }
+            }
+        });
+        OurDialog.showmsg("About Alloy Analyzer " + Version.version(), ta);
+
         return null;
     }
 
@@ -1520,7 +1590,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
                                                             // occur
                         html2.setPage(e.getURL());
                         html2.requestFocusInWindow();
-                    } catch (Throwable ex) {}
+                    } catch (Throwable ex) {
+                    }
                 }
             };
             html1.setEditable(false);
@@ -1970,11 +2041,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
                     y = 30;
                 }
             }
-            if (width < 100)
-                width = 100;
-            if (height < 100)
-                height = 100;
         }
+
+        if (width < 500)
+            width = 500;
+        if (height < 500)
+            height = 500;
+
         frame.setSize(width, height);
         frame.setLocation(x, y);
         frame.setVisible(true);
@@ -2064,8 +2137,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             windowmenu = menu(bar, "&Window", doRefreshWindow(false));
             windowmenu2 = menu(null, "&Window", doRefreshWindow(true));
             helpmenu = menu(bar, "&Help", null);
-            if (!Util.onMac())
-                menuItem(helpmenu, "About Alloy...", 'A', doAbout());
+            menuItem(helpmenu, "About Alloy...", 'A', doAbout());
             menuItem(helpmenu, "Quick Guide", 'Q', doHelp());
             menuItem(helpmenu, "See the Copyright Notices...", 'L', doLicense());
         } finally {
@@ -2128,7 +2200,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold("Alloy Analyzer " + Version.version() + " (build date: " + Version.buildDate() + " git " + Version.commit + ")\n\n");
+        log.logBold("Alloy Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
 
         // If on Mac, then register an application listener
         try {
@@ -2155,7 +2227,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             java.lang.reflect.Field old = ClassLoader.class.getDeclaredField("usr_paths");
             old.setAccessible(true);
             old.set(null, newarray);
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
 
         // Pre-load the preferences dialog
         prefDialog = new PreferencesDialog(log, binary);
