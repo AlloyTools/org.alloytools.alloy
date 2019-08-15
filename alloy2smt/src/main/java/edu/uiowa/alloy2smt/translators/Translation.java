@@ -3,6 +3,7 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.*;
@@ -21,13 +22,17 @@ public class Translation
     private final SmtProgram    smtAst;
     private final Mapper        mapper;
     private final String        smtScript;
+    private final AlloySettings alloySettings;
 
-    public Translation(Alloy2SmtTranslator translator, SmtProgram smtAst, Mapper mapper, String smtScript)
+    public Translation(Alloy2SmtTranslator translator, SmtProgram smtAst,
+                       Mapper mapper, String smtScript,
+                       AlloySettings alloySettings)
     {
         this.translator = translator;
         this.smtAst     = smtAst;
         this.mapper     = mapper;
         this.smtScript  = smtScript;
+        this.alloySettings = alloySettings;
     }
 
     /**
@@ -69,7 +74,7 @@ public class Translation
      * @return the satResult of translating the given command (ignoring
      * scope constraints) into smt
      */
-    public String translateCommand(int commandIndex, boolean includeScope)
+    public String translateCommand(int commandIndex)
     {
 
         Alloy2SmtTranslator commandTranslator = new Alloy2SmtTranslator(translator);
@@ -81,7 +86,8 @@ public class Translation
         List<Assertion> assertions = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
 
 
-        List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex, includeScope);
+        List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex,
+                alloySettings.includeCommandScope);
 
         // get new declarations, definitions, and assertions
         List<Sort> newSorts = commandTranslator.smtProgram
@@ -151,13 +157,13 @@ public class Translation
      * @return a translation for all commands in smt using (check-sat)
      * without getting the models
      */
-    public String translateAllCommandsWithCheckSat(boolean includeScope)
+    public String translateAllCommandsWithCheckSat()
     {
         StringBuilder stringBuilder = new StringBuilder(getSmtScript());
         for (int i = 0; i < translator.commands.size() ; i++)
         {
             stringBuilder.append(SmtLibPrettyPrinter.PUSH + "\n");
-            stringBuilder.append(translateCommand(i, includeScope) + "\n");
+            stringBuilder.append(translateCommand(i) + "\n");
             stringBuilder.append(SmtLibPrettyPrinter.CHECK_SAT + "\n");
             stringBuilder.append(SmtLibPrettyPrinter.POP + "\n");
         }

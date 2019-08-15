@@ -21,16 +21,16 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     public final static String BLOCK_MODEL = "(block-model)";
     public final static String PUSH = "(push 1)";
     public final static String POP = "(pop 1)";
-    private Map<String, String> options;
+    private SmtSettings smtSettings;
 
-    public SmtLibPrettyPrinter(Map<String, String> options)
+    public SmtLibPrettyPrinter(SmtSettings smtSettings)
     {
-        this.options = options;
+        this.smtSettings = smtSettings;
     }
 
     public SmtLibPrettyPrinter()
     {
-        this.options = new HashMap<>();
+        this.smtSettings = SmtSettings.Default;
     }
 
     private StringBuilder stringBuilder = new StringBuilder();
@@ -43,23 +43,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
 
     private void initializeProgram()
     {
-        stringBuilder.append(
-                "(set-logic ALL)\n" +
-                "(set-option :produce-models true)\n" +
-                "(set-option :incremental true)\n" +
-                "(set-option :block-models literals)\n" +
-//                "(set-option :fmf-bound true)\n" +
-                "(set-option :finite-model-find true)\n" +
-                "(set-option :sets-ext true)\n");
-
-        if(options != null && options.size() > 0)
-        {
-            for (Map.Entry<String, String> entry : options.entrySet())
-            {
-                SolverOption option = new SolverOption(entry.getKey(), entry.getValue());
-                visit(option);
-            }
-        }
+        visit(smtSettings);
     }
 
     public void visit(SmtProgram program)
@@ -505,11 +489,19 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(SolverOption solverOption)
+    public void visit(SmtSettings smtSettings)
     {
-        stringBuilder.append("(set-option ");
-        stringBuilder.append(":" + solverOption.name + " ");
-        stringBuilder.append(solverOption.value + ")\n");
+        for (String logic: smtSettings.getLogic())
+        {
+            stringBuilder.append("(set-logic " + logic + ")\n");
+        }
+        Map<String, String> options = smtSettings.getSolverOptions();
+        for (Map.Entry<String, String> entry: options.entrySet())
+        {
+            stringBuilder.append("(set-option ");
+            stringBuilder.append(":" + entry.getKey() + " ");
+            stringBuilder.append(entry.getValue() + ")\n");
+        }
     }
 
     @Override

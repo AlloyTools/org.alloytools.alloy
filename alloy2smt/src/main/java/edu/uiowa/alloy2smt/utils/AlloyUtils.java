@@ -16,22 +16,18 @@ import java.util.*;
 
 public class AlloyUtils
 {
-    public static int timeout = 30000;
+    public static AlloySettings alloySettings = AlloySettings.Default;
 
     public static List<CommandResult> runAlloyString(String alloy, boolean includeScope) throws Exception
     {
-        Map<String, String> options = new HashMap<>();
-        options.put(TranslatorUtils.TIMEOUT_OPTION, Integer.toString(timeout));
-        Translation translation = Utils.translate(alloy, options);
+        Translation translation = Utils.translate(alloy, alloySettings);
         Cvc4Task task = new Cvc4Task();
         return task.run(translation, includeScope);
     }
 
     public synchronized static CommandResult runAlloyFile(String fileName, boolean includeScope, int commandIndex) throws Exception
     {
-        Map<String, String> options = new HashMap<>();
-        options.put(TranslatorUtils.TIMEOUT_OPTION, Integer.toString(timeout));
-        Translation translation = Utils.translateFromFile(fileName, options);
+        Translation translation = Utils.translateFromFile(fileName, alloySettings);
         Cvc4Task task = new Cvc4Task();
         CommandResult result =  task.run(translation, includeScope, commandIndex);
             /*
@@ -70,9 +66,7 @@ public class AlloyUtils
 
     public static CommandResult runAlloyFileTimeout(int timeout, String fileName, boolean includeScope, int commandIndex) throws Exception
     {
-        Map<String, String> options = new HashMap<>();
-        options.put(TranslatorUtils.TIMEOUT_OPTION, Integer.toString(timeout));
-        Translation translation = Utils.translateFromFile(fileName, options);
+        Translation translation = Utils.translateFromFile(fileName, alloySettings);
         Cvc4Task task = new Cvc4Task();
         return task.run(translation, includeScope, commandIndex);
     }

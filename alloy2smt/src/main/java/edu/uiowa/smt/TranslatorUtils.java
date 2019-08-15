@@ -18,9 +18,6 @@ public class TranslatorUtils
 {
     private static int freshNameIndex = 0;
 
-    public static final String TIMEOUT_OPTION = "tlimit";
-    public static final String PRODUCE_UNSAT_CORES_OPTION = "produce-unsat-cores";
-
     public static String sanitizeWithBars(Declaration declaration)
     {
         if(declaration.isOriginal())

@@ -2,6 +2,7 @@ package edu.uiowa.alloy2smt.mapping;
 
 import edu.uiowa.alloy2smt.Utils;
 import edu.uiowa.alloy2smt.translators.Translation;
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ class MapperTests
     void signature1()
     {
         String alloy = "sig A {} \n fact f {#A = 3}";
-        Translation translation = Utils.translate(alloy, Collections.emptyMap());
+        Translation translation = Utils.translate(alloy, AlloySettings.Default);
         Mapper mapper = translation.getMapper();
         Assertions.assertNotNull(mapper);
 
@@ -38,7 +39,7 @@ class MapperTests
                 "sig A {f: A, g: A -> A} \n" +
                 "sig B {f: A, g: B -> A}" +
                 " fact f {#A = 3 and #B = 4}";
-        Translation translation = Utils.translate(alloy, Collections.emptyMap());
+        Translation translation = Utils.translate(alloy, AlloySettings.Default);
         Mapper mapper = translation.getMapper();
         Assertions.assertNotNull(mapper);
 

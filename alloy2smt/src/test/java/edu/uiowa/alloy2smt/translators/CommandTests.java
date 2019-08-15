@@ -1,6 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.uiowa.alloy2smt.Utils;
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.TranslatorUtils;
@@ -21,7 +22,7 @@ class CommandTests
     void defaultCommand()
     {
         String alloy = "sig A {}\n";
-        Translation translation = Utils.translate(alloy, Collections.emptyMap());
+        Translation translation = Utils.translate(alloy, AlloySettings.Default);
         assertEquals(1, translation.getCommands().size());
     }
 

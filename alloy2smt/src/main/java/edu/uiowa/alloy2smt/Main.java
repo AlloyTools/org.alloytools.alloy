@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt;
 import edu.uiowa.alloy2smt.translators.Translation;
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import org.apache.commons.cli.*;
@@ -78,7 +79,7 @@ public class Main
                 if (isValidInputFilePath(inputFile))
                 {
                     String alloy      = new String(Files.readAllBytes(Paths.get(inputFile)), StandardCharsets.UTF_8);
-                    translation       = Utils.translate(alloy, Collections.emptyMap());
+                    translation       = Utils.translate(alloy, AlloySettings.Default);
                     defaultOutputFile = OUTPUT_DIR + SEP + new File(inputFile).getName() + ".smt2";
                 } else
                 {
@@ -95,7 +96,7 @@ public class Main
                     stringBuilder.append(scanner.nextLine()).append("\n");
                 }
 
-                translation         = Utils.translate(stringBuilder.toString(), Collections.emptyMap());
+                translation         = Utils.translate(stringBuilder.toString(), AlloySettings.Default);
                 defaultOutputFile   = DEFAULT_OUTPUT_FILE + ".smt2";
             }
 
@@ -122,7 +123,7 @@ public class Main
                 // translate all alloy commands
                 for (int i = 0; i < translation.getCommands().size(); i++)
                 {
-                    String commandTranslation = translation.translateCommand(i, false);
+                    String commandTranslation = translation.translateCommand(i);
 
                     commandTranslation         =    SmtLibPrettyPrinter.PUSH + "\n" + commandTranslation +
                             SmtLibPrettyPrinter.CHECK_SAT + "\n" + SmtLibPrettyPrinter.GET_MODEL + "\n" +

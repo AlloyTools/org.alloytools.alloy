@@ -100,7 +100,8 @@ public class Cvc4EnumerationTask implements WorkerEngine.WorkerTask
     private Translation translateToSMT() throws IOException
     {
         int resolutionMode      = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
-        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode, Collections.emptyMap());
+        Cvc4Task.setAlloySettings();
+        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode, Cvc4Task.alloySettings);
         return translation;
     }
 

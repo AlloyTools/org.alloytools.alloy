@@ -1,7 +1,7 @@
 package edu.mit.csail.sdg.alloy4whole;
 
 import edu.mit.csail.sdg.alloy4.*;
-
+import edu.mit.csail.sdg.alloy4whole.instances.*;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.Utils;
@@ -9,15 +9,15 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.mapping.MappingField;
 import edu.uiowa.alloy2smt.mapping.MappingSignature;
 import edu.uiowa.alloy2smt.mapping.MappingType;
+import edu.uiowa.alloy2smt.translators.Translation;
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.alloy2smt.utils.AlloyUnsatCore;
-import edu.uiowa.smt.TranslatorUtils;
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
-import edu.uiowa.smt.smtAst.*;
+import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.parser.SmtModelVisitor;
 import edu.uiowa.smt.parser.antlr.SmtLexer;
 import edu.uiowa.smt.parser.antlr.SmtParser;
-import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.alloy2smt.translators.Translation;
+import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.smtAst.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -26,7 +26,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import edu.mit.csail.sdg.alloy4whole.instances.*;
 
 import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
 
@@ -45,7 +44,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
     public static Cvc4Process cvc4Process;
     private WorkerEngine.WorkerCallback workerCallback;
     private Translation translation;
-    private Map<String, String> options;
+    public static AlloySettings alloySettings = AlloySettings.getInstance();
     public static String lastXmlFile;
 
     Cvc4Task(Map<String, String> alloyFiles, String originalFileName, int resolutionMode, int targetCommandIndex)
@@ -165,19 +164,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
     }
 
-    public void setSolverOptions(Cvc4Process cvc4Process, Translation translation) throws IOException
-    {
-        options = new HashMap<>();
-
-        // (set-option :tlimit 30000)
-        options.put(TranslatorUtils.TIMEOUT_OPTION, Cvc4Timeout.get().toString());
-        //(set-option :produce-unsat-cores false)
-        options.put(TranslatorUtils.PRODUCE_UNSAT_CORES_OPTION, Cvc4ProduceUnsatCores.get().toString());
-    }
-
     private CommandResult solveCommand(int index) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index, Cvc4IncludeCommandScope.get());
+        String commandTranslation = translation.translateCommand(index);
 
         Command command = translation.getCommands().get(index);
 
@@ -714,16 +703,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private Translation translateToSMT() throws IOException
     {
-        setSolverOptions(cvc4Process, translation);
+        setAlloySettings();
 
-        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode, options);
+        Translation translation = Utils.translate(alloyFiles, originalFileName, resolutionMode, alloySettings);
 
         // callbackBold("Translation output");
         // callbackPlain(translation.getSmtScript());
 
         // output the smt file
         File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
-        String allCommands  = translation.translateAllCommandsWithCheckSat(Cvc4IncludeCommandScope.get());
+        String allCommands  = translation.translateAllCommandsWithCheckSat();
         Formatter formatter = new Formatter(smtFile);
         formatter.format("%s", allCommands);
         formatter.close();
@@ -744,6 +733,15 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         workerCallback.callback(jsonMessage);
         callbackPlain("\n");
         return translation;
+    }
+
+    public static void setAlloySettings()
+    {
+        // (set-option :tlimit 30000)
+        alloySettings.putSolverOption(SmtSettings.TLIMIT, Cvc4Timeout.get().toString());
+        //(set-option :produce-unsat-cores false)
+        alloySettings.putSolverOption(SmtSettings.PRODUCE_UNSAT_CORES, Cvc4ProduceUnsatCores.get().toString());
+        alloySettings.includeCommandScope = Cvc4IncludeCommandScope.get();
     }
 
     //ToDo: replace this with a call edu.uiowa.smt.Result.parseModel

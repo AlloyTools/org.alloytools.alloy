@@ -64,7 +64,7 @@ public interface SmtAstVisitor
 
     void visit(UninterpretedConstant uninterpretedConstant);
 
-    void visit(SolverOption solverOption);
+    void visit(SmtSettings smtSettings);
 
     String printGetValue(Expression expression);
 

@@ -57,7 +57,7 @@ public class Cvc4Task
 
     private CommandResult solveCommand(int index, boolean includeScope, Translation translation) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index, includeScope);
+        String commandTranslation = translation.translateCommand(index);
         Command command = translation.getCommands().get(index);
         String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
 
