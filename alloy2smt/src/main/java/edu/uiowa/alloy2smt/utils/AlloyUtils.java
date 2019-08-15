@@ -20,13 +20,16 @@ public class AlloyUtils
 
     public static List<CommandResult> runAlloyString(String alloy, boolean includeScope) throws Exception
     {
+        alloySettings.includeCommandScope = includeScope;
         Translation translation = Utils.translate(alloy, alloySettings);
+
         Cvc4Task task = new Cvc4Task();
         return task.run(translation, includeScope);
     }
 
     public synchronized static CommandResult runAlloyFile(String fileName, boolean includeScope, int commandIndex) throws Exception
     {
+        alloySettings.includeCommandScope = includeScope;
         Translation translation = Utils.translateFromFile(fileName, alloySettings);
         Cvc4Task task = new Cvc4Task();
         CommandResult result =  task.run(translation, includeScope, commandIndex);
