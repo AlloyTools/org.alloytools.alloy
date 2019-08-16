@@ -8,7 +8,7 @@ public class SmtSettings extends SmtAst
 {
     private List<String> logic = new ArrayList<>();
     private Map<String, String> solverOptions = new HashMap<>();
-    public boolean printNamedAnnotations = false;
+    public boolean produceUnsatCore;
 
     public static final SmtSettings Default = new SmtSettings();
 
@@ -23,7 +23,7 @@ public class SmtSettings extends SmtAst
         putSolverOption("finite-model-find", "true");
         putSolverOption("sets-ext", "true");
         putSolverOption("block-models", "literals");
-        printNamedAnnotations = false;
+        produceUnsatCore = false;
     }
 
     public static SmtSettings getInstance()
@@ -35,7 +35,7 @@ public class SmtSettings extends SmtAst
     {
         logic = new ArrayList<>(settings.logic);
         solverOptions = new HashMap<>(settings.solverOptions);
-        printNamedAnnotations = settings.printNamedAnnotations;
+        produceUnsatCore = settings.produceUnsatCore;
     }
 
     public void addLogic(String logic)

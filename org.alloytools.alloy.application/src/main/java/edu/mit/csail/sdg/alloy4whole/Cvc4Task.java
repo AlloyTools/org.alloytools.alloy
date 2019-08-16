@@ -742,6 +742,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         //(set-option :produce-unsat-cores false)
         alloySettings.putSolverOption(SmtSettings.PRODUCE_UNSAT_CORES, Cvc4ProduceUnsatCores.get().toString());
         alloySettings.includeCommandScope = Cvc4IncludeCommandScope.get();
+        alloySettings.produceUnsatCore = Cvc4ProduceUnsatCores.get();
     }
 
     //ToDo: replace this with a call edu.uiowa.smt.Result.parseModel

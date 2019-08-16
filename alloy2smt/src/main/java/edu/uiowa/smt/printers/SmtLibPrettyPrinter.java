@@ -274,6 +274,7 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
     @Override
     public void visit(Assertion assertion)
     {
+        stringBuilder.append("\n");
         if(! assertion.getComment().isEmpty())
         {
             // print comment
@@ -281,20 +282,20 @@ public class SmtLibPrettyPrinter implements SmtAstVisitor
         }
 
         stringBuilder.append("(assert ");
-        if(! assertion.getSymbolicName().isEmpty())
+        if(smtSettings.produceUnsatCore && !assertion.getSymbolicName().isEmpty())
         {
             stringBuilder.append("(! ");
         }
         this.visit(assertion.getExpression());
-        if(assertion.getSymbolicName().isEmpty())
-        {
-            stringBuilder.append(")\n");
-        }
-        else
+        if(smtSettings.produceUnsatCore && !assertion.getSymbolicName().isEmpty())
         {
             stringBuilder.append("\n :named |" +
                     assertion.getSymbolicName().replace("\\", "/")
                     + "|))\n");
+        }
+        else
+        {
+            stringBuilder.append(")\n");
         }
     }
 
