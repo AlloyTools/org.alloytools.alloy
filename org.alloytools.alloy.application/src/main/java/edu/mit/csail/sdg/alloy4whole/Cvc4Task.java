@@ -16,7 +16,7 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.parser.SmtModelVisitor;
 import edu.uiowa.smt.parser.antlr.SmtLexer;
 import edu.uiowa.smt.parser.antlr.SmtParser;
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 import edu.uiowa.smt.smtAst.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -86,10 +86,10 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
                     for (int index = 0; index < translation.getCommands().size() - 1; index++)
                     {
                         // (push)
-                        cvc4Process.sendCommand(SmtLibPrettyPrinter.PUSH);
+                        cvc4Process.sendCommand(SmtLibPrinter.PUSH);
                         commandResult = solveCommand(index);
                         // (pop)
-                        cvc4Process.sendCommand(SmtLibPrettyPrinter.POP);
+                        cvc4Process.sendCommand(SmtLibPrinter.POP);
                         this.commandResults.add(commandResult);
                     }
 
@@ -182,8 +182,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         final long startSolve   = System.currentTimeMillis();
 
         // (check-sat)
-//        callbackPlain( commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
-        String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
+//        callbackPlain( commandTranslation + SmtLibPrinter.CHECK_SAT);
+        String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrinter.CHECK_SAT);
 
         final long endSolve     = System.currentTimeMillis();
         long duration		    = (endSolve - startSolve);
@@ -224,7 +224,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private Set<Pos> prepareUnsatCore(int commandIndex, long duration) throws Exception
     {
-        String smtCore = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_UNSAT_CORE);
+        String smtCore = cvc4Process.sendCommand(SmtLibPrinter.GET_UNSAT_CORE);
 
         callbackPlain("CVC4 found an ");
         Object[] modelMessage = new Object []{"link", "unsat core", "MSG: " + smtCore};
@@ -315,7 +315,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
      */
     private String prepareInstance(int commandIndex, long duration) throws Exception
     {
-        String smtModel = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
+        String smtModel = cvc4Process.sendCommand(SmtLibPrinter.GET_MODEL);
 
         callbackPlain("CVC4 found a ");
         Object[] modelMessage = new Object []{"link", "model", "MSG: " + smtModel};

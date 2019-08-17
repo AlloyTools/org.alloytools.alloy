@@ -421,7 +421,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
         Expression expression = exprTranslator.translateExpr(all, new Environment());
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
-                command.bitwidth +  "Int", expression);
+                "Scope " + command.bitwidth +  " Int", expression);
         assertions.add(assertion);
         return assertions;
     }

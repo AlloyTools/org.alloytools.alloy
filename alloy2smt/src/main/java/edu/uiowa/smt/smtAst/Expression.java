@@ -8,9 +8,8 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 
-import java.util.Collections;
 import java.util.Map;
 
 public abstract class Expression extends SmtAst
@@ -18,7 +17,7 @@ public abstract class Expression extends SmtAst
     @Override
     public String toString()
     {
-        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+        SmtLibPrinter printer = new SmtLibPrinter();
         printer.visit(this);
         return printer.getSmtLib();
     }

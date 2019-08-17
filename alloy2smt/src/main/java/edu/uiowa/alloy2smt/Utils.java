@@ -15,6 +15,7 @@ import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 import edu.uiowa.smt.smtAst.SmtProgram;
 
 import java.util.Map;

@@ -9,8 +9,7 @@
 package edu.uiowa.alloy2smt;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
-import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -19,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Formatter;
 import java.util.Scanner;
 
@@ -125,9 +123,9 @@ public class Main
                 {
                     String commandTranslation = translation.translateCommand(i);
 
-                    commandTranslation         =    SmtLibPrettyPrinter.PUSH + "\n" + commandTranslation +
-                            SmtLibPrettyPrinter.CHECK_SAT + "\n" + SmtLibPrettyPrinter.GET_MODEL + "\n" +
-                            SmtLibPrettyPrinter.POP + "\n";
+                    commandTranslation         =    SmtLibPrinter.PUSH + "\n" + commandTranslation +
+                            SmtLibPrinter.CHECK_SAT + "\n" + SmtLibPrinter.GET_MODEL + "\n" +
+                            SmtLibPrinter.POP + "\n";
 
                     formatter.format("%s\n", commandTranslation);
                     System.out.println("\n" + commandTranslation);

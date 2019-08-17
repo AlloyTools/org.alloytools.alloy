@@ -2,15 +2,11 @@ package edu.uiowa.alloy2smt.utils;
 
 import edu.mit.csail.sdg.ast.Command;
 import edu.uiowa.alloy2smt.translators.Translation;
-import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.cvc4.Cvc4Process;
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Cvc4Task
 {
@@ -32,10 +28,10 @@ public class Cvc4Task
             for (int index = 0; index < translation.getCommands().size(); index++)
             {
                 // (push)
-                cvc4Process.sendCommand(SmtLibPrettyPrinter.PUSH);
+                cvc4Process.sendCommand(SmtLibPrinter.PUSH);
                 CommandResult commandResult = solveCommand(index, includeScope, translation);
                 // (pop)
-                cvc4Process.sendCommand(SmtLibPrettyPrinter.POP);
+                cvc4Process.sendCommand(SmtLibPrinter.POP);
                 commandResults.add(commandResult);
             }
             return commandResults;
@@ -59,14 +55,14 @@ public class Cvc4Task
     {
         String commandTranslation = translation.translateCommand(index);
         Command command = translation.getCommands().get(index);
-        String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrettyPrinter.CHECK_SAT);
+        String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrinter.CHECK_SAT);
 
-        String smt = translation.getSmtScript() + commandTranslation + SmtLibPrettyPrinter.CHECK_SAT;
+        String smt = translation.getSmtScript() + commandTranslation + SmtLibPrinter.CHECK_SAT;
         CommandResult commandResult = new CommandResult(index, command, smt, result);
 
         if (result.equals("sat"))
         {
-            commandResult.model = cvc4Process.sendCommand(SmtLibPrettyPrinter.GET_MODEL);
+            commandResult.model = cvc4Process.sendCommand(SmtLibPrinter.GET_MODEL);
             commandResult.smtModel = commandResult.parseModel(commandResult.model);
         }
         return commandResult;

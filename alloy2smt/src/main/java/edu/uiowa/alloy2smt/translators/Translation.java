@@ -4,12 +4,11 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
-import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
@@ -115,34 +114,34 @@ public class Translation
         StringBuilder stringBuilder = new StringBuilder();
         for (Sort sort : newSorts)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(sort);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (ConstantDeclaration declaration : newConstantDeclarations)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(declaration);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (FunctionDeclaration declaration : newFunctionDeclarations)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(declaration);
             stringBuilder.append(printer.getSmtLib());
         }
 
         for (Assertion newAssertion : newAssertions)
         {
-            SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter();
+            SmtLibPrinter printer = new SmtLibPrettyPrinter();
             printer.visit(newAssertion);
             stringBuilder.append(printer.getSmtLib());
         }
 
         // get the translation for the command assertion
-        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter();
+        SmtLibPrinter printer     = new SmtLibPrettyPrinter();
         for (Assertion assertion: commandAssertions)
         {
             printer.visit(assertion);
@@ -162,10 +161,10 @@ public class Translation
         StringBuilder stringBuilder = new StringBuilder(getSmtScript());
         for (int i = 0; i < translator.commands.size() ; i++)
         {
-            stringBuilder.append(SmtLibPrettyPrinter.PUSH + "\n");
+            stringBuilder.append(SmtLibPrinter.PUSH + "\n");
             stringBuilder.append(translateCommand(i) + "\n");
-            stringBuilder.append(SmtLibPrettyPrinter.CHECK_SAT + "\n");
-            stringBuilder.append(SmtLibPrettyPrinter.POP + "\n");
+            stringBuilder.append(SmtLibPrinter.CHECK_SAT + "\n");
+            stringBuilder.append(SmtLibPrinter.POP + "\n");
         }
         return stringBuilder.toString();
     }
