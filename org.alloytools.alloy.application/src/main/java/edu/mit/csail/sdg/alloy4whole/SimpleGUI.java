@@ -2089,7 +2089,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
         // }
         // };
         // c.callback(null);
-
+        
+        if (Util.onMac()) {
+            frame.getRootPane().putClientProperty("apple.awt.fullscreenable", true);
+        }
         SimpleGUI.this.frame = frame;
         finishInit(args, windowWidth);
     }
