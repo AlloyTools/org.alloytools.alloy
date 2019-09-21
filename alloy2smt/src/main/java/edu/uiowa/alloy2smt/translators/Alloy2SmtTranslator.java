@@ -154,14 +154,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     {
         // Axiom for identity relation
         VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort, false);
-        MultiArityExpression        tupleA  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable());
-        BinaryExpression            memberA = BinaryExpression.Op.MEMBER.make(tupleA, this.atomUniverse.getVariable());
 
         VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort, false);
-        MultiArityExpression        tupleB  = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,b.getVariable());
-        BinaryExpression            memberB = BinaryExpression.Op.MEMBER.make(tupleB, this.atomUniverse.getVariable());
-
-        Expression            and     = MultiArityExpression.Op.AND.make(memberA, memberB);
 
         MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
 
@@ -170,10 +164,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         BinaryExpression            equals  = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
 
         BinaryExpression            equiv   = BinaryExpression.Op.EQ.make(member, equals);
-
-        BinaryExpression            implies = BinaryExpression.Op.IMPLIES.make(and, equiv);
         
-        QuantifiedExpression        idenSemantics  = QuantifiedExpression.Op.FORALL.make(implies, a, b);
+        QuantifiedExpression        idenSemantics  = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
 
         this.smtProgram.addAssertion(new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
         this.smtProgram.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.atomUniverse.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
