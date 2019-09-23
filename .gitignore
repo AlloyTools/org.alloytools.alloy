@@ -39,3 +39,10 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 
 .idea
 *.iml
+.classpath
+.project
+*.prefs
+.settings/
+
+*.jar
+.vscode

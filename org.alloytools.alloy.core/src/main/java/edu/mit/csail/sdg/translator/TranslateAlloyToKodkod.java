@@ -57,6 +57,7 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.parser.Macro;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.Decls;
 import kodkod.ast.ExprToIntCast;
@@ -954,6 +955,11 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 
     @Override
     public Object visit(Assert x) throws Err {
+        return null;
+    }
+
+    @Override
+    public Object visit(Macro x) throws Err {
         return null;
     }
 

@@ -563,7 +563,10 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 		Stream<SymbolInformation> sigs = module.getAllSigs().makeConstList().stream()
 				.map(sig -> newSymbolInformation(sig.label, posToLocation(sig.pos), 
-				                                 sig.isOne != null || sig.isLone != null ? SymbolKind.Object : SymbolKind.Class));
+												 sig.isEnum != null ? SymbolKind.Enum :
+												 sig.isEnumMember() ? SymbolKind.EnumMember : 
+				                                 sig.isOne != null || sig.isLone != null ? SymbolKind.Object :
+				                                 SymbolKind.Class));
 
 		Stream<SymbolInformation> fields = module.getAllSigs().makeConstList().stream()
 				.flatMap(sig -> sig.getFields().makeConstList().stream()).map(field -> {
@@ -577,15 +580,9 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 				.map(func -> newSymbolInformation(func.label, posToLocation(func.pos), 
 												  func.isPred ? SymbolKind.Boolean : SymbolKind.Function));
 
-		Stream<SymbolInformation> macros = module.getAllMacros().makeConstList().stream().map( macro -> {
-			SymbolInformation symbolInfo = new SymbolInformation();
-			Location location = posToLocation(macro.pos);
-			symbolInfo.setLocation(location);
-
-			symbolInfo.setName(macro.name);
-			symbolInfo.setKind(SymbolKind.Constant);
-			return symbolInfo;
-		});
+		Stream<SymbolInformation> macros = module.getAllMacros().makeConstList().stream().map( macro -> 
+			newSymbolInformation(macro.name, posToLocation(macro.pos), SymbolKind.Constructor)
+		);
 
 		Stream<SymbolInformation> assertions = module.getAllAssertions().stream().map(
 				assertion -> newSymbolInformation(assertion.label, posToLocation(assertion.pos), SymbolKind.Property));

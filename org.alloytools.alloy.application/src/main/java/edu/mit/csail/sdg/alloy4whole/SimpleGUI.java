@@ -2006,7 +2006,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                         break;
 
                     default :
-                        if (cmd.endsWith(".als") || cmd.endsWith(".ele")) // [HASLab] .ele extension
+                        if (cmd.endsWith(".als") || cmd.endsWith(".md") || cmd.endsWith(".ele")) // [HASLab] .ele extension
                             remainingArgs.add(cmd);
                         else {
                             System.out.println("Unknown cmd " + cmd);
@@ -2352,7 +2352,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // Open the given file, if a filename is given in the command line
         for (String f : args)
-            if (f.toLowerCase(Locale.US).endsWith(".als") || f.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] ele extension
+            if (f.toLowerCase(Locale.US).endsWith(".als") || f.toLowerCase(Locale.US).endsWith(".md") || f.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] ele extension
                 File file = new File(f);
                 if (file.exists() && file.isFile())
                     doOpenFile(file.getPath());
