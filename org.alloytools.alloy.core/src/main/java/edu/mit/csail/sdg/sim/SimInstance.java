@@ -57,6 +57,7 @@ import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.parser.Macro;
 
 /** Mutable; represents an instance. */
 
@@ -920,6 +921,11 @@ public final class SimInstance extends VisitReturn<Object> {
 
     @Override
     public Object visit(Assert x) throws Err {
+        return null;
+    }
+
+    @Override
+    public Object visit(Macro x) throws Err {
         return null;
     }
 

@@ -123,6 +123,28 @@ public class VisitQueryOnce<T> extends VisitQuery<T> {
             return super.visit(x);
     }
 
+    /**
+     * Visits a Field node (this default implementation simply returns null)
+     */
+    @Override
+    public T visit(Field x) throws Err {
+        if (visited(x))
+            return null;
+        else
+            return super.visit(x);
+    }
+
+    /**
+     * Will be called for all visit methods. If it returns true then null is
+     * returned otherwise the normal visit method is called.
+     *
+     * @param x the expr that is being visited
+     * @return true if this expr was already visited
+     */
+    protected boolean visited(Expr x) {
+        return visited.put(x, x) != null;
+    }
+
     @Override
     public T visit(Func x) throws Err {
         if (visited(x))
@@ -139,17 +161,6 @@ public class VisitQueryOnce<T> extends VisitQuery<T> {
             return super.visit(x);
     }
 
-    /**
-     * Visits a Field node (this default implementation simply returns null)
-     */
-    @Override
-    public T visit(Field x) throws Err {
-        if (visited(x))
-            return null;
-        else
-            return super.visit(x);
-    }
-
     @Override
     public T visit(Macro x) throws Err {
         if (visited(x))
@@ -157,15 +168,4 @@ public class VisitQueryOnce<T> extends VisitQuery<T> {
         else
             return super.visit(x);
     }
-    /**
-     * Will be called for all visit methods. If it returns true then null is
-     * returned otherwise the normal visit method is called.
-     *
-     * @param x the expr that is being visited
-     * @return true if this expr was already visited
-     */
-    protected boolean visited(Expr x) {
-        return visited.put(x, x) != null;
-    }
-
 }

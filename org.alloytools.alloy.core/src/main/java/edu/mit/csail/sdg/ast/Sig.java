@@ -355,6 +355,13 @@ public abstract class Sig extends Expr implements Clause {
     /** Returns true iff "this is equal or subtype of that" */
     public abstract boolean isSameOrDescendentOf(Sig that);
 
+    public boolean isEnumMember() {
+        if (this instanceof PrimSig) {
+            PrimSig _this = (PrimSig) this;
+            return _this.parent.isEnum != null;
+        } else
+            return false;
+    }
     /** {@inheritDoc} */
     @Override
     public int getDepth() {
@@ -466,7 +473,7 @@ public abstract class Sig extends Expr implements Clause {
         public final PrimSig parent;
 
         /**
-         * The position of the reference to the parent Sig. 
+         * The position of the reference to the parent Sig.
          * Can be null only if parent is null
          */
         public final Pos parentRefPos;

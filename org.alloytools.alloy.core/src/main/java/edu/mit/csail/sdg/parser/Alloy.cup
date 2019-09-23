@@ -26,6 +26,7 @@ package edu.mit.csail.sdg.parser;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -271,12 +272,11 @@ parser code {:
         if (!filename.endsWith(INT_LIB_NAME + ".als"))
             u.addOpen(null, null, ExprVar.make(null, INT_LIB_NAME), null, ExprVar.make(null, "integer"));
         u.resolution = initialResolutionMode;
-        //System.out.println("alloy_parseStream(): fc.containsKey(" + filename + "): " + fc.containsKey(filename));
         String content = fc!=null ? fc.get(filename) : null;
         if (content==null && loaded!=null) content = loaded.get(filename);
         if (content==null) content = Util.readAll(filename);
         if (loaded!=null) loaded.put(filename,content);
-        if (content.startsWith("---") || filename.endsWith(".md")) content = MarkdownHandler.strip(content);
+        if (content.startsWith("---") || filename.toLowerCase(Locale.ROOT).endsWith(".md")) content = MarkdownHandler.strip(content);
         content = Util.convertLineBreak(content);
         isr = new StringReader(content);
         CompFilter s = new CompFilter(u, seenDollar, filename, lineOffset, new BufferedReader(isr));
@@ -616,7 +616,6 @@ Typescopes ::= Typescopes:a COMMA Typescope:b {: RESULT=a; a.add(b);            
 
 Typescope  ::= TypeNumber:a Name:b  {:
    nod(b);
-   //System.out.println("scope pos: " + a.pos.merge(b.pos));
    RESULT = new CommandScope(a.pos.merge(b.pos), b.pos, new PrimSig(b.label, AttrType.WHERE.make(a.pos.merge(b.pos))), a.isExact, a.startingScope, a.endingScope, a.increment);
 :};
 

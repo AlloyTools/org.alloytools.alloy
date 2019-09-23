@@ -32,7 +32,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +57,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Attr;
 import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
@@ -78,6 +78,7 @@ import edu.mit.csail.sdg.ast.ExprLet;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Module;
@@ -89,8 +90,6 @@ import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
-import edu.mit.csail.sdg.ast.ExprUnary.Op;
-import edu.mit.csail.sdg.ast.Assert;
 
 /**
  * Mutable; this class represents an Alloy module; equals() uses object
@@ -225,7 +224,6 @@ public final class CompModule extends Browsable implements Module {
     /** Each macro name is mapped to a MacroAST object. */
     private final Map<String,Macro>           macros      = new LinkedHashMap<String,Macro>();
 
-    
     /** Each assertion name is mapped to its Expr. */
     private final Map<String,Assert>            asserts     = new LinkedHashMap<String,Assert>();
 
@@ -368,7 +366,7 @@ public final class CompModule extends Browsable implements Module {
                 match = rootmodule.globals.get(name);
             if (match != null) {
                 if (match instanceof Macro)
-                    return ((Macro) match);//.changePos(pos);
+                    return (match);//.changePos(pos);
                 match = ExprUnary.Op.NOOP.make(pos, match);
                 return ExprChoice.make(isIntsNotUsed, pos, asList(match), asList(name));
             }
@@ -673,6 +671,11 @@ public final class CompModule extends Browsable implements Module {
 
         @Override
         public Expr visit(Assert x) throws Err {
+            return x;
+        }
+
+        @Override
+        public Expr visit(Macro x) throws Err {
             return x;
         }
 
@@ -1450,7 +1453,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     Sig addSig(Pos namePos, String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
-        
+
         Sig obj;
         Pos pos = Pos.UNKNOWN.merge(WHERE.find(attributes));
         status = 3;
@@ -2460,7 +2463,7 @@ public final class CompModule extends Browsable implements Module {
                 tryIgnore( () -> d.expr.accept(visitor));
             });
             s.getFacts().forEach(f -> tryIgnore(() -> f.accept(visitor)));
-            
+
             if(s instanceof SubsetSig){
                 SubsetSig ss = (SubsetSig) s;
                 ss.parentRefs().forEach( p -> tryIgnore( () -> p.accept(visitor)));
@@ -2473,7 +2476,7 @@ public final class CompModule extends Browsable implements Module {
 
         funcs.values().forEach(funs -> {
             funs.forEach(fun -> {
-                
+
                 //System.out.println("visiting func " + fun.label + ". label pos: " + fun.labelExpr().pos);
                 //tryIgnore ( () -> fun.labelExpr().accept(visitor));
                 fun.accept(visitor);
@@ -2539,7 +2542,6 @@ public final class CompModule extends Browsable implements Module {
 
                 if (expr.pos != null && expr.pos.contains(pos)) {
 
-                    //System.out.println("find(): containing expr: " + expr);
                     int width = expr.pos.width();
                     if (width <= holder.width) {
                         if (holder.expr == null || holder.expr.referenced() == null || expr.referenced() != null) {

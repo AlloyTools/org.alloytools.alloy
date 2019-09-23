@@ -268,7 +268,7 @@ public final class Reflection {
      * @return the given argument converted to the given type
      */
     @SuppressWarnings({
-                       "unchecked", "rawtypes"
+                       "unchecked", "rawtypes", "deprecation"
     } )
     private static Object convert(String arg, Class< ? > type) {
         try {

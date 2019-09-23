@@ -265,17 +265,6 @@ public final class Func extends Expr implements Clause {
         return (isPred ? "pred " : "fun ") + label;
     }
 
-    // /** {@inheritDoc} */
-    // @Override
-    // public final Pos pos() {
-    //     return pos;
-    // }
-    // /** {@inheritDoc} */
-    // @Override
-    // public final Pos pos() {
-    //     return pos;
-    // }
-
     /** {@inheritDoc} */
     @Override
     public final Pos span() {

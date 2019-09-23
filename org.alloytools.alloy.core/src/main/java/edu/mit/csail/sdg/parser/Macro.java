@@ -35,7 +35,7 @@ import edu.mit.csail.sdg.parser.CompModule.Context;
 
 /** Immutable; this class represents a macro. */
 
-final public class Macro extends ExprCustom {
+public final class Macro extends ExprCustom {
 
     /** If nonnull, this is a private macro. */
     final Pos                        isPrivate;

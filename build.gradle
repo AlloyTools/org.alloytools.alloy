@@ -12,3 +12,7 @@ if (System.env.TRAVIS == 'true') {
     }
   }
 }
+
+tasks.withType(JavaCompile) {
+    options.warnings = false
+}

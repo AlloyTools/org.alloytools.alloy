@@ -32,6 +32,7 @@ import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * Immutable; this class rearranges the AST to promote as many clauses up to the
@@ -131,6 +132,11 @@ final class ConvToConjunction extends VisitReturn<Expr> {
 
     @Override
     public Expr visit(Assert x) throws Err {
+        return x;
+    }
+
+    @Override
+    public Expr visit(Macro x) throws Err {
         return x;
     }
 

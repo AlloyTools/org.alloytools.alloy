@@ -17,6 +17,7 @@ package edu.mit.csail.sdg.ast;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * This abstract class implements a Query visitor that walks over an Expr and
@@ -156,6 +157,11 @@ public abstract class VisitQuery<T> extends VisitReturn<T> {
 
     @Override
     public T visit(Assert x) throws Err {
+        return null;
+    }
+
+    @Override
+    public T visit(Macro x) throws Err {
         return null;
     }
 

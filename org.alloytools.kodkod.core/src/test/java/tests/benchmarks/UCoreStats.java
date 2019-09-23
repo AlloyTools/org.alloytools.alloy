@@ -30,6 +30,7 @@ import static tests.util.Reflection.strategy;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
@@ -244,10 +245,14 @@ public final class UCoreStats {
      */
     public static Object instance(Class< ? > c) {
         try {
-            return c.newInstance();
+            return c.getDeclaredConstructor().newInstance();
         } catch (InstantiationException e) {
             throw new IllegalArgumentException(c.getName() + " has no accessible nullary constructor.");
         } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(c.getName() + " has no accessible nullary constructor.");
+        } catch(InvocationTargetException e){
+            throw new RuntimeException(e);
+        } catch (ReflectiveOperationException e){
             throw new IllegalArgumentException(c.getName() + " has no accessible nullary constructor.");
         }
     }

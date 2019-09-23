@@ -454,8 +454,6 @@ public final class CompUtil {
     }
 
     public static CompModule nullModule() {
-        CompModule res = new CompModule(null, "", "");
-
-        return res;
+        return new CompModule(null, "", "");
     }
 }

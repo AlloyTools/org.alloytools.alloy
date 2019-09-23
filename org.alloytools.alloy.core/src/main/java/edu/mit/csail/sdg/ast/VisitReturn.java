@@ -83,11 +83,12 @@ public abstract class VisitReturn<T> {
     /** Visits a Field node. */
     public abstract T visit(Field x) throws Err;
 
+    /** Visits a Func node. */
     public abstract T visit(Func x) throws Err;
 
+    /** Visists an Assert node. */
     public abstract T visit(Assert x) throws Err;
 
-    public T visit(Macro macro) throws Err {
-        return null;
-    }
+    /** Visits a Macro node. */
+    public abstract T visit(Macro macro) throws Err;
 }
