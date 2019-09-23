@@ -11,8 +11,7 @@ The relational solver uses as backend the SMT solver [CVC4](https://cvc4.cs.stan
 CVC4 binaries for Windows, macOS and Linux are included in the release [alloy_cvc4.zip](https://github.com/CVC4/org.alloytools.alloy/releases/download/v5.0.0.4/alloy_cvc4.zip). The latest version of CVC4 can be downloaded from [here](https://cvc4.github.io/downloads.html). To build the latest version of alloy_cvc4 in Linux run the commands:
 ```cmd
 git clone https://github.com/CVC4/org.alloytools.alloy
-cd org.alloytools.alloy     
-git checkout cvc4
+cd org.alloytools.alloy
 ./gradlew alloyCVC4
 cd bin
 chmod +x cvc4_linux

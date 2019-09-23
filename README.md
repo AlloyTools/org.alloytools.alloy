@@ -22,18 +22,17 @@ JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 # TL;DR
 
-Checkout the project and type ./gradlew. You find the executable JAR in bin/alloy_cvc4.jar after the build has finished.
+Checkout the project and type `./gradlew alloyCVC4`. You find the executable JAR in bin/alloy_cvc4.jar after the build has finished.
 
-     $ java -version           # works with 1.8 - 1.11
+     $ java -version
      java version "11.0.1" 2018-10-16 LTS
      Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
      Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
      $ git clone https://github.com/CVC4/org.alloytools.alloy
-     $ cd org.alloytools.alloy
-     # switch to cvc4 branch
-     $ git checkout cvc4 
-     $ ./gradlew build
+     $ cd org.alloytools.alloy     
+     $ ./gradlew alloyCVC4
      $ cd bin
+     $ chmod +x cvc4_linux
      $ java -jar alloy_cvc4.jar
      # opens GUI
 
