@@ -44,9 +44,9 @@ The CVC4 Relational Solver can be chosen from the the options menu.
 
 ![Options](options.png)
 
-**CVC4 timeout** can also be set there, in seconds. This is the time alloted to CVC4 to solve a particular Alloy command (`run`, `check`, or `execute all`). The default timeout is 30 seconds.  
+**CVC4 timeout.** can also be set there, in seconds. This is the time alloted to CVC4 to solve a particular Alloy command (`run`, `check`, or `execute all`). The default timeout is 30 seconds.  
 
-**CVC4 include scope** specifies whether to consider or ignore the scope constraints in all commands. _By default the scope is disabled._
+**CVC4 include scope.** specifies whether to consider or ignore the scope constraints in all commands. _By default the scope is disabled._
 In the following example, the CVC4 Relational Solver returns the empty set for signature `A` when the scope option is disabled. 
 
 ```cmd
@@ -69,6 +69,10 @@ The CVC4 Relational Solver returns 3 elements for signature A.
 ```
 
 where `r` is a relational expression, `n` is a numeral and `op` is an builtin arithmetic relational operator (`<`, `>`, `>=`, `=<`, `=`, `!=`)
+
+
+**CVC4 produce unsat core.** Enabling this option will show the unsat core of an inconsistent model or a valid assertion.
+
 
 
 ## Differences with Alloy Semantics
