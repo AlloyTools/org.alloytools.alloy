@@ -23,15 +23,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import org.alloytools.util.table.Table;
-
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Util;
 
 /**
@@ -298,35 +295,47 @@ public final class Func extends Expr implements Clause {
     }
 
     public String explainOld() {
+        if (clean(label).contains("run$")) {
+            return null;
+        }
+
+
         StringBuilder sb = new StringBuilder();
         if (isPred)
             sb.append("pred ");
         else
             sb.append("fun ");
 
-        sb.append(clean(label)).append(":\n");
+        sb.append(clean(label)).append("[");
 
         if (decls.size() > 0 || !isPred) {
-            sb.append("\n");
-            int n = 0;
 
             int count = (int) decls.stream().flatMap(decl -> decl.names.stream()).count();
 
-            Table t = new Table(2, count + (isPred ? 0 : 1), 1);
+            String del = "";
             for (Decl decl : decls) {
+
+                String delName = "";
                 for (Expr e : decl.names) {
-                    t.set(0, n, e);
-                    t.set(1, n, TableView.toTable(decl.expr.type));
-                    n++;
+                    sb.append(delName).append(e);
+                    delName = ", ";
                 }
+                sb.append(" : " + decl.expr.type.explain());
             }
-            if (!isPred) {
-                t.set(0, n, "→");
-                t.set(1, n, TableView.toTable(returnDecl.type));
-                n++;
-            }
-            sb.append(t.transpose(0));
+            // if (!isPred) {
+            //     t.set(0, n, "→");
+            //     t.set(1, n, TableView.toTable(returnDecl.type));
+            //     n++;
+            // }
+            // sb.append(t.transpose(0));
+            del = ", ";
         }
+        sb.append("]");
+        if (!isPred) {
+            sb.append(" : ");
+            sb.append(returnDecl.type.explain());
+        }
+
         return sb.toString();
     }
 
