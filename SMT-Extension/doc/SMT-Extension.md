@@ -101,7 +101,7 @@ For the integers, the CVC4 Relational Solver then adds two new builtin constants
 1. `univInt` denotes a finite set that includes all the (user-defined) integer signatures as well as any builtin constants (0,1,...) occurring in the model, and 
 2. `idenInt` denotes the identity relation over `univInt`. 
 
-
+<!---
 As in the standard semantics, the CVC4 Relational Solver interprets the builtin signature `Int` as the (infinite) set of all integers. However, it does not accept universally quantification directly over `Int`. For instance, the following assertion will be rejected 
 ````
 // generates error
@@ -115,16 +115,7 @@ assert a1 {all x : A | x > 1 implies x > 0}  // allowed
 
 check a1
 ````
-
-````
- sig A, B, C in Int {} 
- fact { 
-     A = 1 + 2   // A is the union of singleton sets 1 and 2
-     B = 4 + 5
-     C = plus[A, B]
- } 
-run {} for 5 Int, 12 seq
-````
+--->
 
 ### Semantics of Integer Operators
 
