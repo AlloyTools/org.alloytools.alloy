@@ -123,7 +123,6 @@ public class ExprUnaryTranslator
 
         if(exprUnary.sub instanceof Sig.Field)
         {
-
             return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
         }
 
