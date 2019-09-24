@@ -11,7 +11,7 @@ This Alloy Analyzer plugin provides an alternative relational solver that extend
 
 With this relational solver, signatures have by default *unbounded scope* and integers are not bound by any particular bit width.
 
-The CVC4 Relational Solver uses as backend the SMT solver [CVC4](https://cvc4.cs.stanford.edu/web) through CVC4's direct support for the theory of finite relations. Because of that, _the relational solver assumes that all user-defined signatures in an Alloy model are finite._ The only builtin signature that is currently supported is `Int` which is interpreted as the (infinite) set of mathematical integers. A later extension may include the builtin signature `String`, interpreted as the set of all strings of Unicode characters.
+The CVC4 Relational Solver uses as backend the SMT solver [CVC4](https://cvc4.github.io) through CVC4's direct support for the theory of finite relations. Because of that, _the relational solver assumes that all user-defined signatures in an Alloy model are finite._ The only builtin signature that is currently supported is `Int` which is interpreted as the (infinite) set of mathematical integers. A later extension may include the builtin signature `String`, interpreted as the set of all strings of Unicode characters.
 
 ## Installation
 
@@ -20,8 +20,7 @@ CVC4 binaries for Windows, macOS and Linux are included in the release alloy_cvc
 To build and run the latest version of alloy_cvc4 in Linux run the commands:
 ```cmd
 git clone https://github.com/CVC4/org.alloytools.alloy
-cd org.alloytools.alloy     
-git checkout cvc4
+cd org.alloytools.alloy
 ./gradlew alloyCVC4
 cd bin
 chmod +x cvc4_linux
@@ -31,8 +30,7 @@ The build process for macOS is analogous. For Windows, do the following:
 
 ```cmd
 git clone https://github.com/CVC4/org.alloytools.alloy
-cd org.alloytools.alloy     
-git checkout cvc4
+cd org.alloytools.alloy
 gradlew.bat alloyCVC4
 cd bin
 java -jar alloy_cvc4.jar     
@@ -68,7 +66,7 @@ The CVC4 Relational Solver returns 3 elements for signature A.
 #r op n
 ```
 
-where `r` is a relational expression, `n` is a numeral and `op` is an builtin arithmetic relational operator (`<`, `>`, `>=`, `=<`, `=`, `!=`)
+where `r` is a relational expression, `n` is a numeral and `op` is a builtin arithmetic relational operator (`<`, `>`, `>=`, `=<`, `=`, `!=`)
 
 
 **CVC4 produce unsat core.** Enabling this option will show the unsat core of an inconsistent model or a valid assertion.
@@ -97,11 +95,11 @@ sig B {
 
 Note that terms like `A + Int` are well-typed (and so allowed) in Alloy. _The restriction above is specific to the CVC4 Relational Solver_ although it does not appear to be a major one in common usage. Its rationale is that it greatly facilitates the translation of Alloy models to CVC4 whose type system has only simple types and no subtypes. 
 
-One consequence of this restrictions is that, contrary to the standard Alloy semantics, _`univ` is considered to consists only of the union of all the top-level user-defined signatures_ and so it contains no integers. Correspondingly, _`ident` ranges over pairs of atoms only._ 
-For the integers, the CVC4 Relational Solver then adds two new builtin constants: `intuniv` and `intident` where 
+One consequence of this restrictions is that, contrary to the standard Alloy semantics, _`univ` is considered to consist only of the union of all the top-level user-defined signatures_ and so it contains no integers. Correspondingly, _`iden` ranges over pairs of atoms only._ 
+For the integers, the CVC4 Relational Solver then adds two new builtin constants: `univInt` and `idenInt` where 
 
-1. `intuniv` denotes a finite set that includes all the (user-defined) integer signatures as well as any builtin constants (0,1,...) occurring in the model, and 
-2. `intident` denotes the identity relation over `intuniv`. 
+1. `univInt` denotes a finite set that includes all the (user-defined) integer signatures as well as any builtin constants (0,1,...) occurring in the model, and 
+2. `idenInt` denotes the identity relation over `univInt`. 
 
 
 As in the standard semantics, the CVC4 Relational Solver interprets the builtin signature `Int` as the (infinite) set of all integers. However, it does not accept universally quantification directly over `Int`. For instance, the following assertion will be rejected 
@@ -111,7 +109,7 @@ assert a1 { all x : Int | x > 1 implies x > 0 }
 ````
 In contrast, universally quantifying over a user-defined subset of `Int` is allowed since such subsets are  considered to be finite:
 ````
-sig A {} in Int
+sig A in Int {}
 
 assert a1 {all x : A | x > 1 implies x > 0}  // allowed
 
