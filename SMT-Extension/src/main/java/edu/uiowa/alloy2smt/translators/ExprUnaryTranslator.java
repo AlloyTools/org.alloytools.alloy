@@ -85,7 +85,7 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
     {
         Expression          closure             = translateClosure(exprUnary, environment);
-        BinaryExpression    reflexiveClosure    = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.atomIdentity.getVariable());
+        BinaryExpression    reflexiveClosure    = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
         return reflexiveClosure;
     }
 
@@ -107,10 +107,10 @@ public class ExprUnaryTranslator
             {
                 switch (((Sig) exprUnary.sub).label)
                 {                    
-                    case "univ": return Alloy2SmtTranslator.atomUniverse.getVariable();
-                    case "iden": return Alloy2SmtTranslator.atomIdentity.getVariable();
+                    case "univ": return Alloy2SmtTranslator.univAtom.getVariable();
+                    case "iden": return Alloy2SmtTranslator.idenAtom.getVariable();
                     case "none": return Alloy2SmtTranslator.atomNone.getVariable();
-                    case "Int":  return Alloy2SmtTranslator.intUniv.getVariable();
+                    case "Int":  return Alloy2SmtTranslator.univInt.getVariable();
                     default:
                         throw new UnsupportedOperationException();
                 }
@@ -123,6 +123,7 @@ public class ExprUnaryTranslator
 
         if(exprUnary.sub instanceof Sig.Field)
         {
+
             return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
         }
 

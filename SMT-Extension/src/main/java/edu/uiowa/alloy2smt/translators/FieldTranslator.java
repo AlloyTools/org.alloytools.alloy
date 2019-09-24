@@ -148,6 +148,13 @@ public class FieldTranslator
     {
 
         String      fieldName   = field.sig.label + "/" + field.label;
+
+        if(fieldName.equals("integer/univInt/idenInt"))
+        {
+            translator.fieldsMap.put(field, AbstractTranslator.idenInt);
+            return;
+        }
+
         List<Sort>  fieldSorts  = new ArrayList<>();
 
         for (Sig sig : field.type().fold().get(0))

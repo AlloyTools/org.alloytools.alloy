@@ -75,8 +75,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.integerConstants       = new HashMap<>();
         this.sigToIdMap             = new HashMap<>();
 
-        this.signaturesMap.put(Sig.UNIV, atomUniverse);
-        this.signaturesMap.put(Sig.SIGINT, intUniv);
+        this.signaturesMap.put(Sig.UNIV, univAtom);
+        this.signaturesMap.put(Sig.SIGINT, univInt);
         this.smtProgram.addSort(atomSort);
         this.smtProgram.addSort(uninterpretedInt);
         this.smtProgram.addFunction(uninterpretedIntValue);
@@ -144,33 +144,20 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     private void translateSpecialFunctions()
     {
-        this.smtProgram.addFunction(this.atomNone);
-        this.smtProgram.addFunction(this.atomUniverse);
-        this.smtProgram.addFunction(this.atomIdentity);
-        this.smtProgram.addFunction(this.intUniv);
+        this.smtProgram.addFunction(atomNone);
+        this.smtProgram.addFunction(univAtom);
+        this.smtProgram.addFunction(idenAtom);
+        this.smtProgram.addFunction(idenInt);
+        this.smtProgram.addFunction(univInt);
     }
 
     private void translateSpecialAssertions()
     {
-        // Axiom for identity relation
-        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort, false);
-
-        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(atomSort), atomSort, false);
-
-        MultiArityExpression        tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
-
-        BinaryExpression            member  = BinaryExpression.Op.MEMBER.make(tupleAB, this.atomIdentity.getVariable());
-
-        BinaryExpression            equals  = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
-
-        BinaryExpression            equiv   = BinaryExpression.Op.EQ.make(member, equals);
-        
-        QuantifiedExpression        idenSemantics  = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
-
         this.smtProgram.addAssertion(new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.atomUniverse.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(intUniv.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
-        this.smtProgram.addAssertion(new Assertion("", "Identity relation definition for Atom", idenSemantics));
+        this.smtProgram.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.univAtom.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
+        this.smtProgram.addAssertion(new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(univInt.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
+        addIdenAtom(atomSort, idenAtom);
+        addIdenAtom(uninterpretedInt, idenInt);
 
         // uninterpretedIntValue is injective function
         VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
@@ -188,6 +175,26 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         smtProgram.addAssertion(new Assertion("", uninterpretedIntValueName + " is injective", forAll));
 
+    }
+
+    private void addIdenAtom(Sort sort, FunctionDeclaration identity)
+    {
+        // Axiom for identity relation
+        VariableDeclaration a       = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+
+        VariableDeclaration b       = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+
+        MultiArityExpression tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,a.getVariable(), b.getVariable());
+
+        BinaryExpression member  = BinaryExpression.Op.MEMBER.make(tupleAB, identity.getVariable());
+
+        BinaryExpression            equals  = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
+
+        BinaryExpression            equiv   = BinaryExpression.Op.EQ.make(member, equals);
+
+        QuantifiedExpression idenSemantics  = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
+
+        this.smtProgram.addAssertion(new Assertion("", "Identity relation definition", idenSemantics));
     }
 
     private void translateFacts()

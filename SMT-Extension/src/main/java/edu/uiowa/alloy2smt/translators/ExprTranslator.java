@@ -10,7 +10,6 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
-import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
@@ -141,7 +140,7 @@ public class ExprTranslator
                 return translator.handleIntConstant(intConstant);
             }
             case IDEN:
-                return translator.atomIdentity.getVariable();
+                return translator.idenAtom.getVariable();
             case TRUE:
                 return BoolConstant.True;
             case FALSE:

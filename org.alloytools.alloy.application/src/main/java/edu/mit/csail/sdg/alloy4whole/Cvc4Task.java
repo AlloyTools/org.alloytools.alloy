@@ -729,7 +729,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         workerCallback.callback(smtMessage);
 
         callbackPlain("\nGenerated json mapping file: ");
-        Object[] jsonMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ jsonFile.getAbsolutePath()};
+        Object[] jsonMessage = new Object []{"link", jsonFile.getAbsolutePath(), "CNF: "+ jsonFile.getAbsolutePath()};
         workerCallback.callback(jsonMessage);
         callbackPlain("\n");
         return translation;

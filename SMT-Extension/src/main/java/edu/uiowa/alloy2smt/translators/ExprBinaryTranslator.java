@@ -1,6 +1,5 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -1108,11 +1107,11 @@ public class ExprBinaryTranslator
             
             for(int i = 0; i < rightExprArity-1; ++i)
             {
-                join = BinaryExpression.Op.JOIN.make(join, exprTranslator.translator.atomUniverse.getVariable());
+                join = BinaryExpression.Op.JOIN.make(join, exprTranslator.translator.univAtom.getVariable());
             }
             for(int i = 0; i < rightExprArity-1; ++i)
             {
-                join = BinaryExpression.Op.PRODUCT.make(join, exprTranslator.translator.atomUniverse.getVariable());
+                join = BinaryExpression.Op.PRODUCT.make(join, exprTranslator.translator.univAtom.getVariable());
             }            
             
             Expression intersection         = BinaryExpression.Op.INTERSECTION.make(join, left);
@@ -1146,11 +1145,11 @@ public class ExprBinaryTranslator
                 UninterpretedSort sort = (UninterpretedSort) tuple.elementSorts.get(i);
                 if(sort.equals(AbstractTranslator.atomSort))
                 {
-                    left = BinaryExpression.Op.PRODUCT.make(left, translator.atomUniverse.getVariable());
+                    left = BinaryExpression.Op.PRODUCT.make(left, translator.univAtom.getVariable());
                 }
                 else
                 {
-                    left = BinaryExpression.Op.PRODUCT.make(left, translator.intUniv.getVariable());
+                    left = BinaryExpression.Op.PRODUCT.make(left, translator.univInt.getVariable());
                 }
             }
             BinaryExpression    intersection    = BinaryExpression.Op.INTERSECTION.make(left, right);
@@ -1180,11 +1179,11 @@ public class ExprBinaryTranslator
                 UninterpretedSort sort = (UninterpretedSort) tuple.elementSorts.get(i);
                 if(sort.equals(AbstractTranslator.atomSort))
                 {
-                    right = BinaryExpression.Op.PRODUCT.make(translator.atomUniverse.getVariable(), right);
+                    right = BinaryExpression.Op.PRODUCT.make(translator.univAtom.getVariable(), right);
                 }
                 else
                 {
-                    right = BinaryExpression.Op.PRODUCT.make(translator.intUniv.getVariable(), right);
+                    right = BinaryExpression.Op.PRODUCT.make(translator.univInt.getVariable(), right);
                 }
             }
 

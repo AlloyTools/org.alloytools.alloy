@@ -239,4 +239,18 @@ public class ArithmeticTests
         assertEquals(new HashSet<>(Arrays.asList(5, 6, 7)), set);
         assertEquals("unsat", commandResults.get(1).satResult);
     }
+
+    @Test
+    public void idenInt() throws Exception
+    {
+        String alloy =
+                "sig A, B in Int {} \n" +
+                "fact { #A = 3 and B = A.idenInt}" ;
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, true);
+
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/B");
+        Set<Integer> set = TranslatorUtils.getIntSet(b);
+        assertEquals(3, set.size());
+    }
 }

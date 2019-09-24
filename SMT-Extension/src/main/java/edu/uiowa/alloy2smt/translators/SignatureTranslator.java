@@ -79,7 +79,7 @@ public class SignatureTranslator
             {
                 unionTopSigExprs = BinaryExpression.Op.UNION.make(unionTopSigExprs, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable());
             }
-            Expression equal = BinaryExpression.Op.EQ.make(unionTopSigExprs, translator.atomUniverse.getVariable());
+            Expression equal = BinaryExpression.Op.EQ.make(unionTopSigExprs, translator.univAtom.getVariable());
             List<Pos> positions = translator.topLevelSigs.stream().map(s -> s.pos).collect(Collectors.toList());
             Assertion assertion = AlloyUtils.getAssertion(positions, "atomUniv is the union of top level signatures", equal);
             translator.smtProgram.addAssertion(assertion);

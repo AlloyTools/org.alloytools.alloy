@@ -41,10 +41,11 @@ public abstract class AbstractTranslator
     public final static SetSort setOfUnaryAtomSort = new SetSort(unaryAtomSort);
     public final static SetSort setOfBinaryAtomSort = new SetSort(binaryAtomSort);
     public final static SetSort setOfTernaryIntSort = new SetSort(ternaryIntSort);
-    public final static FunctionDeclaration atomUniverse = new FunctionDeclaration("atomUniv", setOfUnaryAtomSort, false);
+    public final static FunctionDeclaration univAtom = new FunctionDeclaration("univAtom", setOfUnaryAtomSort, false);
     public final static FunctionDeclaration atomNone = new FunctionDeclaration("atomNone", setOfUnaryAtomSort, false);
-    public final static FunctionDeclaration atomIdentity = new FunctionDeclaration("atomIdentity", setOfBinaryAtomSort, false);
-    public final static FunctionDeclaration intUniv = new FunctionDeclaration("intUniv", setOfUninterpretedIntTuple, false);
+    public final static FunctionDeclaration idenAtom = new FunctionDeclaration("idenAtom", setOfBinaryAtomSort, false);
+    public final static FunctionDeclaration univInt = new FunctionDeclaration("univInt", setOfUninterpretedIntTuple, false);
+    public final static FunctionDeclaration idenInt = new FunctionDeclaration("idenInt", setOfUninterpretedIntPairs, false);
     public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort, false);
 
