@@ -1,1 +1,1 @@
-include ':org.alloytools.kodkod.nativesat', ':org.alloytools.kodkod.core', ':org.alloytools.alloy.core', ':org.alloytools.alloy.extra', ':org.alloytools.alloy.application', ':alloy2smt'
+include ':org.alloytools.kodkod.nativesat', ':org.alloytools.kodkod.core', ':org.alloytools.alloy.core', ':org.alloytools.alloy.extra', ':org.alloytools.alloy.application', ':SMT-Extension'

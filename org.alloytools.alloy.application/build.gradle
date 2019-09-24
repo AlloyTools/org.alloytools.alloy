@@ -1,7 +1,7 @@
 dependencies {
     compile project(':org.alloytools.alloy.core'), fileTree(dir: 'lib', include: ['*.jar'])
     compile project(':org.alloytools.alloy.extra')
-    compile project(':alloy2smt')
+    compile project(':SMT-Extension')
 }
 
 task alloyCVC4(type: Jar) {

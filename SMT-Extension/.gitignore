@@ -25,5 +25,5 @@ target/
 *.iml
 nbactions.xml
 .gradle/
-build/
+alloy2smt/build/
 out/
