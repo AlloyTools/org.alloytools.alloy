@@ -59,7 +59,7 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
 * [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
 * [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
-* [alloy2smt](alloy2smt) – The translator from alloy model to [CVC4](http://cvc4.cs.stanford.edu/downloads/)) smt-lib 
+* [SMT-Extension](SMT-Extension) – The translator from alloy model to [CVC4](http://cvc4.github.io) smt-lib 
 
 ### Projects dependency graph
 ![Dependency graph](dependency-graph.png)
