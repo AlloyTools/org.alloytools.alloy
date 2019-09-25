@@ -116,15 +116,15 @@ In future versions, to avoid possible misunderstanding on the user's part, it mi
 sig A, B in Int {}
 
 // allowed since A is finite
-fact {all a : A | 0 <= a and a < 11}  
+fact { all a : A | 0 <= a and a < 11 }  
 
 // allowed since univInt is finite
-fact {all a : univInt | 0 <= a and a < 51}
+fact { all a : univInt | 0 <= a and a < 51 }
 
 // Disallowed, should raise an error
-fact {all a : Int | (0 <= a and a < 21) => a in univInt}
-fact {all a : Int - A | a !in B}
-fact {all a : A | a !in Int & B}
+fact { all a : Int | (0 <= a and a < 21) => a in univInt }
+fact { all a : Int - A | a !in B }
+fact { all a : A | a !in Int & B }
 ````
 ### Semantics of Integer Operators
 
@@ -144,9 +144,9 @@ The CVC4 Relational Solver interprets the builtin relational constants `plus`, `
 ````
  sig A, B, C in Int {} 
  fact { 
-     A = 1 + 2   // A is the union of singleton sets 1 and 2
-     B = 4 + 5
-     C = plus[A, B]
+  A = 1 + 2   // A is the union of singleton sets 1 and 2
+  B = 4 + 5
+  C = plus[A, B]
  } 
 run {} for 5 Int, 12 seq
 ````
@@ -177,10 +177,10 @@ When the operands are singletons, the semantics of CVC4 Relational Solver is sim
 ```cmd
 sig A, B in Int {} 
 fact { 
-    plus[A, B] = 6
-    minus[A, B] = 2
-    #A = 1
-    #B = 1
+  plus[A, B] = 6
+  minus[A, B] = 2
+  #A = 1
+  #B = 1
 }
 run {} for 4 Int, 7 seq
 ```
