@@ -24,7 +24,7 @@ cd org.alloytools.alloy
 ./gradlew alloyCVC4
 cd bin
 chmod +x cvc4_linux
-java -jar alloy_cvc4.jar     
+java -jar alloy_cvc4.jar &
 ```
 The build process for macOS is analogous. For Windows, do the following:
 
@@ -33,7 +33,7 @@ git clone https://github.com/CVC4/org.alloytools.alloy
 cd org.alloytools.alloy
 gradlew.bat alloyCVC4
 cd bin
-java -jar alloy_cvc4.jar     
+java -jar alloy_cvc4.jar
 ```
 
 ## CVC4 options 
@@ -98,25 +98,34 @@ Note that terms like `A + Int` are well-typed (and so allowed) in Alloy. _The re
 One consequence of this restrictions is that, contrary to the standard Alloy semantics, _`univ` is considered to consist only of the union of all the top-level user-defined signatures_ and so it contains no integers. Correspondingly, _`iden` ranges over pairs of atoms only._ 
 For the integers, the CVC4 Relational Solver then adds two new builtin constants: `univInt` and `idenInt` where 
 
-1. `univInt` denotes a finite set that includes all the (user-defined) integer signatures as well as any builtin constants (0,1,...) occurring in the model, and 
+1. `univInt` denotes a finite subset of integers that includes all the user-defined subsignatures of `Int` as well as any builtin constants (such as 0,1, and so on) occurring in the model; 
 2. `idenInt` denotes the identity relation over `univInt`. 
 
-<!---
-As in the standard semantics, the CVC4 Relational Solver interprets the builtin signature `Int` as the (infinite) set of all integers. However, it does not accept universally quantification directly over `Int`. For instance, the following assertion will be rejected 
-````
-// generates error
-assert a1 { all x : Int | x > 1 implies x > 0 }  
-````
-In contrast, universally quantifying over a user-defined subset of `Int` is allowed since such subsets are  considered to be finite:
-````
-sig A in Int {}
 
-assert a1 {all x : A | x > 1 implies x > 0}  // allowed
-
-check a1
+**Note**: Because of the restriction of the CVC4 Relational Solver to finite sets, the predefined signature `Int` _is currently identified with_ `univInt` when used in a formula. For example, the formula 
 ````
---->
+all x : Int | x > 1 implies x > 0
+````
+is actually treated as if it was 
+````
+all x : univInt | x > 1 implies x > 0 
+````
+In other words, it is not possible to actually quantify over all integers, but only over a finite subset of them (denoted by `univInt` and determined by the solver) that is large enough to contain all the user-defined subsignatures of `Int` and any integer constant appearing in the model.
+In future versions, to avoid possible misunderstanding on the user's part, it might be better to simply disallow the use of `Int` in formulas and permit it only in signature declarations, as in the model fragment below, instead of silently treating `Int` as `univInt`.
+````
+sig A, B in Int {}
 
+// allowed since A is finite
+fact {all a : A | 0 <= a and a < 11}  
+
+// allowed since univInt is finite
+fact {all a : univInt | 0 <= a and a < 51}
+
+// Disallowed, should raise an error
+fact {all a : Int | (0 <= a and a < 21) => a in univInt}
+fact {all a : Int - A | a !in B}
+fact {all a : A | a !in Int & B}
+````
 ### Semantics of Integer Operators
 
 The CVC4 Relational Solver interprets the builtin relational constants `plus`, `minus`, `mul`, `div`, and `rem` differently from standard Alloy, and more consistently with Alloy's use of square brackets as syntactic sugar for relational join. Specifically, it uses the following semantics where, because of the restrictions above, `A` and `B` can only be expressions denoting finite sets:
@@ -149,8 +158,7 @@ this/B={4, 5}
 this/C={5, 6, 7}
 ```
 
-**Note:** Because of the restriction to finite relations, the operators above must be fully applied. In other words, expressions like `plus[A]` or `x in A.plus` are not allowed. This guarantees that an expression like `plus[A, B]` denotes a finite set.
-In the last example, in effect it is as if `plus` was the relation 
+**Note:** Because of the restriction to finite relations, the operators above must be fully applied. In other words, expressions like `plus[A]` or `x in A.plus` are not allowed. This guarantees that an expression like `plus[A, B]` denotes a finite set. In the last example above, in effect it is as if `plus` was the relation 
 
 ````
 { (1, 4, 5), (1, 5, 6), (2, 4, 6), (2, 5, 7) }
@@ -165,7 +173,7 @@ this/A={1, 2}
 this/B={4, 5}
 this/C={12}
 ```
-When the operands are singletons, the semantics of CVC4 Relational Solver is similar to the Kodkod solver (modulo the bit width) as shown in the following example:
+When the operands are singletons, the semantics of CVC4 Relational Solver is similar to that of the Kodkod solver (modulo the bit width), as shown in the following example:
 ```cmd
 sig A, B in Int {} 
 fact { 
@@ -217,9 +225,9 @@ When both operands are singletons, the two semantics are effectively the same. B
 ```cmd
 sig A, B in Int {} 
 fact { 
-A > B
-#A = 1
-#B = 1   
+  A > B
+  #A = 1
+  #B = 1   
 }
 run {} for 4 Int, 7 seq
 ```
@@ -227,8 +235,9 @@ run {} for 4 Int, 7 seq
 
 ## Unsupported features
 Currently the following Alloy features are not fully supported by CVC4 Relational Solver:
-- The cardinality operator in expressions (e.g., `sig A,B {r: A} fact {#A + 2 = 3 and #B < #A}`). However it is supported when it is one side of the comparison operator and the other side is a constant integer (e.g., `#A = 3`, `#A > 2`, `#A >= 2`, `#A < 4`, `#A <= 4`, `4 >= #A`) 
- 
+- The cardinality operator in expressions (e.g., `sig A,B {r: A} fact {#A + 2 = 3 and #B < #A}`) unless it is used for a direct comparison with an integer constant. So expressions like `#A + 2 = 3 and #B < #A}` are not supported whereas expressions like `#A = 3`, `#A > 2`, `#A >= 2`, `#A < 4`, `#A <= 4`, `4 >= #A` are supported.
+- Running the command line interface of Alloy (only the GUI is supported).
+
 
 ## Examples
 
