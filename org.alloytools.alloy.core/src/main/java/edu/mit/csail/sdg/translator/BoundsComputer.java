@@ -452,9 +452,9 @@ final class BoundsComputer {
                     continue;
                 }
                 if (s.isSome != null && lower.size() < 1)
-                    sol.addFormula(s.isVariable != null ? exp.some().always() : exp.one(), s.isSome); // [HASLab]
+                    sol.addFormula(s.isVariable != null ? exp.some().always() : exp.some(), s.isSome); // [HASLab]
                 if (s.isLone != null && upper.size() > 1)
-                    sol.addFormula(s.isVariable != null ? exp.lone().always() : exp.one(), s.isLone); // [HASLab]
+                    sol.addFormula(s.isVariable != null ? exp.lone().always() : exp.lone(), s.isLone); // [HASLab]
                 if (n < 0)
                     continue; // This means no scope was specified
                 if (lower.size() == n && upper.size() == n && sc.isExact(s)) {
