@@ -442,8 +442,11 @@ public final class A4Solution {
         solver_opts.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
         // [HASLab] create unique readable name
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
-        String[] pths = getOriginalFilename().split("/");
-        String file = pths[pths.length - 1].substring(0, pths[pths.length - 1].length() - 4).replace(' ', '_');
+        String file = "untitled";
+        if (!getOriginalFilename().isEmpty()) {
+            String[] pths = getOriginalFilename().split("/");
+            file = pths[pths.length - 1].substring(0, pths[pths.length - 1].length() - 4).replace(' ', '_');
+        }
         String check = getOriginalCommand().replace(' ', '_').replace('$', '-');
         solver_opts.setUniqueName(file + "-" + check + "-" + dateFormat.format(new Date()) + "-" + this.hashCode());
         solver = new PardinusSolver(solver_opts); // [HASLab] temporal solver
