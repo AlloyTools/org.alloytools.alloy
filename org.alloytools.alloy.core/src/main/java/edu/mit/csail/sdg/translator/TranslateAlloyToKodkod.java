@@ -266,7 +266,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                     // well-bounded (except possibly the first column).
                     // Thus, we need to add a bound that the first column is a
                     // subset of s.
-                    if (s.isOne == null) {
+                    if (s.isOne == null || s.isVariable != null) { // [HASLab]
                         Expression sr = a2k(s), fr = a2k(f);
                         for (int i = f.type().arity(); i > 1; i--)
                             fr = fr.join(Expression.UNIV);
