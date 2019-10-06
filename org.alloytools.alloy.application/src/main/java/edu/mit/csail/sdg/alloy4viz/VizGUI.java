@@ -332,7 +332,7 @@ public final class VizGUI implements ComponentListener {
         public static VisualizerMode get() {
             return parse(Preferences.userNodeForPackage(Util.class).get("VisualizerMode", ""));
         }
-    };
+    }
 
     /**
      * The latest X corrdinate of the Alloy Visualizer window.

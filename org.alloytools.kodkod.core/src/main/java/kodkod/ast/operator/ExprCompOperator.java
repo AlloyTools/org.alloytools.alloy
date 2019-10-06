@@ -40,5 +40,5 @@ public enum ExprCompOperator {
                                   public String toString() {
                                       return "=";
                                   }
-                              };
+                              }
 }

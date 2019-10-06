@@ -214,7 +214,7 @@ public final class Solution {
                                  * The formula is trivially unsatisfiable with respect to the specified bounds:
                                  * a series of simple transformations reduces the formula to the constant FALSE.
                                  */
-                                TRIVIALLY_UNSATISFIABLE;
+                                TRIVIALLY_UNSATISFIABLE
 
     }
 

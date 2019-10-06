@@ -786,7 +786,7 @@ public final class Util {
     /** Returns true iff running on Windows **/
     public static boolean onWindows() {
         return System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows");
-    };
+    }
 
     /** Returns true iff running on Mac OS X. **/
     public static boolean onMac() {
