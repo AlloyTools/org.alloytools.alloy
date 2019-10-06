@@ -50,5 +50,5 @@ public enum IntCastOperator {
                                  public String toString() {
                                      return "Bits";
                                  }
-                             };
+                             }
 }

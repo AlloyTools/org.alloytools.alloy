@@ -381,7 +381,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
                BLOCK_COMMENT,
                LINE_COMMENT,
                YAML,
-               MARKDOWN;
+               MARKDOWN
     }
 
     private final Mode do_reapply(Mode mode, final String txt, final int line) {

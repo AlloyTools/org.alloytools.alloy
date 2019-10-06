@@ -57,7 +57,7 @@ public abstract class HOLTranslation extends Translation {
     // TODO: override in subclasses!!!
     public Formula formulaWithInc() {
         return formula();
-    };
+    }
 
     @Override
     public boolean trivial() {

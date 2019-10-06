@@ -82,7 +82,7 @@ public interface KodkodSolver {
      */
     public Solution solve(Formula formula, Bounds bounds) throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 
-    public Iterator<Solution> solveAll(Formula fgoal, Bounds bounds) throws HigherOrderDeclException, UnboundLeafException, AbortedException;;
+    public Iterator<Solution> solveAll(Formula fgoal, Bounds bounds) throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 
     // /**
     // * Attempts to find a set of solutions to the given {@code formula} and
