@@ -1,6 +1,14 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
-# Alloy
+<!--[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)-->
+# Electrum and Alloy
+
+Electrum is an extension to the Alloy Analyzer by
+[INESC TEC](https://www.inesctec.pt/en) (the Institute for Systems and
+Computer Engineering, Technology and Science) and
+[ONERA](https://www.onera.fr/en) (the French aerospace research center)
+provides an analyzer for Electrum models, a temporal extension to the
+Alloy modeling language. The Analyzer provides both bounded and
+unbounded model checking procedures.
 
 Alloy 4 is a self-contained executable, which includes the Kodkod
 model finder and a variety of SAT solvers, as well as the standard
