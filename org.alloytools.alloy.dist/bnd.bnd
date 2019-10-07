@@ -11,6 +11,7 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.AlloyTools
 	org.alloytools.kodkod.nativesat.util;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
+	slf4j.api,\
 
 -sources: false
 
@@ -27,5 +28,4 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.AlloyTools
 	@${repo;org.sat4j.core}, \
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
-	@${repo;slf4j.api}, \
 	LICENSES
