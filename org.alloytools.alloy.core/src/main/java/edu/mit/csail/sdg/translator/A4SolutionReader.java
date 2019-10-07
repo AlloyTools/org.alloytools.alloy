@@ -364,11 +364,13 @@ public final class A4SolutionReader {
         // set up the basic values of the A4Solution object
         final int bitwidth = Integer.parseInt(inst.getAttribute("bitwidth"));
         final int maxseq = Integer.parseInt(inst.getAttribute("maxseq"));
-        final int mintrace = Integer.parseInt(inst.getAttribute("mintrace"));
-        final int maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));
         final int tracelength;
         final int backloop;
+        final int mintrace;
+        final int maxtrace;
         try {
+            mintrace = Integer.parseInt(inst.getAttribute("mintrace"));
+            maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));
             tracelength = Integer.parseInt(inst.getAttribute("tracelength"));  // [HASLab]
             backloop = Integer.parseInt(inst.getAttribute("backloop"));        // [HASLab]
         } catch (Exception ex) {
