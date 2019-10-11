@@ -1855,7 +1855,7 @@ public final class VizGUI implements ComponentListener {
                     g2.draw(circl);
                     FontMetrics mets = g2.getFontMetrics();
                     String lbl = normalize(i, lst, lop) + "";
-                    g2.drawString(lbl, i * dist + radius + offsetx - (mets.stringWidth(lbl) / 2), offsety + (mets.getAscent() / 2));
+                    //                    g2.drawString(lbl, i * dist + radius + offsetx - (mets.stringWidth(lbl) / 2), offsety + (mets.getAscent() / 2));
                     states.add(circl);
                     g2.setStroke(new BasicStroke(1));
                     g2.setColor(new Color(0, 0, 0));
