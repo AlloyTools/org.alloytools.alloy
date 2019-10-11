@@ -1,13 +1,10 @@
--- inital time step is zero, and each time t is greator than or equal to zero
--- fact {0 in Time and all t: Time | 0 <= t}
-
 sig Time in Int {}
 
 one sig BankAccount 
 {
 	deposit: Int one -> Time,
-	withdrawal: Int one->  Time,
-	balance: Int one-> Time, -- accumulated balance
+	withdrawal: Int one-> Time,
+	balance: Int one-> Time
 }
 
 fun depositValue[t: Time]: Int {BankAccount.deposit.t}
@@ -25,7 +22,7 @@ pred deposit[t, t' : Time, amount: Int]
 pred withdraw[t, t' : Time, amount: Int]
 {	
 	amount > 0
-	balanceValue[t] >= amount -- there is enough balance
+	balanceValue[t] >= amount -- there is enough balance at t
 	depositValue[t'] = 0
 	withdrawalValue[t'] = amount
 	balanceValue[t'] = minus[balanceValue[t'], amount]	
@@ -43,21 +40,22 @@ pred someTransaction[t, t': Time]
 	some amount : Int | deposit[t, t', amount] or withdraw[t, t', amount]	
 }
 
-fact system {
-  init[0]
-  all t: Time - 0 |
-    someTransaction[t, plus[t, 1]]
+pred system 
+{
+	init[0]
+	all t: Time - 0 | someTransaction[minus[t, 1] , t]
 }
 
-run 
-{
-	deposit[1, 2, 10] 
-	deposit[2, 3, 4] 
-	withdraw[3, 4, 5]
-} for 5 Int
+run scenario
+{	
+	init[0]
+	deposit[0, 1, 10]
+	deposit[1, 2, 40] 
+	withdraw[2, 3, 30]
+} for 7 Int
 
 assert nonNegative 
-{ 
+{
 	all t: Time |
 	depositValue[t] >= 0 and
 	withdrawalValue[t] >= 0 and
