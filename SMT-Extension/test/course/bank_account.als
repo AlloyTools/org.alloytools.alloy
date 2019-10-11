@@ -1,64 +1,59 @@
-sig Time in Int{}
 -- inital time step is zero, and each time t is greator than or equal to zero
-fact {0 in Time and all t: Time | 0 <= t}
+-- fact {0 in Time and all t: Time | 0 <= t}
 
-abstract sig BankAccount {
+sig Time in Int {}
+
+one sig BankAccount 
+{
 	deposit: Int one -> Time,
 	withdrawal: Int one->  Time,
 	balance: Int one-> Time, -- accumulated balance
 }
 
-one sig checkAccount extends BankAccount {}
+fun depositValue[t: Time]: Int {BankAccount.deposit.t}
+fun withdrawalValue[t: Time]: Int {BankAccount.withdrawal.t}
+fun balanceValue[t: Time]: Int {BankAccount.balance.t}
 
-pred openAccount[account: BankAccount]
+pred deposit[t, t' : Time, amount: Int]
 {
-	account.deposit.0 = 0
-	account.withdrawal.0 = 0
-	account.balance.0 = 0
-}
-
-fun depositValue[account: BankAccount, t: Time]: Int {account.deposit.t}
-fun withdrawalValue[account: BankAccount, t: Time]: Int {account.withdrawal.t}
-fun balanceValue[account: BankAccount, t: Time]: Int {account.balance.t}
-
-pred deposit[account: BankAccount, t : Time, amount: Int]
-{	
-	t > 0 and amount > 0
-	let t' = {minus[t, 1]	} |
 	{
-		depositValue[account, t] = amount
-	  	withdrawalValue[account, t] = 0
-		balanceValue[account, t] = plus[balanceValue[account, t'], amount]
+		depositValue[t'] = amount
+	  	withdrawalValue[t'] = 0
+		balanceValue[t'] = plus[balanceValue[t], amount]
 	}
 }
 
-pred withdraw[account: BankAccount, t : Time, amount: Int]
+pred withdraw[t, t' : Time, amount: Int]
 {	
-	t > 0 and amount > 0
-	let t' = {minus[t, 1]	} |
+	amount > 0
 	{
-		balanceValue[account, t'] >= amount -- there is enough balance
-		depositValue[account, t] = 0
-	  	withdrawalValue[account, t] = amount
-		balanceValue[account, t] = minus[balanceValue[account, t'], amount]
+		balanceValue[t] >= amount -- there is enough balance
+		depositValue[t'] = 0
+	  	withdrawalValue[t'] = amount
+		balanceValue[t'] = minus[balanceValue[t'], amount]
 	}
 }
 
-fact init{openAccount [checkAccount]}
+pred init [t: Time]
+{  
+ 	BankAccount.deposit.0 = 0
+	BankAccount.withdrawal.0 = 0
+	BankAccount.balance.0 = 0
+}
 
-pred someTransaction[account: BankAccount, t: Time] {
-       t > 0
-	some amount: Int | amount > 0 and 
-	(deposit[checkAccount, t, amount] or withdraw[checkAccount, t, amount])	
+pred someTransaction[t, t': Time] 
+{
+	some amount : Int | deposit[t, t', amount] or withdraw[t, t', amount]	
 }
 
 fact system {
+  init[0]
   all t: Time - 0, account: BankAccount |
-    someTransaction[account, t]
+    someTransaction[t, plut[t, 1]]
 }
 
 run {
-deposit[checkAccount, 1, 3] 
+--deposit[1, 2, 10] 
 --deposit[checkAccount, 2, 4] 
 --withdraw[checkAccount, 3, 2]
 } for 5 Int
