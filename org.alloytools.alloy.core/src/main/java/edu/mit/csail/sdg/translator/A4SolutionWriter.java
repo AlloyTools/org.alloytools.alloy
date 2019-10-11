@@ -106,7 +106,7 @@ public final class A4SolutionWriter {
             while (true) {
                 A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum), state)); // [HASLab]
                 int n = ts.size();
-                if (n <= 0 || expr instanceof ExprCall) // [HASLab] hack to allow temporal skolems that refer to atoms outside the current state
+                if (n <= 0 || expr instanceof ExprCall || expr instanceof ExprVar) // [HASLab] hack to allow temporal skolems that refer to atoms outside the current state
                     break;
                 if (lastSize > 0 && lastSize <= n)
                     throw new ErrorFatal("An internal error occurred in the evaluator.");
