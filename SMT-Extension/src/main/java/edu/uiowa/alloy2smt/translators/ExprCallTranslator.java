@@ -139,6 +139,15 @@ public class ExprCallTranslator
             }
         }
 
+        Expression argumentConstraints = BoolConstant.True;
+        for (VariableDeclaration declaration : quantifiedArguments)
+        {
+            if (declaration.getConstraint() != null)
+            {
+                argumentConstraints = MultiArityExpression.Op.AND.make(argumentConstraints, declaration.getConstraint());
+            }
+        }
+
         String freshName = TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple);
         FunctionDeclaration result = new FunctionDeclaration(freshName, argumentSorts,
                 AbstractTranslator.setOfUninterpretedIntTuple, false);
@@ -182,10 +191,20 @@ public class ExprCallTranslator
             Expression and = MultiArityExpression.Op.AND.make(equal, singletonA, singletonB, singletonResult);
 
             Expression exists = QuantifiedExpression.Op.EXISTS.make(and, x, y, z);
-
-            Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprCall.pos),
-                    String.format("%1$s %2$s %3$s axiom", op, A, B), exists);
-            translator.smtProgram.addAssertion(assertion);
+            if(argumentConstraints.equals(BoolConstant.True))
+            {
+                Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprCall.pos),
+                        String.format("%1$s %2$s %3$s axiom", op, A, B), exists);
+                translator.smtProgram.addAssertion(assertion);
+            }
+            else
+            {
+                Expression implies = BinaryExpression.Op.IMPLIES.make(argumentConstraints, exists);
+                Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, quantifiedArguments);
+                Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprCall.pos),
+                        String.format("%1$s %2$s %3$s axiom", op, A, B), forAll);
+                translator.smtProgram.addAssertion(assertion);
+            }
 
             return resultExpression;
         }
@@ -200,14 +219,7 @@ public class ExprCallTranslator
         Expression and1 = MultiArityExpression.Op.AND.make(xMember, yMember);
         Expression and2 = MultiArityExpression.Op.AND.make(equal, and1);
         Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
-        Expression argumentConstraints = BoolConstant.True;
-        for (VariableDeclaration declaration : quantifiedArguments)
-        {
-            if (declaration.getConstraint() != null)
-            {
-                argumentConstraints = MultiArityExpression.Op.AND.make(argumentConstraints, declaration.getConstraint());
-            }
-        }
+
         Expression antecedent1 = MultiArityExpression.Op.AND.make(argumentConstraints, zMember);
         Expression implies1 = BinaryExpression.Op.IMPLIES.make(antecedent1, exists1);
         List<VariableDeclaration> quantifiers1 = new ArrayList<>(quantifiedArguments);
