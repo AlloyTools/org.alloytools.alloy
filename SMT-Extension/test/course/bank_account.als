@@ -26,8 +26,8 @@ pred withdraw[t, t' : Time, amount: Int]
 }
 assert sanity
 {
-    let t = 0 | let a = 5 |
-    let t' = plus[t,1] |
+    all  t': Time - 0, a : univInt |
+    let t = minus[t',1] |
     {
         a > 0 and withdraw[t, t', a]  and balanceValue[t] >= a
         implies
