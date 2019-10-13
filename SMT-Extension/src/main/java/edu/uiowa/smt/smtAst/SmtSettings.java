@@ -15,7 +15,7 @@ public class SmtSettings extends SmtAst
 
     public static final String TLIMIT = "tlimit";
     public static final String PRODUCE_UNSAT_CORES = "produce-unsat-cores";
-    public static final String FINITE_MODEL_FINDING = "finite-model-find";
+    public static final String FINITE_MODEL_FIND = "finite-model-find";
 
     protected SmtSettings()
     {
@@ -24,7 +24,7 @@ public class SmtSettings extends SmtAst
         putSolverOption("incremental", "true");
         putSolverOption("sets-ext", "true");
         putSolverOption("block-models", "literals");
-        putSolverOption(FINITE_MODEL_FINDING, Boolean.toString(true));
+        putSolverOption(FINITE_MODEL_FIND, Boolean.toString(true));
         finiteModelFinding = true;
         produceUnsatCore = false;
     }

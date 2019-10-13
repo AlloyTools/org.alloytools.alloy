@@ -742,7 +742,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         //(set-option :produce-unsat-cores false)
         alloySettings.putSolverOption(SmtSettings.PRODUCE_UNSAT_CORES, Cvc4ProduceUnsatCores.get().toString());
         //(set-option :finite-model-find false)
-        alloySettings.putSolverOption(SmtSettings.FINITE_MODEL_FINDING, Cvc4FiniteModelFind.get().toString());
+        alloySettings.putSolverOption(SmtSettings.FINITE_MODEL_FIND, Cvc4FiniteModelFind.get().toString());
         alloySettings.includeCommandScope = Cvc4IncludeCommandScope.get();
         alloySettings.produceUnsatCore = Cvc4ProduceUnsatCores.get();
         alloySettings.finiteModelFinding = Cvc4FiniteModelFind.get();
