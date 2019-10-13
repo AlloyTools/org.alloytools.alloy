@@ -741,8 +741,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         alloySettings.putSolverOption(SmtSettings.TLIMIT, Cvc4Timeout.get().toString());
         //(set-option :produce-unsat-cores false)
         alloySettings.putSolverOption(SmtSettings.PRODUCE_UNSAT_CORES, Cvc4ProduceUnsatCores.get().toString());
+        //(set-option :finite-model-find false)
+        alloySettings.putSolverOption(SmtSettings.FINITE_MODEL_FINDING, Cvc4FiniteModelFind.get().toString());
         alloySettings.includeCommandScope = Cvc4IncludeCommandScope.get();
         alloySettings.produceUnsatCore = Cvc4ProduceUnsatCores.get();
+        alloySettings.finiteModelFinding = Cvc4FiniteModelFind.get();
+        alloySettings.integerSingletonsOnly = Cvc4IntegerSingletonsOnly.get();
     }
 
     //ToDo: replace this with a call edu.uiowa.smt.Result.parseModel

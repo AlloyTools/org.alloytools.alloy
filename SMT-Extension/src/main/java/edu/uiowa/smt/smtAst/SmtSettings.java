@@ -9,20 +9,23 @@ public class SmtSettings extends SmtAst
     private List<String> logic = new ArrayList<>();
     private Map<String, String> solverOptions = new HashMap<>();
     public boolean produceUnsatCore;
+    public boolean finiteModelFinding;
 
     public static final SmtSettings Default = new SmtSettings();
 
     public static final String TLIMIT = "tlimit";
     public static final String PRODUCE_UNSAT_CORES = "produce-unsat-cores";
+    public static final String FINITE_MODEL_FINDING = "finite-model-find";
 
     protected SmtSettings()
     {
         addLogic("ALL");
         putSolverOption("produce-models", "true");
         putSolverOption("incremental", "true");
-        putSolverOption("finite-model-find", "true");
         putSolverOption("sets-ext", "true");
         putSolverOption("block-models", "literals");
+        putSolverOption(FINITE_MODEL_FINDING, Boolean.toString(true));
+        finiteModelFinding = true;
         produceUnsatCore = false;
     }
 
@@ -36,6 +39,7 @@ public class SmtSettings extends SmtAst
         logic = new ArrayList<>(settings.logic);
         solverOptions = new HashMap<>(settings.solverOptions);
         produceUnsatCore = settings.produceUnsatCore;
+        finiteModelFinding = settings.finiteModelFinding;
     }
 
     public void addLogic(String logic)

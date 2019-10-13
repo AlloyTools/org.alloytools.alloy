@@ -84,14 +84,9 @@ public class ExprCallTranslator
 
     public Expression translateArithmetic(ExprCall exprCall, Expression A, Expression B, BinaryExpression.Op op, Environment environment)
     {
-
         A = convertIntConstantToSet(A);
 
         B = convertIntConstantToSet(B);
-
-        // for all x, y : uninterpretedInt. x in A and y in B implies
-        // exists z :uninterpretedInt. (x, y, z) in operation
-
 
         if (A.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
@@ -171,12 +166,36 @@ public class ExprCallTranslator
         Expression yValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, y.getVariable());
         Expression zValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, z.getVariable());
 
+        Expression xyOperation = op.make(xValue, yValue);
+        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
+
+        if(translator.alloySettings.integerSingletonsOnly)
+        {
+            // A= {x}, B = {y} => Result = {z} where z = (x operation y)
+            Expression xSingleton = UnaryExpression.Op.SINGLETON.make(xTuple);
+            Expression ySingleton = UnaryExpression.Op.SINGLETON.make(yTuple);
+            Expression zSingleton = UnaryExpression.Op.SINGLETON.make(zTuple);
+            Expression singletonA = BinaryExpression.Op.EQ.make(A, xSingleton);
+            Expression singletonB = BinaryExpression.Op.EQ.make(B, ySingleton);
+            Expression singletonResult = BinaryExpression.Op.EQ.make(resultExpression, zSingleton);
+
+            Expression and = MultiArityExpression.Op.AND.make(equal, singletonA, singletonB, singletonResult);
+
+            Expression exists = QuantifiedExpression.Op.EXISTS.make(and, x, y, z);
+
+            Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprCall.pos),
+                    String.format("%1$s %2$s %3$s axiom", op, A, B), exists);
+            translator.smtProgram.addAssertion(assertion);
+
+            return resultExpression;
+        }
+
+        // for all x, y : uninterpretedInt. x in A and y in B implies
+        // exists z :uninterpretedInt. (x, y, z) in operation
+
         Expression xMember = BinaryExpression.Op.MEMBER.make(xTuple, A);
         Expression yMember = BinaryExpression.Op.MEMBER.make(yTuple, B);
         Expression zMember = BinaryExpression.Op.MEMBER.make(zTuple, resultExpression);
-
-        Expression xyOperation = op.make(xValue, yValue);
-        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
 
         Expression and1 = MultiArityExpression.Op.AND.make(xMember, yMember);
         Expression and2 = MultiArityExpression.Op.AND.make(equal, and1);

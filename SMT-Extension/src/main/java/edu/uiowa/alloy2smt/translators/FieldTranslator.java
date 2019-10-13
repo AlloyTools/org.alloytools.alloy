@@ -124,11 +124,14 @@ public class FieldTranslator
             }
         }
 
-        Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, a, b);
+        if(! consequent.equals(BoolConstant.True))
+        {
+            Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
+            Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
-        Assertion disjoint2 = AlloyUtils.getAssertion(positions, sig.label + " disjoint2", forAll);
-        translator.smtProgram.addAssertion(disjoint2);
+            Assertion disjoint2 = AlloyUtils.getAssertion(positions, sig.label + " disjoint2", forAll);
+            translator.smtProgram.addAssertion(disjoint2);
+        }
     }
 
     private Expression getFieldExpression(List<Sig.Field> fields, String label)

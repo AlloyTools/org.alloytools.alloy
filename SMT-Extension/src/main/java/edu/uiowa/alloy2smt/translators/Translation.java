@@ -69,7 +69,6 @@ public class Translation
 
     /**
      * @param commandIndex the index of the command
-     * @param includeScope whether to include scope in translation
      * @return the satResult of translating the given command (ignoring
      * scope constraints) into smt
      */
@@ -85,8 +84,7 @@ public class Translation
         List<Assertion> assertions = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
 
 
-        List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex,
-                alloySettings.includeCommandScope);
+        List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex);
 
         // get new declarations, definitions, and assertions
         List<Sort> newSorts = commandTranslator.smtProgram

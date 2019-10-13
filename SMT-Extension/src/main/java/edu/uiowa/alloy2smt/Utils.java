@@ -43,7 +43,7 @@ public class Utils
 
     private static Translation getTranslation(CompModule alloyModel, AlloySettings settings)
     {
-        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel);
+        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel, settings);
         SmtProgram program              = translator.translate();
         Mapper mapper                   = translator.generateMapper();
         SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter(settings);
