@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class QuantifiedExpression extends Expression
 {
@@ -141,6 +142,14 @@ public class QuantifiedExpression extends Expression
         }
         return op ==  quantifiedObject.op &&
                 expr.equals(quantifiedObject.expr);
+    }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        List<Variable> freeVariables = expr.getFreeVariables();
+        freeVariables.removeAll(variables.stream().map(v -> v.getVariable()).collect(Collectors.toList()));
+        return freeVariables;
     }
 
     @Override

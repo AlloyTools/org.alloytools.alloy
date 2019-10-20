@@ -10,6 +10,8 @@ package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtAstVisitor;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class Variable extends Expression
@@ -60,6 +62,12 @@ public class Variable extends Expression
         }
         Variable constantObject = (Variable) object;
         return declaration.equals(constantObject.declaration);
+    }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        return Collections.singletonList(this);
     }
 
     @Override

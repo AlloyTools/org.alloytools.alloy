@@ -10,6 +10,7 @@ package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtLibPrinter;
 
+import java.util.List;
 import java.util.Map;
 
 public abstract class Expression extends SmtAst
@@ -29,6 +30,8 @@ public abstract class Expression extends SmtAst
 
     @Override
     public abstract boolean equals(Object object);
+
+    public abstract List<Variable> getFreeVariables();
 
     public abstract Expression substitute(Variable oldVariable, Variable newVariable);
 

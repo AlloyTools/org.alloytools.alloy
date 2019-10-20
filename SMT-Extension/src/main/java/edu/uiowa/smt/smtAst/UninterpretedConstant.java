@@ -3,6 +3,8 @@ package edu.uiowa.smt.smtAst;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class UninterpretedConstant extends Constant
@@ -70,6 +72,12 @@ public class UninterpretedConstant extends Constant
         UninterpretedConstant constant = (UninterpretedConstant) object;
         return name.equals(constant.name) &&
                 sort.equals(constant.sort);
+    }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        return Collections.emptyList();
     }
 
     @Override

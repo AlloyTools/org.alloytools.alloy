@@ -236,6 +236,18 @@ public class MultiArityExpression extends Expression
         return op ==  multiArity.op &&
                 exprs.equals(multiArity.exprs);
     }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        List<Variable> freeVariables = new ArrayList<>();
+        for (Expression expression: exprs)
+        {
+            freeVariables.addAll(expression.getFreeVariables());
+        }
+        return freeVariables;
+    }
+
     @Override
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {

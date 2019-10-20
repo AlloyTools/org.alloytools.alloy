@@ -12,6 +12,8 @@ import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class IntConstant extends Constant
@@ -83,6 +85,12 @@ public class IntConstant extends Constant
         }
         IntConstant intConstant = (IntConstant) object;
         return value.equals(intConstant.value);
+    }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        return Collections.emptyList();
     }
 
     @Override

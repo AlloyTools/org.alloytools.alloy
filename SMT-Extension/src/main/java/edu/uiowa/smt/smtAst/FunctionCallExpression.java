@@ -114,6 +114,17 @@ public class FunctionCallExpression extends Expression
     }
 
     @Override
+    public List<Variable> getFreeVariables()
+    {
+        List<Variable> freeVariables = new ArrayList<>();
+        for (Expression expression: arguments)
+        {
+            freeVariables.addAll(expression.getFreeVariables());
+        }
+        return freeVariables;
+    }
+
+    @Override
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {
         if(this.function.getVariable().equals(newVariable))

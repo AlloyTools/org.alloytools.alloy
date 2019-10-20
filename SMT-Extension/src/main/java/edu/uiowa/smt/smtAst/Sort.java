@@ -11,6 +11,8 @@ package edu.uiowa.smt.smtAst;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.printers.SmtLibPrinter;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class Sort extends Expression
@@ -58,6 +60,12 @@ public class Sort extends Expression
     public boolean equals(Object object)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        return Collections.emptyList();
     }
 
     @Override

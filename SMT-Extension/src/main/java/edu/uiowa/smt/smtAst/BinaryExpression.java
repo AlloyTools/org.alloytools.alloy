@@ -366,6 +366,14 @@ public class BinaryExpression extends Expression
                 rhsExpr.equals(binaryObject.rhsExpr);
     }
 
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        List<Variable> freeVariables = lhsExpr.getFreeVariables();
+        freeVariables.addAll(rhsExpr.getFreeVariables());
+        return freeVariables;
+    }
+
     private Expression evaluateEquality(Map<String, FunctionDefinition> functions, Expression left, Expression right)
     {
         String variableName = ((Variable) left).getName();

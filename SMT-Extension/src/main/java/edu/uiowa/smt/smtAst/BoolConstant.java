@@ -11,6 +11,8 @@ package edu.uiowa.smt.smtAst;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class BoolConstant extends Constant
@@ -64,6 +66,12 @@ public class BoolConstant extends Constant
         }
         BoolConstant booleanObject = (BoolConstant) object;
         return value == booleanObject.value;
+    }
+
+    @Override
+    public List<Variable> getFreeVariables()
+    {
+        return Collections.emptyList();
     }
 
     @Override

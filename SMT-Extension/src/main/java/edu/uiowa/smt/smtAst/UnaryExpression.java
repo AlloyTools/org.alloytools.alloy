@@ -205,6 +205,12 @@ public class UnaryExpression extends Expression
     }
 
     @Override
+    public List<Variable> getFreeVariables()
+    {
+        return expr.getFreeVariables();
+    }
+
+    @Override
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {
         if(expr.equals(newVariable))

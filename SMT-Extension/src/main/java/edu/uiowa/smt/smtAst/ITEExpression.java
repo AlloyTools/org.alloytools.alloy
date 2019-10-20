@@ -119,6 +119,15 @@ public class ITEExpression extends Expression
     }
 
     @Override
+    public List<Variable> getFreeVariables()
+    {
+        List<Variable> freeVariables = condExpr.getFreeVariables();
+        freeVariables.addAll(thenExpr.getFreeVariables());
+        freeVariables.addAll(elseExpr.getFreeVariables());
+        return freeVariables;
+    }
+
+    @Override
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {
         if (condExpr.equals(newVariable) || thenExpr.equals(newVariable) || elseExpr.equals(newVariable))
