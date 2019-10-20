@@ -10,7 +10,7 @@ package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.printers.SmtAstVisitor;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +67,9 @@ public class Variable extends Expression
     @Override
     public List<Variable> getFreeVariables()
     {
-        return Collections.singletonList(this);
+        List<Variable> freeVariables = new ArrayList<>();
+        freeVariables.add(this);
+        return freeVariables;
     }
 
     @Override

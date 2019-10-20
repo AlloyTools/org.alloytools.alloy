@@ -12,7 +12,7 @@ import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
 import java.math.BigInteger;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +90,7 @@ public class IntConstant extends Constant
     @Override
     public List<Variable> getFreeVariables()
     {
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     @Override

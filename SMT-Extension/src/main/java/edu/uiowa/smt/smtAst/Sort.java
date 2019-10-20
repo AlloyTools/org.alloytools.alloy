@@ -11,7 +11,7 @@ package edu.uiowa.smt.smtAst;
 import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.printers.SmtLibPrinter;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +65,7 @@ public class Sort extends Expression
     @Override
     public List<Variable> getFreeVariables()
     {
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     @Override
