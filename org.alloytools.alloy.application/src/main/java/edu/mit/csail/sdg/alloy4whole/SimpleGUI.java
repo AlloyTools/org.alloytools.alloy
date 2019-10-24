@@ -1387,6 +1387,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
             optmenu.addSeparator();
             // CVC4 options
+            JMenu relationalSolverMenu = addToMenu(optmenu, RelationalSolver);
             JMenu cvc4TimeoutMenu = addToMenu(optmenu, Cvc4Timeout);
             List<JMenuItem> cvc4BooleanPreferences = addToMenu(optmenu,
                     Cvc4IncludeCommandScope,
