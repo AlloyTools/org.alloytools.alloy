@@ -16,11 +16,7 @@
 package edu.mit.csail.sdg.alloy4;
 
 import java.io.Serializable;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.RandomAccess;
+import java.util.*;
 
 /**
  * Immutable; implements a list based on equals(); null values are allowed.
@@ -54,7 +50,7 @@ public final class ConstList<T> extends AbstractList<T> implements Serializable,
          * will be given a default capacity of 0)
          */
         public TempList(int n) {
-            list = new ArrayList<T>(n >= 0 ? n : 0);
+            list = new ArrayList<T>(Math.max(n, 0));
         }
 
         /**
@@ -62,7 +58,7 @@ public final class ConstList<T> extends AbstractList<T> implements Serializable,
          * elem (if n<=0, the created list is empty)
          */
         public TempList(int n, T elem) {
-            list = new ArrayList<T>(n > 0 ? n : 0);
+            list = new ArrayList<T>(Math.max(n, 0));
             while (n > 0) {
                 list.add(elem);
                 n--;
@@ -82,8 +78,7 @@ public final class ConstList<T> extends AbstractList<T> implements Serializable,
          */
         public TempList(T... all) {
             list = new ArrayList<T>(all.length);
-            for (int i = 0; i < all.length; i++)
-                list.add(all[i]);
+            list.addAll(Arrays.asList(all));
         }
 
         /** Returns a String representation. */

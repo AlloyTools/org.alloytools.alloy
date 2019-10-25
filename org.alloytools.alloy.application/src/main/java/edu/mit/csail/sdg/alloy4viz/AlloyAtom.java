@@ -40,17 +40,10 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
      */
     private final int       index;
 
-    /** Create a new AlloyAtom with the given type and index. */
-    public AlloyAtom(AlloyType type, int index) {
-        this.type = type;
-        this.index = index;
-        this.originalName = type.getName() + "." + index;
-    }
-
     /**
      * Create a new AlloyAtom with the given type, index, and label.
      */
-    public AlloyAtom(AlloyType type, int index, String originalName) {
+    AlloyAtom(AlloyType type, int index, String originalName) {
         this.type = type;
         this.index = index;
         this.originalName = originalName;
@@ -60,7 +53,7 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
      * Return a label for this atom as recommended by a theme (theme can be null if
      * there's no theme to consult).
      */
-    public String getVizName(VizState theme, boolean numberAtoms) {
+    String getVizName(VizState theme, boolean numberAtoms) {
         if (theme != null) {
             if (theme.useOriginalName() || type.getName().equals("String"))
                 return originalName;
@@ -128,7 +121,7 @@ public final class AlloyAtom implements Comparable<AlloyAtom> {
         // make sure X>5 just like X>0
         // (even though lexically, the type name "X" < the type name "seq/Int"
         if (at.equals(AlloyType.INT) && bt.equals(AlloyType.INT))
-            return (index < otherAtom.index) ? -1 : ((index > otherAtom.index) ? 1 : 0);
+            return Integer.compare(index, otherAtom.index);
         int result = at.compareTo(bt);
         if (result != 0)
             return result;
