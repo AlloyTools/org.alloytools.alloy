@@ -1,5 +1,7 @@
 .DS_Store
 .gradle/
+gradle/
+.idea/
 generated/
 bin/
 bin_test/
