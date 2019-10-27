@@ -1,0 +1,2 @@
+[submodule "org.alloytools.satsolver.provider/extern/minisat/minisat"]
+	url = https://github.com/niklasso/minisat.git

@@ -1,5 +1,6 @@
 .DS_Store
 .gradle/
+.idea
 generated/
 bin/
 bin_test/
@@ -37,3 +38,8 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.out
 *.app
 
+# Build files
+!build/windows/installation-files/lib/*.exe
+!build/windows/installation-files/lib/*.dll
+!build/windows/installation-files/redist/*.exe
+!build/windows/Output/alloy-setup-5.1.0.exe
