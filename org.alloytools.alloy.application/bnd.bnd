@@ -10,6 +10,7 @@
 	osgi.enroute.junit.wrapper, \
 	osgi.enroute.hamcrest.wrapper, \
     org.sat4j.core, \
+	org.alloytools.pardinus;version=latest,\
     org.alloytools.kodkod.nativesat.amd64-linux, \
     org.alloytools.kodkod.nativesat.util, \
     org.alloytools.kodkod.nativesat.x86-linux, \
