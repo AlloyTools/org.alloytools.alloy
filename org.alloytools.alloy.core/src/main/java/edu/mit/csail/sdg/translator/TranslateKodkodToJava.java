@@ -789,7 +789,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             case ONCE :
                 file.printf("Formula %s=%s.once();%n", newname, sub);
                 break;
-            case PREVIOUSLY :
+            case BEFORE :
                 file.printf("Formula %s=%s.previously();%n", newname, sub);
                 break;
             case AFTER :

@@ -861,7 +861,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case EVENTUALLY :
                 return k2pos(cform(x.sub).eventually(), x);   // [HASLab]
             case BEFORE :
-                return k2pos(cform(x.sub).previously(), x);     // [HASLab]
+                return k2pos(cform(x.sub).before(), x);     // [HASLab]
             case HISTORICALLY :
                 return k2pos(cform(x.sub).historically(), x); // [HASLab]
             case ONCE :
