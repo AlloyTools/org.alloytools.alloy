@@ -11,7 +11,7 @@ Bundle-NativeCode: \
 		processor=x86, \
 	x86-mac/libminisatprover.dylib; \
 		osname=MacOSX; \
-		processor=x86
+		processor=x86, \
 	x86-mac/electrod; \
 		osname=MacOSX; \
 		processor=x86
