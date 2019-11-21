@@ -16,7 +16,7 @@
 	osgi.enroute.junit.wrapper, \
 	osgi.enroute.hamcrest.wrapper, \
     src/main/resources;version=file, \
-    slf4j.api
+    slf4j.api, \
 	
 Export-Package: \
 	edu.mit.csail.sdg.alloy4,\
