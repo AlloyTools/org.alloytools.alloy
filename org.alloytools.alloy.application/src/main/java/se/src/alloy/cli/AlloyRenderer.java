@@ -13,7 +13,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 import java.io.File;
 import java.util.List;
 
-public class AlloyRenderer {
+public class AlloyRenderer implements FileRunner {
   public static final String DEFAULT_GRAPH_FOLDER = "./graphs/";
   private final Config configFile;
   private final A4Reporter reporter;

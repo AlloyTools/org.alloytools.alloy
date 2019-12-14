@@ -8,16 +8,32 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Args {
   public final Config configFile;
   private List<String> files;
+  private final Boolean watch;
 
-  private Args(Config configFile, List<String> files) {
+  private Args(Config configFile, List<String> files, Boolean watch) {
     this.configFile = configFile;
     this.files = files;
+    this.watch = watch;
   }
 
   public static Args parse(List<String> args) throws IOException {
     String configFile = parse_configFile(args);
+    Boolean watch = parse_watchFlag(args);
     List<String> files = parse_files(args);
-    return new Args(Config.fromFile(configFile), files);
+    return new Args(Config.fromFile(configFile), files, watch);
+  }
+
+  private static Boolean parse_watchFlag(List<String> args) {
+    AtomicReference<Boolean> watch = new AtomicReference<Boolean>();
+    watch.set(Config.DEFAULT_WATCH_MODE);
+    args.forEach(
+            x -> {
+              String flag = flag(x);
+              if (flag.equals("--watch")) {
+                watch.set(true);
+              }
+            });
+    return watch.get();
   }
 
   private static List<String> parse_files(List<String> args) {
@@ -58,5 +74,9 @@ public class Args {
 
   public List<String> files() {
     return this.files;
+  }
+
+  public Boolean watch() {
+    return this.watch;
   }
 }

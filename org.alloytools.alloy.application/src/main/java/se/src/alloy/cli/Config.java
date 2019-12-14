@@ -6,6 +6,7 @@ import java.util.Properties;
 
 public class Config {
   public static final String DEFAULT_CONFIG_FILE = ".alloy";
+  public static final Boolean DEFAULT_WATCH_MODE = false;
   private final Verbosity verbosity;
 
   private Config(Verbosity verbosity) {

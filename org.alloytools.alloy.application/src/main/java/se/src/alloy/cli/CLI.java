@@ -1,13 +1,15 @@
 package se.src.alloy.cli;
 
+import edu.mit.csail.sdg.alloy4.Version;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 public final class CLI {
-  public static void main(String[] rawArgs) throws IOException {
+  public static void main(String[] rawArgs) throws IOException, InterruptedException {
     long startTime = System.nanoTime();
-    Printer.log("Alloy Runner v0.0.1");
+    Printer.log("Alloy " + Version.getShortversion());
     Printer.newline();
 
     List<String> args1 = Arrays.asList(rawArgs);
@@ -22,23 +24,32 @@ public final class CLI {
     Printer.newline();
   }
 
-  private static void dispatch(SubCommand subCommand, List<String> rest) throws IOException {
+  private static void dispatch(SubCommand subCommand, List<String> rest)
+      throws IOException, InterruptedException {
     Args args = Args.parse(rest);
 
-    switch (subCommand) {
-      case CHECK:
-        AlloyChecker.fromConfigFile(args.configFile()).run(args.files());
-        break;
+    FileRunner cmd = pickCommand(subCommand, args);
 
-      case RENDER:
-        AlloyRenderer.fromConfigFile(args.configFile()).run(args.files());
-        break;
-
-      case VIEW:
-        AlloyViewer.run(args.files());
-        break;
+    if (args.watch()) {
+      Watcher.run(args, cmd);
+    } else {
+      cmd.run(args.files());
     }
   }
+
+  private static FileRunner pickCommand(SubCommand subCommand, Args args) {
+    switch (subCommand) {
+      case VIEW:
+        return AlloyViewer.create();
+
+      case RENDER:
+        return AlloyRenderer.fromConfigFile(args.configFile());
+
+      case CHECK:
+      default:
+        return AlloyChecker.fromConfigFile(args.configFile());
+    }
+  };
 
   public enum SubCommand {
     CHECK,

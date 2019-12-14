@@ -12,7 +12,7 @@ public class Printer {
   static final String COLOR_GREEN = "\033[0;32m";
   static final String COLOR_RED_BOLD = "\033[1;31m";
 
-  static void log(String s) {
+  public static void log(String s) {
     String sep = " | ";
     Instant now = Instant.now();
     String date =
@@ -20,6 +20,10 @@ public class Printer {
             .format(DateTimeFormatter.ISO_LOCAL_TIME)
             .substring(0, 13);
     System.out.print(COLOR_BLUE + date + COLOR_RESET + sep + s);
+  }
+
+  public static void append(String s) {
+    System.out.print(s);
   }
 
   public static void success(String t) {

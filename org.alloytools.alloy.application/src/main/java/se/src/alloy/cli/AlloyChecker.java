@@ -12,7 +12,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
 import java.util.List;
 
-public class AlloyChecker {
+public class AlloyChecker implements FileRunner {
   private final Config configFile;
   private final A4Reporter reporter;
 
