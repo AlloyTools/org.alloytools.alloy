@@ -101,37 +101,37 @@ public class ExprCallTranslator
         Expression newA = A;
         Expression newB = B;
 
-        // add variables in the environment as arguments to the result function
-        LinkedHashMap<String, Expression> argumentsMap = environment.getVariables();
+        // get the free variables in expressions A, B
+        List<Variable> arguments = new ArrayList<>(A.getFreeVariables());
+        arguments.addAll(B.getFreeVariables());
+        // include only free variables in environment
+        arguments.removeIf(a -> ! environment.containsKey(a.getName()));
         List<Sort> argumentSorts = new ArrayList<>();
-        List<Expression> arguments = new ArrayList<>();
         List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
-        for (Map.Entry<String, Expression> argument : argumentsMap.entrySet())
+        for (Variable argument : arguments)
         {
-            arguments.add(argument.getValue());
-            Variable variable = (Variable) argument.getValue();
-            Sort sort = variable.getSort();
+            Sort sort = argument.getSort();
             argumentSorts.add(sort);
 
             // handle set sorts differently to avoid sets quantifiers
             if (sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
-                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, variable.isOriginal());
+                VariableDeclaration tuple = new VariableDeclaration(argument.getName(), elementSort, argument.isOriginal());
                 quantifiedArguments.add(tuple);
                 Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple.getVariable());
-                newA = newA.replace(argument.getValue(), singleton);
-                newB = newB.replace(argument.getValue(), singleton);
-                Expression constraint = ((VariableDeclaration) variable.getDeclaration()).getConstraint();
+                newA = newA.replace(argument, singleton);
+                newB = newB.replace(argument, singleton);
+                Expression constraint = ((VariableDeclaration) argument.getDeclaration()).getConstraint();
                 if (constraint != null)
                 {
-                    constraint = constraint.replace(variable, singleton);
+                    constraint = constraint.replace(argument, singleton);
                 }
                 tuple.setConstraint(constraint);
             }
             else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
             {
-                quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
+                quantifiedArguments.add((VariableDeclaration) argument.getDeclaration());
             }
             else
             {
@@ -156,7 +156,8 @@ public class ExprCallTranslator
         Expression resultExpression;
         if (result.getInputSorts().size() > 0)
         {
-            resultExpression = new FunctionCallExpression(result, arguments);
+            List<Expression> expressions = new ArrayList<>(arguments);
+            resultExpression = new FunctionCallExpression(result, expressions);
         }
         else
         {

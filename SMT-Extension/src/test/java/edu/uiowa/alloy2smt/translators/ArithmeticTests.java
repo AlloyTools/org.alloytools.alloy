@@ -5,6 +5,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -14,6 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ArithmeticTests
 {
+    @BeforeEach
+    private void settings()
+    {
+        AlloyUtils.alloySettings.integerSingletonsOnly = false;
+    }
     @Test
     public void union() throws Exception
     {
@@ -107,7 +113,6 @@ public class ArithmeticTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertTrue(commandResults.size() == 1);
         assertEquals("sat", commandResults.get(0).satResult);
-        FunctionDefinition mod = AlloyUtils.getFunctionDefinition(commandResults.get(0), AbstractTranslator.mod);
     }
 
     @Test
@@ -222,6 +227,7 @@ public class ArithmeticTests
     @Test
     public void intScope() throws Exception
     {
+        AlloyUtils.alloySettings.integerSingletonsOnly = false;
         String alloy =
                 "sig A, B, C in Int {} \n" +
                         "fact { \n" +
@@ -257,6 +263,7 @@ public class ArithmeticTests
     @Test
     public void bankAccount() throws Exception
     {
+        AlloyUtils.alloySettings.integerSingletonsOnly = true;
         String alloy =
                 "sig Time in Int {}\n" +
                         "one sig BankAccount \n" +
