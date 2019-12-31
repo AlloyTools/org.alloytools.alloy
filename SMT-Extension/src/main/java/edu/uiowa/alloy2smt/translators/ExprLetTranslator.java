@@ -4,7 +4,14 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprLet;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.Expression;
+import edu.uiowa.smt.smtAst.FunctionDeclaration;
+import edu.uiowa.smt.smtAst.LetExpression;
+import edu.uiowa.smt.smtAst.VariableDeclaration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ExprLetTranslator
 {
@@ -19,8 +26,17 @@ public class ExprLetTranslator
 
     Expression translateExprLet(ExprLet exprLet, Environment environment)
     {
-        Expr letExpanded = AlloyUtils.substituteExpr(exprLet.sub, exprLet.var, exprLet.expr);
-        Expression letTranslation = exprTranslator.translateExpr(letExpanded, environment);
-        return letTranslation;
+        Expression expression = exprTranslator.translateExpr(exprLet.expr, environment);
+
+        VariableDeclaration declaration = new VariableDeclaration(exprLet.var.label,
+                expression.getSort() , true);
+        Map<VariableDeclaration, Expression> map = new HashMap<>();
+        map.put(declaration, expression);
+
+        Environment newEnvironment = new Environment(environment);
+        newEnvironment.put(declaration.getName(), declaration.getVariable());
+        Expression body = exprTranslator.translateExpr(exprLet.sub, newEnvironment);
+        Expression let = new LetExpression(map, body);
+        return let;
     }
 }

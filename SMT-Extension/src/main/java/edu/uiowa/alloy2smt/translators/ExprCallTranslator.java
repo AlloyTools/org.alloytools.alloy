@@ -2,6 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprCall;
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
@@ -149,8 +150,15 @@ public class ExprCallTranslator
         }
 
         String freshName = TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple);
-        FunctionDeclaration result = new FunctionDeclaration(freshName, argumentSorts,
-                AbstractTranslator.setOfUninterpretedIntTuple, false);
+        FunctionDeclaration result;
+        if(translator.alloySettings.integerSingletonsOnly)
+        {
+            result = new FunctionDeclaration(freshName, argumentSorts, AbstractTranslator.uninterpretedIntTuple, false);
+        }
+        else
+        {
+            result = new FunctionDeclaration(freshName, argumentSorts, AbstractTranslator.setOfUninterpretedIntTuple, false);
+        }
         translator.smtProgram.addFunction(result);
 
         Expression resultExpression;

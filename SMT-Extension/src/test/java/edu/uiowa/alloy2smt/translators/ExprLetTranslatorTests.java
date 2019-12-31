@@ -31,4 +31,12 @@ class ExprLetTranslatorTests
         Set<String> a0Atoms = TranslatorUtils.getAtomSet(a0);
         assertEquals(1, a0Atoms.size());
     }
+
+    @Test
+    public void letInt() throws Exception
+    {
+        String alloy = "assert sanity {let t = minus[3,1] | { 2 = t}} check sanity";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }
