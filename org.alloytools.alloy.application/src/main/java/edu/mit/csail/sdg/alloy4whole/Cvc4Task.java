@@ -607,8 +607,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             {
                 case UNION:
                 {
-                    tuples.addAll(getTuples(binary.getLhsExpr(), functionsMap));
-                    tuples.addAll(getTuples(binary.getRhsExpr(), functionsMap));
+                    tuples.addAll(getTuples(binary.getA(), functionsMap));
+                    tuples.addAll(getTuples(binary.getB(), functionsMap));
                     return tuples;
                 }
                 default:
@@ -669,8 +669,8 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             {
                 case UNION:
                 {
-                    atoms.addAll(getAtoms(binary.getLhsExpr(), functions));
-                    atoms.addAll(getAtoms(binary.getRhsExpr(), functions));
+                    atoms.addAll(getAtoms(binary.getA(), functions));
+                    atoms.addAll(getAtoms(binary.getB(), functions));
                     return atoms;
                 }
                 default:

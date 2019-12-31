@@ -195,7 +195,7 @@ public class ExprCallTranslator
             Expression zSingleton = UnaryExpression.Op.SINGLETON.make(zTuple);
             Expression singletonA = BinaryExpression.Op.EQ.make(A, xSingleton);
             Expression singletonB = BinaryExpression.Op.EQ.make(B, ySingleton);
-            Expression singletonResult = BinaryExpression.Op.EQ.make(resultExpression, zSingleton);
+            Expression singletonResult = BinaryExpression.Op.EQ.make(resultExpression, zTuple);
 
             Expression and = MultiArityExpression.Op.AND.make(equal, singletonA, singletonB, singletonResult);
 
@@ -263,7 +263,14 @@ public class ExprCallTranslator
         {
             ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-            A = UnaryExpression.Op.SINGLETON.make(tuple);
+            if(translator.alloySettings.integerSingletonsOnly)
+            {
+                A = UnaryExpression.Op.SINGLETON.make(tuple);
+            }
+            else
+            {
+                A = tuple;
+            }
         }
         return A;
     }

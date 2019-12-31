@@ -89,17 +89,17 @@ public class SmtLibPrinter implements SmtAstVisitor
         if (binaryExpression.getOp() != BinaryExpression.Op.TUPSEL)
         {
             stringBuilder.append("(" + binaryExpression.getOp() + " ");
-            this.visit(binaryExpression.getLhsExpr());
+            this.visit(binaryExpression.getA());
             stringBuilder.append(" ");
-            this.visit(binaryExpression.getRhsExpr());
+            this.visit(binaryExpression.getB());
             stringBuilder.append(")");
         }
         else
         {
             stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
-            stringBuilder.append(((IntConstant) binaryExpression.getLhsExpr()).getValue());
+            stringBuilder.append(((IntConstant) binaryExpression.getA()).getValue());
             stringBuilder.append(") ");
-            this.visit(binaryExpression.getRhsExpr());
+            this.visit(binaryExpression.getB());
             stringBuilder.append(")");
         }
     }

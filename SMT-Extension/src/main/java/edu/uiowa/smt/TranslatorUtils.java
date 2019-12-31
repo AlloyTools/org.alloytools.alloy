@@ -182,8 +182,8 @@ public class TranslatorUtils
         BinaryExpression binary = (BinaryExpression) expression;
         Set<Integer> set = new HashSet<>();
         assert (binary.getOp() == BinaryExpression.Op.UNION);
-        set.addAll(getIntSet(binary.getLhsExpr()));
-        set.addAll(getIntSet(binary.getRhsExpr()));
+        set.addAll(getIntSet(binary.getA()));
+        set.addAll(getIntSet(binary.getB()));
         return set;
     }
 
@@ -217,8 +217,8 @@ public class TranslatorUtils
             BinaryExpression binary = (BinaryExpression) expression;
             Set<String> set = new HashSet<>();
             assert (binary.getOp() == BinaryExpression.Op.UNION);
-            set.addAll(getAtomSet(binary.getLhsExpr()));
-            set.addAll(getAtomSet(binary.getRhsExpr()));
+            set.addAll(getAtomSet(binary.getA()));
+            set.addAll(getAtomSet(binary.getB()));
             return set;
         }
 
@@ -273,8 +273,8 @@ public class TranslatorUtils
         BinaryExpression binary = (BinaryExpression) expression;
         Set<List<String>> set = new HashSet<>();
         assert (binary.getOp() == BinaryExpression.Op.UNION);
-        set.addAll(getRelation(binary.getLhsExpr()));
-        set.addAll(getRelation(binary.getRhsExpr()));
+        set.addAll(getRelation(binary.getA()));
+        set.addAll(getRelation(binary.getB()));
         return set;
     }
 

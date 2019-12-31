@@ -51,18 +51,18 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
             printTabs();
             stringBuilder.append("(" + binaryExpression.getOp() + " ");
             tabsCount++;
-            this.visit(binaryExpression.getLhsExpr());
+            this.visit(binaryExpression.getA());
             stringBuilder.append(" ");
-            this.visit(binaryExpression.getRhsExpr());
+            this.visit(binaryExpression.getB());
             stringBuilder.append(")");
             tabsCount -= 2;
         }
         else
         {
             stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
-            stringBuilder.append(((IntConstant)binaryExpression.getLhsExpr()).getValue());
+            stringBuilder.append(((IntConstant)binaryExpression.getA()).getValue());
             stringBuilder.append(") ");
-            this.visit(binaryExpression.getRhsExpr());
+            this.visit(binaryExpression.getB());
             stringBuilder.append(")");
         }
     }

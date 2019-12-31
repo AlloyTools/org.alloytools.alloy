@@ -18,22 +18,22 @@ import java.util.Map;
 public class BinaryExpression extends Expression
 {
     private final Op            op;
-    private Expression    lhsExpr;
-    private Expression    rhsExpr;
+    private Expression A;
+    private Expression B;
 
-    private BinaryExpression(Op op, Expression lhsExpr, Expression rhsExpr)
+    private BinaryExpression(Op op, Expression A, Expression B)
     {
         this.op         = op;
-        if(lhsExpr == null)
+        if(A == null)
         {
             throw new RuntimeException("Left expression is null");
         }
-        this.lhsExpr    = lhsExpr;
-        if(rhsExpr == null)
+        this.A = A;
+        if(B == null)
         {
             throw new RuntimeException("Right expression is null");
         }
-        this.rhsExpr    = rhsExpr;
+        this.B = B;
 
         checkTypes();
     }
@@ -45,13 +45,13 @@ public class BinaryExpression extends Expression
         {
             case IMPLIES:
             {
-                if (lhsExpr.getSort() != AbstractTranslator.boolSort)
+                if (A.getSort() != AbstractTranslator.boolSort)
                 {
-                    throw new RuntimeException(String.format("Left expression sort '%1$s' is not boolean", lhsExpr.getSort()));
+                    throw new RuntimeException(String.format("Left expression sort '%1$s' is not boolean", A.getSort()));
                 }
-                if (rhsExpr.getSort() != AbstractTranslator.boolSort)
+                if (B.getSort() != AbstractTranslator.boolSort)
                 {
-                    throw new RuntimeException(String.format("Right expression sort '%1$s' is not boolean", rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("Right expression sort '%1$s' is not boolean", B.getSort()));
                 }
             } break;
             case PLUS:
@@ -64,13 +64,13 @@ public class BinaryExpression extends Expression
             case GT:
             case LT:
             {
-                if (lhsExpr.getSort() != AbstractTranslator.intSort)
+                if (A.getSort() != AbstractTranslator.intSort)
                 {
-                    throw new RuntimeException(String.format("Left expression sort '%1$s' is not integer or  set of integers", lhsExpr.getSort()));
+                    throw new RuntimeException(String.format("Left expression sort '%1$s' is not integer or  set of integers", A.getSort()));
                 }
-                if (rhsExpr.getSort() != AbstractTranslator.intSort)
+                if (B.getSort() != AbstractTranslator.intSort)
                 {
-                    throw new RuntimeException(String.format("Right expression sort '%1$s' is not integer or  set of integers", rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("Right expression sort '%1$s' is not integer or  set of integers", B.getSort()));
                 }
             } break;
 
@@ -80,47 +80,47 @@ public class BinaryExpression extends Expression
             case SETMINUS:
             case SUBSET:
             {
-                if(! lhsExpr.getSort().equals(rhsExpr.getSort()))
+                if(! A.getSort().equals(B.getSort()))
                 {
-                    throw new RuntimeException(String.format("The sort of left expression sort '%1$s' is different than the sort of right expression '%2$s'", lhsExpr.getSort(), rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of left expression sort '%1$s' is different than the sort of right expression '%2$s'", A.getSort(), B.getSort()));
                 }
             } break;
 
             case MEMBER:
             {
-                if(rhsExpr instanceof IntConstant)
+                if(B instanceof IntConstant)
                 {
-                    rhsExpr = IntConstant.getSingletonTuple((IntConstant) rhsExpr);
+                    B = IntConstant.getSingletonTuple((IntConstant) B);
                 }
 
-                if(!(rhsExpr.getSort() instanceof  SetSort))
+                if(!(B.getSort() instanceof  SetSort))
                 {
-                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set", rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set", B.getSort()));
                 }
 
-                SetSort setSort = (SetSort) rhsExpr.getSort();
+                SetSort setSort = (SetSort) B.getSort();
 
-                if(!(lhsExpr.getSort().equals(setSort.elementSort)))
+                if(!(A.getSort().equals(setSort.elementSort)))
                 {
-                    throw new RuntimeException(String.format("The sort of left expression '%1$s' doesn't match the element sort of the right expression '%2$s'", lhsExpr.getSort(), setSort.elementSort));
+                    throw new RuntimeException(String.format("The sort of left expression '%1$s' doesn't match the element sort of the right expression '%2$s'", A.getSort(), setSort.elementSort));
                 }
             } break;
 
             case JOIN:
             {
-                if(!(lhsExpr.getSort() instanceof  SetSort &&
-                        ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
+                if(!(A.getSort() instanceof  SetSort &&
+                        ((SetSort) A.getSort()).elementSort instanceof TupleSort))
                 {
-                    throw new RuntimeException(String.format("The sort of left expression '%1$s' is not a set of tuples", lhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of left expression '%1$s' is not a set of tuples", A.getSort()));
                 }
-                if(!(rhsExpr.getSort() instanceof  SetSort &&
-                        ((SetSort) rhsExpr.getSort()).elementSort instanceof TupleSort))
+                if(!(B.getSort() instanceof  SetSort &&
+                        ((SetSort) B.getSort()).elementSort instanceof TupleSort))
                 {
-                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set of tuples", rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set of tuples", B.getSort()));
                 }
 
-                TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
-                TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
+                TupleSort leftSort  = (TupleSort) ((SetSort) A.getSort()).elementSort;
+                TupleSort rightSort = (TupleSort) ((SetSort) B.getSort()).elementSort;
 
                 if(!(leftSort.elementSorts.get(leftSort.elementSorts.size() - 1).equals(rightSort.elementSorts.get(0))))
                 {
@@ -129,30 +129,30 @@ public class BinaryExpression extends Expression
             } break;
             case PRODUCT:
             {
-                if(!(lhsExpr.getSort() instanceof  SetSort &&
-                        ((SetSort) lhsExpr.getSort()).elementSort instanceof TupleSort))
+                if(!(A.getSort() instanceof  SetSort &&
+                        ((SetSort) A.getSort()).elementSort instanceof TupleSort))
                 {
-                    throw new RuntimeException(String.format("The sort of left expression '%1$s' is not a set of tuples", lhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of left expression '%1$s' is not a set of tuples", A.getSort()));
                 }
-                if(!(rhsExpr.getSort() instanceof  SetSort &&
-                        ((SetSort) rhsExpr.getSort()).elementSort instanceof TupleSort))
+                if(!(B.getSort() instanceof  SetSort &&
+                        ((SetSort) B.getSort()).elementSort instanceof TupleSort))
                 {
-                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set of tuples", rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not a set of tuples", B.getSort()));
                 }
             } break;
             case TUPSEL:
             {
-                if(!(lhsExpr instanceof IntConstant))
+                if(!(A instanceof IntConstant))
                 {
-                    throw new RuntimeException(String.format("The left expression '%1$s' is not a constant integer", lhsExpr));
+                    throw new RuntimeException(String.format("The left expression '%1$s' is not a constant integer", A));
                 }
-                if(!(rhsExpr.getSort() instanceof TupleSort))
+                if(!(B.getSort() instanceof TupleSort))
                 {
-                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not tuple", rhsExpr.getSort()));
+                    throw new RuntimeException(String.format("The sort of right expression '%1$s' is not tuple", B.getSort()));
                 }
 
-                int index = Integer.parseInt(((IntConstant) lhsExpr).getValue());
-                TupleSort sort = (TupleSort)rhsExpr.getSort();
+                int index = Integer.parseInt(((IntConstant) A).getValue());
+                TupleSort sort = (TupleSort) B.getSort();
                 if (index >= sort.elementSorts.size() || index < 0)
                 {
                     throw new RuntimeException(String.format("The index '%1$d' out of range", index));
@@ -163,14 +163,14 @@ public class BinaryExpression extends Expression
         }
     }
 
-    public Expression getLhsExpr()
+    public Expression getA()
     {
-        return this.lhsExpr;
+        return this.A;
     }
 
-    public Expression getRhsExpr()
+    public Expression getB()
     {
-        return this.rhsExpr;
+        return this.B;
     }
 
     public Op getOp()
@@ -258,27 +258,27 @@ public class BinaryExpression extends Expression
         switch (op)
         {
             case IMPLIES: return AbstractTranslator.boolSort;
-            case PLUS: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
-            case MINUS: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
-            case MULTIPLY: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
-            case DIVIDE: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
-            case MOD: return lhsExpr.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case PLUS: return A.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case MINUS: return A.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case MULTIPLY: return A.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case DIVIDE: return A.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
+            case MOD: return A.getSort() instanceof IntSort? AbstractTranslator.intSort: AbstractTranslator.setOfUninterpretedIntTuple;
             case EQ: return AbstractTranslator.boolSort;
             case GTE: return AbstractTranslator.boolSort;
             case LTE: return AbstractTranslator.boolSort;
             case GT: return AbstractTranslator.boolSort;
             case LT: return AbstractTranslator.boolSort;
-            case UNION: return lhsExpr.getSort();
-            case INTERSECTION: return lhsExpr.getSort();
-            case SETMINUS: return lhsExpr.getSort();
+            case UNION: return A.getSort();
+            case INTERSECTION: return A.getSort();
+            case SETMINUS: return A.getSort();
             case MEMBER: return AbstractTranslator.boolSort;
             case SUBSET: return AbstractTranslator.boolSort;
             case JOIN:
             {
                 // type checking is handled during construction
 
-                TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
-                TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
+                TupleSort leftSort  = (TupleSort) ((SetSort) A.getSort()).elementSort;
+                TupleSort rightSort = (TupleSort) ((SetSort) B.getSort()).elementSort;
 
                 // the join sorts should match
                 assert(leftSort.elementSorts.get(leftSort.elementSorts.size() - 1) ==
@@ -303,8 +303,8 @@ public class BinaryExpression extends Expression
             {
                 // type checking is handled during construction
 
-                TupleSort leftSort  = (TupleSort) ((SetSort) lhsExpr.getSort()).elementSort;
-                TupleSort rightSort = (TupleSort) ((SetSort) rhsExpr.getSort()).elementSort;
+                TupleSort leftSort  = (TupleSort) ((SetSort) A.getSort()).elementSort;
+                TupleSort rightSort = (TupleSort) ((SetSort) B.getSort()).elementSort;
 
                 List<Sort> newSorts = new ArrayList<>();
                 newSorts.addAll(leftSort.elementSorts);
@@ -315,8 +315,8 @@ public class BinaryExpression extends Expression
             }
             case TUPSEL:
             {
-                int index = Integer.parseInt(((IntConstant) lhsExpr).getValue());
-                TupleSort sort = (TupleSort)rhsExpr.getSort();
+                int index = Integer.parseInt(((IntConstant) A).getValue());
+                TupleSort sort = (TupleSort) B.getSort();
                 return sort.elementSorts.get(index);
             }
             default:
@@ -330,19 +330,19 @@ public class BinaryExpression extends Expression
         {
             case EQ:
             {
-                if(lhsExpr instanceof Variable && rhsExpr instanceof UninterpretedConstant)
+                if(A instanceof Variable && B instanceof UninterpretedConstant)
                 {
-                    return evaluateEquality(functions, lhsExpr, rhsExpr);
+                    return evaluateEquality(functions, A, B);
                 }
-                if(rhsExpr instanceof Variable && lhsExpr instanceof UninterpretedConstant)
+                if(B instanceof Variable && A instanceof UninterpretedConstant)
                 {
-                    return evaluateEquality(functions, rhsExpr, lhsExpr);
+                    return evaluateEquality(functions, B, A);
                 }
             }break;
             case UNION:
             {
-                Expression left = lhsExpr.evaluate(functions);
-                Expression right = rhsExpr.evaluate(functions);
+                Expression left = A.evaluate(functions);
+                Expression right = B.evaluate(functions);
                 return Op.UNION.make(left, right);
             }
         }
@@ -362,15 +362,15 @@ public class BinaryExpression extends Expression
         }
         BinaryExpression binaryObject = (BinaryExpression) object;
         return op ==  binaryObject.op &&
-                lhsExpr.equals(binaryObject.lhsExpr) &&
-                rhsExpr.equals(binaryObject.rhsExpr);
+                A.equals(binaryObject.A) &&
+                B.equals(binaryObject.B);
     }
 
     @Override
     public List<Variable> getFreeVariables()
     {
-        List<Variable> freeVariables = lhsExpr.getFreeVariables();
-        freeVariables.addAll(rhsExpr.getFreeVariables());
+        List<Variable> freeVariables = A.getFreeVariables();
+        freeVariables.addAll(B.getFreeVariables());
         return freeVariables;
     }
 
@@ -396,13 +396,13 @@ public class BinaryExpression extends Expression
     @Override
     public Expression substitute(Variable oldVariable, Variable newVariable)
     {
-        if(lhsExpr.equals(newVariable) || rhsExpr.equals(newVariable))
+        if(A.equals(newVariable) || B.equals(newVariable))
         {
             throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
         }
 
-        Expression A = lhsExpr.substitute(oldVariable, newVariable);
-        Expression B = rhsExpr.substitute(oldVariable, newVariable);
+        Expression A = this.A.substitute(oldVariable, newVariable);
+        Expression B = this.B.substitute(oldVariable, newVariable);
         return op.make(A, B);
     }
 
@@ -413,8 +413,8 @@ public class BinaryExpression extends Expression
         {
             return newExpression;
         }
-        Expression A = lhsExpr.replace(oldExpression, newExpression);
-        Expression B = rhsExpr.replace(oldExpression, newExpression);
+        Expression A = this.A.replace(oldExpression, newExpression);
+        Expression B = this.B.replace(oldExpression, newExpression);
         return op.make(A, B);
     }
 }
