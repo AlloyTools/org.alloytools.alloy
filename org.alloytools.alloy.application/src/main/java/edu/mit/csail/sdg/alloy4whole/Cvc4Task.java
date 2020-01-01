@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -325,6 +326,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 //        callbackPlain(smtModel + "\n");
 
         Command command = translation.getCommands().get(commandIndex);
+
+        smtModel= showInputDialog(smtModel);
+
         SmtModel model = parseModel(smtModel);
 
         File xmlFile        = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
@@ -782,6 +786,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return smtUnsatCore;
     }
 
+    public static String showInputDialog(String text)
+    {
+        JTextArea textArea = new JTextArea(text);
+        textArea.setSize(textArea.getPreferredSize().width, textArea.getPreferredSize().height);
+        JOptionPane.showConfirmDialog(null, new JScrollPane(textArea), "Debugging", JOptionPane.OK_OPTION);
+        return textArea.getText();
+    }
+    
     private class CommandResult
     {
         public int index;

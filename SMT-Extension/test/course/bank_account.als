@@ -1,11 +1,13 @@
 sig Time in Int {}
+fact positive {all t: Time | t >= 0}
+fact noGaps {all t: Time - 0 | minus[t,1] in Time }
 one sig BankAccount
 {
     deposit: Int one -> Time,
     withdrawal: Int one-> Time,
     balance: Int one-> Time
 }
-{#deposit > 0 and #withdrawal > 0 and #balance > 0 }
+{some deposit and some withdrawal and some balance}
 fun depositValue[t: Time]: Int {BankAccount.deposit.t}
 fun withdrawalValue[t: Time]: Int {BankAccount.withdrawal.t}
 fun balanceValue[t: Time]: Int {BankAccount.balance.t}
@@ -24,24 +26,26 @@ pred withdraw[t, t' : Time, amount: Int]
     withdrawalValue[t'] = amount
     balanceValue[t'] = minus[balanceValue[t], amount]
 }
+
 assert sanity
 {
     all  t': Time - 0, a : univInt |
-    let t = minus[t',1] |
+    let t = minus[t',1] | -- t' = t + 1
     {
-        a > 0 and withdraw[t, t', a]  and balanceValue[t] >= a
+        withdraw[t, t', a]  
         implies
         balanceValue[t'] < balanceValue[t]
     }
 }
 check sanity
+
 //pred init [t: Time]
 //{
 //  BankAccount.deposit.t = 0
 //  BankAccount.withdrawal.t = 0
 //  BankAccount.balance.t = 0
 //}
-//
+
 //pred someTransaction[t, t': Time]
 //{
 //  some amount : Int | deposit[t, t', amount] or withdraw[t, t', amount]
