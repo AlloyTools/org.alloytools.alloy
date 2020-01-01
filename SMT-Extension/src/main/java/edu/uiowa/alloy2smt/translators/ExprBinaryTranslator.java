@@ -1923,26 +1923,8 @@ public class ExprBinaryTranslator
         Expression left     = exprTranslator.translateExpr(expr.left, environment);
         Expression right    = exprTranslator.translateExpr(expr.right, environment);
 
-        if(left instanceof Variable &&
-                (!(((Variable)left).getDeclaration().getSort() instanceof SetSort)))
-        {
-            left = AlloyUtils.makeSet((Variable) left);
-        }
-        else if(left instanceof MultiArityExpression &&
-                ((MultiArityExpression)left).getOp() == MultiArityExpression.Op.MKTUPLE)
-        {
-            left = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)left);
-        }
-        if(right instanceof Variable &&
-                (!(((Variable)right).getDeclaration().getSort() instanceof SetSort)))
-        {
-            right = AlloyUtils.makeSet((Variable) right);
-        }
-        else if(right instanceof MultiArityExpression &&
-                ((MultiArityExpression)right).getOp() == MultiArityExpression.Op.MKTUPLE)
-        {
-            right = AlloyUtils.mkSingletonOutOfTuple((MultiArityExpression)right);
-        }
+        left = AlloyUtils.makeSet(left);
+        right = AlloyUtils.makeSet(right);
 
         if(left.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
