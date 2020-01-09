@@ -70,8 +70,8 @@ public class ExprBinaryTranslator
             case LTE                : return translateComparison(expr, BinaryExpression.Op.LTE, environment);
             case GT                 : return translateComparison(expr, BinaryExpression.Op.GT, environment);
             case GTE                : return translateComparison(expr, BinaryExpression.Op.GTE, environment);
-            case IN                 : return translateSubsetOperation(expr, BinaryExpression.Op.SUBSET, environment);
-            case NOT_IN             : return translateSubsetOperation(expr, null, environment);
+            case IN                 : return translateSubsetOperation(expr, environment);
+            case NOT_IN             : return UnaryExpression.Op.NOT.make(translateSubsetOperation(expr, environment));
             case IMPLIES            : return translateImplies(expr, environment);            
             case AND                : return translateAnd(expr, environment);
             case OR                 : return translateOr(expr, environment);
@@ -1918,41 +1918,42 @@ public class ExprBinaryTranslator
         return operation;
     }
     
-    private Expression translateSubsetOperation(ExprBinary expr, BinaryExpression.Op op, Environment environment)
+    private Expression translateSubsetOperation(ExprBinary expr, Environment environment)
     {
-        Expression left     = exprTranslator.translateExpr(expr.left, environment);
-        Expression right    = exprTranslator.translateExpr(expr.right, environment);
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        A = exprTranslator.translator.handleIntConstant(A);
 
-        left = AlloyUtils.makeSet(left);
-        right = AlloyUtils.makeSet(right);
+        Environment newEnvironment = new Environment(environment);
+        Expression B = exprTranslator.translateExpr(expr.right, newEnvironment);
+        B = exprTranslator.translator.handleIntConstant(B);
 
-        if(left.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        // left sort | right sort | Translation
+        // -------------------------------------
+        // tuple     | tuple      | (= A B)
+        // tuple     | set        | (member tuple set)
+        // set       | set        | (subset A B)
+        Expression translation;
+        if(A.getSort() instanceof TupleSort && B.getSort() instanceof  TupleSort)
         {
-            left = exprTranslator.translator.handleIntConstant(left);
+            translation = BinaryExpression.Op.EQ.make(A, B);
+        }
+        else if(A.getSort() instanceof TupleSort && B.getSort() instanceof SetSort)
+        {
+            translation = BinaryExpression.Op.MEMBER.make(A, B);
+        }
+        else
+        {
+            translation = BinaryExpression.Op.SUBSET.make(A, B);
         }
 
-        if(right.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        if(newEnvironment.getAuxiliaryFormula() == null)
         {
-            right = exprTranslator.translator.handleIntConstant(right);
+            return translation;
         }
-                
-        Expression finalExpr = BinaryExpression.Op.SUBSET.make(left, right);
-        
-        if(op == null)
-        {
-            finalExpr = UnaryExpression.Op.NOT.make(finalExpr);
-        }
-        if(!exprTranslator.translator.existentialBdVars.isEmpty())
-        {
-            if(exprTranslator.translator.auxExpr != null)
-            {
-                finalExpr = MultiArityExpression.Op.AND.make(finalExpr, exprTranslator.translator.auxExpr);
-                exprTranslator.translator.auxExpr = null;
-            }
-            finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, exprTranslator.translator.existentialBdVars);
-            exprTranslator.translator.existentialBdVars.clear();
-        }                
-        return finalExpr;                 
+        assert newEnvironment.getAuxiliaryFormula().getOp() == QuantifiedExpression.Op.EXISTS;
+        Expression expression =  newEnvironment.getAuxiliaryFormula();
+        expression = ((QuantifiedExpression)expression).getExpression().replace(B, A);
+        return expression;
     }
 
     private Expression translateJoin(ExprBinary expr, Environment environment)

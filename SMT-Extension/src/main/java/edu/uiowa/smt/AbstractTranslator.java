@@ -76,10 +76,21 @@ public abstract class AbstractTranslator
 
     public Expression handleIntConstant(Expression expression)
     {
-        Expression intConstant = ((MultiArityExpression) ((UnaryExpression) expression).getExpression()).getExpressions().get(0);
-        ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
-        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-        expression = UnaryExpression.Op.SINGLETON.make(tuple);
+        if(expression.getSort().equals(AbstractTranslator.intSortTuple))
+        {
+            Expression intConstant = ((MultiArityExpression) expression).getExpressions().get(0);
+            ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
+            return tuple;
+        }
+        if(expression.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        {
+            Expression intConstant = ((MultiArityExpression) ((UnaryExpression) expression).getExpression()).getExpressions().get(0);
+            ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
+            Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
+            return singleton;
+        }
         return expression;
     }
 

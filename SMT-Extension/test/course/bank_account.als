@@ -39,37 +39,43 @@ assert sanity
 }
 check sanity
 
-//pred init [t: Time]
-//{
-//  BankAccount.deposit.t = 0
-//  BankAccount.withdrawal.t = 0
-//  BankAccount.balance.t = 0
-//}
+pred init [t: Time]
+{
+  BankAccount.deposit.t = 0
+  BankAccount.withdrawal.t = 0
+  BankAccount.balance.t = 0
+}
 
-//pred someTransaction[t, t': Time]
-//{
-//  some amount : Int | deposit[t, t', amount] or withdraw[t, t', amount]
-//}
-//
-//
-//pred system
-//{
-//  init[0]
-//  all t: Time - 0 | someTransaction[minus[t, 1] , t]
-//}
-//
-//run scenario
-//{
-//  init[0]
-//  deposit[0, 1, 10]
-//  deposit[1, 2, 40]
-//  withdraw[2, 3, 30]
-//} for 7 Int
-//
-//pred nonNegative [t: Time]
-//{
-//  depositValue[t] >= 0 and
-//  withdrawalValue[t] >= 0 and
-//  balanceValue[t] >= 0
-//}
-//
+pred someTransaction[t, t': Time]
+{
+  some amount : Int | deposit[t, t', amount] or withdraw[t, t', amount]
+}
+
+
+pred system
+{
+  init[0]
+  all t: Time - 0 | someTransaction[minus[t, 1] , t]
+}
+
+run scenario1
+{
+  init[0]
+  deposit[0, 1, 10]
+  deposit[1, 2, 40]
+  withdraw[2, 3, 30]
+} for 7 Int
+
+run scenario2
+{
+-- system
+ balanceValue[2] = 1000
+} for 7 Int
+
+pred nonNegative [t: Time]
+{
+  depositValue[t] >= 0 and
+  withdrawalValue[t] >= 0 and
+  balanceValue[t] >= 0
+}
+

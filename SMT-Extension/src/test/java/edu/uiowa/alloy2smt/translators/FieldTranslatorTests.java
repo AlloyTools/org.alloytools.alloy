@@ -165,6 +165,20 @@ class FieldTranslatorTests
         assertEquals("unsat", commandResults.get(0).satResult);
     }
 
+    @Test
+    void multiplicitySemantics() throws Exception
+    {
+        String alloy =
+                "one sig B {}\n" +
+                        "one sig A \n" +
+                        "{\n" +
+                        "    f: A one -> B\n" +
+                        "}\n" +
+                        "run {#f  = 0} for 3";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
+
 }
 
 
