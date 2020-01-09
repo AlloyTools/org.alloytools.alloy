@@ -273,4 +273,15 @@ public class ExprQtTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void betterThanAlloy() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "fact f{all x : lone (A & A) | one x}\n" +
+                "run {#A = 3} for 3";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }
