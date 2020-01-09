@@ -68,7 +68,7 @@ run scenario1
 
 run scenario2
 {
--- system
+ system
  balanceValue[2] = 1000
 } for 7 Int
 
