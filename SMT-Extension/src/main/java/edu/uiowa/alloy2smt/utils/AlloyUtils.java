@@ -118,23 +118,6 @@ public class AlloyUtils
         throw new UnsupportedOperationException(String.format("%s", declaration.getSort()));
     }
 
-    public static Expression makeSet(Expression expression)
-    {
-        if((expression.getSort() instanceof UninterpretedSort) || expression.getSort() instanceof IntSort)
-        {
-            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expression);
-            return UnaryExpression.Op.SINGLETON.make(tuple);
-        }
-        else if(expression.getSort() instanceof TupleSort)
-        {
-            return UnaryExpression.Op.SINGLETON.make(expression);
-        }
-        else
-        {
-            return expression;
-        }
-    }
-
     public static Expression mkSingletonOutOfAtoms(List<Expression> atomExprs)
     {
         MultiArityExpression tuple      = MultiArityExpression.Op.MKTUPLE.make(atomExprs);

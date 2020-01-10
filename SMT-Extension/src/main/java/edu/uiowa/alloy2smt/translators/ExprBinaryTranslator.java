@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -1787,8 +1788,8 @@ public class ExprBinaryTranslator
         Expression A = exprTranslator.translateExpr(expr.left, environmentA);
         Expression B = exprTranslator.translateExpr(expr.right, environmentB);
 
-        A = AlloyUtils.makeSet(A);
-        B = AlloyUtils.makeSet(B);
+        A = TranslatorUtils.makeRelation(A);
+        B = TranslatorUtils.makeRelation(B);
 
         if (A.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
@@ -1862,26 +1863,25 @@ public class ExprBinaryTranslator
 
     private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op, Environment environment)
     {
-        Expression expression = exprTranslator.translateExpr(expr.sub, environment);
+        Environment newEnvironment = new Environment(environment);
+        Expression expression = exprTranslator.translateExpr(expr.sub, newEnvironment);
         if (n == 0)
         {
             // the set expression is empty
             Expression empty = UnaryExpression.Op.EMPTYSET.make(expression.getSort());
             Expression equal = BinaryExpression.Op.EQ.make(expression, empty);
-            return equal;
+            Expression finalExpression = exprTranslator.translateAuxiliaryFormula(equal, newEnvironment);
+            return finalExpression;
         }
-        int arity = expr.sub.type().arity();
-        List<Expression> variables = new ArrayList<>();
-        List<VariableDeclaration> declarations;
-        List<Sort> exprSorts = AlloyUtils.getExprSorts(expr.sub);
 
-        if (arity == 1)
+        List<Expression> variables = new ArrayList<>();
+        List<VariableDeclaration> declarations = new ArrayList<>();
+
+        Sort sort = ((SetSort) expression.getSort()).elementSort;
+        for(int i = 0; i < n; i++)
         {
-            declarations = exprTranslator.getBdVars(exprSorts.get(0), n);
-        }
-        else
-        {
-            declarations = exprTranslator.getBdTupleVars(exprSorts, arity, n);
+            VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+            declarations.add(variable);
         }
 
         for (VariableDeclaration declaration : declarations)
@@ -1901,38 +1901,18 @@ public class ExprBinaryTranslator
             distinct = MultiArityExpression.Op.DISTINCT.make(variables);
         }
 
-        //ToDo: review the need of existentialBdVars in AlloyTranslator
-        exprTranslator.translator.existentialBdVars.addAll(declarations);
+        Expression set = TranslatorUtils.makeRelation(variables);
+        Expression equal = BinaryExpression.Op.EQ.make(expression, set);
+        Expression and = MultiArityExpression.Op.AND.make(equal, distinct);
+        Expression exists = QuantifiedExpression.Op.EXISTS.make(and, declarations);
 
-        if (exprTranslator.translator.auxExpr != null)
-        {
-            exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distinct);
-        }
-        else
-        {
-            exprTranslator.translator.auxExpr = distinct;
-        }
-
-        Expression distElementSetExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(variables);
-        Expression right = distElementSetExpr;
+        Expression finalExpression = exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
 
         switch (op)
         {
             case EQ:
             {
-                Expression eqExpr = BinaryExpression.Op.EQ.make(expression, right);
-
-                if (exprTranslator.translator.auxExpr != null)
-                {
-                    eqExpr = MultiArityExpression.Op.AND.make(eqExpr, exprTranslator.translator.auxExpr);
-                    exprTranslator.translator.auxExpr = null;
-                }
-                if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                {
-                    eqExpr = QuantifiedExpression.Op.EXISTS.make(eqExpr, declarations);
-                    exprTranslator.translator.existentialBdVars.clear();
-                }
-                return eqExpr;
+                return  finalExpression;
             }
             default:
                 throw new UnsupportedOperationException();
@@ -1947,7 +1927,7 @@ public class ExprBinaryTranslator
         if (left instanceof Variable &&
                 (!(((Variable) left).getDeclaration().getSort() instanceof SetSort)))
         {
-            left = AlloyUtils.makeSet((Variable) left);
+            left = TranslatorUtils.makeRelation((Variable) left);
         }
         else if (left instanceof MultiArityExpression &&
                 ((MultiArityExpression) left).getOp() == MultiArityExpression.Op.MKTUPLE)
@@ -1957,7 +1937,7 @@ public class ExprBinaryTranslator
         if (right instanceof Variable &&
                 (!(((Variable) right).getDeclaration().getSort() instanceof SetSort)))
         {
-            right = AlloyUtils.makeSet((Variable) right);
+            right = TranslatorUtils.makeRelation((Variable) right);
         }
         else if (right instanceof MultiArityExpression &&
                 ((MultiArityExpression) right).getOp() == MultiArityExpression.Op.MKTUPLE)
@@ -2011,8 +1991,8 @@ public class ExprBinaryTranslator
     {
         Expression A = exprTranslator.translateExpr(expr.left, environment);
         Expression B = exprTranslator.translateExpr(expr.right, environment);
-        A = AlloyUtils.makeSet(A);
-        B = AlloyUtils.makeSet(B);
+        A = TranslatorUtils.makeRelation(A);
+        B = TranslatorUtils.makeRelation(B);
         BinaryExpression join = BinaryExpression.Op.JOIN.make(A, B);
         return join;
     }

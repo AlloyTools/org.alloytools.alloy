@@ -297,4 +297,56 @@ public class TranslatorUtils
     {
         return name.replaceAll("\\|", "");
     }
+
+    public static Expression makeRelationFromDeclarations(List<VariableDeclaration> declarations)
+    {
+        List<Expression> variables = declarations
+                .stream().map(v -> v.getVariable()).collect(Collectors.toList());
+        return TranslatorUtils.makeRelation(variables);
+    }
+
+    public static Expression makeRelation(List<Expression> expressions)
+    {
+        if(expressions.isEmpty())
+        {
+            throw new RuntimeException("Empty list");
+        }
+
+        Expression set = makeRelation(expressions.get(expressions.size() - 1));
+        for (int i = expressions.size() - 2; i >= 0; i--)
+        {
+            Expression expression = expressions.get(i);
+            if(expression.getSort() instanceof SetSort)
+            {
+                set = BinaryExpression.Op.UNION.make(expression, set);
+            }
+            else if(expression.getSort() instanceof TupleSort)
+            {
+                set = MultiArityExpression.Op.INSERT.make(expression, set);
+            }
+            else
+            {
+                Expression tuple = MultiArityExpression.Op.MKTUPLE.make(expression);
+                set = MultiArityExpression.Op.INSERT.make(tuple, set);
+            }
+        }
+        return set;
+    }
+
+    public static Expression makeRelation(Expression expression)
+    {
+        if((expression.getSort() instanceof UninterpretedSort) || expression.getSort() instanceof IntSort)
+        {
+            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expression);
+            return UnaryExpression.Op.SINGLETON.make(tuple);
+        }
+        else if(expression.getSort() instanceof TupleSort)
+        {
+            return UnaryExpression.Op.SINGLETON.make(expression);
+        }
+        else
+        {
+            return expression;
+        }
+    }
 }
