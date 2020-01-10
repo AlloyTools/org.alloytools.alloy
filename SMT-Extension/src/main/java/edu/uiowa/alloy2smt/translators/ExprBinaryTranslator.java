@@ -1109,29 +1109,41 @@ public class ExprBinaryTranslator
 
     private Expression translateImplies(ExprBinary expr, Environment environment)
     {
-        Expression left = exprTranslator.translateExpr(expr.left, environment);
-        Expression right = exprTranslator.translateExpr(expr.right, environment);
-        Expression implExpr = BinaryExpression.Op.IMPLIES.make(left, right);
+        Environment environmentA = new Environment(environment);
+        Environment environmentB = new Environment(environment);
+        Expression A = exprTranslator.translateExpr(expr.left, environmentA);
+        Expression B = exprTranslator.translateExpr(expr.right, environmentB);
+        Expression implies = BinaryExpression.Op.IMPLIES.make(A, B);
 
-        return implExpr;
+        Expression finalExpression = exprTranslator.translateAuxiliaryFormula(implies, environmentA);
+        finalExpression = exprTranslator.translateAuxiliaryFormula(finalExpression, environmentB);
+        return finalExpression;
     }
 
     private Expression translateAnd(ExprBinary expr, Environment environment)
     {
-        Expression left = exprTranslator.translateExpr(expr.left, environment);
-        Expression right = exprTranslator.translateExpr(expr.right, environment);
-        Expression andExpr = MultiArityExpression.Op.AND.make(left, right);
+        Environment environmentA = new Environment(environment);
+        Environment environmentB = new Environment(environment);
+        Expression A = exprTranslator.translateExpr(expr.left, environmentA);
+        Expression B = exprTranslator.translateExpr(expr.right, environmentB);
+        Expression and = MultiArityExpression.Op.AND.make(A, B);
 
-        return andExpr;
+        Expression finalExpression = exprTranslator.translateAuxiliaryFormula(and, environmentA);
+        finalExpression = exprTranslator.translateAuxiliaryFormula(finalExpression, environmentB);
+        return finalExpression;
     }
 
     private Expression translateOr(ExprBinary expr, Environment environment)
     {
-        Expression left = exprTranslator.translateExpr(expr.left, environment);
-        Expression right = exprTranslator.translateExpr(expr.right, environment);
-        Expression orExpr = MultiArityExpression.Op.OR.make(left, right);
+        Environment environmentA = new Environment(environment);
+        Environment environmentB = new Environment(environment);
+        Expression A = exprTranslator.translateExpr(expr.left, environmentA);
+        Expression B = exprTranslator.translateExpr(expr.right, environmentB);
+        Expression or = MultiArityExpression.Op.OR.make(A, B);
 
-        return orExpr;
+        Expression finalExpression = exprTranslator.translateAuxiliaryFormula(or, environmentA);
+        finalExpression = exprTranslator.translateAuxiliaryFormula(finalExpression, environmentB);
+        return finalExpression;
     }
 
     private Expression translateArrow(ExprBinary expr, Environment environment)
@@ -1951,11 +1963,12 @@ public class ExprBinaryTranslator
 
     private Expression translateSubsetOperation(ExprBinary expr, Environment environment)
     {
-        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Environment environmentA = new Environment(environment);
+        Expression A = exprTranslator.translateExpr(expr.left, environmentA);
         A = exprTranslator.translator.handleIntConstant(A);
 
-        Environment newEnvironment = new Environment(environment);
-        Expression B = exprTranslator.translateExpr(expr.right, newEnvironment);
+        Environment environmentB = new Environment(environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environmentB);
         B = exprTranslator.translator.handleIntConstant(B);
 
         // left sort | right sort | Translation
@@ -1977,12 +1990,14 @@ public class ExprBinaryTranslator
             translation = BinaryExpression.Op.SUBSET.make(A, B);
         }
 
-        if (newEnvironment.getAuxiliaryFormula() == null)
+        translation = exprTranslator.translateAuxiliaryFormula(translation, environmentA);
+
+        if (environmentB.getAuxiliaryFormula() == null)
         {
             return translation;
         }
-        assert newEnvironment.getAuxiliaryFormula().getOp() == QuantifiedExpression.Op.EXISTS;
-        Expression expression = newEnvironment.getAuxiliaryFormula();
+        assert environmentB.getAuxiliaryFormula().getOp() == QuantifiedExpression.Op.EXISTS;
+        Expression expression = environmentB.getAuxiliaryFormula();
         expression = ((QuantifiedExpression) expression).getExpression().replace(B, A);
         return expression;
     }
