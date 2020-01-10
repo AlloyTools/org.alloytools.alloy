@@ -69,7 +69,7 @@ public class UnaryExpression extends Expression
             case EMPTYSET:
             case UNIVSET:
             {
-                if(!(expr instanceof Sort))
+                if(!(expr instanceof SetSort))
                 {
                     throw new RuntimeException(String.format("Expected a set sort. Found '%1$s'", expr));
                 }
