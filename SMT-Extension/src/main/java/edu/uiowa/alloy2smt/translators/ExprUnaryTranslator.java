@@ -11,14 +11,10 @@ package edu.uiowa.alloy2smt.translators;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ExprUnaryTranslator
 {
@@ -156,22 +152,6 @@ public class ExprUnaryTranslator
         return exprTranslator.translateExpr(exprUnary.sub, environment);
     }
 
-    private Expression tryAddingExistentialConstraint(Expression expr)
-    {
-        Expression finalExpr = expr;
-
-        if (translator.auxExpr != null)
-        {
-            finalExpr = MultiArityExpression.Op.AND.make(translator.auxExpr, finalExpr);
-            finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, translator.existentialBdVars);
-            translator.auxExpr = null;
-            translator.existentialBdVars.clear();
-
-        }
-        return finalExpr;
-    }
-
-
     private Expression translateNo(ExprUnary exprUnary, Environment environment)
     {
         Environment newEnvironment = new Environment(environment);
@@ -233,45 +213,5 @@ public class ExprUnaryTranslator
         Expression or = MultiArityExpression.Op.OR.make(isEmpty, exists);
         Expression finalExpression = exprTranslator.translateAuxiliaryFormula(or, newEnvironment);
         return finalExpression;
-    }
-
-    public MultiArityExpression mkTupleExpr(VariableDeclaration bdVarDecl)
-    {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getVariable());
-    }
-
-    public MultiArityExpression mkOneTupleExprOutofAtoms(Expression... exprs)
-    {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
-    }
-
-    public MultiArityExpression mkOneTupleExprOutofAtoms(List<Expression> exprs)
-    {
-        return MultiArityExpression.Op.MKTUPLE.make(exprs);
-    }
-
-    public UnaryExpression mkSingleton(Expression tuple)
-    {
-        return UnaryExpression.Op.SINGLETON.make(tuple);
-    }
-
-    public MultiArityExpression mkTupleExpr(List<VariableDeclaration> bdVarDecls)
-    {
-        List<Expression> constExprs = new ArrayList<>();
-        for (VariableDeclaration varDecl : bdVarDecls)
-        {
-            constExprs.add(varDecl.getVariable());
-        }
-        return MultiArityExpression.Op.MKTUPLE.make(constExprs);
-    }
-
-    public Expression mkTupleSelExpr(Expression expr, int index)
-    {
-        return BinaryExpression.Op.TUPSEL.make(IntConstant.getInstance(index), expr);
-    }
-
-    public Expression mkUnaryIntTupValue(Expression expr)
-    {
-        return new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, expr);
     }
 }
