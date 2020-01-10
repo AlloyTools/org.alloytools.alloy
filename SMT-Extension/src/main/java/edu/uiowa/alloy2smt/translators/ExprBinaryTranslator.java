@@ -1981,13 +1981,18 @@ public class ExprBinaryTranslator
         {
             translation = BinaryExpression.Op.EQ.make(A, B);
         }
+        else if (A.getSort() instanceof SetSort && B.getSort() instanceof SetSort)
+        {
+            translation = BinaryExpression.Op.SUBSET.make(A, B);
+        }
         else if (A.getSort() instanceof TupleSort && B.getSort() instanceof SetSort)
         {
             translation = BinaryExpression.Op.MEMBER.make(A, B);
         }
         else
         {
-            translation = BinaryExpression.Op.SUBSET.make(A, B);
+            A = MultiArityExpression.Op.MKTUPLE.make(A);
+            translation = BinaryExpression.Op.MEMBER.make(A, B);
         }
 
         translation = exprTranslator.translateAuxiliaryFormula(translation, environmentA);

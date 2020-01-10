@@ -261,49 +261,24 @@ public class ArithmeticTests
     }
 
     @Test
-    public void bankAccount() throws Exception
+    public void singletonsOnly() throws Exception
     {
         AlloyUtils.alloySettings.integerSingletonsOnly = true;
         String alloy =
-                "sig Time in Int {}\n" +
-                        "one sig BankAccount \n" +
-                        "{\n" +
-                        "    deposit: Int one -> Time,\n" +
-                        "    withdrawal: Int one-> Time,\n" +
-                        "    balance: Int one-> Time\n" +
-                        "}\n" +
-                        "{#deposit > 0 and #withdrawal > 0 and #balance > 0 }\n" +
-                        "fun depositValue[t: Time]: Int {BankAccount.deposit.t}\n" +
-                        "fun withdrawalValue[t: Time]: Int {BankAccount.withdrawal.t}\n" +
-                        "fun balanceValue[t: Time]: Int {BankAccount.balance.t}\n" +
-                        "pred deposit[t, t' : Time, amount: Int]\n" +
-                        "{\n" +
-                        "    amount > 0\n" +
-                        "    depositValue[t'] = amount\n" +
-                        "    withdrawalValue[t'] = 0\n" +
-                        "    balanceValue[t'] = plus[balanceValue[t], amount]\n" +
-                        "}\n" +
-                        "pred withdraw[t, t' : Time, amount: Int]\n" +
-                        "{   \n" +
-                        "    amount > 0\n" +
-                        "    balanceValue[t] >= amount -- there is enough balance at t\n" +
-                        "    depositValue[t'] = 0\n" +
-                        "    withdrawalValue[t'] = amount\n" +
-                        "    balanceValue[t'] = minus[balanceValue[t], amount]   \n" +
-                        "}\n" +
-                        "assert sanity\n" +
-                        "{\n" +
-                        "    all  t': Time - 0, a : univInt | \n" +
-                        "    let t = minus[t',1] |\n" +
-                        "    {\n" +
-                        "        a > 0 and withdraw[t, t', a]  and balanceValue[t] >= a\n" +
-                        "        implies \n" +
-                        "        balanceValue[t'] < balanceValue[t]\n" +
-                        "    }\n" +
-                        "}\n" +
-                        "check sanity";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+                "sig A, B in Int {} \n" +
+                        "fact { \n" +
+                        "10 = plus[A, B] \n" +
+                        "4 = minus[A, B]" +
+                        "} \n" +
+                        "run {} for 7 Int";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, true);
 
-        assertEquals("unsat", commandResults.get(0).satResult);
+        assertEquals("sat", commandResults.get(0).satResult);
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
+        Set<Integer> setA = TranslatorUtils.getIntSet(a);
+        assertEquals(new HashSet<>(Arrays.asList(7)), setA);
+        FunctionDefinition b = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/B");
+        Set<Integer> setB = TranslatorUtils.getIntSet(b);
+        assertEquals(new HashSet<>(Arrays.asList(3)), setB);
     }
 }

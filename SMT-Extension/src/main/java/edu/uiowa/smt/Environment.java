@@ -5,10 +5,7 @@ import edu.uiowa.smt.smtAst.MultiArityExpression;
 import edu.uiowa.smt.smtAst.QuantifiedExpression;
 import edu.uiowa.smt.smtAst.VariableDeclaration;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Environment
 {
@@ -104,7 +101,7 @@ public class Environment
         }
         else
         {
-            List<VariableDeclaration> variables = auxiliaryFormula.getVariables();
+            List<VariableDeclaration> variables = new ArrayList<>(auxiliaryFormula.getVariables());
             variables.addAll(expression.getVariables());
 
             Expression and = MultiArityExpression.Op.AND.make(auxiliaryFormula.getExpression(), expression);
