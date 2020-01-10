@@ -55,7 +55,7 @@ pred someTransaction[t, t': Time]
 pred system
 {
   init[0]
-  all t: Time - 0 | someTransaction[minus[t, 1] , t]
+  all t': Time - 0 |  let t = minus[t',1]  | someTransaction[t, t']
 }
 
 run scenario1
@@ -69,7 +69,7 @@ run scenario1
 run scenario2
 {
  system
- balanceValue[2] = 1000
+ balanceValue[2] = 50
 } for 7 Int
 
 pred nonNegative [t: Time]
