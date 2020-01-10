@@ -1782,9 +1782,10 @@ public class ExprBinaryTranslator
             return translateCardinality(expr, op, environment);
         }
 
-
-        Expression A = exprTranslator.translateExpr(expr.left, environment);
-        Expression B = exprTranslator.translateExpr(expr.right, environment);
+        Environment environmentA = new Environment(environment);
+        Environment environmentB = new Environment(environment);
+        Expression A = exprTranslator.translateExpr(expr.left, environmentA);
+        Expression B = exprTranslator.translateExpr(expr.right, environmentB);
 
         A = AlloyUtils.makeSet(A);
         B = AlloyUtils.makeSet(B);
@@ -1799,20 +1800,11 @@ public class ExprBinaryTranslator
             B = exprTranslator.translator.handleIntConstant(B);
         }
 
+        Expression equality = BinaryExpression.Op.EQ.make(A, B);
 
-        Expression finalExpr = BinaryExpression.Op.EQ.make(A, B);
-
-
-        if (!exprTranslator.translator.existentialBdVars.isEmpty())
-        {
-            if (exprTranslator.translator.auxExpr != null)
-            {
-                finalExpr = MultiArityExpression.Op.AND.make(finalExpr, exprTranslator.translator.auxExpr);
-                exprTranslator.translator.auxExpr = null;
-            }
-            finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, exprTranslator.translator.existentialBdVars);
-        }
-        return finalExpr;
+        Expression finalExpression = exprTranslator.translateAuxiliaryFormula(equality, environmentA);
+        finalExpression = exprTranslator.translateAuxiliaryFormula(finalExpression, environmentB);
+        return finalExpression;
     }
 
     private Expression translateCardinality(ExprBinary expr, BinaryExpression.Op op, Environment environment)
