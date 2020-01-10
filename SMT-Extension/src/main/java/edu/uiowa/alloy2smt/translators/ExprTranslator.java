@@ -10,6 +10,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
@@ -50,28 +51,36 @@ public class ExprTranslator
         assert(expr.type() == Type.FORMULA);
         Environment environment = new Environment();
         Expression formula = translateExpr(expr, environment);
-        // if there is a multiplicity constraint,
+        formula = translateAuxiliaryFormula(formula, environment);
+        Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
+        translator.smtProgram.addAssertion(assertion);
+        return formula;
+    }
+
+    public Expression translateAuxiliaryFormula(Expression booleanExpression, Environment environment)
+    {
+        assert (booleanExpression.getSort().equals(AbstractTranslator.boolSort));
+
+        // if there is a multiplicity constraint
         if(environment.getAuxiliaryFormula() != null)
         {
-            QuantifiedExpression quantifiedExpression = environment.getAuxiliaryFormula();
-            if(quantifiedExpression.getOp() == QuantifiedExpression.Op.EXISTS)
+            QuantifiedExpression formula = environment.getAuxiliaryFormula();
+            if(formula.getOp() == QuantifiedExpression.Op.EXISTS)
             {
-                Expression body = MultiArityExpression.Op.AND.make(quantifiedExpression.getExpression(), formula);
-                formula = QuantifiedExpression.Op.EXISTS.make(body, quantifiedExpression.getVariables());
+                Expression body = MultiArityExpression.Op.AND.make(formula.getExpression(), booleanExpression);
+                booleanExpression = QuantifiedExpression.Op.EXISTS.make(body, formula.getVariables());
             }
-            else if(quantifiedExpression.getOp() == QuantifiedExpression.Op.FORALL)
+            else if(formula.getOp() == QuantifiedExpression.Op.FORALL)
             {
-                Expression body = BinaryExpression.Op.IMPLIES.make(quantifiedExpression.getExpression(), formula);
-                formula = QuantifiedExpression.Op.FORALL.make(body, quantifiedExpression.getVariables());
+                Expression body = BinaryExpression.Op.IMPLIES.make(formula.getExpression(), booleanExpression);
+                booleanExpression = QuantifiedExpression.Op.FORALL.make(body, formula.getVariables());
             }
             else
             {
                 throw new UnsupportedOperationException();
             }
         }
-        Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
-        translator.smtProgram.addAssertion(assertion);
-        return formula;
+        return booleanExpression;
     }
 
     Expression translateExpr(Expr expr, Environment environment)
