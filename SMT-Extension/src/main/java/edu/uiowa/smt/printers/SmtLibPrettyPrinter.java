@@ -139,4 +139,15 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
         stringBuilder.append(")");
         tabsCount -= 2;
     }
+
+    @Override
+    public void visit(Expression expression)
+    {
+        super.visit(expression);
+        if(!expression.getComment().isEmpty())
+        {
+            stringBuilder.append("; " + expression.getComment() + "\n");
+            printTabs();
+        }
+    }
 }

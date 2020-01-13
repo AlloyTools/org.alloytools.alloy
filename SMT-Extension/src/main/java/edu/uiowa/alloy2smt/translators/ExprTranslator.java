@@ -87,49 +87,52 @@ public class ExprTranslator
     {
         if (expr instanceof Sig || expr instanceof Sig.Field)
         {
-            //ToDo: refactor this
-            return exprUnaryTranslator.translateExprUnary((ExprUnary) ExprUnary.Op.NOOP.make(null, expr), environment);
+            return getExpression(expr, exprUnaryTranslator.translateExprUnary((ExprUnary) ExprUnary.Op.NOOP.make(null, expr), environment));
         }
         if (expr instanceof ExprVar)
         {
-            return exprVarTranslator.translateExprVar((ExprVar) expr, environment);
+            return getExpression(expr, exprVarTranslator.translateExprVar((ExprVar) expr, environment));
         }
         if (expr instanceof ExprUnary)
         {
-            return this.exprUnaryTranslator.translateExprUnary((ExprUnary) expr, environment);
+            return getExpression(expr, exprUnaryTranslator.translateExprUnary((ExprUnary) expr, environment));
         }
         else if (expr instanceof ExprBinary)
         {
-            return this.exprBinaryTranslator.translateExprBinary((ExprBinary) expr, environment);
+            return getExpression(expr, exprBinaryTranslator.translateExprBinary((ExprBinary) expr, environment));
         }
         else if (expr instanceof ExprQt)
         {
-            return exprQtTranslator.translateExprQt((ExprQt) expr, environment);
+            return getExpression(expr, exprQtTranslator.translateExprQt((ExprQt) expr, environment));
         }
         else if (expr instanceof ExprConstant)
         {
-            return translateExprConstant((ExprConstant) expr, environment);
+            return getExpression(expr, translateExprConstant((ExprConstant) expr, environment));
         }
         else if (expr instanceof ExprList)
         {
-            return translateExprList((ExprList) expr, environment);
+            return getExpression(expr,  translateExprList((ExprList) expr, environment));
         }
         else if (expr instanceof ExprCall)
         {
-            Expression expression = exprCallTranslator.translateExprCall((ExprCall) expr, environment);
-            expression.setComment(expr.toString());
-            return expression;
+            return getExpression(expr, exprCallTranslator.translateExprCall((ExprCall) expr, environment));
         }
         else if (expr instanceof ExprITE)
         {
-            return translateExprITE((ExprITE) expr, environment);
+            return getExpression(expr, translateExprITE((ExprITE) expr, environment));
         }
         else if (expr instanceof ExprLet)
         {
-            return exprLetTranslator.translateExprLet((ExprLet) expr, environment);
+            return getExpression(expr, exprLetTranslator.translateExprLet((ExprLet) expr, environment));
         }
 
         throw new UnsupportedOperationException(expr.toString());
+    }
+
+    private Expression getExpression(Expr expr, Expression expression)
+    {
+        expression.setComment(expr.toString());
+        return expression;
     }
 
     public Expression translateExprITE(ExprITE expr, Environment environment)
