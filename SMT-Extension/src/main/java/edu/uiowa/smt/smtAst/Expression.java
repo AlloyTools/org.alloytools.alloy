@@ -15,6 +15,7 @@ import java.util.Map;
 
 public abstract class Expression extends SmtAst
 {
+    private  String comment = "";
     @Override
     public String toString()
     {
@@ -24,6 +25,18 @@ public abstract class Expression extends SmtAst
     }
 
     public abstract Sort getSort();
+
+    public String getComment()
+    {
+        return this.comment;
+    }
+
+    public void setComment(String comment)
+    {
+        this.comment = comment;
+    }
+
+
     protected void checkTypes(){}
 
     public abstract Expression evaluate(Map<String, FunctionDefinition> functions);

@@ -116,7 +116,9 @@ public class ExprTranslator
         }
         else if (expr instanceof ExprCall)
         {
-            return exprCallTranslator.translateExprCall((ExprCall) expr, environment);
+            Expression expression = exprCallTranslator.translateExprCall((ExprCall) expr, environment);
+            expression.setComment(expr.toString());
+            return expression;
         }
         else if (expr instanceof ExprITE)
         {

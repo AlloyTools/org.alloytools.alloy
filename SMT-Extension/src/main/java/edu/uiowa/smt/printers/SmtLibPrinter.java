@@ -409,6 +409,11 @@ public class SmtLibPrinter implements SmtAstVisitor
         {   
             throw new UnsupportedOperationException();
         }
+
+        if(!expression.getComment().isEmpty())
+        {
+            stringBuilder.append("; " + expression.getComment() + "\n");
+        }
     }
 
     public void visit(Sort sort)
