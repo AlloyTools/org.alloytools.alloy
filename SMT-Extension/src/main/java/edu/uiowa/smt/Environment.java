@@ -113,4 +113,9 @@ public class Environment
     {
         return auxiliaryFormula;
     }
+
+    public void clearAuxiliaryFormula()
+    {
+        auxiliaryFormula = null;
+    }
 }

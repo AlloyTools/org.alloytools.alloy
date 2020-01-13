@@ -353,15 +353,16 @@ public class ExprQtTranslator
 
         Expression memberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
         Expression and = MultiArityExpression.Op.AND.make(memberOrSubset, multiplicityConstraints);
-        body = BinaryExpression.Op.IMPLIES.make(and, body);
-        QuantifiedExpression existsSet = environment.getAuxiliaryFormula();
+        QuantifiedExpression exists = environment.getAuxiliaryFormula();
 
-        if(existsSet != null)
+        if(exists != null)
         {
-            body = BinaryExpression.Op.IMPLIES.make(existsSet.getExpression(), body);
-
-            body = QuantifiedExpression.Op.EXISTS.make(body, existsSet.getVariables());
+            Expression existsBody = MultiArityExpression.Op.AND.make(exists.getExpression(), body);
+            body = QuantifiedExpression.Op.EXISTS.make(existsBody, exists.getVariables());
+            environment.clearAuxiliaryFormula();
         }
+
+        body = BinaryExpression.Op.IMPLIES.make(and, body);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(body, quantifiedVariables);
         return forAll;
     }
