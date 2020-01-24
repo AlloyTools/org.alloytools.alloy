@@ -182,11 +182,12 @@ public class FieldTranslator
     private void translateMultiplicities(Sig.Field field)
     {
         Expr expr = field.decl().expr;
-
-        // all this: A | let s = this.field | s in expr
+        // Sig A {field: expr}
+        // all this: A | let $s$ = this.field | $s$ in expr
+        // field in (A -> removeMultiplicity[expr]) because A is not a type in SMT
         ExprVar zis = ExprVar.make(null, "this", field.sig.type());
         Expr zisJoinField = ExprBinary.Op.JOIN.make(null, null, zis, field);
-        ExprVar s = ExprVar.make(null, "_s_", zisJoinField.type());
+        ExprVar s = ExprVar.make(null, "$s$", zisJoinField.type());
         Expr in = ExprBinary.Op.IN.make(null, null, s, expr);
         Expr exprLet = ExprLet.make(null, s, zisJoinField , in);
 
