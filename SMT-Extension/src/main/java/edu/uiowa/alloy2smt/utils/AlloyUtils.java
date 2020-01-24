@@ -207,7 +207,7 @@ public class AlloyUtils
                     }
 
                     // change the quantifier name if newExpr contains a free variable with the same name
-                    if(containsFreeVariable((ExprVar) name, newExpr))
+                    if(hasFreeVariable((ExprVar) name, newExpr))
                     {
                         ExprVar newName = ExprVar.make(name.pos, TranslatorUtils.getFreshName(null));
                         sub = substituteExpr(sub, (ExprVar) name, newName);
@@ -283,7 +283,7 @@ public class AlloyUtils
         throw new UnsupportedOperationException();
     }
 
-    private static boolean containsFreeVariable(ExprVar variable, Expr expr)
+    private static boolean hasFreeVariable(ExprVar variable, Expr expr)
     {
         if(expr instanceof ExprVar)
         {
@@ -302,13 +302,13 @@ public class AlloyUtils
 
         if(expr instanceof ExprUnary)
         {
-            return containsFreeVariable(variable, ((ExprUnary) expr).sub);
+            return hasFreeVariable(variable, ((ExprUnary) expr).sub);
         }
 
         if(expr instanceof ExprBinary)
         {
-            boolean left = containsFreeVariable(variable, ((ExprBinary) expr).left);
-            boolean right = containsFreeVariable(variable, ((ExprBinary) expr).right);
+            boolean left = hasFreeVariable(variable, ((ExprBinary) expr).left);
+            boolean right = hasFreeVariable(variable, ((ExprBinary) expr).right);
             return left || right;
         }
 
@@ -324,7 +324,7 @@ public class AlloyUtils
                     }
                 }
             }
-            return containsFreeVariable(variable, ((ExprQt) expr).sub);
+            return hasFreeVariable(variable, ((ExprQt) expr).sub);
         }
 
         if(expr instanceof ExprList)
@@ -333,7 +333,7 @@ public class AlloyUtils
 
             for (Expr argument: list.args)
             {
-               if(containsFreeVariable(variable, argument))
+               if(hasFreeVariable(variable, argument))
                {
                    return true;
                }
@@ -349,17 +349,17 @@ public class AlloyUtils
                 return false;
             }
 
-            boolean  exprBoolean = containsFreeVariable(variable, ((ExprLet) expr).expr);
-            boolean subBoolean = containsFreeVariable(variable, ((ExprLet) expr).sub);
+            boolean  exprBoolean = hasFreeVariable(variable, ((ExprLet) expr).expr);
+            boolean subBoolean = hasFreeVariable(variable, ((ExprLet) expr).sub);
             return exprBoolean || subBoolean;
         }
 
         if(expr instanceof ExprITE)
         {
             ExprITE ite = (ExprITE) expr;
-            boolean cond = containsFreeVariable(variable, ite.cond);
-            boolean left = containsFreeVariable(variable, ite.left);
-            boolean right = containsFreeVariable(variable, ite.right);
+            boolean cond = hasFreeVariable(variable, ite.cond);
+            boolean left = hasFreeVariable(variable, ite.left);
+            boolean right = hasFreeVariable(variable, ite.right);
             return cond || left || right;
         }
 
@@ -369,7 +369,7 @@ public class AlloyUtils
 
             for (Expr argument: call.args)
             {
-                if(containsFreeVariable(variable, argument))
+                if(hasFreeVariable(variable, argument))
                 {
                     return true;
                 }
