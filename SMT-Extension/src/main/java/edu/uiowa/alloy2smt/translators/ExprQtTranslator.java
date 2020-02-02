@@ -231,13 +231,14 @@ public class ExprQtTranslator
             ExprUnary.Op multiplicityOperator = ((ExprUnary) expr).op;
             switch (multiplicityOperator)
             {
-                case NOOP: // same as ONEOF
+
                 case ONEOF:
                 {
                     return getVariableDeclaration(variableName, setSort, range);
                 }
                 case SOMEOF: // same as SETOF
                 case LONEOF: // same as SETOF
+                case NOOP: // only happens with relations
                 case SETOF:
                 {
                     VariableDeclaration declaration = new VariableDeclaration(variableName, setSort, true);
