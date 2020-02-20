@@ -189,4 +189,12 @@ class CardinalityTests
         Set<Integer> atoms = TranslatorUtils.getIntSet(A);
         assertEquals(2, atoms.size());
     }
+
+    @Test
+    public void test13() throws Exception
+    {
+        String alloy =  "sig A {} fact {#A < 0}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }
