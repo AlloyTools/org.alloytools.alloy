@@ -4,6 +4,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Counter;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
@@ -187,7 +188,8 @@ public class PreferencesDialog extends JFrame {
         }
 
         @Override
-        public void setValueIsAdjusting(boolean b) {}
+        public void setValueIsAdjusting(boolean b) {
+        }
 
         @Override
         public boolean getValueIsAdjusting() {
@@ -326,23 +328,28 @@ public class PreferencesDialog extends JFrame {
         try {
             System.loadLibrary(library);
             return true;
-        } catch (UnsatisfiedLinkError ex) {}
+        } catch (UnsatisfiedLinkError ex) {
+        }
         try {
             System.loadLibrary(library + "x1");
             return true;
-        } catch (UnsatisfiedLinkError ex) {}
+        } catch (UnsatisfiedLinkError ex) {
+        }
         try {
             System.loadLibrary(library + "x2");
             return true;
-        } catch (UnsatisfiedLinkError ex) {}
+        } catch (UnsatisfiedLinkError ex) {
+        }
         try {
             System.loadLibrary(library + "x3");
             return true;
-        } catch (UnsatisfiedLinkError ex) {}
+        } catch (UnsatisfiedLinkError ex) {
+        }
         try {
             System.loadLibrary(library + "x4");
             return true;
-        } catch (UnsatisfiedLinkError ex) {}
+        } catch (UnsatisfiedLinkError ex) {
+        }
         try {
             System.loadLibrary(library + "x5");
             return true;
@@ -357,6 +364,7 @@ public class PreferencesDialog extends JFrame {
         tab.addTab("Editor", initEditorPane());
         tab.addTab("Solver", initSolverPane());
         tab.addTab("Miscellaneous", initMiscPane());
+        tab.addTab("Counter", initCounterPane());
 
         add(tab);
         setTitle("Alloy Preferences");
@@ -410,6 +418,11 @@ public class PreferencesDialog extends JFrame {
         addToGrid(p, mkCheckBox(Welcome), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(WarningNonfatal), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(AutoVisualize), gbc().pos(0, r++).gridwidth(2));
+        return makeTabPane(p);
+    }
+
+    protected Component initCounterPane() {
+        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Counter));
         return makeTabPane(p);
     }
 
@@ -525,7 +538,8 @@ public class PreferencesDialog extends JFrame {
                 String val = jtf.getText();
                 try {
                     pref.set(Integer.parseInt(val));
-                } catch (NumberFormatException ex) {}
+                } catch (NumberFormatException ex) {
+                }
             }
         });
         return OurUtil.makeH(pref.title + ": ", jtf);

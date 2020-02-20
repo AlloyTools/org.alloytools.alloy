@@ -190,13 +190,97 @@ public final class A4Options implements Serializable {
 
     }
 
+    public static final class ModelCounter implements Serializable {
+
+        /** This ensures the class can be serialized reliably. */
+        private static final long                   serialVersionUID = 0;
+        /** List of all existing ModelCounter values. */
+        private static final SafeList<ModelCounter> values           = new SafeList<ModelCounter>();
+        /**
+         * This is a unique String for this value; it should be kept consistent in
+         * future versions.
+         */
+        private final String                        id;
+        /**
+         * This is the label that the toString() method will return.
+         */
+        private final String                        toString;
+
+        /** Constructs a new ModelCounter value. */
+        private ModelCounter(String id, String toString, boolean add) {
+            this.id = id;
+            this.toString = toString;
+            if (add) {
+                synchronized (ModelCounter.class) {
+                    values.add(this);
+                }
+            }
+        }
+
+        /**
+         * Returns the unique String for this value; it will be kept consistent in
+         * future versions.
+         */
+        public String id() {
+            return id;
+        }
+
+        /** Returns the list of ModelCounter values. */
+        public static SafeList<ModelCounter> values() {
+            SafeList<ModelCounter> ans;
+            synchronized (SatSolver.class) {
+                ans = values.dup();
+            }
+            return ans;
+        }
+
+        /** Returns the human-readable label for this enum value. */
+        @Override
+        public String toString() {
+            return toString;
+        }
+
+        /** Ensures we can use == to do comparison. */
+        private Object readResolve() {
+            synchronized (ModelCounter.class) {
+                for (ModelCounter x : values)
+                    if (x.id.equals(id))
+                        return x;
+                values.add(this);
+            }
+            return this;
+        }
+
+        /**
+         * Given an id, return the enum value corresponding to it (if there's no match,
+         * then return ApproxMC).
+         */
+        public static ModelCounter parse(String id) {
+            synchronized (ModelCounter.class) {
+                for (ModelCounter x : values)
+                    if (x.id.equals(id))
+                        return x;
+            }
+            return ApproxMC;
+        }
+
+        /** ApproxMC */
+        public static final ModelCounter ApproxMC = new ModelCounter("approxmc", "ApproxMC", true);
+        /** ProjMC */
+        public static final ModelCounter ProjMC   = new ModelCounter("projmc", "ProjMC", true);
+        /** Ganak */
+        public static final ModelCounter Ganak    = new ModelCounter("ganak", "Ganak", true);
+    }
+
+
     /** This ensures the class can be serialized reliably. */
     private static final long serialVersionUID = 0;
 
     /**
      * Constructs an A4Options object with default values for everything.
      */
-    public A4Options() {}
+    public A4Options() {
+    }
 
     public boolean   inferPartialInstance = true;
 

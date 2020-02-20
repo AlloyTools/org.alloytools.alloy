@@ -14,6 +14,7 @@ import javax.swing.Action;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.Icon;
 
+import edu.mit.csail.sdg.translator.A4Options.ModelCounter;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 @SuppressWarnings({
@@ -501,175 +502,183 @@ public class A4Preferences {
     /**
      * True if Alloy Analyzer should let warning be nonfatal.
      */
-    public static final BooleanPref                  WarningNonfatal        = new BooleanPref("WarningNonfatal", "Allow warnings");
+    public static final BooleanPref                     WarningNonfatal        = new BooleanPref("WarningNonfatal", "Allow warnings");
 
     /**
      * True if Alloy Analyzer should automatically visualize the latest instance.
      */
-    public static final BooleanPref                  AutoVisualize          = new BooleanPref("AutoVisualize", "Visualize automatically");
+    public static final BooleanPref                     AutoVisualize          = new BooleanPref("AutoVisualize", "Visualize automatically");
 
     /** True if Alloy Analyzer should insist on antialias. */
-    public static final BooleanPref                  AntiAlias              = new BooleanPref("AntiAlias", "Use anti-aliasing");
+    public static final BooleanPref                     AntiAlias              = new BooleanPref("AntiAlias", "Use anti-aliasing");
 
     /**
      * True if Alloy Analyzer should record the raw Kodkod input and output.
      */
-    public static final BooleanPref                  RecordKodkod           = new BooleanPref("RecordKodkod", "Record the Kodkod input/output");
+    public static final BooleanPref                     RecordKodkod           = new BooleanPref("RecordKodkod", "Record the Kodkod input/output");
 
     /**
      * True if Alloy Analyzer should enable the new Implicit This name resolution.
      */
-    public static final BooleanPref                  ImplicitThis           = new BooleanPref("ImplicitThis", "Enable 'implicit this' name resolution");
+    public static final BooleanPref                     ImplicitThis           = new BooleanPref("ImplicitThis", "Enable 'implicit this' name resolution");
 
     /**
      * True if Alloy Analyzer should not report models that overflow.
      */
-    public static final BooleanPref                  NoOverflow             = new BooleanPref("NoOverflow", "Prevent overflows", true);
+    public static final BooleanPref                     NoOverflow             = new BooleanPref("NoOverflow", "Prevent overflows", true);
 
     /**
      * The latest X coordinate of the Alloy Analyzer's main window.
      */
-    public static final IntPref                      AnalyzerX              = new IntPref("AnalyzerX", 0, -1, 65535);
+    public static final IntPref                         AnalyzerX              = new IntPref("AnalyzerX", 0, -1, 65535);
 
     /**
      * The latest Y coordinate of the Alloy Analyzer's main window.
      */
-    public static final IntPref                      AnalyzerY              = new IntPref("AnalyzerY", 0, -1, 65535);
+    public static final IntPref                         AnalyzerY              = new IntPref("AnalyzerY", 0, -1, 65535);
 
     /** The latest width of the Alloy Analyzer's main window. */
-    public static final IntPref                      AnalyzerWidth          = new IntPref("AnalyzerWidth", 0, -1, 65535);
+    public static final IntPref                         AnalyzerWidth          = new IntPref("AnalyzerWidth", 0, -1, 65535);
 
     /**
      * The latest height of the Alloy Analyzer's main window.
      */
-    public static final IntPref                      AnalyzerHeight         = new IntPref("AnalyzerHeight", 0, -1, 65535);
+    public static final IntPref                         AnalyzerHeight         = new IntPref("AnalyzerHeight", 0, -1, 65535);
 
     /** The latest font size of the Alloy Analyzer. */
-    public static final IntChoicePref                FontSize               = new IntChoicePref("FontSize", "Font size", Arrays.asList(9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72), 14);
+    public static final IntChoicePref                   FontSize               = new IntChoicePref("FontSize", "Font size", Arrays.asList(9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72), 14);
 
     /** The latest font name of the Alloy Analyzer. */
-    public static final StringChoicePref             FontName               = new StringChoicePref("FontName", "Font family", Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()), "Lucida Grande");
+    public static final StringChoicePref                FontName               = new StringChoicePref("FontName", "Font family", Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()), "Lucida Grande");
 
     /** The latest tab distance of the Alloy Analyzer. */
-    public static final IntChoicePref                TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
+    public static final IntChoicePref                   TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
 
     /** The latest welcome screen that the user has seen. */
-    public static final BooleanPref                  Welcome                = new BooleanPref("Welcome", "Show welcome message at start up");
+    public static final BooleanPref                     Welcome                = new BooleanPref("Welcome", "Show welcome message at start up");
 
     /** Look and feel */
-    public static final StringChoicePref             LAF                    = new StringChoicePref("LAF", "Look and feel", Arrays.asList("Native", "Cross-platform"), Util.onMac() || Util.onWindows() ? "Native" : "Cross-platform");
+    public static final StringChoicePref                LAF                    = new StringChoicePref("LAF", "Look and feel", Arrays.asList("Native", "Cross-platform"), Util.onMac() || Util.onWindows() ? "Native" : "Cross-platform");
 
     /**
      * Whether syntax highlighting should be disabled or not.
      */
-    public static final BooleanPref                  SyntaxDisabled         = new BooleanPref("SyntaxHighlightingDisabled", "Disable syntax highlighting");
+    public static final BooleanPref                     SyntaxDisabled         = new BooleanPref("SyntaxHighlightingDisabled", "Disable syntax highlighting");
 
     /** The number of recursion unrolls. */
-    public static final IntChoicePref                Unrolls                = new IntChoicePref("Unrolls", "Recursion depth", Arrays.asList(-1, 0, 1, 2, 3), -1) {
+    public static final IntChoicePref                   Unrolls                = new IntChoicePref("Unrolls", "Recursion depth", Arrays.asList(-1, 0, 1, 2, 3), -1) {
 
-                                                                                @Override
-                                                                                public Object renderValueShort(Integer value) {
-                                                                                    return (value != null && value.intValue() == -1) ? "disabled" : value;
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   public Object renderValueShort(Integer value) {
+                                                                                       return (value != null && value.intValue() == -1) ? "disabled" : value;
+                                                                                   }
+                                                                               };
 
     /** The skolem depth. */
-    public static final IntChoicePref                SkolemDepth            = new IntChoicePref("SkolemDepth3", "Skolem depth", Arrays.asList(0, 1, 2, 3, 4), 1);
+    public static final IntChoicePref                   SkolemDepth            = new IntChoicePref("SkolemDepth3", "Skolem depth", Arrays.asList(0, 1, 2, 3, 4), 1);
 
     /** The unsat core minimization strategy. */
-    private static final String[]                    coreMinimizationLabels = new String[] {
-                                                                                            "Slow", "Slow (guarantees local minimum)", "Medium", "Medium", "Fast", "Fast (initial unsat core)"
+    private static final String[]                       coreMinimizationLabels = new String[] {
+                                                                                               "Slow", "Slow (guarantees local minimum)", "Medium", "Medium", "Fast", "Fast (initial unsat core)"
     };
-    public static final IntChoicePref                CoreMinimization       = new IntChoicePref("CoreMinimization", "Unsat core minimization", Arrays.asList(0, 1, 2), 2) {
+    public static final IntChoicePref                   CoreMinimization       = new IntChoicePref("CoreMinimization", "Unsat core minimization", Arrays.asList(0, 1, 2), 2) {
 
-                                                                                @Override
-                                                                                public Object renderValueShort(Integer value) {
-                                                                                    return coreMinimizationLabels[value * 2];
-                                                                                }
+                                                                                   @Override
+                                                                                   public Object renderValueShort(Integer value) {
+                                                                                       return coreMinimizationLabels[value * 2];
+                                                                                   }
 
-                                                                                @Override
-                                                                                public Object renderValueLong(Integer value) {
-                                                                                    return coreMinimizationLabels[value * 2 + 1];
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   public Object renderValueLong(Integer value) {
+                                                                                       return coreMinimizationLabels[value * 2 + 1];
+                                                                                   }
+                                                                               };
 
-    private static final String[]                    coreGranularityLabels  = new String[] {
-                                                                                            "Top-level", "Top-level conjuncts only", "Flatten once", "Flatten the formula once at the beginning", "Flatten twice", "Flatten the formula at the beginning and after skolemizing", "Expand quantifiers", "In addition to flattening the formula twice, expand the quantifiers"
+    private static final String[]                       coreGranularityLabels  = new String[] {
+                                                                                               "Top-level", "Top-level conjuncts only", "Flatten once", "Flatten the formula once at the beginning", "Flatten twice", "Flatten the formula at the beginning and after skolemizing", "Expand quantifiers", "In addition to flattening the formula twice, expand the quantifiers"
     };
     /** The unsat core granularity. */
-    public static final IntChoicePref                CoreGranularity        = new IntChoicePref("CoreGranularity", "Unsat core granularity", Arrays.asList(0, 1, 2, 3), 0) {
+    public static final IntChoicePref                   CoreGranularity        = new IntChoicePref("CoreGranularity", "Unsat core granularity", Arrays.asList(0, 1, 2, 3), 0) {
 
-                                                                                @Override
-                                                                                public Object renderValueShort(Integer value) {
-                                                                                    return coreGranularityLabels[value * 2];
-                                                                                }
+                                                                                   @Override
+                                                                                   public Object renderValueShort(Integer value) {
+                                                                                       return coreGranularityLabels[value * 2];
+                                                                                   }
 
-                                                                                @Override
-                                                                                public Object renderValueLong(Integer value) {
-                                                                                    return coreGranularityLabels[value * 2 + 1];
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   public Object renderValueLong(Integer value) {
+                                                                                       return coreGranularityLabels[value * 2 + 1];
+                                                                                   }
+                                                                               };
 
     /**
      * The amount of memory (in M) to allocate for Kodkod and the SAT solvers.
      */
-    public static final IntChoicePref                SubMemory              = new IntChoicePref("SubMemory", "Maximum memory", Arrays.asList(768, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 8192, 16384), 2084) {
+    public static final IntChoicePref                   SubMemory              = new IntChoicePref("SubMemory", "Maximum memory", Arrays.asList(768, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 8192, 16384), 2084) {
 
-                                                                                @Override
-                                                                                public Object renderValueShort(Integer value) {
-                                                                                    return value.toString() + " MB";
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   public Object renderValueShort(Integer value) {
+                                                                                       return value.toString() + " MB";
+                                                                                   }
+                                                                               };
 
     /**
      * The amount of stack (in K) to allocate for Kodkod and the SAT solvers.
      */
-    public static final IntChoicePref                SubStack               = new IntChoicePref("SubStack", "Maximum stack", Arrays.asList(1024, 2048, 4096, 8192, 16384, 32768, 65536), 8192) {
+    public static final IntChoicePref                   SubStack               = new IntChoicePref("SubStack", "Maximum stack", Arrays.asList(1024, 2048, 4096, 8192, 16384, 32768, 65536), 8192) {
 
-                                                                                @Override
-                                                                                public Object renderValueShort(Integer value) {
-                                                                                    return value.toString() + " k";
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   public Object renderValueShort(Integer value) {
+                                                                                       return value.toString() + " k";
+                                                                                   }
+                                                                               };
 
     /**
      * The first file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model0                 = new StringPref("Model0");
+    public static final StringPref                      Model0                 = new StringPref("Model0");
 
     /**
      * The second file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model1                 = new StringPref("Model1");
+    public static final StringPref                      Model1                 = new StringPref("Model1");
 
     /**
      * The third file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model2                 = new StringPref("Model2");
+    public static final StringPref                      Model2                 = new StringPref("Model2");
 
     /**
      * The fourth file in Alloy Analyzer's "open recent" list.
      */
-    public static final StringPref                   Model3                 = new StringPref("Model3");
+    public static final StringPref                      Model3                 = new StringPref("Model3");
 
     /** Automatically infer partial instance from model */
-    public static final BooleanPref                  InferPartialInstance   = new BooleanPref("InferPartialInstance", "Infer partial instance");
+    public static final BooleanPref                     InferPartialInstance   = new BooleanPref("InferPartialInstance", "Infer partial instance");
 
-    public static final DelayedChoicePref<SatSolver> Solver                 = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
+    public static final DelayedChoicePref<SatSolver>    Solver                 = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
 
-                                                                                @Override
-                                                                                protected String serialize(SatSolver value) {
-                                                                                    return value.id();
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   protected String serialize(SatSolver value) {
+                                                                                       return value.id();
+                                                                                   }
+                                                                               };
 
-    public static final ChoicePref<Verbosity>        VerbosityPref          = new ChoicePref<Verbosity>("Verbosity", Verbosity.values(), Verbosity.DEFAULT) {
+    public static final DelayedChoicePref<ModelCounter> Counter                = new DelayedChoicePref<ModelCounter>("ModelCounter", "Counter", ModelCounter.values(), ModelCounter.ApproxMC) {
 
-                                                                                @Override
-                                                                                protected String serialize(Verbosity value) {
-                                                                                    return value.id;
-                                                                                }
-                                                                            };
+                                                                                   @Override
+                                                                                   protected String serialize(ModelCounter value) {
+                                                                                       return value.id();
+                                                                                   }
+                                                                               };
+
+    public static final ChoicePref<Verbosity>           VerbosityPref          = new ChoicePref<Verbosity>("Verbosity", Verbosity.values(), Verbosity.DEFAULT) {
+
+                                                                                   @Override
+                                                                                   protected String serialize(Verbosity value) {
+                                                                                       return value.id;
+                                                                                   }
+                                                                               };
 
     public enum Verbosity {
                            /** Level 0. */
@@ -728,7 +737,8 @@ public class A4Preferences {
             if (Pref.class.isAssignableFrom(f.getType())) {
                 try {
                     ans.add((Pref< ? >) f.get(self));
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
         return ans;

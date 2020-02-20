@@ -23,6 +23,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Counter;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
@@ -1432,6 +1433,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 addToMenu(optmenu, Unrolls);
                 addToMenu(optmenu, ImplicitThis, NoOverflow, InferPartialInstance);
             }
+            addToMenu(optmenu, Counter);
 
         } finally {
             wrap = false;
@@ -2089,7 +2091,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         // }
         // };
         // c.callback(null);
-        
+
         if (Util.onMac()) {
             frame.getRootPane().putClientProperty("apple.awt.fullscreenable", true);
         }
