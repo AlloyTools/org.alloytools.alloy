@@ -47,23 +47,23 @@ public class ExprCallTranslator
         }
         else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
         {
-            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
         }
         else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
         {
-            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
         }
         else if (funcName.equals("integer/mul"))
         {
-            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
         }
         else if (funcName.equals("integer/div"))
         {
-            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
         }
         else if (funcName.equals("integer/rem"))
         {
-            return translateArithmetic(exprCall, argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
+            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
         }
 //        else if (translator.functionsMap.containsKey(funcName))
 //        {
@@ -83,7 +83,7 @@ public class ExprCallTranslator
         }
     }
 
-    public Expression translateArithmetic(ExprCall exprCall, Expression A, Expression B, BinaryExpression.Op op, Environment environment)
+    public Expression translateArithmetic(Expression A, Expression B, BinaryExpression.Op op, Environment environment)
     {
         A = convertIntConstantToSet(A);
 
