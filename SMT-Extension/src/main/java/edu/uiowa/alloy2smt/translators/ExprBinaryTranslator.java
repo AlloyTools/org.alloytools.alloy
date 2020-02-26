@@ -1256,56 +1256,6 @@ public class ExprBinaryTranslator
         }
     }
 
-    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Environment environment)
-    {
-        Expression leftExpr = exprTranslator.translateExpr(expr.left, environment);
-        Expression rightExpr = exprTranslator.translateExpr(expr.right, environment);
-
-        FunctionDeclaration result = new FunctionDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple), AbstractTranslator.setOfUninterpretedIntTuple, false);
-        exprTranslator.translator.smtProgram.addFunction(result);
-
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.uninterpretedInt, false);
-        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.uninterpretedInt, false);
-        VariableDeclaration z = new VariableDeclaration("z", AbstractTranslator.uninterpretedInt, false);
-
-        Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
-        Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
-        Expression zTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getVariable());
-
-        Expression xValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, x.getVariable());
-        Expression yValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, y.getVariable());
-        Expression zValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, z.getVariable());
-
-        Expression xMember = BinaryExpression.Op.MEMBER.make(xTuple, leftExpr);
-        Expression yMember = BinaryExpression.Op.MEMBER.make(yTuple, rightExpr);
-        Expression zMember = BinaryExpression.Op.MEMBER.make(zTuple, result.getVariable());
-
-        Expression xyOperation = op.make(xValue, yValue);
-        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
-
-        Expression and1 = MultiArityExpression.Op.AND.make(xMember, yMember);
-        Expression and2 = MultiArityExpression.Op.AND.make(equal, and1);
-        Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
-        Expression implies1 = BinaryExpression.Op.IMPLIES.make(zMember, exists1);
-        Expression forall1 = QuantifiedExpression.Op.FORALL.make(implies1, z);
-
-        Assertion assertion1 = AlloyUtils.getAssertion(Collections.singletonList(expr.pos),
-                String.format("%1$s %2$s %3$s axiom1", op, leftExpr, rightExpr), forall1);
-        exprTranslator.translator.smtProgram.addAssertion(assertion1);
-
-        Expression and3 = BinaryExpression.Op.MEMBER.make(equal, zMember);
-        Expression exists2 = QuantifiedExpression.Op.EXISTS.make(and3, z);
-
-        Expression implies2 = BinaryExpression.Op.IMPLIES.make(and1, exists2);
-        Expression forall2 = QuantifiedExpression.Op.FORALL.make(implies2, x, y);
-
-        Assertion assertion2 = AlloyUtils.getAssertion(Collections.singletonList(expr.pos),
-                String.format("%1$s %2$s %3$s axiom2", op, leftExpr, rightExpr), forall2);
-        exprTranslator.translator.smtProgram.addAssertion(assertion2);
-
-        return result.getVariable();
-    }
-
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
         Expression comparisonExpr = null;
@@ -2015,5 +1965,107 @@ public class ExprBinaryTranslator
         B = TranslatorUtils.makeRelation(B);
         BinaryExpression join = BinaryExpression.Op.JOIN.make(A, B);
         return join;
+    }
+
+    public Expression translateArithmetic(ExprBinary expr, BinaryExpression.Op op, Environment environment)
+    {
+        Expression A = exprTranslator.translateExpr(expr.left, environment);
+        Expression B = exprTranslator.translateExpr(expr.right, environment);
+        A = convertIntConstantToSet(A);
+
+        B = convertIntConstantToSet(B);
+
+        if (A.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        {
+            A = translator.handleIntConstant(A);
+        }
+
+        if (B.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        {
+            B = translator.handleIntConstant(B);
+        }
+
+        String freshName = TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple);
+
+        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.uninterpretedInt, false);
+        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.uninterpretedInt, false);
+        VariableDeclaration z = new VariableDeclaration("z", AbstractTranslator.uninterpretedInt, false);
+
+        Expression xTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable());
+        Expression yTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, y.getVariable());
+        Expression zTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, z.getVariable());
+
+        Expression xValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, x.getVariable());
+        Expression yValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, y.getVariable());
+        Expression zValue = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, z.getVariable());
+
+        Expression xyOperation = op.make(xValue, yValue);
+        Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
+
+        if(translator.alloySettings.integerSingletonsOnly)
+        {
+            // A= {x}, B = {y} => Result = {z} where z = (x operation y)
+            Expression xSingleton = UnaryExpression.Op.SINGLETON.make(xTuple);
+            Expression ySingleton = UnaryExpression.Op.SINGLETON.make(yTuple);
+            Expression singletonA = BinaryExpression.Op.EQ.make(A, xSingleton);
+            Expression singletonB = BinaryExpression.Op.EQ.make(B, ySingleton);
+
+            Expression and = MultiArityExpression.Op.AND.make(equal, singletonA, singletonB);
+
+            QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(and, x, y, z);
+            environment.addAuxiliaryFormula(exists);
+            return z.getVariable();
+        }
+
+        VariableDeclaration result = new VariableDeclaration(freshName, AbstractTranslator.setOfUninterpretedIntTuple, false);
+        Expression resultExpression = result.getVariable();
+
+        // for all z : uninterpretedInt. x in Result implies
+        // exists x, y :uninterpretedInt. x in A and y in B and (x, y, z) in operation
+
+        Expression xMember = BinaryExpression.Op.MEMBER.make(xTuple, A);
+        Expression yMember = BinaryExpression.Op.MEMBER.make(yTuple, B);
+        Expression zMember = BinaryExpression.Op.MEMBER.make(zTuple, resultExpression);
+
+        Expression xyMember = MultiArityExpression.Op.AND.make(xMember, yMember);
+        Expression and2 = MultiArityExpression.Op.AND.make(equal, xyMember);
+        Expression exists1 = QuantifiedExpression.Op.EXISTS.make(and2, x, y);
+
+        Expression implies1 = BinaryExpression.Op.IMPLIES.make(zMember, exists1);
+        Expression axiom1 = QuantifiedExpression.Op.FORALL.make(implies1, z);
+
+
+        // for all x, y : uninterpretedInt. x in A and y in B implies
+        // exists z :uninterpretedInt. x in Result and (x, y, z) in operation
+
+        Expression and3 = MultiArityExpression.Op.AND.make(equal, zMember);
+        Expression exists2 = QuantifiedExpression.Op.EXISTS.make(and3, z);
+
+        Expression implies2 = BinaryExpression.Op.IMPLIES.make(xyMember, exists2);
+        Expression axiom2 = QuantifiedExpression.Op.FORALL.make(implies2, x, y);
+
+        Expression axioms = MultiArityExpression.Op.AND.make(axiom1, axiom2);
+        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(axioms, result);
+        environment.addAuxiliaryFormula(exists);
+
+        return resultExpression;
+    }
+
+    private Expression convertIntConstantToSet(Expression A)
+    {
+        if (A instanceof IntConstant)
+        {
+            ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
+            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
+            if(translator.alloySettings.integerSingletonsOnly)
+            {
+                A = UnaryExpression.Op.SINGLETON.make(tuple);
+            }
+            else
+            {
+                A = tuple;
+            }
+        }
+        return A;
     }
 }
