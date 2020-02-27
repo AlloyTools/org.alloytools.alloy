@@ -1170,11 +1170,11 @@ public class ExprBinaryTranslator
 
             for (int i = 0; i < rightExprArity - 1; ++i)
             {
-                join = BinaryExpression.Op.JOIN.make(join, exprTranslator.translator.univAtom.getVariable());
+                join = BinaryExpression.Op.JOIN.make(join, AbstractTranslator.univAtom.getVariable());
             }
             for (int i = 0; i < rightExprArity - 1; ++i)
             {
-                join = BinaryExpression.Op.PRODUCT.make(join, exprTranslator.translator.univAtom.getVariable());
+                join = BinaryExpression.Op.PRODUCT.make(join, AbstractTranslator.univAtom.getVariable());
             }
 
             Expression intersection = BinaryExpression.Op.INTERSECTION.make(join, left);
