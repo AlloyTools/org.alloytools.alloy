@@ -38,8 +38,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     final ExprTranslator exprTranslator;
 
     Set<String> funcNames;
-    //ToDo: it is really important to remove this variable. It is the source of many bugs
-    Expression auxExpr;
     Map<Sig, Expr> sigFacts;
 
     Map<String, String> funcNamesMap;
@@ -47,7 +45,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Map<String, Expression> setCompFuncNameToDefMap;
     Map<String, VariableDeclaration> setCompFuncNameToBdVarExprMap;
     Map<Sig, FunctionDeclaration> signaturesMap;
-    List<VariableDeclaration> existentialBdVars;
     Map<Sig.Field, FunctionDeclaration> fieldsMap;
     Map<String, Func> nameToFuncMap;
     Map<Expr, Integer> sigToIdMap;
@@ -71,7 +68,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.nameToFuncMap = new HashMap<>();
         this.fieldsMap = new HashMap<>();
         this.sigFacts = new HashMap<>();
-        this.existentialBdVars = new ArrayList<>();
         this.funcNames = new HashSet<>();
         this.integerConstants = new HashMap<>();
         this.sigToIdMap = new HashMap<>();
@@ -111,7 +107,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.functionsMap = new HashMap<>(translator.functionsMap);
         this.fieldsMap = new HashMap<>(translator.fieldsMap);
         this.sigFacts = new HashMap<>(translator.sigFacts);
-        this.existentialBdVars = new ArrayList<>(translator.existentialBdVars);
         this.funcNames = new HashSet<>(translator.funcNames);
 
         this.setComprehensionFuncNameToInputsMap = new HashMap<>(translator.setComprehensionFuncNameToInputsMap);

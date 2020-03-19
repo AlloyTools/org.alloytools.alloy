@@ -1,6 +1,5 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -12,8 +11,8 @@ import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExprBinaryTranslator
 {
@@ -1258,454 +1257,24 @@ public class ExprBinaryTranslator
 
     private Expression translateComparison(ExprBinary expr, BinaryExpression.Op op, Environment environment)
     {
-        Expression comparisonExpr = null;
-
         // Right hand side is a expression and right hand side is a constant
         if (((expr.left instanceof ExprUnary) && ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY &&
                 (expr.right instanceof ExprConstant)))
         {
-            int n = ((ExprConstant) expr.right).num;
-            int arity = ((ExprUnary) expr.left).sub.type().arity();
-            Expression leftExpr = exprTranslator.translateExpr(((ExprUnary) expr.left).sub, environment);
-
-            List<Expression> existentialBdVarExprs = new ArrayList<>();
-            List<VariableDeclaration> existentialBdVars = new ArrayList<>();
-            List<Sort> leftExprSorts = AlloyUtils.getExprSorts(((ExprUnary) expr.left).sub);
-
-            switch (op)
-            {
-                case GT:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n + 1);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n + 1);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression rightExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
-                    }
-
-                    // rightExpr + 1 <= leftExpr
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(rightExpr, leftExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                case LT:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n - 1);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n - 1);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression rightExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
-                    }
-
-                    // leftExpr <= rightExpr-1
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(leftExpr, rightExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                case GTE:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression rightExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
-                    }
-
-                    // rightExpr <= leftExpr
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(rightExpr, leftExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                case LTE:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(leftExprSorts.get(0), n);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(leftExprSorts, arity, n);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression rightExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        rightExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        rightExpr = exprTranslator.mkEmptyRelationOfSort(leftExprSorts);
-                    }
-
-                    // rightExpr <= leftExpr
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(leftExpr, rightExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
+            return translateCardinality(expr, op, environment);
         }
         else if ((expr.right instanceof ExprUnary) && ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY &&
                 (expr.left instanceof ExprConstant))
         {
-            int n = ((ExprConstant) expr.left).num;
-            int arity = ((ExprUnary) expr.right).sub.type().arity();
-            Expression rightExpr = exprTranslator.translateExpr(((ExprUnary) expr.right).sub, environment);
-
-            List<Expression> existentialBdVarExprs = new ArrayList<>();
-            List<VariableDeclaration> existentialBdVars = new ArrayList<>();
-            List<Sort> rightExprSorts = AlloyUtils.getExprSorts(((ExprUnary) expr.right).sub);
-
-            switch (op)
-            {
-                case GT:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n + 1);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n + 1);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression leftExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
-                    }
-
-                    // rightExpr + 1 <= leftExpr
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(rightExpr, leftExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                case LT:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n - 1);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n - 1);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression leftExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
-                    }
-
-                    // leftExpr <= rightExpr-1
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(rightExpr, leftExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                case GTE:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression leftExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
-                    }
-
-                    // rightExpr <= leftExpr
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(rightExpr, leftExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                case LTE:
-                {
-                    if (arity == 1)
-                    {
-                        existentialBdVars = exprTranslator.getBdVars(rightExprSorts.get(0), n);
-                    }
-                    else
-                    {
-                        existentialBdVars = exprTranslator.getBdTupleVars(rightExprSorts, arity, n);
-                    }
-
-                    for (VariableDeclaration bdVar : existentialBdVars)
-                    {
-                        existentialBdVarExprs.add(bdVar.getVariable());
-                    }
-
-                    // (distinct e1 e2 e3 ....)
-                    Expression distElementsExpr = TranslatorUtils.makeDistinct(existentialBdVarExprs);
-
-                    exprTranslator.translator.existentialBdVars.addAll(existentialBdVars);
-                    if (exprTranslator.translator.auxExpr != null)
-                    {
-                        exprTranslator.translator.auxExpr = MultiArityExpression.Op.AND.make(exprTranslator.translator.auxExpr, distElementsExpr);
-                    }
-                    else
-                    {
-                        exprTranslator.translator.auxExpr = distElementsExpr;
-                    }
-
-                    Expression leftExpr;
-
-                    if (existentialBdVarExprs.size() > 0)
-                    {
-                        leftExpr = exprTranslator.mkUnaryRelationOutOfAtomsOrTuples(existentialBdVarExprs);
-                    }
-                    else
-                    {
-                        leftExpr = exprTranslator.mkEmptyRelationOfSort(rightExprSorts);
-                    }
-
-                    // leftExpr <= rightExpr 
-                    comparisonExpr = BinaryExpression.Op.SUBSET.make(leftExpr, rightExpr);
-                    comparisonExpr = MultiArityExpression.Op.AND.make(comparisonExpr, exprTranslator.translator.auxExpr);
-
-                    if (!exprTranslator.translator.existentialBdVars.isEmpty())
-                    {
-                        comparisonExpr = QuantifiedExpression.Op.EXISTS.make(comparisonExpr, exprTranslator.translator.existentialBdVars);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
+            return translateCardinality(expr, op, environment);
         }
         else
         {
             Expression leftExpr = exprTranslator.translateExpr(expr.left, environment);
             Expression rightExpr = exprTranslator.translateExpr(expr.right, environment);
-
-
-            comparisonExpr = getComparison(op, leftExpr, rightExpr);
+            Expression comparisonExpr = getComparison(op, leftExpr, rightExpr);
+            return exprTranslator.translateAuxiliaryFormula(comparisonExpr, environment);
         }
-
-        //ToDo: review the purpose of these 2 lines.
-        exprTranslator.translator.auxExpr = null;
-        exprTranslator.translator.existentialBdVars.clear();
-        return comparisonExpr;
     }
 
     private Expression getComparison(BinaryExpression.Op op, Expression left, Expression right)
@@ -1806,7 +1375,7 @@ public class ExprBinaryTranslator
         )
         {
             int n = ((ExprConstant) expr.right).num;
-            Expression equality = translateEqCardComparison((ExprUnary) expr.left, n, op, environment);
+            Expression equality = translateCardinalityComparison((ExprUnary) expr.left, n, op, environment);
             return equality;
         }
 
@@ -1816,69 +1385,176 @@ public class ExprBinaryTranslator
         )
         {
             int n = ((ExprConstant) expr.left).num;
-            Expression equality = translateEqCardComparison((ExprUnary) expr.right, n, op, environment);
+            Expression equality = translateCardinalityComparison((ExprUnary) expr.right, n, op, environment);
             return equality;
         }
 
         throw new UnsupportedOperationException();
     }
 
-    private Expression translateEqCardComparison(ExprUnary expr, int n, BinaryExpression.Op op, Environment environment)
+    private Expression translateCardinalityComparison(ExprUnary expr, int n, BinaryExpression.Op op, Environment environment)
     {
         Environment newEnvironment = new Environment(environment);
-        Expression expression = exprTranslator.translateExpr(expr.sub, newEnvironment);
-        if (n == 0)
-        {
-            // the set expression is empty
-            Expression empty = UnaryExpression.Op.EMPTYSET.make(expression.getSort());
-            Expression equal = BinaryExpression.Op.EQ.make(expression, empty);
-            Expression finalExpression = exprTranslator.translateAuxiliaryFormula(equal, newEnvironment);
-            return finalExpression;
-        }
+        Expression setExpr = exprTranslator.translateExpr(expr.sub, newEnvironment);
+        SetSort setSort = (SetSort) setExpr.getSort();
+        Sort elementSort = setSort.elementSort;
 
-        List<Expression> variables = new ArrayList<>();
-        List<VariableDeclaration> declarations = new ArrayList<>();
-
-        Sort sort = ((SetSort) expression.getSort()).elementSort;
-        for(int i = 0; i < n; i++)
-        {
-            VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
-            declarations.add(variable);
-        }
-
-        for (VariableDeclaration declaration : declarations)
-        {
-            variables.add(declaration.getVariable());
-        }
-
-        Expression distinct;
-
-        if (variables.size() == 1)
-        {
-            // distinct operator needs at least 2 arguments
-            distinct = BoolConstant.True;
-        }
-        else
-        {
-            distinct = MultiArityExpression.Op.DISTINCT.make(variables);
-        }
-
-        Expression set = TranslatorUtils.makeRelation(variables);
-        Expression equal = BinaryExpression.Op.EQ.make(expression, set);
-        Expression and = MultiArityExpression.Op.AND.make(equal, distinct);
-        Expression exists = QuantifiedExpression.Op.EXISTS.make(and, declarations);
-
-        Expression finalExpression = exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+        // shared code
+        Expression emptySet = UnaryExpression.Op.EMPTYSET.make(setSort);
+        Expression isEmpty = BinaryExpression.Op.EQ.make(setExpr, emptySet);
 
         switch (op)
         {
             case EQ:
             {
-                return  finalExpression;
+                if (n < 0)
+                {
+                    // impossible
+                    return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newEnvironment);
+                }
+
+                if (n == 0)
+                {
+                    // empty set
+                    return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+                }
+
+                List<VariableDeclaration> vars = generateVariables(n, elementSort);
+                Expression cardinalitySet = generateCardinalitySet(vars);
+                Expression equalExpr = BinaryExpression.Op.EQ.make(setExpr, cardinalitySet);
+                Expression andExpr = makeDistinct(equalExpr, vars);
+                Expression exists = QuantifiedExpression.Op.EXISTS.make(andExpr, vars);
+                return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
             }
+
+            case LT:
+            {
+                if (n <= 0)
+                {
+                    // impossible
+                    return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newEnvironment);
+                }
+
+                if (n == 1)
+                {
+                    // empty set
+                    return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+                }
+
+                List<VariableDeclaration> vars = generateVariables(n - 1, elementSort);
+                Expression cardinalitySet = generateCardinalitySet(vars);
+                Expression subsetExpr = BinaryExpression.Op.SUBSET.make(setExpr, cardinalitySet);
+                Expression andExpr = makeDistinct(subsetExpr, vars);
+                Expression exists = QuantifiedExpression.Op.EXISTS.make(andExpr, vars);
+                return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+            }
+
+            case LTE:
+            {
+                if (n <= -1)
+                {
+                    // impossible
+                    return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newEnvironment);
+                }
+
+                if (n == 0)
+                {
+                    // empty set
+                    return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+                }
+
+                List<VariableDeclaration> vars = generateVariables(n, elementSort);
+                Expression cardinalitySet = generateCardinalitySet(vars);
+                Expression subsetExpr = BinaryExpression.Op.SUBSET.make(setExpr, cardinalitySet);
+                Expression andExpr = makeDistinct(subsetExpr, vars);
+                Expression exists = QuantifiedExpression.Op.EXISTS.make(andExpr, vars);
+                return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+            }
+
+            case GT:
+            {
+                if (n <= -1)
+                {
+                    // valid
+                    return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newEnvironment);
+                }
+
+                List<VariableDeclaration> vars = generateVariables(n + 1, elementSort);
+                Expression cardinalitySet = generateCardinalitySet(vars);
+                Expression subsetExpr = BinaryExpression.Op.SUBSET.make(cardinalitySet, setExpr);
+                Expression andExpr = makeDistinct(subsetExpr, vars);
+                Expression exists = QuantifiedExpression.Op.EXISTS.make(andExpr, vars);
+                return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+            }
+
+            case GTE:
+            {
+                if (n <= 0)
+                {
+                    // valid
+                    return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newEnvironment);
+                }
+
+                List<VariableDeclaration> vars = generateVariables(n, elementSort);
+                Expression cardinalitySet = generateCardinalitySet(vars);
+                Expression subsetExpr = BinaryExpression.Op.SUBSET.make(cardinalitySet, setExpr);
+                Expression andExpr = makeDistinct(subsetExpr, vars);
+                Expression exists = QuantifiedExpression.Op.EXISTS.make(andExpr, vars);
+                return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+            }
+
             default:
-                throw new UnsupportedOperationException();
+            {
+                throw new RuntimeException("Unexpected cardinality operator" + op);
+            }
         }
+    }
+
+    private Expression makeDistinct(Expression boolExpr, List<VariableDeclaration> vars)
+    {
+        assert (boolExpr.getSort().equals(AbstractTranslator.boolSort));
+        if (vars.size() == 1)
+        {
+            return boolExpr;
+        }
+        List<Expression> exprs = vars.stream().map(v -> v.getVariable()).collect(Collectors.toList());
+        Expression distinct = MultiArityExpression.Op.DISTINCT.make(exprs);
+        Expression and = MultiArityExpression.Op.AND.make(boolExpr, distinct);
+        return and;
+    }
+
+    private Expression generateCardinalitySet(List<VariableDeclaration> vars)
+    {
+        assert (vars.size() >= 1);
+
+        Expression set = UnaryExpression.Op.SINGLETON.make(vars.get(0).getVariable());
+
+        if (vars.size() == 1)
+        {
+            return set;
+        }
+
+        for (int i = 1; i < vars.size(); i++)
+        {
+            set = MultiArityExpression.Op.INSERT.make(vars.get(i).getVariable(), set);
+        }
+
+        return set;
+    }
+
+    private List<VariableDeclaration> generateVariables(int n, Sort elementSort)
+    {
+        if (n <= 0)
+        {
+            throw new RuntimeException(String.format("Expected %1$d  to be greater than zero. ", n));
+        }
+        List<VariableDeclaration> vars = new ArrayList<>();
+        for (int i = 0; i < n; i++)
+        {
+            String freshName = TranslatorUtils.getFreshName(elementSort);
+            vars.add(new VariableDeclaration(freshName, elementSort, false));
+        }
+        return vars;
     }
 
     private Expression translateSetOperation(ExprBinary expr, BinaryExpression.Op op, Environment environment)
@@ -2002,7 +1678,7 @@ public class ExprBinaryTranslator
         Expression xyOperation = op.make(xValue, yValue);
         Expression equal = BinaryExpression.Op.EQ.make(xyOperation, zValue);
 
-        if(translator.alloySettings.integerSingletonsOnly)
+        if (translator.alloySettings.integerSingletonsOnly)
         {
             // A= {x}, B = {y} => Result = {z} where z = (x operation y)
             Expression xSingleton = UnaryExpression.Op.SINGLETON.make(xTuple);
@@ -2057,7 +1733,7 @@ public class ExprBinaryTranslator
         {
             ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
             Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-            if(translator.alloySettings.integerSingletonsOnly)
+            if (translator.alloySettings.integerSingletonsOnly)
             {
                 A = UnaryExpression.Op.SINGLETON.make(tuple);
             }

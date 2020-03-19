@@ -197,4 +197,12 @@ class CardinalityTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("unsat", commandResults.get(0).satResult);
     }
+
+    @Test
+    public void test14() throws Exception
+    {
+        String alloy =  "sig A {} fact {#A = -1}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("unsat", commandResults.get(0).satResult);
+    }
 }
