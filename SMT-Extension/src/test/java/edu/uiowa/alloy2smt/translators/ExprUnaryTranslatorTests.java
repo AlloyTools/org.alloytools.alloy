@@ -82,4 +82,41 @@ public class ExprUnaryTranslatorTests
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
     }
+
+    @Test
+    void rclosureAtom() throws Exception
+    {
+        String alloy = "sig A {}\n" +
+                "sig B {}\n" +
+                "sig C in A + B {f: set (A +B)}\n" +
+                "fact {#A = 2 and #B = 2}\n" +
+                "fact { some f }\n" +
+                "fact { f = *f }\n" +
+                "fact {all disj x, y: A+B | x -> y in f}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition f = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/C/f");
+        Set<List<String>> set = TranslatorUtils.getRelation(f);
+        assertEquals(16, set.size());
+    }
+
+    @Test
+    void rclosureUInt() throws Exception
+    {
+        String alloy = "sig A in Int {}\n" +
+                "sig B in Int {}\n" +
+                "sig C in A + B {f: set (A +B)}\n" +
+                "fact {#A = 2 and #B = 2}\n" +
+                "fact { some f }\n" +
+                "fact { no (A & B)}\n" +
+                "fact { f = *f }\n" +
+                "fact {all disj x, y: A+B | x -> y in f}";
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition f = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/C/f");
+        Set<List<String>> set = TranslatorUtils.getRelation(f);
+        assertEquals(16, set.size());
+    }
 }

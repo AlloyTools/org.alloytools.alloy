@@ -99,7 +99,15 @@ public class ExprUnaryTranslator
     private Expression translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
     {
         Expression closure = translateClosure(exprUnary, environment);
-        BinaryExpression reflexiveClosure = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
+        BinaryExpression reflexiveClosure;
+        if(closure.getSort().equals(AbstractTranslator.setOfBinaryAtomSort))
+        {
+            reflexiveClosure = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
+        }
+        else
+        {
+            reflexiveClosure = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.idenInt.getVariable());
+        }
         return reflexiveClosure;
     }
 
