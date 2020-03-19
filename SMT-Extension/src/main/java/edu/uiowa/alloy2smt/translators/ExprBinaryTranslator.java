@@ -1402,6 +1402,7 @@ public class ExprBinaryTranslator
         // shared code
         Expression emptySet = UnaryExpression.Op.EMPTYSET.make(setSort);
         Expression isEmpty = BinaryExpression.Op.EQ.make(setExpr, emptySet);
+        Expression notEmpty = UnaryExpression.Op.NOT.make(isEmpty);
 
         switch (op)
         {
@@ -1478,6 +1479,11 @@ public class ExprBinaryTranslator
                     // valid
                     return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newEnvironment);
                 }
+                if(n == 0)
+                {
+                    // not empty
+                    return exprTranslator.translateAuxiliaryFormula(notEmpty, newEnvironment);
+                }
 
                 List<VariableDeclaration> vars = generateVariables(n + 1, elementSort);
                 Expression cardinalitySet = generateCardinalitySet(vars);
@@ -1493,6 +1499,12 @@ public class ExprBinaryTranslator
                 {
                     // valid
                     return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newEnvironment);
+                }
+
+                if(n == 1)
+                {
+                    // not empty
+                    return exprTranslator.translateAuxiliaryFormula(notEmpty, newEnvironment);
                 }
 
                 List<VariableDeclaration> vars = generateVariables(n, elementSort);

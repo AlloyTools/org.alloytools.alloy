@@ -190,6 +190,15 @@ class MultiplicityTests
     }
 
     @Test
+    public void noneDeclaration3() throws Exception
+    {
+        String alloy =  "sig A {} pred p[a: one A]{ no a} run p";
+
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
+    }
+
+    @Test
     public void multipleQuantifiers() throws Exception
     {
         String alloy =  "sig A {}\n" +
