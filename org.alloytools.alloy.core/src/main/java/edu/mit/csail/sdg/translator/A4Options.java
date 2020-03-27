@@ -282,7 +282,14 @@ public final class A4Options implements Serializable {
     public A4Options() {
     }
 
-    public boolean   inferPartialInstance = true;
+    /**
+     * This option specifies the Model Counter to use (ApproxMC, ProjMC, Ganak ...)
+     * <p>
+     * Default value is ApproxMC.
+     */
+    public ModelCounter counter              = ModelCounter.ApproxMC;
+
+    public boolean      inferPartialInstance = true;
 
     /**
      * This option specifies the amount of symmetry breaking to do (when symmetry
@@ -298,7 +305,7 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is 20.
      */
-    public int       symmetry             = 20;
+    public int          symmetry             = 20;
 
     /**
      * This option specifies the maximum skolem-function depth.
@@ -306,7 +313,7 @@ public final class A4Options implements Serializable {
      * Default value is 0, which means it will only generate skolem constants, and
      * will not generate skolem functions.
      */
-    public int       skolemDepth          = 0;
+    public int          skolemDepth          = 0;
 
     /**
      * This option specifies the unsat core minimization strategy
@@ -314,13 +321,13 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is set to the fastest current strategy.
      */
-    public int       coreMinimization     = 2;
+    public int          coreMinimization     = 2;
 
     /**
      * Unsat core granularity, default is 0 (only top-level conjuncts are
      * considered), 3 expands all quantifiers
      */
-    public int       coreGranularity      = 0;
+    public int          coreGranularity      = 0;
 
     /**
      * This option specifies the SAT solver to use (SAT4J, MiniSatJNI,
@@ -328,19 +335,19 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is SAT4J.
      */
-    public SatSolver solver               = SatSolver.SAT4J;
+    public SatSolver    solver               = SatSolver.SAT4J;
 
     /**
      * When this.solver is external, and the solver filename is a relative filename,
      * then this option specifies the directory that the solver filename is relative
      * to.
      */
-    public String    solverDirectory      = "";
+    public String       solverDirectory      = "";
 
     /**
      * This specifies the directory where we may write temporary files to.
      */
-    public String    tempDirectory        = System.getProperty("java.io.tmpdir");
+    public String       tempDirectory        = System.getProperty("java.io.tmpdir");
 
     /**
      * This option tells the compiler the "original filename" that these AST nodes
@@ -349,7 +356,7 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is "".
      */
-    public String    originalFilename     = "";
+    public String       originalFilename     = "";
 
     /**
      * This option specifies whether the compiler should record the original Kodkod
@@ -357,19 +364,19 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is false.
      */
-    public boolean   recordKodkod         = false;
+    public boolean      recordKodkod         = false;
 
     /**
      * This option specifies whether the solver should report only solutions that
      * don't cause any overflows.
      */
-    public boolean   noOverflow           = false;
+    public boolean      noOverflow           = false;
 
     /**
      * This option constrols how deep we unroll loops and unroll recursive
      * predicate/function/macros (negative means it's disallowed)
      */
-    public int       unrolls              = (-1);
+    public int          unrolls              = (-1);
 
     /** This method makes a copy of this Options object. */
     public A4Options dup() {
@@ -380,6 +387,7 @@ public final class A4Options implements Serializable {
         x.skolemDepth = skolemDepth;
         x.coreMinimization = coreMinimization;
         x.solver = solver;
+        x.counter = counter;
         x.solverDirectory = solverDirectory;
         x.tempDirectory = tempDirectory;
         x.originalFilename = originalFilename;

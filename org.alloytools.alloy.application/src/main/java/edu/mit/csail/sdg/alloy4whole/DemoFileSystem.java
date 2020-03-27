@@ -61,7 +61,7 @@ public class DemoFileSystem {
 
     void runFor3(Expr expr) throws Err {
         A4Options opt = new A4Options();
-        Command cmd = new Command(false, 3, 3, 3, expr.and(fact));
+        Command cmd = new Command(false, false, 3, 3, 3, expr.and(fact));
         A4Solution sol = TranslateAlloyToKodkod.execute_command(NOP, sigs, cmd, opt);
         System.out.println(sol.toString().trim());
         if (sol.satisfiable()) {
@@ -147,7 +147,8 @@ public class DemoFileSystem {
         fact = dir1.join(parent).equal(dir2).and(fact);
     }
 
-    private DemoFileSystem() {}
+    private DemoFileSystem() {
+    }
 
     /* The main driver. */
 

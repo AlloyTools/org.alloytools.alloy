@@ -180,7 +180,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * This stores the currently recognized set of reserved keywords.
      */
     private static final String[]     keywords = new String[] {
-                                                               "abstract", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ"
+                                                               "abstract", "all", "and", "as", "assert", "but", "check", "count", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ"
     };
 
     /**
@@ -505,11 +505,13 @@ class OurSyntaxDocument extends DefaultStyledDocument {
                 }
                 setCharacterAttributes(oldi, i - oldi, styleString, false);
             } else if (do_iden(c)) {
-                for (i++; i < n && do_iden(txt.charAt(i)); i++) {}
+                for (i++; i < n && do_iden(txt.charAt(i)); i++) {
+                }
                 AttributeSet style = (c >= '0' && c <= '9') ? styleNumber : (do_keyword(txt, oldi, i - oldi) ? styleKeyword : styleNormal);
                 setCharacterAttributes(oldi, i - oldi, style, false);
             } else {
-                for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-' && txt.charAt(i) != '/'; i++) {}
+                for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-' && txt.charAt(i) != '/'; i++) {
+                }
                 setCharacterAttributes(oldi, i - oldi, styleSymbol, false);
             }
         }

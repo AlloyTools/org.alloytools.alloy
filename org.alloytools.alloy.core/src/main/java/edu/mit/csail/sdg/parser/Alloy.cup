@@ -148,6 +148,7 @@ parser code {:
     ch.put(CompSym.CHECK, "check");
     ch.put(CompSym.COLON, ":");
     ch.put(CompSym.COMMA, ", ");
+    ch.put(CompSym.COUNT, "count");
     ch.put(CompSym.DISJ, "disj");
     ch.put(CompSym.DOMAIN, "<:");
     ch.put(CompSym.DOT, ".");
@@ -403,6 +404,7 @@ terminal Pos CARET;            //  ^
 terminal Pos CHECK;            //  check
 terminal Pos COLON;            //  :
 terminal Pos COMMA;            //  ,
+terminal Pos COUNT;            //  model counter
 terminal Pos DISJ;             //  disj disjoint
 terminal Pos DOMAIN;           //  <:
 terminal Pos DOT;              //  .
@@ -592,6 +594,7 @@ Spec ::= ;
 
 CommandPrefix ::= CHECK:c  {: RESULT = ExprVar.make(c, "c"); :};
 CommandPrefix ::= RUN:r    {: RESULT = ExprVar.make(r, "r"); :};
+CommandPrefix ::= COUNT:ct  {: RESULT = ExprVar.make(ct, "ct"); :};
 
 Command ::=                 CommandPrefix:o Name:x Super:e  Scope:s  Expects:c {: c(false,o,x   ,null,e   ,s,c); :};
 Command ::=                 CommandPrefix:o        Super:e  Scope:s  Expects:c {: c(false,o,null,null,e   ,s,c); :};

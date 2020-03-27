@@ -178,6 +178,7 @@ import java_cup.runtime.*;
 "as"                  { return alloy_sym(yytext(), CompSym.AS          );}
 "but"                 { return alloy_sym(yytext(), CompSym.BUT         );}
 "check"               { return alloy_sym(yytext(), CompSym.CHECK       );}
+"count"               { return alloy_sym(yytext(), CompSym.COUNT       );}
 "disjoint"            { return alloy_sym(yytext(), CompSym.DISJ        );}
 "disj"                { return alloy_sym(yytext(), CompSym.DISJ        );}
 "else"                { return alloy_sym(yytext(), CompSym.ELSE        );}

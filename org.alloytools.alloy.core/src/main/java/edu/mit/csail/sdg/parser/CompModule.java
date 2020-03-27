@@ -162,7 +162,7 @@ public final class CompModule extends Browsable implements Module {
 
     /**
      * 1: has seen the "module" line 3: has seen the
-     * "sig/pred/fun/fact/assert/check/run" commands
+     * "sig/pred/fun/fact/assert/check/run/count" commands
      */
     private int                   status     = 0;
 
@@ -850,9 +850,12 @@ public final class CompModule extends Browsable implements Module {
         }
         if (commands.size() > 0) {
             ArrayList<Browsable> x2 = new ArrayList<Browsable>(commands.size());
+            ArrayList<Browsable> x3 = new ArrayList<Browsable>(commands.size());
             x = new ArrayList<Browsable>(commands.size());
             for (Command e : commands)
-                if (e.check)
+                if (e.count)
+                    x3.add(e);
+                else if (e.check)
                     x.add(e);
                 else
                     x2.add(e);
@@ -860,6 +863,8 @@ public final class CompModule extends Browsable implements Module {
                 ans.add(make("<b>" + x.size() + (x.size() > 1 ? " checks</b>" : " check</b>"), x));
             if (x2.size() > 0)
                 ans.add(make("<b>" + x2.size() + (x2.size() > 1 ? " runs</b>" : " run</b>"), x2));
+            if (x3.size() > 0)
+                ans.add(make("<b>" + x3.size() + (x3.size() > 1 ? " counts</b>" : " count</b>"), x2));
         }
         if (facts.size() > 0) {
             x = new ArrayList<Browsable>(facts.size());
@@ -1248,7 +1253,7 @@ public final class CompModule extends Browsable implements Module {
     /** Add an OPEN declaration. */
     void addOpen(Pos pos, Pos isPrivate, ExprVar name, List<ExprVar> args, ExprVar alias) throws Err {
         if (status > 2)
-            throw new ErrorSyntax(pos, "The \"open\" declaration must occur before any\n" + "sig/pred/fun/fact/assert/check/run command.");
+            throw new ErrorSyntax(pos, "The \"open\" declaration must occur before any\n" + "sig/pred/fun/fact/assert/check/run/count command.");
         String as = (alias == null ? "" : alias.label);
         if (name.label.length() == 0)
             throw new ErrorSyntax(name.span(), "The filename cannot be empty.");
@@ -1820,7 +1825,7 @@ public final class CompModule extends Browsable implements Module {
 
     /** Add a COMMAND declaration. */
 
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean count, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
         if (label != null)
@@ -1832,7 +1837,7 @@ public final class CompModule extends Browsable implements Module {
             throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
         String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
+        Command newcommand = new Command(pos, name, labelName, count, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1840,7 +1845,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, Expr e, boolean count, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
 
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
@@ -1856,7 +1861,7 @@ public final class CompModule extends Browsable implements Module {
             addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, expects, scopes, null, ExprVar.make(null, n), parent);
+        Command newcommand = new Command(e.span().merge(pos), e, labelName, count, check, overall, bitwidth, seq, expects, scopes, null, ExprVar.make(null, n), parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1866,7 +1871,7 @@ public final class CompModule extends Browsable implements Module {
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, 1, null, null, ExprVar.make(null, "$$Default"), null));
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, false, 4, 4, 4, 1, null, null, ExprVar.make(null, "$$Default"), null));
         }
     }
 
@@ -1876,7 +1881,7 @@ public final class CompModule extends Browsable implements Module {
         String cname = ((ExprVar) (cmd.formula)).label;
         Expr e;
         Clause declaringClause = null;
-        if (cmd.check) {
+        if (!cmd.count && cmd.check) {
             List<Object> m = getRawQS(2, cname); // We prefer assertion in the
                                                 // topmost module
             if (m.size() == 0 && cname.indexOf('/') < 0)
@@ -1918,7 +1923,7 @@ public final class CompModule extends Browsable implements Module {
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.count, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
 
     }
 

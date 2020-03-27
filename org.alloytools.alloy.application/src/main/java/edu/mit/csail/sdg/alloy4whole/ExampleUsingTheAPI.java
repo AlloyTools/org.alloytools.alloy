@@ -85,14 +85,14 @@ public final class ExampleUsingTheAPI {
 
         // run { some A && atMostThree[B,B] } for 3 but 3 int, 3 seq
         Expr expr1 = A.some().and(atMost3.call(B, B));
-        Command cmd1 = new Command(false, 3, 3, 3, expr1);
+        Command cmd1 = new Command(false, false, 3, 3, 3, expr1);
         A4Solution sol1 = TranslateAlloyToKodkod.execute_command(NOP, sigs, cmd1, opt);
         System.out.println("[Solution1]:");
         System.out.println(sol1.toString());
 
         // run { some f && SomeG[] } for 3 but 2 int, 1 seq, 5 A, exactly 6 B
         Expr expr2 = f.some().and(someG.call());
-        Command cmd2 = new Command(false, 3, 2, 1, expr2);
+        Command cmd2 = new Command(false, false, 3, 2, 1, expr2);
         cmd2 = cmd2.change(A, false, 1);
         cmd2 = cmd2.change(B, true, 1);
         A4Solution sol2 = TranslateAlloyToKodkod.execute_command(NOP, sigs, cmd2, opt);

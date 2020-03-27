@@ -28,7 +28,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 
 /**
- * Immutable; reresents a "run" or "check" command.
+ * Immutable; reresents a "run" or "check" or "count" command.
  * <p>
  * <b>Invariant:</b> expects == -1, 0, or 1
  * <p>
@@ -60,8 +60,13 @@ public final class Command extends Browsable {
      */
     public final String                  label;
 
-    /** true if this is a "check"; false if this is a "run". */
+    /**
+     * (when "count" is false) true if this is a "check"; false if this is a "run".
+     */
     public final boolean                 check;
+
+    /** true if this is a "count"; false if this is not a "count". */
+    public final boolean                 count;
 
     /**
      * The overall scope (0 or higher) (Or -1 if there is no overall scope).
@@ -115,7 +120,7 @@ public final class Command extends Browsable {
             return p.toString();
         }
         boolean first = true;
-        StringBuilder sb = new StringBuilder(check ? "Check " : "Run ").append(label);
+        StringBuilder sb = new StringBuilder(count ? "Count " : check ? "Check " : "Run ").append(label);
         if (overall >= 0 && (bitwidth >= 0 || maxseq >= 0 || scope.size() > 0))
             sb.append(" for ").append(overall).append(" but");
         else if (overall >= 0)
@@ -142,7 +147,9 @@ public final class Command extends Browsable {
     /**
      * Constructs a new Command object.
      *
-     * @param check - true if this is a "check"; false if this is a "run"
+     * @param count - true if this is a "count"; false if this is not a "count"
+     * @param check - (when "count" is false) true if this is a "check"; false if
+     *            this is a "run"
      * @param overall - the overall scope (0 or higher) (-1 if no overall scope was
      *            specified)
      * @param bitwidth - the integer bitwidth (0 or higher) (-1 if it was not
@@ -151,8 +158,8 @@ public final class Command extends Browsable {
      *            specified)
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
-        this(null, null, "", check, overall, bitwidth, maxseq, -1, null, null, formula, null);
+    public Command(boolean count, boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
+        this(null, null, "", count, check, overall, bitwidth, maxseq, -1, null, null, formula, null);
     }
 
     /**
@@ -161,6 +168,7 @@ public final class Command extends Browsable {
      * @param pos - the original position in the file (must not be null)
      * @param label - the label for this command (it is only for pretty-printing and
      *            does not have to be unique)
+     * @param count - true if this is a "count"; false if this is not a "count"
      * @param check - true if this is a "check"; false if this is a "run"
      * @param overall - the overall scope (0 or higher) (-1 if no overall scope was
      *            specified)
@@ -175,13 +183,14 @@ public final class Command extends Browsable {
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
+    public Command(Pos pos, Expr e, String label, boolean count, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.nameExpr = e;
         this.formula = formula;
         this.pos = pos;
         this.label = (label == null ? "" : label);
+        this.count = count;
         this.check = check;
         this.overall = (overall < 0 ? -1 : overall);
         this.bitwidth = (bitwidth < 0 ? -1 : bitwidth);
@@ -198,7 +207,7 @@ public final class Command extends Browsable {
      * except with a different formula.
      */
     public Command change(Expr newFormula) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent);
+        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent);
     }
 
     /**
@@ -206,7 +215,7 @@ public final class Command extends Browsable {
      * except with a different scope.
      */
     public Command change(ConstList<CommandScope> scope) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent);
+        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent);
     }
 
     /**
@@ -214,7 +223,7 @@ public final class Command extends Browsable {
      * except with a different list of "additional exact sigs".
      */
     public Command change(Sig... additionalExactScopes) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent);
+        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent);
     }
 
     /**
@@ -311,7 +320,7 @@ public final class Command extends Browsable {
     /** {@inheritDoc} */
     @Override
     public String getHTML() {
-        return (check ? "<b>check</b> " : "<b>run</b> ") + label;
+        return (count ? "<b>count</b> " : check ? "<b>check</b> " : "<b>run</b> ") + label;
     }
 
     /** {@inheritDoc} */
