@@ -41,18 +41,49 @@ import kodkod.util.ints.IntSet;
  */
 public abstract class AbstractReporter implements Reporter {
 
+    protected int primaryVars = -1;
+    protected int totalVars   = -1;
+    protected int clauses     = -1;
+
     /**
      * Constructs a new abstract reporter.
      */
-    protected AbstractReporter() {}
+    protected AbstractReporter() {
+    }
 
     /**
      * {@inheritDoc}
      *
      * @see kodkod.engine.config.Reporter#detectingSymmetries(kodkod.instance.Bounds)
      */
+
+    public int getPrimaryVars() {
+        return this.primaryVars;
+    }
+
+    public int getTotalVars() {
+        return this.totalVars;
+    }
+
+    public int getClauses() {
+        return this.clauses;
+    }
+
+    public void setPrimaryVars(int primaryVars) {
+        this.primaryVars = primaryVars;
+    }
+
+    public void setTotalVars(int totalVars) {
+        this.totalVars = totalVars;
+    }
+
+    public void setClauses(int clauses) {
+        this.clauses = clauses;
+    }
+
     @Override
-    public void detectingSymmetries(Bounds bounds) {}
+    public void detectingSymmetries(Bounds bounds) {
+    }
 
     /**
      * {@inheritDoc}
@@ -60,13 +91,15 @@ public abstract class AbstractReporter implements Reporter {
      * @see kodkod.engine.config.Reporter#detectedSymmetries(java.util.Set)
      */
     @Override
-    public void detectedSymmetries(Set<IntSet> parts) {}
+    public void detectedSymmetries(Set<IntSet> parts) {
+    }
 
     /**
      * @see kodkod.engine.config.Reporter#generatingSBP()
      */
     @Override
-    public void generatingSBP() {}
+    public void generatingSBP() {
+    }
 
     /**
      * {@inheritDoc}
@@ -75,79 +108,100 @@ public abstract class AbstractReporter implements Reporter {
      *      kodkod.ast.Relation, java.util.List)
      */
     @Override
-    public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
+    public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {
+    }
 
     /**
      * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
      */
     @Override
-    public void solvingCNF(int primaryVars, int vars, int clauses) {}
+    public void solvingCNF(int primaryVars, int vars, int clauses) {
+    }
 
     /**
      * @see kodkod.engine.config.Reporter#optimizingBoundsAndFormula()
      */
     @Override
-    public void optimizingBoundsAndFormula() {}
+    public void optimizingBoundsAndFormula() {
+    }
 
     /**
      * @see kodkod.engine.config.Reporter#translatingToBoolean(kodkod.ast.Formula,
      *      kodkod.instance.Bounds)
      */
     @Override
-    public void translatingToBoolean(Formula formula, Bounds bounds) {}
+    public void translatingToBoolean(Formula formula, Bounds bounds) {
+    }
 
     /**
      * @see kodkod.engine.config.Reporter#translatingToCNF(kodkod.engine.bool.BooleanFormula)
      */
     @Override
-    public void translatingToCNF(BooleanFormula circuit) {}
+    public void translatingToCNF(BooleanFormula circuit) {
+    }
 
     @Override
-    public void convertingToNNF() {}
+    public void convertingToNNF() {
+    }
 
     @Override
-    public void holLoopStart(HOLTranslation tr, Formula formula, Bounds bounds) {}
+    public void holLoopStart(HOLTranslation tr, Formula formula, Bounds bounds) {
+    }
 
     @Override
-    public void holCandidateFound(HOLTranslation tr, Instance candidate) {}
+    public void holCandidateFound(HOLTranslation tr, Instance candidate) {
+    }
 
     @Override
-    public void holVerifyingCandidate(HOLTranslation tr, Instance candidate, Formula checkFormula, Bounds bounds) {}
+    public void holVerifyingCandidate(HOLTranslation tr, Instance candidate, Formula checkFormula, Bounds bounds) {
+    }
 
     @Override
-    public void holCandidateVerified(HOLTranslation tr, Instance candidate) {}
+    public void holCandidateVerified(HOLTranslation tr, Instance candidate) {
+    }
 
     @Override
-    public void holCandidateNotVerified(HOLTranslation tr, Instance candidate, Instance cex) {}
+    public void holCandidateNotVerified(HOLTranslation tr, Instance candidate, Instance cex) {
+    }
 
     @Override
-    public void holFindingNextCandidate(HOLTranslation tr, Formula inc) {}
+    public void holFindingNextCandidate(HOLTranslation tr, Formula inc) {
+    }
 
     @Override
-    public void holSplitStart(HOLTranslation tr, Formula formula) {}
+    public void holSplitStart(HOLTranslation tr, Formula formula) {
+    }
 
     @Override
-    public void holSplitChoice(HOLTranslation tr, Formula formula, Bounds bounds) {}
+    public void holSplitChoice(HOLTranslation tr, Formula formula, Bounds bounds) {
+    }
 
     @Override
-    public void holSplitChoiceSAT(HOLTranslation tr, Instance inst) {}
+    public void holSplitChoiceSAT(HOLTranslation tr, Instance inst) {
+    }
 
     @Override
-    public void holSplitChoiceUNSAT(HOLTranslation tr) {}
+    public void holSplitChoiceUNSAT(HOLTranslation tr) {
+    }
 
     @Override
-    public void holFixpointStart(HOLTranslation tr, Formula formula, Bounds bounds) {}
+    public void holFixpointStart(HOLTranslation tr, Formula formula, Bounds bounds) {
+    }
 
     @Override
-    public void holFixpointNoSolution(HOLTranslation tr) {}
+    public void holFixpointNoSolution(HOLTranslation tr) {
+    }
 
     @Override
-    public void holFixpointFirstSolution(HOLTranslation tr, Instance candidate) {}
+    public void holFixpointFirstSolution(HOLTranslation tr, Instance candidate) {
+    }
 
     @Override
-    public void holFixpointIncrementing(HOLTranslation tr, Formula inc) {}
+    public void holFixpointIncrementing(HOLTranslation tr, Formula inc) {
+    }
 
     @Override
-    public void holFixpointIncrementingOutcome(HOLTranslation tr, Instance next) {}
+    public void holFixpointIncrementingOutcome(HOLTranslation tr, Instance next) {
+    }
 
 }

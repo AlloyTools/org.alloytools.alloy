@@ -65,6 +65,7 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.translator.A4Options.ModelCounter;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -1362,7 +1363,8 @@ public final class A4Solution {
                         t = pp.product(t);
                     }
                     kr2type(skolem, t);
-                } catch (Throwable ex) {} // Exception here is not fatal
+                } catch (Throwable ex) {
+                } // Exception here is not fatal
             }
 
             @Override
@@ -1372,8 +1374,12 @@ public final class A4Solution {
                 else
                     solved[0] = true; // initially solved[0] is true, so we
                                      // won't report the # of vars/clauses
-                if (rep != null)
+                if (rep != null) {
                     rep.solve(primaryVars, vars, clauses);
+                    setPrimaryVars(primaryVars);
+                    setTotalVars(vars);
+                    setClauses(clauses);
+                }
             }
         });
         if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
@@ -1408,6 +1414,16 @@ public final class A4Solution {
                 sol = solver.solve(fgoal, bounds);
             } catch (WriteCNF.WriteCNFCompleted ex) {
                 rep.resultCNF(out);
+                if (cmd.count) {
+                    if (opt.counter.equals(ModelCounter.ApproxMC)) {
+                        AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
+                        Util.AppendCNFFile(out, solver_reporter.getPrimaryVars());
+                        rep.resultCNF(out);
+                    } else if (opt.counter.equals(ModelCounter.ProjMC)) {
+                        //To be added
+                    }
+                }
+
                 return null;
             }
             // The formula is trivial (otherwise, it would have thrown an
@@ -1446,11 +1462,13 @@ public final class A4Solution {
                     if (opt.coreMinimization == 0)
                         try {
                             p.minimize(new RCEStrategy(p.log()));
-                        } catch (Throwable ex) {}
+                        } catch (Throwable ex) {
+                        }
                     if (opt.coreMinimization == 1)
                         try {
                             p.minimize(new HybridStrategy(p.log()));
-                        } catch (Throwable ex) {}
+                        } catch (Throwable ex) {
+                        }
                     rep.minimized(cmd, i, p.highLevelCore().size());
                 }
                 for (Iterator<TranslationRecord> it = p.core(); it.hasNext();) {

@@ -307,7 +307,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         private ConstList<Sig> growableSigs         = null;
         private A4Solution     partial              = null;
 
-        public GreedySimulator() {}
+        public GreedySimulator() {
+        }
 
         private TupleSet convert(TupleFactory factory, Expr f) throws Err {
             TupleSet old = ((A4TupleSet) (partial.eval(f))).debugGetKodkodTupleset();
@@ -444,10 +445,12 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 }
 
                 @Override
-                public void resultSAT(Object command, long solvingTime, Object solution) {}
+                public void resultSAT(Object command, long solvingTime, Object solution) {
+                }
 
                 @Override
-                public void resultUNSAT(Object command, long solvingTime, Object solution) {}
+                public void resultUNSAT(Object command, long solvingTime, Object solution) {
+                }
             };
             // Form the list of commands
             List<Command> commands = new ArrayList<Command>();
@@ -532,9 +535,17 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         try {
             if (cmd.parent != null || !cmd.getGrowableSigs().isEmpty())
                 return execute_greedyCommand(rep, sigs, cmd, opt);
-            tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
-            tr.makeFacts(cmd.formula);
-            return tr.frame.solve(rep, cmd, new Simplifier(), false);
+            if (cmd.count) {
+                opt.solver = A4Options.SatSolver.CNF;
+                tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
+                tr.makeFacts(cmd.formula);
+                tr.frame.solve(rep, cmd, new Simplifier(), false);
+                return null;
+            } else {
+                tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
+                tr.makeFacts(cmd.formula);
+                return tr.frame.solve(rep, cmd, new Simplifier(), false);
+            }
         } catch (UnsatisfiedLinkError ex) {
             throw new ErrorFatal("The required JNI library cannot be found: " + ex.toString().trim(), ex);
         } catch (CapacityExceededException ex) {

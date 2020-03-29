@@ -15,6 +15,10 @@
 
 package edu.mit.csail.sdg.alloy4;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
+import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -29,6 +34,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -53,7 +61,8 @@ public final class Util {
      * This constructor is private, since this utility class never needs to be
      * instantiated.
      */
-    private Util() {}
+    private Util() {
+    }
 
     /**
      * Copy the input list, append "element" to it, then return the result as an
@@ -302,13 +311,13 @@ public final class Util {
         return convertLineBreak(ans);
     }
 
-    /** 
-     * Returns the modified date of the given file
-     * (If filename begins with Util.jarPrefix() returns 0) 
+    /**
+     * Returns the modified date of the given file (If filename begins with
+     * Util.jarPrefix() returns 0)
      */
-    public static long getModifiedDate(String filename){
+    public static long getModifiedDate(String filename) {
         boolean fromJar = filename.startsWith(jarPrefix());
-        return fromJar ? 0 : new File(filename).lastModified(); 
+        return fromJar ? 0 : new File(filename).lastModified();
     }
 
     /**
@@ -340,6 +349,25 @@ public final class Util {
             close(fos);
             throw new ErrorFatal("Cannot write to the file " + filename, ex);
         }
+    }
+
+    public static void AppendCNFFile(String outFile, int primaryVars) throws IOException {
+
+        byte[] comment = (indVarComment(primaryVars) + "\n").getBytes();
+        Path dest = FileSystems.getDefault().getPath(outFile);
+        OutputStream out = new BufferedOutputStream(Files.newOutputStream(dest, CREATE, APPEND));
+        out.write(comment, 0, comment.length);
+    }
+
+    public static String indVarComment(int max) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("c ind ");
+        for (int i = 1; i <= max; i++) {
+            sb.append(i);
+            sb.append(" ");
+        }
+        sb.append(0);
+        return sb.toString();
     }
 
     /**
