@@ -47,9 +47,18 @@ class SmtOptimizerTests
     }
 
     @Test
-    public void emptyAlloy() throws Exception
+    public void empty() throws Exception
     {
         String alloy =  "";
+
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
+
+    @Test
+    public void command() throws Exception
+    {
+        String alloy =  "run {some x: Int | x = 2}";
 
         List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
         assertEquals("sat", commandResults.get(0).satResult);
