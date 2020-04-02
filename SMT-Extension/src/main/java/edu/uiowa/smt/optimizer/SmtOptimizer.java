@@ -17,12 +17,9 @@ public class SmtOptimizer
     public static SmtScript optimizeHelper(SmtScript script)
     {
         SmtScript optimizedScript = new SmtScript(script);
+        optimizedScript = removeTrivialAssertions(optimizedScript);
+        optimizedScript = removeUninterpretedIntIfNotUsed(optimizedScript);
 
-        if(script == root)
-        {
-            optimizedScript = removeTrivialAssertions(optimizedScript);
-            optimizedScript = removeUninterpretedIntIfNotUsed(optimizedScript);
-        }
         // optimize children as well
         for (SmtScript child :script.getChildren())
         {

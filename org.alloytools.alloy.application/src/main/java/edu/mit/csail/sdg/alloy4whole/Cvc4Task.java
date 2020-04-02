@@ -179,7 +179,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             callbackWarning(warning);
         }
 
-
         final long startSolve   = System.currentTimeMillis();
 
         // (check-sat)
