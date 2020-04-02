@@ -101,16 +101,30 @@ public class SmtOptimizer
         assertions.add(AbstractTranslator.intValueAssertion);
 
         //ToDo: remove this when alloy parser supports univInt and idenInt
-        List<Assertion> alloyUnivInt = script.getAssertions().stream()
+        List<Assertion> assertions1 = script.getAssertions().stream()
                                              .filter(a -> a.getComment().equals("integer/univInt = Int"))
                                              .collect(Collectors.toList());
 
-        List<Assertion> alloyIdenInt = script.getAssertions().stream()
+        List<Assertion> assertions2 = script.getAssertions().stream()
                                              .filter(a -> a.getComment().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))"))
                                              .collect(Collectors.toList());
 
-        assertions.addAll(alloyUnivInt);
-        assertions.addAll(alloyIdenInt);
+        List<Assertion> assertions3 = script.getAssertions().stream()
+                                             .filter(a -> a.getComment().equals("universe") &&
+                                                     a.getExpression().getComment().equals("integer/univInt = Int")
+                                                     )
+                                             .collect(Collectors.toList());
+
+        List<Assertion> assertions4 = script.getAssertions().stream()
+                                            .filter(a -> a.getComment().equals("identity") &&
+                                                    a.getExpression().getComment().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))")
+                                                   )
+                                            .collect(Collectors.toList());
+
+        assertions.addAll(assertions1);
+        assertions.addAll(assertions2);
+        assertions.addAll(assertions3);
+        assertions.addAll(assertions4);
 
         return assertions;
     }

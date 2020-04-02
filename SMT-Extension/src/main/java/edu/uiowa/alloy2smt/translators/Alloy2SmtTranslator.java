@@ -48,6 +48,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Map<Sig.Field, FunctionDeclaration> fieldsMap;
     Map<String, Func> nameToFuncMap;
     Map<Expr, Integer> sigToIdMap;
+    List<Expr> facts;
 
     public Alloy2SmtTranslator(CompModule alloyModel, AlloySettings alloySettings)
     {
@@ -84,6 +85,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.setCompFuncNameToDefMap = new HashMap<>();
         this.setCompFuncNameToBdVarExprMap = new HashMap<>();
         this.exprTranslator = new ExprTranslator(this);
+        this.facts = new ArrayList<>();
     }
 
     public Alloy2SmtTranslator(Alloy2SmtTranslator translator)
@@ -96,7 +98,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.sigToIdMap = new HashMap<>(translator.sigToIdMap);
 
         this.commands = this.alloyModel.getAllCommands();
-
 
         this.signatureTranslator = new SignatureTranslator(this);
         this.comparisonOperations = new HashMap<>(translator.comparisonOperations);
@@ -113,8 +114,8 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.setCompFuncNameToDefMap = new HashMap<>(translator.setCompFuncNameToDefMap);
         this.setCompFuncNameToBdVarExprMap = new HashMap<>(translator.setCompFuncNameToBdVarExprMap);
         this.exprTranslator = new ExprTranslator(this);
+        this.facts = new ArrayList<>(translator.facts);
     }
-
 
     FunctionDeclaration getFunctionFromAlloyName(String name)
     {
@@ -150,9 +151,13 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     private void translateFacts()
     {
-        for (Pair<String, Expr> pair : this.alloyModel.getAllFacts())
+        for(CompModule module : alloyModel.getAllReachableModules())
         {
-            exprTranslator.translateFormula(pair.a, pair.b);
+            for (Pair<String, Expr> pair : module.getAllFacts())
+            {
+                exprTranslator.translateFormula(pair.a, pair.b);
+                this.facts.add(pair.b);
+            }
         }
     }
 
@@ -344,7 +349,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     {
         Command command = this.commands.get(commandIndex);
 
-        List<Assertion> assertions = getAssertions(command);
+        List<Assertion> assertions = getCommandAssertions(command);
 
         if (alloySettings.includeCommandScope)
         {
@@ -470,7 +475,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         return assertions;
     }
 
-    private List<Assertion> getAssertions(Command command)
+    private List<Assertion> getCommandAssertions(Command command)
     {
         assert (command.formula instanceof ExprList);
         ExprList list = (ExprList) command.formula;
@@ -484,10 +489,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         for (Expr argument : list.args)
         {
             // translate only the formulas added by the command and ignore facts
-            if (!isFactFormula(argument) &&
-                    !argument.toString().equals("integer/univInt = Int") &&
-                    !argument.toString().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))")
-            )
+            if (!facts.contains(argument))
             {
                 exprTranslator.translateFormula(argument.toString(), argument);
             }
