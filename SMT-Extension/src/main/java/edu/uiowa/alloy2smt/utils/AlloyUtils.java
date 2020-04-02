@@ -270,14 +270,22 @@ public class AlloyUtils
         {
             ExprCall call = (ExprCall) body;
 
-            List<Expr> arguments = new ArrayList<>();
-            for (Expr expr: call.args)
+            Map<ExprVar, Expr> arguments = new HashMap<>();
+
+            for (int i = 0; i < call.args.size(); i++)
             {
-                Expr newArgument = substituteExpr(expr, oldExpr, newExpr);
-                arguments.add(newArgument);
+                Expr newArgument = substituteExpr(call.args.get(i), oldExpr, newExpr);
+                arguments.put(call.fun.get(i), newArgument);
             }
 
-            return ExprCall.make(call.pos, call.closingBracket, call.fun, arguments, 0);
+            // substitute the old arguments in the function body with the new arguments.
+            Expr functionBody = call.fun.getBody();
+            for (Map.Entry<ExprVar, Expr> entry: arguments.entrySet())
+            {
+                functionBody = substituteExpr(functionBody, entry.getKey(), entry.getValue());
+            }
+
+            return functionBody;
         }
 
         throw new UnsupportedOperationException();

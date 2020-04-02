@@ -24,4 +24,31 @@ public class Bugs
         Set<Integer> atoms = TranslatorUtils.getIntSet(A);
         assertEquals(1, atoms.size());
     }
+
+    @Test
+    public void test2() throws Exception
+    {
+        String alloy = "sig A {f: lone A} check {no a: A | #(a.f) > 1}";
+        List<CommandResult> results =  AlloyUtils.runAlloyString(alloy, false);
+        assertEquals ("unsat", results.get(0).satResult);
+    }
+
+    @Test
+    public void test3() throws Exception
+    {
+        String alloy = "sig A { id: Int }\n" +
+                "pred P1 [p : set A]\n" +
+                "{\n" +
+                "  one a: p | a.id = 1\n" +
+                "}\n" +
+                "pred P2[p : set A] {\n" +
+                "  P1[ { x : p | x.id > 0 } ]\n" +
+                "}\n" +
+                "run {\n" +
+                "  some a : set A | P2[a]\n" +
+                "}";
+
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+        assertEquals("sat", commandResults.get(0).satResult);
+    }
 }

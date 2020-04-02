@@ -365,7 +365,9 @@ public class ExprQtTranslator
 
         body = BinaryExpression.Op.IMPLIES.make(and, body);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(body, quantifiedVariables);
-        return forAll;
+
+        Expression translation = exprTranslator.translateAuxiliaryFormula(forAll, environment);
+        return translation;
     }
 
     private Expression translateNoQuantifier(Expression body, Map<String, Expression> ranges,

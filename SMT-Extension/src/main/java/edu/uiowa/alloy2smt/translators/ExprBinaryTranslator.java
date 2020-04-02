@@ -1605,7 +1605,7 @@ public class ExprBinaryTranslator
         Expression A = exprTranslator.translateExpr(expr.left, environmentA);
         A = exprTranslator.translator.handleIntConstant(A);
 
-        Environment environmentB = new Environment(environment);
+        Environment environmentB = new Environment(environmentA);
         Expression B = exprTranslator.translateExpr(expr.right, environmentB);
         B = exprTranslator.translator.handleIntConstant(B);
 
@@ -1633,16 +1633,9 @@ public class ExprBinaryTranslator
             translation = BinaryExpression.Op.MEMBER.make(A, B);
         }
 
-        translation = exprTranslator.translateAuxiliaryFormula(translation, environmentA);
+        translation = exprTranslator.translateAuxiliaryFormula(translation, environmentB);
 
-        if (environmentB.getAuxiliaryFormula() == null)
-        {
-            return translation;
-        }
-        assert environmentB.getAuxiliaryFormula().getOp() == QuantifiedExpression.Op.EXISTS;
-        Expression expression = environmentB.getAuxiliaryFormula();
-        expression = ((QuantifiedExpression) expression).getExpression().replace(B, A);
-        return expression;
+        return translation;
     }
 
     private Expression translateJoin(ExprBinary expr, Environment environment)

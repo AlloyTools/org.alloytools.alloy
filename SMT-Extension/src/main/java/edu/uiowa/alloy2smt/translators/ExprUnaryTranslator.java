@@ -8,13 +8,13 @@
 
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
+
+import java.util.Collections;
 
 public class ExprUnaryTranslator
 {
@@ -194,17 +194,49 @@ public class ExprUnaryTranslator
         return finalExpression;
     }
 
-    private Expression translateOneOf(ExprUnary exprUnary, Environment environment)
+    private Expression translateOneOf(ExprUnary expr, Environment environment)
     {
-        Expression set = exprTranslator.translateExpr(exprUnary.sub, environment);
+        // expression has pattern (one A) where type of A is (Set E)
+        // the translation is
+        // (exists ((S (Set E)) (x E)) (= S {x}))
 
-        return set;
+        Expression A = exprTranslator.translateExpr(expr.sub, environment);
+        SetSort setSort = (SetSort) A.getSort();
+        Sort elementSort = setSort.elementSort;
+        VariableDeclaration setVariable = new VariableDeclaration(TranslatorUtils.getFreshName(setSort), setSort, false);
+
+        VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getFreshName(elementSort), elementSort, false);
+
+        Expression singleton = UnaryExpression.Op.SINGLETON.make(variable.getVariable());
+
+        Expression equal = BinaryExpression.Op.EQ.make(setVariable.getVariable(), singleton);
+        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(equal, setVariable, variable);
+        environment.addAuxiliaryFormula(exists);
+        return setVariable.getVariable();
     }
 
-    private Expression translateLoneOf(ExprUnary exprUnary, Environment environment)
+    private Expression translateLoneOf(ExprUnary expr, Environment environment)
     {
-        Expression expression = exprTranslator.translateExpr(exprUnary.sub, environment);
-        return expression;
+        // expression has pattern (lone A) where type of A is (Set E)
+        // the translation is
+        // (exists ((S (Set E)) (x E)) (and (subset S A) (subset S {x})))
+
+        Expression A = exprTranslator.translateExpr(expr.sub, environment);
+        SetSort setSort = (SetSort) A.getSort();
+        Sort elementSort = setSort.elementSort;
+        VariableDeclaration setVariable = new VariableDeclaration(TranslatorUtils.getFreshName(setSort), setSort, false);
+        Expression subset1 = BinaryExpression.Op.SUBSET.make(setVariable.getVariable(), A);
+
+        VariableDeclaration variable = new VariableDeclaration(TranslatorUtils.getFreshName(elementSort), elementSort, false);
+
+        Expression singleton = UnaryExpression.Op.SINGLETON.make(variable.getVariable());
+
+        Expression subset2 = BinaryExpression.Op.SUBSET.make(setVariable.getVariable(), singleton);
+
+        Expression andExpr = MultiArityExpression.Op.AND.make(subset1, subset2);
+        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(andExpr, setVariable, variable);
+        environment.addAuxiliaryFormula(exists);
+        return setVariable.getVariable();
     }
 
     private Expression translateLone(ExprUnary exprUnary, Environment environment)
