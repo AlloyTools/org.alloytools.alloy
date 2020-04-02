@@ -53,7 +53,7 @@ public class ExprTranslator
         Expression formula = translateExpr(expr, environment);
         formula = translateAuxiliaryFormula(formula, environment);
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
-        translator.smtProgram.addAssertion(assertion);
+        translator.smtScript.addAssertion(assertion);
         return formula;
     }
 

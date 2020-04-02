@@ -47,7 +47,7 @@ public class SmtLibPrinter implements SmtAstVisitor
         visit(smtSettings);
     }
 
-    public void visit(SmtProgram program)
+    public void visit(SmtScript program)
     {
         initializeProgram();
 

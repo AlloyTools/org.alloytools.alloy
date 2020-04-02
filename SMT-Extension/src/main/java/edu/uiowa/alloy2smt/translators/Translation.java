@@ -18,12 +18,12 @@ public class Translation
 {
 
     private Alloy2SmtTranslator translator;
-    private final SmtProgram    smtAst;
+    private final SmtScript smtAst;
     private final Mapper        mapper;
     private final String        smtScript;
     private final AlloySettings alloySettings;
 
-    public Translation(Alloy2SmtTranslator translator, SmtProgram smtAst,
+    public Translation(Alloy2SmtTranslator translator, SmtScript smtAst,
                        Mapper mapper, String smtScript,
                        AlloySettings alloySettings)
     {
@@ -57,7 +57,7 @@ public class Translation
     /**
      * @return an abstract syntax tree for the smt translation
      */
-    public SmtProgram getSmtAst()
+    public SmtScript getSmtAst()
     {
         return smtAst;
     }
@@ -78,31 +78,31 @@ public class Translation
         Alloy2SmtTranslator commandTranslator = new Alloy2SmtTranslator(translator);
 
         // store old declarations, definitions, and assertions
-        List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtProgram.getSorts());
-        List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getConstantDeclarations());
-        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctions());
-        List<Assertion> assertions = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
+        List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtScript.getSorts());
+        List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtScript.getConstantDeclarations());
+        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtScript.getFunctions());
+        List<Assertion> assertions = new ArrayList<>(commandTranslator.smtScript.getAssertions());
 
 
         List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex);
 
         // get new declarations, definitions, and assertions
-        List<Sort> newSorts = commandTranslator.smtProgram
+        List<Sort> newSorts = commandTranslator.smtScript
                 .getSorts().stream()
                 .filter(((Predicate<Sort>) new HashSet<>(sorts)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<ConstantDeclaration> newConstantDeclarations = commandTranslator.smtProgram
+        List<ConstantDeclaration> newConstantDeclarations = commandTranslator.smtScript
                 .getConstantDeclarations().stream()
                 .filter(((Predicate<ConstantDeclaration>) new HashSet<>(constantDeclarations)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<FunctionDeclaration> newFunctionDeclarations = commandTranslator.smtProgram
+        List<FunctionDeclaration> newFunctionDeclarations = commandTranslator.smtScript
                 .getFunctions().stream()
                 .filter(((Predicate<FunctionDeclaration>) new HashSet<>(functionDeclarations)::contains).negate())
                 .collect(Collectors.toList());
 
-        List<Assertion> newAssertions = commandTranslator.smtProgram
+        List<Assertion> newAssertions = commandTranslator.smtScript
                 .getAssertions().stream()
                 .filter(((Predicate<Assertion>) new HashSet<>(assertions)::contains).negate())
                 .collect(Collectors.toList());

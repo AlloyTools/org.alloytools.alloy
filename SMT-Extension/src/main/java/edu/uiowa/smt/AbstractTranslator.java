@@ -50,7 +50,7 @@ public abstract class AbstractTranslator
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort, false);
 
     // non static members
-    public SmtProgram smtProgram;
+    public SmtScript smtScript;
     public Map<String, FunctionDeclaration> functionsMap;
     public Map<BinaryExpression.Op, FunctionDefinition> comparisonOperations;
     public Map<BinaryExpression.Op, Variable> arithmeticOperations;
@@ -59,7 +59,7 @@ public abstract class AbstractTranslator
     public void addFunction(FunctionDeclaration function)
     {
         this.functionsMap.put(function.getName(), function);
-        this.smtProgram.addFunction(function);
+        this.smtScript.addFunction(function);
     }
 
     public FunctionDeclaration getFunction(String functionName)
@@ -72,7 +72,7 @@ public abstract class AbstractTranslator
         return function;
     }
 
-    public abstract SmtProgram translate();
+    public abstract SmtScript translate();
 
     public Expression handleIntConstant(Expression expression)
     {
@@ -105,11 +105,11 @@ public abstract class AbstractTranslator
         ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt) + "_" + value.toString(),
                 AbstractTranslator.uninterpretedInt, false);
         integerConstants.put(value, uninterpretedInt);
-        smtProgram.addConstantDeclaration(uninterpretedInt);
+        smtScript.addConstantDeclaration(uninterpretedInt);
         Expression callExpression = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
         Expression equality = BinaryExpression.Op.EQ.make(callExpression, intConstant);
         Assertion assertion = new Assertion("", "constant integer", equality);
-        smtProgram.addAssertion(assertion);
+        smtScript.addAssertion(assertion);
         return uninterpretedInt;
     }
 }

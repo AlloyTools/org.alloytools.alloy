@@ -69,7 +69,7 @@ public class FieldTranslator
                         List<Pos> positions = Arrays.asList(decl.names.get(i).pos, decl.names.get(j).pos);
                         Assertion disjoint = AlloyUtils.getAssertion(positions,
                                 String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
-                        translator.smtProgram.addAssertion(disjoint);
+                        translator.smtScript.addAssertion(disjoint);
                     }
                 }
             }
@@ -129,7 +129,7 @@ public class FieldTranslator
             Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, a, b);
 
             Assertion disjoint2 = AlloyUtils.getAssertion(positions, sig.label + " disjoint2", forAll);
-            translator.smtProgram.addAssertion(disjoint2);
+            translator.smtScript.addAssertion(disjoint2);
         }
     }
 
@@ -174,7 +174,7 @@ public class FieldTranslator
         Sort sort = new SetSort(new TupleSort(fieldSorts));
         FunctionDeclaration fieldDeclaration = new FunctionDeclaration(fieldName, sort, true);
         // declare a variable for the field
-        translator.smtProgram.addFunction(fieldDeclaration);
+        translator.smtScript.addFunction(fieldDeclaration);
         translator.fieldsMap.put(field, fieldDeclaration);
         translateMultiplicities(field);
     }
@@ -197,7 +197,7 @@ public class FieldTranslator
 
         Expression multiplicity =  translator.exprTranslator.translateExpr(all, new Environment());
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(field.pos),field.toString() + " multiplicity", multiplicity);
-        translator.smtProgram.addAssertion(assertion);
+        translator.smtScript.addAssertion(assertion);
 
         Expr noMultiplicity = AlloyUtils.removeMultiplicity(field.decl());
         Expr substituteExpr = AlloyUtils.substituteExpr(noMultiplicity, zis, field.sig);

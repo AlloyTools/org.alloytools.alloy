@@ -11,16 +11,16 @@ package edu.uiowa.smt.smtAst;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SmtProgram extends SmtModel
+public class SmtScript extends SmtModel
 {
     private final List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
     private final List<Assertion>              assertions           = new ArrayList<>();
 
-    public SmtProgram()
+    public SmtScript()
     {
     }
 
-    public SmtProgram(SmtProgram program)
+    public SmtScript(SmtScript program)
     {
         super(program);
         this.constantDeclarations.addAll(program.constantDeclarations);

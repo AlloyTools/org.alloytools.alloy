@@ -12,7 +12,7 @@ import edu.uiowa.smt.smtAst.*;
 
 public interface SmtAstVisitor
 {
-    void visit(SmtProgram program);
+    void visit(SmtScript program);
 
     void visit(BinaryExpression bExpr);
 

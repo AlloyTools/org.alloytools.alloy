@@ -176,7 +176,7 @@ public class ExprQtTranslator
             }
         }
         FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getFreshName(returnSort), argumentSorts, returnSort, false);
-        translator.smtProgram.addFunction(setFunction);
+        translator.smtScript.addFunction(setFunction);
 
         Expression setFunctionExpression;
         if(argumentSorts.size() == 0)
@@ -207,7 +207,7 @@ public class ExprQtTranslator
 
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprQt.pos),
                 exprQt.toString(), forAll);
-        translator.smtProgram.addAssertion(assertion);
+        translator.smtScript.addAssertion(assertion);
 
         if(argumentSorts.size() == 0)
         {

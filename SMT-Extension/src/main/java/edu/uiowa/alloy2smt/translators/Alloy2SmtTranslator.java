@@ -53,7 +53,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     {
         TranslatorUtils.reset();
         this.alloySettings = alloySettings;
-        this.smtProgram = new SmtProgram();
+        this.smtScript = new SmtScript();
         this.alloyModel = alloyModel;
         this.reachableSigs = new ArrayList<>();
         this.topLevelSigs = new ArrayList<>();
@@ -74,9 +74,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         this.signaturesMap.put(Sig.UNIV, univAtom);
         this.signaturesMap.put(Sig.SIGINT, univInt);
-        this.smtProgram.addSort(atomSort);
-        this.smtProgram.addSort(uninterpretedInt);
-        this.smtProgram.addFunction(uninterpretedIntValue);
+        this.smtScript.addSort(atomSort);
+        this.smtScript.addSort(uninterpretedInt);
+        this.smtScript.addFunction(uninterpretedIntValue);
 
         this.functionsMap.put(uninterpretedIntValue.getName(), uninterpretedIntValue);
 
@@ -89,7 +89,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     public Alloy2SmtTranslator(Alloy2SmtTranslator translator)
     {
         this.alloySettings = translator.alloySettings;
-        this.smtProgram = new SmtProgram(translator.smtProgram);
+        this.smtScript = new SmtScript(translator.smtScript);
         this.alloyModel = translator.alloyModel;
         this.reachableSigs = new ArrayList<>(translator.reachableSigs);
         this.topLevelSigs = new ArrayList<>(translator.topLevelSigs);
@@ -127,7 +127,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     }
 
     @Override
-    public SmtProgram translate()
+    public SmtScript translate()
     {
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
@@ -136,23 +136,23 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.signatureTranslator.translateSigFacts();
         translateFacts();
         translateSpecialAssertions();
-        return this.smtProgram;
+        return this.smtScript;
     }
 
     private void translateSpecialFunctions()
     {
-        this.smtProgram.addFunction(atomNone);
-        this.smtProgram.addFunction(univAtom);
-        this.smtProgram.addFunction(idenAtom);
-        this.smtProgram.addFunction(idenInt);
-        this.smtProgram.addFunction(univInt);
+        this.smtScript.addFunction(atomNone);
+        this.smtScript.addFunction(univAtom);
+        this.smtScript.addFunction(idenAtom);
+        this.smtScript.addFunction(idenInt);
+        this.smtScript.addFunction(univInt);
     }
 
     private void translateSpecialAssertions()
     {
-        this.smtProgram.addAssertion(new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.univAtom.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
-        this.smtProgram.addAssertion(new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(univInt.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
+        this.smtScript.addAssertion(new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
+        this.smtScript.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.univAtom.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
+        this.smtScript.addAssertion(new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(univInt.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
         addIdenAtom(atomSort, idenAtom);
         addIdenAtom(uninterpretedInt, idenInt);
 
@@ -170,7 +170,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         Expression implication = BinaryExpression.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
 
-        smtProgram.addAssertion(new Assertion("", uninterpretedIntValueName + " is injective", forAll));
+        smtScript.addAssertion(new Assertion("", uninterpretedIntValueName + " is injective", forAll));
 
     }
 
@@ -191,7 +191,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
         QuantifiedExpression idenSemantics = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
 
-        this.smtProgram.addAssertion(new Assertion("", "Identity relation definition", idenSemantics));
+        this.smtScript.addAssertion(new Assertion("", "Identity relation definition", idenSemantics));
     }
 
     private void translateFacts()
