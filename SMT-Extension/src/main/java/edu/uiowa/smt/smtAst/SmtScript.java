@@ -17,6 +17,7 @@ public class SmtScript extends SmtModel
     private List<ConstantDeclaration> constantDeclarations = new ArrayList<>();
     private List<Assertion> assertions = new ArrayList<>();
     private SmtScript parent;
+    // script between push pop commands
     private List<SmtScript> children = new ArrayList<>();
 
     public SmtScript()
