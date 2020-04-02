@@ -49,7 +49,10 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
 
     public void visit(SmtScript script)
     {
-        initializeProgram();
+        if(script.getParent() == null)
+        {
+            initializeProgram();
+        }
 
         for(Sort sort : script.getSorts())
         {

@@ -17,7 +17,7 @@ public class Cvc4Task
     public List<CommandResult> run(Translation translation, boolean includeScope) throws Exception
     {
         List<CommandResult> commandResults = new ArrayList<>();
-        String smtScript = translation.getSmtScript();
+        String smtScript = translation.getOptimizedSmtScript().toString();
         if (smtScript != null)
         {
             cvc4Process = Cvc4Process.start();
@@ -41,7 +41,7 @@ public class Cvc4Task
 
     public CommandResult run(Translation translation, boolean includeScope, int commandIndex ) throws Exception
     {
-        String smtScript = translation.getSmtScript();
+        String smtScript = translation.getOptimizedSmtScript().toString();
         cvc4Process = Cvc4Process.start();
 
         cvc4Process.sendCommand(smtScript);
@@ -53,11 +53,10 @@ public class Cvc4Task
 
     private CommandResult solveCommand(int index, boolean includeScope, Translation translation) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index);
         Command command = translation.getCommands().get(index);
+        String commandTranslation = translation.getOptimizedSmtScript(index).toString();
         String result = cvc4Process.sendCommand(commandTranslation + SmtLibPrinter.CHECK_SAT);
-
-        String smt = translation.getSmtScript() + commandTranslation + SmtLibPrinter.CHECK_SAT;
+        String smt = translation.getOptimizedSmtScript() + commandTranslation + SmtLibPrinter.CHECK_SAT;
         CommandResult commandResult = new CommandResult(index, command, smt, result);
 
         if (result.equals("sat"))

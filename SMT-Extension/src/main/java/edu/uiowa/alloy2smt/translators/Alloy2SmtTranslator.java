@@ -345,8 +345,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
      * @return a list of assertions that represent the translation
      * of the command
      */
-    public List<Assertion> translateCommand(int commandIndex)
+    public void translateCommand(int commandIndex)
     {
+        // set the current smt script to a new child for push pop commands
+        this.smtScript = smtScript.createChild();
+
         Command command = this.commands.get(commandIndex);
 
         List<Assertion> assertions = getCommandAssertions(command);
@@ -357,7 +360,10 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             assertions.addAll(translateIntScope(command));
         }
 
-        return assertions;
+        this.smtScript.addAssertions(assertions);
+
+        // restore the parent for new alloy commands
+        this.smtScript = this.smtScript.getParent();
     }
 
     private List<Assertion> translateIntScope(Command command)

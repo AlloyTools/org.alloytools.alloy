@@ -11,7 +11,11 @@ package edu.uiowa.smt;
 import edu.uiowa.smt.smtAst.*;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class AbstractTranslator
 {
@@ -176,4 +180,58 @@ public abstract class AbstractTranslator
 
         return assertion;
     }
+
+    public SmtScript getSmtScript()
+    {
+        return smtScript;
+    }
+
+    public static List<FunctionDeclaration> getUninterpretedIntFunctions(SmtScript script)
+    {
+        List<FunctionDeclaration> functions = new ArrayList<>(Arrays.asList(AbstractTranslator.uninterpretedIntValue, AbstractTranslator.idenInt, AbstractTranslator.univInt));
+
+        //ToDo: delete when alloy parser supports univInt
+        List<FunctionDeclaration> univInt = script.getFunctions().stream()
+                                                  .filter(f -> f.getName().equals("integer/univInt"))
+                                                  .collect(Collectors.toList());
+        functions.addAll(univInt);
+        return functions;
+    }
+
+    public static List<Assertion> getUninterpretedIntAssertions(SmtScript script)
+    {
+        List<Assertion> assertions = new ArrayList<>();
+        assertions.add(AbstractTranslator.univIntAssertion);
+        assertions.add(AbstractTranslator.idenIntAssertion);
+        assertions.add(AbstractTranslator.intValueAssertion);
+
+        //ToDo: remove this when alloy parser supports univInt and idenInt
+        List<Assertion> assertions1 = script.getAssertions().stream()
+                                            .filter(a -> a.getComment().equals("integer/univInt = Int"))
+                                            .collect(Collectors.toList());
+
+        List<Assertion> assertions2 = script.getAssertions().stream()
+                                            .filter(a -> a.getComment().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))"))
+                                            .collect(Collectors.toList());
+
+        List<Assertion> assertions3 = script.getAssertions().stream()
+                                            .filter(a -> a.getComment().equals("universe") &&
+                                                    a.getExpression().getComment().equals("integer/univInt = Int")
+                                                   )
+                                            .collect(Collectors.toList());
+
+        List<Assertion> assertions4 = script.getAssertions().stream()
+                                            .filter(a -> a.getComment().equals("identity") &&
+                                                    a.getExpression().getComment().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))")
+                                                   )
+                                            .collect(Collectors.toList());
+
+        assertions.addAll(assertions1);
+        assertions.addAll(assertions2);
+        assertions.addAll(assertions3);
+        assertions.addAll(assertions4);
+
+        return assertions;
+    }
+
 }

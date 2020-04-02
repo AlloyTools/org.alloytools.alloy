@@ -12,8 +12,8 @@ import java.util.*;
 
 public class SmtModel extends SmtAst
 {
-    protected final List<FunctionDeclaration>    functions = new ArrayList<>();
     protected final List<Sort>                   sorts     = new ArrayList<>();
+    protected final List<FunctionDeclaration>    functions = new ArrayList<>();
 
     public SmtModel()
     {
@@ -21,8 +21,8 @@ public class SmtModel extends SmtAst
 
     public SmtModel(SmtModel model)
     {
-        this.functions.addAll(model.functions);
         this.sorts.addAll(model.sorts);
+        this.functions.addAll(model.functions);
     }
 
 

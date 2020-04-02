@@ -70,7 +70,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
 //            callbackBold("Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
-            String smtScript = translation.getSmtScript();
+            String smtScript = translation.getOptimizedSmtScript().toString();
 
             if (smtScript != null)
             {
@@ -167,7 +167,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private CommandResult solveCommand(int index) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index);
+        String commandTranslation = translation.getOptimizedSmtScript(index).toString();
 
         Command command = translation.getCommands().get(index);
 

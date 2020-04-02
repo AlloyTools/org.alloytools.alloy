@@ -113,15 +113,15 @@ public class Main
             }
             try (Formatter formatter = new Formatter(outputFile))
             {
-                formatter.format("%s\n", translation.getSmtScript());
+                formatter.format("%s\n", translation.getOptimizedSmtScript());
 
                 System.out.println("\n");
-                System.out.println(translation.getSmtScript());
+                System.out.println(translation.getOptimizedSmtScript());
 
                 // translate all alloy commands
                 for (int i = 0; i < translation.getCommands().size(); i++)
                 {
-                    String commandTranslation = translation.translateCommand(i);
+                    String commandTranslation = translation.getOptimizedSmtScript(i).toString();
 
                     commandTranslation         =    SmtLibPrinter.PUSH + "\n" + commandTranslation +
                             SmtLibPrinter.CHECK_SAT + "\n" + SmtLibPrinter.GET_MODEL + "\n" +
