@@ -494,11 +494,15 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         FunctionDefinition function = functionsMap.get(mappingSignature.functionName);
         if(function == null)
         {
-            throw new Exception("Can not find the function "+ mappingSignature.functionName
-                    + " for signature "+ signature.label + "in the model.") ;
-        }
+            // throw new Exception("Can not find the function "+ mappingSignature.functionName                   + " for signature "+ signature.label + "in the model.") ;
 
-        signature.atoms = getAtoms(function.expression, functionsMap);
+            // due to some optimization, some signatures may be lost. So here we assume empty atoms.
+            signature.atoms = new ArrayList<>();
+        }
+        else
+        {
+            signature.atoms = getAtoms(function.expression, functionsMap);
+        }
         return signature;
     }
 
@@ -545,11 +549,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         FunctionDefinition function = functionsMap.get(mappingField.functionName);
         if(function == null)
         {
-            throw new Exception("Can not find the function "+ mappingField.functionName
-                    + " for field "+ field.label + "in the model.") ;
+            // throw new Exception("Can not find the function "+ mappingField.functionName                     + " for field "+ field.label + "in the model.") ;
+
+            // due to some optimization, some signatures may be lost. So here we assume empty atoms.
+            field.tuples = new ArrayList<>();
+        }
+        else
+        {
+            field.tuples = getTuples(function.expression, functionsMap);
         }
 
-        field.tuples = getTuples(function.expression, functionsMap);
         field.types  = getTypes(mappingField);
 
         return field;
