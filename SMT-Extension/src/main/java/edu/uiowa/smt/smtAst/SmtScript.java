@@ -14,23 +14,25 @@ import java.util.List;
 
 public class SmtScript extends SmtModel
 {
-    private List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
-    private List<Assertion>              assertions           = new ArrayList<>();
+    private List<ConstantDeclaration> constantDeclarations = new ArrayList<>();
+    private List<Assertion> assertions = new ArrayList<>();
+    private SmtScript parent;
+    private List<SmtScript> children = new ArrayList<>();
 
     public SmtScript()
     {
+        parent = null;
     }
 
-    public SmtScript(SmtScript program)
+    public SmtScript(SmtScript script)
     {
-        super(program);
-        this.constantDeclarations.addAll(program.constantDeclarations);
-        this.assertions.addAll(program.assertions);
+        super(script);
+        parent = script;
     }
 
     public void addConstantDeclaration(ConstantDeclaration constantDeclaration)
     {
-        if(constantDeclaration != null)
+        if (constantDeclaration != null)
         {
             this.constantDeclarations.add(constantDeclaration);
         }
@@ -38,7 +40,7 @@ public class SmtScript extends SmtModel
 
     public void addAssertion(Assertion assertion)
     {
-        if(assertion != null)
+        if (assertion != null)
         {
             this.assertions.add(assertion);
         }
@@ -46,7 +48,7 @@ public class SmtScript extends SmtModel
 
     public void removeAssertion(Assertion assertion)
     {
-        if(assertion != null)
+        if (assertion != null)
         {
             this.assertions.removeAll(Collections.singleton(assertion));
         }
@@ -72,6 +74,10 @@ public class SmtScript extends SmtModel
         super.reset();
         this.constantDeclarations.clear();
         this.assertions.clear();
+        for (SmtScript child: children)
+        {
+            child.reset();
+        }
     }
 
     public void removeAssertions(List<Assertion> assertions)
