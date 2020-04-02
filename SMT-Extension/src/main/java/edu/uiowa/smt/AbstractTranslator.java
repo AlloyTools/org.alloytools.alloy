@@ -49,6 +49,19 @@ public abstract class AbstractTranslator
     public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort, false);
 
+    // special assertions
+    public final static Assertion noneAssertion = new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort)));
+
+    public final static Assertion univAssertion = new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(univAtom.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort)));
+
+    public final static Assertion idenAtomAssertion = getIdentityRelation(atomSort, idenAtom);
+
+    public final static Assertion univIntAssertion = new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(univInt.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple)));
+
+    public final static Assertion idenIntAssertion = getIdentityRelation(uninterpretedInt, idenInt);
+
+    public final static Assertion intValueAssertion = getUninterpretedIntValueAssertion();
+
     // non static members
     public SmtScript smtScript;
     public Map<String, FunctionDeclaration> functionsMap;
@@ -111,5 +124,56 @@ public abstract class AbstractTranslator
         Assertion assertion = new Assertion("", "constant integer", equality);
         smtScript.addAssertion(assertion);
         return uninterpretedInt;
+    }
+
+    protected void translateSpecialAssertions()
+    {
+        this.smtScript.addAssertion(noneAssertion);
+        this.smtScript.addAssertion(univAssertion);
+        this.smtScript.addAssertion(univIntAssertion);
+        this.smtScript.addAssertion(idenAtomAssertion);
+        this.smtScript.addAssertion(idenIntAssertion);
+        this.smtScript.addAssertion(intValueAssertion);
+    }
+
+    private static Assertion getUninterpretedIntValueAssertion()
+    {
+        // uninterpretedIntValue is injective function
+        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
+        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, false);
+        Expression XEqualsY = BinaryExpression.Op.EQ.make(X.getVariable(), Y.getVariable());
+        Expression notXEqualsY = UnaryExpression.Op.NOT.make(XEqualsY);
+
+        Expression XValue = new FunctionCallExpression(uninterpretedIntValue, X.getVariable());
+        Expression YValue = new FunctionCallExpression(uninterpretedIntValue, Y.getVariable());
+
+        Expression XValueEqualsYValue = BinaryExpression.Op.EQ.make(XValue, YValue);
+        Expression notXValueEqualsYValue = UnaryExpression.Op.NOT.make(XValueEqualsYValue);
+        Expression implication = BinaryExpression.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
+        Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
+
+        return new Assertion("", uninterpretedIntValueName + " is injective", forAll);
+    }
+
+    private static Assertion getIdentityRelation(Sort sort, FunctionDeclaration identity)
+    {
+        // Axiom for identity relation
+        VariableDeclaration a = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+
+        VariableDeclaration b = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+
+        MultiArityExpression tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, a.getVariable(), b.getVariable());
+
+        BinaryExpression member = BinaryExpression.Op.MEMBER.make(tupleAB, identity.getVariable());
+
+        BinaryExpression equals = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
+
+        BinaryExpression equiv = BinaryExpression.Op.EQ.make(member, equals);
+
+        QuantifiedExpression forAll = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
+
+        Assertion assertion = new Assertion("", "Identity relation definition for " + identity.getName(), forAll);
+
+        return assertion;
     }
 }

@@ -42,27 +42,27 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(BinaryExpression binaryExpression)
+    public void visit(BinaryExpression expr)
     {
-        if(binaryExpression.getOp() != BinaryExpression.Op.TUPSEL)
+        if(expr.getOp() != BinaryExpression.Op.TUPSEL)
         {
             tabsCount++;
             stringBuilder.append("\n");
             printTabs();
-            stringBuilder.append("(" + binaryExpression.getOp() + " ");
+            stringBuilder.append("(" + expr.getOp() + " ");
             tabsCount++;
-            this.visit(binaryExpression.getA());
+            this.visit(expr.getA());
             stringBuilder.append(" ");
-            this.visit(binaryExpression.getB());
+            this.visit(expr.getB());
             stringBuilder.append(")");
             tabsCount -= 2;
         }
         else
         {
-            stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
-            stringBuilder.append(((IntConstant)binaryExpression.getA()).getValue());
+            stringBuilder.append("((_ " + expr.getOp() + " ");
+            stringBuilder.append(((IntConstant) expr.getA()).getValue());
             stringBuilder.append(") ");
-            this.visit(binaryExpression.getB());
+            this.visit(expr.getB());
             stringBuilder.append(")");
         }
     }

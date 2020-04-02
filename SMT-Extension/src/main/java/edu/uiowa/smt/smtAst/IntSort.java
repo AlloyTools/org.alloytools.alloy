@@ -8,8 +8,6 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class IntSort extends Sort
 {
     private static IntSort instance = new IntSort();

@@ -8,7 +8,6 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
 import java.util.Arrays;
 import java.util.List;
 

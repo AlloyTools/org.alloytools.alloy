@@ -8,8 +8,6 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class UninterpretedSort extends Sort
 {
     public UninterpretedSort(String sortName) 

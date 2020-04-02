@@ -8,13 +8,7 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-import edu.uiowa.smt.AbstractTranslator;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SmtModel extends SmtAst
 {
@@ -40,6 +34,14 @@ public class SmtModel extends SmtAst
         }
     }
 
+    public void removeSort(Sort sort)
+    {
+        if(sort != null)
+        {
+            this.sorts.removeAll(Collections.singleton(sort));
+        }
+    }
+
 
 
     public void addFunction(FunctionDeclaration function)
@@ -48,6 +50,27 @@ public class SmtModel extends SmtAst
         {
             this.functions.add(function);
         }
+    }
+
+    public void addFunctions(List<FunctionDeclaration> functions)
+    {
+        for (FunctionDeclaration function: functions)
+        {
+            addFunction(function);
+        }
+    }
+
+    public void removeFunction(FunctionDeclaration function)
+    {
+        if(function != null)
+        {
+            this.functions.removeAll(Collections.singleton(function));
+        }
+    }
+
+    public void removeFunctions(List<FunctionDeclaration> functions)
+    {
+        this.functions.removeAll(functions);
     }
 
     public List<Sort> getSorts()

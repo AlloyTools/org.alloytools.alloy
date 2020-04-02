@@ -8,13 +8,9 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.mit.csail.sdg.ast.Expr;
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class LetExpression extends Expression
 {

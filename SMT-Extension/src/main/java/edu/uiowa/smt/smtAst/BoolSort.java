@@ -5,8 +5,6 @@
  */
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 /**
  *
  * @author Paul Meng, Mudathir Mahgoub

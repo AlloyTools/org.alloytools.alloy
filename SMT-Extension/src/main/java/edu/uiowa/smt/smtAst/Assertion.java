@@ -8,8 +8,6 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class Assertion extends SmtAst
 {
     private final Expression  expression;

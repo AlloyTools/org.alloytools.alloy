@@ -8,8 +8,6 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 //ToDo: review whether the name VariableDeclaration is better
 public class ConstantDeclaration extends Declaration
 {

@@ -1,7 +1,5 @@
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 import java.util.*;
 
 public class SmtSettings extends SmtAst

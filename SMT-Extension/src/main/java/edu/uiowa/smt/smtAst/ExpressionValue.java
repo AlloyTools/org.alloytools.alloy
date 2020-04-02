@@ -1,7 +1,5 @@
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class ExpressionValue extends SmtAst
 {
     private final Expression expression;

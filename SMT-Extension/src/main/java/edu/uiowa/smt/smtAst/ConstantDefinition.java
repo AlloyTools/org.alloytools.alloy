@@ -8,8 +8,6 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class ConstantDefinition extends FunctionDefinition
 {
     public ConstantDefinition(String name,  Sort outputSort, Expression expression, boolean isOriginal)

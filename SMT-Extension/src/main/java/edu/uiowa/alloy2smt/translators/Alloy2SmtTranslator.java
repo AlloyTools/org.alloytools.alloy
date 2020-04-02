@@ -148,52 +148,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.smtScript.addFunction(univInt);
     }
 
-    private void translateSpecialAssertions()
-    {
-        this.smtScript.addAssertion(new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(this.atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort))));
-        this.smtScript.addAssertion(new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(this.univAtom.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort))));
-        this.smtScript.addAssertion(new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(univInt.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple))));
-        addIdenAtom(atomSort, idenAtom);
-        addIdenAtom(uninterpretedInt, idenInt);
-
-        // uninterpretedIntValue is injective function
-        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
-        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, false);
-        Expression XEqualsY = BinaryExpression.Op.EQ.make(X.getVariable(), Y.getVariable());
-        Expression notXEqualsY = UnaryExpression.Op.NOT.make(XEqualsY);
-
-        Expression XValue = new FunctionCallExpression(uninterpretedIntValue, X.getVariable());
-        Expression YValue = new FunctionCallExpression(uninterpretedIntValue, Y.getVariable());
-
-        Expression XValueEqualsYValue = BinaryExpression.Op.EQ.make(XValue, YValue);
-        Expression notXValueEqualsYValue = UnaryExpression.Op.NOT.make(XValueEqualsYValue);
-        Expression implication = BinaryExpression.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
-
-        smtScript.addAssertion(new Assertion("", uninterpretedIntValueName + " is injective", forAll));
-
-    }
-
-    private void addIdenAtom(Sort sort, FunctionDeclaration identity)
-    {
-        // Axiom for identity relation
-        VariableDeclaration a = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
-
-        VariableDeclaration b = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
-
-        MultiArityExpression tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, a.getVariable(), b.getVariable());
-
-        BinaryExpression member = BinaryExpression.Op.MEMBER.make(tupleAB, identity.getVariable());
-
-        BinaryExpression equals = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
-
-        BinaryExpression equiv = BinaryExpression.Op.EQ.make(member, equals);
-
-        QuantifiedExpression idenSemantics = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
-
-        this.smtScript.addAssertion(new Assertion("", "Identity relation definition", idenSemantics));
-    }
-
     private void translateFacts()
     {
         for (Pair<String, Expr> pair : this.alloyModel.getAllFacts())
@@ -530,7 +484,10 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         for (Expr argument : list.args)
         {
             // translate only the formulas added by the command and ignore facts
-            if (!isFactFormula(argument))
+            if (!isFactFormula(argument) &&
+                    !argument.toString().equals("integer/univInt = Int") &&
+                    !argument.toString().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))")
+            )
             {
                 exprTranslator.translateFormula(argument.toString(), argument);
             }

@@ -6,17 +6,15 @@
  *
  */
 
-package edu.uiowa.smt.printers;
-
-import edu.uiowa.smt.smtAst.*;
+package edu.uiowa.smt.smtAst;
 
 public interface SmtAstVisitor
 {
-    void visit(SmtScript program);
+    void visit(SmtScript script);
 
-    void visit(BinaryExpression bExpr);
+    void visit(BinaryExpression expr);
 
-    void visit(Sort intSort);
+    void visit(Sort sort);
     
     void visit(IntSort intSort);
 
@@ -65,8 +63,6 @@ public interface SmtAstVisitor
     void visit(UninterpretedConstant uninterpretedConstant);
 
     void visit(SmtSettings smtSettings);
-
-    String printGetValue(Expression expression);
 
     void visit(SmtValues smtValues);
 

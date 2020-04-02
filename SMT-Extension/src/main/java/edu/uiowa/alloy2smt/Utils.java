@@ -14,6 +14,7 @@ import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.translators.Alloy2SmtTranslator;
 import edu.uiowa.alloy2smt.translators.Translation;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
+import edu.uiowa.smt.optimizer.SmtOptimizer;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 import edu.uiowa.smt.smtAst.SmtScript;
 
@@ -42,15 +43,16 @@ public class Utils
 
     private static Translation getTranslation(CompModule alloyModel, AlloySettings settings)
     {
-        Alloy2SmtTranslator translator  = new Alloy2SmtTranslator(alloyModel, settings);
-        SmtScript script              = translator.translate();
-        Mapper mapper                   = translator.generateMapper();
-        SmtLibPrettyPrinter printer     = new SmtLibPrettyPrinter(settings);
+        Alloy2SmtTranslator translator = new Alloy2SmtTranslator(alloyModel, settings);
+        SmtScript script = translator.translate();
+        script = SmtOptimizer.optimize(script);
+        Mapper mapper = translator.generateMapper();
+        SmtLibPrettyPrinter printer = new SmtLibPrettyPrinter(settings);
         printer.visit(script);
 
-        String smtScript                = printer.getSmtLib();
+        String smtScript = printer.getSmtLib();
 
-        Translation translation         = new Translation(translator, script, mapper, smtScript, settings);
+        Translation translation = new Translation(translator, script, mapper, smtScript, settings);
         return translation;
     }
 }

@@ -1,7 +1,5 @@
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 import java.util.List;
 
 public class SmtValues extends SmtAst

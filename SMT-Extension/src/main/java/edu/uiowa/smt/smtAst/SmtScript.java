@@ -9,6 +9,7 @@
 package edu.uiowa.smt.smtAst;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SmtScript extends SmtModel
@@ -43,6 +44,14 @@ public class SmtScript extends SmtModel
         }
     }
 
+    public void removeAssertion(Assertion assertion)
+    {
+        if(assertion != null)
+        {
+            this.assertions.removeAll(Collections.singleton(assertion));
+        }
+    }
+
     public List<ConstantDeclaration> getConstantDeclarations()
     {
         return this.constantDeclarations;
@@ -63,5 +72,10 @@ public class SmtScript extends SmtModel
         super.reset();
         this.constantDeclarations.clear();
         this.assertions.clear();
+    }
+
+    public void removeAssertions(List<Assertion> assertions)
+    {
+        this.assertions.removeAll(assertions);
     }
 }

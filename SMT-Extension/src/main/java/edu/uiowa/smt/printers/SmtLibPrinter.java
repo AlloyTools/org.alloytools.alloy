@@ -13,7 +13,7 @@ import edu.uiowa.smt.smtAst.*;
 
 import java.util.*;
 
-public class SmtLibPrinter implements SmtAstVisitor
+public class SmtLibPrinter extends AbstractSmtAstVisitor
 {
     public final static String CHECK_SAT = "(check-sat)";
     public final static String GET_MODEL = "(get-model)";
@@ -47,11 +47,11 @@ public class SmtLibPrinter implements SmtAstVisitor
         visit(smtSettings);
     }
 
-    public void visit(SmtScript program)
+    public void visit(SmtScript script)
     {
         initializeProgram();
 
-        for(Sort sort : program.getSorts())
+        for(Sort sort : script.getSorts())
         {
             if(sort instanceof UninterpretedSort)
             {
@@ -60,7 +60,7 @@ public class SmtLibPrinter implements SmtAstVisitor
                 stringBuilder.append(" 0)\n");
             }
         }
-        for (FunctionDeclaration declaration : program.getFunctions())
+        for (FunctionDeclaration declaration : script.getFunctions())
         {
             if(declaration instanceof  FunctionDefinition)
             {
@@ -72,34 +72,34 @@ public class SmtLibPrinter implements SmtAstVisitor
             }
         }
 
-        for (ConstantDeclaration declaration : program.getConstantDeclarations())
+        for (ConstantDeclaration declaration : script.getConstantDeclarations())
         {
             this.visit(declaration);
         }
 
-        for (Assertion assertion: program.getAssertions())
+        for (Assertion assertion: script.getAssertions())
         {
             this.visit(assertion);
         }
     }
 
     @Override
-    public void visit(BinaryExpression binaryExpression)
+    public void visit(BinaryExpression expr)
     {
-        if (binaryExpression.getOp() != BinaryExpression.Op.TUPSEL)
+        if (expr.getOp() != BinaryExpression.Op.TUPSEL)
         {
-            stringBuilder.append("(" + binaryExpression.getOp() + " ");
-            this.visit(binaryExpression.getA());
+            stringBuilder.append("(" + expr.getOp() + " ");
+            this.visit(expr.getA());
             stringBuilder.append(" ");
-            this.visit(binaryExpression.getB());
+            this.visit(expr.getB());
             stringBuilder.append(")");
         }
         else
         {
-            stringBuilder.append("((_ " + binaryExpression.getOp() + " ");
-            stringBuilder.append(((IntConstant) binaryExpression.getA()).getValue());
+            stringBuilder.append("((_ " + expr.getOp() + " ");
+            stringBuilder.append(((IntConstant) expr.getA()).getValue());
             stringBuilder.append(") ");
-            this.visit(binaryExpression.getB());
+            this.visit(expr.getB());
             stringBuilder.append(")");
         }
     }
@@ -355,103 +355,6 @@ public class SmtLibPrinter implements SmtAstVisitor
     }
 
     @Override
-    public void visit(Expression expression)
-    {
-        if (expression instanceof Variable)
-        {
-            this.visit((Variable) expression);
-        }
-        else if (expression instanceof  UnaryExpression)
-        {
-            this.visit((UnaryExpression) expression);
-        }
-        else if (expression instanceof  BinaryExpression)
-        {
-            this.visit((BinaryExpression) expression);
-        }
-        else if (expression instanceof  MultiArityExpression)
-        {
-            this.visit((MultiArityExpression) expression);
-        }
-        else if (expression instanceof  QuantifiedExpression)
-        {
-            this.visit((QuantifiedExpression) expression);
-        }
-        else if (expression instanceof  Sort)
-        {
-            this.visit((Sort) expression);
-        }
-        else if (expression instanceof  IntConstant)
-        {
-            this.visit((IntConstant) expression);
-        }
-        else if (expression instanceof  FunctionCallExpression)
-        {
-            this.visit((FunctionCallExpression) expression);
-        }      
-        else if (expression instanceof BoolConstant)
-        {
-            this.visit((BoolConstant) expression);
-        }
-        else if (expression instanceof  LetExpression)
-        {
-            this.visit((LetExpression) expression);
-        }  
-        else if (expression instanceof  ITEExpression)
-        {
-            this.visit((ITEExpression) expression);
-        }
-        else if (expression instanceof UninterpretedConstant)
-        {
-            this.visit((UninterpretedConstant) expression);
-        }
-        else
-        {   
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    public void visit(Sort sort)
-    {
-        if (sort instanceof  UninterpretedSort)
-        {
-            this.visit((UninterpretedSort) sort);
-        }
-        else if (sort instanceof  SetSort)
-        {
-            this.visit((SetSort) sort);
-        }
-        else if (sort instanceof  TupleSort)
-        {
-            this.visit((TupleSort) sort);
-        }
-        else if (sort instanceof  IntSort)
-        {
-            this.visit((IntSort) sort);
-        }
-        else if (sort instanceof  RealSort)
-        {
-            this.visit((RealSort) sort);
-        }
-        else if (sort instanceof  StringSort)
-        {
-            this.visit((StringSort) sort);
-        }
-        else if (sort instanceof  StringSort)
-        {
-            this.visit((StringSort) sort);
-        }
-        else if (sort instanceof  BoolSort)
-        {
-            this.visit((BoolSort) sort);
-        }        
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    @Override
     public void visit(BoolSort aThis) {
         stringBuilder.append(aThis.getName());
     }
@@ -507,7 +410,6 @@ public class SmtLibPrinter implements SmtAstVisitor
         }
     }
 
-    @Override
     public String printGetValue(Expression expression)
     {
         stringBuilder.append("(get-value (");

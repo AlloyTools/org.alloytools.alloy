@@ -9,7 +9,6 @@
 package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.TranslatorUtils;
-import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.AbstractTranslator;
 
 import java.util.ArrayList;
