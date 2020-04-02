@@ -136,6 +136,12 @@ public class MultiArityExpression extends Expression
         visitor.visit(this);
     }
 
+    public Expression get(int index)
+    {
+        assert (0 <= index && index < exprs.size());
+        return this.exprs.get(index);
+    }
+
     public enum Op 
     {        
         MKTUPLE ("mkTuple"),

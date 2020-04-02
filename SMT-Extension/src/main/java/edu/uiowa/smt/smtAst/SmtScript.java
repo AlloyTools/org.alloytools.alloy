@@ -13,8 +13,8 @@ import java.util.List;
 
 public class SmtScript extends SmtModel
 {
-    private final List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
-    private final List<Assertion>              assertions           = new ArrayList<>();
+    private List<ConstantDeclaration>    constantDeclarations = new ArrayList<>();
+    private List<Assertion>              assertions           = new ArrayList<>();
 
     public SmtScript()
     {
@@ -51,5 +51,17 @@ public class SmtScript extends SmtModel
     public List<Assertion> getAssertions()
     {
         return this.assertions;
+    }
+
+    public void setAssertions(List<Assertion> assertions)
+    {
+        this.assertions = assertions;
+    }
+
+    public void reset()
+    {
+        super.reset();
+        this.constantDeclarations.clear();
+        this.assertions.clear();
     }
 }

@@ -88,4 +88,10 @@ public class SmtModel extends SmtAst
         return new FunctionDefinition(function.getName(), function.inputVariables,
                     function.getSort(), body, function.isOriginal());
     }
+
+    protected void reset()
+    {
+        this.sorts.clear();
+        this.functions.clear();
+    }
 }
