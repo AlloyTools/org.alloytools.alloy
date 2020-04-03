@@ -358,12 +358,12 @@ public class ExprQtTranslator
 
         if(exists != null)
         {
-            Expression existsBody = MultiArityExpression.Op.AND.make(exists.getExpression(), body);
-            body = QuantifiedExpression.Op.EXISTS.make(existsBody, exists.getVariables());
+            Expression and2 = MultiArityExpression.Op.AND.make(exists.getExpression(), and);
+            exists = QuantifiedExpression.Op.EXISTS.make(and2, exists.getVariables());
             environment.clearAuxiliaryFormula();
         }
 
-        body = BinaryExpression.Op.IMPLIES.make(and, body);
+        body = BinaryExpression.Op.IMPLIES.make(exists, body);
         Expression forAll = QuantifiedExpression.Op.FORALL.make(body, quantifiedVariables);
 
         Expression translation = exprTranslator.translateAuxiliaryFormula(forAll, environment);

@@ -69,18 +69,39 @@ public class Translation
     /**
      * @return a translation for all commands in smt using (check-sat)
      * without getting the models
+     * @param isOptimized
      */
-    public String translateAllCommandsWithCheckSat()
+    public String translateAllCommandsWithCheckSat(boolean isOptimized)
     {
-        StringBuilder stringBuilder = new StringBuilder(getOptimizedSmtScript().toString());
+        StringBuilder stringBuilder = new StringBuilder();
+        if(isOptimized)
+        {
+            stringBuilder.append(getOptimizedSmtScript().toString());
+        }
+        else
+        {
+            stringBuilder.append(getOriginalSmtScript().toString());
+        }
         for (int i = 0; i < translator.commands.size(); i++)
         {
             stringBuilder.append(SmtLibPrinter.PUSH + "\n");
-            stringBuilder.append(getOptimizedSmtScript(i) + "\n");
+            if(isOptimized)
+            {
+                stringBuilder.append(getOptimizedSmtScript(i) + "\n");
+            }
+            else
+            {
+                stringBuilder.append(getOriginalSmtScript(i) + "\n");
+            }
             stringBuilder.append(SmtLibPrinter.CHECK_SAT + "\n");
             stringBuilder.append(SmtLibPrinter.POP + "\n");
         }
         return stringBuilder.toString();
+    }
+
+    private SmtScript getOriginalSmtScript(int index)
+    {
+        return translator.smtScript.getChild(index);
     }
 
     /**

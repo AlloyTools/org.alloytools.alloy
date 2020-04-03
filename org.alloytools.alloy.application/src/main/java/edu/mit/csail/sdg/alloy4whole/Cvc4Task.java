@@ -723,28 +723,37 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         // callbackPlain(translation.getSmtScript());
 
         // output the smt file
-        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
-        String allCommands  = translation.translateAllCommandsWithCheckSat();
-        Formatter formatter = new Formatter(smtFile);
-        formatter.format("%s", allCommands);
-        formatter.close();
-
-        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
-
+        generateSmtFile(translation, false);
+        generateSmtFile(translation, true);
 
         // output the mapping
+        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
         translation.getMapper().writeToJson(jsonFile.getPath());
-
-        callbackPlain("\nGenerated smt2 file: ");
-
-        Object[] smtMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ smtFile.getAbsolutePath()};
-        workerCallback.callback(smtMessage);
 
         callbackPlain("\nGenerated json mapping file: ");
         Object[] jsonMessage = new Object []{"link", jsonFile.getAbsolutePath(), "CNF: "+ jsonFile.getAbsolutePath()};
         workerCallback.callback(jsonMessage);
         callbackPlain("\n");
         return translation;
+    }
+
+    private void generateSmtFile(Translation translation, boolean isOptimized) throws IOException
+    {
+        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
+        String allCommands  = translation.translateAllCommandsWithCheckSat(isOptimized);
+        Formatter formatter = new Formatter(smtFile);
+        formatter.format("%s", allCommands);
+        formatter.close();
+        if(isOptimized)
+        {
+            callbackPlain("\nGenerated optimized smt2 file: ");
+        }
+        else
+        {
+            callbackPlain("\nGenerated smt2 file: ");
+        }
+        Object[] smtMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ smtFile.getAbsolutePath()};
+        workerCallback.callback(smtMessage);
     }
 
     public static void setAlloySettings()
