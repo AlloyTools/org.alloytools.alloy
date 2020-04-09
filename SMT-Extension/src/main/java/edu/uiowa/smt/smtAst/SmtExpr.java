@@ -13,7 +13,7 @@ import edu.uiowa.smt.printers.SmtLibPrinter;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Expression extends SmtAst
+public abstract class SmtExpr extends SmtAst
 {
     private  String comment = "";
     @Override
@@ -39,14 +39,14 @@ public abstract class Expression extends SmtAst
 
     protected void checkTypes(){}
 
-    public abstract Expression evaluate(Map<String, FunctionDefinition> functions);
+    public abstract SmtExpr evaluate(Map<String, FunctionDefinition> functions);
 
     @Override
     public abstract boolean equals(Object object);
 
     public abstract List<Variable> getFreeVariables();
 
-    public abstract Expression substitute(Variable oldVariable, Variable newVariable);
+    public abstract SmtExpr substitute(Variable oldVariable, Variable newVariable);
 
-    public abstract Expression replace(Expression oldExpression, Expression newExpression);
+    public abstract SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr);
 }

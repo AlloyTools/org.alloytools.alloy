@@ -50,17 +50,17 @@ public abstract class AbstractTranslator
     public final static FunctionDeclaration idenAtom = new FunctionDeclaration("idenAtom", setOfBinaryAtomSort, false);
     public final static FunctionDeclaration univInt = new FunctionDeclaration("univInt", setOfUninterpretedIntTuple, false);
     public final static FunctionDeclaration idenInt = new FunctionDeclaration("idenInt", setOfUninterpretedIntPairs, false);
-    public final static UnaryExpression intUnivExpr = UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple);
+    public final static SmtUnaryExpr intUnivExpr = SmtUnaryExpr.Op.UNIVSET.make(setOfUninterpretedIntTuple);
     public final static FunctionDeclaration uninterpretedIntValue = new FunctionDeclaration(uninterpretedIntValueName, uninterpretedInt, intSort, false);
 
     // special assertions
-    public final static Assertion noneAssertion = new Assertion("", "Empty unary relation definition for Atom", BinaryExpression.Op.EQ.make(atomNone.getVariable(), UnaryExpression.Op.EMPTYSET.make(setOfUnaryAtomSort)));
+    public final static Assertion noneAssertion = new Assertion("", "Empty unary relation definition for Atom", SmtBinaryExpr.Op.EQ.make(atomNone.getVariable(), SmtUnaryExpr.Op.EMPTYSET.make(setOfUnaryAtomSort)));
 
-    public final static Assertion univAssertion = new Assertion("", "Universe definition for Atom", BinaryExpression.Op.EQ.make(univAtom.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUnaryAtomSort)));
+    public final static Assertion univAssertion = new Assertion("", "Universe definition for Atom", SmtBinaryExpr.Op.EQ.make(univAtom.getVariable(), SmtUnaryExpr.Op.UNIVSET.make(setOfUnaryAtomSort)));
 
     public final static Assertion idenAtomAssertion = getIdentityRelation(atomSort, idenAtom);
 
-    public final static Assertion univIntAssertion = new Assertion("", "Universe definition for UninterpretedInt", BinaryExpression.Op.EQ.make(univInt.getVariable(), UnaryExpression.Op.UNIVSET.make(setOfUninterpretedIntTuple)));
+    public final static Assertion univIntAssertion = new Assertion("", "Universe definition for UninterpretedInt", SmtBinaryExpr.Op.EQ.make(univInt.getVariable(), SmtUnaryExpr.Op.UNIVSET.make(setOfUninterpretedIntTuple)));
 
     public final static Assertion idenIntAssertion = getIdentityRelation(uninterpretedInt, idenInt);
 
@@ -69,8 +69,8 @@ public abstract class AbstractTranslator
     // non static members
     public SmtScript smtScript;
     public Map<String, FunctionDeclaration> functionsMap;
-    public Map<BinaryExpression.Op, FunctionDefinition> comparisonOperations;
-    public Map<BinaryExpression.Op, Variable> arithmeticOperations;
+    public Map<SmtBinaryExpr.Op, FunctionDefinition> comparisonOperations;
+    public Map<SmtBinaryExpr.Op, Variable> arithmeticOperations;
     public Map<BigInteger, ConstantDeclaration> integerConstants;
 
     public void addFunction(FunctionDeclaration function)
@@ -91,24 +91,24 @@ public abstract class AbstractTranslator
 
     public abstract SmtScript translate();
 
-    public Expression handleIntConstant(Expression expression)
+    public SmtExpr handleIntConstant(SmtExpr smtExpr)
     {
-        if(expression.getSort().equals(AbstractTranslator.intSortTuple))
+        if(smtExpr.getSort().equals(AbstractTranslator.intSortTuple))
         {
-            Expression intConstant = ((MultiArityExpression) expression).getExpressions().get(0);
+            SmtExpr intConstant = ((SmtMultiArityExpr) smtExpr).getExpressions().get(0);
             ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
+            SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
             return tuple;
         }
-        if(expression.getSort().equals(AbstractTranslator.setOfIntSortTuple))
+        if(smtExpr.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
-            Expression intConstant = ((MultiArityExpression) ((UnaryExpression) expression).getExpression()).getExpressions().get(0);
+            SmtExpr intConstant = ((SmtMultiArityExpr) ((SmtUnaryExpr) smtExpr).getExpression()).getExpressions().get(0);
             ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, uninterpretedInt.getVariable());
-            Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
+            SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
+            SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
             return singleton;
         }
-        return expression;
+        return smtExpr;
     }
 
     public ConstantDeclaration getUninterpretedIntConstant(IntConstant intConstant)
@@ -123,8 +123,8 @@ public abstract class AbstractTranslator
                 AbstractTranslator.uninterpretedInt, false);
         integerConstants.put(value, uninterpretedInt);
         smtScript.addConstantDeclaration(uninterpretedInt);
-        Expression callExpression = new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
-        Expression equality = BinaryExpression.Op.EQ.make(callExpression, intConstant);
+        SmtExpr callSmtExpr = new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
+        SmtExpr equality = SmtBinaryExpr.Op.EQ.make(callSmtExpr, intConstant);
         Assertion assertion = new Assertion("", "constant integer", equality);
         smtScript.addAssertion(assertion);
         return uninterpretedInt;
@@ -145,16 +145,16 @@ public abstract class AbstractTranslator
         // uninterpretedIntValue is injective function
         VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
         VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, false);
-        Expression XEqualsY = BinaryExpression.Op.EQ.make(X.getVariable(), Y.getVariable());
-        Expression notXEqualsY = UnaryExpression.Op.NOT.make(XEqualsY);
+        SmtExpr XEqualsY = SmtBinaryExpr.Op.EQ.make(X.getVariable(), Y.getVariable());
+        SmtExpr notXEqualsY = SmtUnaryExpr.Op.NOT.make(XEqualsY);
 
-        Expression XValue = new FunctionCallExpression(uninterpretedIntValue, X.getVariable());
-        Expression YValue = new FunctionCallExpression(uninterpretedIntValue, Y.getVariable());
+        SmtExpr XValue = new SmtCallExpr(uninterpretedIntValue, X.getVariable());
+        SmtExpr YValue = new SmtCallExpr(uninterpretedIntValue, Y.getVariable());
 
-        Expression XValueEqualsYValue = BinaryExpression.Op.EQ.make(XValue, YValue);
-        Expression notXValueEqualsYValue = UnaryExpression.Op.NOT.make(XValueEqualsYValue);
-        Expression implication = BinaryExpression.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implication, X, Y);
+        SmtExpr XValueEqualsYValue = SmtBinaryExpr.Op.EQ.make(XValue, YValue);
+        SmtExpr notXValueEqualsYValue = SmtUnaryExpr.Op.NOT.make(XValueEqualsYValue);
+        SmtExpr implication = SmtBinaryExpr.Op.IMPLIES.make(notXEqualsY, notXValueEqualsYValue);
+        SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implication, X, Y);
 
         return new Assertion("", uninterpretedIntValueName + " is injective", forAll);
     }
@@ -166,15 +166,15 @@ public abstract class AbstractTranslator
 
         VariableDeclaration b = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
 
-        MultiArityExpression tupleAB = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, a.getVariable(), b.getVariable());
+        SmtMultiArityExpr tupleAB = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, a.getVariable(), b.getVariable());
 
-        BinaryExpression member = BinaryExpression.Op.MEMBER.make(tupleAB, identity.getVariable());
+        SmtBinaryExpr member = SmtBinaryExpr.Op.MEMBER.make(tupleAB, identity.getVariable());
 
-        BinaryExpression equals = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
+        SmtBinaryExpr equals = SmtBinaryExpr.Op.EQ.make(a.getVariable(), b.getVariable());
 
-        BinaryExpression equiv = BinaryExpression.Op.EQ.make(member, equals);
+        SmtBinaryExpr equiv = SmtBinaryExpr.Op.EQ.make(member, equals);
 
-        QuantifiedExpression forAll = QuantifiedExpression.Op.FORALL.make(equiv, a, b);
+        SmtQtExpr forAll = SmtQtExpr.Op.FORALL.make(equiv, a, b);
 
         Assertion assertion = new Assertion("", "Identity relation definition for " + identity.getName(), forAll);
 
@@ -216,13 +216,13 @@ public abstract class AbstractTranslator
 
         List<Assertion> assertions3 = script.getAssertions().stream()
                                             .filter(a -> a.getComment().equals("universe") &&
-                                                    a.getExpression().getComment().equals("integer/univInt = Int")
+                                                    a.getSmtExpr().getComment().equals("integer/univInt = Int")
                                                    )
                                             .collect(Collectors.toList());
 
         List<Assertion> assertions4 = script.getAssertions().stream()
                                             .filter(a -> a.getComment().equals("identity") &&
-                                                    a.getExpression().getComment().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))")
+                                                    a.getSmtExpr().getComment().equals("(all x,y | x = y <=> x -> y in (integer/univInt <: idenInt))")
                                                    )
                                             .collect(Collectors.toList());
 

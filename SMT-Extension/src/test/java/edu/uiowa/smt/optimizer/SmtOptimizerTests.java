@@ -25,9 +25,9 @@ class SmtOptimizerTests
     public void trivialAssertions()
     {
         script.addAssertion(new Assertion("", "", BoolConstant.True));
-        Expression andTrue = MultiArityExpression.Op.AND.make(BoolConstant.True);
+        SmtExpr andTrue = SmtMultiArityExpr.Op.AND.make(BoolConstant.True);
         script.addAssertion(new Assertion("", "", andTrue));
-        Expression orTrue = MultiArityExpression.Op.OR.make(BoolConstant.True);
+        SmtExpr orTrue = SmtMultiArityExpr.Op.OR.make(BoolConstant.True);
         script.addAssertion(new Assertion("", "", orTrue));
 
         script = SmtOptimizer.optimize(script);

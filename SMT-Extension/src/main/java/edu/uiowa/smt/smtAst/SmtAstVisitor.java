@@ -12,13 +12,13 @@ public interface SmtAstVisitor
 {
     void visit(SmtScript script);
 
-    void visit(BinaryExpression expr);
+    void visit(SmtBinaryExpr expr);
 
     void visit(Sort sort);
     
     void visit(IntSort intSort);
 
-    void visit(QuantifiedExpression quantifiedExpression);
+    void visit(SmtQtExpr quantifiedExpression);
 
     void visit(RealSort realSort);
 
@@ -28,9 +28,9 @@ public interface SmtAstVisitor
 
     void visit(TupleSort tupleSort);
 
-    void visit(Expression expression);
+    void visit(SmtExpr smtExpr);
 
-    void visit(UnaryExpression unaryExpression);
+    void visit(SmtUnaryExpr unaryExpression);
 
     void visit(UninterpretedSort uninterpretedSort);
 
@@ -48,17 +48,17 @@ public interface SmtAstVisitor
 
     void visit(Assertion assertion);
 
-    void visit(MultiArityExpression expression);
+    void visit(SmtMultiArityExpr expression);
 
-    void visit(FunctionCallExpression functionCallExpression);
+    void visit(SmtCallExpr smtCallExpr);
 
     void visit(VariableDeclaration variableDeclaration);
 
     void visit(BoolSort boolSort);
 
-    void visit(LetExpression letExpression);
+    void visit(SmtLetExpr letExpression);
 
-    void visit(ITEExpression iteExpression);
+    void visit(SmtIteExpr iteExpression);
 
     void visit(UninterpretedConstant uninterpretedConstant);
 

@@ -10,19 +10,19 @@ package edu.uiowa.smt.smtAst;
 
 import java.util.*;
 
-public class FunctionCallExpression extends Expression
+public class SmtCallExpr extends SmtExpr
 {
     private final FunctionDeclaration function;
-    private final List<Expression>  arguments;
+    private final List<SmtExpr>  arguments;
 
-    public FunctionCallExpression(FunctionDeclaration function, Expression ... arguments)
+    public SmtCallExpr(FunctionDeclaration function, SmtExpr... arguments)
     {
         this.function = function;
         this.arguments      = Arrays.asList(arguments);
         checkTypes();
     }
     
-    public FunctionCallExpression(FunctionDeclaration function, List<Expression> arguments)
+    public SmtCallExpr(FunctionDeclaration function, List<SmtExpr> arguments)
     {
         this.function = function;
         this.arguments      = arguments;
@@ -53,7 +53,7 @@ public class FunctionCallExpression extends Expression
         return this.function.getName();
     }
 
-    public List<Expression>  getArguments()
+    public List<SmtExpr>  getArguments()
     {
         return this.arguments;
     }
@@ -71,14 +71,14 @@ public class FunctionCallExpression extends Expression
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         FunctionDefinition definition = functions.get(this.function.getName());
         // improve the performance of this line
         Map<String, FunctionDefinition> newScope = new HashMap<>(functions);
         for(int i = 0; i < arguments.size(); i++)
         {
-            Expression argument = arguments.get(i);
+            SmtExpr argument = arguments.get(i);
             if(argument instanceof UninterpretedConstant)
             {
                 UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) argument;
@@ -93,7 +93,7 @@ public class FunctionCallExpression extends Expression
                 throw new UnsupportedOperationException();
             }
         }
-        return definition.getExpression().evaluate(newScope);
+        return definition.getSmtExpr().evaluate(newScope);
     }
     @Override
     public boolean equals(Object object)
@@ -102,11 +102,11 @@ public class FunctionCallExpression extends Expression
         {
             return true;
         }
-        if(!(object instanceof FunctionCallExpression))
+        if(!(object instanceof SmtCallExpr))
         {
             return false;
         }
-        FunctionCallExpression functionCall = (FunctionCallExpression) object;
+        SmtCallExpr functionCall = (SmtCallExpr) object;
         return function.equals(functionCall.function) &&
                 arguments.equals(functionCall.arguments);
     }
@@ -115,46 +115,46 @@ public class FunctionCallExpression extends Expression
     public List<Variable> getFreeVariables()
     {
         List<Variable> freeVariables = new ArrayList<>();
-        for (Expression expression: arguments)
+        for (SmtExpr smtExpr : arguments)
         {
-            freeVariables.addAll(expression.getFreeVariables());
+            freeVariables.addAll(smtExpr.getFreeVariables());
         }
         return freeVariables;
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         if(this.function.getVariable().equals(newVariable))
         {
             throw new UnsupportedOperationException();
         }
 
-        List<Expression> newExpressions = new ArrayList<>();
-        for (Expression expression: arguments)
+        List<SmtExpr> newSmtExprs = new ArrayList<>();
+        for (SmtExpr smtExpr : arguments)
         {
-            if (expression.equals(newVariable))
+            if (smtExpr.equals(newVariable))
             {
                 throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
             }
-            newExpressions.add(expression.substitute(oldVariable, newVariable));
+            newSmtExprs.add(smtExpr.substitute(oldVariable, newVariable));
         }
-        return new FunctionCallExpression(function, newExpressions);
+        return new SmtCallExpr(function, newSmtExprs);
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
-        List<Expression> newExpressions = new ArrayList<>();
-        for (Expression expression: arguments)
+        List<SmtExpr> newSmtExprs = new ArrayList<>();
+        for (SmtExpr smtExpr : arguments)
         {
-            newExpressions.add(expression.replace(oldExpression, newExpression));
+            newSmtExprs.add(smtExpr.replace(oldSmtExpr, newSmtExpr));
         }
-        return new FunctionCallExpression(function, newExpressions);
+        return new SmtCallExpr(function, newSmtExprs);
     }
 
     public FunctionDeclaration getFunction()

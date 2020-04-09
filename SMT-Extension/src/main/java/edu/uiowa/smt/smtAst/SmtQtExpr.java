@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class QuantifiedExpression extends Expression
+public class SmtQtExpr extends SmtExpr
 {
-    private final Expression expr;
+    private final SmtExpr expr;
     private final List<VariableDeclaration> variables;
     private final Op op;
     
-    private QuantifiedExpression(Op op, List<VariableDeclaration> variables, Expression expr)
+    private SmtQtExpr(Op op, List<VariableDeclaration> variables, SmtExpr expr)
     {
         this.variables = new ArrayList<>();
         this.expr       = expr;
@@ -48,7 +48,7 @@ public class QuantifiedExpression extends Expression
         }
     }
 
-    private QuantifiedExpression(Op op, Expression expr, VariableDeclaration... variables)
+    private SmtQtExpr(Op op, SmtExpr expr, VariableDeclaration... variables)
     {
         this.variables = Arrays.asList(variables);
         this.expr       = expr;
@@ -60,7 +60,7 @@ public class QuantifiedExpression extends Expression
         return this.variables;
     }
     
-    public Expression getExpression()
+    public SmtExpr getExpression()
     {
         return this.expr;
     }
@@ -98,14 +98,14 @@ public class QuantifiedExpression extends Expression
             }
         }
 
-        public QuantifiedExpression make(Expression expr, VariableDeclaration... variables)
+        public SmtQtExpr make(SmtExpr expr, VariableDeclaration... variables)
         {
-            return new QuantifiedExpression(this, expr, variables);
+            return new SmtQtExpr(this, expr, variables);
         }
 
-        public QuantifiedExpression make(Expression expr, List<VariableDeclaration> variables)
+        public SmtQtExpr make(SmtExpr expr, List<VariableDeclaration> variables)
         {
-            return new QuantifiedExpression(this, variables, expr);
+            return new SmtQtExpr(this, variables, expr);
         }
 
         @Override
@@ -128,7 +128,7 @@ public class QuantifiedExpression extends Expression
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         throw new UnsupportedOperationException();
     }
@@ -140,11 +140,11 @@ public class QuantifiedExpression extends Expression
         {
             return true;
         }
-        if(!(object instanceof QuantifiedExpression))
+        if(!(object instanceof SmtQtExpr))
         {
             return false;
         }
-        QuantifiedExpression quantifiedObject = (QuantifiedExpression) object;
+        SmtQtExpr quantifiedObject = (SmtQtExpr) object;
         if(! variables.equals(quantifiedObject.variables))
         {
             return false;
@@ -162,9 +162,9 @@ public class QuantifiedExpression extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
-        Expression body = expr;
+        SmtExpr body = expr;
         List<VariableDeclaration> variables = new ArrayList<>(this.variables);
         // check if the new variable is declared
         for (Declaration declaration: this.variables)
@@ -175,8 +175,8 @@ public class QuantifiedExpression extends Expression
                 VariableDeclaration newDeclaration = new VariableDeclaration(TranslatorUtils.getFreshName(declaration.getSort()), declaration.getSort(), false);
                 if(declaration instanceof  VariableDeclaration)
                 {
-                    Expression constraint = ((VariableDeclaration) declaration).getConstraint();
-                    Expression newConstraint = constraint.substitute(oldVariable, newVariable);
+                    SmtExpr constraint = ((VariableDeclaration) declaration).getConstraint();
+                    SmtExpr newConstraint = constraint.substitute(oldVariable, newVariable);
                     newDeclaration.setConstraint(newConstraint);
                 }
                 else
@@ -193,18 +193,18 @@ public class QuantifiedExpression extends Expression
             throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
         }
 
-        Expression newExpression = body.substitute(oldVariable, newVariable);
-        return new QuantifiedExpression(op, variables, newExpression);
+        SmtExpr newSmtExpr = body.substitute(oldVariable, newVariable);
+        return new SmtQtExpr(op, variables, newSmtExpr);
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
-        Expression expression = expr.replace(oldExpression, newExpression);
-        return new QuantifiedExpression(op, variables, expression);
+        SmtExpr smtExpr = expr.replace(oldSmtExpr, newSmtExpr);
+        return new SmtQtExpr(op, variables, smtExpr);
     }
 }

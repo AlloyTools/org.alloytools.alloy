@@ -29,19 +29,19 @@ public class IntConstant extends Constant
         return new IntConstant(value);
     }
 
-    public static Expression getSingletonTuple(int value)
+    public static SmtExpr getSingletonTuple(int value)
     {
-        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+        SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE,
                 new IntConstant(value));
-        Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
+        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
         return singleton;
     }
 
-    public static Expression getSingletonTuple(IntConstant intConstant)
+    public static SmtExpr getSingletonTuple(IntConstant intConstant)
     {
-        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE,
+        SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE,
                 intConstant);
-        Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
+        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
         return singleton;
     }
     
@@ -67,7 +67,7 @@ public class IntConstant extends Constant
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         return this;
     }
@@ -93,17 +93,17 @@ public class IntConstant extends Constant
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         return this;
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
         return this;
     }

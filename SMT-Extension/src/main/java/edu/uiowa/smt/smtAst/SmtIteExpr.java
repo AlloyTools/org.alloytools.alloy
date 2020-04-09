@@ -14,13 +14,13 @@ import java.util.Map;
  *
  * @author Mudathir Mohamed, Paul Meng
  */
-public class ITEExpression extends Expression
+public class SmtIteExpr extends SmtExpr
 {
-    private final Expression                  condExpr;
-    private final Expression                  thenExpr;
-    private final Expression                  elseExpr;
+    private final SmtExpr condExpr;
+    private final SmtExpr thenExpr;
+    private final SmtExpr elseExpr;
     
-    public ITEExpression(Expression condExpr, Expression thenExpr, Expression elseExpr)
+    public SmtIteExpr(SmtExpr condExpr, SmtExpr thenExpr, SmtExpr elseExpr)
     {
         if(condExpr == null)
         {
@@ -55,17 +55,17 @@ public class ITEExpression extends Expression
     }
 
 
-    public Expression getCondExpression()
+    public SmtExpr getCondExpression()
     {
         return this.condExpr;
     }
     
-    public Expression getThenExpression()
+    public SmtExpr getThenExpression()
     {
         return this.thenExpr;
     }    
     
-    public Expression getElseExpression()
+    public SmtExpr getElseExpression()
     {
         return this.elseExpr;
     }        
@@ -82,9 +82,9 @@ public class ITEExpression extends Expression
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
-        Expression evaluatedCondition =  condExpr.evaluate(functions);
+        SmtExpr evaluatedCondition =  condExpr.evaluate(functions);
         if(!(evaluatedCondition instanceof BoolConstant))
         {
             throw new RuntimeException("Expected a boolean constant but got " + evaluatedCondition);
@@ -106,11 +106,11 @@ public class ITEExpression extends Expression
         {
             return true;
         }
-        if(!(object instanceof ITEExpression))
+        if(!(object instanceof SmtIteExpr))
         {
             return false;
         }
-        ITEExpression iteObject = (ITEExpression) object;
+        SmtIteExpr iteObject = (SmtIteExpr) object;
         return  condExpr.equals(iteObject.condExpr) &&
                 thenExpr.equals(iteObject.thenExpr) &&
                 elseExpr.equals(iteObject.elseExpr);
@@ -126,28 +126,28 @@ public class ITEExpression extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         if (condExpr.equals(newVariable) || thenExpr.equals(newVariable) || elseExpr.equals(newVariable))
         {
             throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
         }
-        Expression newCondition = condExpr.substitute(oldVariable, newVariable);
-        Expression newThen = elseExpr.substitute(oldVariable, newVariable);
-        Expression newElse = elseExpr.substitute(oldVariable, newVariable);
-        return new ITEExpression(newCondition, newThen, newElse);
+        SmtExpr newCondition = condExpr.substitute(oldVariable, newVariable);
+        SmtExpr newThen = elseExpr.substitute(oldVariable, newVariable);
+        SmtExpr newElse = elseExpr.substitute(oldVariable, newVariable);
+        return new SmtIteExpr(newCondition, newThen, newElse);
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
-        Expression newCondition = condExpr.replace(oldExpression, newExpression);
-        Expression newThen = elseExpr.replace(oldExpression, newExpression);
-        Expression newElse = elseExpr.replace(oldExpression, newExpression);
-        return new ITEExpression(newCondition, newThen, newElse);
+        SmtExpr newCondition = condExpr.replace(oldSmtExpr, newSmtExpr);
+        SmtExpr newThen = elseExpr.replace(oldSmtExpr, newSmtExpr);
+        SmtExpr newElse = elseExpr.replace(oldSmtExpr, newSmtExpr);
+        return new SmtIteExpr(newCondition, newThen, newElse);
     }
 }

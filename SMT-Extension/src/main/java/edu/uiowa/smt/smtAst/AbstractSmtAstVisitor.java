@@ -1,61 +1,59 @@
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.AbstractTranslator;
-
 import java.util.Map;
 
 abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
 {
     @Override
-    public void visit(Expression expression)
+    public void visit(SmtExpr smtExpr)
     {
-        if (expression instanceof Variable)
+        if (smtExpr instanceof Variable)
         {
-            this.visit((Variable) expression);
+            this.visit((Variable) smtExpr);
         }
-        else if (expression instanceof  UnaryExpression)
+        else if (smtExpr instanceof SmtUnaryExpr)
         {
-            this.visit((UnaryExpression) expression);
+            this.visit((SmtUnaryExpr) smtExpr);
         }
-        else if (expression instanceof  BinaryExpression)
+        else if (smtExpr instanceof SmtBinaryExpr)
         {
-            this.visit((BinaryExpression) expression);
+            this.visit((SmtBinaryExpr) smtExpr);
         }
-        else if (expression instanceof  MultiArityExpression)
+        else if (smtExpr instanceof SmtMultiArityExpr)
         {
-            this.visit((MultiArityExpression) expression);
+            this.visit((SmtMultiArityExpr) smtExpr);
         }
-        else if (expression instanceof  QuantifiedExpression)
+        else if (smtExpr instanceof SmtQtExpr)
         {
-            this.visit((QuantifiedExpression) expression);
+            this.visit((SmtQtExpr) smtExpr);
         }
-        else if (expression instanceof  Sort)
+        else if (smtExpr instanceof  Sort)
         {
-            this.visit((Sort) expression);
+            this.visit((Sort) smtExpr);
         }
-        else if (expression instanceof  IntConstant)
+        else if (smtExpr instanceof  IntConstant)
         {
-            this.visit((IntConstant) expression);
+            this.visit((IntConstant) smtExpr);
         }
-        else if (expression instanceof  FunctionCallExpression)
+        else if (smtExpr instanceof SmtCallExpr)
         {
-            this.visit((FunctionCallExpression) expression);
+            this.visit((SmtCallExpr) smtExpr);
         }
-        else if (expression instanceof BoolConstant)
+        else if (smtExpr instanceof BoolConstant)
         {
-            this.visit((BoolConstant) expression);
+            this.visit((BoolConstant) smtExpr);
         }
-        else if (expression instanceof  LetExpression)
+        else if (smtExpr instanceof SmtLetExpr)
         {
-            this.visit((LetExpression) expression);
+            this.visit((SmtLetExpr) smtExpr);
         }
-        else if (expression instanceof  ITEExpression)
+        else if (smtExpr instanceof SmtIteExpr)
         {
-            this.visit((ITEExpression) expression);
+            this.visit((SmtIteExpr) smtExpr);
         }
-        else if (expression instanceof UninterpretedConstant)
+        else if (smtExpr instanceof UninterpretedConstant)
         {
-            this.visit((UninterpretedConstant) expression);
+            this.visit((UninterpretedConstant) smtExpr);
         }
         else
         {
@@ -122,7 +120,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(BinaryExpression expr)
+    public void visit(SmtBinaryExpr expr)
     {
         visit(expr.getA());
         visit(expr.getB());
@@ -134,7 +132,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(QuantifiedExpression quantifiedExpression)
+    public void visit(SmtQtExpr quantifiedExpression)
     {
         for (VariableDeclaration boundVariable: quantifiedExpression.getVariables())
         {
@@ -170,7 +168,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(UnaryExpression unaryExpression)
+    public void visit(SmtUnaryExpr unaryExpression)
     {
         visit(unaryExpression.getExpression());
     }
@@ -207,7 +205,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
         {
             visit(variable);
         }
-        visit(functionDefinition.getExpression());
+        visit(functionDefinition.getSmtExpr());
         visit(functionDefinition.getSort());
     }
 
@@ -225,22 +223,22 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     @Override
     public void visit(Assertion assertion)
     {
-        visit(assertion.getExpression());
+        visit(assertion.getSmtExpr());
     }
 
     @Override
-    public void visit(MultiArityExpression expression)
+    public void visit(SmtMultiArityExpr expression)
     {
-        for (Expression expr: expression.getExpressions())
+        for (SmtExpr expr: expression.getExpressions())
         {
             visit(expr);
         }
     }
 
     @Override
-    public void visit(FunctionCallExpression callExpression)
+    public void visit(SmtCallExpr callExpression)
     {
-        for (Expression expr: callExpression.getArguments())
+        for (SmtExpr expr: callExpression.getArguments())
         {
             visit(expr);
         }
@@ -258,9 +256,9 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(LetExpression letExpression)
+    public void visit(SmtLetExpr letExpression)
     {
-        for (Map.Entry<VariableDeclaration, Expression> entry : letExpression.getLetVariables().entrySet())
+        for (Map.Entry<VariableDeclaration, SmtExpr> entry : letExpression.getLetVariables().entrySet())
         {
             visit(entry.getKey());
             visit(entry.getValue());
@@ -269,7 +267,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(ITEExpression iteExpression)
+    public void visit(SmtIteExpr iteExpression)
     {
         visit(iteExpression.getCondExpression());
         visit(iteExpression.getThenExpression());

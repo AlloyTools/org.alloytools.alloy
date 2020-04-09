@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Sort extends Expression
+public class Sort extends SmtExpr
 {
     private final String name;
     private final int    arity;
@@ -51,7 +51,7 @@ public class Sort extends Expression
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         throw new UnsupportedOperationException();
     }
@@ -68,17 +68,17 @@ public class Sort extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         return this;
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
         return this;
     }

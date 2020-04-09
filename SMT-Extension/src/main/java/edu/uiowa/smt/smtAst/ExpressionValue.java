@@ -2,21 +2,21 @@ package edu.uiowa.smt.smtAst;
 
 public class ExpressionValue extends SmtAst
 {
-    private final Expression expression;
-    private final Expression value;
+    private final SmtExpr smtExpr;
+    private final SmtExpr value;
 
-    public ExpressionValue(Expression expression, Expression value)
+    public ExpressionValue(SmtExpr smtExpr, SmtExpr value)
     {
-        this.expression = expression;
+        this.smtExpr = smtExpr;
         this.value = value;
     }
 
-    public Expression getExpression()
+    public SmtExpr getSmtExpr()
     {
-        return expression;
+        return smtExpr;
     }
 
-    public Expression getValue()
+    public SmtExpr getValue()
     {
         return value;
     }

@@ -105,7 +105,7 @@ public class TranslatorUtils
         return new SetSort(new TupleSort(elementSorts));
     }
 
-    public static Expression makeDistinct(Expression... exprs)
+    public static SmtExpr makeDistinct(SmtExpr... exprs)
     {
         if (exprs == null)
         {
@@ -117,11 +117,11 @@ public class TranslatorUtils
         }
         else
         {
-            return new MultiArityExpression(MultiArityExpression.Op.DISTINCT, exprs);
+            return new SmtMultiArityExpr(SmtMultiArityExpr.Op.DISTINCT, exprs);
         }
     }
 
-    public static Expression makeDistinct(List<Expression> exprs)
+    public static SmtExpr makeDistinct(List<SmtExpr> exprs)
     {
         if (exprs == null)
         {
@@ -133,55 +133,55 @@ public class TranslatorUtils
         }
         else
         {
-            return MultiArityExpression.Op.DISTINCT.make(exprs);
+            return SmtMultiArityExpr.Op.DISTINCT.make(exprs);
         }
     }
 
-    public static Expression getTuple(Declaration... elements)
+    public static SmtExpr getTuple(Declaration... elements)
     {
-        List<Expression> expressions = Arrays.stream(elements)
-                                             .map(Declaration::getVariable).collect(Collectors.toList());
-        return MultiArityExpression.Op.MKTUPLE.make(expressions);
+        List<SmtExpr> smtExprs = Arrays.stream(elements)
+                                       .map(Declaration::getVariable).collect(Collectors.toList());
+        return SmtMultiArityExpr.Op.MKTUPLE.make(smtExprs);
     }
 
-    public static Expression getTuple(Expression... expressions)
+    public static SmtExpr getTuple(SmtExpr... smtExprs)
     {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expressions);
+        return new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, smtExprs);
     }
 
     public static int getInt(FunctionDefinition definition)
     {
-        return getInt(definition.expression);
+        return getInt(definition.smtExpr);
     }
 
-    public static int getInt(Expression expression)
+    public static int getInt(SmtExpr smtExpr)
     {
-        UnaryExpression unary = (UnaryExpression) expression;
-        if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
+        SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
+        if (unary.getOP() == SmtUnaryExpr.Op.EMPTYSET)
         {
             return 0; // zero is equivalent to an empty set
         }
-        assert (UnaryExpression.Op.SINGLETON == unary.getOP());
-        MultiArityExpression tuple = (MultiArityExpression) unary.getExpression();
-        assert (MultiArityExpression.Op.MKTUPLE == tuple.getOp());
+        assert (SmtUnaryExpr.Op.SINGLETON == unary.getOP());
+        SmtMultiArityExpr tuple = (SmtMultiArityExpr) unary.getExpression();
+        assert (SmtMultiArityExpr.Op.MKTUPLE == tuple.getOp());
         IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
         return Integer.parseInt(constant.getValue());
     }
 
     public static Set<Integer> getIntSet(FunctionDefinition definition)
     {
-        return getIntSet(definition.getExpression());
+        return getIntSet(definition.getSmtExpr());
     }
 
-    public static Set<Integer> getIntSet(Expression expression)
+    public static Set<Integer> getIntSet(SmtExpr smtExpr)
     {
-        if (expression instanceof UnaryExpression)
+        if (smtExpr instanceof SmtUnaryExpr)
         {
-            return new HashSet<>(Arrays.asList(getInt(expression)));
+            return new HashSet<>(Arrays.asList(getInt(smtExpr)));
         }
-        BinaryExpression binary = (BinaryExpression) expression;
+        SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
         Set<Integer> set = new HashSet<>();
-        assert (binary.getOp() == BinaryExpression.Op.UNION);
+        assert (binary.getOp() == SmtBinaryExpr.Op.UNION);
         set.addAll(getIntSet(binary.getA()));
         set.addAll(getIntSet(binary.getB()));
         return set;
@@ -189,34 +189,34 @@ public class TranslatorUtils
 
     public static Set<String> getAtomSet(FunctionDefinition definition)
     {
-        return getAtomSet(definition.getExpression());
+        return getAtomSet(definition.getSmtExpr());
     }
 
-    public static Set<String> getAtomSet(Expression expression)
+    public static Set<String> getAtomSet(SmtExpr smtExpr)
     {
-        if(expression instanceof UninterpretedConstant)
+        if(smtExpr instanceof UninterpretedConstant)
         {
-            UninterpretedConstant constant  = (UninterpretedConstant) expression;
+            UninterpretedConstant constant  = (UninterpretedConstant) smtExpr;
             return Collections.singleton(constant.getName());
         }
-        if (expression instanceof UnaryExpression)
+        if (smtExpr instanceof SmtUnaryExpr)
         {
-            UnaryExpression unary = (UnaryExpression) expression;
-            if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
+            SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
+            if (unary.getOP() == SmtUnaryExpr.Op.EMPTYSET)
             {
                 return new HashSet<>();
             }
-            assert (UnaryExpression.Op.SINGLETON == unary.getOP());
-            MultiArityExpression tuple = (MultiArityExpression) unary.getExpression();
-            assert (MultiArityExpression.Op.MKTUPLE == tuple.getOp());
+            assert (SmtUnaryExpr.Op.SINGLETON == unary.getOP());
+            SmtMultiArityExpr tuple = (SmtMultiArityExpr) unary.getExpression();
+            assert (SmtMultiArityExpr.Op.MKTUPLE == tuple.getOp());
             UninterpretedConstant constant = (UninterpretedConstant) tuple.getExpressions().get(0);
             return new HashSet<>(Collections.singletonList(constant.getName()));
         }
-        if(expression instanceof BinaryExpression)
+        if(smtExpr instanceof SmtBinaryExpr)
         {
-            BinaryExpression binary = (BinaryExpression) expression;
+            SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
             Set<String> set = new HashSet<>();
-            assert (binary.getOp() == BinaryExpression.Op.UNION);
+            assert (binary.getOp() == SmtBinaryExpr.Op.UNION);
             set.addAll(getAtomSet(binary.getA()));
             set.addAll(getAtomSet(binary.getB()));
             return set;
@@ -236,24 +236,24 @@ public class TranslatorUtils
         {
             throw new UnsupportedOperationException(setSort.elementSort.toString());
         }
-        return getRelation(definition.getExpression());
+        return getRelation(definition.getSmtExpr());
     }
 
-    public static Set<List<String>> getRelation(Expression expression)
+    public static Set<List<String>> getRelation(SmtExpr smtExpr)
     {
-        if (expression instanceof UnaryExpression)
+        if (smtExpr instanceof SmtUnaryExpr)
         {
-            UnaryExpression unary = (UnaryExpression) expression;
-            if (unary.getOP() == UnaryExpression.Op.EMPTYSET)
+            SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
+            if (unary.getOP() == SmtUnaryExpr.Op.EMPTYSET)
             {
                 return new HashSet<>();
             }
-            assert (UnaryExpression.Op.SINGLETON == unary.getOP());
-            MultiArityExpression tupleExpression = (MultiArityExpression) unary.getExpression();
-            assert (MultiArityExpression.Op.MKTUPLE == tupleExpression.getOp());
+            assert (SmtUnaryExpr.Op.SINGLETON == unary.getOP());
+            SmtMultiArityExpr tupleExpression = (SmtMultiArityExpr) unary.getExpression();
+            assert (SmtMultiArityExpr.Op.MKTUPLE == tupleExpression.getOp());
             List<String> tuple = new ArrayList<>();
 
-            for (Expression expr: tupleExpression.getExpressions())
+            for (SmtExpr expr: tupleExpression.getExpressions())
             {
                 if(expr instanceof IntConstant)
                 {
@@ -270,9 +270,9 @@ public class TranslatorUtils
             }
             return new HashSet<>(Collections.singletonList(tuple));
         }
-        BinaryExpression binary = (BinaryExpression) expression;
+        SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
         Set<List<String>> set = new HashSet<>();
-        assert (binary.getOp() == BinaryExpression.Op.UNION);
+        assert (binary.getOp() == SmtBinaryExpr.Op.UNION);
         set.addAll(getRelation(binary.getA()));
         set.addAll(getRelation(binary.getB()));
         return set;
@@ -298,55 +298,55 @@ public class TranslatorUtils
         return name.replaceAll("\\|", "");
     }
 
-    public static Expression makeRelationFromDeclarations(List<VariableDeclaration> declarations)
+    public static SmtExpr makeRelationFromDeclarations(List<VariableDeclaration> declarations)
     {
-        List<Expression> variables = declarations
+        List<SmtExpr> variables = declarations
                 .stream().map(v -> v.getVariable()).collect(Collectors.toList());
         return TranslatorUtils.makeRelation(variables);
     }
 
-    public static Expression makeRelation(List<Expression> expressions)
+    public static SmtExpr makeRelation(List<SmtExpr> smtExprs)
     {
-        if(expressions.isEmpty())
+        if(smtExprs.isEmpty())
         {
             throw new RuntimeException("Empty list");
         }
 
-        Expression set = makeRelation(expressions.get(expressions.size() - 1));
-        for (int i = expressions.size() - 2; i >= 0; i--)
+        SmtExpr set = makeRelation(smtExprs.get(smtExprs.size() - 1));
+        for (int i = smtExprs.size() - 2; i >= 0; i--)
         {
-            Expression expression = expressions.get(i);
-            if(expression.getSort() instanceof SetSort)
+            SmtExpr smtExpr = smtExprs.get(i);
+            if(smtExpr.getSort() instanceof SetSort)
             {
-                set = BinaryExpression.Op.UNION.make(expression, set);
+                set = SmtBinaryExpr.Op.UNION.make(smtExpr, set);
             }
-            else if(expression.getSort() instanceof TupleSort)
+            else if(smtExpr.getSort() instanceof TupleSort)
             {
-                set = MultiArityExpression.Op.INSERT.make(expression, set);
+                set = SmtMultiArityExpr.Op.INSERT.make(smtExpr, set);
             }
             else
             {
-                Expression tuple = MultiArityExpression.Op.MKTUPLE.make(expression);
-                set = MultiArityExpression.Op.INSERT.make(tuple, set);
+                SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(smtExpr);
+                set = SmtMultiArityExpr.Op.INSERT.make(tuple, set);
             }
         }
         return set;
     }
 
-    public static Expression makeRelation(Expression expression)
+    public static SmtExpr makeRelation(SmtExpr smtExpr)
     {
-        if((expression.getSort() instanceof UninterpretedSort) || expression.getSort() instanceof IntSort)
+        if((smtExpr.getSort() instanceof UninterpretedSort) || smtExpr.getSort() instanceof IntSort)
         {
-            MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, expression);
-            return UnaryExpression.Op.SINGLETON.make(tuple);
+            SmtMultiArityExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, smtExpr);
+            return SmtUnaryExpr.Op.SINGLETON.make(tuple);
         }
-        else if(expression.getSort() instanceof TupleSort)
+        else if(smtExpr.getSort() instanceof TupleSort)
         {
-            return UnaryExpression.Op.SINGLETON.make(expression);
+            return SmtUnaryExpr.Op.SINGLETON.make(smtExpr);
         }
         else
         {
-            return expression;
+            return smtExpr;
         }
     }
 }

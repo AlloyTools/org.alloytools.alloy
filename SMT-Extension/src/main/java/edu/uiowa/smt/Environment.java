@@ -1,18 +1,17 @@
 package edu.uiowa.smt;
 
-import edu.uiowa.smt.smtAst.Expression;
-import edu.uiowa.smt.smtAst.MultiArityExpression;
-import edu.uiowa.smt.smtAst.QuantifiedExpression;
-import edu.uiowa.smt.smtAst.VariableDeclaration;
+import edu.uiowa.smt.smtAst.*;
+import edu.uiowa.smt.smtAst.SmtQtExpr;
+import edu.uiowa.smt.smtAst.SmtExpr;
 
 import java.util.*;
 
 public class Environment
 {
-    private Map<String, Expression> variablesMap = new HashMap<>();
+    private Map<String, SmtExpr> variablesMap = new HashMap<>();
     private Environment parent;
     //ToDo: review making this auxiliary formula more general
-    private QuantifiedExpression auxiliaryFormula = null;
+    private SmtQtExpr auxiliaryFormula = null;
 
     // top level environment
     public Environment()
@@ -25,25 +24,25 @@ public class Environment
         this.parent = parent;
     }
 
-    public void put(String key, Expression value)
+    public void put(String key, SmtExpr value)
     {
         variablesMap.put(key, value);
     }
 
-    public void putAll(Map<String, Expression> map)
+    public void putAll(Map<String, SmtExpr> map)
     {
-        for(Map.Entry<String, Expression> entry: map.entrySet())
+        for(Map.Entry<String, SmtExpr> entry: map.entrySet())
         {
             put(entry.getKey(), entry.getValue());
         }
     }
 
-    public Expression get(String key)
+    public SmtExpr get(String key)
     {
         Environment currentEnvironment = this;
         while(currentEnvironment != null)
         {
-            Expression value = currentEnvironment.variablesMap.get(key);
+            SmtExpr value = currentEnvironment.variablesMap.get(key);
             if(value != null)
             {
                 return value;
@@ -72,26 +71,26 @@ public class Environment
         return parent;
     }
 
-    public LinkedHashMap<String, Expression> getVariables()
+    public LinkedHashMap<String, SmtExpr> getVariables()
     {
         return getVariablesAuxiliary(this);
     }
 
-    private LinkedHashMap<String, Expression> getVariablesAuxiliary(Environment environment)
+    private LinkedHashMap<String, SmtExpr> getVariablesAuxiliary(Environment environment)
     {
         if(environment.parent == null)
         {
             return new LinkedHashMap<>(environment.variablesMap);
         }
 
-        LinkedHashMap<String, Expression> map = getVariablesAuxiliary(environment.parent);
+        LinkedHashMap<String, SmtExpr> map = getVariablesAuxiliary(environment.parent);
         map.putAll(environment.variablesMap);
         return map;
     }
 
-    public void addAuxiliaryFormula(QuantifiedExpression expression)
+    public void addAuxiliaryFormula(SmtQtExpr expression)
     {
-        if(expression.getOp() != QuantifiedExpression.Op.EXISTS)
+        if(expression.getOp() != SmtQtExpr.Op.EXISTS)
         {
             throw new UnsupportedOperationException();
         }
@@ -104,12 +103,12 @@ public class Environment
             List<VariableDeclaration> variables = new ArrayList<>(auxiliaryFormula.getVariables());
             variables.addAll(expression.getVariables());
 
-            Expression and = MultiArityExpression.Op.AND.make(auxiliaryFormula.getExpression(), expression);
-            auxiliaryFormula = QuantifiedExpression.Op.EXISTS.make(and, variables);
+            SmtExpr and = SmtMultiArityExpr.Op.AND.make(auxiliaryFormula.getExpression(), expression);
+            auxiliaryFormula = SmtQtExpr.Op.EXISTS.make(and, variables);
         }
     }
 
-    public QuantifiedExpression getAuxiliaryFormula()
+    public SmtQtExpr getAuxiliaryFormula()
     {
         return auxiliaryFormula;
     }

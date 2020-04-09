@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Variable extends Expression
+public class Variable extends SmtExpr
 {
     private final Declaration declaration;
 
@@ -42,7 +42,7 @@ public class Variable extends Expression
         return declaration.getSort();
     }
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         throw new UnsupportedOperationException();
     }
@@ -71,7 +71,7 @@ public class Variable extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         if(this.equals(newVariable))
         {
@@ -85,11 +85,11 @@ public class Variable extends Expression
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
         return  this;
     }

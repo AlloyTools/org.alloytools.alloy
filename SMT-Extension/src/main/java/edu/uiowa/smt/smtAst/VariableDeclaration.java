@@ -10,19 +10,19 @@ package edu.uiowa.smt.smtAst;
 
 public class VariableDeclaration extends Declaration
 {
-    private Expression constraint;
+    private SmtExpr constraint;
 
     public VariableDeclaration(String name, Sort sort, boolean isOriginal)
     {
         super(name, sort, isOriginal);
     }
 
-    public void setConstraint(Expression constraint)
+    public void setConstraint(SmtExpr constraint)
     {
         this.constraint = constraint;
     }
 
-    public Expression getConstraint()
+    public SmtExpr getConstraint()
     {
         return constraint;
     }

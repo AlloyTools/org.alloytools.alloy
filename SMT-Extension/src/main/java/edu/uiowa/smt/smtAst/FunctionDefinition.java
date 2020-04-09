@@ -15,27 +15,27 @@ import java.util.stream.Collectors;
 
 public class FunctionDefinition extends FunctionDeclaration
 {
-    public final Expression                 expression;
+    public final SmtExpr smtExpr;
     public final List<VariableDeclaration>  inputVariables;
     
-    public FunctionDefinition(String name, List<VariableDeclaration> inputVariables, Sort outputSort, Expression expression, boolean isOriginal)
+    public FunctionDefinition(String name, List<VariableDeclaration> inputVariables, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
     {
         super(name, inputVariables.stream().map(v -> v.getSort()).collect(Collectors.toList()), outputSort, isOriginal);
         this.inputVariables = inputVariables;
-        this.expression = expression;
+        this.smtExpr = smtExpr;
     }
     
-    public FunctionDefinition(String name, VariableDeclaration inputVariable, Sort outputSort, Expression expression, boolean isOriginal)
+    public FunctionDefinition(String name, VariableDeclaration inputVariable, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
     {
         super(name, inputVariable.getSort(), outputSort, isOriginal);
         this.inputVariables = Collections.singletonList(inputVariable);
-        this.expression = expression;
+        this.smtExpr = smtExpr;
     }
-    public FunctionDefinition(String name, Sort outputSort, Expression expression, boolean isOriginal, VariableDeclaration... inputVariables)
+    public FunctionDefinition(String name, Sort outputSort, SmtExpr smtExpr, boolean isOriginal, VariableDeclaration... inputVariables)
     {
         super(name, Arrays.stream(inputVariables).map(v -> v.getSort()).collect(Collectors.toList()), outputSort, isOriginal);
         this.inputVariables = Arrays.asList(inputVariables);
-        this.expression = expression;
+        this.smtExpr = smtExpr;
     }      
     
     public List<VariableDeclaration> getInputVariables()
@@ -43,9 +43,9 @@ public class FunctionDefinition extends FunctionDeclaration
         return this.inputVariables;
     }
 
-    public Expression getExpression()
+    public SmtExpr getSmtExpr()
     {
-        return this.expression;
+        return this.smtExpr;
     }
 
     @Override

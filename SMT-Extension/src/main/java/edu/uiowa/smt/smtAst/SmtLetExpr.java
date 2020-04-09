@@ -12,16 +12,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LetExpression extends Expression
+public class SmtLetExpr extends SmtExpr
 {
-    private final Expression expr;
-    private final Map<VariableDeclaration, Expression> letVariables;
+    private final SmtExpr expr;
+    private final Map<VariableDeclaration, SmtExpr> letVariables;
 
-    public LetExpression(Map<VariableDeclaration, Expression> letVars, Expression expr)
+    public SmtLetExpr(Map<VariableDeclaration, SmtExpr> letVars, SmtExpr expr)
     {
         this.letVariables = new HashMap<>();
         this.expr = expr;
-        for (Map.Entry<VariableDeclaration, Expression> var : letVars.entrySet())
+        for (Map.Entry<VariableDeclaration, SmtExpr> var : letVars.entrySet())
         {
             this.letVariables.put(var.getKey(), var.getValue());
         }
@@ -33,7 +33,7 @@ public class LetExpression extends Expression
     {
         // make sure the types of the declared variables match their corresponding expressions
 
-        for (Map.Entry<VariableDeclaration, Expression> entry: letVariables.entrySet())
+        for (Map.Entry<VariableDeclaration, SmtExpr> entry: letVariables.entrySet())
         {
             if(! entry.getKey().getSort().equals(entry.getValue().getSort()))
             {
@@ -45,12 +45,12 @@ public class LetExpression extends Expression
         expr.checkTypes();
     }
 
-    public Map<VariableDeclaration, Expression> getLetVariables()
+    public Map<VariableDeclaration, SmtExpr> getLetVariables()
     {
         return this.letVariables;
     }
 
-    public Expression getExpression()
+    public SmtExpr getExpression()
     {
         return this.expr;
     }
@@ -68,7 +68,7 @@ public class LetExpression extends Expression
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         throw new UnsupportedOperationException();
     }
@@ -83,7 +83,7 @@ public class LetExpression extends Expression
     public List<Variable> getFreeVariables()
     {
         List<Variable> freeVariables = expr.getFreeVariables();
-        for (Map.Entry<VariableDeclaration, Expression> entry: letVariables.entrySet())
+        for (Map.Entry<VariableDeclaration, SmtExpr> entry: letVariables.entrySet())
         {
             freeVariables.remove(entry.getKey().getVariable());
         }
@@ -91,13 +91,13 @@ public class LetExpression extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
         throw new UnsupportedOperationException();
     }

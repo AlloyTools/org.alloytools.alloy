@@ -22,12 +22,12 @@ public class SmtValues extends SmtAst
         visitor.visit(this);
     }
 
-    public Expression getExpression(int index)
+    public SmtExpr getExpression(int index)
     {
-        return values.get(index).getExpression();
+        return values.get(index).getSmtExpr();
     }
 
-    public Expression getValue(int index)
+    public SmtExpr getValue(int index)
     {
         return values.get(index).getValue();
     }

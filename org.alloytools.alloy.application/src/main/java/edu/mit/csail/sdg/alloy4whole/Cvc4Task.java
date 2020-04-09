@@ -501,7 +501,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
         else
         {
-            signature.atoms = getAtoms(function.expression, functionsMap);
+            signature.atoms = getAtoms(function.smtExpr, functionsMap);
         }
         return signature;
     }
@@ -523,7 +523,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             throw new Exception("Can not find the function " + fieldName
                     + " for field " + field.label + "in the model.");
         }
-        field.tuples = getTuples(function.expression, functionsMap);
+        field.tuples = getTuples(function.smtExpr, functionsMap);
         field.types  = Collections.singletonList(new Types());
         //ToDo: refactor these magic numbers
         field.types.get(0).types = Arrays.stream(new int[]{parentId, parentId, parentId})
@@ -556,7 +556,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
         else
         {
-            field.tuples = getTuples(function.expression, functionsMap);
+            field.tuples = getTuples(function.smtExpr, functionsMap);
         }
 
         field.types  = getTypes(mappingField);
@@ -577,24 +577,24 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return types;
     }
 
-    private static List<Tuple> getTuples(Expression expression, Map<String,FunctionDefinition> functionsMap)
+    private static List<Tuple> getTuples(SmtExpr smtExpr, Map<String,FunctionDefinition> functionsMap)
     {
         List<Tuple> tuples = new ArrayList<>();
 
-        if(expression instanceof  UnaryExpression)
+        if(smtExpr instanceof SmtUnaryExpr)
         {
-            UnaryExpression unary = (UnaryExpression) expression;
+            SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
             switch (unary.getOP())
             {
                 case EMPTYSET: return new ArrayList<>();
                 case SINGLETON:
                 {
-                    Expression unaryExpression = unary.getExpression();
-                    if(unaryExpression instanceof MultiArityExpression)
+                    SmtExpr unarySmtExpr = unary.getExpression();
+                    if(unarySmtExpr instanceof SmtMultiArityExpr)
                     {
-                        MultiArityExpression multiArity = (MultiArityExpression) unaryExpression;
+                        SmtMultiArityExpr multiArity = (SmtMultiArityExpr) unarySmtExpr;
 
-                        if(multiArity.getOp() == MultiArityExpression.Op.MKTUPLE)
+                        if(multiArity.getOp() == SmtMultiArityExpr.Op.MKTUPLE)
                         {
                             List<Atom> atoms    = getAtoms(multiArity, functionsMap);
                             Tuple tuple         = new Tuple();
@@ -611,9 +611,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
-        if(expression instanceof  BinaryExpression)
+        if(smtExpr instanceof SmtBinaryExpr)
         {
-            BinaryExpression binary = (BinaryExpression) expression;
+            SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
 
             switch (binary.getOp())
             {
@@ -631,13 +631,13 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private static List<Atom> getAtoms(Expression expression, Map<String,FunctionDefinition> functions)
+    private static List<Atom> getAtoms(SmtExpr smtExpr, Map<String,FunctionDefinition> functions)
     {
         List<Atom> atoms = new ArrayList<>();
 
-        if(expression instanceof UninterpretedConstant)
+        if(smtExpr instanceof UninterpretedConstant)
         {
-            UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) expression;
+            UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) smtExpr;
             if(uninterpretedConstant.getSort().equals(AbstractTranslator.atomSort))
             {
                 atoms.add(new Atom(uninterpretedConstant.getName()));
@@ -651,16 +651,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
 
         //ToDo: review removing this which is replaced with uninterpretedInt
-        if(expression instanceof IntConstant)
+        if(smtExpr instanceof IntConstant)
         {
-            IntConstant intConstant  = (IntConstant) expression;
+            IntConstant intConstant  = (IntConstant) smtExpr;
             atoms.add(new Atom(intConstant.getValue()));
             return atoms;
         }
 
-        if(expression instanceof  UnaryExpression)
+        if(smtExpr instanceof SmtUnaryExpr)
         {
-            UnaryExpression unary = (UnaryExpression) expression;
+            SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
             switch (unary.getOP())
             {
                 case EMPTYSET: return new ArrayList<>();
@@ -673,9 +673,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
-        if(expression instanceof  BinaryExpression)
+        if(smtExpr instanceof SmtBinaryExpr)
         {
-            BinaryExpression binary = (BinaryExpression) expression;
+            SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
 
             switch (binary.getOp())
             {
@@ -690,14 +690,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
-        if(expression instanceof MultiArityExpression)
+        if(smtExpr instanceof SmtMultiArityExpr)
         {
-            MultiArityExpression multiArity = (MultiArityExpression) expression;
+            SmtMultiArityExpr multiArity = (SmtMultiArityExpr) smtExpr;
             switch (multiArity.getOp())
             {
                 case MKTUPLE:
                 {
-                    for (Expression expr: multiArity.getExpressions())
+                    for (SmtExpr expr: multiArity.getExpressions())
                     {
                         atoms.addAll(getAtoms(expr, functions));
                     }

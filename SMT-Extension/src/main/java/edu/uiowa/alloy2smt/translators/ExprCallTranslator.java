@@ -23,10 +23,10 @@ public class ExprCallTranslator
         this.translator = exprTranslator.translator;
     }
 
-    Expression translateExprCall(ExprCall exprCall, Environment environment)
+    SmtExpr translateExprCall(ExprCall exprCall, Environment environment)
     {
         String funcName = exprCall.fun.label;
-        List<Expression> argExprs = new ArrayList<>();
+        List<SmtExpr> argExprs = new ArrayList<>();
 
         for (Expr e : exprCall.args)
         {
@@ -35,7 +35,7 @@ public class ExprCallTranslator
 
 //        if (this.translator.funcNamesMap.containsKey(funcName))
 //        {
-//            return new FunctionCallExpression(translator.getFunctionFromAlloyName(funcName), argExprs);
+//            return new FunctionCallSmtExpr(translator.getFunctionFromAlloyName(funcName), argExprs);
 //        }
 //        else if (this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
 //        {
@@ -43,32 +43,32 @@ public class ExprCallTranslator
 //        }
         if(exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
         {
-            return new FunctionCallExpression(translator.functionsMap.get(funcName), argExprs);
+            return new SmtCallExpr(translator.functionsMap.get(funcName), argExprs);
         }
 //        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
 //        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.PLUS, environment);
+//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.PLUS, environment);
 //        }
 //        else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
 //        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MINUS, environment);
+//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.MINUS, environment);
 //        }
 //        else if (funcName.equals("integer/mul"))
 //        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MULTIPLY, environment);
+//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.MULTIPLY, environment);
 //        }
 //        else if (funcName.equals("integer/div"))
 //        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.DIVIDE, environment);
+//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.DIVIDE, environment);
 //        }
 //        else if (funcName.equals("integer/rem"))
 //        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinaryExpression.Op.MOD, environment);
+//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.MOD, environment);
 //        }
 //        else if (translator.functionsMap.containsKey(funcName))
 //        {
 //            FunctionDeclaration function = translator.getFunction(funcName);
-//            return new FunctionCallExpression(function, argExprs);
+//            return new FunctionCallSmtExpr(function, argExprs);
 //        }
         else
         {
@@ -78,8 +78,8 @@ public class ExprCallTranslator
             {
                 body = AlloyUtils.substituteExpr(body, exprCall.fun.get(i), exprCall.args.get(i));
             }
-            Expression callExpression = exprTranslator.translateExpr(body, environment);
-            return callExpression;
+            SmtExpr callSmtExpr = exprTranslator.translateExpr(body, environment);
+            return callSmtExpr;
         }
     }
 }

@@ -16,25 +16,25 @@ public class ExprVarTranslator
         this.translator = exprTranslator.translator;
     }
 
-    Expression translateExprVar(ExprVar exprVar, Environment environment)
+    SmtExpr translateExprVar(ExprVar exprVar, Environment environment)
     {
         String name = exprVar.label;
 
         if(environment.containsKey(name))
         {
-            Expression variable = environment.get(name);
+            SmtExpr variable = environment.get(name);
 
             if(variable.getSort() == AbstractTranslator.atomSort)
             {
-                return UnaryExpression.Op.SINGLETON.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable));
+                return SmtUnaryExpr.Op.SINGLETON.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, variable));
             }
             else if(variable.getSort() == AbstractTranslator.intSort)
             {
-                return UnaryExpression.Op.SINGLETON.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, variable));
+                return SmtUnaryExpr.Op.SINGLETON.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, variable));
             }
             else if(variable.getSort() instanceof TupleSort)
             {
-                return UnaryExpression.Op.SINGLETON.make(variable);
+                return SmtUnaryExpr.Op.SINGLETON.make(variable);
             }
 
             return variable;

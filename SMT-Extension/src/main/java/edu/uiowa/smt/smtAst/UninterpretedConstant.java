@@ -36,7 +36,7 @@ public class UninterpretedConstant extends Constant
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         if(this.getSort().equals(AbstractTranslator.atomSort))
         {
@@ -52,7 +52,7 @@ public class UninterpretedConstant extends Constant
             FunctionDefinition uninterpretedIntValue = functions.get(AbstractTranslator.uninterpretedIntValueName);
             // uninterpretedIntValue: UninterpretedInt -> Int
             assert (uninterpretedIntValue.inputVariables.size() == 1);
-            FunctionCallExpression functionCall = new FunctionCallExpression(uninterpretedIntValue, this);
+            SmtCallExpr functionCall = new SmtCallExpr(uninterpretedIntValue, this);
             return functionCall.evaluate(functions);
         }
         throw new UnsupportedOperationException();
@@ -80,17 +80,17 @@ public class UninterpretedConstant extends Constant
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         return this;
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
         return this;
     }

@@ -28,7 +28,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(UnaryExpression unaryExpression)
+    public void visit(SmtUnaryExpr unaryExpression)
     {
         tabsCount++;
         stringBuilder.append("\n");
@@ -42,9 +42,9 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(BinaryExpression expr)
+    public void visit(SmtBinaryExpr expr)
     {
-        if(expr.getOp() != BinaryExpression.Op.TUPSEL)
+        if(expr.getOp() != SmtBinaryExpr.Op.TUPSEL)
         {
             tabsCount++;
             stringBuilder.append("\n");
@@ -68,7 +68,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(MultiArityExpression multiArityExpression)
+    public void visit(SmtMultiArityExpr multiArityExpression)
     {
         tabsCount++;
         stringBuilder.append("\n");
@@ -97,7 +97,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(QuantifiedExpression quantifiedExpression)
+    public void visit(SmtQtExpr quantifiedExpression)
     {
         quantifiedExpression = optimize(quantifiedExpression);
         tabsCount++;
@@ -116,13 +116,13 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(LetExpression let)
+    public void visit(SmtLetExpr let)
     {
         tabsCount++;
         stringBuilder.append("\n");
         printTabs();
         stringBuilder.append("(let (");
-        for(Map.Entry<VariableDeclaration, Expression> letVar : let.getLetVariables().entrySet())
+        for(Map.Entry<VariableDeclaration, SmtExpr> letVar : let.getLetVariables().entrySet())
         {
             tabsCount++;
             stringBuilder.append("\n");
@@ -141,12 +141,12 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
 
     @Override
-    public void visit(Expression expression)
+    public void visit(SmtExpr smtExpr)
     {
-        super.visit(expression);
-        if(!expression.getComment().isEmpty())
+        super.visit(smtExpr);
+        if(!smtExpr.getComment().isEmpty())
         {
-            stringBuilder.append("; " + expression.getComment() + "\n");
+            stringBuilder.append("; " + smtExpr.getComment() + "\n");
             printTabs();
         }
     }

@@ -87,9 +87,9 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(BinaryExpression expr)
+    public void visit(SmtBinaryExpr expr)
     {
-        if (expr.getOp() != BinaryExpression.Op.TUPSEL)
+        if (expr.getOp() != SmtBinaryExpr.Op.TUPSEL)
         {
             stringBuilder.append("(" + expr.getOp() + " ");
             this.visit(expr.getA());
@@ -114,7 +114,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(QuantifiedExpression quantifiedExpression)
+    public void visit(SmtQtExpr quantifiedExpression)
     {
         quantifiedExpression = optimize(quantifiedExpression);
         stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
@@ -127,24 +127,24 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
         stringBuilder.append(")");
     }
 
-    public QuantifiedExpression optimize(QuantifiedExpression quantifiedExpression)
+    public SmtQtExpr optimize(SmtQtExpr quantifiedExpression)
     {
         List<VariableDeclaration> declarations = new ArrayList<>();
-        Map<VariableDeclaration, Expression> letVariables = new LinkedHashMap<>();
+        Map<VariableDeclaration, SmtExpr> letVariables = new LinkedHashMap<>();
         for (VariableDeclaration variable: quantifiedExpression.getVariables())
         {
             if(variable.getSort() instanceof TupleSort)
             {
-                List<Expression> tupleExpressions = new ArrayList<>();
+                List<SmtExpr> tupleSmtExprs = new ArrayList<>();
                 // convert tuple quantifiers to uninterpreted quantifiers
                 TupleSort tupleSort = (TupleSort) variable.getSort();
                 for (Sort sort: tupleSort.elementSorts)
                 {
                     VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
                     declarations.add(declaration);
-                    tupleExpressions.add(declaration.getVariable());
+                    tupleSmtExprs.add(declaration.getVariable());
                 }
-                Expression tuple = MultiArityExpression.Op.MKTUPLE.make(tupleExpressions);
+                SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(tupleSmtExprs);
                 letVariables.put(variable, tuple);
             }
             else
@@ -154,7 +154,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
         }
         if(letVariables.size() > 0)
         {
-            Expression let = new LetExpression(letVariables, quantifiedExpression.getExpression());
+            SmtExpr let = new SmtLetExpr(letVariables, quantifiedExpression.getExpression());
             return quantifiedExpression.getOp().make(let, declarations);
         }
         else
@@ -196,7 +196,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(UnaryExpression unaryExpression)
+    public void visit(SmtUnaryExpr unaryExpression)
     {
         stringBuilder.append("(" + unaryExpression.getOP() + " ");
         this.visit(unaryExpression.getExpression());
@@ -256,7 +256,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
         stringBuilder.append(") ");
         this.visit(definition.getSort());
         stringBuilder.append(" ").append("\n");
-        this.visit(definition.expression);
+        this.visit(definition.smtExpr);
         stringBuilder.append(")");
         stringBuilder.append("\n");
     }
@@ -290,7 +290,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
         {
             stringBuilder.append("(! ");
         }
-        this.visit(assertion.getExpression());
+        this.visit(assertion.getSmtExpr());
         if(smtSettings.produceUnsatCore && !assertion.getSymbolicName().isEmpty())
         {
             stringBuilder.append("\n :named |" +
@@ -304,7 +304,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(MultiArityExpression multiArityExpression)
+    public void visit(SmtMultiArityExpr multiArityExpression)
     {
         stringBuilder.append("(" + multiArityExpression.getOp() + " ");
         if(multiArityExpression.getExpressions().size() == 1)
@@ -328,24 +328,24 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(FunctionCallExpression functionCallExpression)
+    public void visit(SmtCallExpr smtCallExpr)
     {
-        if(functionCallExpression.getArguments().size() > 0)
+        if(smtCallExpr.getArguments().size() > 0)
         {
             stringBuilder.append("(");
-            stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionCallExpression.getFunction()));
+            stringBuilder.append(TranslatorUtils.sanitizeWithBars(smtCallExpr.getFunction()));
             stringBuilder.append(" ");
-            for(int i = 0; i < functionCallExpression.getArguments().size()-1; ++i)
+            for(int i = 0; i < smtCallExpr.getArguments().size()-1; ++i)
             {
-                this.visit(functionCallExpression.getArguments().get(i));
+                this.visit(smtCallExpr.getArguments().get(i));
                 stringBuilder.append(" ");
             }
-            this.visit(functionCallExpression.getArguments().get(functionCallExpression.getArguments().size()-1));            
+            this.visit(smtCallExpr.getArguments().get(smtCallExpr.getArguments().size()-1));
             stringBuilder.append(")");
         }
         else
         {
-            stringBuilder.append(TranslatorUtils.sanitizeWithBars(functionCallExpression.getFunction()));
+            stringBuilder.append(TranslatorUtils.sanitizeWithBars(smtCallExpr.getFunction()));
         }     
     }
 
@@ -363,10 +363,10 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(LetExpression let)
+    public void visit(SmtLetExpr let)
     {
         stringBuilder.append("(let (");
-        for(Map.Entry<VariableDeclaration, Expression> letVar : let.getLetVariables().entrySet())
+        for(Map.Entry<VariableDeclaration, SmtExpr> letVar : let.getLetVariables().entrySet())
         {
             stringBuilder.append("(");
             stringBuilder.append(TranslatorUtils.sanitizeWithBars(letVar.getKey())).append(" ");
@@ -379,7 +379,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(ITEExpression ite)
+    public void visit(SmtIteExpr ite)
     {
         stringBuilder.append("(ite ");
         this.visit(ite.getCondExpression());
@@ -413,10 +413,10 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
         }
     }
 
-    public String printGetValue(Expression expression)
+    public String printGetValue(SmtExpr smtExpr)
     {
         stringBuilder.append("(get-value (");
-        visit(expression);
+        visit(smtExpr);
         stringBuilder.append("))");
         return stringBuilder.toString();
     }
@@ -436,7 +436,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     public void visit(ExpressionValue expressionValue)
     {
         stringBuilder.append("(");
-        visit(expressionValue.getExpression());
+        visit(expressionValue.getSmtExpr());
         stringBuilder.append(" ");
         visit(expressionValue.getValue());
         stringBuilder.append(")");

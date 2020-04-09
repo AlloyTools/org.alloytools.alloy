@@ -39,7 +39,7 @@ public class SmtOptimizer
 
     public static boolean isTrivial(Assertion assertion)
     {
-        Expression expr = assertion.getExpression();
+        SmtExpr expr = assertion.getSmtExpr();
 
         // (assert true)
         if (expr.equals(BoolConstant.True))
@@ -47,10 +47,10 @@ public class SmtOptimizer
             return true;
         }
 
-        if (expr instanceof MultiArityExpression)
+        if (expr instanceof SmtMultiArityExpr)
         {
-            MultiArityExpression smtMultiArity = (MultiArityExpression) expr;
-            if (smtMultiArity.getOp() == MultiArityExpression.Op.AND)
+            SmtMultiArityExpr smtMultiArity = (SmtMultiArityExpr) expr;
+            if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.AND)
             {
                 // (assert (and))
                 if (smtMultiArity.getExpressions().isEmpty())
@@ -64,7 +64,7 @@ public class SmtOptimizer
                 }
             }
 
-            if (smtMultiArity.getOp() == MultiArityExpression.Op.OR)
+            if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.OR)
             {
                 // (assert (or true))
                 if (smtMultiArity.getExpressions().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))

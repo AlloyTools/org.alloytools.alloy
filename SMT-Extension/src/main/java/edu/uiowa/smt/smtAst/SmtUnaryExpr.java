@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class UnaryExpression extends Expression
+public class SmtUnaryExpr extends SmtExpr
 {    
     private final Op op;
-    private final Expression expr;
+    private final SmtExpr expr;
     
-    private UnaryExpression(Op op, Expression expr)
+    private SmtUnaryExpr(Op op, SmtExpr expr)
     {
         this.op     = op;
         if(expr == null)
@@ -92,7 +92,7 @@ public class UnaryExpression extends Expression
         return this.op;
     }
     
-    public Expression getExpression() 
+    public SmtExpr getExpression()
     {
         return this.expr;
     }
@@ -134,21 +134,21 @@ public class UnaryExpression extends Expression
     }
 
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         if(op == Op.EMPTYSET)
         {
             if(expr.equals(AbstractTranslator.setOfUninterpretedIntTuple))
             {
-                return new UnaryExpression(op, AbstractTranslator.setOfIntSortTuple);
+                return new SmtUnaryExpr(op, AbstractTranslator.setOfIntSortTuple);
             }
             else
             {
                 return this;
             }
         }
-        Expression expression = this.expr.evaluate(functions);
-        return new UnaryExpression(this.op, expression);
+        SmtExpr smtExpr = this.expr.evaluate(functions);
+        return new SmtUnaryExpr(this.op, smtExpr);
     }
 
     @Override
@@ -158,11 +158,11 @@ public class UnaryExpression extends Expression
         {
             return true;
         }
-        if(!(object instanceof UnaryExpression))
+        if(!(object instanceof SmtUnaryExpr))
         {
             return false;
         }
-        UnaryExpression unaryObject = (UnaryExpression) object;
+        SmtUnaryExpr unaryObject = (SmtUnaryExpr) object;
         return op ==  unaryObject.op &&
                 expr.equals(unaryObject.expr);
     }
@@ -174,26 +174,26 @@ public class UnaryExpression extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         if(expr.equals(newVariable))
         {
             throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
         }
 
-        Expression newExpression = expr.substitute(oldVariable, newVariable);
-        return new UnaryExpression(op, newExpression);
+        SmtExpr newSmtExpr = expr.substitute(oldVariable, newVariable);
+        return new SmtUnaryExpr(op, newSmtExpr);
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
-        Expression expression = expr.replace(oldExpression, newExpression);
-        return new UnaryExpression(op, expression);
+        SmtExpr smtExpr = expr.replace(oldSmtExpr, newSmtExpr);
+        return new SmtUnaryExpr(op, smtExpr);
     }
 
     public enum Op
@@ -230,9 +230,9 @@ public class UnaryExpression extends Expression
             }
         }
 
-        public UnaryExpression make(Expression expr)
+        public SmtUnaryExpr make(SmtExpr expr)
         {
-            return new UnaryExpression(this, expr);
+            return new SmtUnaryExpr(this, expr);
         }
 
         @Override

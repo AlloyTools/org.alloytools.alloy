@@ -10,9 +10,9 @@ package edu.uiowa.smt.smtAst;
 
 public class ConstantDefinition extends FunctionDefinition
 {
-    public ConstantDefinition(String name,  Sort outputSort, Expression expression, boolean isOriginal)
+    public ConstantDefinition(String name, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
     {
-        super(name, outputSort, expression, isOriginal);
+        super(name, outputSort, smtExpr, isOriginal);
     }
 
     @Override

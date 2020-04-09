@@ -59,13 +59,13 @@ public class FieldTranslator
             {
                 for (int i = 0; i < decl.names.size() - 1; i++)
                 {
-                    Expression fieldI = getFieldExpression(fields, decl.names.get(i).label);
+                    SmtExpr fieldI = getFieldExpression(fields, decl.names.get(i).label);
                     for (int j = i + 1; j < decl.names.size(); j++)
                     {
-                        Expression fieldJ = getFieldExpression(fields, decl.names.get(j).label);
-                        Expression intersect = BinaryExpression.Op.INTERSECTION.make(fieldI, fieldJ);
-                        Expression emptySet = UnaryExpression.Op.EMPTYSET.make(fieldI.getSort());
-                        Expression equal = BinaryExpression.Op.EQ.make(intersect, emptySet);
+                        SmtExpr fieldJ = getFieldExpression(fields, decl.names.get(j).label);
+                        SmtExpr intersect = SmtBinaryExpr.Op.INTERSECTION.make(fieldI, fieldJ);
+                        SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(fieldI.getSort());
+                        SmtExpr equal = SmtBinaryExpr.Op.EQ.make(intersect, emptySet);
                         List<Pos> positions = Arrays.asList(decl.names.get(i).pos, decl.names.get(j).pos);
                         Assertion disjoint = AlloyUtils.getAssertion(positions,
                                 String.format("disj %1$s, %2$s", decl.names.get(i), decl.names.get(j)), equal);
@@ -88,20 +88,20 @@ public class FieldTranslator
         // sig S {f: disj e}
         // all a, b: S | a != b implies no a.f & b.f
 
-        Expression signature = translator.signaturesMap.get(sig).getVariable();
+        SmtExpr signature = translator.signaturesMap.get(sig).getVariable();
         SetSort setSort = (SetSort) signature.getSort();
         VariableDeclaration a = new VariableDeclaration("a", setSort.elementSort, false);
         VariableDeclaration b = new VariableDeclaration("b", setSort.elementSort, false);
-        Expression aMember = BinaryExpression.Op.MEMBER.make(a.getVariable(), signature);
-        Expression bMember = BinaryExpression.Op.MEMBER.make(b.getVariable(), signature);
-        Expression aSingleton = UnaryExpression.Op.SINGLETON.make(a.getVariable());
-        Expression bSingleton = UnaryExpression.Op.SINGLETON.make(b.getVariable());
+        SmtExpr aMember = SmtBinaryExpr.Op.MEMBER.make(a.getVariable(), signature);
+        SmtExpr bMember = SmtBinaryExpr.Op.MEMBER.make(b.getVariable(), signature);
+        SmtExpr aSingleton = SmtUnaryExpr.Op.SINGLETON.make(a.getVariable());
+        SmtExpr bSingleton = SmtUnaryExpr.Op.SINGLETON.make(b.getVariable());
 
-        Expression members = MultiArityExpression.Op.AND.make(aMember, bMember);
-        Expression equal = BinaryExpression.Op.EQ.make(a.getVariable(), b.getVariable());
-        Expression notEqual = UnaryExpression.Op.NOT.make(equal);
-        Expression antecedent = MultiArityExpression.Op.AND.make(members, notEqual);
-        Expression consequent = BoolConstant.True;
+        SmtExpr members = SmtMultiArityExpr.Op.AND.make(aMember, bMember);
+        SmtExpr equal = SmtBinaryExpr.Op.EQ.make(a.getVariable(), b.getVariable());
+        SmtExpr notEqual = SmtUnaryExpr.Op.NOT.make(equal);
+        SmtExpr antecedent = SmtMultiArityExpr.Op.AND.make(members, notEqual);
+        SmtExpr consequent = BoolConstant.True;
 
         //ToDo: refactor for unsat core
         List<Pos> positions = new ArrayList<>();
@@ -111,13 +111,13 @@ public class FieldTranslator
             {
                 for (ExprHasName name: decl.names)
                 {
-                    Expression field = getFieldExpression(fields, name.label);
-                    Expression aJoin = BinaryExpression.Op.JOIN.make(aSingleton, field);
-                    Expression bJoin = BinaryExpression.Op.JOIN.make(bSingleton, field);
-                    Expression intersect = BinaryExpression.Op.INTERSECTION.make(aJoin, bJoin);
-                    Expression emptySet = UnaryExpression.Op.EMPTYSET.make(intersect.getSort());
-                    Expression isEmpty = BinaryExpression.Op.EQ.make(intersect, emptySet);
-                    consequent = MultiArityExpression.Op.AND.make(consequent, isEmpty);
+                    SmtExpr field = getFieldExpression(fields, name.label);
+                    SmtExpr aJoin = SmtBinaryExpr.Op.JOIN.make(aSingleton, field);
+                    SmtExpr bJoin = SmtBinaryExpr.Op.JOIN.make(bSingleton, field);
+                    SmtExpr intersect = SmtBinaryExpr.Op.INTERSECTION.make(aJoin, bJoin);
+                    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(intersect.getSort());
+                    SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(intersect, emptySet);
+                    consequent = SmtMultiArityExpr.Op.AND.make(consequent, isEmpty);
                     positions.add(name.pos);
                 }
             }
@@ -125,15 +125,15 @@ public class FieldTranslator
 
         if(! consequent.equals(BoolConstant.True))
         {
-            Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
-            Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, a, b);
+            SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(antecedent, consequent);
+            SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, a, b);
 
             Assertion disjoint2 = AlloyUtils.getAssertion(positions, sig.label + " disjoint2", forAll);
             translator.smtScript.addAssertion(disjoint2);
         }
     }
 
-    private Expression getFieldExpression(List<Sig.Field> fields, String label)
+    private SmtExpr getFieldExpression(List<Sig.Field> fields, String label)
     {
         Optional<Sig.Field> field =  fields.stream()
             .filter(f -> f.label.equals(label))
@@ -142,8 +142,8 @@ public class FieldTranslator
         {
             throw new RuntimeException("Can not find field " + label);
         }
-        Expression expression = translator.fieldsMap.get(field.get()).getVariable();
-        return expression;
+        SmtExpr smtExpr = translator.fieldsMap.get(field.get()).getVariable();
+        return smtExpr;
     }
 
     void translate(Sig.Field field)
@@ -195,7 +195,7 @@ public class FieldTranslator
         Decl decl = new Decl(null, null, null, Collections.singletonList(zis), oneOfSig);
         Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), exprLet);
 
-        Expression multiplicity =  translator.exprTranslator.translateExpr(all, new Environment());
+        SmtExpr multiplicity =  translator.exprTranslator.translateExpr(all, new Environment());
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(field.pos),field.toString() + " multiplicity", multiplicity);
         translator.smtScript.addAssertion(assertion);
 

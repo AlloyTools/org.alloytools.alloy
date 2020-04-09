@@ -13,12 +13,12 @@ import edu.uiowa.smt.AbstractTranslator;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MultiArityExpression extends Expression
+public class SmtMultiArityExpr extends SmtExpr
 {
     private final Op op;
-    private final List<Expression> exprs;
+    private final List<SmtExpr> exprs;
     
-    private MultiArityExpression(Op op, List<Expression> exprs)
+    private SmtMultiArityExpr(Op op, List<SmtExpr> exprs)
     {
         this.op     = op;
         this.exprs  = exprs;
@@ -49,20 +49,20 @@ public class MultiArityExpression extends Expression
                     throw new RuntimeException("Insert operation requires at least two expressions");
                 }
                 // the last expression should have a set sort
-                Expression setExpression = exprs.get(exprs.size() - 1);
-                if(!(setExpression.getSort() instanceof  SetSort))
+                SmtExpr setSmtExpr = exprs.get(exprs.size() - 1);
+                if(!(setSmtExpr.getSort() instanceof  SetSort))
                 {
-                    throw new RuntimeException(String.format("The expression '%1$s' has sort '%2S' which is not set",setExpression, setExpression.getSort()));
+                    throw new RuntimeException(String.format("The expression '%1$s' has sort '%2S' which is not set", setSmtExpr, setSmtExpr.getSort()));
                 }
-                SetSort setSort = (SetSort) setExpression.getSort();
+                SetSort setSort = (SetSort) setSmtExpr.getSort();
 
                 // all remaining expressions should have the same sort of the elements of the set
                 for (int i = 0; i < exprs.size() - 1; i++)
                 {
-                    Expression expression = exprs.get(i);
-                    if(!(expression.getSort().equals(setSort.elementSort)))
+                    SmtExpr smtExpr = exprs.get(i);
+                    if(!(smtExpr.getSort().equals(setSort.elementSort)))
                     {
-                        throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' doesn't match the elements sort '%3$s'", exprs.get(i).getSort(), expression , setSort.elementSort));
+                        throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' doesn't match the elements sort '%3$s'", exprs.get(i).getSort(), smtExpr, setSort.elementSort));
                     }
                 }
             } break;
@@ -74,7 +74,7 @@ public class MultiArityExpression extends Expression
                 }
 
                 List<Sort> sorts = this.exprs.stream()
-                                            .map(Expression::getSort).collect(Collectors.toList());
+                                             .map(SmtExpr::getSort).collect(Collectors.toList());
                 Sort firstSort = sorts.get(0);
                 for (int i = 1; i < sorts.size(); i++)
                 {
@@ -105,16 +105,16 @@ public class MultiArityExpression extends Expression
         }
 
         // all expressions should have boolean sort
-        for (Expression expression: exprs)
+        for (SmtExpr smtExpr : exprs)
         {
-            if(!(expression.getSort().equals(AbstractTranslator.boolSort)))
+            if(!(smtExpr.getSort().equals(AbstractTranslator.boolSort)))
             {
-                throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not boolean", expression.getSort(), expression));
+                throw new RuntimeException(String.format("The sort '%1$s' of expression '%2$s' is not boolean", smtExpr.getSort(), smtExpr));
             }
         }
     }
 
-    public MultiArityExpression(Op op, Expression ... exprs)
+    public SmtMultiArityExpr(Op op, SmtExpr... exprs)
     {
         this(op,  Arrays.asList(exprs));
     }    
@@ -124,7 +124,7 @@ public class MultiArityExpression extends Expression
         return this.op;
     }
     
-    public List<Expression> getExpressions()
+    public List<SmtExpr> getExpressions()
     {
         return this.exprs;
     }
@@ -135,7 +135,7 @@ public class MultiArityExpression extends Expression
         visitor.visit(this);
     }
 
-    public Expression get(int index)
+    public SmtExpr get(int index)
     {
         assert (0 <= index && index < exprs.size());
         return this.exprs.get(index);
@@ -156,14 +156,14 @@ public class MultiArityExpression extends Expression
             this.opStr = op;
         }
 
-        public MultiArityExpression make(List<Expression> exprs)
+        public SmtMultiArityExpr make(List<SmtExpr> exprs)
         {
-            return new MultiArityExpression(this, exprs);
+            return new SmtMultiArityExpr(this, exprs);
         }
 
-        public MultiArityExpression make(Expression ...exprs)
+        public SmtMultiArityExpr make(SmtExpr...exprs)
         {
-            return new MultiArityExpression(this, exprs);
+            return new SmtMultiArityExpr(this, exprs);
         }
 
        public static Op getOp(String operator)
@@ -197,7 +197,7 @@ public class MultiArityExpression extends Expression
             {
 
                 List<Sort> sorts = new ArrayList<>();
-                for (Expression expr: exprs)
+                for (SmtExpr expr: exprs)
                 {
                     sorts.add(expr.getSort());
                 }
@@ -216,14 +216,14 @@ public class MultiArityExpression extends Expression
         }
     }
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
-        List<Expression> expressions = new ArrayList<>();
-        for (Expression expression : this.exprs)
+        List<SmtExpr> smtExprs = new ArrayList<>();
+        for (SmtExpr smtExpr : this.exprs)
         {
-            expressions.add(expression.evaluate(functions));
+            smtExprs.add(smtExpr.evaluate(functions));
         }
-        return new MultiArityExpression(this.op, expressions);
+        return new SmtMultiArityExpr(this.op, smtExprs);
     }
 
     @Override
@@ -233,11 +233,11 @@ public class MultiArityExpression extends Expression
         {
             return true;
         }
-        if(!(object instanceof MultiArityExpression))
+        if(!(object instanceof SmtMultiArityExpr))
         {
             return false;
         }
-        MultiArityExpression multiArity = (MultiArityExpression) object;
+        SmtMultiArityExpr multiArity = (SmtMultiArityExpr) object;
         return op ==  multiArity.op &&
                 exprs.equals(multiArity.exprs);
     }
@@ -246,41 +246,41 @@ public class MultiArityExpression extends Expression
     public List<Variable> getFreeVariables()
     {
         List<Variable> freeVariables = new ArrayList<>();
-        for (Expression expression: exprs)
+        for (SmtExpr smtExpr : exprs)
         {
-            freeVariables.addAll(expression.getFreeVariables());
+            freeVariables.addAll(smtExpr.getFreeVariables());
         }
         return freeVariables;
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
-        List<Expression> newExpressions = new ArrayList<>();
-        for (Expression expression: exprs)
+        List<SmtExpr> newSmtExprs = new ArrayList<>();
+        for (SmtExpr smtExpr : exprs)
         {
-            if (expression.equals(newVariable))
+            if (smtExpr.equals(newVariable))
             {
                 throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
             }
-            newExpressions.add(expression.substitute(oldVariable, newVariable));
+            newSmtExprs.add(smtExpr.substitute(oldVariable, newVariable));
         }
-        return new MultiArityExpression(op, newExpressions);
+        return new SmtMultiArityExpr(op, newSmtExprs);
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
 
-        List<Expression> newExpressions = new ArrayList<>();
-        for (Expression expression: exprs)
+        List<SmtExpr> newSmtExprs = new ArrayList<>();
+        for (SmtExpr smtExpr : exprs)
         {
-            newExpressions.add(expression.replace(oldExpression, newExpression));
+            newSmtExprs.add(smtExpr.replace(oldSmtExpr, newSmtExpr));
         }
-        return new MultiArityExpression(op, newExpressions);
+        return new SmtMultiArityExpr(op, newSmtExprs);
     }
 }

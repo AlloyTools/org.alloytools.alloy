@@ -51,16 +51,16 @@ public class SignatureTranslator
                     SafeList<Sig.PrimSig> children = primSig.children();
                     if (children.size() > 0)
                     {
-                        Expression left = translator.signaturesMap.get(sig).getVariable();
-                        Expression union = translator.signaturesMap.get(children.get(0)).getVariable();
+                        SmtExpr left = translator.signaturesMap.get(sig).getVariable();
+                        SmtExpr union = translator.signaturesMap.get(children.get(0)).getVariable();
 
                         for (int i = 1; i < children.size(); i++)
                         {
-                            Expression expression = translator.signaturesMap.get(children.get(i)).getVariable();
-                            union = BinaryExpression.Op.UNION.make(union, expression);
+                            SmtExpr smtExpr = translator.signaturesMap.get(children.get(i)).getVariable();
+                            union = SmtBinaryExpr.Op.UNION.make(union, smtExpr);
                         }
 
-                        BinaryExpression equality = BinaryExpression.Op.EQ.make(left, union);
+                        SmtBinaryExpr equality = SmtBinaryExpr.Op.EQ.make(left, union);
                         List<Pos> positions = children.makeCopy().stream()
                                 .map(s -> s.pos).collect(Collectors.toList());
                         Assertion isAbstract = AlloyUtils.getAssertion(positions, "abstract " + primSig.toString(), equality);
@@ -73,13 +73,13 @@ public class SignatureTranslator
         if (translator.topLevelSigs.size() > 0)
         {
             // The union of all top-level sigs equals to the universe
-            Expression unionTopSigExprs = translator.signaturesMap.get(translator.topLevelSigs.get(0)).getVariable();
+            SmtExpr unionTopSigExprs = translator.signaturesMap.get(translator.topLevelSigs.get(0)).getVariable();
 
             for (int i = 1; i < translator.topLevelSigs.size(); ++i)
             {
-                unionTopSigExprs = BinaryExpression.Op.UNION.make(unionTopSigExprs, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable());
+                unionTopSigExprs = SmtBinaryExpr.Op.UNION.make(unionTopSigExprs, translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable());
             }
-            Expression equal = BinaryExpression.Op.EQ.make(unionTopSigExprs, translator.univAtom.getVariable());
+            SmtExpr equal = SmtBinaryExpr.Op.EQ.make(unionTopSigExprs, translator.univAtom.getVariable());
             List<Pos> positions = translator.topLevelSigs.stream().map(s -> s.pos).collect(Collectors.toList());
             Assertion assertion = AlloyUtils.getAssertion(positions, "atomUniv is the union of top level signatures", equal);
             translator.smtScript.addAssertion(assertion);
@@ -89,13 +89,13 @@ public class SignatureTranslator
             {
                 for (int i = 0; i < translator.topLevelSigs.size() - 1; ++i)
                 {
-                    Expression fstSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable();
+                    SmtExpr fstSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(i)).getVariable();
 
                     for (int j = i + 1; j < translator.topLevelSigs.size(); ++j)
                     {
-                        Expression sndSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(j)).getVariable();
-                        Expression intersect = BinaryExpression.Op.INTERSECTION.make(fstSigExpr, sndSigExpr);
-                        Expression disjoint = BinaryExpression.Op.EQ.make(intersect, AbstractTranslator.atomNone.getVariable());
+                        SmtExpr sndSigExpr = translator.signaturesMap.get(translator.topLevelSigs.get(j)).getVariable();
+                        SmtExpr intersect = SmtBinaryExpr.Op.INTERSECTION.make(fstSigExpr, sndSigExpr);
+                        SmtExpr disjoint = SmtBinaryExpr.Op.EQ.make(intersect, AbstractTranslator.atomNone.getVariable());
                         assertion = AlloyUtils.getAssertion(positions,
                                 "Top level signatures are disjoint", disjoint);
                         translator.smtScript.addAssertion(assertion);
@@ -111,13 +111,13 @@ public class SignatureTranslator
         for (int i = 0; i < signatures.size(); i++)
         {
             Sig signature = signatures.get(i);
-            Expression left = translator.signaturesMap.get(signature).getVariable();
+            SmtExpr left = translator.signaturesMap.get(signature).getVariable();
 
             for (int j = i + 1; j < signatures.size(); j++)
             {
-                Expression right = translator.signaturesMap.get(signatures.get(j)).getVariable();
-                BinaryExpression disjoint = BinaryExpression.Op.INTERSECTION.make(left, right);
-                BinaryExpression equality = BinaryExpression.Op.EQ.make(disjoint, translator.atomNone.getVariable());
+                SmtExpr right = translator.signaturesMap.get(signatures.get(j)).getVariable();
+                SmtBinaryExpr disjoint = SmtBinaryExpr.Op.INTERSECTION.make(left, right);
+                SmtBinaryExpr equality = SmtBinaryExpr.Op.EQ.make(disjoint, translator.atomNone.getVariable());
 
                 List<Pos> positions = Arrays.asList(signature.pos, signatures.get(j).pos);
                 Assertion assertion = AlloyUtils.getAssertion(positions, "Disjoint signatures", equality);
@@ -202,7 +202,7 @@ public class SignatureTranslator
 
     private void translateSignatureOneMultiplicity(Sig sig)
     {
-        Expression expr;
+        SmtExpr expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
 
@@ -218,17 +218,17 @@ public class SignatureTranslator
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
             constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort, false);
         }
-        expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+        expr = AlloyUtils.mkSingletonOutOfTuple(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, constDecl.getVariable()));
         translator.smtScript.addConstantDeclaration(constDecl);
 
-        BinaryExpression subset = BinaryExpression.Op.EQ.make(signature.getVariable(), expr);
+        SmtBinaryExpr subset = SmtBinaryExpr.Op.EQ.make(signature.getVariable(), expr);
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos), "one " + sig.label, subset);
         translator.smtScript.addAssertion(assertion);
     }
 
     private void translateSignatureLoneMultiplicity(Sig sig)
     {
-        Expression expr;
+        SmtExpr expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
@@ -237,24 +237,24 @@ public class SignatureTranslator
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
             constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
-            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
             constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort,false);
-            expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtScript.addConstantDeclaration(constDecl);
 
-        BinaryExpression subset = BinaryExpression.Op.SUBSET.make(signature.getVariable(), expr);
+        SmtBinaryExpr subset = SmtBinaryExpr.Op.SUBSET.make(signature.getVariable(), expr);
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos), "lone " + sig.label, subset);
         translator.smtScript.addAssertion(assertion);
     }
 
     private void translateSignatureSomeMultiplicity(Sig sig)
     {
-        Expression expr;
+        SmtExpr expr;
         ConstantDeclaration constDecl;
         Boolean isInt = sig.type().is_int();        
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
@@ -263,17 +263,17 @@ public class SignatureTranslator
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
             constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
-            expr = AlloyUtils.mkSingletonOutOfTuple(new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
             constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort, false);
-            expr = AlloyUtils.mkSingletonOutOfTuple(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, constDecl.getVariable()));
+            expr = AlloyUtils.mkSingletonOutOfTuple(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, constDecl.getVariable()));
         }
         translator.smtScript.addConstantDeclaration(constDecl);
 
-        BinaryExpression subset = BinaryExpression.Op.SUBSET.make(expr, signature.getVariable());
+        SmtBinaryExpr subset = SmtBinaryExpr.Op.SUBSET.make(expr, signature.getVariable());
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos), "some " + sig.label, subset);
         translator.smtScript.addAssertion(assertion);
     }
@@ -285,7 +285,7 @@ public class SignatureTranslator
         {
             Sig parent = ((Sig.PrimSig) sig).parent;
             FunctionDeclaration parentDeclaration = translator.signaturesMap.get(parent);
-            BinaryExpression subsetExpression = BinaryExpression.Op.SUBSET.make(functionDeclaration.getVariable(), parentDeclaration.getVariable());
+            SmtBinaryExpr subsetExpression = SmtBinaryExpr.Op.SUBSET.make(functionDeclaration.getVariable(), parentDeclaration.getVariable());
             Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos),
                     sig.label + " in " + parent.label, subsetExpression);
             translator.smtScript.addAssertion(assertion);
@@ -306,7 +306,7 @@ public class SignatureTranslator
                 if (parentSig != Sig.SIGINT)
                 {
                     FunctionDeclaration parentDeclaration = translator.signaturesMap.get(parentSig);
-                    BinaryExpression subset = BinaryExpression.Op.SUBSET.make(functionDeclaration.getVariable(), parentDeclaration.getVariable());
+                    SmtBinaryExpr subset = SmtBinaryExpr.Op.SUBSET.make(functionDeclaration.getVariable(), parentDeclaration.getVariable());
                     Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos),
                             sig.label + " in " + parentSig.label, subset);
                     translator.smtScript.addAssertion(assertion);
@@ -314,17 +314,17 @@ public class SignatureTranslator
             }
             else
             {
-                Expression left = translator.signaturesMap.get(parents.get(0)).getVariable();
-                Expression right = translator.signaturesMap.get(parents.get(1)).getVariable();
-                BinaryExpression union = BinaryExpression.Op.UNION.make(left, right);
+                SmtExpr left = translator.signaturesMap.get(parents.get(0)).getVariable();
+                SmtExpr right = translator.signaturesMap.get(parents.get(1)).getVariable();
+                SmtBinaryExpr union = SmtBinaryExpr.Op.UNION.make(left, right);
 
                 for (int i = 2; i < parents.size(); i++)
                 {
-                    Expression expression = translator.signaturesMap.get(parents.get(i)).getVariable();
-                    union = BinaryExpression.Op.UNION.make(union, expression);
+                    SmtExpr smtExpr = translator.signaturesMap.get(parents.get(i)).getVariable();
+                    union = SmtBinaryExpr.Op.UNION.make(union, smtExpr);
                 }
 
-                BinaryExpression subset = BinaryExpression.Op.SUBSET.make(functionDeclaration.getVariable(), union);
+                SmtBinaryExpr subset = SmtBinaryExpr.Op.SUBSET.make(functionDeclaration.getVariable(), union);
                 Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos),
                         sig.toString(), subset);
                 translator.smtScript.addAssertion(assertion);
@@ -394,18 +394,18 @@ public class SignatureTranslator
             }
 
             String name = "this";
-            Map<VariableDeclaration, Expression> boundVariables = new HashMap<>();
+            Map<VariableDeclaration, SmtExpr> boundVariables = new HashMap<>();
             VariableDeclaration declaration = new VariableDeclaration(name, AbstractTranslator.atomSort, true);
             boundVariables.put(declaration, translator.signaturesMap.get(sigFact.getKey()).getVariable());
-            Expression member = AlloyUtils.getMemberExpression(boundVariables, 0);
+            SmtExpr member = AlloyUtils.getMemberExpression(boundVariables, 0);
             declaration.setConstraint(member);
             Environment environment = new Environment();
             environment.put(name, declaration.getVariable());
 
-            Expression bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
+            SmtExpr bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
 
-            Expression implies = BinaryExpression.Op.IMPLIES.make(member, bodyExpr);
-            Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, new ArrayList<>(boundVariables.keySet()));
+            SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(member, bodyExpr);
+            SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, new ArrayList<>(boundVariables.keySet()));
             Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sigFact.getValue().pos),
                     "Signature fact '" + sigFact.getValue().toString() + "' for sig " + sigFact.getKey(), forAll);
             translator.smtScript.addAssertion(assertion);
@@ -430,17 +430,17 @@ public class SignatureTranslator
 
         FunctionDeclaration mapping = defineInjectiveMapping(mappingName, AbstractTranslator.atomSort, translator.intSort);
 
-        Expression setExpression = translator.exprTranslator.translateExpr(set, environment);
-        Expression firstExpression = translator.exprTranslator.translateExpr(first, environment);
+        SmtExpr setSmtExpr = translator.exprTranslator.translateExpr(set, environment);
+        SmtExpr firstSmtExpr = translator.exprTranslator.translateExpr(first, environment);
 
         // ordering/first
-        Expression firstSet = defineFirstElement(prefix, firstExpression, mapping, setExpression);
+        SmtExpr firstSet = defineFirstElement(prefix, firstSmtExpr, mapping, setSmtExpr);
 
         // ordering/last
-        ConstantDeclaration lastAtom = defineLastElement(prefix, mapping, setExpression);
+        ConstantDeclaration lastAtom = defineLastElement(prefix, mapping, setSmtExpr);
 
         // Next relation
-        FunctionDeclaration ordNext = addOrdNext(prefix, setExpression, mapping, ordSig, firstSet, lastAtom);
+        FunctionDeclaration ordNext = addOrdNext(prefix, setSmtExpr, mapping, ordSig, firstSet, lastAtom);
 
         // prev relation
         FunctionDeclaration ordPrev = addOrdPrev(prefix, ordNext);
@@ -460,19 +460,19 @@ public class SignatureTranslator
         translator.addFunction(nexts);
 
         // ordering/lt
-        FunctionDefinition lt = getComparisonDefinition(prefix, "lt", mapping, set1, set2, element1, element2, BinaryExpression.Op.LT);
+        FunctionDefinition lt = getComparisonDefinition(prefix, "lt", mapping, set1, set2, element1, element2, SmtBinaryExpr.Op.LT);
         translator.addFunction(lt);
 
         // ordering/gt
-        FunctionDefinition gt = getComparisonDefinition(prefix, "gt", mapping, set1, set2, element1, element2, BinaryExpression.Op.GT);
+        FunctionDefinition gt = getComparisonDefinition(prefix, "gt", mapping, set1, set2, element1, element2, SmtBinaryExpr.Op.GT);
         translator.addFunction(gt);
 
         // ordering/lte
-        FunctionDefinition lte = getComparisonDefinition(prefix, "lte", mapping, set1, set2, element1, element2, BinaryExpression.Op.LTE);
+        FunctionDefinition lte = getComparisonDefinition(prefix, "lte", mapping, set1, set2, element1, element2, SmtBinaryExpr.Op.LTE);
         translator.addFunction(lte);
 
         // ordering/gte
-        FunctionDefinition gte = getComparisonDefinition(prefix, "gte", mapping, set1, set2, element1, element2, BinaryExpression.Op.GTE);
+        FunctionDefinition gte = getComparisonDefinition(prefix, "gte", mapping, set1, set2, element1, element2, SmtBinaryExpr.Op.GTE);
         translator.addFunction(gte);
 
         //ordering/larger
@@ -502,84 +502,84 @@ public class SignatureTranslator
         VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
         VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.atomSort, false);
 
-        Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
+        SmtExpr xEqualsY = SmtBinaryExpr.Op.EQ.make(x.getVariable(), y.getVariable());
 
-        Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
+        SmtExpr notXEqualsY = SmtUnaryExpr.Op.NOT.make(xEqualsY);
 
-        Expression mappingXEqualsMappingY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, y.getVariable()));
+        SmtExpr mappingXEqualsMappingY = SmtBinaryExpr.Op.EQ.make(new SmtCallExpr(mapping, x.getVariable()), new SmtCallExpr(mapping, y.getVariable()));
 
-        Expression not = UnaryExpression.Op.NOT.make(mappingXEqualsMappingY);
+        SmtExpr not = SmtUnaryExpr.Op.NOT.make(mappingXEqualsMappingY);
 
-        Expression implies = BinaryExpression.Op.IMPLIES.make(notXEqualsY, not);
+        SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(notXEqualsY, not);
 
-        QuantifiedExpression forAll = QuantifiedExpression.Op.FORALL.make(implies, x, y);
+        SmtQtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, x, y);
 
         translator.smtScript.addAssertion(new Assertion("", mappingName + " is injective", forAll));
 
         return mapping;
     }
 
-    private Expression defineFirstElement(String prefix, Expression firstExpression, FunctionDeclaration mapping, Expression setExpression)
+    private SmtExpr defineFirstElement(String prefix, SmtExpr firstSmtExpr, FunctionDeclaration mapping, SmtExpr setSmtExpr)
     {
         final String suffix = "first";
         ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", AbstractTranslator.atomSort, true);
         FunctionDeclaration first = new FunctionDeclaration(prefix + suffix, AbstractTranslator.setOfUnaryAtomSort, true);
 
-        Expression firstSet = UnaryExpression.Op.SINGLETON.make(
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable()));
+        SmtExpr firstSet = SmtUnaryExpr.Op.SINGLETON.make(
+                new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, firstAtom.getVariable()));
 
         translator.smtScript.addConstantDeclaration(firstAtom);
         translator.addFunction(first);
 
         // there is only one first element
         // ordering/first = (singleton (mktuple firstAtom))
-        Expression firstSingleton = BinaryExpression.Op.EQ.make(first.getVariable(), firstSet);
+        SmtExpr firstSingleton = SmtBinaryExpr.Op.EQ.make(first.getVariable(), firstSet);
         translator.smtScript.addAssertion(new Assertion("", prefix + suffix + " = (singleton (mktuple firstAtom))", firstSingleton));
 
         // ordering/first = ordering/Ord.First
-        Expression ordFirstSingleton = BinaryExpression.Op.EQ.make(first.getVariable(), firstExpression);
+        SmtExpr ordFirstSingleton = SmtBinaryExpr.Op.EQ.make(first.getVariable(), firstSmtExpr);
         translator.smtScript.addAssertion(new Assertion("", prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
         VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
-        Expression member = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
-        Expression gte = BinaryExpression.Op.GTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, firstAtom.getVariable()));
-        Expression implies = BinaryExpression.Op.IMPLIES.make(member, gte);
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x);
+        SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, x.getVariable()), setSmtExpr);
+        SmtExpr gte = SmtBinaryExpr.Op.GTE.make(new SmtCallExpr(mapping, x.getVariable()), new SmtCallExpr(mapping, firstAtom.getVariable()));
+        SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(member, gte);
+        SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, x);
         translator.smtScript.addAssertion(new Assertion("",
                 "each element is greater than or equal to the first element", forAll));
 
         return firstSet;
     }
 
-    private ConstantDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, Expression setExpression)
+    private ConstantDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, SmtExpr setSmtExpr)
     {
         final String suffix = "last";
         ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", AbstractTranslator.atomSort, true);
         FunctionDeclaration last = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort, true);
 
-        Expression lastSet = UnaryExpression.Op.SINGLETON.make(
-                new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getVariable()));
+        SmtExpr lastSet = SmtUnaryExpr.Op.SINGLETON.make(
+                new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, lastAtom.getVariable()));
 
         translator.smtScript.addConstantDeclaration(lastAtom);
         translator.addFunction(last);
 
 
         // last element is a member of the set
-        Expression lastMember = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, lastAtom.getVariable()), setExpression);
+        SmtExpr lastMember = SmtBinaryExpr.Op.MEMBER.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, lastAtom.getVariable()), setSmtExpr);
         translator.smtScript.addAssertion(new Assertion("", "last element is a member", lastMember));
 
         // there is only one last element
         // ordering/last = (singleton (mktuple lastAtom))
-        Expression lastSingleton = BinaryExpression.Op.EQ.make(last.getVariable(), lastSet);
+        SmtExpr lastSingleton = SmtBinaryExpr.Op.EQ.make(last.getVariable(), lastSet);
         translator.smtScript.addAssertion(new Assertion("", prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
         VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
-        Expression xMember = BinaryExpression.Op.MEMBER.make(new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, x.getVariable()), setExpression);
-        Expression lte = BinaryExpression.Op.LTE.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, lastAtom.getVariable()));
-        Expression implies = BinaryExpression.Op.IMPLIES.make(xMember, lte);
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x);
+        SmtExpr xMember = SmtBinaryExpr.Op.MEMBER.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, x.getVariable()), setSmtExpr);
+        SmtExpr lte = SmtBinaryExpr.Op.LTE.make(new SmtCallExpr(mapping, x.getVariable()), new SmtCallExpr(mapping, lastAtom.getVariable()));
+        SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(xMember, lte);
+        SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, x);
         translator.smtScript.addAssertion(new Assertion("",
                 "each element is less than or equal to the last element", forAll));
 
@@ -588,11 +588,11 @@ public class SignatureTranslator
 
     private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, VariableDeclaration set, FunctionDeclaration declaration)
     {
-        Expression tClosure = UnaryExpression.Op.TCLOSURE.make(declaration.getVariable());
+        SmtExpr tClosure = SmtUnaryExpr.Op.TCLOSURE.make(declaration.getVariable());
 
-        Expression join = BinaryExpression.Op.JOIN.make(set.getVariable(), tClosure);
+        SmtExpr join = SmtBinaryExpr.Op.JOIN.make(set.getVariable(), tClosure);
 
-        Expression difference = BinaryExpression.Op.SETMINUS.make(set.getVariable(), join);
+        SmtExpr difference = SmtBinaryExpr.Op.SETMINUS.make(set.getVariable(), join);
 
         return new FunctionDefinition(prefix + suffix, translator.setOfUnaryAtomSort,
                 difference, true, set);
@@ -600,8 +600,8 @@ public class SignatureTranslator
 
     private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, FunctionDeclaration ord, String suffix)
     {
-        UnaryExpression tClosure = UnaryExpression.Op.TCLOSURE.make(ord.getVariable());
-        BinaryExpression join = BinaryExpression.Op.JOIN.make(set1.getVariable(), tClosure);
+        SmtUnaryExpr tClosure = SmtUnaryExpr.Op.TCLOSURE.make(ord.getVariable());
+        SmtBinaryExpr join = SmtBinaryExpr.Op.JOIN.make(set1.getVariable(), tClosure);
         String name = prefix + suffix;
         FunctionDefinition definition = new FunctionDefinition(name, translator.setOfUnaryAtomSort, join, true, set1);
         return definition;
@@ -609,8 +609,8 @@ public class SignatureTranslator
 
     private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, VariableDeclaration set1, VariableDeclaration set2, FunctionDefinition definition)
     {
-        FunctionCallExpression call = new FunctionCallExpression(definition, set1.getVariable(), set2.getVariable());
-        ITEExpression ite = new ITEExpression(call, set1.getVariable(),
+        SmtCallExpr call = new SmtCallExpr(definition, set1.getVariable(), set2.getVariable());
+        SmtIteExpr ite = new SmtIteExpr(call, set1.getVariable(),
                 set2.getVariable());
         return new FunctionDefinition(prefix + suffix,
                 translator.setOfUnaryAtomSort,
@@ -619,7 +619,7 @@ public class SignatureTranslator
         );
     }
 
-    private FunctionDeclaration addOrdNext(String prefix, Expression setExpression, FunctionDeclaration intMapping, Sig ordSig, Expression firstSet, ConstantDeclaration lastAtom)
+    private FunctionDeclaration addOrdNext(String prefix, SmtExpr setSmtExpr, FunctionDeclaration intMapping, Sig ordSig, SmtExpr firstSet, ConstantDeclaration lastAtom)
     {
         String nextMapping = prefix + "nextMapping";
 
@@ -632,41 +632,41 @@ public class SignatureTranslator
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member
 
-        BinaryExpression xMember = BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(x), setExpression);
-        BinaryExpression xLessThanNext = BinaryExpression.Op.LT.make(new FunctionCallExpression(intMapping, x.getVariable()), new FunctionCallExpression(intMapping,
-                        new FunctionCallExpression(mapping, x.getVariable())));
+        SmtBinaryExpr xMember = SmtBinaryExpr.Op.MEMBER.make(TranslatorUtils.getTuple(x), setSmtExpr);
+        SmtBinaryExpr xLessThanNext = SmtBinaryExpr.Op.LT.make(new SmtCallExpr(intMapping, x.getVariable()), new SmtCallExpr(intMapping,
+                        new SmtCallExpr(mapping, x.getVariable())));
 
-        Expression notXEqualsLast = UnaryExpression.Op.NOT.make(
-                BinaryExpression.Op.EQ.make(x.getVariable(), lastAtom.getVariable()));
-        Expression nextIsMember = BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(new FunctionCallExpression(mapping, x.getVariable())), setExpression);
+        SmtExpr notXEqualsLast = SmtUnaryExpr.Op.NOT.make(
+                SmtBinaryExpr.Op.EQ.make(x.getVariable(), lastAtom.getVariable()));
+        SmtExpr nextIsMember = SmtBinaryExpr.Op.MEMBER.make(TranslatorUtils.getTuple(new SmtCallExpr(mapping, x.getVariable())), setSmtExpr);
 
-        Expression impliesNextIsMember = BinaryExpression.Op.IMPLIES.make(notXEqualsLast, nextIsMember);
+        SmtExpr impliesNextIsMember = SmtBinaryExpr.Op.IMPLIES.make(notXEqualsLast, nextIsMember);
 
-        Expression xMemberconsequent = MultiArityExpression.Op.AND.make(xLessThanNext, impliesNextIsMember);
+        SmtExpr xMemberconsequent = SmtMultiArityExpr.Op.AND.make(xLessThanNext, impliesNextIsMember);
 
-        Expression xMemberImplies = BinaryExpression.Op.IMPLIES.make(xMember, xMemberconsequent);
+        SmtExpr xMemberImplies = SmtBinaryExpr.Op.IMPLIES.make(xMember, xMemberconsequent);
 
-        Expression forAllX = QuantifiedExpression.Op.FORALL.make(xMemberImplies, x);
+        SmtExpr forAllX = SmtQtExpr.Op.FORALL.make(xMemberImplies, x);
         translator.smtScript.addAssertion(
                 new Assertion("", "For all x : x is a member implies (intMapping(x) < intMapping (nextMapping(x)) and " +
                         "(x != lastAtom implies nextMapping(x) is a member))", forAllX));
 
         // the next mapping is one-to-one (injective) members
         // for all x, y (x != y and x, y members) implies (nextMapping(x) != nextMapping(y)))
-        Expression xEqualsY = BinaryExpression.Op.EQ.make(x.getVariable(), y.getVariable());
-        Expression notXEqualsY = UnaryExpression.Op.NOT.make(xEqualsY);
+        SmtExpr xEqualsY = SmtBinaryExpr.Op.EQ.make(x.getVariable(), y.getVariable());
+        SmtExpr notXEqualsY = SmtUnaryExpr.Op.NOT.make(xEqualsY);
 
-        Expression xyMembers = MultiArityExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(x), setExpression), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(y), setExpression));
+        SmtExpr xyMembers = SmtMultiArityExpr.Op.AND.make(SmtBinaryExpr.Op.MEMBER.make(TranslatorUtils.getTuple(x), setSmtExpr), SmtBinaryExpr.Op.MEMBER.make(TranslatorUtils.getTuple(y), setSmtExpr));
 
-        Expression antecedent = MultiArityExpression.Op.AND.make(notXEqualsY, xyMembers);
+        SmtExpr antecedent = SmtMultiArityExpr.Op.AND.make(notXEqualsY, xyMembers);
 
-        Expression mappingXEqualsMappingY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), new FunctionCallExpression(mapping, y.getVariable()));
+        SmtExpr mappingXEqualsMappingY = SmtBinaryExpr.Op.EQ.make(new SmtCallExpr(mapping, x.getVariable()), new SmtCallExpr(mapping, y.getVariable()));
 
-        Expression consequent = UnaryExpression.Op.NOT.make(mappingXEqualsMappingY);
+        SmtExpr consequent = SmtUnaryExpr.Op.NOT.make(mappingXEqualsMappingY);
 
-        Expression implies = BinaryExpression.Op.IMPLIES.make(antecedent, consequent);
+        SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(antecedent, consequent);
 
-        Expression forAll = QuantifiedExpression.Op.FORALL.make(implies, x, y);
+        SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, x, y);
 
         translator.smtScript.addAssertion(new Assertion("", nextMapping + " is injective for members", forAll));
 
@@ -674,43 +674,43 @@ public class SignatureTranslator
         translator.addFunction(ordNext);
 
         // for all x, y (x,y) in the next relation iff x, y are members and nextMapping(x) = y
-        Expression xy = TranslatorUtils.getTuple(x, y);
-        Expression xyInNext = BinaryExpression.Op.MEMBER.make(xy, ordNext.getVariable());
+        SmtExpr xy = TranslatorUtils.getTuple(x, y);
+        SmtExpr xyInNext = SmtBinaryExpr.Op.MEMBER.make(xy, ordNext.getVariable());
 
-        Expression xLessThanY = BinaryExpression.Op.LT.make(new FunctionCallExpression(intMapping, x.getVariable()), new FunctionCallExpression(intMapping, y.getVariable()));
+        SmtExpr xLessThanY = SmtBinaryExpr.Op.LT.make(new SmtCallExpr(intMapping, x.getVariable()), new SmtCallExpr(intMapping, y.getVariable()));
 
-        Expression nextXEqualsY = BinaryExpression.Op.EQ.make(new FunctionCallExpression(mapping, x.getVariable()), y.getVariable());
+        SmtExpr nextXEqualsY = SmtBinaryExpr.Op.EQ.make(new SmtCallExpr(mapping, x.getVariable()), y.getVariable());
 
-        Expression and = MultiArityExpression.Op.AND.make(xyMembers, nextXEqualsY);
+        SmtExpr and = SmtMultiArityExpr.Op.AND.make(xyMembers, nextXEqualsY);
 
-        BinaryExpression iff = BinaryExpression.Op.EQ.make(xyInNext, and);
+        SmtBinaryExpr iff = SmtBinaryExpr.Op.EQ.make(xyInNext, and);
 
-        QuantifiedExpression forAllXY = QuantifiedExpression.Op.FORALL.make(iff, x, y);
+        SmtQtExpr forAllXY = SmtQtExpr.Op.FORALL.make(iff, x, y);
         translator.smtScript.addAssertion(new Assertion("", prefix + "next", forAllXY));
 
-        Expression ordSigExpression = translator.signaturesMap.get(ordSig).getVariable();
+        SmtExpr ordSigSmtExpr = translator.signaturesMap.get(ordSig).getVariable();
 
         Sig.Field nextField = StreamSupport
                 .stream(ordSig.getFields().spliterator(), false)
                 .filter(field -> field.label.contains("Next"))
                 .findFirst().get();
 
-        Expression nextFieldExpression = translator.fieldsMap.get(nextField).getVariable();
+        SmtExpr nextFieldSmtExpr = translator.fieldsMap.get(nextField).getVariable();
 
-        Expression join = BinaryExpression.Op.JOIN.make(ordSigExpression, nextFieldExpression);
+        SmtExpr join = SmtBinaryExpr.Op.JOIN.make(ordSigSmtExpr, nextFieldSmtExpr);
 
-        Expression equality = BinaryExpression.Op.EQ.make(ordNext.getVariable(), join);
+        SmtExpr equality = SmtBinaryExpr.Op.EQ.make(ordNext.getVariable(), join);
 
         // next = ordSig.Next
         translator.smtScript.addAssertion(
                 new Assertion("", ordNext.getName() + " = " + ordSig.label + "." + nextField.label, equality));
 
         // either (next is an empty set and the ordered set is a singleton) or next is nonempty
-        Expression emptySet = UnaryExpression.Op.EMPTYSET.make(translator.setOfBinaryAtomSort);
-        Expression nextIsEmpty = BinaryExpression.Op.EQ.make(ordNext.getVariable(), emptySet);
-        Expression setSingleton = BinaryExpression.Op.EQ.make(setExpression, firstSet);
-        Expression nextIsNonempty = UnaryExpression.Op.NOT.make(nextIsEmpty);
-        Expression or = MultiArityExpression.Op.OR.make(MultiArityExpression.Op.AND.make(nextIsEmpty, setSingleton), nextIsNonempty);
+        SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(translator.setOfBinaryAtomSort);
+        SmtExpr nextIsEmpty = SmtBinaryExpr.Op.EQ.make(ordNext.getVariable(), emptySet);
+        SmtExpr setSingleton = SmtBinaryExpr.Op.EQ.make(setSmtExpr, firstSet);
+        SmtExpr nextIsNonempty = SmtUnaryExpr.Op.NOT.make(nextIsEmpty);
+        SmtExpr or = SmtMultiArityExpr.Op.OR.make(SmtMultiArityExpr.Op.AND.make(nextIsEmpty, setSingleton), nextIsNonempty);
 
         // either (next is an empty set and the ordered set is a singleton) or next is nonempty
         translator.smtScript.addAssertion(
@@ -722,9 +722,9 @@ public class SignatureTranslator
     {
         FunctionDeclaration ordPrev = new FunctionDeclaration(prefix + "prev", translator.setOfBinaryAtomSort, true);
 
-        UnaryExpression transpose = UnaryExpression.Op.TRANSPOSE.make(ordNext.getVariable());
+        SmtUnaryExpr transpose = SmtUnaryExpr.Op.TRANSPOSE.make(ordNext.getVariable());
 
-        BinaryExpression equality = BinaryExpression.Op.EQ.make(ordPrev.getVariable(), transpose);
+        SmtBinaryExpr equality = SmtBinaryExpr.Op.EQ.make(ordPrev.getVariable(), transpose);
 
         translator.addFunction(ordPrev);
 
@@ -733,13 +733,13 @@ public class SignatureTranslator
         return ordPrev;
     }
 
-    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, FunctionDeclaration mapping, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, BinaryExpression.Op operator)
+    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, FunctionDeclaration mapping, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, SmtBinaryExpr.Op operator)
     {
-        QuantifiedExpression ltExpression =
-                        QuantifiedExpression.Op.FORALL.make(
-                                BinaryExpression.Op.IMPLIES.make(MultiArityExpression.Op.AND.make(BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element1), set1.getVariable()), BinaryExpression.Op.MEMBER.make(TranslatorUtils.getTuple(element2), set2.getVariable())), operator.make(new FunctionCallExpression(mapping, element1.getVariable()), new FunctionCallExpression(mapping, element1.getVariable()))),
+        SmtQtExpr ltExpression =
+                        SmtQtExpr.Op.FORALL.make(
+                                SmtBinaryExpr.Op.IMPLIES.make(SmtMultiArityExpr.Op.AND.make(SmtBinaryExpr.Op.MEMBER.make(TranslatorUtils.getTuple(element1), set1.getVariable()), SmtBinaryExpr.Op.MEMBER.make(TranslatorUtils.getTuple(element2), set2.getVariable())), operator.make(new SmtCallExpr(mapping, element1.getVariable()), new SmtCallExpr(mapping, element1.getVariable()))),
                                 element1, element2
-                        );
+                                                );
 
         return new FunctionDefinition(prefix + suffix,
                 BoolSort.getInstance(),

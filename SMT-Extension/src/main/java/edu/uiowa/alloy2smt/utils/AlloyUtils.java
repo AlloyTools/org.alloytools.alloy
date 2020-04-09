@@ -97,56 +97,56 @@ public class AlloyUtils
         return sorts;
     }
 
-    public static BinaryExpression getMemberExpression(Map<VariableDeclaration, Expression> variableToSetMap, int index)
+    public static SmtBinaryExpr getMemberExpression(Map<VariableDeclaration, SmtExpr> variableToSetMap, int index)
     {
         VariableDeclaration declaration = (new ArrayList<>(variableToSetMap.keySet())).get(index);
-        Expression rightSetExpression = variableToSetMap.get(declaration);
+        SmtExpr rightSetSmtExpr = variableToSetMap.get(declaration);
         if(declaration.getSort() instanceof SetSort)
         {
-            return BinaryExpression.Op.SUBSET.make(declaration.getVariable(), rightSetExpression);
+            return SmtBinaryExpr.Op.SUBSET.make(declaration.getVariable(), rightSetSmtExpr);
         }
         if(declaration.getSort() instanceof TupleSort)
         {
-            return BinaryExpression.Op.MEMBER.make(declaration.getVariable(), rightSetExpression);
+            return SmtBinaryExpr.Op.MEMBER.make(declaration.getVariable(), rightSetSmtExpr);
         }
         if((declaration.getSort() instanceof UninterpretedSort) || (declaration.getSort() instanceof IntSort))
         {
-            Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
-            return BinaryExpression.Op.MEMBER.make(tuple, rightSetExpression);
+            SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, declaration.getVariable());
+            return SmtBinaryExpr.Op.MEMBER.make(tuple, rightSetSmtExpr);
         }
 
         throw new UnsupportedOperationException(String.format("%s", declaration.getSort()));
     }
 
-    public static Expression mkSingletonOutOfAtoms(List<Expression> atomExprs)
+    public static SmtExpr mkSingletonOutOfAtoms(List<SmtExpr> atomExprs)
     {
-        MultiArityExpression tuple      = MultiArityExpression.Op.MKTUPLE.make(atomExprs);
-        UnaryExpression      singleton  = UnaryExpression.Op.SINGLETON.make(tuple);
+        SmtMultiArityExpr tuple      = SmtMultiArityExpr.Op.MKTUPLE.make(atomExprs);
+        SmtUnaryExpr singleton  = SmtUnaryExpr.Op.SINGLETON.make(tuple);
         return singleton;
     }
 
-    public static Expression mkSingletonOutOfTuple(Expression tupleExpr)
+    public static SmtExpr mkSingletonOutOfTuple(SmtExpr tupleExpr)
     {
-        UnaryExpression      singleton  = UnaryExpression.Op.SINGLETON.make(tupleExpr);
+        SmtUnaryExpr singleton  = SmtUnaryExpr.Op.SINGLETON.make(tupleExpr);
         return singleton;
     }
 
-    public static List<Expression> getFunctionCallArguments(List<VariableDeclaration> quantifiedArguments,
-                                                          Map<String, Expression> argumentsMap)
+    public static List<SmtExpr> getFunctionCallArguments(List<VariableDeclaration> quantifiedArguments,
+                                                         Map<String, SmtExpr> argumentsMap)
     {
-        List<Expression> expressions = new ArrayList<>();
+        List<SmtExpr> smtExprs = new ArrayList<>();
         for (VariableDeclaration declaration: quantifiedArguments)
         {
             if(declaration.getSort().equals(argumentsMap.get(declaration.getName()).getSort()))
             {
-                expressions.add(declaration.getVariable());
+                smtExprs.add(declaration.getVariable());
             }
             else
             {
-                expressions.add(UnaryExpression.Op.SINGLETON.make(declaration.getVariable()));
+                smtExprs.add(SmtUnaryExpr.Op.SINGLETON.make(declaration.getVariable()));
             }
         }
-        return expressions;
+        return smtExprs;
     }
 
     public static Expr substituteExpr(Expr body, ExprVar oldExpr, Expr newExpr)
@@ -455,7 +455,7 @@ public class AlloyUtils
                    .replace("$", "");
     }
 
-    public static Assertion getAssertion(List<Pos> positions, String comment, Expression expression)
+    public static Assertion getAssertion(List<Pos> positions, String comment, SmtExpr smtExpr)
     {
         try
         {
@@ -466,7 +466,7 @@ public class AlloyUtils
                 range.symbolIndex = getFreshSymbol();
                 stringBuilder.append(range.toJson());
             }
-            return new Assertion(stringBuilder.toString(), comment, expression);
+            return new Assertion(stringBuilder.toString(), comment, smtExpr);
         }
         catch (IOException e)
         {

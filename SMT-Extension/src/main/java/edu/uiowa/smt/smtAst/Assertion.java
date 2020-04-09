@@ -10,17 +10,17 @@ package edu.uiowa.smt.smtAst;
 
 public class Assertion extends SmtAst
 {
-    private final Expression  expression;
+    private final SmtExpr smtExpr;
 
     private final String comment;
 
     private final String symbolicName;
 
-    public Assertion(String symbolicName, String comment, Expression expression)
+    public Assertion(String symbolicName, String comment, SmtExpr smtExpr)
     {
         this.symbolicName = symbolicName;
         this.comment = comment;
-        this.expression = expression;
+        this.smtExpr = smtExpr;
     }
 
     public String getComment()
@@ -28,9 +28,9 @@ public class Assertion extends SmtAst
         return this.comment;
     }
 
-    public Expression getExpression()
+    public SmtExpr getSmtExpr()
     {
-        return this.expression;
+        return this.smtExpr;
     }
 
     public String getSymbolicName()

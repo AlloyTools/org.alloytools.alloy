@@ -46,44 +46,44 @@ public class ExprTranslator
         this.exprLetTranslator = new ExprLetTranslator(this);
     }
 
-    public Expression translateFormula(String label, Expr expr)
+    public SmtExpr translateFormula(String label, Expr expr)
     {
         assert(expr.type() == Type.FORMULA);
         Environment environment = new Environment();
-        Expression formula = translateExpr(expr, environment);
+        SmtExpr formula = translateExpr(expr, environment);
         formula = translateAuxiliaryFormula(formula, environment);
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
         translator.smtScript.addAssertion(assertion);
         return formula;
     }
 
-    public Expression translateAuxiliaryFormula(Expression booleanExpression, Environment environment)
+    public SmtExpr translateAuxiliaryFormula(SmtExpr booleanSmtExpr, Environment environment)
     {
-        assert (booleanExpression.getSort().equals(AbstractTranslator.boolSort));
+        assert (booleanSmtExpr.getSort().equals(AbstractTranslator.boolSort));
 
         // if there is a multiplicity constraint
         if(environment.getAuxiliaryFormula() != null)
         {
-            QuantifiedExpression formula = environment.getAuxiliaryFormula();
-            if(formula.getOp() == QuantifiedExpression.Op.EXISTS)
+            SmtQtExpr formula = environment.getAuxiliaryFormula();
+            if(formula.getOp() == SmtQtExpr.Op.EXISTS)
             {
-                Expression body = MultiArityExpression.Op.AND.make(formula.getExpression(), booleanExpression);
-                booleanExpression = QuantifiedExpression.Op.EXISTS.make(body, formula.getVariables());
+                SmtExpr body = SmtMultiArityExpr.Op.AND.make(formula.getExpression(), booleanSmtExpr);
+                booleanSmtExpr = SmtQtExpr.Op.EXISTS.make(body, formula.getVariables());
             }
-            else if(formula.getOp() == QuantifiedExpression.Op.FORALL)
+            else if(formula.getOp() == SmtQtExpr.Op.FORALL)
             {
-                Expression body = BinaryExpression.Op.IMPLIES.make(formula.getExpression(), booleanExpression);
-                booleanExpression = QuantifiedExpression.Op.FORALL.make(body, formula.getVariables());
+                SmtExpr body = SmtBinaryExpr.Op.IMPLIES.make(formula.getExpression(), booleanSmtExpr);
+                booleanSmtExpr = SmtQtExpr.Op.FORALL.make(body, formula.getVariables());
             }
             else
             {
                 throw new UnsupportedOperationException();
             }
         }
-        return booleanExpression;
+        return booleanSmtExpr;
     }
 
-    Expression translateExpr(Expr expr, Environment environment)
+    SmtExpr translateExpr(Expr expr, Environment environment)
     {
         if (expr instanceof Sig || expr instanceof Sig.Field)
         {
@@ -129,28 +129,28 @@ public class ExprTranslator
         throw new UnsupportedOperationException(expr.toString());
     }
 
-    private Expression getExpression(Expr expr, Expression expression)
+    private SmtExpr getExpression(Expr expr, SmtExpr smtExpr)
     {
-        expression.setComment(expr.toString());
-        return expression;
+        smtExpr.setComment(expr.toString());
+        return smtExpr;
     }
 
-    public Expression translateExprITE(ExprITE expr, Environment environment)
+    public SmtExpr translateExprITE(ExprITE expr, Environment environment)
     {
-        Expression condExpr = translateExpr(expr.cond, environment);
-        Expression thenExpr = translateExpr(expr.left, environment);
-        Expression elseExpr = translateExpr(expr.right, environment);
-        return new ITEExpression(condExpr, thenExpr, elseExpr);
+        SmtExpr condExpr = translateExpr(expr.cond, environment);
+        SmtExpr thenExpr = translateExpr(expr.left, environment);
+        SmtExpr elseExpr = translateExpr(expr.right, environment);
+        return new SmtIteExpr(condExpr, thenExpr, elseExpr);
     }
 
-    public Expression translateExprConstant(ExprConstant expr, Environment environment)
+    public SmtExpr translateExprConstant(ExprConstant expr, Environment environment)
     {
         switch (expr.op)
         {
             // alloy only supports integers
             case NUMBER:
             {
-                Expression intConstant = IntConstant.getSingletonTuple(expr.num);
+                SmtExpr intConstant = IntConstant.getSingletonTuple(expr.num);
                 return translator.handleIntConstant(intConstant);
             }
             case IDEN:
@@ -164,16 +164,16 @@ public class ExprTranslator
         }
     }
 
-    Expression translateExprList(ExprList exprList, Environment environment)
+    SmtExpr translateExprList(ExprList exprList, Environment environment)
     {
         switch (exprList.op)
         {
             case AND:
-                return translateExprListAndOr(MultiArityExpression.Op.AND, exprList, environment);
+                return translateExprListAndOr(SmtMultiArityExpr.Op.AND, exprList, environment);
             case OR:
-                return translateExprListAndOr(MultiArityExpression.Op.OR, exprList, environment);
+                return translateExprListAndOr(SmtMultiArityExpr.Op.OR, exprList, environment);
             case DISJOINT:
-                return translateExprListToDisjBinaryExpressions(MultiArityExpression.Op.DISTINCT, exprList, environment);
+                return translateExprListToDisjBinaryExpressions(SmtMultiArityExpr.Op.DISTINCT, exprList, environment);
             case TOTALORDER:
                 throw new UnsupportedOperationException();// total order should be handled before coming here
             default:
@@ -181,28 +181,28 @@ public class ExprTranslator
         }
     }
 
-    Expression translateExprListToDisjBinaryExpressions(MultiArityExpression.Op op, ExprList exprList, Environment environment)
+    SmtExpr translateExprListToDisjBinaryExpressions(SmtMultiArityExpr.Op op, ExprList exprList, Environment environment)
     {
-        List<Expression> exprs = new ArrayList<>();
+        List<SmtExpr> exprs = new ArrayList<>();
 
         for (Expr e : exprList.args)
         {
             exprs.add(translateExpr(e, environment));
         }
-        Expression finalExpr;
-        List<Expression> finalExprs = new ArrayList<>();
+        SmtExpr finalExpr;
+        List<SmtExpr> finalExprs = new ArrayList<>();
 
         if (exprs.size() > 1)
         {
             for (int i = 0; i < exprs.size() - 1; ++i)
             {
-                Expression disjExpr = BinaryExpression.Op.EQ.make(translator.atomNone.getVariable(), BinaryExpression.Op.INTERSECTION.make(exprs.get(i), exprs.get(i + 1)));
+                SmtExpr disjExpr = SmtBinaryExpr.Op.EQ.make(translator.atomNone.getVariable(), SmtBinaryExpr.Op.INTERSECTION.make(exprs.get(i), exprs.get(i + 1)));
                 finalExprs.add(disjExpr);
             }
             finalExpr = finalExprs.get(0);
             for (int i = 1; i < finalExprs.size(); ++i)
             {
-                finalExpr = MultiArityExpression.Op.AND.make(finalExpr, finalExprs.get(i));
+                finalExpr = SmtMultiArityExpr.Op.AND.make(finalExpr, finalExprs.get(i));
             }
         }
         else
@@ -212,35 +212,35 @@ public class ExprTranslator
         return finalExpr;
     }
 
-    private Expression translateExprListAndOr(MultiArityExpression.Op op, ExprList exprList, Environment environment)
+    private SmtExpr translateExprListAndOr(SmtMultiArityExpr.Op op, ExprList exprList, Environment environment)
     {
-        if(op != MultiArityExpression.Op.AND && op != MultiArityExpression.Op.OR)
+        if(op != SmtMultiArityExpr.Op.AND && op != SmtMultiArityExpr.Op.OR)
         {
             throw new UnsupportedOperationException(op.toString());
         }
 
         if (exprList.args.size() == 0)
         {
-            if (op == MultiArityExpression.Op.AND)
+            if (op == SmtMultiArityExpr.Op.AND)
             {
                 return BoolConstant.True;
             }
 
-            if (op == MultiArityExpression.Op.OR)
+            if (op == SmtMultiArityExpr.Op.OR)
             {
                 return BoolConstant.False;
             }
         }
 
-        List<Expression> expressions = new ArrayList<>();
+        List<SmtExpr> smtExprs = new ArrayList<>();
 
         for (Expr expr: exprList.args)
         {
-            Expression expression = translateExpr(expr, environment);
-            expressions.add(expression);
+            SmtExpr smtExpr = translateExpr(expr, environment);
+            smtExprs.add(smtExpr);
         }
 
-        return op.make(expressions);
+        return op.make(smtExprs);
     }
 
     /**
@@ -275,7 +275,7 @@ public class ExprTranslator
         return bdVars;
     }
 
-    Expression mkEmptyRelationOfSort(List<Sort> sorts)
+    SmtExpr mkEmptyRelationOfSort(List<Sort> sorts)
     {
         if (sorts.isEmpty())
         {
@@ -287,21 +287,21 @@ public class ExprTranslator
                 Logger.getLogger(ExprTranslator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return UnaryExpression.Op.EMPTYSET.make(new SetSort(new TupleSort(sorts)));
+        return SmtUnaryExpr.Op.EMPTYSET.make(new SetSort(new TupleSort(sorts)));
     }
 
-    Expression mkUnaryRelationOutOfAtomsOrTuples(List<Expression> atomOrTupleExprs)
+    SmtExpr mkUnaryRelationOutOfAtomsOrTuples(List<SmtExpr> atomOrTupleExprs)
     {
-        List<Expression> atomTupleExprs = new ArrayList<>();
+        List<SmtExpr> atomTupleExprs = new ArrayList<>();
 
-        for (Expression e : atomOrTupleExprs)
+        for (SmtExpr e : atomOrTupleExprs)
         {
             if (e instanceof Variable)
             {
                 if (((Variable) e).getDeclaration().getSort() == translator.atomSort ||
                         ((Variable) e).getDeclaration().getSort() == translator.uninterpretedInt)
                 {
-                    MultiArityExpression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, e);
+                    SmtMultiArityExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, e);
                     atomTupleExprs.add(tuple);
                 }
                 else if (((Variable) e).getDeclaration().getSort() instanceof TupleSort)
@@ -320,13 +320,13 @@ public class ExprTranslator
         }
 
 
-        UnaryExpression singleton = UnaryExpression.Op.SINGLETON.make(atomTupleExprs.get(0));
+        SmtUnaryExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(atomTupleExprs.get(0));
 
         if (atomTupleExprs.size() > 1)
         {
             atomTupleExprs.remove(0);
             atomTupleExprs.add(singleton);
-            MultiArityExpression set = MultiArityExpression.Op.INSERT.make(atomTupleExprs);
+            SmtMultiArityExpr set = SmtMultiArityExpr.Op.INSERT.make(atomTupleExprs);
             return set;
         }
         return singleton;

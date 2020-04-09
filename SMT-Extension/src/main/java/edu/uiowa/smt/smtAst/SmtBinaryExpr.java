@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class BinaryExpression extends Expression
+public class SmtBinaryExpr extends SmtExpr
 {
     private final Op            op;
-    private Expression A;
-    private Expression B;
+    private SmtExpr A;
+    private SmtExpr B;
 
-    private BinaryExpression(Op op, Expression A, Expression B)
+    private SmtBinaryExpr(Op op, SmtExpr A, SmtExpr B)
     {
         this.op         = op;
         if(A == null)
@@ -162,12 +162,12 @@ public class BinaryExpression extends Expression
         }
     }
 
-    public Expression getA()
+    public SmtExpr getA()
     {
         return this.A;
     }
 
-    public Expression getB()
+    public SmtExpr getB()
     {
         return this.B;
     }
@@ -206,9 +206,9 @@ public class BinaryExpression extends Expression
 
         private final String opStr;
 
-        public BinaryExpression make(Expression left, Expression right)
+        public SmtBinaryExpr make(SmtExpr left, SmtExpr right)
         {
-            return new BinaryExpression(this, left, right);
+            return new SmtBinaryExpr(this, left, right);
         }
 
         Op(String op)
@@ -323,7 +323,7 @@ public class BinaryExpression extends Expression
         }
     }
     @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
+    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
     {
         switch(op)
         {
@@ -340,8 +340,8 @@ public class BinaryExpression extends Expression
             }break;
             case UNION:
             {
-                Expression left = A.evaluate(functions);
-                Expression right = B.evaluate(functions);
+                SmtExpr left = A.evaluate(functions);
+                SmtExpr right = B.evaluate(functions);
                 return Op.UNION.make(left, right);
             }
         }
@@ -355,11 +355,11 @@ public class BinaryExpression extends Expression
         {
             return true;
         }
-        if(!(object instanceof BinaryExpression))
+        if(!(object instanceof SmtBinaryExpr))
         {
             return false;
         }
-        BinaryExpression binaryObject = (BinaryExpression) object;
+        SmtBinaryExpr binaryObject = (SmtBinaryExpr) object;
         return op ==  binaryObject.op &&
                 A.equals(binaryObject.A) &&
                 B.equals(binaryObject.B);
@@ -373,14 +373,14 @@ public class BinaryExpression extends Expression
         return freeVariables;
     }
 
-    private Expression evaluateEquality(Map<String, FunctionDefinition> functions, Expression left, Expression right)
+    private SmtExpr evaluateEquality(Map<String, FunctionDefinition> functions, SmtExpr left, SmtExpr right)
     {
         String variableName = ((Variable) left).getName();
         if(! functions.containsKey(variableName))
         {
             throw new RuntimeException("Function " + variableName + " is undefined");
         }
-        Expression leftValue = functions.get(variableName).getExpression();
+        SmtExpr leftValue = functions.get(variableName).getSmtExpr();
         boolean isEqual = leftValue.equals(right);
         if(isEqual)
         {
@@ -393,27 +393,27 @@ public class BinaryExpression extends Expression
     }
 
     @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
+    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         if(A.equals(newVariable) || B.equals(newVariable))
         {
             throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
         }
 
-        Expression A = this.A.substitute(oldVariable, newVariable);
-        Expression B = this.B.substitute(oldVariable, newVariable);
+        SmtExpr A = this.A.substitute(oldVariable, newVariable);
+        SmtExpr B = this.B.substitute(oldVariable, newVariable);
         return op.make(A, B);
     }
 
     @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
     {
-        if(oldExpression.equals(this))
+        if(oldSmtExpr.equals(this))
         {
-            return newExpression;
+            return newSmtExpr;
         }
-        Expression A = this.A.replace(oldExpression, newExpression);
-        Expression B = this.B.replace(oldExpression, newExpression);
+        SmtExpr A = this.A.replace(oldSmtExpr, newSmtExpr);
+        SmtExpr B = this.B.replace(oldSmtExpr, newSmtExpr);
         return op.make(A, B);
     }
 }

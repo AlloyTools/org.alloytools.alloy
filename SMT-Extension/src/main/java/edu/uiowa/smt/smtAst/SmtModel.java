@@ -106,7 +106,7 @@ public class SmtModel extends SmtAst
             }
             functions.put(declaration.getName(), (FunctionDefinition) declaration);
         }
-        Expression body = function.expression.evaluate(functions);
+        SmtExpr body = function.smtExpr.evaluate(functions);
 
         return new FunctionDefinition(function.getName(), function.inputVariables,
                     function.getSort(), body, function.isOriginal());

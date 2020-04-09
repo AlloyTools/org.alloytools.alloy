@@ -42,7 +42,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     Map<String, String> funcNamesMap;
     Map<String, List<String>> setComprehensionFuncNameToInputsMap;
-    Map<String, Expression> setCompFuncNameToDefMap;
+    Map<String, SmtExpr> setCompFuncNameToDefMap;
     Map<String, VariableDeclaration> setCompFuncNameToBdVarExprMap;
     Map<Sig, FunctionDeclaration> signaturesMap;
     Map<Sig.Field, FunctionDeclaration> fieldsMap;
@@ -133,7 +133,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         translateSpecialFunctions();
         this.signatureTranslator.translateSigs();
         this.signatureTranslator.translateSpecialSigFacts();
-        //translateFunctionsAndPredicates();
         this.signatureTranslator.translateSigFacts();
         translateFacts();
         translateSpecialAssertions();
@@ -378,9 +377,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         Expr oneOfInt = ExprUnary.Op.ONEOF.make(null, Sig.SIGINT);
         Decl decl = new Decl(null, null, null, Collections.singletonList(x), oneOfInt);
         Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
-        Expression expression = exprTranslator.translateExpr(all, new Environment());
+        SmtExpr smtExpr = exprTranslator.translateExpr(all, new Environment());
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
-                "Scope " + command.bitwidth + " Int", expression);
+                "Scope " + command.bitwidth + " Int", smtExpr);
         assertions.add(assertion);
         return assertions;
     }
@@ -398,17 +397,17 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                         .filter(s -> s.sig == signature)
                         .findFirst();
                 int scope = 0;
-                BinaryExpression.Op op;
+                SmtBinaryExpr.Op op;
                 if (optional.isPresent())
                 {
                     CommandScope commandScope = optional.get();
                     if (commandScope.isExact || alloyModel.getExactSigs().contains(signature))
                     {
-                        op = BinaryExpression.Op.EQ;
+                        op = SmtBinaryExpr.Op.EQ;
                     }
                     else
                     {
-                        op = BinaryExpression.Op.SUBSET;
+                        op = SmtBinaryExpr.Op.SUBSET;
                     }
                     scope = commandScope.endingScope;
                 }
@@ -416,11 +415,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                 {
                     if (alloyModel.getExactSigs().contains(signature))
                     {
-                        op = BinaryExpression.Op.EQ;
+                        op = SmtBinaryExpr.Op.EQ;
                     }
                     else
                     {
-                        op = BinaryExpression.Op.SUBSET;
+                        op = SmtBinaryExpr.Op.SUBSET;
                     }
 
                     if (signature.isTopLevel())
@@ -443,7 +442,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     }
                 }
 
-                Expression variable = signaturesMap.get(signature).getVariable();
+                SmtExpr variable = signaturesMap.get(signature).getVariable();
 
                 if (scope >= 1)
                 {
@@ -451,27 +450,27 @@ public class Alloy2SmtTranslator extends AbstractTranslator
                     Sort sort = signature.type().is_int() ? AbstractTranslator.uninterpretedInt : AbstractTranslator.atomSort;
                     VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
                     declarations.add(firstAtom);
-                    Expression firstTuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, firstAtom.getVariable());
-                    Expression set = UnaryExpression.Op.SINGLETON.make(firstTuple);
+                    SmtExpr firstTuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, firstAtom.getVariable());
+                    SmtExpr set = SmtUnaryExpr.Op.SINGLETON.make(firstTuple);
                     for (int i = 1; i < scope; i++)
                     {
                         VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
                         declarations.add(declaration);
-                        Expression tuple = new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, declaration.getVariable());
-                        Expression singleton = UnaryExpression.Op.SINGLETON.make(tuple);
-                        set = BinaryExpression.Op.UNION.make(singleton, set);
+                        SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, declaration.getVariable());
+                        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
+                        set = SmtBinaryExpr.Op.UNION.make(singleton, set);
                     }
 
-                    Expression constraint = op.make(variable, set);
+                    SmtExpr constraint = op.make(variable, set);
                     if (declarations.size() > 1)
                     {
-                        List<Expression> expressions = declarations
+                        List<SmtExpr> smtExprs = declarations
                                 .stream().map(d -> d.getVariable())
                                 .collect(Collectors.toList());
-                        Expression distinct = MultiArityExpression.Op.DISTINCT.make(expressions);
-                        constraint = MultiArityExpression.Op.AND.make(constraint, distinct);
+                        SmtExpr distinct = SmtMultiArityExpr.Op.DISTINCT.make(smtExprs);
+                        constraint = SmtMultiArityExpr.Op.AND.make(constraint, distinct);
                     }
-                    Expression exists = QuantifiedExpression.Op.EXISTS.make(constraint, declarations);
+                    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(constraint, declarations);
                     Assertion scopeAssertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
                             signature.toString() + " scope", exists);
                     assertions.add(scopeAssertion);
