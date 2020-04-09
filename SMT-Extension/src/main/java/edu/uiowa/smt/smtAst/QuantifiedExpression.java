@@ -46,10 +46,6 @@ public class QuantifiedExpression extends Expression
         {
             throw new RuntimeException(String.format("Expected at least one variable for the quantified expression '%1$s'.", this.toString()));
         }
-        if(op == Op.CHOICE && variables.size() > 1)
-        {
-            throw new RuntimeException(String.format("Expected exactly one variable for the choice expression '%1$s'.", this.toString()));
-        }
     }
 
     private QuantifiedExpression(Op op, Expression expr, VariableDeclaration... variables)
@@ -82,8 +78,7 @@ public class QuantifiedExpression extends Expression
     public enum Op 
     {        
         FORALL ("forall"),
-        EXISTS ("exists"),
-        CHOICE("choice");
+        EXISTS ("exists");
 
         private final String opStr;
 
@@ -127,7 +122,6 @@ public class QuantifiedExpression extends Expression
         {
             case EXISTS:
             case FORALL: return AbstractTranslator.boolSort;
-            case CHOICE: return variables.get(0).getSort();
             default:
                 throw new UnsupportedOperationException("Unsupported operator" + op.toString());
         }

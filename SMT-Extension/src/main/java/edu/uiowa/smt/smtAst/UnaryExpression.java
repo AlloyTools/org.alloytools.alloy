@@ -73,6 +73,14 @@ public class UnaryExpression extends Expression
                     throw new RuntimeException(String.format("Expected a set sort. Found '%1$s'", expr));
                 }
             } break;
+            case CHOOSE:
+            {
+                if(expr.getSort() instanceof SetSort)
+                {
+                    throw new RuntimeException(String.format("Expected a set sort in '%1$s', found '%2$s' ",
+                            this.toString(), expr.getSort()));
+                }
+            }
             case SINGLETON: break;
             default:
                 throw new UnsupportedOperationException();
@@ -94,77 +102,32 @@ public class UnaryExpression extends Expression
         visitor.visit(this);
     }
     
-    public enum Op 
-    {	        
-        NOT ("not"),
-        COMPLEMENT ("complement"),
-        TRANSPOSE ("transpose"),
-        TCLOSURE("tclosure"),
-        SINGLETON("singleton"),
-        UNIVSET("as univset"),
-        EMPTYSET("as emptyset");
-
-        private final String opStr;
-
-        Op(String str)
-        {
-            this.opStr = str;
-        }
-
-        public UnaryExpression make(Expression expr)
-        {
-            return new UnaryExpression(this, expr);
-        }
-
-        public static Op getOp(String operator)
-        {
-            switch (operator)
-            {
-                case"not"           : return NOT;
-                case "complement"   : return COMPLEMENT;
-                case "transpose"    : return TRANSPOSE;
-                case "tclosure"     : return TCLOSURE;
-                case "singleton"    : return SINGLETON;
-                case "as univset"   : return UNIVSET;
-                case "as emptyset"  : return EMPTYSET;
-                default:
-                    throw new UnsupportedOperationException("Operator " + operator + " is not defined");
-            }
-        }
-
-        @Override
-        public String toString() 
-        {
-            return this.opStr;
-        }    
-    }
-
     @Override
     public Sort getSort()
     {
-        switch (op) {
+        switch (op)
+        {
             case NOT:
                 return AbstractTranslator.boolSort;
             case COMPLEMENT:
                 return expr.getSort();
-            case TRANSPOSE: {
+            case TRANSPOSE:
+            {
                 // type checking is handled during construction
                 TupleSort oldSort = (TupleSort) ((SetSort) expr.getSort()).elementSort;
                 List<Sort> reverse = new ArrayList<>();
-                for (int i = oldSort.elementSorts.size() - 1; i >= 0; i--) {
+                for (int i = oldSort.elementSorts.size() - 1; i >= 0; i--)
+                {
                     reverse.add(oldSort.elementSorts.get(i));
                 }
-                SetSort sort = new SetSort(new TupleSort(reverse));
-                return sort;
+                    SetSort sort = new SetSort(new TupleSort(reverse));
+                    return sort;
             }
-            case TCLOSURE:
-                return expr.getSort();
-            case SINGLETON:
-                return new SetSort(expr.getSort());
-            case EMPTYSET:
-                return expr.getSort();
-            case UNIVSET:
-                return expr.getSort();
+            case TCLOSURE: return expr.getSort();
+            case SINGLETON: return new SetSort(expr.getSort());
+            case CHOOSE: return ((SetSort) expr.getSort()).elementSort;
+            case EMPTYSET: return expr.getSort();
+            case UNIVSET: return expr.getSort();
             default:
                 throw new UnsupportedOperationException();
         }
@@ -187,6 +150,7 @@ public class UnaryExpression extends Expression
         Expression expression = this.expr.evaluate(functions);
         return new UnaryExpression(this.op, expression);
     }
+
     @Override
     public boolean equals(Object object)
     {
@@ -230,5 +194,51 @@ public class UnaryExpression extends Expression
         }
         Expression expression = expr.replace(oldExpression, newExpression);
         return new UnaryExpression(op, expression);
+    }
+
+    public enum Op
+    {
+        NOT ("not"),
+        COMPLEMENT ("complement"),
+        TRANSPOSE ("transpose"),
+        TCLOSURE("tclosure"),
+        SINGLETON("singleton"),
+        CHOOSE("choose"),
+        UNIVSET("as univset"),
+        EMPTYSET("as emptyset");
+
+        private final String opStr;
+
+        Op(String str)
+        {
+            this.opStr = str;
+        }
+
+        public static Op getOp(String operator)
+        {
+            switch (operator)
+            {
+                case"not"           : return NOT;
+                case "complement"   : return COMPLEMENT;
+                case "transpose"    : return TRANSPOSE;
+                case "tclosure"     : return TCLOSURE;
+                case "singleton"    : return SINGLETON;
+                case "as univset"   : return UNIVSET;
+                case "as emptyset"  : return EMPTYSET;
+                default:
+                    throw new UnsupportedOperationException("Operator " + operator + " is not defined");
+            }
+        }
+
+        public UnaryExpression make(Expression expr)
+        {
+            return new UnaryExpression(this, expr);
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.opStr;
+        }
     }
 }
