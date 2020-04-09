@@ -104,7 +104,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
         stringBuilder.append("\n");
         printTabs();
         stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-        for (VariableDeclaration boundVariable: quantifiedExpression.getVariables())
+        for (SmtVariable boundVariable: quantifiedExpression.getVariables())
         {
             this.visit(boundVariable);
         }
@@ -122,7 +122,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
         stringBuilder.append("\n");
         printTabs();
         stringBuilder.append("(let (");
-        for(Map.Entry<VariableDeclaration, SmtExpr> letVar : let.getLetVariables().entrySet())
+        for(Map.Entry<SmtVariable, SmtExpr> letVar : let.getLetVariables().entrySet())
         {
             tabsCount++;
             stringBuilder.append("\n");

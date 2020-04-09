@@ -100,7 +100,7 @@ public class Environment
         }
         else
         {
-            List<VariableDeclaration> variables = new ArrayList<>(auxiliaryFormula.getVariables());
+            List<SmtVariable> variables = new ArrayList<>(auxiliaryFormula.getVariables());
             variables.addAll(expression.getVariables());
 
             SmtExpr and = SmtMultiArityExpr.Op.AND.make(auxiliaryFormula.getExpression(), expression);

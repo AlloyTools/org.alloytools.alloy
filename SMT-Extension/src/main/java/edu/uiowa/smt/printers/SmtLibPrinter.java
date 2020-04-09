@@ -118,7 +118,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     {
         quantifiedExpression = optimize(quantifiedExpression);
         stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-        for (VariableDeclaration boundVariable: quantifiedExpression.getVariables())
+        for (SmtVariable boundVariable: quantifiedExpression.getVariables())
         {
             this.visit(boundVariable);
         }
@@ -129,9 +129,9 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
 
     public SmtQtExpr optimize(SmtQtExpr quantifiedExpression)
     {
-        List<VariableDeclaration> declarations = new ArrayList<>();
-        Map<VariableDeclaration, SmtExpr> letVariables = new LinkedHashMap<>();
-        for (VariableDeclaration variable: quantifiedExpression.getVariables())
+        List<SmtVariable> declarations = new ArrayList<>();
+        Map<SmtVariable, SmtExpr> letVariables = new LinkedHashMap<>();
+        for (SmtVariable variable: quantifiedExpression.getVariables())
         {
             if(variable.getSort() instanceof TupleSort)
             {
@@ -140,7 +140,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
                 TupleSort tupleSort = (TupleSort) variable.getSort();
                 for (Sort sort: tupleSort.elementSorts)
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+                    SmtVariable declaration = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
                     declarations.add(declaration);
                     tupleSmtExprs.add(declaration.getVariable());
                 }
@@ -249,7 +249,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     public void visit(FunctionDefinition definition)
     {
         stringBuilder.append("(define-fun ").append(TranslatorUtils.sanitizeWithBars(definition)).append(" (");
-        for(VariableDeclaration bdVar : definition.inputVariables)
+        for(SmtVariable bdVar : definition.inputVariables)
         {
             this.visit(bdVar);
         }
@@ -350,7 +350,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
 
     @Override
-    public void visit(VariableDeclaration variable)
+    public void visit(SmtVariable variable)
     {
         stringBuilder.append("(" + TranslatorUtils.sanitizeWithBars(variable) + " ");
         this.visit(variable.getSort());
@@ -366,7 +366,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     public void visit(SmtLetExpr let)
     {
         stringBuilder.append("(let (");
-        for(Map.Entry<VariableDeclaration, SmtExpr> letVar : let.getLetVariables().entrySet())
+        for(Map.Entry<SmtVariable, SmtExpr> letVar : let.getLetVariables().entrySet())
         {
             stringBuilder.append("(");
             stringBuilder.append(TranslatorUtils.sanitizeWithBars(letVar.getKey())).append(" ");

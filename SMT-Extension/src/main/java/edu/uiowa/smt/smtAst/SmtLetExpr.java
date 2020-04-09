@@ -15,13 +15,13 @@ import java.util.Map;
 public class SmtLetExpr extends SmtExpr
 {
     private final SmtExpr expr;
-    private final Map<VariableDeclaration, SmtExpr> letVariables;
+    private final Map<SmtVariable, SmtExpr> letVariables;
 
-    public SmtLetExpr(Map<VariableDeclaration, SmtExpr> letVars, SmtExpr expr)
+    public SmtLetExpr(Map<SmtVariable, SmtExpr> letVars, SmtExpr expr)
     {
         this.letVariables = new HashMap<>();
         this.expr = expr;
-        for (Map.Entry<VariableDeclaration, SmtExpr> var : letVars.entrySet())
+        for (Map.Entry<SmtVariable, SmtExpr> var : letVars.entrySet())
         {
             this.letVariables.put(var.getKey(), var.getValue());
         }
@@ -33,7 +33,7 @@ public class SmtLetExpr extends SmtExpr
     {
         // make sure the types of the declared variables match their corresponding expressions
 
-        for (Map.Entry<VariableDeclaration, SmtExpr> entry: letVariables.entrySet())
+        for (Map.Entry<SmtVariable, SmtExpr> entry: letVariables.entrySet())
         {
             if(! entry.getKey().getSort().equals(entry.getValue().getSort()))
             {
@@ -45,7 +45,7 @@ public class SmtLetExpr extends SmtExpr
         expr.checkTypes();
     }
 
-    public Map<VariableDeclaration, SmtExpr> getLetVariables()
+    public Map<SmtVariable, SmtExpr> getLetVariables()
     {
         return this.letVariables;
     }
@@ -83,7 +83,7 @@ public class SmtLetExpr extends SmtExpr
     public List<Variable> getFreeVariables()
     {
         List<Variable> freeVariables = expr.getFreeVariables();
-        for (Map.Entry<VariableDeclaration, SmtExpr> entry: letVariables.entrySet())
+        for (Map.Entry<SmtVariable, SmtExpr> entry: letVariables.entrySet())
         {
             freeVariables.remove(entry.getKey().getVariable());
         }

@@ -37,16 +37,17 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     final SignatureTranslator signatureTranslator;
     final ExprTranslator exprTranslator;
 
+    //ToDo: cleanup this
     Set<String> funcNames;
     Map<Sig, Expr> sigFacts;
 
     Map<String, String> funcNamesMap;
     Map<String, List<String>> setComprehensionFuncNameToInputsMap;
     Map<String, SmtExpr> setCompFuncNameToDefMap;
-    Map<String, VariableDeclaration> setCompFuncNameToBdVarExprMap;
+    Map<String, SmtVariable> setCompFuncNameToBdVarExprMap;
     Map<Sig, FunctionDeclaration> signaturesMap;
     Map<Sig.Field, FunctionDeclaration> fieldsMap;
-    Map<String, Func> nameToFuncMap;
+    Map<Func, FunctionDefinition> funcMap;
     Map<Expr, Integer> sigToIdMap;
     List<Expr> facts;
 
@@ -66,7 +67,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         this.signaturesMap = new HashMap<>();
         this.funcNamesMap = new HashMap<>();
         this.functionsMap = new HashMap<>();
-        this.nameToFuncMap = new HashMap<>();
+        this.funcMap = new HashMap<>();
         this.fieldsMap = new HashMap<>();
         this.sigFacts = new HashMap<>();
         this.funcNames = new HashSet<>();
@@ -446,15 +447,15 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
                 if (scope >= 1)
                 {
-                    List<VariableDeclaration> declarations = new ArrayList<>();
+                    List<SmtVariable> declarations = new ArrayList<>();
                     Sort sort = signature.type().is_int() ? AbstractTranslator.uninterpretedInt : AbstractTranslator.atomSort;
-                    VariableDeclaration firstAtom = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+                    SmtVariable firstAtom = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
                     declarations.add(firstAtom);
                     SmtExpr firstTuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, firstAtom.getVariable());
                     SmtExpr set = SmtUnaryExpr.Op.SINGLETON.make(firstTuple);
                     for (int i = 1; i < scope; i++)
                     {
-                        VariableDeclaration declaration = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+                        SmtVariable declaration = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
                         declarations.add(declaration);
                         SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, declaration.getVariable());
                         SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
@@ -563,5 +564,24 @@ public class Alloy2SmtTranslator extends AbstractTranslator
             scopeSum = command.overall == -1 ? AlloySettings.defaultScope : command.overall;
         }
         return scopeSum;
+    }
+
+    public FunctionDefinition getFuncTranslation(Func func)
+    {
+        FunctionDefinition function = funcMap.get(func);
+        if (function == null)
+        {
+            function = translateFunc(func);
+        }
+        return function;
+    }
+
+    private FunctionDefinition translateFunc(Func func)
+    {
+        Environment environment = new Environment();
+        SmtExpr smtExpr = exprTranslator.translateExpr(func.getBody(), environment);
+        List<SmtVariable> variables = new ArrayList<>();
+        FunctionDefinition function = new FunctionDefinition(func.label, variables, smtExpr.getSort(),smtExpr, true);
+        return function;
     }
 }

@@ -8,11 +8,11 @@
 
 package edu.uiowa.smt.smtAst;
 
-public class VariableDeclaration extends Declaration
+public class SmtVariable extends Declaration
 {
     private SmtExpr constraint;
 
-    public VariableDeclaration(String name, Sort sort, boolean isOriginal)
+    public SmtVariable(String name, Sort sort, boolean isOriginal)
     {
         super(name, sort, isOriginal);
     }

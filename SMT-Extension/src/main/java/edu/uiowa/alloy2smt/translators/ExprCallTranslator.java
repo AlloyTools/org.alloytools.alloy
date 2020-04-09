@@ -2,6 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprCall;
+import edu.mit.csail.sdg.ast.Func;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
@@ -25,7 +26,10 @@ public class ExprCallTranslator
 
     SmtExpr translateExprCall(ExprCall exprCall, Environment environment)
     {
-        String funcName = exprCall.fun.label;
+        Func func = exprCall.fun;
+
+        FunctionDefinition function = translator.getFuncTranslation(func);
+
         List<SmtExpr> argExprs = new ArrayList<>();
 
         for (Expr e : exprCall.args)
@@ -43,7 +47,7 @@ public class ExprCallTranslator
 //        }
         if(exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
         {
-            return new SmtCallExpr(translator.functionsMap.get(funcName), argExprs);
+            return new SmtCallExpr(translator.functionsMap.get(func.label), argExprs);
         }
 //        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
 //        {

@@ -52,7 +52,7 @@ public interface SmtAstVisitor
 
     void visit(SmtCallExpr smtCallExpr);
 
-    void visit(VariableDeclaration variableDeclaration);
+    void visit(SmtVariable smtVariable);
 
     void visit(BoolSort boolSort);
 

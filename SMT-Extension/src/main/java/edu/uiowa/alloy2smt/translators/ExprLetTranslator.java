@@ -4,7 +4,7 @@ import edu.mit.csail.sdg.ast.ExprLet;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.smtAst.SmtExpr;
 import edu.uiowa.smt.smtAst.SmtLetExpr;
-import edu.uiowa.smt.smtAst.VariableDeclaration;
+import edu.uiowa.smt.smtAst.SmtVariable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,9 +24,9 @@ public class ExprLetTranslator
     {
         SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, environment);
 
-        VariableDeclaration declaration = new VariableDeclaration(exprLet.var.label,
+        SmtVariable declaration = new SmtVariable(exprLet.var.label,
                 smtExpr.getSort() , true);
-        Map<VariableDeclaration, SmtExpr> map = new HashMap<>();
+        Map<SmtVariable, SmtExpr> map = new HashMap<>();
         map.put(declaration, smtExpr);
 
         Environment newEnvironment = new Environment(environment);

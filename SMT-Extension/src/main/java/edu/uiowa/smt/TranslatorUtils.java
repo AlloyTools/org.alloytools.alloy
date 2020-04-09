@@ -298,7 +298,7 @@ public class TranslatorUtils
         return name.replaceAll("\\|", "");
     }
 
-    public static SmtExpr makeRelationFromDeclarations(List<VariableDeclaration> declarations)
+    public static SmtExpr makeRelationFromDeclarations(List<SmtVariable> declarations)
     {
         List<SmtExpr> variables = declarations
                 .stream().map(v -> v.getVariable()).collect(Collectors.toList());

@@ -6,10 +6,10 @@ model : '(' 'model' sortDeclaration* functionDefinition* ')' ;
 
 sortDeclaration :  '(' 'declare-sort' sortName arity ')' ;
 
-functionDefinition : '(' 'define-fun' functionName '(' variableDeclaration* ')' sort
+functionDefinition : '(' 'define-fun' functionName '(' smtVariable* ')' sort
                         expression ')' ;
 
-variableDeclaration : '(' variableName sort ')' ;
+smtVariable : '(' variableName sort ')' ;
 
 sort :  sortName | '(' tupleSort ')' | '(' setSort ')' ;
 
@@ -44,7 +44,7 @@ ternaryExpression : TernaryOperator expression expression expression ;
 
 multiArityExpression :  MultiArityOperator expression+ ;
 
-quantifiedExpression : Quantifier '(' variableDeclaration+ ')' '(' expression ')' ;
+quantifiedExpression : Quantifier '(' smtVariable+ ')' '(' expression ')' ;
 
 functionCallExpression : Identifier expression+ ;
 

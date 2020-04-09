@@ -134,7 +134,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     @Override
     public void visit(SmtQtExpr quantifiedExpression)
     {
-        for (VariableDeclaration boundVariable: quantifiedExpression.getVariables())
+        for (SmtVariable boundVariable: quantifiedExpression.getVariables())
         {
             this.visit(boundVariable);
         }
@@ -201,7 +201,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     @Override
     public void visit(FunctionDefinition functionDefinition)
     {
-        for (VariableDeclaration variable: functionDefinition.getInputVariables())
+        for (SmtVariable variable: functionDefinition.getInputVariables())
         {
             visit(variable);
         }
@@ -245,9 +245,9 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(VariableDeclaration variableDeclaration)
+    public void visit(SmtVariable smtVariable)
     {
-        visit(variableDeclaration.getSort());
+        visit(smtVariable.getSort());
     }
 
     @Override
@@ -258,7 +258,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     @Override
     public void visit(SmtLetExpr letExpression)
     {
-        for (Map.Entry<VariableDeclaration, SmtExpr> entry : letExpression.getLetVariables().entrySet())
+        for (Map.Entry<SmtVariable, SmtExpr> entry : letExpression.getLetVariables().entrySet())
         {
             visit(entry.getKey());
             visit(entry.getValue());

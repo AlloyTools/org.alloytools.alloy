@@ -394,8 +394,8 @@ public class SignatureTranslator
             }
 
             String name = "this";
-            Map<VariableDeclaration, SmtExpr> boundVariables = new HashMap<>();
-            VariableDeclaration declaration = new VariableDeclaration(name, AbstractTranslator.atomSort, true);
+            Map<SmtVariable, SmtExpr> boundVariables = new HashMap<>();
+            SmtVariable declaration = new SmtVariable(name, AbstractTranslator.atomSort, true);
             boundVariables.put(declaration, translator.signaturesMap.get(sigFact.getKey()).getVariable());
             SmtExpr member = AlloyUtils.getMemberExpression(boundVariables, 0);
             declaration.setConstraint(member);
@@ -445,11 +445,11 @@ public class SignatureTranslator
         // prev relation
         FunctionDeclaration ordPrev = addOrdPrev(prefix, ordNext);
 
-        VariableDeclaration set1 = new VariableDeclaration("s1", translator.setOfUnaryAtomSort, false);
-        VariableDeclaration set2 = new VariableDeclaration("s2", translator.setOfUnaryAtomSort, false);
+        SmtVariable set1 = new SmtVariable("s1", translator.setOfUnaryAtomSort, false);
+        SmtVariable set2 = new SmtVariable("s2", translator.setOfUnaryAtomSort, false);
 
-        VariableDeclaration element1 = new VariableDeclaration("e1", AbstractTranslator.atomSort, false);
-        VariableDeclaration element2 = new VariableDeclaration("e2", AbstractTranslator.atomSort, false);
+        SmtVariable element1 = new SmtVariable("e1", AbstractTranslator.atomSort, false);
+        SmtVariable element2 = new SmtVariable("e2", AbstractTranslator.atomSort, false);
 
         // ordering/prevs
         FunctionDefinition prevs = getPrevsNextsDefinition(prefix, set1, ordPrev, "prevs");
@@ -499,8 +499,8 @@ public class SignatureTranslator
 
         // the mapping is one-to-one(injective)
         // for all x, y (x != y and  implies f(x) != f(y))
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.atomSort, false);
+        SmtVariable x = new SmtVariable("x", AbstractTranslator.atomSort, false);
+        SmtVariable y = new SmtVariable("y", AbstractTranslator.atomSort, false);
 
         SmtExpr xEqualsY = SmtBinaryExpr.Op.EQ.make(x.getVariable(), y.getVariable());
 
@@ -541,7 +541,7 @@ public class SignatureTranslator
         translator.smtScript.addAssertion(new Assertion("", prefix + suffix + " = " + prefix + "Ord.First", ordFirstSingleton));
 
         // each element is greater than or equal to the first element
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
+        SmtVariable x = new SmtVariable("x", AbstractTranslator.atomSort, false);
         SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, x.getVariable()), setSmtExpr);
         SmtExpr gte = SmtBinaryExpr.Op.GTE.make(new SmtCallExpr(mapping, x.getVariable()), new SmtCallExpr(mapping, firstAtom.getVariable()));
         SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(member, gte);
@@ -575,7 +575,7 @@ public class SignatureTranslator
         translator.smtScript.addAssertion(new Assertion("", prefix + suffix + " = (singleton (mktuple lastAtom))", lastSingleton));
 
         // each element is less than or equal to the last element
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
+        SmtVariable x = new SmtVariable("x", AbstractTranslator.atomSort, false);
         SmtExpr xMember = SmtBinaryExpr.Op.MEMBER.make(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, x.getVariable()), setSmtExpr);
         SmtExpr lte = SmtBinaryExpr.Op.LTE.make(new SmtCallExpr(mapping, x.getVariable()), new SmtCallExpr(mapping, lastAtom.getVariable()));
         SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(xMember, lte);
@@ -586,7 +586,7 @@ public class SignatureTranslator
         return lastAtom;
     }
 
-    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, VariableDeclaration set, FunctionDeclaration declaration)
+    private FunctionDefinition getMaxMinDefinition(String prefix, String suffix, SmtVariable set, FunctionDeclaration declaration)
     {
         SmtExpr tClosure = SmtUnaryExpr.Op.TCLOSURE.make(declaration.getVariable());
 
@@ -598,7 +598,7 @@ public class SignatureTranslator
                 difference, true, set);
     }
 
-    private FunctionDefinition getPrevsNextsDefinition(String prefix, VariableDeclaration set1, FunctionDeclaration ord, String suffix)
+    private FunctionDefinition getPrevsNextsDefinition(String prefix, SmtVariable set1, FunctionDeclaration ord, String suffix)
     {
         SmtUnaryExpr tClosure = SmtUnaryExpr.Op.TCLOSURE.make(ord.getVariable());
         SmtBinaryExpr join = SmtBinaryExpr.Op.JOIN.make(set1.getVariable(), tClosure);
@@ -607,7 +607,7 @@ public class SignatureTranslator
         return definition;
     }
 
-    private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, VariableDeclaration set1, VariableDeclaration set2, FunctionDefinition definition)
+    private FunctionDefinition getLargerSmallerDefinition(String prefix, String suffix, SmtVariable set1, SmtVariable set2, FunctionDefinition definition)
     {
         SmtCallExpr call = new SmtCallExpr(definition, set1.getVariable(), set2.getVariable());
         SmtIteExpr ite = new SmtIteExpr(call, set1.getVariable(),
@@ -626,8 +626,8 @@ public class SignatureTranslator
         FunctionDeclaration mapping = new FunctionDeclaration(nextMapping, AbstractTranslator.atomSort, AbstractTranslator.atomSort, true);
         translator.addFunction(mapping);
 
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.atomSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.atomSort, false);
+        SmtVariable x = new SmtVariable("x", AbstractTranslator.atomSort, false);
+        SmtVariable y = new SmtVariable("y", AbstractTranslator.atomSort, false);
 
         // for all x : x is a member implies intMapping(x) < intMapping (nextMapping(x)) and
         //                                                    x != lastAtom implies nextMapping(x) is a member
@@ -733,7 +733,7 @@ public class SignatureTranslator
         return ordPrev;
     }
 
-    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, FunctionDeclaration mapping, VariableDeclaration set1, VariableDeclaration set2, VariableDeclaration element1, VariableDeclaration element2, SmtBinaryExpr.Op operator)
+    private FunctionDefinition getComparisonDefinition(String prefix, String suffix, FunctionDeclaration mapping, SmtVariable set1, SmtVariable set2, SmtVariable element1, SmtVariable element2, SmtBinaryExpr.Op operator)
     {
         SmtQtExpr ltExpression =
                         SmtQtExpr.Op.FORALL.make(

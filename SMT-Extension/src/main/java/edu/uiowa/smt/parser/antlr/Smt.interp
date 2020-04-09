@@ -58,7 +58,7 @@ rule names:
 model
 sortDeclaration
 functionDefinition
-variableDeclaration
+smtVariable
 sort
 setSort
 tupleSort

@@ -140,7 +140,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateOneArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -151,13 +151,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
@@ -217,7 +217,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateOneArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
@@ -229,12 +229,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A one -> some B
@@ -282,7 +282,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateOneArrowAny(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -293,12 +293,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A one -> set B
@@ -338,7 +338,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateSomeArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -349,12 +349,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A some -> one B
@@ -401,7 +401,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateAnyArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -412,12 +412,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A set -> one B
@@ -455,7 +455,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateSomeArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -466,8 +466,8 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
@@ -502,7 +502,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateSomeArrowAny(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -513,8 +513,8 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
@@ -542,7 +542,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateAnyArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -553,8 +553,8 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
@@ -580,7 +580,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateOneArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
@@ -592,13 +592,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
@@ -662,7 +662,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateSomeArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
@@ -675,12 +675,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A some -> lone B
@@ -731,7 +731,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateAnyArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -743,12 +743,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
         // multiplicitySet subset of A set -> lone B
@@ -792,7 +792,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateLoneArrowLone(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -803,13 +803,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
@@ -877,7 +877,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateLoneArrowOne(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -888,13 +888,13 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
-        VariableDeclaration v = new VariableDeclaration("v", BSort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
+        SmtVariable v = new SmtVariable("v", BSort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
         SmtExpr vMemberB = SmtBinaryExpr.Op.MEMBER.make(v.getVariable(), B);
 
@@ -959,7 +959,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateLoneArrowSome(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -971,12 +971,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A lone -> some B
@@ -1031,7 +1031,7 @@ public class ExprBinaryTranslator
     private SmtExpr translateLoneArrowAny(ExprBinary expr, Environment environment)
     {
         SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
-        VariableDeclaration multiplicitySet = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
         SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
@@ -1042,12 +1042,12 @@ public class ExprBinaryTranslator
         SetSort ASort = (SetSort) A.getSort();
         SetSort BSort = (SetSort) B.getSort();
 
-        VariableDeclaration x = new VariableDeclaration("x", ASort.elementSort, false);
-        VariableDeclaration y = new VariableDeclaration("y", BSort.elementSort, false);
+        SmtVariable x = new SmtVariable("x", ASort.elementSort, false);
+        SmtVariable y = new SmtVariable("y", BSort.elementSort, false);
         SmtExpr xMemberA = SmtBinaryExpr.Op.MEMBER.make(x.getVariable(), A);
         SmtExpr yMemberB = SmtBinaryExpr.Op.MEMBER.make(y.getVariable(), B);
 
-        VariableDeclaration u = new VariableDeclaration("u", ASort.elementSort, false);
+        SmtVariable u = new SmtVariable("u", ASort.elementSort, false);
         SmtExpr uMemberA = SmtBinaryExpr.Op.MEMBER.make(u.getVariable(), A);
 
         // multiplicitySet subset of A lone -> set B
@@ -1088,7 +1088,7 @@ public class ExprBinaryTranslator
         return multiplicitySet.getVariable();
     }
 
-    private SmtExpr getTupleConcatenation(SetSort ASort, SetSort BSort, VariableDeclaration x, VariableDeclaration y)
+    private SmtExpr getTupleConcatenation(SetSort ASort, SetSort BSort, SmtVariable x, SmtVariable y)
     {
         List<SmtExpr> tupleElements = new ArrayList<>();
         for (int i = 0; i < ((TupleSort) ASort.elementSort).elementSorts.size(); i++)
@@ -1279,8 +1279,8 @@ public class ExprBinaryTranslator
 
     private SmtExpr getComparison(SmtBinaryExpr.Op op, SmtExpr left, SmtExpr right)
     {
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.uninterpretedInt, false);
-        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.uninterpretedInt, false);
+        SmtVariable x = new SmtVariable("x", AbstractTranslator.uninterpretedInt, false);
+        SmtVariable y = new SmtVariable("y", AbstractTranslator.uninterpretedInt, false);
         SmtExpr xTuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, x.getVariable());
         SmtExpr yTuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, y.getVariable());
         SmtExpr xSingleton = SmtUnaryExpr.Op.SINGLETON.make(xTuple);
@@ -1420,7 +1420,7 @@ public class ExprBinaryTranslator
                     return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
                 }
 
-                List<VariableDeclaration> vars = generateVariables(n, elementSort);
+                List<SmtVariable> vars = generateVariables(n, elementSort);
                 SmtExpr cardinalitySet = generateCardinalitySet(vars);
                 SmtExpr equalExpr = SmtBinaryExpr.Op.EQ.make(setExpr, cardinalitySet);
                 SmtExpr andExpr = makeDistinct(equalExpr, vars);
@@ -1442,7 +1442,7 @@ public class ExprBinaryTranslator
                     return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
                 }
 
-                List<VariableDeclaration> vars = generateVariables(n - 1, elementSort);
+                List<SmtVariable> vars = generateVariables(n - 1, elementSort);
                 SmtExpr cardinalitySet = generateCardinalitySet(vars);
                 SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(setExpr, cardinalitySet);
                 SmtExpr andExpr = makeDistinct(subsetExpr, vars);
@@ -1464,7 +1464,7 @@ public class ExprBinaryTranslator
                     return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
                 }
 
-                List<VariableDeclaration> vars = generateVariables(n, elementSort);
+                List<SmtVariable> vars = generateVariables(n, elementSort);
                 SmtExpr cardinalitySet = generateCardinalitySet(vars);
                 SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(setExpr, cardinalitySet);
                 SmtExpr andExpr = makeDistinct(subsetExpr, vars);
@@ -1485,7 +1485,7 @@ public class ExprBinaryTranslator
                     return exprTranslator.translateAuxiliaryFormula(notEmpty, newEnvironment);
                 }
 
-                List<VariableDeclaration> vars = generateVariables(n + 1, elementSort);
+                List<SmtVariable> vars = generateVariables(n + 1, elementSort);
                 SmtExpr cardinalitySet = generateCardinalitySet(vars);
                 SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(cardinalitySet, setExpr);
                 SmtExpr andExpr = makeDistinct(subsetExpr, vars);
@@ -1507,7 +1507,7 @@ public class ExprBinaryTranslator
                     return exprTranslator.translateAuxiliaryFormula(notEmpty, newEnvironment);
                 }
 
-                List<VariableDeclaration> vars = generateVariables(n, elementSort);
+                List<SmtVariable> vars = generateVariables(n, elementSort);
                 SmtExpr cardinalitySet = generateCardinalitySet(vars);
                 SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(cardinalitySet, setExpr);
                 SmtExpr andExpr = makeDistinct(subsetExpr, vars);
@@ -1522,7 +1522,7 @@ public class ExprBinaryTranslator
         }
     }
 
-    private SmtExpr makeDistinct(SmtExpr boolExpr, List<VariableDeclaration> vars)
+    private SmtExpr makeDistinct(SmtExpr boolExpr, List<SmtVariable> vars)
     {
         assert (boolExpr.getSort().equals(AbstractTranslator.boolSort));
         if (vars.size() == 1)
@@ -1535,7 +1535,7 @@ public class ExprBinaryTranslator
         return and;
     }
 
-    private SmtExpr generateCardinalitySet(List<VariableDeclaration> vars)
+    private SmtExpr generateCardinalitySet(List<SmtVariable> vars)
     {
         assert (vars.size() >= 1);
 
@@ -1554,17 +1554,17 @@ public class ExprBinaryTranslator
         return set;
     }
 
-    private List<VariableDeclaration> generateVariables(int n, Sort elementSort)
+    private List<SmtVariable> generateVariables(int n, Sort elementSort)
     {
         if (n <= 0)
         {
             throw new RuntimeException(String.format("Expected %1$d  to be greater than zero. ", n));
         }
-        List<VariableDeclaration> vars = new ArrayList<>();
+        List<SmtVariable> vars = new ArrayList<>();
         for (int i = 0; i < n; i++)
         {
             String freshName = TranslatorUtils.getFreshName(elementSort);
-            vars.add(new VariableDeclaration(freshName, elementSort, false));
+            vars.add(new SmtVariable(freshName, elementSort, false));
         }
         return vars;
     }
@@ -1668,9 +1668,9 @@ public class ExprBinaryTranslator
 
         String freshName = TranslatorUtils.getFreshName(AbstractTranslator.setOfUninterpretedIntTuple);
 
-        VariableDeclaration x = new VariableDeclaration("x", AbstractTranslator.uninterpretedInt, false);
-        VariableDeclaration y = new VariableDeclaration("y", AbstractTranslator.uninterpretedInt, false);
-        VariableDeclaration z = new VariableDeclaration("z", AbstractTranslator.uninterpretedInt, false);
+        SmtVariable x = new SmtVariable("x", AbstractTranslator.uninterpretedInt, false);
+        SmtVariable y = new SmtVariable("y", AbstractTranslator.uninterpretedInt, false);
+        SmtVariable z = new SmtVariable("z", AbstractTranslator.uninterpretedInt, false);
 
         SmtExpr xTuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, x.getVariable());
         SmtExpr yTuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, y.getVariable());
@@ -1698,7 +1698,7 @@ public class ExprBinaryTranslator
             return z.getVariable();
         }
 
-        VariableDeclaration result = new VariableDeclaration(freshName, AbstractTranslator.setOfUninterpretedIntTuple, false);
+        SmtVariable result = new SmtVariable(freshName, AbstractTranslator.setOfUninterpretedIntTuple, false);
         SmtExpr resultSmtExpr = result.getVariable();
 
         // for all z : uninterpretedInt. x in Result implies

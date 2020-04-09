@@ -90,8 +90,8 @@ public class FieldTranslator
 
         SmtExpr signature = translator.signaturesMap.get(sig).getVariable();
         SetSort setSort = (SetSort) signature.getSort();
-        VariableDeclaration a = new VariableDeclaration("a", setSort.elementSort, false);
-        VariableDeclaration b = new VariableDeclaration("b", setSort.elementSort, false);
+        SmtVariable a = new SmtVariable("a", setSort.elementSort, false);
+        SmtVariable b = new SmtVariable("b", setSort.elementSort, false);
         SmtExpr aMember = SmtBinaryExpr.Op.MEMBER.make(a.getVariable(), signature);
         SmtExpr bMember = SmtBinaryExpr.Op.MEMBER.make(b.getVariable(), signature);
         SmtExpr aSingleton = SmtUnaryExpr.Op.SINGLETON.make(a.getVariable());

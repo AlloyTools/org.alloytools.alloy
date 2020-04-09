@@ -247,21 +247,21 @@ public class ExprTranslator
      * Auxiliary functions
      */
 
-    List<VariableDeclaration> getBdVars(Sort sort, int num)
+    List<SmtVariable> getBdVars(Sort sort, int num)
     {
-        List<VariableDeclaration> bdVars = new ArrayList<>();
+        List<SmtVariable> bdVars = new ArrayList<>();
 
         for (int i = 0; i < num; i++)
         {
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false));
+            bdVars.add(new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false));
         }
         return bdVars;
     }
 
-    List<VariableDeclaration> getBdTupleVars(List<Sort> sorts, int arity, int num)
+    List<SmtVariable> getBdTupleVars(List<Sort> sorts, int arity, int num)
     {
         List<Sort> elementSorts = new ArrayList<>();
-        List<VariableDeclaration> bdVars = new ArrayList<>();
+        List<SmtVariable> bdVars = new ArrayList<>();
 
         for (int i = 0; i < arity; i++)
         {
@@ -270,7 +270,7 @@ public class ExprTranslator
         for (int i = 0; i < num; i++)
         {
             Sort sort = new TupleSort(elementSorts);
-            bdVars.add(new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false));
+            bdVars.add(new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false));
         }
         return bdVars;
     }

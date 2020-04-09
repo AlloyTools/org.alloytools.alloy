@@ -143,8 +143,8 @@ public abstract class AbstractTranslator
     private static Assertion getUninterpretedIntValueAssertion()
     {
         // uninterpretedIntValue is injective function
-        VariableDeclaration X = new VariableDeclaration("x", uninterpretedInt, false);
-        VariableDeclaration Y = new VariableDeclaration("y", uninterpretedInt, false);
+        SmtVariable X = new SmtVariable("x", uninterpretedInt, false);
+        SmtVariable Y = new SmtVariable("y", uninterpretedInt, false);
         SmtExpr XEqualsY = SmtBinaryExpr.Op.EQ.make(X.getVariable(), Y.getVariable());
         SmtExpr notXEqualsY = SmtUnaryExpr.Op.NOT.make(XEqualsY);
 
@@ -162,9 +162,9 @@ public abstract class AbstractTranslator
     private static Assertion getIdentityRelation(Sort sort, FunctionDeclaration identity)
     {
         // Axiom for identity relation
-        VariableDeclaration a = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable a = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-        VariableDeclaration b = new VariableDeclaration(TranslatorUtils.getFreshName(sort), sort, false);
+        SmtVariable b = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
         SmtMultiArityExpr tupleAB = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, a.getVariable(), b.getVariable());
 

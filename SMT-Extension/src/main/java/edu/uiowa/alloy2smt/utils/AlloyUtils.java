@@ -97,9 +97,9 @@ public class AlloyUtils
         return sorts;
     }
 
-    public static SmtBinaryExpr getMemberExpression(Map<VariableDeclaration, SmtExpr> variableToSetMap, int index)
+    public static SmtBinaryExpr getMemberExpression(Map<SmtVariable, SmtExpr> variableToSetMap, int index)
     {
-        VariableDeclaration declaration = (new ArrayList<>(variableToSetMap.keySet())).get(index);
+        SmtVariable declaration = (new ArrayList<>(variableToSetMap.keySet())).get(index);
         SmtExpr rightSetSmtExpr = variableToSetMap.get(declaration);
         if(declaration.getSort() instanceof SetSort)
         {
@@ -131,11 +131,11 @@ public class AlloyUtils
         return singleton;
     }
 
-    public static List<SmtExpr> getFunctionCallArguments(List<VariableDeclaration> quantifiedArguments,
+    public static List<SmtExpr> getFunctionCallArguments(List<SmtVariable> quantifiedArguments,
                                                          Map<String, SmtExpr> argumentsMap)
     {
         List<SmtExpr> smtExprs = new ArrayList<>();
-        for (VariableDeclaration declaration: quantifiedArguments)
+        for (SmtVariable declaration: quantifiedArguments)
         {
             if(declaration.getSort().equals(argumentsMap.get(declaration.getName()).getSort()))
             {

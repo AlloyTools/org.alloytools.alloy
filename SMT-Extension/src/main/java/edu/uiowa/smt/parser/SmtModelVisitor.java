@@ -116,10 +116,10 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         String name = ctx.functionName().getText();
         name = processName(name);
-        List<VariableDeclaration> variableDeclarations = ctx.variableDeclaration().stream()
-                                                   .map(argument -> (VariableDeclaration) this.visitVariableDeclaration(argument))
-                                                   .collect(Collectors.toList());
-        Map<String, SmtExpr> arguments = variableDeclarations
+        List<SmtVariable> smtVariables = ctx.variableDeclaration().stream()
+                                            .map(argument -> (SmtVariable) this.visitVariableDeclaration(argument))
+                                            .collect(Collectors.toList());
+        Map<String, SmtExpr> arguments = smtVariables
                 .stream()
                 .collect(Collectors
                         .toMap(v -> v.getName(), v -> v.getVariable()));
@@ -129,7 +129,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 
         SmtExpr smtExpr = (SmtExpr) this.visitExpression(ctx.expression(), environment);
 
-        FunctionDefinition definition   = new FunctionDefinition(name, variableDeclarations, returnSort, smtExpr, true);
+        FunctionDefinition definition   = new FunctionDefinition(name, smtVariables, returnSort, smtExpr, true);
 
         return definition;
     }
@@ -144,7 +144,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
     {
         String name = processName(ctx.variableName().getText());
         Sort   sort = (Sort) this.visitSort(ctx.sort());
-        return new VariableDeclaration(name, sort, true);
+        return new SmtVariable(name, sort, true);
     }
 
     public SmtAst visitExpression(SmtParser.ExpressionContext ctx, Environment environment)
@@ -225,10 +225,10 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
 
     public SmtAst visitQuantifiedExpression(SmtParser.QuantifiedExpressionContext ctx, Environment environment)
     {
-        List<VariableDeclaration> variableDeclarations = ctx.variableDeclaration().stream()
-                                                   .map(argument -> (VariableDeclaration) this.visitVariableDeclaration(argument))
-                                                   .collect(Collectors.toList());
-        Map<String, SmtExpr> variables = variableDeclarations
+        List<SmtVariable> smtVariables = ctx.variableDeclaration().stream()
+                                            .map(argument -> (SmtVariable) this.visitVariableDeclaration(argument))
+                                            .collect(Collectors.toList());
+        Map<String, SmtExpr> variables = smtVariables
                 .stream()
                 .collect(Collectors
                         .toMap(v -> v.getName(), v -> v.getVariable()));
@@ -237,7 +237,7 @@ public class SmtModelVisitor extends SmtBaseVisitor<SmtAst>
         SmtExpr smtExpr = (SmtExpr) this.visitExpression(ctx.expression(), newEnvironment);
 
         SmtQtExpr.Op operator = SmtQtExpr.Op.getOp(ctx.Quantifier().getText());
-        return operator.make(smtExpr, variableDeclarations);
+        return operator.make(smtExpr, smtVariables);
     }
 
     public SmtAst visitFunctionCallExpression(SmtParser.FunctionCallExpressionContext ctx, Environment environment)

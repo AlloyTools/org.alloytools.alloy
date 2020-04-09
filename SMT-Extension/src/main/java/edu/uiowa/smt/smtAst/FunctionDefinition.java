@@ -16,29 +16,29 @@ import java.util.stream.Collectors;
 public class FunctionDefinition extends FunctionDeclaration
 {
     public final SmtExpr smtExpr;
-    public final List<VariableDeclaration>  inputVariables;
+    public final List<SmtVariable>  inputVariables;
     
-    public FunctionDefinition(String name, List<VariableDeclaration> inputVariables, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
+    public FunctionDefinition(String name, List<SmtVariable> inputVariables, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
     {
         super(name, inputVariables.stream().map(v -> v.getSort()).collect(Collectors.toList()), outputSort, isOriginal);
         this.inputVariables = inputVariables;
         this.smtExpr = smtExpr;
     }
     
-    public FunctionDefinition(String name, VariableDeclaration inputVariable, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
+    public FunctionDefinition(String name, SmtVariable inputVariable, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
     {
         super(name, inputVariable.getSort(), outputSort, isOriginal);
         this.inputVariables = Collections.singletonList(inputVariable);
         this.smtExpr = smtExpr;
     }
-    public FunctionDefinition(String name, Sort outputSort, SmtExpr smtExpr, boolean isOriginal, VariableDeclaration... inputVariables)
+    public FunctionDefinition(String name, Sort outputSort, SmtExpr smtExpr, boolean isOriginal, SmtVariable... inputVariables)
     {
         super(name, Arrays.stream(inputVariables).map(v -> v.getSort()).collect(Collectors.toList()), outputSort, isOriginal);
         this.inputVariables = Arrays.asList(inputVariables);
         this.smtExpr = smtExpr;
     }      
     
-    public List<VariableDeclaration> getInputVariables()
+    public List<SmtVariable> getInputVariables()
     {
         return this.inputVariables;
     }

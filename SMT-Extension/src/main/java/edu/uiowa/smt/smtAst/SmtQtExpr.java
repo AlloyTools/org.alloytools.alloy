@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 public class SmtQtExpr extends SmtExpr
 {
     private final SmtExpr expr;
-    private final List<VariableDeclaration> variables;
+    private final List<SmtVariable> variables;
     private final Op op;
     
-    private SmtQtExpr(Op op, List<VariableDeclaration> variables, SmtExpr expr)
+    private SmtQtExpr(Op op, List<SmtVariable> variables, SmtExpr expr)
     {
         this.variables = new ArrayList<>();
         this.expr       = expr;
         this.op         = op;
-        for(VariableDeclaration bdVar : variables)
+        for(SmtVariable bdVar : variables)
         {
             this.variables.add(bdVar);
         }
@@ -48,14 +48,14 @@ public class SmtQtExpr extends SmtExpr
         }
     }
 
-    private SmtQtExpr(Op op, SmtExpr expr, VariableDeclaration... variables)
+    private SmtQtExpr(Op op, SmtExpr expr, SmtVariable... variables)
     {
         this.variables = Arrays.asList(variables);
         this.expr       = expr;
         this.op         = op;
     }
     
-    public List<VariableDeclaration> getVariables()
+    public List<SmtVariable> getVariables()
     {
         return this.variables;
     }
@@ -98,12 +98,12 @@ public class SmtQtExpr extends SmtExpr
             }
         }
 
-        public SmtQtExpr make(SmtExpr expr, VariableDeclaration... variables)
+        public SmtQtExpr make(SmtExpr expr, SmtVariable... variables)
         {
             return new SmtQtExpr(this, expr, variables);
         }
 
-        public SmtQtExpr make(SmtExpr expr, List<VariableDeclaration> variables)
+        public SmtQtExpr make(SmtExpr expr, List<SmtVariable> variables)
         {
             return new SmtQtExpr(this, variables, expr);
         }
@@ -165,17 +165,17 @@ public class SmtQtExpr extends SmtExpr
     public SmtExpr substitute(Variable oldVariable, Variable newVariable)
     {
         SmtExpr body = expr;
-        List<VariableDeclaration> variables = new ArrayList<>(this.variables);
+        List<SmtVariable> variables = new ArrayList<>(this.variables);
         // check if the new variable is declared
         for (Declaration declaration: this.variables)
         {
             if(declaration.getVariable().equals(newVariable))
             {
                 // choose a new name for the declared variable
-                VariableDeclaration newDeclaration = new VariableDeclaration(TranslatorUtils.getFreshName(declaration.getSort()), declaration.getSort(), false);
-                if(declaration instanceof  VariableDeclaration)
+                SmtVariable newDeclaration = new SmtVariable(TranslatorUtils.getFreshName(declaration.getSort()), declaration.getSort(), false);
+                if(declaration instanceof SmtVariable)
                 {
-                    SmtExpr constraint = ((VariableDeclaration) declaration).getConstraint();
+                    SmtExpr constraint = ((SmtVariable) declaration).getConstraint();
                     SmtExpr newConstraint = constraint.substitute(oldVariable, newVariable);
                     newDeclaration.setConstraint(newConstraint);
                 }

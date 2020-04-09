@@ -76,7 +76,7 @@ public class ExprQtTranslator
                 ranges.put(name.label, range);
                 String label = name.label;
                 SetSort setSort = (SetSort) range.getSort();
-                VariableDeclaration variable = getVariableDeclaration(decl.expr, label, setSort, range);
+                SmtVariable variable = getVariableDeclaration(decl.expr, label, setSort, range);
                 SmtExpr constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
                 multiplicityConstraints = SmtMultiArityExpr.Op.AND.make(multiplicityConstraints, constraint);
                 newEnvironment.put(name.label, variable.getVariable());
@@ -131,10 +131,10 @@ public class ExprQtTranslator
         // assert forall x, y,... (x in e1 and y in e2 ... and f <=>
         // (x, y, ...) in comprehension(freeVariables))
 
-        List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
-                                                              .stream()
-                                                              .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                             .collect(Collectors.toList());
+        List<SmtVariable> quantifiedVariables = ranges.entrySet()
+                                                      .stream()
+                                                      .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
+                                                      .collect(Collectors.toList());
 
         List<Sort> elementSorts = quantifiedVariables.stream()
                 .map(v -> ((TupleSort) (v.getSort())).elementSorts.get(0))
@@ -148,7 +148,7 @@ public class ExprQtTranslator
         LinkedHashMap<String, SmtExpr> argumentsMap = environment.getParent().getVariables();
         List<Sort> argumentSorts = new ArrayList<>();
         List<SmtExpr> arguments = new ArrayList<>();
-        List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
+        List<SmtVariable> quantifiedArguments = new ArrayList<>();
         for (Map.Entry<String, SmtExpr> argument: argumentsMap.entrySet())
         {
             Variable variable = (Variable) argument.getValue();
@@ -160,7 +160,7 @@ public class ExprQtTranslator
             if(sort instanceof SetSort)
             {
                 Sort elementSort = ((SetSort) sort).elementSort;
-                VariableDeclaration tuple = new VariableDeclaration(variable.getName(), elementSort, variable.isOriginal());
+                SmtVariable tuple = new SmtVariable(variable.getName(), elementSort, variable.isOriginal());
                 quantifiedArguments.add(tuple);
                 SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple.getVariable());
                 body = body.replace(variable, singleton);
@@ -168,7 +168,7 @@ public class ExprQtTranslator
             }
             else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
             {
-                quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
+                quantifiedArguments.add((SmtVariable) variable.getDeclaration());
             }
             else
             {
@@ -220,7 +220,7 @@ public class ExprQtTranslator
     }
 
 
-    private VariableDeclaration getVariableDeclaration(Expr expr, String variableName, SetSort setSort, SmtExpr range)
+    private SmtVariable getVariableDeclaration(Expr expr, String variableName, SetSort setSort, SmtExpr range)
     {
         if(expr instanceof Sig)
         {
@@ -241,7 +241,7 @@ public class ExprQtTranslator
                 case NOOP: // only happens with relations
                 case SETOF:
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort, true);
+                    SmtVariable declaration = new SmtVariable(variableName, setSort, true);
                     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(declaration.getVariable(), range);
                     declaration.setConstraint(subset);
                     return declaration;
@@ -272,7 +272,7 @@ public class ExprQtTranslator
                 case LONE_ARROW_ONE     :
                 case LONE_ARROW_LONE    :
                 {
-                    VariableDeclaration declaration = new VariableDeclaration(variableName, setSort, true);
+                    SmtVariable declaration = new SmtVariable(variableName, setSort, true);
                     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(declaration.getVariable(), range);
                     declaration.setConstraint(subset);
                     return declaration;
@@ -284,15 +284,15 @@ public class ExprQtTranslator
         throw new UnsupportedOperationException();
     }
 
-    private VariableDeclaration getVariableDeclaration(String variableName, SetSort setSort, SmtExpr range)
+    private SmtVariable getVariableDeclaration(String variableName, SetSort setSort, SmtExpr range)
     {
-        VariableDeclaration declaration = new VariableDeclaration(variableName, setSort.elementSort, true);
+        SmtVariable declaration = new SmtVariable(variableName, setSort.elementSort, true);
         SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(declaration.getVariable(), range);
         declaration.setConstraint(member);
         return declaration;
     }
 
-    private SmtExpr getMultiplicityConstraint(Expr expr, VariableDeclaration variable, SetSort setSort)
+    private SmtExpr getMultiplicityConstraint(Expr expr, SmtVariable variable, SetSort setSort)
     {
         if(expr instanceof ExprUnary)
         {
@@ -322,7 +322,7 @@ public class ExprQtTranslator
                 {
                     // either the set is empty or a singleton
                     SmtExpr empty = SmtBinaryExpr.Op.EQ.make(variable.getVariable(), emptySet);
-                    VariableDeclaration singleElement = new VariableDeclaration(TranslatorUtils.getFreshName(setSort.elementSort), setSort.elementSort, false);
+                    SmtVariable singleElement = new SmtVariable(TranslatorUtils.getFreshName(setSort.elementSort), setSort.elementSort, false);
                     SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(singleElement.getVariable());
                     SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(variable.getVariable(), singleton);
                     SmtExpr emptyOrSingleton = SmtMultiArityExpr.Op.OR.make(empty, isSingleton);
@@ -347,10 +347,10 @@ public class ExprQtTranslator
         // forall x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints implies f)
 
 
-        List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
-                                                              .stream()
-                                                              .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                              .collect(Collectors.toList());
+        List<SmtVariable> quantifiedVariables = ranges.entrySet()
+                                                      .stream()
+                                                      .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
+                                                      .collect(Collectors.toList());
 
         SmtExpr memberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
         SmtExpr and = SmtMultiArityExpr.Op.AND.make(memberOrSubset, multiplicityConstraints);
@@ -384,10 +384,10 @@ public class ExprQtTranslator
         // some x: e1, y: e2, ... | f is translated into
         // exists x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints and f)
 
-        List<VariableDeclaration> quantifiedVariables = ranges.entrySet()
-                                                              .stream()
-                                                              .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                              .collect(Collectors.toList());
+        List<SmtVariable> quantifiedVariables = ranges.entrySet()
+                                                      .stream()
+                                                      .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
+                                                      .collect(Collectors.toList());
 
         SmtMultiArityExpr and = SmtMultiArityExpr.Op.AND.make(
                 getMemberOrSubsetExpressions(ranges, environment),
@@ -414,7 +414,7 @@ public class ExprQtTranslator
         SmtExpr and = BoolConstant.True;
         for (Map.Entry<String, SmtExpr> entry : ranges.entrySet())
         {
-            VariableDeclaration variable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
+            SmtVariable variable = (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration();
             SmtExpr memberOrSubset;
             if (variable.getSort() instanceof TupleSort)
             {
@@ -441,10 +441,10 @@ public class ExprQtTranslator
         //                      for all x', y', ... (x in e1 and y in e2 ... and multiplicityConstraints(x', y', ...)
         //                              and not (x' = x and y' = y ...) implies not f(x', y', ...)))
 
-        List<VariableDeclaration> oldVariables = ranges.entrySet()
-                                                            .stream()
-                                                            .map(entry -> (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                            .collect(Collectors.toList());
+        List<SmtVariable> oldVariables = ranges.entrySet()
+                                               .stream()
+                                               .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
+                                               .collect(Collectors.toList());
 
         SmtExpr oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
 
@@ -452,7 +452,7 @@ public class ExprQtTranslator
 
         existsAnd = SmtMultiArityExpr.Op.AND.make(existsAnd, body);
 
-        List<VariableDeclaration> newVariables = new ArrayList<>();
+        List<SmtVariable> newVariables = new ArrayList<>();
 
         SmtExpr newBody = body;
         SmtExpr oldEqualNew = BoolConstant.True;
@@ -460,8 +460,8 @@ public class ExprQtTranslator
         SmtExpr newMultiplicityConstraints = multiplicityConstraints;
         for (Map.Entry<String, SmtExpr> entry : ranges.entrySet())
         {
-            VariableDeclaration oldVariable = (VariableDeclaration) ((Variable) environment.get(entry.getKey())).getDeclaration();
-            VariableDeclaration newVariable = new VariableDeclaration(TranslatorUtils.getFreshName(oldVariable.getSort()), oldVariable.getSort(), false);
+            SmtVariable oldVariable = (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration();
+            SmtVariable newVariable = new SmtVariable(TranslatorUtils.getFreshName(oldVariable.getSort()), oldVariable.getSort(), false);
             if(oldVariable.getConstraint() != null)
             {
                 SmtExpr newConstraint = oldVariable.getConstraint().substitute(oldVariable.getVariable(), newVariable.getVariable());
