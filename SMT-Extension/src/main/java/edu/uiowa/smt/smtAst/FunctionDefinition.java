@@ -8,6 +8,8 @@
 
 package edu.uiowa.smt.smtAst;
 
+import edu.uiowa.smt.printers.SmtLibPrinter;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -51,5 +53,13 @@ public class FunctionDefinition extends FunctionDeclaration
     @Override
     public void accept(SmtAstVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public String toString()
+    {
+        SmtLibPrinter printer = new SmtLibPrinter();
+        printer.visit(this);
+        return printer.getSmtLib();
     }
 }

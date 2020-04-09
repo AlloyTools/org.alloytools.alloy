@@ -75,7 +75,7 @@ public class SmtUnaryExpr extends SmtExpr
             } break;
             case CHOOSE:
             {
-                if(expr.getSort() instanceof SetSort)
+                if(!(expr.getSort() instanceof SetSort))
                 {
                     throw new RuntimeException(String.format("Expected a set sort in '%1$s', found '%2$s' ",
                             this.toString(), expr.getSort()));

@@ -39,4 +39,39 @@ public class ExprCallTranslatorTests
 
         assertTrue(Collections.disjoint(a0Atoms, a1Atoms));
     }
+
+    @Test
+    public void predicate1() throws Exception
+    {
+        String alloy =
+                "sig A {}\n" +
+                "pred p[x: one A] {some x}\n" +
+                "fact {p[A]}\n";
+
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(1, aAtoms.size());
+    }
+
+    @Test
+    public void predicate2() throws Exception
+    {
+        String alloy =
+                "sig A in Int {}\n" +
+                "one sig A0 in A{} \n" +
+                "pred isTen[x: one A] {x = 10}\n" +
+                "fact {isTen[A0]}\n";
+
+        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+
+        assertEquals("sat", commandResults.get(0).satResult);
+
+        FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
+        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
+        assertEquals(1, aAtoms.size());
+    }
 }

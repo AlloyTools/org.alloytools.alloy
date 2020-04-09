@@ -30,12 +30,20 @@ public class ExprCallTranslator
 
         FunctionDefinition function = translator.getFuncTranslation(func);
 
-        List<SmtExpr> argExprs = new ArrayList<>();
+        List<SmtExpr> arguments = new ArrayList<>();
 
-        for (Expr e : exprCall.args)
+        for (int i = 0; i < exprCall.args.size(); i++)
         {
-            argExprs.add(exprTranslator.translateExpr(e, environment));
+            SmtExpr expr = exprTranslator.translateExpr(exprCall.args.get(i), environment);
+            if(function.getSort(i) instanceof TupleSort)
+            {
+                expr = SmtUnaryExpr.Op.CHOOSE.make(expr);
+            }
+            arguments.add(expr);
         }
+
+        SmtCallExpr callExpr = new SmtCallExpr(function, arguments);
+        return callExpr;
 
 //        if (this.translator.funcNamesMap.containsKey(funcName))
 //        {
@@ -45,10 +53,10 @@ public class ExprCallTranslator
 //        {
 //            return translateSetComprehensionFuncCallExpr(funcName, argExprs);
 //        }
-        if(exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
-        {
-            return new SmtCallExpr(translator.functionsMap.get(func.label), argExprs);
-        }
+//        if(exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
+//        {
+//            return new SmtCallExpr(translator.functionsMap.get(func.label), arguments);
+//        }
 //        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
 //        {
 //            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.PLUS, environment);
@@ -74,16 +82,16 @@ public class ExprCallTranslator
 //            FunctionDeclaration function = translator.getFunction(funcName);
 //            return new FunctionCallSmtExpr(function, argExprs);
 //        }
-        else
-        {
-            Expr body = exprCall.fun.getBody();
-
-            for (int i = 0; i < exprCall.args.size(); i++)
-            {
-                body = AlloyUtils.substituteExpr(body, exprCall.fun.get(i), exprCall.args.get(i));
-            }
-            SmtExpr callSmtExpr = exprTranslator.translateExpr(body, environment);
-            return callSmtExpr;
-        }
+//        else
+//        {
+//            Expr body = exprCall.fun.getBody();
+//
+//            for (int i = 0; i < exprCall.args.size(); i++)
+//            {
+//                body = AlloyUtils.substituteExpr(body, exprCall.fun.get(i), exprCall.args.get(i));
+//            }
+//            SmtExpr callSmtExpr = exprTranslator.translateExpr(body, environment);
+//            return callSmtExpr;
+//        }
     }
 }

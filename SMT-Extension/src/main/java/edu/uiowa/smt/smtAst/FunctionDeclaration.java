@@ -90,4 +90,14 @@ public class FunctionDeclaration extends Declaration
     {
         visitor.visit(this);
     }
+
+    public Sort getSort(int index)
+    {
+        if(index >= this.inputSorts.size())
+        {
+            throw new RuntimeException("Argument index out of range");
+        }
+
+        return inputSorts.get(index);
+    }
 }

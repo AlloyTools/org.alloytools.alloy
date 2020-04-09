@@ -1,13 +1,11 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.Decl;
+import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.smtAst.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,42 +21,48 @@ public class DeclTranslator
         this.translator = exprTranslator.translator;
     }
 
-    public Environment translateDecl(Decl decl, Environment parent)
+    public List<SmtVariable> translateDecl(Decl decl, Environment environment)
     {
-        List<Pair<Declaration, SmtExpr>> declarations = new ArrayList<>();
-
-        Environment environment = new Environment(parent);
+        List<SmtVariable> variables = new ArrayList<>();
 
         for (ExprHasName name: decl.names)
         {
             Decl individualDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2, Collections.singletonList(name), decl.expr);
-            environment = translateIndividualDecl(decl, environment);
+            variables.add(translateIndividualDecl(individualDecl, environment));
         }
 
         //ToDo: disjoint
 
         //ToDo: disjoint2
 
-        return environment;
+        return variables;
     }
 
-    public Environment translateIndividualDecl(Decl decl, Environment environment)
+    public SmtVariable translateIndividualDecl(Decl decl, Environment environment)
     {
         ExprHasName name = decl.names.get(0);
-        List<Sort> sorts = AlloyUtils.getExprSorts(decl.expr);
-        Sort sort;
-        if(decl.expr instanceof ExprUnary && ((ExprUnary) decl.expr).op == ExprUnary.Op.ONEOF)
+        Expr expr = decl.expr;
+
+        if(expr instanceof ExprUnary && ((ExprUnary) expr).op == ExprUnary.Op.NOOP)
         {
-            // for singletons quantifiers over the element sort
-            sort = ((SetSort)sorts.get(0)).elementSort;
+            expr = ((ExprUnary) expr).sub;
         }
-        else
+
+        SmtExpr set = exprTranslator.translateExpr(expr, environment);
+        SetSort setSort = (SetSort) set.getSort();
+        Sort sort = setSort;
+
+        // for singletons quantifiers has the same sort of the elements
+        if(expr instanceof ExprUnary)
         {
-            sort = sorts.get(0);
+            if(((ExprUnary) expr).op == ExprUnary.Op.ONEOF)
+            {
+                sort = setSort.elementSort;
+            }
         }
 
         SmtVariable smtVariable = new SmtVariable(name.label, sort, true);
-        SmtExpr set = exprTranslator.translateExpr(decl.expr, environment);
+
         SmtExpr memberOrSubset;
         if(sort instanceof SetSort)
         {
@@ -70,7 +74,7 @@ public class DeclTranslator
         }
 
         smtVariable.setConstraint(memberOrSubset);
-        environment.put(smtVariable.getName(), smtVariable.getVariable());
-        return environment;
+
+        return smtVariable;
     }
 }

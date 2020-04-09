@@ -579,9 +579,23 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     private FunctionDefinition translateFunc(Func func)
     {
         Environment environment = new Environment();
+        List<SmtVariable> arguments = new ArrayList<>();
+        for (Decl decl: func.decls)
+        {
+            arguments.addAll(exprTranslator.translateDecl(decl, environment));
+        }
+        // add arguments to function environment
+        for (SmtVariable variable: arguments)
+        {
+            environment.put(variable.getName(), variable.getVariable());
+        }
+
         SmtExpr smtExpr = exprTranslator.translateExpr(func.getBody(), environment);
-        List<SmtVariable> variables = new ArrayList<>();
-        FunctionDefinition function = new FunctionDefinition(func.label, variables, smtExpr.getSort(),smtExpr, true);
+
+        FunctionDefinition function = new FunctionDefinition(func.label, arguments, smtExpr.getSort(),smtExpr, true);
+
+        smtScript.addFunction(function);
+
         return function;
     }
 }
