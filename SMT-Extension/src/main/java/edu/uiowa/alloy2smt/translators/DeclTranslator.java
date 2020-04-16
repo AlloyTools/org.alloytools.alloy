@@ -73,8 +73,16 @@ public class DeclTranslator
 
         assert (set instanceof Variable);
         Variable variable = (Variable) set;
-        SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
-        smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
+        if(variable.getDeclaration() instanceof SmtVariable)
+        {
+            SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
+            smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
+        }
+        else
+        {
+            SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(smtVariable.getVariable(), variable);
+            smtVariable.setConstraint(subset);
+        }
         return smtVariable;
     }
 }

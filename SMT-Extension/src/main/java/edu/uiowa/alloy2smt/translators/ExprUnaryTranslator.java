@@ -44,7 +44,7 @@ public class ExprUnaryTranslator
             case LONEOF:
                 return translateLoneOf(exprUnary, environment);
             case SOMEOF:
-                return exprTranslator.translateExpr(exprUnary.sub, environment);
+                return translateSomeOf(exprUnary, environment);
             case SETOF:
                 return exprTranslator.translateExpr(exprUnary.sub, environment);
             case LONE:
@@ -237,6 +237,30 @@ public class ExprUnaryTranslator
 
         SmtQtExpr exists1 = SmtQtExpr.Op.EXISTS.make(subset2, variable);
         SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, exists1);
+        setVariable.setConstraint(andExpr);
+        SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
+        environment.addAuxiliaryFormula(exists2);
+        return setVariable.getVariable();
+    }
+
+    private SmtExpr translateSomeOf(ExprUnary expr, Environment environment)
+    {
+        // expression has pattern (some A) where type of A is (Set E)
+        // the translation is
+        // (exists ((S (Set E)))
+        //      (and
+        //          (subset S A)
+        //          (not (= S (as emptyset (Set E))))
+
+        SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
+        SetSort setSort = (SetSort) A.getSort();
+        SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
+        SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
+
+        SmtExpr emptyset = SmtUnaryExpr.Op.EMPTYSET.make(setSort);
+        SmtExpr equal = SmtBinaryExpr.Op.EQ.make(setVariable.getVariable(), emptyset);
+        SmtExpr notEmpty = SmtUnaryExpr.Op.NOT.make(equal);
+        SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset, notEmpty);
         setVariable.setConstraint(andExpr);
         SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
         environment.addAuxiliaryFormula(exists2);
