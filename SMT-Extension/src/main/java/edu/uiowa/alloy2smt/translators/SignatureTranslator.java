@@ -203,7 +203,7 @@ public class SignatureTranslator
     private void translateSignatureOneMultiplicity(Sig sig)
     {
         SmtExpr expr;
-        ConstantDeclaration constDecl;
+        FunctionDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
 
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
@@ -211,15 +211,15 @@ public class SignatureTranslator
         if (isInt)
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
+            constDecl = new FunctionDeclaration(name, AbstractTranslator.uninterpretedInt, false);
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort, false);
+            constDecl = new FunctionDeclaration(name, AbstractTranslator.atomSort, false);
         }
         expr = AlloyUtils.mkSingletonOutOfTuple(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, constDecl.getVariable()));
-        translator.smtScript.addConstantDeclaration(constDecl);
+        translator.smtScript.addFunction(constDecl);
 
         SmtBinaryExpr subset = SmtBinaryExpr.Op.EQ.make(signature.getVariable(), expr);
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos), "one " + sig.label, subset);
@@ -229,23 +229,23 @@ public class SignatureTranslator
     private void translateSignatureLoneMultiplicity(Sig sig)
     {
         SmtExpr expr;
-        ConstantDeclaration constDecl;
+        FunctionDeclaration constDecl;
         Boolean isInt = sig.type().is_int();
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
+            constDecl = new FunctionDeclaration(name, AbstractTranslator.uninterpretedInt, false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort,false);
+            constDecl = new FunctionDeclaration(name, AbstractTranslator.atomSort,false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, constDecl.getVariable()));
         }
-        translator.smtScript.addConstantDeclaration(constDecl);
+        translator.smtScript.addFunction(constDecl);
 
         SmtBinaryExpr subset = SmtBinaryExpr.Op.SUBSET.make(signature.getVariable(), expr);
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos), "lone " + sig.label, subset);
@@ -255,23 +255,23 @@ public class SignatureTranslator
     private void translateSignatureSomeMultiplicity(Sig sig)
     {
         SmtExpr expr;
-        ConstantDeclaration constDecl;
+        FunctionDeclaration constDecl;
         Boolean isInt = sig.type().is_int();        
         FunctionDeclaration signature = translator.signaturesMap.get(sig);
 
         if (isInt)
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.uninterpretedInt, false);
+            constDecl = new FunctionDeclaration(name, AbstractTranslator.uninterpretedInt, false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, constDecl.getVariable()));
         }
         else
         {
             String name = TranslatorUtils.getFreshName(AbstractTranslator.atomSort);
-            constDecl = new ConstantDeclaration(name, AbstractTranslator.atomSort, false);
+            constDecl = new FunctionDeclaration(name, AbstractTranslator.atomSort, false);
             expr = AlloyUtils.mkSingletonOutOfTuple(new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, constDecl.getVariable()));
         }
-        translator.smtScript.addConstantDeclaration(constDecl);
+        translator.smtScript.addFunction(constDecl);
 
         SmtBinaryExpr subset = SmtBinaryExpr.Op.SUBSET.make(expr, signature.getVariable());
         Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(sig.pos), "some " + sig.label, subset);
@@ -437,7 +437,7 @@ public class SignatureTranslator
         SmtExpr firstSet = defineFirstElement(prefix, firstSmtExpr, mapping, setSmtExpr);
 
         // ordering/last
-        ConstantDeclaration lastAtom = defineLastElement(prefix, mapping, setSmtExpr);
+        FunctionDeclaration lastAtom = defineLastElement(prefix, mapping, setSmtExpr);
 
         // Next relation
         FunctionDeclaration ordNext = addOrdNext(prefix, setSmtExpr, mapping, ordSig, firstSet, lastAtom);
@@ -522,13 +522,13 @@ public class SignatureTranslator
     private SmtExpr defineFirstElement(String prefix, SmtExpr firstSmtExpr, FunctionDeclaration mapping, SmtExpr setSmtExpr)
     {
         final String suffix = "first";
-        ConstantDeclaration firstAtom = new ConstantDeclaration(prefix + "FirstAtom", AbstractTranslator.atomSort, true);
+        FunctionDeclaration firstAtom = new FunctionDeclaration(prefix + "FirstAtom", AbstractTranslator.atomSort, true);
         FunctionDeclaration first = new FunctionDeclaration(prefix + suffix, AbstractTranslator.setOfUnaryAtomSort, true);
 
         SmtExpr firstSet = SmtUnaryExpr.Op.SINGLETON.make(
                 new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, firstAtom.getVariable()));
 
-        translator.smtScript.addConstantDeclaration(firstAtom);
+        translator.smtScript.addFunction(firstAtom);
         translator.addFunction(first);
 
         // there is only one first element
@@ -552,16 +552,16 @@ public class SignatureTranslator
         return firstSet;
     }
 
-    private ConstantDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, SmtExpr setSmtExpr)
+    private FunctionDeclaration defineLastElement(String prefix, FunctionDeclaration mapping, SmtExpr setSmtExpr)
     {
         final String suffix = "last";
-        ConstantDeclaration lastAtom = new ConstantDeclaration(prefix + "LastAtom", AbstractTranslator.atomSort, true);
+        FunctionDeclaration lastAtom = new FunctionDeclaration(prefix + "LastAtom", AbstractTranslator.atomSort, true);
         FunctionDeclaration last = new FunctionDeclaration(prefix + suffix, translator.setOfUnaryAtomSort, true);
 
         SmtExpr lastSet = SmtUnaryExpr.Op.SINGLETON.make(
                 new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, lastAtom.getVariable()));
 
-        translator.smtScript.addConstantDeclaration(lastAtom);
+        translator.smtScript.addFunction(lastAtom);
         translator.addFunction(last);
 
 
@@ -619,7 +619,7 @@ public class SignatureTranslator
         );
     }
 
-    private FunctionDeclaration addOrdNext(String prefix, SmtExpr setSmtExpr, FunctionDeclaration intMapping, Sig ordSig, SmtExpr firstSet, ConstantDeclaration lastAtom)
+    private FunctionDeclaration addOrdNext(String prefix, SmtExpr setSmtExpr, FunctionDeclaration intMapping, Sig ordSig, SmtExpr firstSet, FunctionDeclaration lastAtom)
     {
         String nextMapping = prefix + "nextMapping";
 

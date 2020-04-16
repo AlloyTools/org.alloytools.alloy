@@ -42,8 +42,6 @@ public interface SmtAstVisitor
 
     void visit(FunctionDefinition functionDefinition);
 
-    void visit(ConstantDeclaration constantDeclaration);
-
     void visit(BoolConstant booleanConstant);
 
     void visit(Assertion assertion);

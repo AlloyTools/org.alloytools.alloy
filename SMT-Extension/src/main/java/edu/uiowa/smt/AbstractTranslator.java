@@ -71,7 +71,7 @@ public abstract class AbstractTranslator
     public Map<String, FunctionDeclaration> functionsMap;
     public Map<SmtBinaryExpr.Op, FunctionDefinition> comparisonOperations;
     public Map<SmtBinaryExpr.Op, Variable> arithmeticOperations;
-    public Map<BigInteger, ConstantDeclaration> integerConstants;
+    public Map<BigInteger, FunctionDeclaration> integerConstants;
 
     public void addFunction(FunctionDeclaration function)
     {
@@ -96,14 +96,14 @@ public abstract class AbstractTranslator
         if(smtExpr.getSort().equals(AbstractTranslator.intSortTuple))
         {
             SmtExpr intConstant = ((SmtMultiArityExpr) smtExpr).getExpressions().get(0);
-            ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
+            FunctionDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
             SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
             return tuple;
         }
         if(smtExpr.getSort().equals(AbstractTranslator.setOfIntSortTuple))
         {
             SmtExpr intConstant = ((SmtMultiArityExpr) ((SmtUnaryExpr) smtExpr).getExpression()).getExpressions().get(0);
-            ConstantDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
+            FunctionDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
             SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
             SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
             return singleton;
@@ -111,7 +111,7 @@ public abstract class AbstractTranslator
         return smtExpr;
     }
 
-    public ConstantDeclaration getUninterpretedIntConstant(IntConstant intConstant)
+    public FunctionDeclaration getUninterpretedIntConstant(IntConstant intConstant)
     {
         BigInteger value = new BigInteger(intConstant.getValue());
         if (integerConstants.containsKey(value))
@@ -119,10 +119,10 @@ public abstract class AbstractTranslator
             return integerConstants.get(value);
         }
 
-        ConstantDeclaration uninterpretedInt = new ConstantDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt) + "_" + value.toString(),
+        FunctionDeclaration uninterpretedInt = new FunctionDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt) + "_" + value.toString(),
                 AbstractTranslator.uninterpretedInt, false);
         integerConstants.put(value, uninterpretedInt);
-        smtScript.addConstantDeclaration(uninterpretedInt);
+        smtScript.addFunction(uninterpretedInt);
         SmtExpr callSmtExpr = new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
         SmtExpr equality = SmtBinaryExpr.Op.EQ.make(callSmtExpr, intConstant);
         Assertion assertion = new Assertion("", "constant integer", equality);

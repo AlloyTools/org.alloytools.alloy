@@ -1736,7 +1736,7 @@ public class ExprBinaryTranslator
     {
         if (A instanceof IntConstant)
         {
-            ConstantDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
+            FunctionDeclaration uninterpretedInt = translator.getUninterpretedIntConstant((IntConstant) A);
             SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
             if (translator.alloySettings.integerSingletonsOnly)
             {

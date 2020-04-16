@@ -75,11 +75,6 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
             }
         }
 
-        for (ConstantDeclaration declaration : script.getConstantDeclarations())
-        {
-            this.visit(declaration);
-        }
-
         for (Assertion assertion: script.getAssertions())
         {
             this.visit(assertion);
@@ -259,15 +254,6 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
         this.visit(definition.smtExpr);
         stringBuilder.append(")");
         stringBuilder.append("\n");
-    }
-
-    @Override
-    public void visit(ConstantDeclaration constantDeclaration)
-    {
-        stringBuilder.append("(declare-const ");
-        stringBuilder.append(TranslatorUtils.sanitizeWithBars(constantDeclaration) + " ");
-        this.visit(constantDeclaration.getSort());
-        stringBuilder.append(")\n");
     }
 
     @Override

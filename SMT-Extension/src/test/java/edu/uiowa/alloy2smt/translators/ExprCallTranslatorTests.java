@@ -6,9 +6,7 @@ import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Set;
-import java.util.Collections;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,7 +69,8 @@ public class ExprCallTranslatorTests
         assertEquals("sat", commandResults.get(0).satResult);
 
         FunctionDefinition a = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A");
-        Set<String> aAtoms = TranslatorUtils.getAtomSet(a);
-        assertEquals(1, aAtoms.size());
+        Set<Integer> set =  TranslatorUtils.getIntSet(a);
+        assertEquals(1, set.size());
+        assertEquals(new HashSet<>(Arrays.asList(10)), set);
     }
 }

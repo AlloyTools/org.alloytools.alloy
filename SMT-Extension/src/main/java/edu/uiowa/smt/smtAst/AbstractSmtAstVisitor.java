@@ -210,12 +210,6 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     }
 
     @Override
-    public void visit(ConstantDeclaration constantDeclaration)
-    {
-        visit(constantDeclaration.getSort());
-    }
-
-    @Override
     public void visit(BoolConstant booleanConstant)
     {
     }

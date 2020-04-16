@@ -18,7 +18,6 @@ import java.util.List;
 
 public class SmtScript extends SmtModel
 {
-    private List<ConstantDeclaration> constantDeclarations = new ArrayList<>();
     private List<Assertion> assertions = new ArrayList<>();
     private SmtScript parent;
     // script between push pop commands
@@ -32,7 +31,6 @@ public class SmtScript extends SmtModel
     public SmtScript(SmtScript smtScript)
     {
         super(smtScript);
-        this.constantDeclarations.addAll(smtScript.constantDeclarations);
         this.assertions.addAll(smtScript.assertions);
         this.parent = smtScript.parent;
     }
@@ -55,14 +53,6 @@ public class SmtScript extends SmtModel
         return child;
     }
 
-    public void addConstantDeclaration(ConstantDeclaration constantDeclaration)
-    {
-        if (constantDeclaration != null)
-        {
-            this.constantDeclarations.add(constantDeclaration);
-        }
-    }
-
     public void addAssertion(Assertion assertion)
     {
         if (assertion != null)
@@ -79,11 +69,6 @@ public class SmtScript extends SmtModel
         }
     }
 
-    public List<ConstantDeclaration> getConstantDeclarations()
-    {
-        return this.constantDeclarations;
-    }
-
     public List<Assertion> getAssertions()
     {
         return this.assertions;
@@ -97,7 +82,6 @@ public class SmtScript extends SmtModel
     public void reset()
     {
         super.reset();
-        this.constantDeclarations.clear();
         this.assertions.clear();
         for (SmtScript child: children)
         {
