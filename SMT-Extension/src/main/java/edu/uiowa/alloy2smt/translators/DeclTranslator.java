@@ -58,23 +58,23 @@ public class DeclTranslator
             if(((ExprUnary) expr).op == ExprUnary.Op.ONEOF)
             {
                 sort = setSort.elementSort;
+                SmtVariable smtVariable = new SmtVariable(name.label, sort, true);
+                assert (set instanceof SmtUnaryExpr);
+                assert (((SmtUnaryExpr) set).getOP() == SmtUnaryExpr.Op.SINGLETON);
+                assert (((SmtUnaryExpr) set).getExpression() instanceof Variable);
+                Variable variable = (Variable) ((SmtUnaryExpr) set).getExpression();
+                SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
+                smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
+                return smtVariable;
             }
         }
 
         SmtVariable smtVariable = new SmtVariable(name.label, sort, true);
 
-        SmtExpr memberOrSubset;
-        if(sort instanceof SetSort)
-        {
-            memberOrSubset = SmtBinaryExpr.Op.SUBSET.make(smtVariable.getVariable(), set);
-        }
-        else
-        {
-            memberOrSubset = SmtBinaryExpr.Op.MEMBER.make(smtVariable.getVariable(), set);
-        }
-
-        smtVariable.setConstraint(memberOrSubset);
-
+        assert (set instanceof Variable);
+        Variable variable = (Variable) set;
+        SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
+        smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
         return smtVariable;
     }
 }

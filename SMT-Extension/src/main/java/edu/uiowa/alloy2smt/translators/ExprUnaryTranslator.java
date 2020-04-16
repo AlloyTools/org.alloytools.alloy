@@ -204,9 +204,12 @@ public class ExprUnaryTranslator
 
         SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
 
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
         SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(variable.getVariable(), A);
+        variable.setConstraint(member);
+
+        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
         SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(member, variable);
+
         environment.addAuxiliaryFormula(exists);
         return singleton;
     }
@@ -215,7 +218,10 @@ public class ExprUnaryTranslator
     {
         // expression has pattern (lone A) where type of A is (Set E)
         // the translation is
-        // (exists ((S (Set E)) (x E)) (and (subset S A) (subset S {x})))
+        // (exists ((S (Set E)))
+        //      (and
+        //          (subset S A)
+        //          (exists ((x E)) (subset S (singleton x))) ))
 
         SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
         SetSort setSort = (SetSort) A.getSort();
@@ -229,9 +235,11 @@ public class ExprUnaryTranslator
 
         SmtExpr subset2 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), singleton);
 
-        SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, subset2);
-        SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable, variable);
-        environment.addAuxiliaryFormula(exists);
+        SmtQtExpr exists1 = SmtQtExpr.Op.EXISTS.make(subset2, variable);
+        SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, exists1);
+        setVariable.setConstraint(andExpr);
+        SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
+        environment.addAuxiliaryFormula(exists2);
         return setVariable.getVariable();
     }
 
