@@ -582,7 +582,9 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         List<SmtVariable> arguments = new ArrayList<>();
         for (Decl decl: func.decls)
         {
-            arguments.addAll(exprTranslator.translateDecl(decl, environment));
+            List<SmtVariable> variables = exprTranslator.translateDecl(decl, environment);
+            List<SmtVariable> setVariables = convertToSetVariables(variables);
+            arguments.addAll(setVariables);
         }
         // add arguments to function environment
         for (SmtVariable variable: arguments)
@@ -597,5 +599,25 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         smtScript.addFunction(function);
 
         return function;
+    }
+
+    private List<SmtVariable> convertToSetVariables(List<SmtVariable> variables)
+    {
+        List<SmtVariable> setVariables = new ArrayList<>();
+
+        for (SmtVariable variable: variables)
+        {
+            if(variable.getSort() instanceof TupleSort)
+            {
+                Sort sort = new SetSort(variable.getSort());
+                SmtVariable newVariable = new SmtVariable(variable.getName(), sort, variable.isOriginal());
+                setVariables.add(newVariable);
+            }
+            else
+            {
+                setVariables.add(variable);
+            }
+        }
+        return setVariables;
     }
 }
