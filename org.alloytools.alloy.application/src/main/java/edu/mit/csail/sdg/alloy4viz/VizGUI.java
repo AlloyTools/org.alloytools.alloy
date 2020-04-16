@@ -286,6 +286,7 @@ public final class VizGUI implements ComponentListener {
      * This enum defines the set of possible visualizer modes.
      */
     private enum VisualizerMode {
+
                                  /** Visualize using graphviz's dot. */
                                  Viz("graphviz"),
                                  // /** See the DOT content. */ DOT("dot"),
@@ -703,11 +704,13 @@ public final class VizGUI implements ComponentListener {
 
     /** Invoked when the Visualizationwindow is shown. */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Invoked when the Visualizationwindow is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Helper method that repopulates the Porjection popup menu.
@@ -809,7 +812,8 @@ public final class VizGUI implements ComponentListener {
                     }
 
                     @Override
-                    public final void focusLost(FocusEvent e) {}
+                    public final void focusLost(FocusEvent e) {
+                    }
                 });
                 content = scroll;
                 break;
@@ -830,10 +834,10 @@ public final class VizGUI implements ComponentListener {
             // }
             default : {
                 if (myGraphPanel == null) {
-                    myGraphPanel = new VizGraphPanel(myState, false);
+                    myGraphPanel = new VizGraphPanel(frame, myState, false);
                 } else {
-                    myGraphPanel.seeDot(false);
-                    myGraphPanel.remakeAll();
+                    myGraphPanel.seeDot(frame, false);
+                    myGraphPanel.remakeAll(frame);
                 }
             }
                 content = myGraphPanel;
@@ -868,7 +872,8 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values.\nFor example, ", true, "univ", false, " shows the list of all atoms.\n(You can press UP and DOWN to recall old inputs).\n");
             try {
                 evaluator.compute(new File(xmlFileName));
-            } catch (Exception ex) {} // exception should not happen
+            } catch (Exception ex) {
+            } // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
         }
@@ -1008,7 +1013,7 @@ public final class VizGUI implements ComponentListener {
             } catch (Throwable e) {
                 xmlLoaded.remove(fileName);
                 xmlLoaded.remove(xmlFileName);
-                OurDialog.alert("Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
+                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
                 if (xmlLoaded.size() > 0) {
                     loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false);
                     return;
@@ -1048,14 +1053,14 @@ public final class VizGUI implements ComponentListener {
         try {
             myState.loadPaletteXML(filename);
         } catch (IOException ex) {
-            OurDialog.alert("Error: " + ex.getMessage());
+            OurDialog.alert(frame, "Error: " + ex.getMessage());
             return false;
         }
         repopulateProjectionPopup();
         if (myCustomPanel != null)
             myCustomPanel.remakeAll();
         if (myGraphPanel != null)
-            myGraphPanel.remakeAll();
+            myGraphPanel.remakeAll(frame);
         addThemeHistory(filename);
         thmFileName = filename;
         updateDisplay();
@@ -1070,11 +1075,11 @@ public final class VizGUI implements ComponentListener {
         if (myState == null)
             return false; // Can only save if there is a VizState loaded
         if (filename == null) {
-            File file = OurDialog.askFile(false, null, ".thm", ".thm theme files");
+            File file = OurDialog.askFile(frame, false, null, ".thm", ".thm theme files");
             if (file == null)
                 return false;
             if (file.exists())
-                if (!OurDialog.askOverwrite(Util.canon(file.getPath())))
+                if (!OurDialog.askOverwrite(frame, Util.canon(file.getPath())))
                     return false;
             Util.setCurrentDirectory(file.getParentFile());
             filename = file.getPath();
@@ -1086,7 +1091,7 @@ public final class VizGUI implements ComponentListener {
                                             // changed
             addThemeHistory(filename);
         } catch (Throwable er) {
-            OurDialog.alert("Error saving the theme.\n\nError: " + er.getMessage());
+            OurDialog.alert(frame, "Error saving the theme.\n\nError: " + er.getMessage());
             return false;
         }
         thmFileName = filename;
@@ -1113,7 +1118,7 @@ public final class VizGUI implements ComponentListener {
     private Runner doLoad() {
         if (wrap)
             return wrapMe();
-        File file = OurDialog.askFile(true, null, ".xml", ".xml instance files");
+        File file = OurDialog.askFile(frame, true, null, ".xml", ".xml instance files");
         if (file == null)
             return null;
         Util.setCurrentDirectory(file.getParentFile());
@@ -1199,13 +1204,13 @@ public final class VizGUI implements ComponentListener {
         if (myState == null)
             return null; // Can only load if there is a VizState loaded
         if (myState.changedSinceLastSave()) {
-            char opt = OurDialog.askSaveDiscardCancel("The current theme");
+            char opt = OurDialog.askSaveDiscardCancel(frame, "The current theme");
             if (opt == 'c')
                 return null;
             if (opt == 's' && !saveThemeFile(thmFileName.length() == 0 ? null : thmFileName))
                 return null;
         }
-        File file = OurDialog.askFile(true, null, ".thm", ".thm theme files");
+        File file = OurDialog.askFile(frame, true, null, ".thm", ".thm theme files");
         if (file != null) {
             Util.setCurrentDirectory(file.getParentFile());
             loadThemeFile(file.getPath());
@@ -1226,13 +1231,13 @@ public final class VizGUI implements ComponentListener {
         if (myState == null)
             return null; // Can only load if there is a VizState loaded
         if (myState.changedSinceLastSave()) {
-            char opt = OurDialog.askSaveDiscardCancel("The current theme");
+            char opt = OurDialog.askSaveDiscardCancel(frame, "The current theme");
             if (opt == 'c')
                 return null;
             if (opt == 's' && !saveThemeFile(thmFileName.length() == 0 ? null : thmFileName))
                 return null;
         }
-        File file = OurDialog.askFile(true, defaultTheme, ".thm", ".thm theme files");
+        File file = OurDialog.askFile(frame, true, defaultTheme, ".thm", ".thm theme files");
         if (file != null)
             loadThemeFile(file.getPath());
         return null;
@@ -1251,11 +1256,11 @@ public final class VizGUI implements ComponentListener {
     private Runner doSaveThemeAs() {
         if (wrap)
             return wrapMe();
-        File file = OurDialog.askFile(false, null, ".thm", ".thm theme files");
+        File file = OurDialog.askFile(frame, false, null, ".thm", ".thm theme files");
         if (file == null)
             return null;
         if (file.exists())
-            if (!OurDialog.askOverwrite(Util.canon(file.getPath())))
+            if (!OurDialog.askOverwrite(frame, Util.canon(file.getPath())))
                 return null;
         Util.setCurrentDirectory(file.getParentFile());
         saveThemeFile(file.getPath());
@@ -1265,18 +1270,18 @@ public final class VizGUI implements ComponentListener {
     private Runner doExportDot() {
         if (wrap)
             return wrapMe();
-        File file = OurDialog.askFile(false, null, ".dot", ".dot graph files");
+        File file = OurDialog.askFile(frame, false, null, ".dot", ".dot graph files");
         if (file == null)
             return null;
         if (file.exists())
-            if (!OurDialog.askOverwrite(Util.canon(file.getPath())))
+            if (!OurDialog.askOverwrite(frame, Util.canon(file.getPath())))
                 return null;
         Util.setCurrentDirectory(file.getParentFile());
         String filename = Util.canon(file.getPath());
         try {
-            Util.writeAll(filename, myGraphPanel.toDot());
+            Util.writeAll(filename, myGraphPanel.toDot(frame));
         } catch (Throwable er) {
-            OurDialog.alert("Error saving the theme.\n\nError: " + er.getMessage());
+            OurDialog.alert(frame, "Error saving the theme.\n\nError: " + er.getMessage());
         }
         return null;
     }
@@ -1284,18 +1289,18 @@ public final class VizGUI implements ComponentListener {
     private Runner doExportXml() {
         if (wrap)
             return wrapMe();
-        File file = OurDialog.askFile(false, null, ".xml", ".xml XML files");
+        File file = OurDialog.askFile(frame, false, null, ".xml", ".xml XML files");
         if (file == null)
             return null;
         if (file.exists())
-            if (!OurDialog.askOverwrite(Util.canon(file.getPath())))
+            if (!OurDialog.askOverwrite(frame, Util.canon(file.getPath())))
                 return null;
         Util.setCurrentDirectory(file.getParentFile());
         String filename = Util.canon(file.getPath());
         try {
             Util.writeAll(filename, Util.readAll(xmlFileName));
         } catch (Throwable er) {
-            OurDialog.alert("Error saving XML instance.\n\nError: " + er.getMessage());
+            OurDialog.alert(frame, "Error saving XML instance.\n\nError: " + er.getMessage());
         }
         return null;
     }
@@ -1306,14 +1311,14 @@ public final class VizGUI implements ComponentListener {
             return wrapMe();
         if (myState == null)
             return null;
-        if (!OurDialog.yesno("Are you sure you wish to clear all your customizations?", "Yes, clear them", "No, keep them"))
+        if (!OurDialog.yesno(frame, "Are you sure you wish to clear all your customizations?", "Yes, clear them", "No, keep them"))
             return null;
         myState.resetTheme();
         repopulateProjectionPopup();
         if (myCustomPanel != null)
             myCustomPanel.remakeAll();
         if (myGraphPanel != null)
-            myGraphPanel.remakeAll();
+            myGraphPanel.remakeAll(frame);
         thmFileName = "";
         updateDisplay();
         return null;
@@ -1327,18 +1332,19 @@ public final class VizGUI implements ComponentListener {
             return wrapMe();
         if (myState == null)
             return null;
-        if (!OurDialog.yesno("This will clear your original customizations. Are you sure?", "Yes, clear them", "No, keep them"))
+        if (!OurDialog.yesno(frame, "This will clear your original customizations. Are you sure?", "Yes, clear them", "No, keep them"))
             return null;
         myState.resetTheme();
         try {
             MagicLayout.magic(myState);
             MagicColor.magic(myState);
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
         repopulateProjectionPopup();
         if (myCustomPanel != null)
             myCustomPanel.remakeAll();
         if (myGraphPanel != null)
-            myGraphPanel.remakeAll();
+            myGraphPanel.remakeAll(frame);
         updateDisplay();
         return null;
     }
@@ -1400,14 +1406,14 @@ public final class VizGUI implements ComponentListener {
         if (settingsOpen != 0)
             return null;
         if (xmlFileName.length() == 0) {
-            OurDialog.alert("Cannot display the next solution since no instance is currently loaded.");
+            OurDialog.alert(frame, "Cannot display the next solution since no instance is currently loaded.");
         } else if (enumerator == null) {
-            OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
+            OurDialog.alert(frame, "Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
                 enumerator.compute(xmlFileName);
             } catch (Throwable ex) {
-                OurDialog.alert(ex.getMessage());
+                OurDialog.alert(frame, ex.getMessage());
             }
         }
         return null;

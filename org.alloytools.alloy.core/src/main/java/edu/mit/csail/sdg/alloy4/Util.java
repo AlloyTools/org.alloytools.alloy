@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
+import javax.swing.JFrame;
+
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
 
 /**
@@ -53,7 +55,8 @@ public final class Util {
      * This constructor is private, since this utility class never needs to be
      * instantiated.
      */
-    private Util() {}
+    private Util() {
+    }
 
     /**
      * Copy the input list, append "element" to it, then return the result as an
@@ -302,13 +305,13 @@ public final class Util {
         return convertLineBreak(ans);
     }
 
-    /** 
-     * Returns the modified date of the given file
-     * (If filename begins with Util.jarPrefix() returns 0) 
+    /**
+     * Returns the modified date of the given file (If filename begins with
+     * Util.jarPrefix() returns 0)
      */
-    public static long getModifiedDate(String filename){
+    public static long getModifiedDate(String filename) {
         boolean fromJar = filename.startsWith(jarPrefix());
-        return fromJar ? 0 : new File(filename).lastModified(); 
+        return fromJar ? 0 : new File(filename).lastModified();
     }
 
     /**
@@ -421,7 +424,7 @@ public final class Util {
      * file exists, we then do nothing. Returns true iff a file was created and
      * written.
      */
-    private static boolean copy(String sourcename, String destname) {
+    private static boolean copy(JFrame parent, String sourcename, String destname) {
         File destfileobj = new File(destname);
         if (destfileobj.isFile() && destfileobj.length() > 0)
             return false;
@@ -450,7 +453,7 @@ public final class Util {
         if (!close(in))
             result = false;
         if (!result)
-            OurDialog.fatal("Error occurred in creating the file \"" + destname + "\"");
+            OurDialog.fatal(parent, "Error occurred in creating the file \"" + destname + "\"");
         return true;
     }
 
@@ -458,6 +461,7 @@ public final class Util {
      * Copy the list of files from JAR into the destination directory, then set the
      * correct permissions on them if possible.
      *
+     * @param parent
      * @param executable - if true, we will attempt to set the file's "executable"
      *            permission (failure to do this is ignored)
      * @param keepPath - if true, the full path will be created for the destination
@@ -465,7 +469,7 @@ public final class Util {
      * @param destdir - the destination directory
      * @param names - the files to copy from the JAR
      */
-    public static void copy(boolean executable, boolean keepPath, String destdir, String... names) {
+    public static void copy(JFrame parent, boolean executable, boolean keepPath, String destdir, String... names) {
         String[] args = new String[names.length + 2];
         args[0] = "/bin/chmod"; // This does not work on Windows, but the
                                // "executable" bit is not needed on Windows
@@ -488,7 +492,7 @@ public final class Util {
                                                                // caught later
                                                                // by the file
                                                                // copy
-            if (copy(name, destname)) {
+            if (copy(parent, name, destname)) {
                 args[j] = destname;
                 j++;
             }
