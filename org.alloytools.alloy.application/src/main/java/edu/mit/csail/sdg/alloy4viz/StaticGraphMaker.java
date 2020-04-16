@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
@@ -90,7 +91,7 @@ public final class StaticGraphMaker {
      * Produces a single Graph from the given Instance and View and choice of
      * Projection
      */
-    public static JPanel produceGraph(AlloyInstance instance, VizState view, AlloyProjection proj) throws ErrorFatal {
+    public static JPanel produceGraph(JFrame parent, AlloyInstance instance, VizState view, AlloyProjection proj) throws ErrorFatal {
         view = new VizState(view);
         if (proj == null)
             proj = new AlloyProjection();
@@ -98,7 +99,7 @@ public final class StaticGraphMaker {
         new StaticGraphMaker(graph, instance, view, proj);
         if (graph.nodes.size() == 0)
             new GraphNode(graph, "", "Due to your theme settings, every atom is hidden.", "Please click Theme and adjust your settings.");
-        return new GraphViewer(graph);
+        return new GraphViewer(parent, graph);
     }
 
     /** The list of colors, in order, to assign each legend. */
@@ -254,7 +255,8 @@ public final class StaticGraphMaker {
                     moreLabel.append(", ");
                 moreLabel.append(atomname(atoms.get(i), false));
             }
-            if (label.length() == 0) { /* label=moreLabel.toString(); */ } else {
+            if (label.length() == 0) {
+                /* label=moreLabel.toString(); */ } else {
                 label = label + (" [" + moreLabel + "]");
             }
         }

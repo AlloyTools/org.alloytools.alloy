@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -66,6 +67,11 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
     private static final String ALLOY_NOW              = "http://alloy.mit.edu/alloy4/download/alloy4.txt";
 
     /**
+     * parent JFrame where popups should be centered
+     */
+    private final JFrame        parent;
+
+    /**
      * If alloy.mit.edu has replied, then return the latest Alloy build number, else
      * return -1.
      */
@@ -86,19 +92,21 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
     }
 
     /** Construct a new MailBug object. */
-    private MailBug() {}
+    private MailBug(JFrame parent) {
+        this.parent = parent;
+    }
 
     /**
      * Setup the uncaught-exception-handler and use a separate thread to query
      * alloy.mit.edu for latest version number.
      */
-    public static void setup() {
+    public static void setup(JFrame parent) {
         if (AlloyCore.isDebug())
             return;
 
         if (Thread.getDefaultUncaughtExceptionHandler() != null)
             return;
-        MailBug x = new MailBug();
+        MailBug x = new MailBug(parent);
         Thread.setDefaultUncaughtExceptionHandler(x);
         new Thread(x).start();
     }
@@ -310,20 +318,20 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
         final JScrollPane scroll = OurUtil.scrollpane(problem, new LineBorder(Color.DARK_GRAY), new Dimension(300, 200));
         for (Throwable ex2 = ex; ex2 != null; ex2 = ex2.getCause()) {
             if (ex2 instanceof StackOverflowError)
-                OurDialog.fatal(new Object[] {
-                                              "Sorry. The Alloy Analyzer has run out of stack space.", " ", "Try simplifying your model or reducing the scope.", "And try reducing Options->SkolemDepth to 0.", "And try increasing Options->Stack.", " ", "There is no way for Alloy to continue execution, so pressing OK will shut down Alloy."
+                OurDialog.fatal(parent, new Object[] {
+                                                      "Sorry. The Alloy Analyzer has run out of stack space.", " ", "Try simplifying your model or reducing the scope.", "And try reducing Options->SkolemDepth to 0.", "And try increasing Options->Stack.", " ", "There is no way for Alloy to continue execution, so pressing OK will shut down Alloy."
                 });
             if (ex2 instanceof OutOfMemoryError)
-                OurDialog.fatal(new Object[] {
-                                              "Sorry. The Alloy Analyzer has run out of memory.", " ", "Try simplifying your model or reducing the scope.", "And try reducing Options->SkolemDepth to 0.", "And try increasing Options->Memory.", " ", "There is no way for Alloy to continue execution, so pressing OK will shut down Alloy."
+                OurDialog.fatal(parent, new Object[] {
+                                                      "Sorry. The Alloy Analyzer has run out of memory.", " ", "Try simplifying your model or reducing the scope.", "And try reducing Options->SkolemDepth to 0.", "And try increasing Options->Memory.", " ", "There is no way for Alloy to continue execution, so pressing OK will shut down Alloy."
                 });
         }
         if (ver > Version.buildNumber())
-            OurDialog.fatal(new Object[] {
-                                          "Sorry. A fatal error has occurred.", " ", "You are running Alloy Analyzer " + Version.version(), "but the most recent is Alloy Analyzer " + name, " ", "Please try to upgrade to the newest version", "as the problem may have already been fixed.", " ", "There is no way for Alloy to continue execution, so pressing OK will shut down Alloy."
+            OurDialog.fatal(parent, new Object[] {
+                                                  "Sorry. A fatal error has occurred.", " ", "You are running Alloy Analyzer " + Version.version(), "but the most recent is Alloy Analyzer " + name, " ", "Please try to upgrade to the newest version", "as the problem may have already been fixed.", " ", "There is no way for Alloy to continue execution, so pressing OK will shut down Alloy."
             });
-        if (OurDialog.yesno(new Object[] {
-                                          "Sorry. A fatal internal error has occurred.", " ", "You may submit a bug report (via HTTP).", "The error report will include your system", "configuration, but no other information.", " ", "If you'd like to be notified about a fix,", "please describe the problem and enter your email address.", " ", OurUtil.makeHT("Email:", 5, email, null), OurUtil.makeHT("Problem:", 5, scroll, null)
+        if (OurDialog.yesno(parent, new Object[] {
+                                                  "Sorry. A fatal internal error has occurred.", " ", "You may submit a bug report (via HTTP).", "The error report will include your system", "configuration, but no other information.", " ", "If you'd like to be notified about a fix,", "please describe the problem and enter your email address.", " ", OurUtil.makeHT("Email:", 5, email, null), OurUtil.makeHT("Problem:", 5, scroll, null)
         }, yes, no))
             sendCrashReport(thread, ex, email.getText(), problem.getText());
         System.exit(1);
