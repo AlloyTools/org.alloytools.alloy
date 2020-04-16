@@ -195,22 +195,20 @@ public class ExprUnaryTranslator
     private SmtExpr translateOneOf(ExprUnary expr, Environment environment)
     {
         // expression has pattern (one A) where type of A is (Set E)
-        // the translation is
-        // (exists ((S (Set E)) (x E)) (= S {x}))
+        // the translation is (Singleton x) where
+        // (exists ((x E)) (member x A))
 
         SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
         SetSort setSort = (SetSort) A.getSort();
         Sort elementSort = setSort.elementSort;
-        SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
 
         SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
 
         SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
-
-        SmtExpr equal = SmtBinaryExpr.Op.EQ.make(setVariable.getVariable(), singleton);
-        SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(equal, setVariable, variable);
+        SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(variable.getVariable(), A);
+        SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(member, variable);
         environment.addAuxiliaryFormula(exists);
-        return setVariable.getVariable();
+        return singleton;
     }
 
     private SmtExpr translateLoneOf(ExprUnary expr, Environment environment)
