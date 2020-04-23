@@ -349,4 +349,21 @@ public class TranslatorUtils
       return smtExpr;
     }
   }
+
+  public static List<SmtVariable> copySmtVariables(List<SmtVariable> smtVariables)
+  {
+    List<SmtVariable> newVariables = new ArrayList<>();
+    for (SmtVariable smtVariable : smtVariables)
+    {
+      SmtVariable newVariable = new SmtVariable(TranslatorUtils.getFreshName(smtVariable.getSort()), smtVariable.getSort(), false);
+      if (smtVariable.getConstraint() != null)
+      {
+        SmtExpr newConstraint = smtVariable.getConstraint()
+                                           .substitute(smtVariable.getVariable(), newVariable.getVariable());
+        newVariable.setConstraint(newConstraint);
+      }
+      newVariables.add(newVariable);
+    }
+    return newVariables;
+  }
 }

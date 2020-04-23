@@ -1,13 +1,13 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ExprQtTranslator
 {
@@ -28,42 +28,28 @@ public class ExprQtTranslator
   {
     // create a new scope for quantified variables
     Environment newEnvironment = new Environment(environment);
-    Map<String, SmtExpr> ranges = new LinkedHashMap<>();
-
-    // this variable maintains the multiplicity constraints for declared variables
-    // x: [one, lone, some, set] e
-    SmtExpr multiplicityConstraints = BoolConstant.True;
-    multiplicityConstraints = declareQuantifiedVariables(exprQt, newEnvironment, ranges, multiplicityConstraints);
-
-    SmtExpr quantifiersConstraints = multiplicityConstraints;
-
-    SmtExpr disjointConstraints = getDisjointConstraints(exprQt, newEnvironment);
-
-    if (!disjointConstraints.equals(BoolConstant.True))
-    {
-      quantifiersConstraints = SmtMultiArityExpr.Op.AND.make(quantifiersConstraints, disjointConstraints);
-    }
+    List<SmtVariable> smtVariables = exprTranslator.translateDecls(exprQt.decls, newEnvironment);
+    SmtExpr constraints = getDisjointConstraints(exprQt, newEnvironment);
 
     // translate the body of the quantified expression
     SmtExpr body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
     switch (exprQt.op)
     {
       case ALL:
-        return translateAllQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
+        return translateAllQuantifier(body, smtVariables, newEnvironment, constraints);
       case NO:
-        return translateNoQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
+        return translateNoQuantifier(body, smtVariables, newEnvironment, constraints);
       case SOME:
-        return translateSomeQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
+        return translateSomeQuantifier(body, smtVariables, newEnvironment, constraints);
       case ONE:
-        return translateOneQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
+        return translateOneQuantifier(body, smtVariables, newEnvironment, constraints);
       case LONE:
-        return translateLoneQuantifier(body, ranges, newEnvironment, quantifiersConstraints);
+        return translateLoneQuantifier(body, smtVariables, newEnvironment, constraints);
       case COMPREHENSION:
-        return translateComprehension(exprQt, body, ranges, newEnvironment);
+//        return translateComprehension(exprQt, body, smtVariables, newEnvironment);
       default:
         throw new UnsupportedOperationException();
     }
-//        throw new UnsupportedOperationException();
   }
 
   private SmtExpr declareQuantifiedVariables(ExprQt exprQt, Environment newEnvironment, Map<String, SmtExpr> ranges, SmtExpr multiplicityConstraints)
@@ -86,7 +72,7 @@ public class ExprQtTranslator
   }
 
 
-  private SmtExpr getDisjointConstraints(ExprQt exprQt, Environment newEnvironment)
+  private SmtExpr getDisjointConstraints(ExprQt exprQt, Environment environment)
   {
     SmtExpr disjointConstraints = BoolConstant.True;
 
@@ -99,8 +85,8 @@ public class ExprQtTranslator
         {
           for (int j = i + 1; j < decl.names.size(); j++)
           {
-            SmtExpr variableI = newEnvironment.get(decl.names.get(i).label);
-            SmtExpr variableJ = newEnvironment.get(decl.names.get(j).label);
+            SmtExpr variableI = environment.get(decl.names.get(i).label);
+            SmtExpr variableJ = environment.get(decl.names.get(j).label);
 
             if (variableJ.getSort() instanceof UninterpretedSort)
             {
@@ -124,100 +110,100 @@ public class ExprQtTranslator
     return disjointConstraints;
   }
 
-  private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, Map<String, SmtExpr> ranges, Environment environment)
-  {
-    // {x: e1, y: e2, ... | f} is translated into
-    // declare-fun comprehension(freeVariables): (e1 x e2 x ...)
-    // assert forall x, y,... (x in e1 and y in e2 ... and f <=>
-    // (x, y, ...) in comprehension(freeVariables))
-
-    List<SmtVariable> quantifiedVariables = ranges.entrySet()
-                                                  .stream()
-                                                  .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                  .collect(Collectors.toList());
-
-    List<Sort> elementSorts = quantifiedVariables.stream()
-                                                 .map(v -> ((TupleSort) (v.getSort())).elementSorts.get(0))
-                                                 .collect(Collectors.toList());
-
-    Sort returnSort = new SetSort(new TupleSort(elementSorts));
-
-    SmtExpr membership = getMemberOrSubsetExpressions(ranges, environment);
-
-    // add variables in the environment as arguments to the set function
-    LinkedHashMap<String, SmtExpr> argumentsMap = environment.getParent().getVariables();
-    List<Sort> argumentSorts = new ArrayList<>();
-    List<SmtExpr> arguments = new ArrayList<>();
-    List<SmtVariable> quantifiedArguments = new ArrayList<>();
-    for (Map.Entry<String, SmtExpr> argument : argumentsMap.entrySet())
-    {
-      Variable variable = (Variable) argument.getValue();
-      arguments.add(variable);
-      Sort sort = variable.getSort();
-      argumentSorts.add(sort);
-
-      // handle set sorts differently to avoid second order quantification
-      if (sort instanceof SetSort)
-      {
-        Sort elementSort = ((SetSort) sort).elementSort;
-        SmtVariable tuple = new SmtVariable(variable.getName(), elementSort, variable.isOriginal());
-        quantifiedArguments.add(tuple);
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple.getVariable());
-        body = body.replace(variable, singleton);
-        membership = membership.replace(argument.getValue(), singleton);
-      }
-      else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
-      {
-        quantifiedArguments.add((SmtVariable) variable.getDeclaration());
-      }
-      else
-      {
-        throw new UnsupportedOperationException();
-      }
-    }
-    FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getFreshName(returnSort), argumentSorts, returnSort, false);
-    translator.smtScript.addFunction(setFunction);
-
-    SmtExpr setFunctionSmtExpr;
-    if (argumentSorts.size() == 0)
-    {
-      setFunctionSmtExpr = setFunction.getVariable();
-    }
-    else
-    {
-      List<SmtExpr> smtExprs = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
-      setFunctionSmtExpr = new SmtCallExpr(setFunction, smtExprs);
-    }
-
-    List<SmtExpr> quantifiedSmtExprs = quantifiedVariables.stream()
-                                                          .map(v -> SmtBinaryExpr.Op.TUPSEL.make(IntConstant.getInstance(0), v.getVariable()))
-                                                          .collect(Collectors.toList());
-
-    SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(quantifiedSmtExprs);
-
-    SmtExpr tupleMember = SmtBinaryExpr.Op.MEMBER.make(tuple, setFunctionSmtExpr);
-
-    SmtExpr and = SmtMultiArityExpr.Op.AND.make(membership, body);
-
-    SmtExpr equivalence = SmtBinaryExpr.Op.EQ.make(tupleMember, and);
-
-    // add variables defined in functions, predicates or let expression to the list of quantifiers
-    quantifiedArguments.addAll(quantifiedVariables);
-    SmtExpr forAll = SmtQtExpr.Op.FORALL.make(equivalence, quantifiedArguments);
-
-    Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprQt.pos),
-        exprQt.toString(), forAll);
-    translator.smtScript.addAssertion(assertion);
-
-    if (argumentSorts.size() == 0)
-    {
-      return setFunction.getVariable();
-    }
-    else
-    {
-      return new SmtCallExpr(setFunction, arguments);
-    }
-  }
+//  private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, Map<String, SmtExpr> ranges, Environment environment)
+//  {
+//    // {x: e1, y: e2, ... | f} is translated into
+//    // declare-fun comprehension(freeVariables): (e1 x e2 x ...)
+//    // assert forall x, y,... (x in e1 and y in e2 ... and f <=>
+//    // (x, y, ...) in comprehension(freeVariables))
+//
+//    List<SmtVariable> quantifiedVariables = ranges.entrySet()
+//                                                  .stream()
+//                                                  .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
+//                                                  .collect(Collectors.toList());
+//
+//    List<Sort> elementSorts = quantifiedVariables.stream()
+//                                                 .map(v -> ((TupleSort) (v.getSort())).elementSorts.get(0))
+//                                                 .collect(Collectors.toList());
+//
+//    Sort returnSort = new SetSort(new TupleSort(elementSorts));
+//
+//    SmtExpr membership = getMemberOrSubsetExpressions(ranges, environment);
+//
+//    // add variables in the environment as arguments to the set function
+//    LinkedHashMap<String, SmtExpr> argumentsMap = environment.getParent().getVariables();
+//    List<Sort> argumentSorts = new ArrayList<>();
+//    List<SmtExpr> arguments = new ArrayList<>();
+//    List<SmtVariable> quantifiedArguments = new ArrayList<>();
+//    for (Map.Entry<String, SmtExpr> argument : argumentsMap.entrySet())
+//    {
+//      Variable variable = (Variable) argument.getValue();
+//      arguments.add(variable);
+//      Sort sort = variable.getSort();
+//      argumentSorts.add(sort);
+//
+//      // handle set sorts differently to avoid second order quantification
+//      if (sort instanceof SetSort)
+//      {
+//        Sort elementSort = ((SetSort) sort).elementSort;
+//        SmtVariable tuple = new SmtVariable(variable.getName(), elementSort, variable.isOriginal());
+//        quantifiedArguments.add(tuple);
+//        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple.getVariable());
+//        body = body.replace(variable, singleton);
+//        membership = membership.replace(argument.getValue(), singleton);
+//      }
+//      else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
+//      {
+//        quantifiedArguments.add((SmtVariable) variable.getDeclaration());
+//      }
+//      else
+//      {
+//        throw new UnsupportedOperationException();
+//      }
+//    }
+//    FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getFreshName(returnSort), argumentSorts, returnSort, false);
+//    translator.smtScript.addFunction(setFunction);
+//
+//    SmtExpr setFunctionSmtExpr;
+//    if (argumentSorts.size() == 0)
+//    {
+//      setFunctionSmtExpr = setFunction.getVariable();
+//    }
+//    else
+//    {
+//      List<SmtExpr> smtExprs = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
+//      setFunctionSmtExpr = new SmtCallExpr(setFunction, smtExprs);
+//    }
+//
+//    List<SmtExpr> quantifiedSmtExprs = quantifiedVariables.stream()
+//                                                          .map(v -> SmtBinaryExpr.Op.TUPSEL.make(IntConstant.getInstance(0), v.getVariable()))
+//                                                          .collect(Collectors.toList());
+//
+//    SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(quantifiedSmtExprs);
+//
+//    SmtExpr tupleMember = SmtBinaryExpr.Op.MEMBER.make(tuple, setFunctionSmtExpr);
+//
+//    SmtExpr and = SmtMultiArityExpr.Op.AND.make(membership, body);
+//
+//    SmtExpr equivalence = SmtBinaryExpr.Op.EQ.make(tupleMember, and);
+//
+//    // add variables defined in functions, predicates or let expression to the list of quantifiers
+//    quantifiedArguments.addAll(quantifiedVariables);
+//    SmtExpr forAll = SmtQtExpr.Op.FORALL.make(equivalence, quantifiedArguments);
+//
+//    Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprQt.pos),
+//        exprQt.toString(), forAll);
+//    translator.smtScript.addAssertion(assertion);
+//
+//    if (argumentSorts.size() == 0)
+//    {
+//      return setFunction.getVariable();
+//    }
+//    else
+//    {
+//      return new SmtCallExpr(setFunction, arguments);
+//    }
+//  }
 
 
   private SmtVariable getVariableDeclaration(Expr expr, String variableName, SetSort setSort, SmtExpr range)
@@ -340,20 +326,15 @@ public class ExprQtTranslator
     throw new UnsupportedOperationException();
   }
 
-  private SmtExpr translateAllQuantifier(SmtExpr body, Map<String, SmtExpr> ranges,
-                                         Environment environment, SmtExpr multiplicityConstraints)
+  private SmtExpr translateAllQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
+                                         Environment environment, SmtExpr constraints)
   {
     // all x: e1, y: e2, ... | f is translated into
-    // forall x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints implies f)
+    // forall x, y,... (x in e1 and y in e2 and ... and constraints implies f)
 
 
-    List<SmtVariable> quantifiedVariables = ranges.entrySet()
-                                                  .stream()
-                                                  .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                  .collect(Collectors.toList());
-
-    SmtExpr memberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
-    SmtExpr and = SmtMultiArityExpr.Op.AND.make(memberOrSubset, multiplicityConstraints);
+    SmtExpr multiplicity = getMemberOrSubsetExpressions(smtVariables);
+    SmtExpr and = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints);
     SmtQtExpr exists = environment.getAuxiliaryFormula();
 
     if (exists != null)
@@ -364,34 +345,28 @@ public class ExprQtTranslator
     }
 
     body = SmtBinaryExpr.Op.IMPLIES.make(exists, body);
-    SmtExpr forAll = SmtQtExpr.Op.FORALL.make(body, quantifiedVariables);
+    SmtExpr forAll = SmtQtExpr.Op.FORALL.make(body, smtVariables);
 
     SmtExpr translation = exprTranslator.translateAuxiliaryFormula(forAll, environment);
     return translation;
   }
 
-  private SmtExpr translateNoQuantifier(SmtExpr body, Map<String, SmtExpr> ranges,
+  private SmtExpr translateNoQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
                                         Environment environment, SmtExpr multiplicityConstraints)
   {
     SmtExpr notBody = SmtUnaryExpr.Op.NOT.make(body);
-    return translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
+    return translateAllQuantifier(notBody, smtVariables, environment, multiplicityConstraints);
   }
 
-  private SmtExpr translateSomeQuantifier(SmtExpr body, Map<String, SmtExpr> ranges,
-                                          Environment environment, SmtExpr multiplicityConstraints)
+  private SmtExpr translateSomeQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
+                                          Environment environment, SmtExpr constraints)
   {
 
     // some x: e1, y: e2, ... | f is translated into
-    // exists x, y,... (x in e1 and y in e2 and ... and multiplicityConstraints and f)
+    // exists x, y,... (x in e1 and y in e2 and ... and constraints and f)
 
-    List<SmtVariable> quantifiedVariables = ranges.entrySet()
-                                                  .stream()
-                                                  .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                                  .collect(Collectors.toList());
-
-    SmtMultiArityExpr and = SmtMultiArityExpr.Op.AND.make(
-        getMemberOrSubsetExpressions(ranges, environment),
-        multiplicityConstraints, body);
+    SmtExpr multiplicity = getMemberOrSubsetExpressions(smtVariables);
+    SmtMultiArityExpr and = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints);
 
     SmtQtExpr existsSet = environment.getAuxiliaryFormula();
     if (existsSet != null)
@@ -400,116 +375,81 @@ public class ExprQtTranslator
       smtExprs.add(existsSet.getExpression());
       and = SmtMultiArityExpr.Op.AND.make(smtExprs);
       SmtExpr exists = SmtQtExpr.Op.EXISTS.make(and, existsSet.getVariables());
-      return SmtQtExpr.Op.EXISTS.make(exists, quantifiedVariables);
+      return SmtQtExpr.Op.EXISTS.make(exists, smtVariables);
     }
     else
     {
-      SmtExpr exists = SmtQtExpr.Op.EXISTS.make(and, quantifiedVariables);
+      SmtExpr exists = SmtQtExpr.Op.EXISTS.make(and, smtVariables);
       return exists;
     }
   }
 
-  private SmtExpr getMemberOrSubsetExpressions(Map<String, SmtExpr> ranges, Environment environment)
+  private SmtExpr getMemberOrSubsetExpressions(List<SmtVariable> smtVariables)
   {
-    SmtExpr and = BoolConstant.True;
-    for (Map.Entry<String, SmtExpr> entry : ranges.entrySet())
+    SmtExpr andExpr = BoolConstant.True;
+    for (SmtVariable smtVariable : smtVariables)
     {
-      SmtVariable variable = (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration();
-      SmtExpr memberOrSubset;
-      if (variable.getSort() instanceof TupleSort)
+      if (smtVariable.getConstraint() == null)
       {
-        memberOrSubset = SmtBinaryExpr.Op.MEMBER.make(variable.getVariable(), entry.getValue());
+        continue;
       }
-      else if (variable.getSort() instanceof SetSort)
-      {
-        memberOrSubset = SmtBinaryExpr.Op.SUBSET.make(variable.getVariable(), entry.getValue());
-      }
-      else
-      {
-        throw new UnsupportedOperationException(variable.getSort().toString());
-      }
-      and = SmtMultiArityExpr.Op.AND.make(and, memberOrSubset);
+      andExpr = SmtMultiArityExpr.Op.AND.make(andExpr, smtVariable.getConstraint());
     }
-    return and;
+    return andExpr;
   }
 
-  private SmtExpr translateOneQuantifier(SmtExpr body, Map<String, SmtExpr> ranges,
-                                         Environment environment, SmtExpr multiplicityConstraints)
+  private SmtExpr translateOneQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
+                                         Environment environment, SmtExpr constraints)
   {
     // one x: e1, y: e2, ... | f(x, y, ...) is translated into
-    // exists x, y, ... ( x in e1 and y in e2 and ... and multiplicityConstraints(x, y, ...) and f(x, y, ...) and
-    //                      for all x', y', ... (x in e1 and y in e2 ... and multiplicityConstraints(x', y', ...)
-    //                              and not (x' = x and y' = y ...) implies not f(x', y', ...)))
+    // exists x, y, ... ( x in e1 and y in e2 and ... and constraints(x, y, ...) and f(x, y, ...) and
+    //    for all x', y', ... (x in e1 and y in e2 ... and constraints(x', y', ...)
+    //      and not (x' = x and y' = y ...) implies not f(x', y', ...)))
 
-    List<SmtVariable> oldVariables = ranges.entrySet()
-                                           .stream()
-                                           .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
-                                           .collect(Collectors.toList());
+    SmtExpr multiplicity = getMemberOrSubsetExpressions(smtVariables);
+    SmtExpr existsAnd = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints, body);
 
-    SmtExpr oldMemberOrSubset = getMemberOrSubsetExpressions(ranges, environment);
+    // create new variables x', y', ...
+    List<SmtVariable> newVariables = TranslatorUtils.copySmtVariables(smtVariables);
 
-    SmtExpr existsAnd = SmtMultiArityExpr.Op.AND.make(oldMemberOrSubset, multiplicityConstraints);
-
-    existsAnd = SmtMultiArityExpr.Op.AND.make(existsAnd, body);
-
-    List<SmtVariable> newVariables = new ArrayList<>();
-
-    SmtExpr newBody = body;
+    // build the expr (x' = x and y' = y ...)
     SmtExpr oldEqualNew = BoolConstant.True;
-    SmtExpr newMemberOrSubset = BoolConstant.True;
-    SmtExpr newMultiplicityConstraints = multiplicityConstraints;
-    for (Map.Entry<String, SmtExpr> entry : ranges.entrySet())
+    for (int i = 0; i < smtVariables.size(); i++)
     {
-      SmtVariable oldVariable = (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration();
-      SmtVariable newVariable = new SmtVariable(TranslatorUtils.getFreshName(oldVariable.getSort()), oldVariable.getSort(), false);
-      if (oldVariable.getConstraint() != null)
-      {
-        SmtExpr newConstraint = oldVariable.getConstraint().substitute(oldVariable.getVariable(), newVariable.getVariable());
-        newVariable.setConstraint(newConstraint);
-      }
-
-      newVariables.add(newVariable);
-      newBody = newBody.substitute(oldVariable.getVariable(), newVariable.getVariable());
-      newMultiplicityConstraints = newMultiplicityConstraints.substitute(oldVariable.getVariable(), newVariable.getVariable());
-
+      SmtVariable oldVariable = smtVariables.get(i);
+      SmtVariable newVariable = newVariables.get(i);
       oldEqualNew = SmtMultiArityExpr.Op.AND.make(oldEqualNew, SmtBinaryExpr.Op.EQ.make(oldVariable.getVariable(), newVariable.getVariable()));
-      if (newVariable.getSort() instanceof TupleSort)
-      {
-        newMemberOrSubset = SmtMultiArityExpr.Op.AND.make(newMemberOrSubset, SmtBinaryExpr.Op.MEMBER.make(newVariable.getVariable(), entry.getValue()));
-      }
-      else if (newVariable.getSort() instanceof SetSort)
-      {
-        newMemberOrSubset = SmtMultiArityExpr.Op.AND.make(newMemberOrSubset, SmtBinaryExpr.Op.SUBSET.make(newVariable.getVariable(), entry.getValue()));
-      }
-      else
-      {
-        throw new UnsupportedOperationException();
-      }
     }
-
-
-    newBody = SmtUnaryExpr.Op.NOT.make(newBody);
     SmtExpr notOldEqualNew = SmtUnaryExpr.Op.NOT.make(oldEqualNew);
 
-    SmtExpr forAllAnd = SmtMultiArityExpr.Op.AND.make(newMemberOrSubset, newMultiplicityConstraints);
-    forAllAnd = SmtMultiArityExpr.Op.AND.make(forAllAnd, notOldEqualNew);
+    // build a new body from the old one by replacing old variables with new variables
+    SmtExpr newBody = body;
+    for (int i = 0; i < smtVariables.size(); i++)
+    {
+      newBody = newBody.substitute(smtVariables.get(i).getVariable(), newVariables.get(i).getVariable());
+    }
+    newBody = SmtUnaryExpr.Op.NOT.make(newBody);
+
+    SmtExpr newMultiplicity = getMemberOrSubsetExpressions(newVariables);
+
+    SmtExpr forAllAnd = SmtMultiArityExpr.Op.AND.make(newMultiplicity, constraints, notOldEqualNew);
 
     SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(forAllAnd, newBody);
     SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, newVariables);
     existsAnd = SmtMultiArityExpr.Op.AND.make(existsAnd, forAll);
-    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(existsAnd, oldVariables);
+    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(existsAnd, smtVariables);
     return exists;
   }
 
-  private SmtExpr translateLoneQuantifier(SmtExpr body, Map<String, SmtExpr> ranges,
-                                          Environment environment, SmtExpr multiplicityConstraints)
+  private SmtExpr translateLoneQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
+                                          Environment environment, SmtExpr constraints)
   {
     // lone ... | f is translated into
     // (all ... | not f)  or (one ... | f)
 
     SmtExpr notBody = SmtUnaryExpr.Op.NOT.make(body);
-    SmtExpr allNot = translateAllQuantifier(notBody, ranges, environment, multiplicityConstraints);
-    SmtExpr one = translateOneQuantifier(body, ranges, environment, multiplicityConstraints);
+    SmtExpr allNot = translateAllQuantifier(notBody, smtVariables, environment, constraints);
+    SmtExpr one = translateOneQuantifier(body, smtVariables, environment, constraints);
     SmtExpr or = SmtMultiArityExpr.Op.OR.make(allNot, one);
     return or;
   }

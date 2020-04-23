@@ -22,6 +22,16 @@ public class DeclTranslator
     this.translator = exprTranslator.translator;
   }
 
+  public List<SmtVariable> translateDecls(List<Decl> decls, Environment environment)
+  {
+    List<SmtVariable> variables = new ArrayList<>();
+    for (Decl decl: decls)
+    {
+      variables.addAll(translateDecl(decl, environment));
+    }
+    return variables;
+  }
+
   public List<SmtVariable> translateDecl(Decl decl, Environment environment)
   {
     List<SmtVariable> variables = new ArrayList<>();
@@ -35,6 +45,12 @@ public class DeclTranslator
     //ToDo: disjoint
 
     //ToDo: disjoint2
+
+    // add variables to the environment
+    for (SmtVariable variable: variables)
+    {
+      environment.put(variable.getName(), variable.getVariable());
+    }
 
     return variables;
   }

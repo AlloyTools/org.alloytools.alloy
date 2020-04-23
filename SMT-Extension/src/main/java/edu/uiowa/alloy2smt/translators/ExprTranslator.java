@@ -8,6 +8,7 @@
 
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
@@ -51,6 +52,10 @@ public class ExprTranslator
     this.declTranslator = new DeclTranslator(this);
   }
 
+  public List<SmtVariable> translateDecls(List<Decl> decls, Environment environment)
+  {
+    return declTranslator.translateDecls(decls, environment);
+  }
 
   public List<SmtVariable> translateDecl(Decl decl, Environment environment)
   {
