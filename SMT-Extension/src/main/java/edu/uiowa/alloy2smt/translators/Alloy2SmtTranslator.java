@@ -572,6 +572,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     if (function == null)
     {
       function = translateFunc(func);
+      funcMap.put(func, function);
     }
     return function;
   }
