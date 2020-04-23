@@ -187,6 +187,27 @@ public class ExprQtTranslatorTests
 
 
   @Test
+  void comprehension1() throws Exception
+  {
+    String alloy =
+        "abstract sig A {f: set A, g: set A}\n" +
+            "one sig A0, A1 extends A{}\n" +
+            "fact f1 {f = A0 -> A0 + A0 -> A1 + A1 -> A0  and g = A1 -> A1}\n" +
+            "fact f2{ f= {x: A, y: A | no (x->y & g)}}\n" +
+            "run {} for 10";
+
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition f = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A/f");
+    Set<List<String>> fTuples = TranslatorUtils.getRelation(f);
+    assertEquals(3, fTuples.size());
+
+    FunctionDefinition g = AlloyUtils.getFunctionDefinition(commandResults.get(0), "this/A/g");
+    Set<List<String>> gTuples = TranslatorUtils.getRelation(g);
+    assertEquals(1, gTuples.size());
+  }
+
+  @Test
   void disjointSingletons() throws Exception
   {
     String alloy =

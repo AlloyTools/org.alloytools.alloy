@@ -1,13 +1,13 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
+import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ExprQtTranslator
 {
@@ -46,31 +46,11 @@ public class ExprQtTranslator
       case LONE:
         return translateLoneQuantifier(body, smtVariables, newEnvironment, constraints);
       case COMPREHENSION:
-//        return translateComprehension(exprQt, body, smtVariables, newEnvironment);
+        return translateComprehension(exprQt, body, smtVariables, newEnvironment);
       default:
         throw new UnsupportedOperationException();
     }
   }
-
-  private SmtExpr declareQuantifiedVariables(ExprQt exprQt, Environment newEnvironment, Map<String, SmtExpr> ranges, SmtExpr multiplicityConstraints)
-  {
-    for (Decl decl : exprQt.decls)
-    {
-      SmtExpr range = exprTranslator.translateExpr(decl.expr, newEnvironment);
-      for (ExprHasName name : decl.names)
-      {
-        ranges.put(name.label, range);
-        String label = name.label;
-        SetSort setSort = (SetSort) range.getSort();
-        SmtVariable variable = getVariableDeclaration(decl.expr, label, setSort, range);
-        SmtExpr constraint = getMultiplicityConstraint(decl.expr, variable, setSort);
-        multiplicityConstraints = SmtMultiArityExpr.Op.AND.make(multiplicityConstraints, constraint);
-        newEnvironment.put(name.label, variable.getVariable());
-      }
-    }
-    return multiplicityConstraints;
-  }
-
 
   private SmtExpr getDisjointConstraints(ExprQt exprQt, Environment environment)
   {
@@ -110,100 +90,86 @@ public class ExprQtTranslator
     return disjointConstraints;
   }
 
-//  private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, Map<String, SmtExpr> ranges, Environment environment)
-//  {
-//    // {x: e1, y: e2, ... | f} is translated into
-//    // declare-fun comprehension(freeVariables): (e1 x e2 x ...)
-//    // assert forall x, y,... (x in e1 and y in e2 ... and f <=>
-//    // (x, y, ...) in comprehension(freeVariables))
-//
-//    List<SmtVariable> quantifiedVariables = ranges.entrySet()
-//                                                  .stream()
-//                                                  .map(entry -> (SmtVariable) ((Variable) environment.get(entry.getKey())).getDeclaration())
-//                                                  .collect(Collectors.toList());
-//
-//    List<Sort> elementSorts = quantifiedVariables.stream()
-//                                                 .map(v -> ((TupleSort) (v.getSort())).elementSorts.get(0))
-//                                                 .collect(Collectors.toList());
-//
-//    Sort returnSort = new SetSort(new TupleSort(elementSorts));
-//
-//    SmtExpr membership = getMemberOrSubsetExpressions(ranges, environment);
-//
-//    // add variables in the environment as arguments to the set function
-//    LinkedHashMap<String, SmtExpr> argumentsMap = environment.getParent().getVariables();
-//    List<Sort> argumentSorts = new ArrayList<>();
-//    List<SmtExpr> arguments = new ArrayList<>();
-//    List<SmtVariable> quantifiedArguments = new ArrayList<>();
-//    for (Map.Entry<String, SmtExpr> argument : argumentsMap.entrySet())
-//    {
-//      Variable variable = (Variable) argument.getValue();
-//      arguments.add(variable);
-//      Sort sort = variable.getSort();
-//      argumentSorts.add(sort);
-//
-//      // handle set sorts differently to avoid second order quantification
-//      if (sort instanceof SetSort)
-//      {
-//        Sort elementSort = ((SetSort) sort).elementSort;
-//        SmtVariable tuple = new SmtVariable(variable.getName(), elementSort, variable.isOriginal());
-//        quantifiedArguments.add(tuple);
-//        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple.getVariable());
-//        body = body.replace(variable, singleton);
-//        membership = membership.replace(argument.getValue(), singleton);
-//      }
-//      else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
-//      {
-//        quantifiedArguments.add((SmtVariable) variable.getDeclaration());
-//      }
-//      else
-//      {
-//        throw new UnsupportedOperationException();
-//      }
-//    }
-//    FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getFreshName(returnSort), argumentSorts, returnSort, false);
-//    translator.smtScript.addFunction(setFunction);
-//
-//    SmtExpr setFunctionSmtExpr;
-//    if (argumentSorts.size() == 0)
-//    {
-//      setFunctionSmtExpr = setFunction.getVariable();
-//    }
-//    else
-//    {
-//      List<SmtExpr> smtExprs = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
-//      setFunctionSmtExpr = new SmtCallExpr(setFunction, smtExprs);
-//    }
-//
-//    List<SmtExpr> quantifiedSmtExprs = quantifiedVariables.stream()
-//                                                          .map(v -> SmtBinaryExpr.Op.TUPSEL.make(IntConstant.getInstance(0), v.getVariable()))
-//                                                          .collect(Collectors.toList());
-//
-//    SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(quantifiedSmtExprs);
-//
-//    SmtExpr tupleMember = SmtBinaryExpr.Op.MEMBER.make(tuple, setFunctionSmtExpr);
-//
-//    SmtExpr and = SmtMultiArityExpr.Op.AND.make(membership, body);
-//
-//    SmtExpr equivalence = SmtBinaryExpr.Op.EQ.make(tupleMember, and);
-//
-//    // add variables defined in functions, predicates or let expression to the list of quantifiers
-//    quantifiedArguments.addAll(quantifiedVariables);
-//    SmtExpr forAll = SmtQtExpr.Op.FORALL.make(equivalence, quantifiedArguments);
-//
-//    Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprQt.pos),
-//        exprQt.toString(), forAll);
-//    translator.smtScript.addAssertion(assertion);
-//
-//    if (argumentSorts.size() == 0)
-//    {
-//      return setFunction.getVariable();
-//    }
-//    else
-//    {
-//      return new SmtCallExpr(setFunction, arguments);
-//    }
-//  }
+  private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, List<SmtVariable> smtVariables, Environment environment)
+  {
+    // {x: e1, y: e2, ... | f} is translated into
+    // declare-fun comprehension(freeVariables): (e1 product e2 product ...)
+    // assert forall x, y,... (x in e1 and y in e2 ... and f <=>
+    // (x, y, ...) in comprehension(freeVariables))
+
+    // determine the sort of the alloy comprehension
+    List<Sort> elementSorts = new ArrayList<>();
+    for (SmtVariable smtVariable : smtVariables)
+    {
+      // all variables should be unary
+      assert (smtVariable.getSort() instanceof TupleSort);
+      TupleSort tupleSort = (TupleSort) smtVariable.getSort();
+      elementSorts.add(tupleSort.elementSorts.get(0));
+    }
+    Sort returnSort = new SetSort(new TupleSort(elementSorts));
+
+    // determine the free variables for the set comprehension from the environment, and
+    // add theme as arguments to the comprehension function
+    LinkedHashMap<String, SmtExpr> argumentsMap = environment.getParent().getVariables();
+    List<Sort> argumentSorts = new ArrayList<>();
+    List<SmtExpr> arguments = new ArrayList<>();
+    List<SmtVariable> quantifiedArguments = new ArrayList<>();
+    for (Map.Entry<String, SmtExpr> argument : argumentsMap.entrySet())
+    {
+      Variable variable = (Variable) argument.getValue();
+      // add the variable as an argument to the call expression
+      arguments.add(variable);
+      Sort sort = variable.getSort();
+      // add the sort of the variable to the declaration of the comprehension function
+      argumentSorts.add(sort);
+      quantifiedArguments.add((SmtVariable) variable.getDeclaration());
+    }
+
+    FunctionDeclaration setFunction = new FunctionDeclaration(TranslatorUtils.getFreshName(returnSort), argumentSorts, returnSort, false);
+    translator.smtScript.addFunction(setFunction);
+
+    SmtExpr smtCallExpr;
+    if (argumentSorts.size() == 0)
+    {
+      smtCallExpr = setFunction.getVariable();
+    }
+    else
+    {
+      List<SmtExpr> smtExprs = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
+      smtCallExpr = new SmtCallExpr(setFunction, smtExprs);
+    }
+
+    SmtExpr membership = getMemberOrSubsetExpressions(smtVariables);
+
+    List<SmtExpr> quantifiedSmtExprs = smtVariables.stream()
+                                                   .map(v -> SmtBinaryExpr.Op.TUPSEL.make(IntConstant.getInstance(0), v.getVariable()))
+                                                   .collect(Collectors.toList());
+
+    SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(quantifiedSmtExprs);
+
+    SmtExpr tupleMember = SmtBinaryExpr.Op.MEMBER.make(tuple, smtCallExpr);
+
+    SmtExpr and = SmtMultiArityExpr.Op.AND.make(membership, body);
+
+    SmtExpr equivalence = SmtBinaryExpr.Op.EQ.make(tupleMember, and);
+
+    // add variables defined in functions, predicates or let expression to the list of quantifiers
+    quantifiedArguments.addAll(smtVariables);
+    SmtExpr forAll = SmtQtExpr.Op.FORALL.make(equivalence, quantifiedArguments);
+
+    Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(exprQt.pos),
+        setFunction.getName() + " = " + exprQt.toString(), forAll);
+    translator.smtScript.addAssertion(assertion);
+
+    if (argumentSorts.size() == 0)
+    {
+      return setFunction.getVariable();
+    }
+    else
+    {
+      return new SmtCallExpr(setFunction, arguments);
+    }
+  }
 
 
   private SmtVariable getVariableDeclaration(Expr expr, String variableName, SetSort setSort, SmtExpr range)
