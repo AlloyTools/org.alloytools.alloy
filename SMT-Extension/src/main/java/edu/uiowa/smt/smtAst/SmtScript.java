@@ -12,14 +12,15 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.optimizer.UninterpretedIntVisitor;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.math.BigInteger;
+import java.util.*;
 
 public class SmtScript extends SmtModel
 {
   private List<Assertion> assertions = new ArrayList<>();
   private SmtScript parent;
+  //ToDo: refactor classes abstract translator and SmtScript
+  private Map<BigInteger, FunctionDeclaration> integerConstants = new HashMap<>();
   // script between push pop commands
   private List<SmtScript> children = new ArrayList<>();
 
@@ -33,6 +34,7 @@ public class SmtScript extends SmtModel
     super(smtScript);
     this.assertions.addAll(smtScript.assertions);
     this.parent = smtScript.parent;
+    this.integerConstants.putAll(smtScript.integerConstants);
   }
 
   private void copyChildren(SmtScript smtScript)
@@ -43,6 +45,17 @@ public class SmtScript extends SmtModel
       copy.parent = this;
       this.children.add(copy);
     }
+  }
+
+  public Map<BigInteger, FunctionDeclaration> getIntegerConstants()
+  {
+    return integerConstants;
+  }
+
+  public void putIntegerConstant(BigInteger value, FunctionDeclaration declaration)
+  {
+    integerConstants.put(value, declaration);
+    addFunction(declaration);
   }
 
   public SmtScript createChild()

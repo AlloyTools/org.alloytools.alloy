@@ -62,7 +62,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     this.funcMap = new HashMap<>();
     this.fieldsMap = new HashMap<>();
     this.sigFacts = new HashMap<>();
-    this.integerConstants = new HashMap<>();
     this.sigToIdMap = new HashMap<>();
 
     this.signaturesMap.put(Sig.UNIV, univAtom);
@@ -90,7 +89,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     this.signatureTranslator = new SignatureTranslator(this);
     this.comparisonOperations = new HashMap<>(translator.comparisonOperations);
-    this.integerConstants = new HashMap<>(translator.integerConstants);
     this.arithmeticOperations = new HashMap<>(translator.arithmeticOperations);
     this.signaturesMap = new HashMap<>(translator.signaturesMap);
     this.functionsMap = new HashMap<>(translator.functionsMap);
@@ -325,23 +323,20 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     Command command = this.commands.get(commandIndex);
 
-    List<Assertion> assertions = getCommandAssertions(command);
+    translatecommandExprList(command);
 
     if (alloySettings.includeCommandScope)
     {
-      assertions.addAll(translateSignaturesScope(command));
-      assertions.addAll(translateIntScope(command));
+      translateSignaturesScope(command);
+      translateIntScope(command);
     }
-
-    this.smtScript.addAssertions(assertions);
 
     // restore the parent for new alloy commands
     this.smtScript = this.smtScript.getParent();
   }
 
-  private List<Assertion> translateIntScope(Command command)
+  private void translateIntScope(Command command)
   {
-    List<Assertion> assertions = new ArrayList<>();
     int minInteger = -(int) Math.pow(2, command.bitwidth - 1);
     int maxInteger = -minInteger - 1;
     ExprVar x = ExprVar.make(command.pos, "x", Sig.SIGINT.type());
@@ -351,16 +346,11 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Expr oneOfInt = ExprUnary.Op.ONEOF.make(null, Sig.SIGINT);
     Decl decl = new Decl(null, null, null, Collections.singletonList(x), oneOfInt);
     Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
-    SmtExpr smtExpr = exprTranslator.translateExpr(all, new SmtEnv());
-    Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
-        "Scope " + command.bitwidth + " Int", smtExpr);
-    assertions.add(assertion);
-    return assertions;
+    exprTranslator.translateFormula("Scope " + command.bitwidth + " Int", all);
   }
 
-  private List<Assertion> translateSignaturesScope(Command command)
+  private void translateSignaturesScope(Command command)
   {
-    List<Assertion> assertions = new ArrayList<>();
     Map<Sig, Map<Sig, Integer>> childrenScope = new HashMap<>();
     for (Sig signature : reachableSigs)
     {
@@ -447,23 +437,21 @@ public class Alloy2SmtTranslator extends AbstractTranslator
           SmtExpr exists = SmtQtExpr.Op.EXISTS.make(constraint, declarations);
           Assertion scopeAssertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
               signature.toString() + " scope", exists);
-          assertions.add(scopeAssertion);
+          smtScript.addAssertion(scopeAssertion);
         }
       }
     }
-    return assertions;
   }
 
-  private List<Assertion> getCommandAssertions(Command command)
+  private void translatecommandExprList(Command command)
   {
     assert (command.formula instanceof ExprList);
     ExprList list = (ExprList) command.formula;
     assert (list.op == ExprList.Op.AND);
-    List<Assertion> assertions = new ArrayList<>();
 
     //ToDo: refactor this line which just prints the command as a comment
     Assertion comment = new Assertion("", command.toString(), BoolConstant.True);
-    assertions.add(comment);
+    smtScript.addAssertion(comment);
 
     for (Expr argument : list.args)
     {
@@ -473,7 +461,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
         exprTranslator.translateFormula(argument.toString(), argument);
       }
     }
-    return assertions;
   }
 
   //ToDo: refactor this function by storing positions outside

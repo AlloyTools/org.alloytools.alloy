@@ -71,7 +71,6 @@ public abstract class AbstractTranslator
   public Map<String, FunctionDeclaration> functionsMap;
   public Map<SmtBinaryExpr.Op, FunctionDefinition> comparisonOperations;
   public Map<SmtBinaryExpr.Op, Variable> arithmeticOperations;
-  public Map<BigInteger, FunctionDeclaration> integerConstants;
 
   public void addFunction(FunctionDeclaration function)
   {
@@ -114,15 +113,15 @@ public abstract class AbstractTranslator
   public FunctionDeclaration getUninterpretedIntConstant(IntConstant intConstant)
   {
     BigInteger value = new BigInteger(intConstant.getValue());
-    if (integerConstants.containsKey(value))
+    Map<BigInteger, FunctionDeclaration> integerConstants = smtScript.getIntegerConstants();
+    if (smtScript.getIntegerConstants().containsKey(value))
     {
       return integerConstants.get(value);
     }
 
     FunctionDeclaration uninterpretedInt = new FunctionDeclaration(TranslatorUtils.getFreshName(AbstractTranslator.uninterpretedInt) + "_" + value.toString(),
         AbstractTranslator.uninterpretedInt, false);
-    integerConstants.put(value, uninterpretedInt);
-    smtScript.addFunction(uninterpretedInt);
+    smtScript.putIntegerConstant(value, uninterpretedInt);
     SmtExpr callSmtExpr = new SmtCallExpr(AbstractTranslator.uninterpretedIntValue, uninterpretedInt.getVariable());
     SmtExpr equality = SmtBinaryExpr.Op.EQ.make(callSmtExpr, intConstant);
     Assertion assertion = new Assertion("", "constant integer", equality);
