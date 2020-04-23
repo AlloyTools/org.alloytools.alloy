@@ -88,10 +88,9 @@ public class DeclTranslator
 
     SmtVariable smtVariable = new SmtVariable(name.label, sort, true);
 
-    assert (set instanceof Variable);
-    Variable variable = (Variable) set;
-    if (variable.getDeclaration() instanceof SmtVariable)
+    if (set instanceof Variable && ((Variable) set).getDeclaration() instanceof SmtVariable)
     {
+      Variable variable = (Variable) set;
       SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
       if(constraint != null)
       {
@@ -100,7 +99,7 @@ public class DeclTranslator
     }
     else
     {
-      SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(smtVariable.getVariable(), variable);
+      SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(smtVariable.getVariable(), set);
       smtVariable.setConstraint(subset);
     }
     return smtVariable;

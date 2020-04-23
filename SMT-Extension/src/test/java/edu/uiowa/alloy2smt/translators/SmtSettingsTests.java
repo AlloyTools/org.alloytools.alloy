@@ -13,7 +13,7 @@ public class SmtSettingsTests
   {
     SmtSettings smtSettings = SmtSettings.getInstance();
     smtSettings.putSolverOption("tlimit", "5000");
-    smtSettings.putSolverOption("produce-unsat-cores", "true");
+    smtSettings.putSolverOption(SmtSettings.PRODUCE_UNSAT_CORES, "true");
 
     SmtLibPrinter printer = new SmtLibPrinter(smtSettings);
     printer.visit(smtSettings);

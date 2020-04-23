@@ -219,4 +219,15 @@ class MultiplicityTests
     List<CommandResult> results = AlloyUtils.runAlloyString(alloy, false);
     assertEquals("sat", results.get(0).satResult);
   }
+
+  @Test
+  public void arrow() throws Exception
+  {
+    String alloy =
+        "sig A {} \n" +
+        "fact {some x: A -> A | some x and no A}";
+
+    List<CommandResult> results = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("unsat", results.get(0).satResult);
+  }
 }
