@@ -49,7 +49,7 @@ public class ModuleTests
   public void orderingModule2() throws Exception
   {
     AlloySettings alloySettings = AlloySettings.Default;
-    alloySettings.putSolverOption(SmtSettings.TLIMIT, "300000");
+    alloySettings.putSolverOption(SmtSettings.TLIMIT, "30000");
 
     String alloy =
         "open util/ordering[A] as ordA\n" +
