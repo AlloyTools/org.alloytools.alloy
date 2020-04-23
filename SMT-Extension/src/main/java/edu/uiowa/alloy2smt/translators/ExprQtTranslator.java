@@ -332,7 +332,7 @@ public class ExprQtTranslator
     // exists x, y,... (x in e1 and y in e2 and ... and constraints and f)
 
     SmtExpr multiplicity = getMemberOrSubsetExpressions(smtVariables);
-    SmtMultiArityExpr and = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints);
+    SmtMultiArityExpr and = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints, body);
 
     SmtQtExpr existsSet = environment.getAuxiliaryFormula();
     if (existsSet != null)
