@@ -2,7 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.smtAst.SmtExpr;
 import edu.uiowa.smt.smtAst.SmtMultiArityExpr;
 import edu.uiowa.smt.smtAst.SmtUnaryExpr;
@@ -19,13 +19,13 @@ public class ExprVarTranslator
     this.translator = exprTranslator.translator;
   }
 
-  SmtExpr translateExprVar(ExprVar exprVar, Environment environment)
+  SmtExpr translateExprVar(ExprVar exprVar, SmtEnv smtEnv)
   {
     String name = exprVar.label;
 
-    if (environment.containsKey(name))
+    if (smtEnv.containsKey(name))
     {
-      SmtExpr variable = environment.get(name);
+      SmtExpr variable = smtEnv.get(name);
 
       if (variable.getSort() == AbstractTranslator.atomSort)
       {

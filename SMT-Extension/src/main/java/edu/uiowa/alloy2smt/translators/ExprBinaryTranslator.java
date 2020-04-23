@@ -5,7 +5,7 @@ import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -25,107 +25,107 @@ public class ExprBinaryTranslator
     translator = exprTranslator.translator;
   }
 
-  SmtExpr translateExprBinary(ExprBinary expr, Environment environment)
+  SmtExpr translateExprBinary(ExprBinary expr, SmtEnv smtEnv)
   {
     switch (expr.op)
     {
       case ARROW:
-        return translateArrow(expr, environment);
+        return translateArrow(expr, smtEnv);
       case ANY_ARROW_SOME:
-        return translateAnyArrowSome(expr, environment);
+        return translateAnyArrowSome(expr, smtEnv);
       case ANY_ARROW_ONE:
-        return translateAnyArrowOne(expr, environment);
+        return translateAnyArrowOne(expr, smtEnv);
       case ANY_ARROW_LONE:
-        return translateAnyArrowLone(expr, environment);
+        return translateAnyArrowLone(expr, smtEnv);
       case SOME_ARROW_ANY:
-        return translateSomeArrowAny(expr, environment);
+        return translateSomeArrowAny(expr, smtEnv);
       case SOME_ARROW_SOME:
-        return translateSomeArrowSome(expr, environment);
+        return translateSomeArrowSome(expr, smtEnv);
       case SOME_ARROW_ONE:
-        return translateSomeArrowOne(expr, environment);
+        return translateSomeArrowOne(expr, smtEnv);
       case SOME_ARROW_LONE:
-        return translateSomeArrowLone(expr, environment);
+        return translateSomeArrowLone(expr, smtEnv);
       case ONE_ARROW_ANY:
-        return translateOneArrowAny(expr, environment);
+        return translateOneArrowAny(expr, smtEnv);
       case ONE_ARROW_SOME:
-        return translateOneArrowSome(expr, environment);
+        return translateOneArrowSome(expr, smtEnv);
       case ONE_ARROW_ONE:
-        return translateOneArrowOne(expr, environment);
+        return translateOneArrowOne(expr, smtEnv);
       case ONE_ARROW_LONE:
-        return translateOneArrowLone(expr, environment);
+        return translateOneArrowLone(expr, smtEnv);
       case LONE_ARROW_ANY:
-        return translateLoneArrowAny(expr, environment);
+        return translateLoneArrowAny(expr, smtEnv);
       case LONE_ARROW_SOME:
-        return translateLoneArrowSome(expr, environment);
+        return translateLoneArrowSome(expr, smtEnv);
       case LONE_ARROW_ONE:
-        return translateLoneArrowOne(expr, environment);
+        return translateLoneArrowOne(expr, smtEnv);
       case LONE_ARROW_LONE:
-        return translateLoneArrowLone(expr, environment);
+        return translateLoneArrowLone(expr, smtEnv);
       case ISSEQ_ARROW_LONE:
         throw new UnsupportedOperationException();
 
         // Relational operators
       case JOIN:
-        return translateJoin(expr, environment);
+        return translateJoin(expr, smtEnv);
       case DOMAIN:
-        return translateDomainRestriction(expr, environment);
+        return translateDomainRestriction(expr, smtEnv);
       case RANGE:
-        return translateRangeRestriction(expr, environment);
+        return translateRangeRestriction(expr, smtEnv);
       case INTERSECT:
-        return translateSetOperation(expr, SmtBinaryExpr.Op.INTERSECTION, environment);
+        return translateSetOperation(expr, SmtBinaryExpr.Op.INTERSECTION, smtEnv);
       case PLUSPLUS:
-        return translatePlusPlus(expr, environment);
+        return translatePlusPlus(expr, smtEnv);
       case EQUALS:
-        return translateEqComparison(expr, SmtBinaryExpr.Op.EQ, environment);
+        return translateEqComparison(expr, SmtBinaryExpr.Op.EQ, smtEnv);
       case NOT_EQUALS:
-        return SmtUnaryExpr.Op.NOT.make(translateEqComparison(expr, SmtBinaryExpr.Op.EQ, environment));
+        return SmtUnaryExpr.Op.NOT.make(translateEqComparison(expr, SmtBinaryExpr.Op.EQ, smtEnv));
 
       // Set op
       case PLUS:
-        return translateSetOperation(expr, SmtBinaryExpr.Op.UNION, environment);
+        return translateSetOperation(expr, SmtBinaryExpr.Op.UNION, smtEnv);
       case MINUS:
-        return translateSetOperation(expr, SmtBinaryExpr.Op.SETMINUS, environment);
+        return translateSetOperation(expr, SmtBinaryExpr.Op.SETMINUS, smtEnv);
 
       // Arithmetic operators
       case IPLUS:
-        return translateArithmetic(expr, SmtBinaryExpr.Op.PLUS, environment);
+        return translateArithmetic(expr, SmtBinaryExpr.Op.PLUS, smtEnv);
       case IMINUS:
-        return translateArithmetic(expr, SmtBinaryExpr.Op.MINUS, environment);
+        return translateArithmetic(expr, SmtBinaryExpr.Op.MINUS, smtEnv);
       case MUL:
-        return translateArithmetic(expr, SmtBinaryExpr.Op.MULTIPLY, environment);
+        return translateArithmetic(expr, SmtBinaryExpr.Op.MULTIPLY, smtEnv);
       case DIV:
-        return translateArithmetic(expr, SmtBinaryExpr.Op.DIVIDE, environment);
+        return translateArithmetic(expr, SmtBinaryExpr.Op.DIVIDE, smtEnv);
       case REM:
-        return translateArithmetic(expr, SmtBinaryExpr.Op.MOD, environment);
+        return translateArithmetic(expr, SmtBinaryExpr.Op.MOD, smtEnv);
       // Comparison operators
       case LT:
-        return translateComparison(expr, SmtBinaryExpr.Op.LT, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.LT, smtEnv);
       case LTE:
-        return translateComparison(expr, SmtBinaryExpr.Op.LTE, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.LTE, smtEnv);
       case GT:
-        return translateComparison(expr, SmtBinaryExpr.Op.GT, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.GT, smtEnv);
       case GTE:
-        return translateComparison(expr, SmtBinaryExpr.Op.GTE, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.GTE, smtEnv);
       case IN:
-        return translateSubsetOperation(expr, environment);
+        return translateSubsetOperation(expr, smtEnv);
       case NOT_IN:
-        return SmtUnaryExpr.Op.NOT.make(translateSubsetOperation(expr, environment));
+        return SmtUnaryExpr.Op.NOT.make(translateSubsetOperation(expr, smtEnv));
       case IMPLIES:
-        return translateImplies(expr, environment);
+        return translateImplies(expr, smtEnv);
       case AND:
-        return translateAnd(expr, environment);
+        return translateAnd(expr, smtEnv);
       case OR:
-        return translateOr(expr, environment);
+        return translateOr(expr, smtEnv);
       case IFF:
-        return translateEqComparison(expr, SmtBinaryExpr.Op.EQ, environment);
+        return translateEqComparison(expr, SmtBinaryExpr.Op.EQ, smtEnv);
       case NOT_LT:
-        return translateComparison(expr, SmtBinaryExpr.Op.GTE, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.GTE, smtEnv);
       case NOT_LTE:
-        return translateComparison(expr, SmtBinaryExpr.Op.GT, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.GT, smtEnv);
       case NOT_GT:
-        return translateComparison(expr, SmtBinaryExpr.Op.LTE, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.LTE, smtEnv);
       case NOT_GTE:
-        return translateComparison(expr, SmtBinaryExpr.Op.LT, environment);
+        return translateComparison(expr, SmtBinaryExpr.Op.LT, smtEnv);
       case SHL:
         throw new UnsupportedOperationException();
       case SHA:
@@ -137,13 +137,13 @@ public class ExprBinaryTranslator
     }
   }
 
-  private SmtExpr translateOneArrowOne(ExprBinary expr, Environment environment)
+  private SmtExpr translateOneArrowOne(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -208,20 +208,20 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateOneArrowSome(ExprBinary expr, Environment environment)
+  private SmtExpr translateOneArrowSome(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -273,19 +273,19 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateOneArrowAny(ExprBinary expr, Environment environment)
+  private SmtExpr translateOneArrowAny(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -330,18 +330,18 @@ public class ExprBinaryTranslator
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllY);
 
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateSomeArrowOne(ExprBinary expr, Environment environment)
+  private SmtExpr translateSomeArrowOne(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -393,18 +393,18 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateAnyArrowOne(ExprBinary expr, Environment environment)
+  private SmtExpr translateAnyArrowOne(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -447,18 +447,18 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateSomeArrowSome(ExprBinary expr, Environment environment)
+  private SmtExpr translateSomeArrowSome(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -495,17 +495,17 @@ public class ExprBinaryTranslator
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(Arrays.asList(forAllX, forAllY, subset));
 
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateSomeArrowAny(ExprBinary expr, Environment environment)
+  private SmtExpr translateSomeArrowAny(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -534,18 +534,18 @@ public class ExprBinaryTranslator
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
 
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateAnyArrowSome(ExprBinary expr, Environment environment)
+  private SmtExpr translateAnyArrowSome(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -573,18 +573,18 @@ public class ExprBinaryTranslator
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
 
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateOneArrowLone(ExprBinary expr, Environment environment)
+  private SmtExpr translateOneArrowLone(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -653,20 +653,20 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateSomeArrowLone(ExprBinary expr, Environment environment)
+  private SmtExpr translateSomeArrowLone(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -723,18 +723,18 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateAnyArrowLone(ExprBinary expr, Environment environment)
+  private SmtExpr translateAnyArrowLone(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -783,19 +783,19 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateLoneArrowLone(ExprBinary expr, Environment environment)
+  private SmtExpr translateLoneArrowLone(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -868,19 +868,19 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateLoneArrowOne(ExprBinary expr, Environment environment)
+  private SmtExpr translateLoneArrowOne(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -950,19 +950,19 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateLoneArrowSome(ExprBinary expr, Environment environment)
+  private SmtExpr translateLoneArrowSome(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -1023,18 +1023,18 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
 
-  private SmtExpr translateLoneArrowAny(ExprBinary expr, Environment environment)
+  private SmtExpr translateLoneArrowAny(ExprBinary expr, SmtEnv smtEnv)
   {
     SetSort sort = new SetSort(new TupleSort(AlloyUtils.getExprSorts(expr)));
     SmtVariable multiplicitySet = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
 
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
 
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(multiplicitySet.getVariable(), product);
@@ -1083,7 +1083,7 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllY);
     SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    environment.addAuxiliaryFormula(existsSet);
+    smtEnv.addAuxiliaryFormula(existsSet);
 
     return multiplicitySet.getVariable();
   }
@@ -1106,65 +1106,65 @@ public class ExprBinaryTranslator
     return SmtMultiArityExpr.Op.MKTUPLE.make(tupleElements);
   }
 
-  private SmtExpr translateImplies(ExprBinary expr, Environment environment)
+  private SmtExpr translateImplies(ExprBinary expr, SmtEnv smtEnv)
   {
-    Environment environmentA = new Environment(environment);
-    Environment environmentB = new Environment(environment);
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environmentA);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environmentB);
+    SmtEnv smtEnvA = new SmtEnv(smtEnv);
+    SmtEnv smtEnvB = new SmtEnv(smtEnv);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnvA);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(implies, environmentA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, environmentB);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(implies, smtEnvA);
+    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
-  private SmtExpr translateAnd(ExprBinary expr, Environment environment)
+  private SmtExpr translateAnd(ExprBinary expr, SmtEnv smtEnv)
   {
-    Environment environmentA = new Environment(environment);
-    Environment environmentB = new Environment(environment);
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environmentA);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environmentB);
+    SmtEnv smtEnvA = new SmtEnv(smtEnv);
+    SmtEnv smtEnvB = new SmtEnv(smtEnv);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnvA);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(and, environmentA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, environmentB);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(and, smtEnvA);
+    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
-  private SmtExpr translateOr(ExprBinary expr, Environment environment)
+  private SmtExpr translateOr(ExprBinary expr, SmtEnv smtEnv)
   {
-    Environment environmentA = new Environment(environment);
-    Environment environmentB = new Environment(environment);
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environmentA);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environmentB);
+    SmtEnv smtEnvA = new SmtEnv(smtEnv);
+    SmtEnv smtEnvB = new SmtEnv(smtEnv);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnvA);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     SmtExpr or = SmtMultiArityExpr.Op.OR.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(or, environmentA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, environmentB);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(or, smtEnvA);
+    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
-  private SmtExpr translateArrow(ExprBinary expr, Environment environment)
+  private SmtExpr translateArrow(ExprBinary expr, SmtEnv smtEnv)
   {
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
     SmtExpr product = SmtBinaryExpr.Op.PRODUCT.make(A, B);
     return product;
   }
 
-  private SmtExpr translatePlusPlus(ExprBinary expr, Environment environment)
+  private SmtExpr translatePlusPlus(ExprBinary expr, SmtEnv smtEnv)
   {
     int rightExprArity = expr.right.type().arity();
     if (rightExprArity == 1)
     {
       // ++ is like a single + with arity 1 (i.e. is like a union)
-      return translateSetOperation(expr, SmtBinaryExpr.Op.UNION, environment);
+      return translateSetOperation(expr, SmtBinaryExpr.Op.UNION, smtEnv);
     }
     else
     {
-      SmtExpr left = exprTranslator.translateExpr(expr.left, environment);
-      SmtExpr right = exprTranslator.translateExpr(expr.right, environment);
+      SmtExpr left = exprTranslator.translateExpr(expr.left, smtEnv);
+      SmtExpr right = exprTranslator.translateExpr(expr.right, smtEnv);
       SmtExpr join = right;
 
       for (int i = 0; i < rightExprArity - 1; ++i)
@@ -1185,7 +1185,7 @@ public class ExprBinaryTranslator
     }
   }
 
-  private SmtExpr translateDomainRestriction(ExprBinary expr, Environment environment)
+  private SmtExpr translateDomainRestriction(ExprBinary expr, SmtEnv smtEnv)
   {
     int arity = expr.right.type().arity();
 
@@ -1196,8 +1196,8 @@ public class ExprBinaryTranslator
     }
     else
     {
-      SmtExpr left = exprTranslator.translateExpr(expr.left, environment);
-      SmtExpr right = exprTranslator.translateExpr(expr.right, environment);
+      SmtExpr left = exprTranslator.translateExpr(expr.left, smtEnv);
+      SmtExpr right = exprTranslator.translateExpr(expr.right, smtEnv);
 
       // right type should be a set of tuples
       SetSort rightSort = (SetSort) right.getSort();
@@ -1219,7 +1219,7 @@ public class ExprBinaryTranslator
     }
   }
 
-  private SmtExpr translateRangeRestriction(ExprBinary expr, Environment environment)
+  private SmtExpr translateRangeRestriction(ExprBinary expr, SmtEnv smtEnv)
   {
     int arity = expr.left.type().arity();
 
@@ -1230,8 +1230,8 @@ public class ExprBinaryTranslator
     }
     else
     {
-      SmtExpr left = exprTranslator.translateExpr(expr.left, environment);
-      SmtExpr right = exprTranslator.translateExpr(expr.right, environment);
+      SmtExpr left = exprTranslator.translateExpr(expr.left, smtEnv);
+      SmtExpr right = exprTranslator.translateExpr(expr.right, smtEnv);
 
       // left type should be a set of tuples
       SetSort leftSort = (SetSort) left.getSort();
@@ -1255,25 +1255,25 @@ public class ExprBinaryTranslator
     }
   }
 
-  private SmtExpr translateComparison(ExprBinary expr, SmtBinaryExpr.Op op, Environment environment)
+  private SmtExpr translateComparison(ExprBinary expr, SmtBinaryExpr.Op op, SmtEnv smtEnv)
   {
     // Right hand side is a expression and right hand side is a constant
     if (((expr.left instanceof ExprUnary) && ((ExprUnary) expr.left).op == ExprUnary.Op.CARDINALITY &&
         (expr.right instanceof ExprConstant)))
     {
-      return translateCardinality(expr, op, environment);
+      return translateCardinality(expr, op, smtEnv);
     }
     else if ((expr.right instanceof ExprUnary) && ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY &&
         (expr.left instanceof ExprConstant))
     {
-      return translateCardinality(expr, op, environment);
+      return translateCardinality(expr, op, smtEnv);
     }
     else
     {
-      SmtExpr leftExpr = exprTranslator.translateExpr(expr.left, environment);
-      SmtExpr rightExpr = exprTranslator.translateExpr(expr.right, environment);
+      SmtExpr leftExpr = exprTranslator.translateExpr(expr.left, smtEnv);
+      SmtExpr rightExpr = exprTranslator.translateExpr(expr.right, smtEnv);
       SmtExpr comparisonExpr = getComparison(op, leftExpr, rightExpr);
-      return exprTranslator.translateAuxiliaryFormula(comparisonExpr, environment);
+      return exprTranslator.translateAuxiliaryFormula(comparisonExpr, smtEnv);
     }
   }
 
@@ -1302,7 +1302,7 @@ public class ExprBinaryTranslator
     return exists;
   }
 
-  private SmtExpr translateEqComparison(ExprBinary expr, SmtBinaryExpr.Op op, Environment environment)
+  private SmtExpr translateEqComparison(ExprBinary expr, SmtBinaryExpr.Op op, SmtEnv smtEnv)
   {
 
     if ((expr.left instanceof ExprUnary &&
@@ -1311,13 +1311,13 @@ public class ExprBinaryTranslator
             ((ExprUnary) expr.right).op == ExprUnary.Op.CARDINALITY)
     )
     {
-      return translateCardinality(expr, op, environment);
+      return translateCardinality(expr, op, smtEnv);
     }
 
-    Environment environmentA = new Environment(environment);
-    Environment environmentB = new Environment(environment);
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environmentA);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environmentB);
+    SmtEnv smtEnvA = new SmtEnv(smtEnv);
+    SmtEnv smtEnvB = new SmtEnv(smtEnv);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnvA);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
 
     A = TranslatorUtils.makeRelation(A);
     B = TranslatorUtils.makeRelation(B);
@@ -1334,12 +1334,12 @@ public class ExprBinaryTranslator
 
     SmtExpr equality = SmtBinaryExpr.Op.EQ.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(equality, environmentA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, environmentB);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(equality, smtEnvA);
+    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
-  private SmtExpr translateCardinality(ExprBinary expr, SmtBinaryExpr.Op op, Environment environment)
+  private SmtExpr translateCardinality(ExprBinary expr, SmtBinaryExpr.Op op, SmtEnv smtEnv)
   {
     // CVC4 doesn't support comparison  between 2 cardinality expressions
     if
@@ -1375,7 +1375,7 @@ public class ExprBinaryTranslator
     )
     {
       int n = ((ExprConstant) expr.right).num;
-      SmtExpr equality = translateCardinalityComparison((ExprUnary) expr.left, n, op, environment);
+      SmtExpr equality = translateCardinalityComparison((ExprUnary) expr.left, n, op, smtEnv);
       return equality;
     }
 
@@ -1385,17 +1385,17 @@ public class ExprBinaryTranslator
     )
     {
       int n = ((ExprConstant) expr.left).num;
-      SmtExpr equality = translateCardinalityComparison((ExprUnary) expr.right, n, op, environment);
+      SmtExpr equality = translateCardinalityComparison((ExprUnary) expr.right, n, op, smtEnv);
       return equality;
     }
 
     throw new UnsupportedOperationException();
   }
 
-  private SmtExpr translateCardinalityComparison(ExprUnary expr, int n, SmtBinaryExpr.Op op, Environment environment)
+  private SmtExpr translateCardinalityComparison(ExprUnary expr, int n, SmtBinaryExpr.Op op, SmtEnv smtEnv)
   {
-    Environment newEnvironment = new Environment(environment);
-    SmtExpr setExpr = exprTranslator.translateExpr(expr.sub, newEnvironment);
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    SmtExpr setExpr = exprTranslator.translateExpr(expr.sub, newSmtEnv);
     SetSort setSort = (SetSort) setExpr.getSort();
     Sort elementSort = setSort.elementSort;
 
@@ -1411,13 +1411,13 @@ public class ExprBinaryTranslator
         if (n < 0)
         {
           // impossible
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newSmtEnv);
         }
 
         if (n == 0)
         {
           // empty set
-          return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n, elementSort);
@@ -1425,7 +1425,7 @@ public class ExprBinaryTranslator
         SmtExpr equalExpr = SmtBinaryExpr.Op.EQ.make(setExpr, cardinalitySet);
         SmtExpr andExpr = makeDistinct(equalExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
       }
 
       case LT:
@@ -1433,13 +1433,13 @@ public class ExprBinaryTranslator
         if (n <= 0)
         {
           // impossible
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newSmtEnv);
         }
 
         if (n == 1)
         {
           // empty set
-          return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n - 1, elementSort);
@@ -1447,7 +1447,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(setExpr, cardinalitySet);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
       }
 
       case LTE:
@@ -1455,13 +1455,13 @@ public class ExprBinaryTranslator
         if (n <= -1)
         {
           // impossible
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newSmtEnv);
         }
 
         if (n == 0)
         {
           // empty set
-          return exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n, elementSort);
@@ -1469,7 +1469,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(setExpr, cardinalitySet);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
       }
 
       case GT:
@@ -1477,12 +1477,12 @@ public class ExprBinaryTranslator
         if (n <= -1)
         {
           // valid
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newSmtEnv);
         }
         if (n == 0)
         {
           // not empty
-          return exprTranslator.translateAuxiliaryFormula(notEmpty, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(notEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n + 1, elementSort);
@@ -1490,7 +1490,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(cardinalitySet, setExpr);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
       }
 
       case GTE:
@@ -1498,13 +1498,13 @@ public class ExprBinaryTranslator
         if (n <= 0)
         {
           // valid
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newSmtEnv);
         }
 
         if (n == 1)
         {
           // not empty
-          return exprTranslator.translateAuxiliaryFormula(notEmpty, newEnvironment);
+          return exprTranslator.translateAuxiliaryFormula(notEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n, elementSort);
@@ -1512,7 +1512,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(cardinalitySet, setExpr);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
       }
 
       default:
@@ -1569,10 +1569,10 @@ public class ExprBinaryTranslator
     return vars;
   }
 
-  private SmtExpr translateSetOperation(ExprBinary expr, SmtBinaryExpr.Op op, Environment environment)
+  private SmtExpr translateSetOperation(ExprBinary expr, SmtBinaryExpr.Op op, SmtEnv smtEnv)
   {
-    SmtExpr left = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr right = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr left = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr right = exprTranslator.translateExpr(expr.right, smtEnv);
 
     if (left instanceof Variable &&
         (!(((Variable) left).getDeclaration().getSort() instanceof SetSort)))
@@ -1599,14 +1599,14 @@ public class ExprBinaryTranslator
     return operation;
   }
 
-  private SmtExpr translateSubsetOperation(ExprBinary expr, Environment environment)
+  private SmtExpr translateSubsetOperation(ExprBinary expr, SmtEnv smtEnv)
   {
-    Environment environmentA = new Environment(environment);
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environmentA);
+    SmtEnv smtEnvA = new SmtEnv(smtEnv);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnvA);
     A = exprTranslator.translator.handleIntConstant(A);
 
-    Environment environmentB = new Environment(environmentA);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environmentB);
+    SmtEnv smtEnvB = new SmtEnv(smtEnvA);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     B = exprTranslator.translator.handleIntConstant(B);
 
     // left sort | right sort | Translation
@@ -1633,25 +1633,25 @@ public class ExprBinaryTranslator
       translation = SmtBinaryExpr.Op.MEMBER.make(A, B);
     }
 
-    translation = exprTranslator.translateAuxiliaryFormula(translation, environmentB);
+    translation = exprTranslator.translateAuxiliaryFormula(translation, smtEnvB);
 
     return translation;
   }
 
-  private SmtExpr translateJoin(ExprBinary expr, Environment environment)
+  private SmtExpr translateJoin(ExprBinary expr, SmtEnv smtEnv)
   {
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
     A = TranslatorUtils.makeRelation(A);
     B = TranslatorUtils.makeRelation(B);
     SmtBinaryExpr join = SmtBinaryExpr.Op.JOIN.make(A, B);
     return join;
   }
 
-  public SmtExpr translateArithmetic(ExprBinary expr, SmtBinaryExpr.Op op, Environment environment)
+  public SmtExpr translateArithmetic(ExprBinary expr, SmtBinaryExpr.Op op, SmtEnv smtEnv)
   {
-    SmtExpr A = exprTranslator.translateExpr(expr.left, environment);
-    SmtExpr B = exprTranslator.translateExpr(expr.right, environment);
+    SmtExpr A = exprTranslator.translateExpr(expr.left, smtEnv);
+    SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnv);
     A = convertIntConstantToSet(A);
 
     B = convertIntConstantToSet(B);
@@ -1694,7 +1694,7 @@ public class ExprBinaryTranslator
       SmtExpr and = SmtMultiArityExpr.Op.AND.make(equal, singletonA, singletonB);
 
       SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(and, x, y, z);
-      environment.addAuxiliaryFormula(exists);
+      smtEnv.addAuxiliaryFormula(exists);
       return z.getVariable();
     }
 
@@ -1727,7 +1727,7 @@ public class ExprBinaryTranslator
 
     SmtExpr axioms = SmtMultiArityExpr.Op.AND.make(axiom1, axiom2);
     SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(axioms, result);
-    environment.addAuxiliaryFormula(exists);
+    smtEnv.addAuxiliaryFormula(exists);
 
     return resultSmtExpr;
   }

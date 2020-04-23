@@ -2,7 +2,7 @@ module examples/case_studies/ins
 
 /*
  * Models an Intentional Naming System (INS), a scheme for
- * dynamic resource discovery in a dynamic environment.
+ * dynamic resource discovery in a dynamic smtEnv.
  *
  * For a detailed description, see:
  *   http://sdg.lcs.mit.edu/pubs/2000/INS_ASE00.pdf

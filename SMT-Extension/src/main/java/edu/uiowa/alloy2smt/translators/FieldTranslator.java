@@ -12,7 +12,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.*;
@@ -195,7 +195,7 @@ public class FieldTranslator
     Decl decl = new Decl(null, null, null, Collections.singletonList(zis), oneOfSig);
     Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), exprLet);
 
-    SmtExpr multiplicity = translator.exprTranslator.translateExpr(all, new Environment());
+    SmtExpr multiplicity = translator.exprTranslator.translateExpr(all, new SmtEnv());
     Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(field.pos), field.toString() + " multiplicity", multiplicity);
     translator.smtScript.addAssertion(assertion);
 

@@ -19,7 +19,7 @@ import edu.uiowa.alloy2smt.mapping.MappingType;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -351,7 +351,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Expr oneOfInt = ExprUnary.Op.ONEOF.make(null, Sig.SIGINT);
     Decl decl = new Decl(null, null, null, Collections.singletonList(x), oneOfInt);
     Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
-    SmtExpr smtExpr = exprTranslator.translateExpr(all, new Environment());
+    SmtExpr smtExpr = exprTranslator.translateExpr(all, new SmtEnv());
     Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(command.pos),
         "Scope " + command.bitwidth + " Int", smtExpr);
     assertions.add(assertion);
@@ -552,21 +552,21 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
   private FunctionDefinition translateFunc(Func func)
   {
-    Environment environment = new Environment();
+    SmtEnv smtEnv = new SmtEnv();
     List<SmtVariable> arguments = new ArrayList<>();
     for (Decl decl : func.decls)
     {
-      List<SmtVariable> variables = exprTranslator.translateDecl(decl, environment);
+      List<SmtVariable> variables = exprTranslator.translateDecl(decl, smtEnv);
       List<SmtVariable> setVariables = convertToSetVariables(variables);
       arguments.addAll(setVariables);
     }
     // add arguments to function environment
     for (SmtVariable variable : arguments)
     {
-      environment.put(variable.getName(), variable.getVariable());
+      smtEnv.put(variable.getName(), variable.getVariable());
     }
 
-    SmtExpr smtExpr = exprTranslator.translateExpr(func.getBody(), environment);
+    SmtExpr smtExpr = exprTranslator.translateExpr(func.getBody(), smtEnv);
 
     FunctionDefinition function = new FunctionDefinition(func.label, arguments, smtExpr.getSort(), smtExpr, true);
 

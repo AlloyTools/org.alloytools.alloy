@@ -1,7 +1,7 @@
 package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.ExprLet;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.smtAst.SmtExpr;
 import edu.uiowa.smt.smtAst.SmtLetExpr;
 import edu.uiowa.smt.smtAst.SmtVariable;
@@ -20,18 +20,18 @@ public class ExprLetTranslator
     this.translator = exprTranslator.translator;
   }
 
-  SmtExpr translateExprLet(ExprLet exprLet, Environment environment)
+  SmtExpr translateExprLet(ExprLet exprLet, SmtEnv smtEnv)
   {
-    SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, environment);
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, smtEnv);
 
     SmtVariable declaration = new SmtVariable(exprLet.var.label,
         smtExpr.getSort(), true);
     Map<SmtVariable, SmtExpr> map = new HashMap<>();
     map.put(declaration, smtExpr);
 
-    Environment newEnvironment = new Environment(environment);
-    newEnvironment.put(declaration.getName(), declaration.getVariable());
-    SmtExpr body = exprTranslator.translateExpr(exprLet.sub, newEnvironment);
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    newSmtEnv.put(declaration.getName(), declaration.getVariable());
+    SmtExpr body = exprTranslator.translateExpr(exprLet.sub, newSmtEnv);
     SmtExpr let = new SmtLetExpr(map, body);
     return let;
   }

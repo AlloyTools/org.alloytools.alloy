@@ -16,7 +16,7 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -367,7 +367,7 @@ public class SignatureTranslator
     // Translate facts on signatures
     for (Map.Entry<Sig, Expr> sigFact : translator.sigFacts.entrySet())
     {
-      Environment environment = new Environment();
+      SmtEnv smtEnv = new SmtEnv();
       Expr expr = sigFact.getValue();
 
       // handle total order operator differently
@@ -375,7 +375,7 @@ public class SignatureTranslator
           ((ExprUnary) expr).sub instanceof ExprList &&
           ((ExprList) ((ExprUnary) expr).sub).op == ExprList.Op.TOTALORDER)
       {
-        translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), environment);
+        translateTotalOrder(sigFact.getKey(), ((ExprList) ((ExprUnary) expr).sub), smtEnv);
         this.translatedSigFacts.add(sigFact);
       }
     }
@@ -399,10 +399,10 @@ public class SignatureTranslator
       boundVariables.put(declaration, translator.signaturesMap.get(sigFact.getKey()).getVariable());
       SmtExpr member = AlloyUtils.getMemberExpression(boundVariables, 0);
       declaration.setConstraint(member);
-      Environment environment = new Environment();
-      environment.put(name, declaration.getVariable());
+      SmtEnv smtEnv = new SmtEnv();
+      smtEnv.put(name, declaration.getVariable());
 
-      SmtExpr bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), environment);
+      SmtExpr bodyExpr = translator.exprTranslator.translateExpr(sigFact.getValue(), smtEnv);
 
       SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(member, bodyExpr);
       SmtExpr forAll = SmtQtExpr.Op.FORALL.make(implies, new ArrayList<>(boundVariables.keySet()));
@@ -412,7 +412,7 @@ public class SignatureTranslator
     }
   }
 
-  private void translateTotalOrder(Sig ordSig, ExprList exprList, Environment environment)
+  private void translateTotalOrder(Sig ordSig, ExprList exprList, SmtEnv smtEnv)
   {
     if (exprList.args.size() != 3)
     {
@@ -430,8 +430,8 @@ public class SignatureTranslator
 
     FunctionDeclaration mapping = defineInjectiveMapping(mappingName, AbstractTranslator.atomSort, translator.intSort);
 
-    SmtExpr setSmtExpr = translator.exprTranslator.translateExpr(set, environment);
-    SmtExpr firstSmtExpr = translator.exprTranslator.translateExpr(first, environment);
+    SmtExpr setSmtExpr = translator.exprTranslator.translateExpr(set, smtEnv);
+    SmtExpr firstSmtExpr = translator.exprTranslator.translateExpr(first, smtEnv);
 
     // ordering/first
     SmtExpr firstSet = defineFirstElement(prefix, firstSmtExpr, mapping, setSmtExpr);

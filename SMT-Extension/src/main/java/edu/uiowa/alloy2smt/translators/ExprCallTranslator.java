@@ -4,10 +4,9 @@ import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.Func;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.smtAst.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class ExprCallTranslator
     this.translator = exprTranslator.translator;
   }
 
-  SmtExpr translateExprCall(ExprCall exprCall, Environment environment)
+  SmtExpr translateExprCall(ExprCall exprCall, SmtEnv smtEnv)
   {
     String funcName = exprCall.fun.label;
 //
@@ -33,33 +32,33 @@ public class ExprCallTranslator
     if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
     {
       Expr expr = ExprBinary.Op.IPLUS.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
-      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.PLUS, environment);
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.PLUS, smtEnv);
     }
     else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
     {
       Expr expr = ExprBinary.Op.IMINUS.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
-      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MINUS, environment);
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MINUS, smtEnv);
     }
     else if (funcName.equals("integer/mul"))
     {
       Expr expr = ExprBinary.Op.MUL.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
-      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MULTIPLY, environment);
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MULTIPLY, smtEnv);
     }
     else if (funcName.equals("integer/div"))
     {
       Expr expr = ExprBinary.Op.DIV.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
-      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.DIVIDE, environment);
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.DIVIDE, smtEnv);
     }
     else if (funcName.equals("integer/rem"))
     {
       Expr expr = ExprBinary.Op.REM.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
-      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MOD, environment);
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MOD, smtEnv);
     }
 
-    return buildSmtCallExpr(exprCall, environment);
+    return buildSmtCallExpr(exprCall, smtEnv);
   }
 
-  private SmtExpr buildSmtCallExpr(ExprCall exprCall, Environment environment)
+  private SmtExpr buildSmtCallExpr(ExprCall exprCall, SmtEnv smtEnv)
   {
     Func func = exprCall.fun;
 
@@ -69,7 +68,7 @@ public class ExprCallTranslator
 
     for (int i = 0; i < exprCall.args.size(); i++)
     {
-      SmtExpr expr = exprTranslator.translateExpr(exprCall.args.get(i), environment);
+      SmtExpr expr = exprTranslator.translateExpr(exprCall.args.get(i), smtEnv);
       if (function.getSort(i) instanceof TupleSort)
       {
         expr = SmtUnaryExpr.Op.CHOOSE.make(expr);

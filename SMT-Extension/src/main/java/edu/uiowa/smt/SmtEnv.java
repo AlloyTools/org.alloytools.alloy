@@ -7,21 +7,21 @@ import edu.uiowa.smt.smtAst.SmtVariable;
 
 import java.util.*;
 
-public class Environment
+public class SmtEnv
 {
   private Map<String, SmtExpr> variablesMap = new HashMap<>();
-  private Environment parent;
+  private SmtEnv parent;
   //ToDo: review making this auxiliary formula more general
   private SmtQtExpr auxiliaryFormula = null;
 
   // top level environment
-  public Environment()
+  public SmtEnv()
   {
     parent = null;
     variablesMap = new HashMap<>();
   }
 
-  public Environment(Environment parent)
+  public SmtEnv(SmtEnv parent)
   {
     this.parent = parent;
   }
@@ -41,34 +41,34 @@ public class Environment
 
   public SmtExpr get(String key)
   {
-    Environment currentEnvironment = this;
-    while (currentEnvironment != null)
+    SmtEnv currentSmtEnv = this;
+    while (currentSmtEnv != null)
     {
-      SmtExpr value = currentEnvironment.variablesMap.get(key);
+      SmtExpr value = currentSmtEnv.variablesMap.get(key);
       if (value != null)
       {
         return value;
       }
-      currentEnvironment = currentEnvironment.parent;
+      currentSmtEnv = currentSmtEnv.parent;
     }
     throw new RuntimeException(String.format("Can not find the variable %s in the environment", key));
   }
 
   public boolean containsKey(String key)
   {
-    Environment currentEnvironment = this;
-    while (currentEnvironment != null)
+    SmtEnv currentSmtEnv = this;
+    while (currentSmtEnv != null)
     {
-      if (currentEnvironment.variablesMap.containsKey(key))
+      if (currentSmtEnv.variablesMap.containsKey(key))
       {
         return true;
       }
-      currentEnvironment = currentEnvironment.parent;
+      currentSmtEnv = currentSmtEnv.parent;
     }
     return false;
   }
 
-  public Environment getParent()
+  public SmtEnv getParent()
   {
     return parent;
   }
@@ -78,15 +78,15 @@ public class Environment
     return getVariablesAuxiliary(this);
   }
 
-  private LinkedHashMap<String, SmtExpr> getVariablesAuxiliary(Environment environment)
+  private LinkedHashMap<String, SmtExpr> getVariablesAuxiliary(SmtEnv smtEnv)
   {
-    if (environment.parent == null)
+    if (smtEnv.parent == null)
     {
-      return new LinkedHashMap<>(environment.variablesMap);
+      return new LinkedHashMap<>(smtEnv.variablesMap);
     }
 
-    LinkedHashMap<String, SmtExpr> map = getVariablesAuxiliary(environment.parent);
-    map.putAll(environment.variablesMap);
+    LinkedHashMap<String, SmtExpr> map = getVariablesAuxiliary(smtEnv.parent);
+    map.putAll(smtEnv.variablesMap);
     return map;
   }
 

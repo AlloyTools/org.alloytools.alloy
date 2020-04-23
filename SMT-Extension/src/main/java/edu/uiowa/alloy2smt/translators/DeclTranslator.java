@@ -4,7 +4,7 @@ import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprUnary;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.ArrayList;
@@ -22,24 +22,24 @@ public class DeclTranslator
     this.translator = exprTranslator.translator;
   }
 
-  public List<SmtVariable> translateDecls(List<Decl> decls, Environment environment)
+  public List<SmtVariable> translateDecls(List<Decl> decls, SmtEnv smtEnv)
   {
     List<SmtVariable> variables = new ArrayList<>();
     for (Decl decl: decls)
     {
-      variables.addAll(translateDecl(decl, environment));
+      variables.addAll(translateDecl(decl, smtEnv));
     }
     return variables;
   }
 
-  public List<SmtVariable> translateDecl(Decl decl, Environment environment)
+  public List<SmtVariable> translateDecl(Decl decl, SmtEnv smtEnv)
   {
     List<SmtVariable> variables = new ArrayList<>();
 
     for (ExprHasName name : decl.names)
     {
       Decl individualDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2, Collections.singletonList(name), decl.expr);
-      variables.add(translateIndividualDecl(individualDecl, environment));
+      variables.add(translateIndividualDecl(individualDecl, smtEnv));
     }
 
     //ToDo: disjoint
@@ -49,13 +49,13 @@ public class DeclTranslator
     // add variables to the environment
     for (SmtVariable variable: variables)
     {
-      environment.put(variable.getName(), variable.getVariable());
+      smtEnv.put(variable.getName(), variable.getVariable());
     }
 
     return variables;
   }
 
-  public SmtVariable translateIndividualDecl(Decl decl, Environment environment)
+  public SmtVariable translateIndividualDecl(Decl decl, SmtEnv smtEnv)
   {
     ExprHasName name = decl.names.get(0);
     Expr expr = decl.expr;
@@ -65,7 +65,7 @@ public class DeclTranslator
       expr = ((ExprUnary) expr).sub;
     }
 
-    SmtExpr set = exprTranslator.translateExpr(expr, environment);
+    SmtExpr set = exprTranslator.translateExpr(expr, smtEnv);
     SetSort setSort = (SetSort) set.getSort();
     Sort sort = setSort;
 

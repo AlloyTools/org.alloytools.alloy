@@ -2,7 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.*;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
@@ -24,35 +24,35 @@ public class ExprQtTranslator
     this.translator = exprTranslator.translator;
   }
 
-  SmtExpr translateExprQt(ExprQt exprQt, Environment environment)
+  SmtExpr translateExprQt(ExprQt exprQt, SmtEnv smtEnv)
   {
     // create a new scope for quantified variables
-    Environment newEnvironment = new Environment(environment);
-    List<SmtVariable> smtVariables = exprTranslator.translateDecls(exprQt.decls, newEnvironment);
-    SmtExpr constraints = getDisjointConstraints(exprQt, newEnvironment);
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    List<SmtVariable> smtVariables = exprTranslator.translateDecls(exprQt.decls, newSmtEnv);
+    SmtExpr constraints = getDisjointConstraints(exprQt, newSmtEnv);
 
     // translate the body of the quantified expression
-    SmtExpr body = exprTranslator.translateExpr(exprQt.sub, newEnvironment);
+    SmtExpr body = exprTranslator.translateExpr(exprQt.sub, newSmtEnv);
     switch (exprQt.op)
     {
       case ALL:
-        return translateAllQuantifier(body, smtVariables, newEnvironment, constraints);
+        return translateAllQuantifier(body, smtVariables, newSmtEnv, constraints);
       case NO:
-        return translateNoQuantifier(body, smtVariables, newEnvironment, constraints);
+        return translateNoQuantifier(body, smtVariables, newSmtEnv, constraints);
       case SOME:
-        return translateSomeQuantifier(body, smtVariables, newEnvironment, constraints);
+        return translateSomeQuantifier(body, smtVariables, newSmtEnv, constraints);
       case ONE:
-        return translateOneQuantifier(body, smtVariables, newEnvironment, constraints);
+        return translateOneQuantifier(body, smtVariables, newSmtEnv, constraints);
       case LONE:
-        return translateLoneQuantifier(body, smtVariables, newEnvironment, constraints);
+        return translateLoneQuantifier(body, smtVariables, newSmtEnv, constraints);
       case COMPREHENSION:
-        return translateComprehension(exprQt, body, smtVariables, newEnvironment);
+        return translateComprehension(exprQt, body, smtVariables, newSmtEnv);
       default:
         throw new UnsupportedOperationException();
     }
   }
 
-  private SmtExpr getDisjointConstraints(ExprQt exprQt, Environment environment)
+  private SmtExpr getDisjointConstraints(ExprQt exprQt, SmtEnv smtEnv)
   {
     SmtExpr disjointConstraints = BoolConstant.True;
 
@@ -65,8 +65,8 @@ public class ExprQtTranslator
         {
           for (int j = i + 1; j < decl.names.size(); j++)
           {
-            SmtExpr variableI = environment.get(decl.names.get(i).label);
-            SmtExpr variableJ = environment.get(decl.names.get(j).label);
+            SmtExpr variableI = smtEnv.get(decl.names.get(i).label);
+            SmtExpr variableJ = smtEnv.get(decl.names.get(j).label);
 
             if (variableJ.getSort() instanceof UninterpretedSort)
             {
@@ -90,7 +90,7 @@ public class ExprQtTranslator
     return disjointConstraints;
   }
 
-  private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, List<SmtVariable> smtVariables, Environment environment)
+  private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, List<SmtVariable> smtVariables, SmtEnv smtEnv)
   {
     // {x: e1, y: e2, ... | f} is translated into
     // declare-fun comprehension(freeVariables): (e1 product e2 product ...)
@@ -110,7 +110,7 @@ public class ExprQtTranslator
 
     // determine the free variables for the set comprehension from the environment, and
     // add theme as arguments to the comprehension function
-    LinkedHashMap<String, SmtExpr> argumentsMap = environment.getParent().getVariables();
+    LinkedHashMap<String, SmtExpr> argumentsMap = smtEnv.getParent().getVariables();
     List<Sort> argumentSorts = new ArrayList<>();
     List<SmtExpr> arguments = new ArrayList<>();
     List<SmtVariable> quantifiedArguments = new ArrayList<>();
@@ -293,7 +293,7 @@ public class ExprQtTranslator
   }
 
   private SmtExpr translateAllQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
-                                         Environment environment, SmtExpr constraints)
+                                         SmtEnv smtEnv, SmtExpr constraints)
   {
     // all x: e1, y: e2, ... | f is translated into
     // forall x, y,... (x in e1 and y in e2 and ... and constraints implies f)
@@ -301,31 +301,31 @@ public class ExprQtTranslator
 
     SmtExpr multiplicity = getMemberOrSubsetExpressions(smtVariables);
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints);
-    SmtQtExpr exists = environment.getAuxiliaryFormula();
+    SmtQtExpr exists = smtEnv.getAuxiliaryFormula();
 
     if (exists != null)
     {
       SmtExpr and2 = SmtMultiArityExpr.Op.AND.make(exists.getExpression(), and);
       exists = SmtQtExpr.Op.EXISTS.make(and2, exists.getVariables());
-      environment.clearAuxiliaryFormula();
+      smtEnv.clearAuxiliaryFormula();
     }
 
     body = SmtBinaryExpr.Op.IMPLIES.make(exists, body);
     SmtExpr forAll = SmtQtExpr.Op.FORALL.make(body, smtVariables);
 
-    SmtExpr translation = exprTranslator.translateAuxiliaryFormula(forAll, environment);
+    SmtExpr translation = exprTranslator.translateAuxiliaryFormula(forAll, smtEnv);
     return translation;
   }
 
   private SmtExpr translateNoQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
-                                        Environment environment, SmtExpr multiplicityConstraints)
+                                        SmtEnv smtEnv, SmtExpr multiplicityConstraints)
   {
     SmtExpr notBody = SmtUnaryExpr.Op.NOT.make(body);
-    return translateAllQuantifier(notBody, smtVariables, environment, multiplicityConstraints);
+    return translateAllQuantifier(notBody, smtVariables, smtEnv, multiplicityConstraints);
   }
 
   private SmtExpr translateSomeQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
-                                          Environment environment, SmtExpr constraints)
+                                          SmtEnv smtEnv, SmtExpr constraints)
   {
 
     // some x: e1, y: e2, ... | f is translated into
@@ -334,7 +334,7 @@ public class ExprQtTranslator
     SmtExpr multiplicity = getMemberOrSubsetExpressions(smtVariables);
     SmtMultiArityExpr and = SmtMultiArityExpr.Op.AND.make(multiplicity, constraints, body);
 
-    SmtQtExpr existsSet = environment.getAuxiliaryFormula();
+    SmtQtExpr existsSet = smtEnv.getAuxiliaryFormula();
     if (existsSet != null)
     {
       List<SmtExpr> smtExprs = new ArrayList<>(and.getExpressions());
@@ -365,7 +365,7 @@ public class ExprQtTranslator
   }
 
   private SmtExpr translateOneQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
-                                         Environment environment, SmtExpr constraints)
+                                         SmtEnv smtEnv, SmtExpr constraints)
   {
     // one x: e1, y: e2, ... | f(x, y, ...) is translated into
     // exists x, y, ... ( x in e1 and y in e2 and ... and constraints(x, y, ...) and f(x, y, ...) and
@@ -408,14 +408,14 @@ public class ExprQtTranslator
   }
 
   private SmtExpr translateLoneQuantifier(SmtExpr body, List<SmtVariable> smtVariables,
-                                          Environment environment, SmtExpr constraints)
+                                          SmtEnv smtEnv, SmtExpr constraints)
   {
     // lone ... | f is translated into
     // (all ... | not f)  or (one ... | f)
 
     SmtExpr notBody = SmtUnaryExpr.Op.NOT.make(body);
-    SmtExpr allNot = translateAllQuantifier(notBody, smtVariables, environment, constraints);
-    SmtExpr one = translateOneQuantifier(body, smtVariables, environment, constraints);
+    SmtExpr allNot = translateAllQuantifier(notBody, smtVariables, smtEnv, constraints);
+    SmtExpr one = translateOneQuantifier(body, smtVariables, smtEnv, constraints);
     SmtExpr or = SmtMultiArityExpr.Op.OR.make(allNot, one);
     return or;
   }
