@@ -195,7 +195,7 @@ public class ExprUnaryTranslator
     private SmtExpr translateOneOf(ExprUnary expr, Environment environment)
     {
         // expression has pattern (one A) where type of A is (Set E)
-        // the translation is (Singleton x) where
+        // the translation returns the set (Singleton x) where x satisfies
         // (exists ((x E)) (member x A))
 
         SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
@@ -217,7 +217,7 @@ public class ExprUnaryTranslator
     private SmtExpr translateLoneOf(ExprUnary expr, Environment environment)
     {
         // expression has pattern (lone A) where type of A is (Set E)
-        // the translation is
+        // the translation returns a set which satisfies
         // (exists ((S (Set E)))
         //      (and
         //          (subset S A)
@@ -246,7 +246,7 @@ public class ExprUnaryTranslator
     private SmtExpr translateSomeOf(ExprUnary expr, Environment environment)
     {
         // expression has pattern (some A) where type of A is (Set E)
-        // the translation is
+        // the translation returns a set which satisfies
         // (exists ((S (Set E)))
         //      (and
         //          (subset S A)
