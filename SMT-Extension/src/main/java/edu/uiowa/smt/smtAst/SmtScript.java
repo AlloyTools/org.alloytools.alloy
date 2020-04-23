@@ -190,4 +190,11 @@ public class SmtScript extends SmtModel
     prettyPrinter.visit(this);
     return prettyPrinter.getSmtLib();
   }
+
+  public String print(SmtSettings settings)
+  {
+    SmtLibPrettyPrinter prettyPrinter = new SmtLibPrettyPrinter(settings);
+    prettyPrinter.visit(this);
+    return prettyPrinter.getSmtLib();
+  }
 }

@@ -27,6 +27,11 @@ public class Translation
     this.alloySettings = alloySettings;
   }
 
+  public AlloySettings getAlloySettings()
+  {
+    return alloySettings;
+  }
+
   /**
    * @return a mapper that maps alloy signatures and fields into their
    * corresponding functions in the generated smt script

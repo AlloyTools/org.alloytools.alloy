@@ -1,9 +1,11 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.FunctionDefinition;
+import edu.uiowa.smt.smtAst.SmtSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,13 +48,16 @@ public class ModuleTests
   @Test
   public void orderingModule2() throws Exception
   {
+    AlloySettings alloySettings = AlloySettings.Default;
+    alloySettings.putSolverOption(SmtSettings.TLIMIT, "300000");
+
     String alloy =
         "open util/ordering[A] as ordA\n" +
             "sig A {}\n" +
             "one sig A0, A1, A2 extends A{}\n" +
             "fact {nexts [A0] = A1 + A2}";
 
-    List<CommandResult> results = AlloyUtils.runAlloyString(alloy, false);
+    List<CommandResult> results = AlloyUtils.runAlloyString(alloy, false, alloySettings);
     assertEquals("sat", results.get(0).satResult);
     FunctionDefinition a = AlloyUtils.getFunctionDefinition(results.get(0), "this/A");
     Set<String> aAtoms = TranslatorUtils.getAtomSet(a);

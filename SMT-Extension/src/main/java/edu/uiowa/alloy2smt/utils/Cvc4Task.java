@@ -19,7 +19,7 @@ public class Cvc4Task
   public List<CommandResult> run(Translation translation, boolean includeScope) throws Exception
   {
     List<CommandResult> commandResults = new ArrayList<>();
-    String smtScript = translation.getOptimizedSmtScript().toString();
+    String smtScript = translation.getOptimizedSmtScript().print(translation.getAlloySettings());
     if (smtScript != null)
     {
       cvc4Process = Cvc4Process.start();

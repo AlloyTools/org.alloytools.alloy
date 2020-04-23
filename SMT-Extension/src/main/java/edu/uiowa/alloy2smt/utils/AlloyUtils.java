@@ -17,6 +17,15 @@ public class AlloyUtils
 {
   public static AlloySettings alloySettings = AlloySettings.Default;
 
+  public static List<CommandResult> runAlloyString(String alloy, boolean includeScope, AlloySettings alloySettings) throws Exception
+  {
+    alloySettings.includeCommandScope = includeScope;
+    Translation translation = Utils.translate(alloy, alloySettings);
+
+    Cvc4Task task = new Cvc4Task();
+    return task.run(translation, includeScope);
+  }
+
   public static List<CommandResult> runAlloyString(String alloy, boolean includeScope) throws Exception
   {
     alloySettings.includeCommandScope = includeScope;

@@ -40,7 +40,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
   Map<Sig, Expr> sigFacts;
   Map<Sig, FunctionDeclaration> signaturesMap;
   Map<Sig.Field, FunctionDeclaration> fieldsMap;
-  Map<Func, FunctionDefinition> funcMap;
   Map<Expr, Integer> sigToIdMap;
   List<Expr> facts;
 
@@ -59,7 +58,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     this.arithmeticOperations = new HashMap<>();
     this.signaturesMap = new HashMap<>();
     this.functionsMap = new HashMap<>();
-    this.funcMap = new HashMap<>();
     this.fieldsMap = new HashMap<>();
     this.sigFacts = new HashMap<>();
     this.sigToIdMap = new HashMap<>();
@@ -528,11 +526,10 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
   public FunctionDefinition getFuncTranslation(Func func)
   {
-    FunctionDefinition function = funcMap.get(func);
+    FunctionDefinition function = (FunctionDefinition) functionsMap.get(func.label);
     if (function == null)
     {
       function = translateFunc(func);
-      funcMap.put(func, function);
     }
     return function;
   }
@@ -557,7 +554,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     FunctionDefinition function = new FunctionDefinition(func.label, arguments, smtExpr.getSort(), smtExpr, true);
 
-    smtScript.addFunction(function);
+    addFunction(function);
 
     return function;
   }
