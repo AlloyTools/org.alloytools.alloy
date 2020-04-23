@@ -1,10 +1,13 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.Func;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.smtAst.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +23,43 @@ public class ExprCallTranslator
   }
 
   SmtExpr translateExprCall(ExprCall exprCall, Environment environment)
+  {
+    String funcName = exprCall.fun.label;
+//
+////    if (exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
+////    {
+////      return new SmtCallExpr(translator.functionsMap.get(func.label), arguments);
+////    }
+    if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
+    {
+      Expr expr = ExprBinary.Op.IPLUS.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.PLUS, environment);
+    }
+    else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
+    {
+      Expr expr = ExprBinary.Op.IMINUS.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MINUS, environment);
+    }
+    else if (funcName.equals("integer/mul"))
+    {
+      Expr expr = ExprBinary.Op.MUL.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MULTIPLY, environment);
+    }
+    else if (funcName.equals("integer/div"))
+    {
+      Expr expr = ExprBinary.Op.DIV.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.DIVIDE, environment);
+    }
+    else if (funcName.equals("integer/rem"))
+    {
+      Expr expr = ExprBinary.Op.REM.make(null, null, exprCall.args.get(0), exprCall.args.get(1));
+      return exprTranslator.exprBinaryTranslator.translateArithmetic((ExprBinary) expr, SmtBinaryExpr.Op.MOD, environment);
+    }
+
+    return buildSmtCallExpr(exprCall, environment);
+  }
+
+  private SmtExpr buildSmtCallExpr(ExprCall exprCall, Environment environment)
   {
     Func func = exprCall.fun;
 
@@ -39,54 +79,5 @@ public class ExprCallTranslator
 
     SmtCallExpr callExpr = new SmtCallExpr(function, arguments);
     return callExpr;
-
-//        if (this.translator.funcNamesMap.containsKey(funcName))
-//        {
-//            return new FunctionCallSmtExpr(translator.getFunctionFromAlloyName(funcName), argExprs);
-//        }
-//        else if (this.translator.setComprehensionFuncNameToInputsMap.containsKey(funcName))
-//        {
-//            return translateSetComprehensionFuncCallExpr(funcName, argExprs);
-//        }
-//        if(exprCall.fun.pos.filename.contains("models/util/ordering.als".replace("/", File.separator)))
-//        {
-//            return new SmtCallExpr(translator.functionsMap.get(func.label), arguments);
-//        }
-//        else if (funcName.equals("integer/plus") || funcName.equals("integer/add"))
-//        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.PLUS, environment);
-//        }
-//        else if (funcName.equals("integer/minus") || funcName.equals("integer/sub"))
-//        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.MINUS, environment);
-//        }
-//        else if (funcName.equals("integer/mul"))
-//        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.MULTIPLY, environment);
-//        }
-//        else if (funcName.equals("integer/div"))
-//        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.DIVIDE, environment);
-//        }
-//        else if (funcName.equals("integer/rem"))
-//        {
-//            return translateArithmetic(argExprs.get(0), argExprs.get(1), BinarySmtExpr.Op.MOD, environment);
-//        }
-//        else if (translator.functionsMap.containsKey(funcName))
-//        {
-//            FunctionDeclaration function = translator.getFunction(funcName);
-//            return new FunctionCallSmtExpr(function, argExprs);
-//        }
-//        else
-//        {
-//            Expr body = exprCall.fun.getBody();
-//
-//            for (int i = 0; i < exprCall.args.size(); i++)
-//            {
-//                body = AlloyUtils.substituteExpr(body, exprCall.fun.get(i), exprCall.args.get(i));
-//            }
-//            SmtExpr callSmtExpr = exprTranslator.translateExpr(body, environment);
-//            return callSmtExpr;
-//        }
   }
 }

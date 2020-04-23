@@ -37,14 +37,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
   final SignatureTranslator signatureTranslator;
   final ExprTranslator exprTranslator;
 
-  //ToDo: cleanup this
-  Set<String> funcNames;
   Map<Sig, Expr> sigFacts;
-
-  Map<String, String> funcNamesMap;
-  Map<String, List<String>> setComprehensionFuncNameToInputsMap;
-  Map<String, SmtExpr> setCompFuncNameToDefMap;
-  Map<String, SmtVariable> setCompFuncNameToBdVarExprMap;
   Map<Sig, FunctionDeclaration> signaturesMap;
   Map<Sig.Field, FunctionDeclaration> fieldsMap;
   Map<Func, FunctionDefinition> funcMap;
@@ -65,12 +58,10 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     this.comparisonOperations = new HashMap<>();
     this.arithmeticOperations = new HashMap<>();
     this.signaturesMap = new HashMap<>();
-    this.funcNamesMap = new HashMap<>();
     this.functionsMap = new HashMap<>();
     this.funcMap = new HashMap<>();
     this.fieldsMap = new HashMap<>();
     this.sigFacts = new HashMap<>();
-    this.funcNames = new HashSet<>();
     this.integerConstants = new HashMap<>();
     this.sigToIdMap = new HashMap<>();
 
@@ -82,9 +73,6 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
     this.functionsMap.put(uninterpretedIntValue.getName(), uninterpretedIntValue);
 
-    this.setComprehensionFuncNameToInputsMap = new HashMap<>();
-    this.setCompFuncNameToDefMap = new HashMap<>();
-    this.setCompFuncNameToBdVarExprMap = new HashMap<>();
     this.exprTranslator = new ExprTranslator(this);
     this.facts = new ArrayList<>();
   }
@@ -105,27 +93,12 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     this.integerConstants = new HashMap<>(translator.integerConstants);
     this.arithmeticOperations = new HashMap<>(translator.arithmeticOperations);
     this.signaturesMap = new HashMap<>(translator.signaturesMap);
-    this.funcNamesMap = new HashMap<>(translator.funcNamesMap);
     this.functionsMap = new HashMap<>(translator.functionsMap);
     this.fieldsMap = new HashMap<>(translator.fieldsMap);
     this.sigFacts = new HashMap<>(translator.sigFacts);
-    this.funcNames = new HashSet<>(translator.funcNames);
 
-    this.setComprehensionFuncNameToInputsMap = new HashMap<>(translator.setComprehensionFuncNameToInputsMap);
-    this.setCompFuncNameToDefMap = new HashMap<>(translator.setCompFuncNameToDefMap);
-    this.setCompFuncNameToBdVarExprMap = new HashMap<>(translator.setCompFuncNameToBdVarExprMap);
     this.exprTranslator = new ExprTranslator(this);
     this.facts = new ArrayList<>(translator.facts);
-  }
-
-  FunctionDeclaration getFunctionFromAlloyName(String name)
-  {
-    FunctionDeclaration function = functionsMap.get(funcNamesMap.get(name));
-    if (function == null)
-    {
-      throw new RuntimeException("Function " + name + " is not found.");
-    }
-    return function;
   }
 
   @Override
