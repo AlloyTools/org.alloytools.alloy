@@ -93,7 +93,10 @@ public class DeclTranslator
     if (variable.getDeclaration() instanceof SmtVariable)
     {
       SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
-      smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
+      if(constraint != null)
+      {
+        smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
+      }
     }
     else
     {
