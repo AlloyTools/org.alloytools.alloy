@@ -17,94 +17,96 @@ import java.util.Map;
 
 public class IntConstant extends Constant
 {
-    private final BigInteger value;
+  private final BigInteger value;
 
-    private IntConstant(int value)
-    {
-        this.value = new BigInteger(String.valueOf(value));
-    }
+  private IntConstant(int value)
+  {
+    this.value = new BigInteger(String.valueOf(value));
+  }
 
-    public static IntConstant getInstance(int value)
-    {
-        return new IntConstant(value);
-    }
+  public static IntConstant getInstance(int value)
+  {
+    return new IntConstant(value);
+  }
 
-    public static SmtExpr getSingletonTuple(int value)
-    {
-        SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE,
-                new IntConstant(value));
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
-        return singleton;
-    }
+  public static SmtExpr getSingletonTuple(int value)
+  {
+    SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE,
+        new IntConstant(value));
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
+    return singleton;
+  }
 
-    public static SmtExpr getSingletonTuple(IntConstant intConstant)
-    {
-        SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE,
-                intConstant);
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
-        return singleton;
-    }
-    
-    public IntConstant(String value)
-    {
-        this.value = new BigInteger(value);
-    }  
-    
-    public String getValue()
-    {
-        return this.value.toString();
-    }
-    
-    @Override
-    public void accept(SmtAstVisitor visitor) {
-        visitor.visit(this);
-    }
+  public static SmtExpr getSingletonTuple(IntConstant intConstant)
+  {
+    SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE,
+        intConstant);
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);
+    return singleton;
+  }
 
-    @Override
-    public Sort getSort()
-    {
-        return AbstractTranslator.intSort;
-    }
+  public IntConstant(String value)
+  {
+    this.value = new BigInteger(value);
+  }
 
-    @Override
-    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
-    {
-        return this;
-    }
-    @Override
-    public boolean equals(Object object)
-    {
-        if(object == this)
-        {
-            return true;
-        }
-        if(!(object instanceof IntConstant))
-        {
-            return false;
-        }
-        IntConstant intConstant = (IntConstant) object;
-        return value.equals(intConstant.value);
-    }
+  public String getValue()
+  {
+    return this.value.toString();
+  }
 
-    @Override
-    public List<Variable> getFreeVariables()
-    {
-        return new ArrayList<>();
-    }
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
 
-    @Override
-    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
-    {
-        return this;
-    }
+  @Override
+  public Sort getSort()
+  {
+    return AbstractTranslator.intSort;
+  }
 
-    @Override
-    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
+  @Override
+  public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
+  {
+    return this;
+  }
+
+  @Override
+  public boolean equals(Object object)
+  {
+    if (object == this)
     {
-        if(oldSmtExpr.equals(this))
-        {
-            return newSmtExpr;
-        }
-        return this;
+      return true;
     }
+    if (!(object instanceof IntConstant))
+    {
+      return false;
+    }
+    IntConstant intConstant = (IntConstant) object;
+    return value.equals(intConstant.value);
+  }
+
+  @Override
+  public List<Variable> getFreeVariables()
+  {
+    return new ArrayList<>();
+  }
+
+  @Override
+  public SmtExpr substitute(Variable oldVariable, Variable newVariable)
+  {
+    return this;
+  }
+
+  @Override
+  public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
+  {
+    if (oldSmtExpr.equals(this))
+    {
+      return newSmtExpr;
+    }
+    return this;
+  }
 }

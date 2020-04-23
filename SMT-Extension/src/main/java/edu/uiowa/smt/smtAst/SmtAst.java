@@ -10,5 +10,5 @@ package edu.uiowa.smt.smtAst;
 
 public abstract class SmtAst
 {
-    public abstract void accept(SmtAstVisitor visitor);
+  public abstract void accept(SmtAstVisitor visitor);
 }

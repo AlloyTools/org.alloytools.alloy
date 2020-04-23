@@ -14,61 +14,64 @@ import java.util.logging.Logger;
 
 public class Alloy2SmtLogger implements Filter
 {
-    private final Logger LOGGER;
-    
-    public Alloy2SmtLogger(String className)
-    {
-        LOGGER = Logger.getLogger(className);                 
-    }
-    
-    public void printInfo(String info) 
-    {
-        if(info != null) {
-            LOGGER.info(info);
-        }
-    }
-    
-    public void printWarning(String warning) 
-    {
-        if(warning != null) {
-            LOGGER.warning(warning);
-        }
-    }
+  private final Logger LOGGER;
 
-    public void printSevere(String severe) 
+  public Alloy2SmtLogger(String className)
+  {
+    LOGGER = Logger.getLogger(className);
+  }
+
+  public void printInfo(String info)
+  {
+    if (info != null)
     {
-        if(severe != null) {
-            LOGGER.warning(severe);
-        }
-    }    
+      LOGGER.info(info);
+    }
+  }
+
+  public void printWarning(String warning)
+  {
+    if (warning != null)
+    {
+      LOGGER.warning(warning);
+    }
+  }
+
+  public void printSevere(String severe)
+  {
+    if (severe != null)
+    {
+      LOGGER.warning(severe);
+    }
+  }
+
+  @Override
+  public boolean isLoggable(LogRecord record)
+  {
+    if (record == null)
+    {
+      return false;
+    }
+    return !record.getMessage().toLowerCase().startsWith("debug");
+  }
+
+  public enum LEVEL
+  {
+    INFO("info"),
+    WARNING("warning"),
+    SEVERE("severe");
+
+    private final String levelStr;
+
+    private LEVEL(String level)
+    {
+      this.levelStr = level;
+    }
 
     @Override
-    public boolean isLoggable(LogRecord record) 
+    public String toString()
     {
-        if(record == null)
-        {
-            return false;
-        }
-        return !record.getMessage().toLowerCase().startsWith("debug");
+      return this.levelStr;
     }
-    
-    public enum LEVEL 
-    {	        
-        INFO ("info"),
-        WARNING ("warning"),
-        SEVERE ("severe");
-
-        private final String levelStr;
-
-        private LEVEL(String level) 
-        {
-            this.levelStr = level;
-        }
-
-        @Override
-        public String toString() 
-        {
-            return this.levelStr;
-        }    
-    }       
+  }
 }

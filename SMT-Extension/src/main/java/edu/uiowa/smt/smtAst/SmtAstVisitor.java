@@ -10,61 +10,61 @@ package edu.uiowa.smt.smtAst;
 
 public interface SmtAstVisitor
 {
-    void visit(SmtScript script);
+  void visit(SmtScript script);
 
-    void visit(SmtBinaryExpr expr);
+  void visit(SmtBinaryExpr expr);
 
-    void visit(Sort sort);
-    
-    void visit(IntSort intSort);
+  void visit(Sort sort);
 
-    void visit(SmtQtExpr quantifiedExpression);
+  void visit(IntSort intSort);
 
-    void visit(RealSort realSort);
+  void visit(SmtQtExpr quantifiedExpression);
 
-    void visit(SetSort setSort);
+  void visit(RealSort realSort);
 
-    void visit(StringSort stringSort);
+  void visit(SetSort setSort);
 
-    void visit(TupleSort tupleSort);
+  void visit(StringSort stringSort);
 
-    void visit(SmtExpr smtExpr);
+  void visit(TupleSort tupleSort);
 
-    void visit(SmtUnaryExpr unaryExpression);
+  void visit(SmtExpr smtExpr);
 
-    void visit(UninterpretedSort uninterpretedSort);
+  void visit(SmtUnaryExpr unaryExpression);
 
-    void visit(IntConstant intConstant);
+  void visit(UninterpretedSort uninterpretedSort);
 
-    void visit(Variable variable);
+  void visit(IntConstant intConstant);
 
-    void visit(FunctionDeclaration functionDeclaration);
+  void visit(Variable variable);
 
-    void visit(FunctionDefinition functionDefinition);
+  void visit(FunctionDeclaration functionDeclaration);
 
-    void visit(BoolConstant booleanConstant);
+  void visit(FunctionDefinition functionDefinition);
 
-    void visit(Assertion assertion);
+  void visit(BoolConstant booleanConstant);
 
-    void visit(SmtMultiArityExpr expression);
+  void visit(Assertion assertion);
 
-    void visit(SmtCallExpr smtCallExpr);
+  void visit(SmtMultiArityExpr expression);
 
-    void visit(SmtVariable smtVariable);
+  void visit(SmtCallExpr smtCallExpr);
 
-    void visit(BoolSort boolSort);
+  void visit(SmtVariable smtVariable);
 
-    void visit(SmtLetExpr letExpression);
+  void visit(BoolSort boolSort);
 
-    void visit(SmtIteExpr iteExpression);
+  void visit(SmtLetExpr letExpression);
 
-    void visit(UninterpretedConstant uninterpretedConstant);
+  void visit(SmtIteExpr iteExpression);
 
-    void visit(SmtSettings smtSettings);
+  void visit(UninterpretedConstant uninterpretedConstant);
 
-    void visit(SmtValues smtValues);
+  void visit(SmtSettings smtSettings);
 
-    void visit(ExpressionValue expressionValue);
+  void visit(SmtValues smtValues);
 
-    void visit(SmtUnsatCore smtUnsatCore);
+  void visit(ExpressionValue expressionValue);
+
+  void visit(SmtUnsatCore smtUnsatCore);
 }

@@ -9,59 +9,60 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SmtOptimizerTests
 {
-    private SmtScript script = new SmtScript();
+  private SmtScript script = new SmtScript();
 
-    @BeforeEach
-    private void reset()
-    {
-        script.reset();
-    }
+  @BeforeEach
+  private void reset()
+  {
+    script.reset();
+  }
 
-    @Test
-    public void trivialAssertions()
-    {
-        script.addAssertion(new Assertion("", "", BoolConstant.True));
-        SmtExpr andTrue = SmtMultiArityExpr.Op.AND.make(BoolConstant.True);
-        script.addAssertion(new Assertion("", "", andTrue));
-        SmtExpr orTrue = SmtMultiArityExpr.Op.OR.make(BoolConstant.True);
-        script.addAssertion(new Assertion("", "", orTrue));
+  @Test
+  public void trivialAssertions()
+  {
+    script.addAssertion(new Assertion("", "", BoolConstant.True));
+    SmtExpr andTrue = SmtMultiArityExpr.Op.AND.make(BoolConstant.True);
+    script.addAssertion(new Assertion("", "", andTrue));
+    SmtExpr orTrue = SmtMultiArityExpr.Op.OR.make(BoolConstant.True);
+    script.addAssertion(new Assertion("", "", orTrue));
 
-        script = SmtOptimizer.optimize(script);
+    script = SmtOptimizer.optimize(script);
 
-        // all trivial assertions should be filtered out.
-        assertTrue(script.getAssertions().isEmpty());
-    }
+    // all trivial assertions should be filtered out.
+    assertTrue(script.getAssertions().isEmpty());
+  }
 
-    @Test
-    public void unusedUninterpretedInt()
-    {
-        script.addFunctions(AbstractTranslator.getUninterpretedIntFunctions(script));
+  @Test
+  public void unusedUninterpretedInt()
+  {
+    script.addFunctions(AbstractTranslator.getUninterpretedIntFunctions(script));
 
-        script = SmtOptimizer.optimize(script);
+    script = SmtOptimizer.optimize(script);
 
-        // all trivial assertions should be filtered out.
-        assertTrue(script.getFunctions().isEmpty());
-    }
+    // all trivial assertions should be filtered out.
+    assertTrue(script.getFunctions().isEmpty());
+  }
 
-    @Test
-    public void empty() throws Exception
-    {
-        String alloy =  "";
+  @Test
+  public void empty() throws Exception
+  {
+    String alloy = "";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
-    }
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
+  }
 
-    @Test
-    public void command() throws Exception
-    {
-        String alloy =  "run {some x: Int | x = 2}";
+  @Test
+  public void command() throws Exception
+  {
+    String alloy = "run {some x: Int | x = 2}";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
-    }
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
+  }
 }

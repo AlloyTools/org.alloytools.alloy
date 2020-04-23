@@ -1,49 +1,44 @@
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.Func;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
-import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
-import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExprCallTranslator
 {
-    final ExprTranslator exprTranslator;
-    final Alloy2SmtTranslator translator;
+  final ExprTranslator exprTranslator;
+  final Alloy2SmtTranslator translator;
 
-    public ExprCallTranslator(ExprTranslator exprTranslator)
+  public ExprCallTranslator(ExprTranslator exprTranslator)
+  {
+    this.exprTranslator = exprTranslator;
+    this.translator = exprTranslator.translator;
+  }
+
+  SmtExpr translateExprCall(ExprCall exprCall, Environment environment)
+  {
+    Func func = exprCall.fun;
+
+    FunctionDefinition function = translator.getFuncTranslation(func);
+
+    List<SmtExpr> arguments = new ArrayList<>();
+
+    for (int i = 0; i < exprCall.args.size(); i++)
     {
-        this.exprTranslator = exprTranslator;
-        this.translator = exprTranslator.translator;
+      SmtExpr expr = exprTranslator.translateExpr(exprCall.args.get(i), environment);
+      if (function.getSort(i) instanceof TupleSort)
+      {
+        expr = SmtUnaryExpr.Op.CHOOSE.make(expr);
+      }
+      arguments.add(expr);
     }
 
-    SmtExpr translateExprCall(ExprCall exprCall, Environment environment)
-    {
-        Func func = exprCall.fun;
-
-        FunctionDefinition function = translator.getFuncTranslation(func);
-
-        List<SmtExpr> arguments = new ArrayList<>();
-
-        for (int i = 0; i < exprCall.args.size(); i++)
-        {
-            SmtExpr expr = exprTranslator.translateExpr(exprCall.args.get(i), environment);
-            if(function.getSort(i) instanceof TupleSort)
-            {
-                expr = SmtUnaryExpr.Op.CHOOSE.make(expr);
-            }
-            arguments.add(expr);
-        }
-
-        SmtCallExpr callExpr = new SmtCallExpr(function, arguments);
-        return callExpr;
+    SmtCallExpr callExpr = new SmtCallExpr(function, arguments);
+    return callExpr;
 
 //        if (this.translator.funcNamesMap.containsKey(funcName))
 //        {
@@ -93,5 +88,5 @@ public class ExprCallTranslator
 //            SmtExpr callSmtExpr = exprTranslator.translateExpr(body, environment);
 //            return callSmtExpr;
 //        }
-    }
+  }
 }

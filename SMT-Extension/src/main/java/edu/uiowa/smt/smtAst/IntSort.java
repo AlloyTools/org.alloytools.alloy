@@ -10,34 +10,35 @@ package edu.uiowa.smt.smtAst;
 
 public class IntSort extends Sort
 {
-    private static IntSort instance = new IntSort();
+  private static IntSort instance = new IntSort();
 
-    private IntSort()
+  private IntSort()
+  {
+    super("Int", 0);
+  }
+
+  public static IntSort getInstance()
+  {
+    return instance;
+  }
+
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
+
+  @Override
+  public boolean equals(Object object)
+  {
+    if (object == this)
     {
-        super("Int", 0);
+      return true;
     }
-
-    public static IntSort getInstance()
+    if (!(object instanceof IntSort))
     {
-        return instance;
+      return false;
     }
-
-    @Override
-    public void accept(SmtAstVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
-    public boolean equals(Object object)
-    {
-        if(object == this)
-        {
-            return true;
-        }
-        if(!(object instanceof IntSort))
-        {
-            return false;
-        }
-        return true;
-    }
+    return true;
+  }
 }

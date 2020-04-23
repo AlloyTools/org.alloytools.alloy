@@ -15,38 +15,41 @@ import java.util.Map;
 
 public abstract class SmtExpr extends SmtAst
 {
-    private  String comment = "";
-    @Override
-    public String toString()
-    {
-        SmtLibPrinter printer = new SmtLibPrinter();
-        printer.visit(this);
-        return printer.getSmtLib();
-    }
+  private String comment = "";
 
-    public abstract Sort getSort();
+  @Override
+  public String toString()
+  {
+    SmtLibPrinter printer = new SmtLibPrinter();
+    printer.visit(this);
+    return printer.getSmtLib();
+  }
 
-    public String getComment()
-    {
-        return this.comment;
-    }
+  public abstract Sort getSort();
 
-    public void setComment(String comment)
-    {
-        this.comment = comment;
-    }
+  public String getComment()
+  {
+    return this.comment;
+  }
+
+  public void setComment(String comment)
+  {
+    this.comment = comment;
+  }
 
 
-    protected void checkTypes(){}
+  protected void checkTypes()
+  {
+  }
 
-    public abstract SmtExpr evaluate(Map<String, FunctionDefinition> functions);
+  public abstract SmtExpr evaluate(Map<String, FunctionDefinition> functions);
 
-    @Override
-    public abstract boolean equals(Object object);
+  @Override
+  public abstract boolean equals(Object object);
 
-    public abstract List<Variable> getFreeVariables();
+  public abstract List<Variable> getFreeVariables();
 
-    public abstract SmtExpr substitute(Variable oldVariable, Variable newVariable);
+  public abstract SmtExpr substitute(Variable oldVariable, Variable newVariable);
 
-    public abstract SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr);
+  public abstract SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr);
 }

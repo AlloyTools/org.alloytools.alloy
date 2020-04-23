@@ -9,200 +9,201 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CardinalityTests
 {
-    @Test
-    public void test1() throws Exception
-    {
-        String alloy =  "sig A {r: A -> A} fact{#r = 2}";                
+  @Test
+  public void test1() throws Exception
+  {
+    String alloy = "sig A {r: A -> A} fact{#r = 2}";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertTrue(2 <= atoms.size());
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertTrue(2 <= atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
-        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
-        assertEquals(2, tuples.size());
-    }
+    FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
+    Set<List<String>> tuples = TranslatorUtils.getRelation(r);
+    assertEquals(2, tuples.size());
+  }
 
-    @Test
-    public void test2() throws Exception
-    {
-        String alloy =  "sig A {r: A -> A} fact{#r >= 2}";
+  @Test
+  public void test2() throws Exception
+  {
+    String alloy = "sig A {r: A -> A} fact{#r >= 2}";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertTrue(2 <= atoms.size());
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertTrue(2 <= atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
-        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
-        assertEquals(2, tuples.size());
-    }
+    FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
+    Set<List<String>> tuples = TranslatorUtils.getRelation(r);
+    assertEquals(2, tuples.size());
+  }
 
-    @Test
-    public void test3() throws Exception
-    {
-        String alloy =  "sig A {r: A -> A} fact {#r > 2}";                
+  @Test
+  public void test3() throws Exception
+  {
+    String alloy = "sig A {r: A -> A} fact {#r > 2}";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertTrue(2 <= atoms.size());
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertTrue(2 <= atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
-        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
-        assertTrue(2 < tuples.size());
-    }
+    FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
+    Set<List<String>> tuples = TranslatorUtils.getRelation(r);
+    assertTrue(2 < tuples.size());
+  }
 
-    @Test
-    public void test4() throws Exception
-    {
-        String alloy =  "sig A {r: A -> A} fact {#r < 2}";
-                
+  @Test
+  public void test4() throws Exception
+  {
+    String alloy = "sig A {r: A -> A} fact {#r < 2}";
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(0, atoms.size());
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
-        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
-        assertEquals(0, tuples.size());
-    }
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(0, atoms.size());
 
-    @Test
-    public void test5() throws Exception
-    {
-        String alloy =  "sig A {r: A -> A}fact {#r <= 2}";
-                
+    FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
+    Set<List<String>> tuples = TranslatorUtils.getRelation(r);
+    assertEquals(0, tuples.size());
+  }
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+  @Test
+  public void test5() throws Exception
+  {
+    String alloy = "sig A {r: A -> A}fact {#r <= 2}";
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(0, atoms.size());
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
-        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
-        assertEquals(0, tuples.size());
-    }
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-    @Test
-    public void test6() throws Exception
-    {
-        String alloy =  "sig A in Int{r: A -> A}fact {#r = 2}";
-                
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(0, atoms.size());
 
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
+    Set<List<String>> tuples = TranslatorUtils.getRelation(r);
+    assertEquals(0, tuples.size());
+  }
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<Integer> atoms = TranslatorUtils.getIntSet(A);
-        assertEquals(2, atoms.size());
+  @Test
+  public void test6() throws Exception
+  {
+    String alloy = "sig A in Int{r: A -> A}fact {#r = 2}";
 
-        FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
-        Set<List<String>> tuples = TranslatorUtils.getRelation(r);
-        assertEquals(2, tuples.size());
-    }
 
-    @Test
-    public void test7() throws Exception
-    {
-        String alloy =  "sig A{} fact {#A = 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(2, atoms.size());
-    }
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<Integer> atoms = TranslatorUtils.getIntSet(A);
+    assertEquals(2, atoms.size());
 
-    @Test
-    public void test8() throws Exception
-    {
-        String alloy =  "sig A{} fact {#A > 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition r = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A/r");
+    Set<List<String>> tuples = TranslatorUtils.getRelation(r);
+    assertEquals(2, tuples.size());
+  }
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(3, atoms.size());
-    }
+  @Test
+  public void test7() throws Exception
+  {
+    String alloy = "sig A{} fact {#A = 2}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-    @Test
-    public void test9() throws Exception
-    {
-        String alloy =  "sig A{} fact {#A >= 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(2, atoms.size());
+  }
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(2, atoms.size());
-    }
+  @Test
+  public void test8() throws Exception
+  {
+    String alloy = "sig A{} fact {#A > 2}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-    @Test
-    public void test10() throws Exception
-    {
-        String alloy =  "sig A{} fact {#A < 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(3, atoms.size());
+  }
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(0, atoms.size());
-    }
+  @Test
+  public void test9() throws Exception
+  {
+    String alloy = "sig A{} fact {#A >= 2}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-    @Test
-    public void test11() throws Exception
-    {
-        String alloy =  "sig A{} fact {#A <= 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(2, atoms.size());
+  }
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<String> atoms = TranslatorUtils.getAtomSet(A);
-        assertEquals(0, atoms.size());
-    }
+  @Test
+  public void test10() throws Exception
+  {
+    String alloy = "sig A{} fact {#A < 2}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-    @Test
-    public void test12() throws Exception
-    {
-        String alloy =  "sig A in Int{} fact {#A = 2}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("sat", commandResults.get(0).satResult);
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(0, atoms.size());
+  }
 
-        FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
-        Set<Integer> atoms = TranslatorUtils.getIntSet(A);
-        assertEquals(2, atoms.size());
-    }
+  @Test
+  public void test11() throws Exception
+  {
+    String alloy = "sig A{} fact {#A <= 2}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
 
-    @Test
-    public void test13() throws Exception
-    {
-        String alloy =  "sig A {} fact {#A < 0}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("unsat", commandResults.get(0).satResult);
-    }
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<String> atoms = TranslatorUtils.getAtomSet(A);
+    assertEquals(0, atoms.size());
+  }
 
-    @Test
-    public void test14() throws Exception
-    {
-        String alloy =  "sig A {} fact {#A = -1}";
-        List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
-        assertEquals("unsat", commandResults.get(0).satResult);
-    }
+  @Test
+  public void test12() throws Exception
+  {
+    String alloy = "sig A in Int{} fact {#A = 2}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
+
+    FunctionDefinition A = TranslatorUtils.getFunctionDefinition(commandResults.get(0).smtModel, "this/A");
+    Set<Integer> atoms = TranslatorUtils.getIntSet(A);
+    assertEquals(2, atoms.size());
+  }
+
+  @Test
+  public void test13() throws Exception
+  {
+    String alloy = "sig A {} fact {#A < 0}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("unsat", commandResults.get(0).satResult);
+  }
+
+  @Test
+  public void test14() throws Exception
+  {
+    String alloy = "sig A {} fact {#A = -1}";
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("unsat", commandResults.get(0).satResult);
+  }
 }

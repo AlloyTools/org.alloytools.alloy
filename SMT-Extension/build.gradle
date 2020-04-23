@@ -12,7 +12,7 @@ repositories {
 dependencies {
 
     compile project(':org.alloytools.alloy.core')
-    
+
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 

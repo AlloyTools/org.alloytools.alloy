@@ -8,7 +8,9 @@
 
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.*;
+import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.Environment;
 import edu.uiowa.smt.TranslatorUtils;
@@ -16,270 +18,270 @@ import edu.uiowa.smt.smtAst.*;
 
 public class ExprUnaryTranslator
 {
-    final ExprTranslator exprTranslator;
-    final Alloy2SmtTranslator translator;
-    final ExprVarTranslator exprVarTranslator;
+  final ExprTranslator exprTranslator;
+  final Alloy2SmtTranslator translator;
+  final ExprVarTranslator exprVarTranslator;
 
-    public ExprUnaryTranslator(ExprTranslator exprTranslator)
-    {
-        this.exprTranslator = exprTranslator;
-        this.translator = exprTranslator.translator;
-        this.exprVarTranslator = exprTranslator.exprVarTranslator;
-    }
+  public ExprUnaryTranslator(ExprTranslator exprTranslator)
+  {
+    this.exprTranslator = exprTranslator;
+    this.translator = exprTranslator.translator;
+    this.exprVarTranslator = exprTranslator.exprVarTranslator;
+  }
 
-    SmtExpr translateExprUnary(ExprUnary exprUnary, Environment environment)
+  SmtExpr translateExprUnary(ExprUnary exprUnary, Environment environment)
+  {
+    switch (exprUnary.op)
     {
-        switch (exprUnary.op)
-        {
-            case NOOP:
-                return translateNoop(exprUnary, environment);
-            case NO:
-                return translateNo(exprUnary, environment);
-            case SOME:
-                return translateSome(exprUnary, environment);
-            case ONE:
-                return translateOne(exprUnary, environment);
-            case ONEOF:
-                return translateOneOf(exprUnary, environment);
-            case LONEOF:
-                return translateLoneOf(exprUnary, environment);
-            case SOMEOF:
-                return translateSomeOf(exprUnary, environment);
-            case SETOF:
-                return exprTranslator.translateExpr(exprUnary.sub, environment);
-            case LONE:
-                return translateLone(exprUnary, environment);
-            case CARDINALITY:
-                throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
-            case TRANSPOSE:
-                return translateTranspose(exprUnary, environment);
-            case CLOSURE:
-                return translateClosure(exprUnary, environment);
-            case RCLOSURE:
-                return translateReflexiveClosure(exprUnary, environment);
-            case NOT:
-                return translateNot(exprUnary, environment);
-            case CAST2INT:
-                return translateCAST2INT(exprUnary, environment);
-            case CAST2SIGINT:
-                return translateCAST2SIGINT(exprUnary, environment);
-            default:
-            {
-                throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
-            }
-        }
-    }
-
-    private SmtExpr translateCAST2INT(ExprUnary exprUnary, Environment environment)
-    {
+      case NOOP:
+        return translateNoop(exprUnary, environment);
+      case NO:
+        return translateNo(exprUnary, environment);
+      case SOME:
+        return translateSome(exprUnary, environment);
+      case ONE:
+        return translateOne(exprUnary, environment);
+      case ONEOF:
+        return translateOneOf(exprUnary, environment);
+      case LONEOF:
+        return translateLoneOf(exprUnary, environment);
+      case SOMEOF:
+        return translateSomeOf(exprUnary, environment);
+      case SETOF:
         return exprTranslator.translateExpr(exprUnary.sub, environment);
+      case LONE:
+        return translateLone(exprUnary, environment);
+      case CARDINALITY:
+        throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
+      case TRANSPOSE:
+        return translateTranspose(exprUnary, environment);
+      case CLOSURE:
+        return translateClosure(exprUnary, environment);
+      case RCLOSURE:
+        return translateReflexiveClosure(exprUnary, environment);
+      case NOT:
+        return translateNot(exprUnary, environment);
+      case CAST2INT:
+        return translateCAST2INT(exprUnary, environment);
+      case CAST2SIGINT:
+        return translateCAST2SIGINT(exprUnary, environment);
+      default:
+      {
+        throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
+      }
     }
+  }
 
-    private SmtExpr translateCAST2SIGINT(ExprUnary exprUnary, Environment environment)
+  private SmtExpr translateCAST2INT(ExprUnary exprUnary, Environment environment)
+  {
+    return exprTranslator.translateExpr(exprUnary.sub, environment);
+  }
+
+  private SmtExpr translateCAST2SIGINT(ExprUnary exprUnary, Environment environment)
+  {
+    return exprTranslator.translateExpr(exprUnary.sub, environment);
+  }
+
+  private SmtExpr translateNot(ExprUnary exprUnary, Environment environment)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, environment);
+    SmtExpr not = SmtUnaryExpr.Op.NOT.make(smtExpr);
+    return not;
+  }
+
+  private SmtExpr translateClosure(ExprUnary exprUnary, Environment environment)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, environment);
+    SmtUnaryExpr closure = SmtUnaryExpr.Op.TCLOSURE.make(smtExpr);
+    return closure;
+  }
+
+  private SmtExpr translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
+  {
+    SmtExpr closure = translateClosure(exprUnary, environment);
+    SmtBinaryExpr reflexiveClosure;
+    if (closure.getSort().equals(AbstractTranslator.setOfBinaryAtomSort))
     {
-        return exprTranslator.translateExpr(exprUnary.sub, environment);
+      reflexiveClosure = SmtBinaryExpr.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
     }
-
-    private SmtExpr translateNot(ExprUnary exprUnary, Environment environment)
+    else
     {
-        SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, environment);
-        SmtExpr not = SmtUnaryExpr.Op.NOT.make(smtExpr);
-        return not;
+      reflexiveClosure = SmtBinaryExpr.Op.UNION.make(closure, AbstractTranslator.idenInt.getVariable());
     }
+    return reflexiveClosure;
+  }
 
-    private SmtExpr translateClosure(ExprUnary exprUnary, Environment environment)
-    {
-        SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, environment);
-        SmtUnaryExpr closure = SmtUnaryExpr.Op.TCLOSURE.make(smtExpr);
-        return closure;
-    }
+  private SmtExpr translateTranspose(ExprUnary exprUnary, Environment environment)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, environment);
+    SmtUnaryExpr transpose = SmtUnaryExpr.Op.TRANSPOSE.make(smtExpr);
+    return transpose;
+  }
 
-    private SmtExpr translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
+
+  private SmtExpr translateNoop(ExprUnary exprUnary, Environment environment)
+  {
+    if (exprUnary.sub instanceof Sig)
     {
-        SmtExpr closure = translateClosure(exprUnary, environment);
-        SmtBinaryExpr reflexiveClosure;
-        if(closure.getSort().equals(AbstractTranslator.setOfBinaryAtomSort))
+
+      // alloy built in signatures include: univ, none, iden
+      if (((Sig) exprUnary.sub).builtin)
+      {
+        switch (((Sig) exprUnary.sub).label)
         {
-            reflexiveClosure = SmtBinaryExpr.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
+          case "univ":
+            return Alloy2SmtTranslator.univAtom.getVariable();
+          case "iden":
+            return Alloy2SmtTranslator.idenAtom.getVariable();
+          case "none":
+            return Alloy2SmtTranslator.atomNone.getVariable();
+          case "Int":
+            return Alloy2SmtTranslator.univInt.getVariable();
+          default:
+            throw new UnsupportedOperationException();
         }
-        else
-        {
-            reflexiveClosure = SmtBinaryExpr.Op.UNION.make(closure, AbstractTranslator.idenInt.getVariable());
-        }
-        return reflexiveClosure;
+      }
+      else
+      {
+        return translator.signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
+      }
     }
 
-    private SmtExpr translateTranspose(ExprUnary exprUnary, Environment environment)
+    if (exprUnary.sub instanceof Sig.Field)
     {
-        SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, environment);
-        SmtUnaryExpr transpose = SmtUnaryExpr.Op.TRANSPOSE.make(smtExpr);
-        return transpose;
+      return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
     }
 
-
-    private SmtExpr translateNoop(ExprUnary exprUnary, Environment environment)
+    if (exprUnary.sub instanceof ExprVar)
     {
-        if (exprUnary.sub instanceof Sig)
-        {
-
-            // alloy built in signatures include: univ, none, iden
-            if (((Sig) exprUnary.sub).builtin)
-            {
-                switch (((Sig) exprUnary.sub).label)
-                {
-                    case "univ":
-                        return Alloy2SmtTranslator.univAtom.getVariable();
-                    case "iden":
-                        return Alloy2SmtTranslator.idenAtom.getVariable();
-                    case "none":
-                        return Alloy2SmtTranslator.atomNone.getVariable();
-                    case "Int":
-                        return Alloy2SmtTranslator.univInt.getVariable();
-                    default:
-                        throw new UnsupportedOperationException();
-                }
-            }
-            else
-            {
-                return translator.signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
-            }
-        }
-
-        if (exprUnary.sub instanceof Sig.Field)
-        {
-            return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
-        }
-
-        if (exprUnary.sub instanceof ExprVar)
-        {
-            return exprVarTranslator.translateExprVar((ExprVar) exprUnary.sub, environment);
-        }
-
-        return exprTranslator.translateExpr(exprUnary.sub, environment);
+      return exprVarTranslator.translateExprVar((ExprVar) exprUnary.sub, environment);
     }
 
-    private SmtExpr translateNo(ExprUnary exprUnary, Environment environment)
-    {
-        Environment newEnvironment = new Environment(environment);
-        SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
-        SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
-        SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
-        SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
-        return finalSmtExpr;
-    }
+    return exprTranslator.translateExpr(exprUnary.sub, environment);
+  }
 
-    private SmtExpr translateSome(ExprUnary exprUnary, Environment environment)
-    {
-        Environment newEnvironment = new Environment(environment);
-        SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
-        SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
-        SmtExpr equality = SmtBinaryExpr.Op.EQ.make(set, emptySet);
-        SmtExpr isNotEmpty = SmtUnaryExpr.Op.NOT.make(equality);
-        SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(isNotEmpty, newEnvironment);
-        return finalSmtExpr;
-    }
+  private SmtExpr translateNo(ExprUnary exprUnary, Environment environment)
+  {
+    Environment newEnvironment = new Environment(environment);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
+    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
+    SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(isEmpty, newEnvironment);
+    return finalSmtExpr;
+  }
 
-    private SmtExpr translateOne(ExprUnary exprUnary, Environment environment)
-    {
-        Environment newEnvironment = new Environment(environment);
-        SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
-        Sort sort = ((SetSort) set.getSort()).elementSort;
-        SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
-        SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
-        SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
-        SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
-        return finalSmtExpr;
-    }
+  private SmtExpr translateSome(ExprUnary exprUnary, Environment environment)
+  {
+    Environment newEnvironment = new Environment(environment);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
+    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
+    SmtExpr equality = SmtBinaryExpr.Op.EQ.make(set, emptySet);
+    SmtExpr isNotEmpty = SmtUnaryExpr.Op.NOT.make(equality);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(isNotEmpty, newEnvironment);
+    return finalSmtExpr;
+  }
 
-    private SmtExpr translateOneOf(ExprUnary expr, Environment environment)
-    {
-        // expression has pattern (one A) where type of A is (Set E)
-        // the translation returns the set (Singleton x) where x satisfies
-        // (exists ((x E)) (member x A))
+  private SmtExpr translateOne(ExprUnary exprUnary, Environment environment)
+  {
+    Environment newEnvironment = new Environment(environment);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
+    Sort sort = ((SetSort) set.getSort()).elementSort;
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
+    SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
+    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(exists, newEnvironment);
+    return finalSmtExpr;
+  }
 
-        SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
-        SetSort setSort = (SetSort) A.getSort();
-        Sort elementSort = setSort.elementSort;
+  private SmtExpr translateOneOf(ExprUnary expr, Environment environment)
+  {
+    // expression has pattern (one A) where type of A is (Set E)
+    // the translation returns the set (Singleton x) where x satisfies
+    // (exists ((x E)) (member x A))
 
-        SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
+    SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
+    SetSort setSort = (SetSort) A.getSort();
+    Sort elementSort = setSort.elementSort;
 
-        SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(variable.getVariable(), A);
-        variable.setConstraint(member);
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
 
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
-        SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(member, variable);
+    SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(variable.getVariable(), A);
+    variable.setConstraint(member);
 
-        environment.addAuxiliaryFormula(exists);
-        return singleton;
-    }
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
+    SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(member, variable);
 
-    private SmtExpr translateLoneOf(ExprUnary expr, Environment environment)
-    {
-        // expression has pattern (lone A) where type of A is (Set E)
-        // the translation returns a set which satisfies
-        // (exists ((S (Set E)))
-        //      (and
-        //          (subset S A)
-        //          (exists ((x E)) (subset S (singleton x))) ))
+    environment.addAuxiliaryFormula(exists);
+    return singleton;
+  }
 
-        SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
-        SetSort setSort = (SetSort) A.getSort();
-        Sort elementSort = setSort.elementSort;
-        SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
-        SmtExpr subset1 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
+  private SmtExpr translateLoneOf(ExprUnary expr, Environment environment)
+  {
+    // expression has pattern (lone A) where type of A is (Set E)
+    // the translation returns a set which satisfies
+    // (exists ((S (Set E)))
+    //      (and
+    //          (subset S A)
+    //          (exists ((x E)) (subset S (singleton x))) ))
 
-        SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
+    SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
+    SetSort setSort = (SetSort) A.getSort();
+    Sort elementSort = setSort.elementSort;
+    SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
+    SmtExpr subset1 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
 
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
 
-        SmtExpr subset2 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), singleton);
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
 
-        SmtQtExpr exists1 = SmtQtExpr.Op.EXISTS.make(subset2, variable);
-        SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, exists1);
-        setVariable.setConstraint(andExpr);
-        SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
-        environment.addAuxiliaryFormula(exists2);
-        return setVariable.getVariable();
-    }
+    SmtExpr subset2 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), singleton);
 
-    private SmtExpr translateSomeOf(ExprUnary expr, Environment environment)
-    {
-        // expression has pattern (some A) where type of A is (Set E)
-        // the translation returns a set which satisfies
-        // (exists ((S (Set E)))
-        //      (and
-        //          (subset S A)
-        //          (not (= S (as emptyset (Set E))))
+    SmtQtExpr exists1 = SmtQtExpr.Op.EXISTS.make(subset2, variable);
+    SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, exists1);
+    setVariable.setConstraint(andExpr);
+    SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
+    environment.addAuxiliaryFormula(exists2);
+    return setVariable.getVariable();
+  }
 
-        SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
-        SetSort setSort = (SetSort) A.getSort();
-        SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
-        SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
+  private SmtExpr translateSomeOf(ExprUnary expr, Environment environment)
+  {
+    // expression has pattern (some A) where type of A is (Set E)
+    // the translation returns a set which satisfies
+    // (exists ((S (Set E)))
+    //      (and
+    //          (subset S A)
+    //          (not (= S (as emptyset (Set E))))
 
-        SmtExpr emptyset = SmtUnaryExpr.Op.EMPTYSET.make(setSort);
-        SmtExpr equal = SmtBinaryExpr.Op.EQ.make(setVariable.getVariable(), emptyset);
-        SmtExpr notEmpty = SmtUnaryExpr.Op.NOT.make(equal);
-        SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset, notEmpty);
-        setVariable.setConstraint(andExpr);
-        SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
-        environment.addAuxiliaryFormula(exists2);
-        return setVariable.getVariable();
-    }
+    SmtExpr A = exprTranslator.translateExpr(expr.sub, environment);
+    SetSort setSort = (SetSort) A.getSort();
+    SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
+    SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
 
-    private SmtExpr translateLone(ExprUnary exprUnary, Environment environment)
-    {
-        Environment newEnvironment = new Environment(environment);
-        SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
-        SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
-        SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
-        Sort sort = ((SetSort) set.getSort()).elementSort;
-        SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
-        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
-        SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
-        SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
-        SmtExpr or = SmtMultiArityExpr.Op.OR.make(isEmpty, exists);
-        SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(or, newEnvironment);
-        return finalSmtExpr;
-    }
+    SmtExpr emptyset = SmtUnaryExpr.Op.EMPTYSET.make(setSort);
+    SmtExpr equal = SmtBinaryExpr.Op.EQ.make(setVariable.getVariable(), emptyset);
+    SmtExpr notEmpty = SmtUnaryExpr.Op.NOT.make(equal);
+    SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset, notEmpty);
+    setVariable.setConstraint(andExpr);
+    SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
+    environment.addAuxiliaryFormula(exists2);
+    return setVariable.getVariable();
+  }
+
+  private SmtExpr translateLone(ExprUnary exprUnary, Environment environment)
+  {
+    Environment newEnvironment = new Environment(environment);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newEnvironment);
+    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
+    SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
+    Sort sort = ((SetSort) set.getSort()).elementSort;
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
+    SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
+    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
+    SmtExpr or = SmtMultiArityExpr.Op.OR.make(isEmpty, exists);
+    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(or, newEnvironment);
+    return finalSmtExpr;
+  }
 }

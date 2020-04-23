@@ -14,88 +14,90 @@ import java.util.Map;
 
 public class Variable extends SmtExpr
 {
-    private final Declaration declaration;
+  private final Declaration declaration;
 
-    Variable(Declaration declaration)
-    {
-        this.declaration = declaration;
-    }
-    
-    public String getName()
-    {
-        return this.declaration.getName();
-    }
+  Variable(Declaration declaration)
+  {
+    this.declaration = declaration;
+  }
 
-    public Declaration getDeclaration()
-    {
-        return this.declaration;
-    }
+  public String getName()
+  {
+    return this.declaration.getName();
+  }
 
-    @Override
-    public void accept(SmtAstVisitor visitor) {
-        visitor.visit(this);
-    }
+  public Declaration getDeclaration()
+  {
+    return this.declaration;
+  }
 
-    @Override
-    public Sort getSort()
-    {
-        return declaration.getSort();
-    }
-    @Override
-    public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
 
-    @Override
-    public boolean equals(Object object)
-    {
-        if(object == this)
-        {
-            return true;
-        }
-        if(!(object instanceof Variable))
-        {
-            return false;
-        }
-        Variable constantObject = (Variable) object;
-        return declaration.equals(constantObject.declaration);
-    }
+  @Override
+  public Sort getSort()
+  {
+    return declaration.getSort();
+  }
 
-    @Override
-    public List<Variable> getFreeVariables()
-    {
-        List<Variable> freeVariables = new ArrayList<>();
-        freeVariables.add(this);
-        return freeVariables;
-    }
+  @Override
+  public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
+  {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public SmtExpr substitute(Variable oldVariable, Variable newVariable)
+  @Override
+  public boolean equals(Object object)
+  {
+    if (object == this)
     {
-        if(this.equals(newVariable))
-        {
-            throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
-        }
-        if(this.equals(oldVariable))
-        {
-            return newVariable;
-        }
-        return  this;
+      return true;
     }
+    if (!(object instanceof Variable))
+    {
+      return false;
+    }
+    Variable constantObject = (Variable) object;
+    return declaration.equals(constantObject.declaration);
+  }
 
-    @Override
-    public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
-    {
-        if(oldSmtExpr.equals(this))
-        {
-            return newSmtExpr;
-        }
-        return  this;
-    }
+  @Override
+  public List<Variable> getFreeVariables()
+  {
+    List<Variable> freeVariables = new ArrayList<>();
+    freeVariables.add(this);
+    return freeVariables;
+  }
 
-    public boolean isOriginal()
+  @Override
+  public SmtExpr substitute(Variable oldVariable, Variable newVariable)
+  {
+    if (this.equals(newVariable))
     {
-        return declaration.isOriginal();
+      throw new RuntimeException(String.format("Variable '%1$s' is not free in expression '%2$s'", newVariable, this));
     }
+    if (this.equals(oldVariable))
+    {
+      return newVariable;
+    }
+    return this;
+  }
+
+  @Override
+  public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
+  {
+    if (oldSmtExpr.equals(this))
+    {
+      return newSmtExpr;
+    }
+    return this;
+  }
+
+  public boolean isOriginal()
+  {
+    return declaration.isOriginal();
+  }
 }

@@ -11,28 +11,28 @@ import java.util.Map;
 
 public class ExprLetTranslator
 {
-    final ExprTranslator exprTranslator;
-    final Alloy2SmtTranslator translator;
+  final ExprTranslator exprTranslator;
+  final Alloy2SmtTranslator translator;
 
-    public ExprLetTranslator(ExprTranslator exprTranslator)
-    {
-        this.exprTranslator = exprTranslator;
-        this.translator = exprTranslator.translator;
-    }
+  public ExprLetTranslator(ExprTranslator exprTranslator)
+  {
+    this.exprTranslator = exprTranslator;
+    this.translator = exprTranslator.translator;
+  }
 
-    SmtExpr translateExprLet(ExprLet exprLet, Environment environment)
-    {
-        SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, environment);
+  SmtExpr translateExprLet(ExprLet exprLet, Environment environment)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, environment);
 
-        SmtVariable declaration = new SmtVariable(exprLet.var.label,
-                smtExpr.getSort() , true);
-        Map<SmtVariable, SmtExpr> map = new HashMap<>();
-        map.put(declaration, smtExpr);
+    SmtVariable declaration = new SmtVariable(exprLet.var.label,
+        smtExpr.getSort(), true);
+    Map<SmtVariable, SmtExpr> map = new HashMap<>();
+    map.put(declaration, smtExpr);
 
-        Environment newEnvironment = new Environment(environment);
-        newEnvironment.put(declaration.getName(), declaration.getVariable());
-        SmtExpr body = exprTranslator.translateExpr(exprLet.sub, newEnvironment);
-        SmtExpr let = new SmtLetExpr(map, body);
-        return let;
-    }
+    Environment newEnvironment = new Environment(environment);
+    newEnvironment.put(declaration.getName(), declaration.getVariable());
+    SmtExpr body = exprTranslator.translateExpr(exprLet.sub, newEnvironment);
+    SmtExpr let = new SmtLetExpr(map, body);
+    return let;
+  }
 }

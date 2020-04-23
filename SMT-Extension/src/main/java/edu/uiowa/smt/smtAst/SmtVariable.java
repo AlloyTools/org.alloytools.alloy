@@ -10,26 +10,26 @@ package edu.uiowa.smt.smtAst;
 
 public class SmtVariable extends Declaration
 {
-    private SmtExpr constraint;
+  private SmtExpr constraint;
 
-    public SmtVariable(String name, Sort sort, boolean isOriginal)
-    {
-        super(name, sort, isOriginal);
-    }
+  public SmtVariable(String name, Sort sort, boolean isOriginal)
+  {
+    super(name, sort, isOriginal);
+  }
 
-    public void setConstraint(SmtExpr constraint)
-    {
-        this.constraint = constraint;
-    }
+  public void setConstraint(SmtExpr constraint)
+  {
+    this.constraint = constraint;
+  }
 
-    public SmtExpr getConstraint()
-    {
-        return constraint;
-    }
+  public SmtExpr getConstraint()
+  {
+    return constraint;
+  }
 
-    @Override
-    public void accept(SmtAstVisitor visitor)
-    {
-        visitor.visit(this);
-    }
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
 }

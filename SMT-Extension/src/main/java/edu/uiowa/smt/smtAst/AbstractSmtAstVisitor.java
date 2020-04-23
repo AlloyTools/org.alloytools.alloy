@@ -4,296 +4,296 @@ import java.util.Map;
 
 abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
 {
-    @Override
-    public void visit(SmtExpr smtExpr)
+  @Override
+  public void visit(SmtExpr smtExpr)
+  {
+    if (smtExpr instanceof Variable)
     {
-        if (smtExpr instanceof Variable)
-        {
-            this.visit((Variable) smtExpr);
-        }
-        else if (smtExpr instanceof SmtUnaryExpr)
-        {
-            this.visit((SmtUnaryExpr) smtExpr);
-        }
-        else if (smtExpr instanceof SmtBinaryExpr)
-        {
-            this.visit((SmtBinaryExpr) smtExpr);
-        }
-        else if (smtExpr instanceof SmtMultiArityExpr)
-        {
-            this.visit((SmtMultiArityExpr) smtExpr);
-        }
-        else if (smtExpr instanceof SmtQtExpr)
-        {
-            this.visit((SmtQtExpr) smtExpr);
-        }
-        else if (smtExpr instanceof  Sort)
-        {
-            this.visit((Sort) smtExpr);
-        }
-        else if (smtExpr instanceof  IntConstant)
-        {
-            this.visit((IntConstant) smtExpr);
-        }
-        else if (smtExpr instanceof SmtCallExpr)
-        {
-            this.visit((SmtCallExpr) smtExpr);
-        }
-        else if (smtExpr instanceof BoolConstant)
-        {
-            this.visit((BoolConstant) smtExpr);
-        }
-        else if (smtExpr instanceof SmtLetExpr)
-        {
-            this.visit((SmtLetExpr) smtExpr);
-        }
-        else if (smtExpr instanceof SmtIteExpr)
-        {
-            this.visit((SmtIteExpr) smtExpr);
-        }
-        else if (smtExpr instanceof UninterpretedConstant)
-        {
-            this.visit((UninterpretedConstant) smtExpr);
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
+      this.visit((Variable) smtExpr);
     }
-
-    @Override
-    public void visit(Sort sort)
+    else if (smtExpr instanceof SmtUnaryExpr)
     {
-        if (sort instanceof  UninterpretedSort)
-        {
-            this.visit((UninterpretedSort) sort);
-        }
-        else if (sort instanceof  SetSort)
-        {
-            this.visit((SetSort) sort);
-        }
-        else if (sort instanceof  TupleSort)
-        {
-            this.visit((TupleSort) sort);
-        }
-        else if (sort instanceof  IntSort)
-        {
-            this.visit((IntSort) sort);
-        }
-        else if (sort instanceof  RealSort)
-        {
-            this.visit((RealSort) sort);
-        }
-        else if (sort instanceof  StringSort)
-        {
-            this.visit((StringSort) sort);
-        }
-        else if (sort instanceof  StringSort)
-        {
-            this.visit((StringSort) sort);
-        }
-        else if (sort instanceof  BoolSort)
-        {
-            this.visit((BoolSort) sort);
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
+      this.visit((SmtUnaryExpr) smtExpr);
     }
-
-    @Override
-    public void visit(SmtScript script)
+    else if (smtExpr instanceof SmtBinaryExpr)
     {
-        for (Sort sort: script.getSorts())
-        {
-            visit(sort);
-        }
-        for (FunctionDeclaration function: script.getFunctions())
-        {
-            visit(function);
-        }
-        for (Assertion assertion: script.getAssertions())
-        {
-            visit(assertion);
-        }
+      this.visit((SmtBinaryExpr) smtExpr);
     }
-
-    @Override
-    public void visit(SmtBinaryExpr expr)
+    else if (smtExpr instanceof SmtMultiArityExpr)
     {
-        visit(expr.getA());
-        visit(expr.getB());
+      this.visit((SmtMultiArityExpr) smtExpr);
     }
-
-    @Override
-    public void visit(IntSort intSort)
+    else if (smtExpr instanceof SmtQtExpr)
     {
+      this.visit((SmtQtExpr) smtExpr);
     }
-
-    @Override
-    public void visit(SmtQtExpr quantifiedExpression)
+    else if (smtExpr instanceof Sort)
     {
-        for (SmtVariable boundVariable: quantifiedExpression.getVariables())
-        {
-            this.visit(boundVariable);
-        }
-        this.visit(quantifiedExpression.getExpression());
+      this.visit((Sort) smtExpr);
     }
-
-    @Override
-    public void visit(RealSort realSort)
+    else if (smtExpr instanceof IntConstant)
     {
-
+      this.visit((IntConstant) smtExpr);
     }
-
-    @Override
-    public void visit(SetSort setSort)
+    else if (smtExpr instanceof SmtCallExpr)
     {
-        visit(setSort.elementSort);
+      this.visit((SmtCallExpr) smtExpr);
     }
-
-    @Override
-    public void visit(StringSort stringSort)
+    else if (smtExpr instanceof BoolConstant)
     {
+      this.visit((BoolConstant) smtExpr);
     }
-
-    @Override
-    public void visit(TupleSort tupleSort)
+    else if (smtExpr instanceof SmtLetExpr)
     {
-        for (Sort sort: tupleSort.elementSorts)
-        {
-            visit(sort);
-        }
+      this.visit((SmtLetExpr) smtExpr);
     }
-
-    @Override
-    public void visit(SmtUnaryExpr unaryExpression)
+    else if (smtExpr instanceof SmtIteExpr)
     {
-        visit(unaryExpression.getExpression());
+      this.visit((SmtIteExpr) smtExpr);
     }
-
-    @Override
-    public void visit(UninterpretedSort uninterpretedSort)
+    else if (smtExpr instanceof UninterpretedConstant)
     {
+      this.visit((UninterpretedConstant) smtExpr);
     }
-
-    @Override
-    public void visit(IntConstant intConstant)
+    else
     {
+      throw new UnsupportedOperationException();
     }
+  }
 
-    @Override
-    public void visit(Variable variable)
+  @Override
+  public void visit(Sort sort)
+  {
+    if (sort instanceof UninterpretedSort)
     {
+      this.visit((UninterpretedSort) sort);
     }
-
-    @Override
-    public void visit(FunctionDeclaration functionDeclaration)
+    else if (sort instanceof SetSort)
     {
-        for (Sort sort: functionDeclaration.getInputSorts())
-        {
-            visit(sort);
-        }
-        visit(functionDeclaration.getSort());
+      this.visit((SetSort) sort);
     }
-
-    @Override
-    public void visit(FunctionDefinition functionDefinition)
+    else if (sort instanceof TupleSort)
     {
-        for (SmtVariable variable: functionDefinition.getInputVariables())
-        {
-            visit(variable);
-        }
-        visit(functionDefinition.getSmtExpr());
-        visit(functionDefinition.getSort());
+      this.visit((TupleSort) sort);
     }
-
-    @Override
-    public void visit(BoolConstant booleanConstant)
+    else if (sort instanceof IntSort)
     {
+      this.visit((IntSort) sort);
     }
-
-    @Override
-    public void visit(Assertion assertion)
+    else if (sort instanceof RealSort)
     {
-        visit(assertion.getSmtExpr());
+      this.visit((RealSort) sort);
     }
-
-    @Override
-    public void visit(SmtMultiArityExpr expression)
+    else if (sort instanceof StringSort)
     {
-        for (SmtExpr expr: expression.getExpressions())
-        {
-            visit(expr);
-        }
+      this.visit((StringSort) sort);
     }
-
-    @Override
-    public void visit(SmtCallExpr callExpression)
+    else if (sort instanceof StringSort)
     {
-        for (SmtExpr expr: callExpression.getArguments())
-        {
-            visit(expr);
-        }
+      this.visit((StringSort) sort);
     }
-
-    @Override
-    public void visit(SmtVariable smtVariable)
+    else if (sort instanceof BoolSort)
     {
-        visit(smtVariable.getSort());
+      this.visit((BoolSort) sort);
     }
-
-    @Override
-    public void visit(BoolSort boolSort)
+    else
     {
+      throw new UnsupportedOperationException();
     }
+  }
 
-    @Override
-    public void visit(SmtLetExpr letExpression)
+  @Override
+  public void visit(SmtScript script)
+  {
+    for (Sort sort : script.getSorts())
     {
-        for (Map.Entry<SmtVariable, SmtExpr> entry : letExpression.getLetVariables().entrySet())
-        {
-            visit(entry.getKey());
-            visit(entry.getValue());
-        }
-        visit(letExpression.getExpression());
+      visit(sort);
     }
-
-    @Override
-    public void visit(SmtIteExpr iteExpression)
+    for (FunctionDeclaration function : script.getFunctions())
     {
-        visit(iteExpression.getCondExpression());
-        visit(iteExpression.getThenExpression());
-        visit(iteExpression.getElseExpression());
+      visit(function);
     }
-
-    @Override
-    public void visit(UninterpretedConstant uninterpretedConstant)
+    for (Assertion assertion : script.getAssertions())
     {
-        visit(uninterpretedConstant.getSort());
+      visit(assertion);
     }
+  }
 
-    @Override
-    public void visit(SmtSettings smtSettings)
+  @Override
+  public void visit(SmtBinaryExpr expr)
+  {
+    visit(expr.getA());
+    visit(expr.getB());
+  }
+
+  @Override
+  public void visit(IntSort intSort)
+  {
+  }
+
+  @Override
+  public void visit(SmtQtExpr quantifiedExpression)
+  {
+    for (SmtVariable boundVariable : quantifiedExpression.getVariables())
     {
+      this.visit(boundVariable);
     }
+    this.visit(quantifiedExpression.getExpression());
+  }
 
-    @Override
-    public void visit(SmtValues smtValues)
+  @Override
+  public void visit(RealSort realSort)
+  {
+
+  }
+
+  @Override
+  public void visit(SetSort setSort)
+  {
+    visit(setSort.elementSort);
+  }
+
+  @Override
+  public void visit(StringSort stringSort)
+  {
+  }
+
+  @Override
+  public void visit(TupleSort tupleSort)
+  {
+    for (Sort sort : tupleSort.elementSorts)
     {
-
+      visit(sort);
     }
+  }
 
-    @Override
-    public void visit(ExpressionValue expressionValue)
+  @Override
+  public void visit(SmtUnaryExpr unaryExpression)
+  {
+    visit(unaryExpression.getExpression());
+  }
+
+  @Override
+  public void visit(UninterpretedSort uninterpretedSort)
+  {
+  }
+
+  @Override
+  public void visit(IntConstant intConstant)
+  {
+  }
+
+  @Override
+  public void visit(Variable variable)
+  {
+  }
+
+  @Override
+  public void visit(FunctionDeclaration functionDeclaration)
+  {
+    for (Sort sort : functionDeclaration.getInputSorts())
     {
-
+      visit(sort);
     }
+    visit(functionDeclaration.getSort());
+  }
 
-    @Override
-    public void visit(SmtUnsatCore smtUnsatCore)
+  @Override
+  public void visit(FunctionDefinition functionDefinition)
+  {
+    for (SmtVariable variable : functionDefinition.getInputVariables())
     {
-
+      visit(variable);
     }
+    visit(functionDefinition.getSmtExpr());
+    visit(functionDefinition.getSort());
+  }
+
+  @Override
+  public void visit(BoolConstant booleanConstant)
+  {
+  }
+
+  @Override
+  public void visit(Assertion assertion)
+  {
+    visit(assertion.getSmtExpr());
+  }
+
+  @Override
+  public void visit(SmtMultiArityExpr expression)
+  {
+    for (SmtExpr expr : expression.getExpressions())
+    {
+      visit(expr);
+    }
+  }
+
+  @Override
+  public void visit(SmtCallExpr callExpression)
+  {
+    for (SmtExpr expr : callExpression.getArguments())
+    {
+      visit(expr);
+    }
+  }
+
+  @Override
+  public void visit(SmtVariable smtVariable)
+  {
+    visit(smtVariable.getSort());
+  }
+
+  @Override
+  public void visit(BoolSort boolSort)
+  {
+  }
+
+  @Override
+  public void visit(SmtLetExpr letExpression)
+  {
+    for (Map.Entry<SmtVariable, SmtExpr> entry : letExpression.getLetVariables().entrySet())
+    {
+      visit(entry.getKey());
+      visit(entry.getValue());
+    }
+    visit(letExpression.getExpression());
+  }
+
+  @Override
+  public void visit(SmtIteExpr iteExpression)
+  {
+    visit(iteExpression.getCondExpression());
+    visit(iteExpression.getThenExpression());
+    visit(iteExpression.getElseExpression());
+  }
+
+  @Override
+  public void visit(UninterpretedConstant uninterpretedConstant)
+  {
+    visit(uninterpretedConstant.getSort());
+  }
+
+  @Override
+  public void visit(SmtSettings smtSettings)
+  {
+  }
+
+  @Override
+  public void visit(SmtValues smtValues)
+  {
+
+  }
+
+  @Override
+  public void visit(ExpressionValue expressionValue)
+  {
+
+  }
+
+  @Override
+  public void visit(SmtUnsatCore smtUnsatCore)
+  {
+
+  }
 }
