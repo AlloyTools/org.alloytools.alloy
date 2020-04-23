@@ -2,6 +2,7 @@ package edu.uiowa.alloy2smt.translators;
 
 import edu.mit.csail.sdg.ast.ExprLet;
 import edu.uiowa.smt.SmtEnv;
+import edu.uiowa.smt.smtAst.BoolSort;
 import edu.uiowa.smt.smtAst.SmtExpr;
 import edu.uiowa.smt.smtAst.SmtLetExpr;
 import edu.uiowa.smt.smtAst.SmtVariable;
@@ -22,17 +23,27 @@ public class ExprLetTranslator
 
   SmtExpr translateExprLet(ExprLet exprLet, SmtEnv smtEnv)
   {
-    SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, smtEnv);
+    SmtEnv letEnv = new SmtEnv(smtEnv);
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprLet.expr, letEnv);
 
     SmtVariable declaration = new SmtVariable(exprLet.var.label,
         smtExpr.getSort(), true);
     Map<SmtVariable, SmtExpr> map = new HashMap<>();
     map.put(declaration, smtExpr);
 
-    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
-    newSmtEnv.put(declaration.getName(), declaration.getVariable());
-    SmtExpr body = exprTranslator.translateExpr(exprLet.sub, newSmtEnv);
+    letEnv.put(declaration.getName(), declaration.getVariable());
+    SmtExpr body = exprTranslator.translateExpr(exprLet.sub, letEnv);
     SmtExpr let = new SmtLetExpr(map, body);
+    if(let.getSort() instanceof BoolSort)
+    {
+      SmtExpr finalExpr = exprTranslator.addAuxiliaryVaraibles(let, letEnv);
+      return finalExpr;
+    }
+    // add auxiliary variables to smtEnv
+    for (SmtVariable variable: letEnv.getAuxiliaryVariables())
+    {
+      smtEnv.addAuxiliaryVariable(variable);
+    }
     return let;
   }
 }
