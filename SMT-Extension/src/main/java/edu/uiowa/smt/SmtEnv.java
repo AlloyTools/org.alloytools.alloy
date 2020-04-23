@@ -1,24 +1,20 @@
 package edu.uiowa.smt;
 
-import edu.uiowa.smt.smtAst.SmtExpr;
-import edu.uiowa.smt.smtAst.SmtMultiArityExpr;
-import edu.uiowa.smt.smtAst.SmtQtExpr;
-import edu.uiowa.smt.smtAst.SmtVariable;
+import edu.uiowa.smt.smtAst.*;
 
 import java.util.*;
 
 public class SmtEnv
 {
-  private Map<String, SmtExpr> variablesMap = new HashMap<>();
+  private LinkedHashMap<String, SmtExpr> variablesMap = new LinkedHashMap<>();
+  private List<SmtVariable> auxiliaryVariables = new ArrayList<>();
   private SmtEnv parent;
-  //ToDo: review making this auxiliary formula more general
-  private SmtQtExpr auxiliaryFormula = null;
 
   // top level environment
   public SmtEnv()
   {
     parent = null;
-    variablesMap = new HashMap<>();
+    variablesMap = new LinkedHashMap<>();
   }
 
   public SmtEnv(SmtEnv parent)
@@ -73,6 +69,11 @@ public class SmtEnv
     return parent;
   }
 
+  public List<SmtVariable> getAuxiliaryVariables()
+  {
+    return auxiliaryVariables;
+  }
+
   public LinkedHashMap<String, SmtExpr> getVariables()
   {
     return getVariablesAuxiliary(this);
@@ -90,33 +91,9 @@ public class SmtEnv
     return map;
   }
 
-  public void addAuxiliaryFormula(SmtQtExpr expression)
+  public void addAuxiliaryVariable(SmtVariable variable)
   {
-    if (expression.getOp() != SmtQtExpr.Op.EXISTS)
-    {
-      throw new UnsupportedOperationException();
-    }
-    if (auxiliaryFormula == null)
-    {
-      auxiliaryFormula = expression;
-    }
-    else
-    {
-      List<SmtVariable> variables = new ArrayList<>(auxiliaryFormula.getVariables());
-      variables.addAll(expression.getVariables());
-
-      SmtExpr and = SmtMultiArityExpr.Op.AND.make(auxiliaryFormula.getExpression(), expression);
-      auxiliaryFormula = SmtQtExpr.Op.EXISTS.make(and, variables);
-    }
-  }
-
-  public SmtQtExpr getAuxiliaryFormula()
-  {
-    return auxiliaryFormula;
-  }
-
-  public void clearAuxiliaryFormula()
-  {
-    auxiliaryFormula = null;
+    auxiliaryVariables.add(variable);
+    variablesMap.put(variable.getName(), variable.getVariable());
   }
 }

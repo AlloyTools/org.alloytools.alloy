@@ -166,7 +166,7 @@ public class ExprUnaryTranslator
     SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newSmtEnv);
     SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
     SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(isEmpty, newSmtEnv);
     return finalSmtExpr;
   }
 
@@ -177,7 +177,7 @@ public class ExprUnaryTranslator
     SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
     SmtExpr equality = SmtBinaryExpr.Op.EQ.make(set, emptySet);
     SmtExpr isNotEmpty = SmtUnaryExpr.Op.NOT.make(equality);
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(isNotEmpty, newSmtEnv);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(isNotEmpty, newSmtEnv);
     return finalSmtExpr;
   }
 
@@ -190,7 +190,7 @@ public class ExprUnaryTranslator
     SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
     SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
     SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(exists, newSmtEnv);
     return finalSmtExpr;
   }
 
@@ -210,9 +210,9 @@ public class ExprUnaryTranslator
     variable.setConstraint(member);
 
     SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
-    SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(member, variable);
 
-    smtEnv.addAuxiliaryFormula(exists);
+    variable.setConstraint(member);
+    smtEnv.addAuxiliaryVariable(variable);
     return singleton;
   }
 
@@ -240,8 +240,7 @@ public class ExprUnaryTranslator
     SmtQtExpr exists1 = SmtQtExpr.Op.EXISTS.make(subset2, variable);
     SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, exists1);
     setVariable.setConstraint(andExpr);
-    SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
-    smtEnv.addAuxiliaryFormula(exists2);
+    smtEnv.addAuxiliaryVariable(setVariable);
     return setVariable.getVariable();
   }
 
@@ -264,8 +263,7 @@ public class ExprUnaryTranslator
     SmtExpr notEmpty = SmtUnaryExpr.Op.NOT.make(equal);
     SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset, notEmpty);
     setVariable.setConstraint(andExpr);
-    SmtQtExpr exists2 = SmtQtExpr.Op.EXISTS.make(andExpr, setVariable);
-    smtEnv.addAuxiliaryFormula(exists2);
+    smtEnv.addAuxiliaryVariable(setVariable);
     return setVariable.getVariable();
   }
 
@@ -281,7 +279,7 @@ public class ExprUnaryTranslator
     SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
     SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
     SmtExpr or = SmtMultiArityExpr.Op.OR.make(isEmpty, exists);
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(or, newSmtEnv);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(or, newSmtEnv);
     return finalSmtExpr;
   }
 }

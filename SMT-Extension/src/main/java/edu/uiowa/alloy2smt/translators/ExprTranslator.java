@@ -66,34 +66,21 @@ public class ExprTranslator
     assert (expr.type() == Type.FORMULA);
     SmtEnv smtEnv = new SmtEnv();
     SmtExpr formula = translateExpr(expr, smtEnv);
-    formula = translateAuxiliaryFormula(formula, smtEnv);
+    formula = addAuxiliaryVaraibles(formula, smtEnv);
     Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
     translator.smtScript.addAssertion(assertion);
     return formula;
   }
 
-  public SmtExpr translateAuxiliaryFormula(SmtExpr booleanSmtExpr, SmtEnv smtEnv)
+  public SmtExpr addAuxiliaryVaraibles(SmtExpr booleanSmtExpr, SmtEnv smtEnv)
   {
     assert (booleanSmtExpr.getSort().equals(AbstractTranslator.boolSort));
-
-    // if there is a multiplicity constraint
-    if (smtEnv.getAuxiliaryFormula() != null)
+    List<SmtVariable> variables = smtEnv.getAuxiliaryVariables();
+    if (! variables.isEmpty())
     {
-      SmtQtExpr formula = smtEnv.getAuxiliaryFormula();
-      if (formula.getOp() == SmtQtExpr.Op.EXISTS)
-      {
-        SmtExpr body = SmtMultiArityExpr.Op.AND.make(formula.getExpression(), booleanSmtExpr);
-        booleanSmtExpr = SmtQtExpr.Op.EXISTS.make(body, formula.getVariables());
-      }
-      else if (formula.getOp() == SmtQtExpr.Op.FORALL)
-      {
-        SmtExpr body = SmtBinaryExpr.Op.IMPLIES.make(formula.getExpression(), booleanSmtExpr);
-        booleanSmtExpr = SmtQtExpr.Op.FORALL.make(body, formula.getVariables());
-      }
-      else
-      {
-        throw new UnsupportedOperationException();
-      }
+      SmtExpr constraints = TranslatorUtils.getVariablesConstraints(variables);
+      SmtExpr body = SmtMultiArityExpr.Op.AND.make(constraints, booleanSmtExpr);
+      booleanSmtExpr = SmtQtExpr.Op.EXISTS.make(body, variables);
     }
     return booleanSmtExpr;
   }

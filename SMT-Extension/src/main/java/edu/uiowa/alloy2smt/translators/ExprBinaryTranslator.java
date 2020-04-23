@@ -207,10 +207,8 @@ public class ExprBinaryTranslator
 
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
-
-
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
     return multiplicitySet.getVariable();
   }
 
@@ -272,9 +270,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
 
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -329,8 +327,8 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllY);
 
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -392,8 +390,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -446,8 +445,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllX = SmtQtExpr.Op.FORALL.make(xImplies, x);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -494,8 +494,8 @@ public class ExprBinaryTranslator
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(Arrays.asList(forAllX, forAllY, subset));
 
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
     return multiplicitySet.getVariable();
   }
 
@@ -532,9 +532,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
 
-    smtEnv.addAuxiliaryFormula(existsSet);
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -571,9 +571,10 @@ public class ExprBinaryTranslator
     SmtExpr xImplies = SmtBinaryExpr.Op.IMPLIES.make(xMemberA, existsY);
     SmtExpr forAllX = SmtQtExpr.Op.FORALL.make(xImplies, x);
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
 
-    smtEnv.addAuxiliaryFormula(existsSet);
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
+
     return multiplicitySet.getVariable();
   }
 
@@ -652,9 +653,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
 
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -722,8 +723,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -782,10 +784,8 @@ public class ExprBinaryTranslator
     SmtExpr forAllX = SmtQtExpr.Op.FORALL.make(xImplies, x);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
-
-
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
     return multiplicitySet.getVariable();
   }
 
@@ -867,8 +867,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
 
     return multiplicitySet.getVariable();
@@ -949,8 +950,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
 
     return multiplicitySet.getVariable();
@@ -1022,8 +1024,9 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllX, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -1082,8 +1085,8 @@ public class ExprBinaryTranslator
     SmtExpr forAllY = SmtQtExpr.Op.FORALL.make(yImplies, y);
 
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(subset, forAllY);
-    SmtQtExpr existsSet = SmtQtExpr.Op.EXISTS.make(and, multiplicitySet);
-    smtEnv.addAuxiliaryFormula(existsSet);
+    multiplicitySet.setConstraint(and);
+    smtEnv.addAuxiliaryVariable(multiplicitySet);
 
     return multiplicitySet.getVariable();
   }
@@ -1114,8 +1117,8 @@ public class ExprBinaryTranslator
     SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     SmtExpr implies = SmtBinaryExpr.Op.IMPLIES.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(implies, smtEnvA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(implies, smtEnvA);
+    finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
@@ -1127,8 +1130,8 @@ public class ExprBinaryTranslator
     SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     SmtExpr and = SmtMultiArityExpr.Op.AND.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(and, smtEnvA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(and, smtEnvA);
+    finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
@@ -1140,8 +1143,8 @@ public class ExprBinaryTranslator
     SmtExpr B = exprTranslator.translateExpr(expr.right, smtEnvB);
     SmtExpr or = SmtMultiArityExpr.Op.OR.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(or, smtEnvA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(or, smtEnvA);
+    finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
@@ -1270,10 +1273,14 @@ public class ExprBinaryTranslator
     }
     else
     {
-      SmtExpr leftExpr = exprTranslator.translateExpr(expr.left, smtEnv);
-      SmtExpr rightExpr = exprTranslator.translateExpr(expr.right, smtEnv);
-      SmtExpr comparisonExpr = getComparison(op, leftExpr, rightExpr);
-      return exprTranslator.translateAuxiliaryFormula(comparisonExpr, smtEnv);
+      SmtEnv envA = new SmtEnv(smtEnv);
+      SmtEnv envB = new SmtEnv(smtEnv);
+      SmtExpr A = exprTranslator.translateExpr(expr.left, envA);
+      SmtExpr B = exprTranslator.translateExpr(expr.right, envB);
+      SmtExpr comparisonExpr = getComparison(op, A, B);
+      SmtExpr finalExpr = exprTranslator.addAuxiliaryVaraibles(comparisonExpr, envA);
+      finalExpr = exprTranslator.addAuxiliaryVaraibles(finalExpr, envB);
+      return finalExpr;
     }
   }
 
@@ -1334,8 +1341,8 @@ public class ExprBinaryTranslator
 
     SmtExpr equality = SmtBinaryExpr.Op.EQ.make(A, B);
 
-    SmtExpr finalSmtExpr = exprTranslator.translateAuxiliaryFormula(equality, smtEnvA);
-    finalSmtExpr = exprTranslator.translateAuxiliaryFormula(finalSmtExpr, smtEnvB);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(equality, smtEnvA);
+    finalSmtExpr = exprTranslator.addAuxiliaryVaraibles(finalSmtExpr, smtEnvB);
     return finalSmtExpr;
   }
 
@@ -1411,13 +1418,13 @@ public class ExprBinaryTranslator
         if (n < 0)
         {
           // impossible
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(BoolConstant.False, newSmtEnv);
         }
 
         if (n == 0)
         {
           // empty set
-          return exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(isEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n, elementSort);
@@ -1425,7 +1432,7 @@ public class ExprBinaryTranslator
         SmtExpr equalExpr = SmtBinaryExpr.Op.EQ.make(setExpr, cardinalitySet);
         SmtExpr andExpr = makeDistinct(equalExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
+        return exprTranslator.addAuxiliaryVaraibles(exists, newSmtEnv);
       }
 
       case LT:
@@ -1433,13 +1440,13 @@ public class ExprBinaryTranslator
         if (n <= 0)
         {
           // impossible
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(BoolConstant.False, newSmtEnv);
         }
 
         if (n == 1)
         {
           // empty set
-          return exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(isEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n - 1, elementSort);
@@ -1447,7 +1454,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(setExpr, cardinalitySet);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
+        return exprTranslator.addAuxiliaryVaraibles(exists, newSmtEnv);
       }
 
       case LTE:
@@ -1455,13 +1462,13 @@ public class ExprBinaryTranslator
         if (n <= -1)
         {
           // impossible
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.False, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(BoolConstant.False, newSmtEnv);
         }
 
         if (n == 0)
         {
           // empty set
-          return exprTranslator.translateAuxiliaryFormula(isEmpty, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(isEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n, elementSort);
@@ -1469,7 +1476,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(setExpr, cardinalitySet);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
+        return exprTranslator.addAuxiliaryVaraibles(exists, newSmtEnv);
       }
 
       case GT:
@@ -1477,12 +1484,12 @@ public class ExprBinaryTranslator
         if (n <= -1)
         {
           // valid
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(BoolConstant.True, newSmtEnv);
         }
         if (n == 0)
         {
           // not empty
-          return exprTranslator.translateAuxiliaryFormula(notEmpty, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(notEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n + 1, elementSort);
@@ -1490,7 +1497,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(cardinalitySet, setExpr);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
+        return exprTranslator.addAuxiliaryVaraibles(exists, newSmtEnv);
       }
 
       case GTE:
@@ -1498,13 +1505,13 @@ public class ExprBinaryTranslator
         if (n <= 0)
         {
           // valid
-          return exprTranslator.translateAuxiliaryFormula(BoolConstant.True, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(BoolConstant.True, newSmtEnv);
         }
 
         if (n == 1)
         {
           // not empty
-          return exprTranslator.translateAuxiliaryFormula(notEmpty, newSmtEnv);
+          return exprTranslator.addAuxiliaryVaraibles(notEmpty, newSmtEnv);
         }
 
         List<SmtVariable> vars = generateVariables(n, elementSort);
@@ -1512,7 +1519,7 @@ public class ExprBinaryTranslator
         SmtExpr subsetExpr = SmtBinaryExpr.Op.SUBSET.make(cardinalitySet, setExpr);
         SmtExpr andExpr = makeDistinct(subsetExpr, vars);
         SmtExpr exists = SmtQtExpr.Op.EXISTS.make(andExpr, vars);
-        return exprTranslator.translateAuxiliaryFormula(exists, newSmtEnv);
+        return exprTranslator.addAuxiliaryVaraibles(exists, newSmtEnv);
       }
 
       default:
@@ -1633,9 +1640,10 @@ public class ExprBinaryTranslator
       translation = SmtBinaryExpr.Op.MEMBER.make(A, B);
     }
 
-    translation = exprTranslator.translateAuxiliaryFormula(translation, smtEnvB);
+    SmtExpr finalExpr = exprTranslator.addAuxiliaryVaraibles(translation, smtEnvA);
+    finalExpr = exprTranslator.addAuxiliaryVaraibles(finalExpr, smtEnvB);
 
-    return translation;
+    return finalExpr;
   }
 
   private SmtExpr translateJoin(ExprBinary expr, SmtEnv smtEnv)
@@ -1683,20 +1691,21 @@ public class ExprBinaryTranslator
     SmtExpr xyOperation = op.make(xValue, yValue);
     SmtExpr equal = SmtBinaryExpr.Op.EQ.make(xyOperation, zValue);
 
-    if (translator.alloySettings.integerSingletonsOnly)
-    {
-      // A= {x}, B = {y} => Result = {z} where z = (x operation y)
-      SmtExpr xSingleton = SmtUnaryExpr.Op.SINGLETON.make(xTuple);
-      SmtExpr ySingleton = SmtUnaryExpr.Op.SINGLETON.make(yTuple);
-      SmtExpr singletonA = SmtBinaryExpr.Op.EQ.make(A, xSingleton);
-      SmtExpr singletonB = SmtBinaryExpr.Op.EQ.make(B, ySingleton);
-
-      SmtExpr and = SmtMultiArityExpr.Op.AND.make(equal, singletonA, singletonB);
-
-      SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(and, x, y, z);
-      smtEnv.addAuxiliaryFormula(exists);
-      return z.getVariable();
-    }
+    //ToDo: refactor this into optimization
+//    if (translator.alloySettings.integerSingletonsOnly)
+//    {
+//      // A= {x}, B = {y} => Result = {z} where z = (x operation y)
+//      SmtExpr xSingleton = SmtUnaryExpr.Op.SINGLETON.make(xTuple);
+//      SmtExpr ySingleton = SmtUnaryExpr.Op.SINGLETON.make(yTuple);
+//      SmtExpr singletonA = SmtBinaryExpr.Op.EQ.make(A, xSingleton);
+//      SmtExpr singletonB = SmtBinaryExpr.Op.EQ.make(B, ySingleton);
+//
+//      SmtExpr and = SmtMultiArityExpr.Op.AND.make(equal, singletonA, singletonB);
+//
+//      SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(and, x, y, z);
+//      smtEnv.addAuxiliaryFormula(exists);
+//      return z.getVariable();
+//    }
 
     SmtVariable result = new SmtVariable(freshName, AbstractTranslator.setOfUninterpretedIntTuple, false);
     SmtExpr resultSmtExpr = result.getVariable();
@@ -1726,8 +1735,9 @@ public class ExprBinaryTranslator
     SmtExpr axiom2 = SmtQtExpr.Op.FORALL.make(implies2, x, y);
 
     SmtExpr axioms = SmtMultiArityExpr.Op.AND.make(axiom1, axiom2);
-    SmtQtExpr exists = SmtQtExpr.Op.EXISTS.make(axioms, result);
-    smtEnv.addAuxiliaryFormula(exists);
+
+    result.setConstraint(axioms);
+    smtEnv.addAuxiliaryVariable(result);
 
     return resultSmtExpr;
   }

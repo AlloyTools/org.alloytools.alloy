@@ -366,4 +366,18 @@ public class TranslatorUtils
     }
     return newVariables;
   }
+
+  public static SmtExpr getVariablesConstraints(List<SmtVariable> smtVariables)
+  {
+    SmtExpr andExpr = BoolConstant.True;
+    for (SmtVariable smtVariable : smtVariables)
+    {
+      if (smtVariable.getConstraint() == null)
+      {
+        continue;
+      }
+      andExpr = SmtMultiArityExpr.Op.AND.make(andExpr, smtVariable.getConstraint());
+    }
+    return andExpr;
+  }
 }
