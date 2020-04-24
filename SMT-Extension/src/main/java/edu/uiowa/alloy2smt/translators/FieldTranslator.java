@@ -195,7 +195,8 @@ public class FieldTranslator
     Decl decl = new Decl(null, null, null, Collections.singletonList(zis), oneOfSig);
     Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), exprLet);
 
-    SmtExpr multiplicity = translator.exprTranslator.translateExpr(all, new SmtEnv());
+    SmtEnv smtEnv = new SmtEnv();
+    SmtExpr multiplicity = translator.exprTranslator.translateExpr(all, smtEnv);
     Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(field.pos), field.toString() + " multiplicity", multiplicity);
     translator.smtScript.addAssertion(assertion);
 

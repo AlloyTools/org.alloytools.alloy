@@ -1640,10 +1640,33 @@ public class ExprBinaryTranslator
       translation = SmtBinaryExpr.Op.MEMBER.make(A, B);
     }
 
-    SmtExpr finalExpr = exprTranslator.addAuxiliaryVaraibles(translation, smtEnvA);
-    finalExpr = exprTranslator.addAuxiliaryVaraibles(finalExpr, smtEnvB);
+    // auxiliary variables for expression A should be handled before coming here
+    assert (smtEnvA.getAuxiliaryVariables().isEmpty());
 
-    return finalExpr;
+    if (!smtEnvB.getAuxiliaryVariables().isEmpty())
+    {
+      //if not empty,  there should be a single auxiliary variable for the set B
+      List<SmtVariable> variables = smtEnvB.getAuxiliaryVariables();
+      assert (variables.size() == 1);
+      // here we replace the set variable in B,  with set A.
+      SmtVariable variable = variables.get(0);
+      if(variable.getConstraint() != null)
+      {
+        if(variable.getSort() instanceof SetSort)
+        {
+          SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), A);
+          return constraint;
+        }
+        else
+        {
+          SmtExpr choose = SmtUnaryExpr.Op.CHOOSE.make(A);
+          SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), choose);
+          return constraint;
+        }
+      }
+    }
+
+    return translation;
   }
 
   private SmtExpr translateJoin(ExprBinary expr, SmtEnv smtEnv)
