@@ -10,6 +10,10 @@ package edu.uiowa.smt.smtAst;
 
 public interface SmtAstVisitor
 {
+  void visit(SmtAst smtAst);
+
+  void visit(Declaration declaration);
+
   void visit(SmtScript script);
 
   void visit(SmtBinaryExpr expr);

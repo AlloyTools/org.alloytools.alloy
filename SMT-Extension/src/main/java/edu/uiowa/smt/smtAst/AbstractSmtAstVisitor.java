@@ -5,6 +5,44 @@ import java.util.Map;
 abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
 {
   @Override
+  public void visit(SmtAst smtAst)
+  {
+    if(smtAst instanceof SmtScript)
+    {
+      this.visit((SmtScript) smtAst);
+    }
+    else if(smtAst instanceof Declaration)
+    {
+      this.visit((Declaration) smtAst);
+    }
+    else
+    {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
+  public void visit(Declaration declaration)
+  {
+    if(declaration instanceof FunctionDefinition)
+    {
+      this.visit((FunctionDefinition) declaration);
+    }
+    else if(declaration instanceof FunctionDeclaration)
+    {
+      this.visit((FunctionDeclaration) declaration);
+    }
+    else if(declaration instanceof SmtVariable)
+    {
+      this.visit((SmtVariable) declaration);
+    }
+    else
+    {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
   public void visit(SmtExpr smtExpr)
   {
     if (smtExpr instanceof Variable)
@@ -109,7 +147,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     {
       visit(sort);
     }
-    for (FunctionDeclaration function : script.getFunctions())
+    for (Declaration function : script.getFunctions())
     {
       visit(function);
     }
