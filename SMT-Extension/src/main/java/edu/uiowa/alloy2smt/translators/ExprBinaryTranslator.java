@@ -1645,10 +1645,15 @@ public class ExprBinaryTranslator
 
     if (!smtEnvB.getAuxiliaryVariables().isEmpty())
     {
-      //if not empty,  there should be a single auxiliary variable for the set B
+      //if not empty, there should be a only one auxiliary variable for set B
       List<SmtVariable> variables = smtEnvB.getAuxiliaryVariables();
       assert (variables.size() == 1);
-      // here we replace the set variable in B,  with set A.
+      // When there is an auxiliary variable, this means the IN operator is used
+      // as a multiplicity constraint for A, and not as subset operator.
+      // Example:'s in (A one -> some A)'. The translation is not (subset s temp)
+      // where 'temp' is the translation of (A one -> some A). But translation should
+      // restrict  's' to satisfy the multiplicity constraint.
+
       SmtVariable variable = variables.get(0);
       if(variable.getConstraint() != null)
       {
