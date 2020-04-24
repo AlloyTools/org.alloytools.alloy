@@ -25,7 +25,7 @@ public class DeclTranslator
   public List<SmtVariable> translateDecls(List<Decl> decls, SmtEnv smtEnv)
   {
     List<SmtVariable> variables = new ArrayList<>();
-    for (Decl decl: decls)
+    for (Decl decl : decls)
     {
       variables.addAll(translateDecl(decl, smtEnv));
     }
@@ -42,12 +42,8 @@ public class DeclTranslator
       variables.add(translateIndividualDecl(individualDecl, smtEnv));
     }
 
-    //ToDo: disjoint
-
-    //ToDo: disjoint2
-
     // add variables to the environment
-    for (SmtVariable variable: variables)
+    for (SmtVariable variable : variables)
     {
       smtEnv.put(variable.getName(), variable.getVariable());
     }
@@ -92,7 +88,7 @@ public class DeclTranslator
     {
       Variable variable = (Variable) set;
       SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
-      if(constraint != null)
+      if (constraint != null)
       {
         smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
       }
@@ -103,5 +99,43 @@ public class DeclTranslator
       smtVariable.setConstraint(subset);
     }
     return smtVariable;
+  }
+
+  public SmtExpr getDisjointConstraints(List<Decl> decls, SmtEnv smtEnv)
+  {
+    SmtExpr disjointConstraints = BoolConstant.True;
+
+    for (Decl decl : decls)
+    {
+      // disjoint fields
+      if (decl.disjoint != null && decl.names.size() > 1)
+      {
+        for (int i = 0; i < decl.names.size() - 1; i++)
+        {
+          for (int j = i + 1; j < decl.names.size(); j++)
+          {
+            SmtExpr variableI = smtEnv.get(decl.names.get(i).label);
+            SmtExpr variableJ = smtEnv.get(decl.names.get(j).label);
+
+            if (variableJ.getSort() instanceof UninterpretedSort)
+            {
+              throw new UnsupportedOperationException();
+            }
+
+            if (variableJ.getSort() instanceof TupleSort)
+            {
+              variableI = SmtUnaryExpr.Op.SINGLETON.make(variableI);
+              variableJ = SmtUnaryExpr.Op.SINGLETON.make(variableJ);
+            }
+
+            SmtExpr intersect = SmtBinaryExpr.Op.INTERSECTION.make(variableI, variableJ);
+            SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(variableI.getSort());
+            SmtExpr equal = SmtBinaryExpr.Op.EQ.make(intersect, emptySet);
+            disjointConstraints = SmtMultiArityExpr.Op.AND.make(disjointConstraints, equal);
+          }
+        }
+      }
+    }
+    return disjointConstraints;
   }
 }

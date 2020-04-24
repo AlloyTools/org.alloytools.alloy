@@ -225,7 +225,7 @@ class MultiplicityTests
   {
     String alloy =
         "sig A {} \n" +
-        "fact {some x: A -> A | some x and no A}";
+            "fact {some x: A -> A | some x and no A}";
 
     List<CommandResult> results = AlloyUtils.runAlloyString(alloy, false);
     assertEquals("unsat", results.get(0).satResult);

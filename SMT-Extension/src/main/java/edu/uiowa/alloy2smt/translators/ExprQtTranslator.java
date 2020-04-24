@@ -28,8 +28,8 @@ public class ExprQtTranslator
   {
     // create a new scope for quantified variables
     SmtEnv declsEnv = new SmtEnv(smtEnv);
-    List<SmtVariable> smtVariables = exprTranslator.translateDecls(exprQt.decls, declsEnv);
-    SmtExpr constraints = getDisjointConstraints(exprQt.decls, declsEnv);
+    List<SmtVariable> smtVariables = exprTranslator.declTranslator.translateDecls(exprQt.decls, declsEnv);
+    SmtExpr constraints = exprTranslator.declTranslator.getDisjointConstraints(exprQt.decls, declsEnv);
 
     // translate the body of the quantified expression
     SmtEnv bodyEnv = new SmtEnv(declsEnv);
@@ -52,44 +52,6 @@ public class ExprQtTranslator
       default:
         throw new UnsupportedOperationException();
     }
-  }
-
-  private SmtExpr getDisjointConstraints(List<Decl> decls, SmtEnv smtEnv)
-  {
-    SmtExpr disjointConstraints = BoolConstant.True;
-
-    for (Decl decl : decls)
-    {
-      // disjoint fields
-      if (decl.disjoint != null && decl.names.size() > 1)
-      {
-        for (int i = 0; i < decl.names.size() - 1; i++)
-        {
-          for (int j = i + 1; j < decl.names.size(); j++)
-          {
-            SmtExpr variableI = smtEnv.get(decl.names.get(i).label);
-            SmtExpr variableJ = smtEnv.get(decl.names.get(j).label);
-
-            if (variableJ.getSort() instanceof UninterpretedSort)
-            {
-              throw new UnsupportedOperationException();
-            }
-
-            if (variableJ.getSort() instanceof TupleSort)
-            {
-              variableI = SmtUnaryExpr.Op.SINGLETON.make(variableI);
-              variableJ = SmtUnaryExpr.Op.SINGLETON.make(variableJ);
-            }
-
-            SmtExpr intersect = SmtBinaryExpr.Op.INTERSECTION.make(variableI, variableJ);
-            SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(variableI.getSort());
-            SmtExpr equal = SmtBinaryExpr.Op.EQ.make(intersect, emptySet);
-            disjointConstraints = SmtMultiArityExpr.Op.AND.make(disjointConstraints, equal);
-          }
-        }
-      }
-    }
-    return disjointConstraints;
   }
 
   private SmtExpr translateComprehension(ExprQt exprQt, SmtExpr body, List<SmtVariable> smtVariables, SmtEnv smtEnv)

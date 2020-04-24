@@ -1,8 +1,12 @@
 package edu.uiowa.smt;
 
-import edu.uiowa.smt.smtAst.*;
+import edu.uiowa.smt.smtAst.SmtExpr;
+import edu.uiowa.smt.smtAst.SmtVariable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SmtEnv
 {

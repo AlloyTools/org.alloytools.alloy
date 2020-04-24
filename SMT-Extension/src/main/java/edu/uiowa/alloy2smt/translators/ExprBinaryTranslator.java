@@ -1655,9 +1655,9 @@ public class ExprBinaryTranslator
       // restrict  's' to satisfy the multiplicity constraint.
 
       SmtVariable variable = variables.get(0);
-      if(variable.getConstraint() != null)
+      if (variable.getConstraint() != null)
       {
-        if(variable.getSort() instanceof SetSort)
+        if (variable.getSort() instanceof SetSort)
         {
           SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), A);
           return constraint;

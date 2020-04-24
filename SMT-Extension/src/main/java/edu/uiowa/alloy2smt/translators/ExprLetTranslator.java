@@ -34,13 +34,13 @@ public class ExprLetTranslator
     letEnv.put(declaration.getName(), declaration.getVariable());
     SmtExpr body = exprTranslator.translateExpr(exprLet.sub, letEnv);
     SmtExpr let = new SmtLetExpr(map, body);
-    if(let.getSort() instanceof BoolSort)
+    if (let.getSort() instanceof BoolSort)
     {
       SmtExpr finalExpr = exprTranslator.addAuxiliaryVaraibles(let, letEnv);
       return finalExpr;
     }
     // add auxiliary variables to smtEnv
-    for (SmtVariable variable: letEnv.getAuxiliaryVariables())
+    for (SmtVariable variable : letEnv.getAuxiliaryVariables())
     {
       smtEnv.addAuxiliaryVariable(variable);
     }

@@ -7,11 +7,11 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
   @Override
   public void visit(SmtAst smtAst)
   {
-    if(smtAst instanceof SmtScript)
+    if (smtAst instanceof SmtScript)
     {
       this.visit((SmtScript) smtAst);
     }
-    else if(smtAst instanceof Declaration)
+    else if (smtAst instanceof Declaration)
     {
       this.visit((Declaration) smtAst);
     }
@@ -24,15 +24,15 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
   @Override
   public void visit(Declaration declaration)
   {
-    if(declaration instanceof FunctionDefinition)
+    if (declaration instanceof FunctionDefinition)
     {
       this.visit((FunctionDefinition) declaration);
     }
-    else if(declaration instanceof FunctionDeclaration)
+    else if (declaration instanceof FunctionDeclaration)
     {
       this.visit((FunctionDeclaration) declaration);
     }
-    else if(declaration instanceof SmtVariable)
+    else if (declaration instanceof SmtVariable)
     {
       this.visit((SmtVariable) declaration);
     }

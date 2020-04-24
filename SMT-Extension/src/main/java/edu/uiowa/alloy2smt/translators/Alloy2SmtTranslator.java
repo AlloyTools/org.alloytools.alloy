@@ -540,7 +540,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     List<SmtVariable> arguments = new ArrayList<>();
     for (Decl decl : func.decls)
     {
-      List<SmtVariable> variables = exprTranslator.translateDecl(decl, smtEnv);
+      List<SmtVariable> variables = exprTranslator.declTranslator.translateDecl(decl, smtEnv);
       List<SmtVariable> setVariables = convertToSetVariables(variables);
       arguments.addAll(setVariables);
     }

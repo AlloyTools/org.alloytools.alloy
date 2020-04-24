@@ -51,16 +51,6 @@ public class ExprTranslator
     this.declTranslator = new DeclTranslator(this);
   }
 
-  public List<SmtVariable> translateDecls(List<Decl> decls, SmtEnv smtEnv)
-  {
-    return declTranslator.translateDecls(decls, smtEnv);
-  }
-
-  public List<SmtVariable> translateDecl(Decl decl, SmtEnv smtEnv)
-  {
-    return declTranslator.translateDecl(decl, smtEnv);
-  }
-
   public SmtExpr translateFormula(String label, Expr expr)
   {
     assert (expr.type() == Type.FORMULA);
@@ -76,7 +66,7 @@ public class ExprTranslator
   {
     assert (booleanSmtExpr.getSort().equals(AbstractTranslator.boolSort));
     List<SmtVariable> variables = smtEnv.getAuxiliaryVariables();
-    if (! variables.isEmpty())
+    if (!variables.isEmpty())
     {
       SmtExpr constraints = TranslatorUtils.getVariablesConstraints(variables);
       SmtExpr body = SmtMultiArityExpr.Op.AND.make(constraints, booleanSmtExpr);

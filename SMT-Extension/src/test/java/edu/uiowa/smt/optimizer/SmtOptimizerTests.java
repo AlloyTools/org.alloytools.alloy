@@ -4,7 +4,6 @@ import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.smtAst.*;
-import kodkod.ast.Expression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

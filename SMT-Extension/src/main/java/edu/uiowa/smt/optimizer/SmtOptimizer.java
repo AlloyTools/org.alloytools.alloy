@@ -102,10 +102,10 @@ public class SmtOptimizer
   {
     List<Assertion> assertions = new ArrayList<>();
 
-    for (Assertion assertion: script.getAssertions())
+    for (Assertion assertion : script.getAssertions())
     {
       SmtExpr optimizedExpr = null;
-      while(optimizedExpr != assertion.getSmtExpr())
+      while (optimizedExpr != assertion.getSmtExpr())
       {
         optimizedExpr = optimizeExpr(assertion.getSmtExpr());
       }
@@ -120,7 +120,7 @@ public class SmtOptimizer
   public static SmtExpr optimizeExpr(SmtExpr smtExpr)
   {
     SmtExpr optimizedExpr;
-    optimizedExpr =  optimizedTupleSelectZeroForUnaryTuples(smtExpr);
+    optimizedExpr = optimizedTupleSelectZeroForUnaryTuples(smtExpr);
     return optimizedExpr;
   }
 
@@ -130,17 +130,17 @@ public class SmtOptimizer
     // Optimized: (let ((x (mkTuple a))) (= (a 5))
 
     SmtExpr optimizedExpr = smtExpr;
-    if(smtExpr instanceof SmtLetExpr)
+    if (smtExpr instanceof SmtLetExpr)
     {
       SmtLetExpr letExpr = (SmtLetExpr) smtExpr;
       SmtExpr optimizedBody = letExpr.getSmtExpr();
-      for (Map.Entry<SmtVariable, SmtExpr> entry: letExpr.getLetVariables().entrySet())
+      for (Map.Entry<SmtVariable, SmtExpr> entry : letExpr.getLetVariables().entrySet())
       {
         SmtVariable smtVariable = entry.getKey();
         SmtExpr expr = entry.getValue();
 
         // check if the tuple has arity 1
-        if(expr instanceof SmtMultiArityExpr &&
+        if (expr instanceof SmtMultiArityExpr &&
             ((SmtMultiArityExpr) expr).getOp() == SmtMultiArityExpr.Op.MKTUPLE &&
             ((SmtMultiArityExpr) expr).getExpressions().size() == 1)
         {
