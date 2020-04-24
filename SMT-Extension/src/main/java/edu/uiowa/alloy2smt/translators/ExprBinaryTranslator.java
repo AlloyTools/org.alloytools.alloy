@@ -1641,7 +1641,13 @@ public class ExprBinaryTranslator
     }
 
     // auxiliary variables for expression A should be handled before coming here
-    assert (smtEnvA.getAuxiliaryVariables().isEmpty());
+    if(! smtEnvA.getAuxiliaryVariables().isEmpty())
+    {
+      for (SmtVariable variable: smtEnvA.getAuxiliaryVariables())
+      {
+        smtEnv.addAuxiliaryVariable(variable);
+      }
+    }
 
     if (!smtEnvB.getAuxiliaryVariables().isEmpty())
     {
