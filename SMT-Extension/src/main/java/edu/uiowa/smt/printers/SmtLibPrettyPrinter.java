@@ -135,7 +135,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
     stringBuilder.append(") ");
     tabsCount++;
-    this.visit(let.getExpression());
+    this.visit(let.getSmtExpr());
     stringBuilder.append(")");
     tabsCount -= 2;
   }

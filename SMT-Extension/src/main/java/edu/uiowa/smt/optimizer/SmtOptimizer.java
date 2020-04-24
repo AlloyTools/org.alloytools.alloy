@@ -4,6 +4,7 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.smtAst.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SmtOptimizer
@@ -91,5 +92,44 @@ public class SmtOptimizer
       script.removeAssertions(uIntAssertions);
     }
     return script;
+  }
+
+  public static SmtExpr optimizeExpr(SmtExpr smtExpr)
+  {
+    SmtExpr optimizedExpr;
+    optimizedExpr =  optimizedTupleSelectZeroForUnaryTuples(smtExpr);
+    return optimizedExpr;
+  }
+
+  private static SmtExpr optimizedTupleSelectZeroForUnaryTuples(SmtExpr smtExpr)
+  {
+    // Original : (let ((x (mkTuple a))) (= ((_ tupSel 0) x) 5))
+    // Optimized: (let ((x (mkTuple a))) (= (a 5))
+
+    SmtExpr optimizedExpr = smtExpr;
+    if(smtExpr instanceof SmtLetExpr)
+    {
+      SmtLetExpr letExpr = (SmtLetExpr) smtExpr;
+      SmtExpr optimizedBody = letExpr.getSmtExpr();
+      for (Map.Entry<SmtVariable, SmtExpr> entry: letExpr.getLetVariables().entrySet())
+      {
+        SmtVariable smtVariable = entry.getKey();
+        SmtExpr expr = entry.getValue();
+
+        // check if the tuple has arity 1
+        if(expr instanceof SmtMultiArityExpr &&
+            ((SmtMultiArityExpr) expr).getOp() == SmtMultiArityExpr.Op.MKTUPLE &&
+            ((SmtMultiArityExpr) expr).getExpressions().size() == 1)
+        {
+          SmtMultiArityExpr makeTuple = (SmtMultiArityExpr) expr;
+          SmtExpr zero = new IntConstant("0");
+          SmtExpr tupleSelect = SmtBinaryExpr.Op.TUPSEL.make(zero, smtVariable.getVariable());
+          optimizedBody = optimizedBody.replace(tupleSelect, makeTuple.get(0));
+        }
+      }
+      optimizedExpr = new SmtLetExpr(letExpr.getLetVariables(), optimizedBody);
+    }
+
+    return optimizedExpr;
   }
 }

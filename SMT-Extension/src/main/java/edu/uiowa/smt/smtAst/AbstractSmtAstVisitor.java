@@ -257,7 +257,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
       visit(entry.getKey());
       visit(entry.getValue());
     }
-    visit(letExpression.getExpression());
+    visit(letExpression.getSmtExpr());
   }
 
   @Override

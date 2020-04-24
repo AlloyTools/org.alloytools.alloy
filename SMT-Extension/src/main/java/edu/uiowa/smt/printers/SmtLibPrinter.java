@@ -365,7 +365,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
       stringBuilder.append(")");
     }
     stringBuilder.append(") ");
-    this.visit(let.getExpression());
+    this.visit(let.getSmtExpr());
     stringBuilder.append(")");
   }
 

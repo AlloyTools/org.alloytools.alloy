@@ -50,7 +50,7 @@ public class SmtLetExpr extends SmtExpr
     return this.letVariables;
   }
 
-  public SmtExpr getExpression()
+  public SmtExpr getSmtExpr()
   {
     return this.expr;
   }
@@ -76,7 +76,17 @@ public class SmtLetExpr extends SmtExpr
   @Override
   public boolean equals(Object object)
   {
-    throw new UnsupportedOperationException();
+    // syntax equality without alpha equivalence
+    if (object == this)
+    {
+      return true;
+    }
+    if (!(object instanceof SmtLetExpr))
+    {
+      return false;
+    }
+    SmtLetExpr letObject = (SmtLetExpr) object;
+    return letVariables.equals(letObject.letVariables) && expr.equals(letObject.expr);
   }
 
   @Override
