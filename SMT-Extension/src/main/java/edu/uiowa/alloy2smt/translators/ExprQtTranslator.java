@@ -29,7 +29,7 @@ public class ExprQtTranslator
     // create a new scope for quantified variables
     SmtEnv declsEnv = new SmtEnv(smtEnv);
     List<SmtVariable> smtVariables = exprTranslator.translateDecls(exprQt.decls, declsEnv);
-    SmtExpr constraints = getDisjointConstraints(exprQt, declsEnv);
+    SmtExpr constraints = getDisjointConstraints(exprQt.decls, declsEnv);
 
     // translate the body of the quantified expression
     SmtEnv bodyEnv = new SmtEnv(declsEnv);
@@ -54,11 +54,11 @@ public class ExprQtTranslator
     }
   }
 
-  private SmtExpr getDisjointConstraints(ExprQt exprQt, SmtEnv smtEnv)
+  private SmtExpr getDisjointConstraints(List<Decl> decls, SmtEnv smtEnv)
   {
     SmtExpr disjointConstraints = BoolConstant.True;
 
-    for (Decl decl : exprQt.decls)
+    for (Decl decl : decls)
     {
       // disjoint fields
       if (decl.disjoint != null && decl.names.size() > 1)
