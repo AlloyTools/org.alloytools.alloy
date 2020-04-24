@@ -3,6 +3,7 @@ package edu.uiowa.smt.optimizer;
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.smtAst.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,6 +23,9 @@ public class SmtOptimizer
     SmtScript optimizedScript = new SmtScript(script);
     optimizedScript = removeTrivialAssertions(optimizedScript);
     optimizedScript = removeUninterpretedIntIfNotUsed(optimizedScript);
+
+    optimizedScript = optimizeSmtExpr(optimizedScript);
+
 
     // optimize children as well
     for (SmtScript child : script.getChildren())
@@ -91,6 +95,25 @@ public class SmtOptimizer
       List<Assertion> uIntAssertions = AbstractTranslator.getUninterpretedIntAssertions(script);
       script.removeAssertions(uIntAssertions);
     }
+    return script;
+  }
+
+  private static SmtScript optimizeSmtExpr(SmtScript script)
+  {
+    List<Assertion> assertions = new ArrayList<>();
+
+    for (Assertion assertion: script.getAssertions())
+    {
+      SmtExpr optimizedExpr = null;
+      while(optimizedExpr != assertion.getSmtExpr())
+      {
+        optimizedExpr = optimizeExpr(assertion.getSmtExpr());
+      }
+      Assertion optimizedAssertion = new Assertion(assertion.getSymbolicName(), assertion.getComment(), optimizedExpr);
+      assertions.add(optimizedAssertion);
+    }
+
+    script.setAssertions(assertions);
     return script;
   }
 
