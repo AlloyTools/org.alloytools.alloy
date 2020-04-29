@@ -70,7 +70,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
 //            callbackBold("Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
-            String smtScript = translation.getOptimizedSmtScript().toString();
+            String smtScript = translation.getOptimizedSmtScript().print(translation.getAlloySettings());
 
             if (smtScript != null)
             {
