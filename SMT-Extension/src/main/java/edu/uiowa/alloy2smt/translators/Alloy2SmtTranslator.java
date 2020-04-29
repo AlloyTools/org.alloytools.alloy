@@ -106,7 +106,24 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     this.signatureTranslator.translateSigFacts();
     translateFacts();
     translateSpecialAssertions();
+    translateFunctions();
     return this.smtScript;
+  }
+
+  private void translateFunctions()
+  {
+    for (CompModule module : alloyModel.getAllReachableModules())
+    {
+      if (module.getModelName().contains("util/ordering") ||
+          module.getModelName().contains("util/integer"))
+      {
+        continue;
+      }
+      for (Func func : module.getAllFunc())
+      {
+        getFuncTranslation(func);
+      }
+    }
   }
 
   private void translateSpecialFunctions()
