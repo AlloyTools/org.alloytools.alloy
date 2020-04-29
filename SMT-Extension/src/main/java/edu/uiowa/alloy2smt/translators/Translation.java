@@ -80,11 +80,11 @@ public class Translation
     StringBuilder stringBuilder = new StringBuilder();
     if (isOptimized)
     {
-      stringBuilder.append(getOptimizedSmtScript().toString());
+      stringBuilder.append(getOptimizedSmtScript().print(alloySettings));
     }
     else
     {
-      stringBuilder.append(getOriginalSmtScript().toString());
+      stringBuilder.append(getOriginalSmtScript().print(alloySettings));
     }
     for (int i = 0; i < translator.commands.size(); i++)
     {
