@@ -1,5 +1,5 @@
 <!-- 
-   required smtEnv properties:
+   required environment properties:
      VERSION - version number (e.g., 4.2), 
      jarName - jar file name inside the 'dist' folder (e.g., alloy4.2.jar) 
 -->
@@ -53,7 +53,7 @@
 		<mkdir dir="dist/" />
 	</target>
 
-	<property smtEnv="env" />
+	<property environment="env" />
 
 	<path id="lib.class.path">
 		<fileset dir="lib">

@@ -218,7 +218,7 @@ m4_require([_LT_TAG_COMPILER])dnl
 case $host_os in
 aix3*)
   # AIX sometimes has problems with the GCC collect2 program.  For some
-  # reason, if we set the COLLECT_NAMES smtEnv variable, the problems
+  # reason, if we set the COLLECT_NAMES environment variable, the problems
   # vanish in a puff of smoke.
   if test "X${COLLECT_NAMES+set}" != Xset; then
     COLLECT_NAMES=

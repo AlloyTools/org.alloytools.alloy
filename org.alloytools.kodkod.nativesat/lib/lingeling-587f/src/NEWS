@@ -9,7 +9,7 @@ capping of long learned clauses
 poison flag for minimization
 partially flipping initial phase during rebias and rephrasing
 more aggressive rebias
-setting options through smtEnv declarations
+setting options through environment declarations
 initial incremental interface with one assumption
 optional tracing of API calls
 added missing reschedule when using '--bias' option
