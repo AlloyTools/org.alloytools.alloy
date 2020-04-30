@@ -31,6 +31,37 @@ import edu.mit.csail.sdg.sim.SimTupleset;
 import edu.mit.csail.sdg.translator.*;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
+import org.alloytools.alloy.core.AlloyCore;
+
+import javax.swing.Timer;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.FontUIResource;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.*;
+
+import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
+import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
+import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
+import static java.awt.event.KeyEvent.*;
+
+//import com.apple.eawt.Application;
+//import com.apple.eawt.ApplicationAdapter;
+//import com.apple.eawt.ApplicationEvent;
+//
 
 /**
  * Simple graphical interface for accessing various features of the analyzer.
