@@ -461,4 +461,14 @@ public class SmtBinaryExpr extends SmtExpr
     SmtExpr B = this.B.replace(oldSmtExpr, newSmtExpr);
     return op.make(A, B);
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) || A.containsExpr(expr) || B.containsExpr(expr))
+    {
+      return true;
+    }
+    return false;
+  }
 }

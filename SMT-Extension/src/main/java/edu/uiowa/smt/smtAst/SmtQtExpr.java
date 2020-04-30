@@ -211,4 +211,14 @@ public class SmtQtExpr extends SmtExpr
     SmtExpr smtExpr = expr.replace(oldSmtExpr, newSmtExpr);
     return new SmtQtExpr(op, variables, smtExpr);
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) || this.expr.containsExpr(expr))
+    {
+      return true;
+    }
+    return false;
+  }
 }

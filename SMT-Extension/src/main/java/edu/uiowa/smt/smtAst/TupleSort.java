@@ -66,4 +66,23 @@ public class TupleSort extends Sort
     TupleSort sort = (TupleSort) object;
     return sort.elementSorts.equals(this.elementSorts);
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+
+    for (SmtExpr smtExpr: elementSorts)
+    {
+      if(smtExpr.containsExpr(expr))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

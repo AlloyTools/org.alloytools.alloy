@@ -294,4 +294,23 @@ public class SmtMultiArityExpr extends SmtExpr
     }
     return new SmtMultiArityExpr(op, newSmtExprs);
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+
+    for (SmtExpr smtExpr: this.exprs)
+    {
+      if(smtExpr.containsExpr(expr))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

@@ -111,4 +111,15 @@ public class SmtLetExpr extends SmtExpr
   {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) || this.expr.containsExpr(expr))
+    {
+      return true;
+    }
+
+    return false;
+  }
 }

@@ -100,4 +100,14 @@ public class Variable extends SmtExpr
   {
     return declaration.isOriginal();
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+    return false;
+  }
 }

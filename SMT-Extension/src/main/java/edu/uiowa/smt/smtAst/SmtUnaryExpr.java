@@ -259,4 +259,14 @@ public class SmtUnaryExpr extends SmtExpr
       return this.opStr;
     }
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) || this.expr.containsExpr(expr))
+    {
+      return true;
+    }
+    return false;
+  }
 }

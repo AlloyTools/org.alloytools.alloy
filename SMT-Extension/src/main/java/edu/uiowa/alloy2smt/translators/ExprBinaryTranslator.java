@@ -1641,9 +1641,9 @@ public class ExprBinaryTranslator
     }
 
     // auxiliary variables for expression A should be handled before coming here
-    if(! smtEnvA.getAuxiliaryVariables().isEmpty())
+    if (!smtEnvA.getAuxiliaryVariables().isEmpty())
     {
-      for (SmtVariable variable: smtEnvA.getAuxiliaryVariables())
+      for (SmtVariable variable : smtEnvA.getAuxiliaryVariables())
       {
         smtEnv.addAuxiliaryVariable(variable);
       }
@@ -1657,23 +1657,24 @@ public class ExprBinaryTranslator
       // When there is an auxiliary variable, this means the IN operator is used
       // as a multiplicity constraint for A, and not as subset operator.
       // Example:'s in (A one -> some A)'. The translation is not (subset s temp)
-      // where 'temp' is the translation of (A one -> some A). But translation should
+      // where 'temp' is the translation of (A one -> some A). But the translation should
       // restrict  's' to satisfy the multiplicity constraint.
 
       SmtVariable variable = variables.get(0);
-      if (variable.getConstraint() != null)
+      // if there is no constraint, there should not be an auxiliary variable
+      assert (variable.getConstraint() != null);
+
+      if (variable.getSort() instanceof SetSort)
       {
-        if (variable.getSort() instanceof SetSort)
-        {
-          SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), A);
-          return constraint;
-        }
-        else
-        {
-          SmtExpr choose = SmtUnaryExpr.Op.CHOOSE.make(A);
-          SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), choose);
-          return constraint;
-        }
+        SmtExpr solution = exprTranslator.solveForVariable(variable.getVariable(), B, A);
+        SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), solution);
+        return constraint;
+      }
+      else
+      {
+        SmtExpr choose = SmtUnaryExpr.Op.CHOOSE.make(A);
+        SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), choose);
+        return constraint;
       }
     }
 

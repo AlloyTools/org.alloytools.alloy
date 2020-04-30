@@ -83,4 +83,10 @@ public class Sort extends SmtExpr
     }
     return this;
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    throw new UnsupportedOperationException();
+  }
 }

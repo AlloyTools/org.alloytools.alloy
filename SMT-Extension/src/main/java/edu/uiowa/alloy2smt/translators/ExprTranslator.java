@@ -324,4 +324,35 @@ public class ExprTranslator
     }
     return singleton;
   }
+
+  public SmtExpr solveForVariable(Variable variable, SmtExpr expr, SmtExpr base)
+  {
+    if (expr.equals(variable))
+    {
+      return base;
+    }
+    if (expr instanceof SmtBinaryExpr)
+    {
+      SmtBinaryExpr binaryExpr = (SmtBinaryExpr) expr;
+      switch (binaryExpr.getOp())
+      {
+        case PRODUCT:
+        {
+          if (binaryExpr.getA().containsExpr(variable))
+          {
+            SmtExpr nestedBase = SmtBinaryExpr.Op.JOIN.make(base, binaryExpr.getB());
+            SmtExpr solution = solveForVariable(variable, binaryExpr.getA(), nestedBase);
+            return  solution;
+          }
+          if (binaryExpr.getB().containsExpr(variable))
+          {
+            SmtExpr nestedBase = SmtBinaryExpr.Op.JOIN.make(binaryExpr.getA(), base);
+            SmtExpr solution = solveForVariable(variable, binaryExpr.getB(), nestedBase);
+            return  solution;
+          }
+        }
+      }
+    }
+    throw new UnsupportedOperationException();
+  }
 }

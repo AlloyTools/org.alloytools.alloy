@@ -37,4 +37,14 @@ public class UninterpretedSort extends Sort
     UninterpretedSort sort = (UninterpretedSort) object;
     return sort.getName().equals(this.getName());
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+    return false;
+  }
 }

@@ -90,4 +90,14 @@ public class BoolConstant extends Constant
     }
     return this;
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+    return false;
+  }
 }

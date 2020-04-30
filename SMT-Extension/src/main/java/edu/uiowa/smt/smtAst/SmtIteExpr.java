@@ -151,4 +151,17 @@ public class SmtIteExpr extends SmtExpr
     SmtExpr newElse = elseExpr.replace(oldSmtExpr, newSmtExpr);
     return new SmtIteExpr(newCondition, newThen, newElse);
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) ||
+        this.condExpr.containsExpr(expr) ||
+        this.thenExpr.containsExpr(expr) ||
+        this.elseExpr.containsExpr(expr))
+    {
+      return true;
+    }
+    return false;
+  }
 }

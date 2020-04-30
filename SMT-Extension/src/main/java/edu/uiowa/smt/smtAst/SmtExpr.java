@@ -52,4 +52,6 @@ public abstract class SmtExpr extends SmtAst
   public abstract SmtExpr substitute(Variable oldVariable, Variable newVariable);
 
   public abstract SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr);
+
+  public abstract boolean containsExpr(SmtExpr expr);
 }

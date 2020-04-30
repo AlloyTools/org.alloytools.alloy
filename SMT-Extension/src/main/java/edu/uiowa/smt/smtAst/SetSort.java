@@ -40,4 +40,14 @@ public class SetSort extends Sort
     SetSort sort = (SetSort) object;
     return sort.elementSort.equals(this.elementSort);
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) || elementSort.containsExpr(expr))
+    {
+      return true;
+    }
+    return false;
+  }
 }

@@ -162,4 +162,23 @@ public class SmtCallExpr extends SmtExpr
   {
     return function;
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+
+    for (SmtExpr smtExpr: this.arguments)
+    {
+      if(smtExpr.containsExpr(expr))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

@@ -34,4 +34,14 @@ public class RealSort extends Sort
     }
     return true;
   }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+    return false;
+  }
 }
