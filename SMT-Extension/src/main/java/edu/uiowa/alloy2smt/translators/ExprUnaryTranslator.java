@@ -8,383 +8,278 @@
 
 package edu.uiowa.alloy2smt.translators;
 
-import edu.mit.csail.sdg.ast.*;
-import edu.uiowa.alloy2smt.utils.AlloyUtils;
+import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Sig;
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.Environment;
+import edu.uiowa.smt.SmtEnv;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ExprUnaryTranslator
 {
-    final ExprTranslator exprTranslator;
-    final Alloy2SmtTranslator translator;
-    final ExprVarTranslator exprVarTranslator;
+  final ExprTranslator exprTranslator;
+  final Alloy2SmtTranslator translator;
+  final ExprVarTranslator exprVarTranslator;
 
-    public ExprUnaryTranslator(ExprTranslator exprTranslator)
+  public ExprUnaryTranslator(ExprTranslator exprTranslator)
+  {
+    this.exprTranslator = exprTranslator;
+    this.translator = exprTranslator.translator;
+    this.exprVarTranslator = exprTranslator.exprVarTranslator;
+  }
+
+  SmtExpr translateExprUnary(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    switch (exprUnary.op)
     {
-        this.exprTranslator = exprTranslator;
-        this.translator = exprTranslator.translator;
-        this.exprVarTranslator = exprTranslator.exprVarTranslator;
+      case NOOP:
+        return translateNoop(exprUnary, smtEnv);
+      case NO:
+        return translateNo(exprUnary, smtEnv);
+      case SOME:
+        return translateSome(exprUnary, smtEnv);
+      case ONE:
+        return translateOne(exprUnary, smtEnv);
+      case ONEOF:
+        return translateOneOf(exprUnary, smtEnv);
+      case LONEOF:
+        return translateLoneOf(exprUnary, smtEnv);
+      case SOMEOF:
+        return translateSomeOf(exprUnary, smtEnv);
+      case SETOF:
+        return exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+      case LONE:
+        return translateLone(exprUnary, smtEnv);
+      case CARDINALITY:
+        throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
+      case TRANSPOSE:
+        return translateTranspose(exprUnary, smtEnv);
+      case CLOSURE:
+        return translateClosure(exprUnary, smtEnv);
+      case RCLOSURE:
+        return translateReflexiveClosure(exprUnary, smtEnv);
+      case NOT:
+        return translateNot(exprUnary, smtEnv);
+      case CAST2INT:
+        return translateCAST2INT(exprUnary, smtEnv);
+      case CAST2SIGINT:
+        return translateCAST2SIGINT(exprUnary, smtEnv);
+      default:
+      {
+        throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
+      }
     }
+  }
 
-    Expression translateExprUnary(ExprUnary exprUnary, Environment environment)
+  private SmtExpr translateCAST2INT(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    return exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+  }
+
+  private SmtExpr translateCAST2SIGINT(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    return exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+  }
+
+  private SmtExpr translateNot(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+    SmtExpr not = SmtUnaryExpr.Op.NOT.make(smtExpr);
+    return not;
+  }
+
+  private SmtExpr translateClosure(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+    SmtUnaryExpr closure = SmtUnaryExpr.Op.TCLOSURE.make(smtExpr);
+    return closure;
+  }
+
+  private SmtExpr translateReflexiveClosure(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtExpr closure = translateClosure(exprUnary, smtEnv);
+    SmtBinaryExpr reflexiveClosure;
+    if (closure.getSort().equals(AbstractTranslator.setOfBinaryAtomSort))
     {
-        switch (exprUnary.op)
+      reflexiveClosure = SmtBinaryExpr.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
+    }
+    else
+    {
+      reflexiveClosure = SmtBinaryExpr.Op.UNION.make(closure, AbstractTranslator.idenInt.getVariable());
+    }
+    return reflexiveClosure;
+  }
+
+  private SmtExpr translateTranspose(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtExpr smtExpr = exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+    SmtUnaryExpr transpose = SmtUnaryExpr.Op.TRANSPOSE.make(smtExpr);
+    return transpose;
+  }
+
+
+  private SmtExpr translateNoop(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    if (exprUnary.sub instanceof Sig)
+    {
+
+      // alloy built in signatures include: univ, none, iden
+      if (((Sig) exprUnary.sub).builtin)
+      {
+        switch (((Sig) exprUnary.sub).label)
         {
-            case NOOP       : return translateNoop(exprUnary, environment);
-            case NO         : return translateNo(exprUnary, environment);
-            case SOME       : return translateSome(exprUnary, environment);
-            case ONE        : return translateOne(exprUnary, environment);
-            case ONEOF      : return translateOneOf(exprUnary, environment);
-            case LONEOF     : return translateLone(exprUnary, environment);
-            case SOMEOF     : return exprTranslator.translateExpr(exprUnary.sub, environment);
-            case SETOF      : return exprTranslator.translateExpr(exprUnary.sub, environment);
-            case LONE       : return translateLone(exprUnary, environment);
-            case CARDINALITY: throw new UnsupportedOperationException("CVC4 doesn't support cardinality operator with finite relations!");
-            case TRANSPOSE  : return translateTranspose(exprUnary, environment);
-            case CLOSURE    : return translateClosure(exprUnary, environment);
-            case RCLOSURE   : return translateReflexiveClosure(exprUnary, environment);
-            case NOT        : return translateNot(exprUnary, environment);
-            case CAST2INT   : return translateCAST2INT(exprUnary, environment);
-            case CAST2SIGINT : return translateCAST2SIGINT(exprUnary, environment);
-            default:
-            {
-                throw new UnsupportedOperationException("Not supported yet: " + exprUnary.op);
-            }
+          case "univ":
+            return Alloy2SmtTranslator.univAtom.getVariable();
+          case "iden":
+            return Alloy2SmtTranslator.idenAtom.getVariable();
+          case "none":
+            return Alloy2SmtTranslator.atomNone.getVariable();
+          case "Int":
+            return Alloy2SmtTranslator.univInt.getVariable();
+          default:
+            throw new UnsupportedOperationException();
         }
-    }
-    
-    private Expression translateCAST2INT(ExprUnary exprUnary, Environment environment)
-    {
-        return exprTranslator.translateExpr(exprUnary.sub, environment);
-    }
-    
-    private Expression translateCAST2SIGINT(ExprUnary exprUnary, Environment environment)
-    {
-        return exprTranslator.translateExpr(exprUnary.sub, environment);
-    }    
-
-    private Expression translateNot(ExprUnary exprUnary, Environment environment)
-    {
-        Expression expression   = exprTranslator.translateExpr(exprUnary.sub, environment);
-        Expression not          = UnaryExpression.Op.NOT.make(expression);
-        return not;
+      }
+      else
+      {
+        return translator.signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
+      }
     }
 
-    private Expression translateClosure(ExprUnary exprUnary, Environment environment)
+    if (exprUnary.sub instanceof Sig.Field)
     {
-        Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, environment);
-        UnaryExpression closure     = UnaryExpression.Op.TCLOSURE.make(expression);
-        return closure;
+      return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
     }
 
-    private Expression translateReflexiveClosure(ExprUnary exprUnary, Environment environment)
+    if (exprUnary.sub instanceof ExprVar)
     {
-        Expression          closure             = translateClosure(exprUnary, environment);
-        BinaryExpression    reflexiveClosure    = BinaryExpression.Op.UNION.make(closure, AbstractTranslator.idenAtom.getVariable());
-        return reflexiveClosure;
+      return exprVarTranslator.translateExprVar((ExprVar) exprUnary.sub, smtEnv);
     }
 
-    private Expression translateTranspose(ExprUnary exprUnary, Environment environment)
-    {
-        Expression      expression  = exprTranslator.translateExpr(exprUnary.sub, environment);
-        UnaryExpression transpose   = UnaryExpression.Op.TRANSPOSE.make(expression);
-        return transpose;
-    }
+    return exprTranslator.translateExpr(exprUnary.sub, smtEnv);
+  }
 
+  private SmtExpr translateNo(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newSmtEnv);
+    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
+    SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVariables(isEmpty, newSmtEnv);
+    return finalSmtExpr;
+  }
 
-    private Expression translateNoop(ExprUnary exprUnary, Environment environment)
-    {
-        if(exprUnary.sub instanceof Sig)
-        {
+  private SmtExpr translateSome(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newSmtEnv);
+    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
+    SmtExpr equality = SmtBinaryExpr.Op.EQ.make(set, emptySet);
+    SmtExpr isNotEmpty = SmtUnaryExpr.Op.NOT.make(equality);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVariables(isNotEmpty, newSmtEnv);
+    return finalSmtExpr;
+  }
 
-            // alloy built in signatures include: univ, none, iden
-            if(((Sig) exprUnary.sub).builtin)
-            {
-                switch (((Sig) exprUnary.sub).label)
-                {                    
-                    case "univ": return Alloy2SmtTranslator.univAtom.getVariable();
-                    case "iden": return Alloy2SmtTranslator.idenAtom.getVariable();
-                    case "none": return Alloy2SmtTranslator.atomNone.getVariable();
-                    case "Int":  return Alloy2SmtTranslator.univInt.getVariable();
-                    default:
-                        throw new UnsupportedOperationException();
-                }
-            }
-            else
-            {
-                return translator.signaturesMap.get(((Sig) exprUnary.sub)).getVariable();
-            }
-        }
+  private SmtExpr translateOne(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newSmtEnv);
+    Sort sort = ((SetSort) set.getSort()).elementSort;
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
+    SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
+    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVariables(exists, newSmtEnv);
+    return finalSmtExpr;
+  }
 
-        if(exprUnary.sub instanceof Sig.Field)
-        {
-            return translator.fieldsMap.get(((Sig.Field) exprUnary.sub)).getVariable();
-        }
+  private SmtExpr translateOneOf(ExprUnary expr, SmtEnv smtEnv)
+  {
+    // expression has pattern (one A) where type of A is (Set E)
+    // the translation returns the set (Singleton x) where x satisfies
+    // (exists ((x E)) (member x A))
 
-        if(exprUnary.sub instanceof ExprVar)
-        {
-            return exprVarTranslator.translateExprVar((ExprVar) exprUnary.sub, environment);
-        }
-        
-        return exprTranslator.translateExpr(exprUnary.sub, environment);
-    }
+    SmtExpr A = exprTranslator.translateExpr(expr.sub, smtEnv);
+    SetSort setSort = (SetSort) A.getSort();
+    Sort elementSort = setSort.elementSort;
 
-    private Expression tryAddingExistentialConstraint(Expression expr)
-    {
-        Expression finalExpr = expr;
-        
-        if(translator.auxExpr != null)
-        {
-            finalExpr = MultiArityExpression.Op.AND.make(translator.auxExpr, finalExpr);
-            finalExpr = QuantifiedExpression.Op.EXISTS.make(finalExpr, translator.existentialBdVars);
-            translator.auxExpr = null;
-            translator.existentialBdVars.clear();
-            
-        }
-        return finalExpr;
-    }
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
 
+    SmtExpr member = SmtBinaryExpr.Op.MEMBER.make(variable.getVariable(), A);
+    variable.setConstraint(member);
 
-    private Expression translateNo(ExprUnary exprUnary, Environment environment)
-    {
-        int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, environment);        
-        
-        List<Sort> elementSorts = new ArrayList<>();
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
 
-        for(int i = 0; i < arity; i++)
-        {
-            elementSorts.add(sorts.get(i));
-        }
-        Expression eqExpr = BinaryExpression.Op.EQ.make(set, UnaryExpression.Op.EMPTYSET.make(new SetSort(new TupleSort(elementSorts))));
-        return tryAddingExistentialConstraint(eqExpr);
-    }
+    variable.setConstraint(member);
+    smtEnv.addAuxiliaryVariable(variable);
+    return singleton;
+  }
 
-    private Expression translateSome(ExprUnary exprUnary, Environment environment)
-    {
-        int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression someRel  = exprTranslator.translateExpr(exprUnary.sub, environment);  
-        List<VariableDeclaration>  bdVars      = new ArrayList<>();
-        List<Expression>                bdVarExprs  = new ArrayList<>();        
-        
-        for(Sort sort : sorts)
-        {
-            String name = TranslatorUtils.getFreshName(sort);
-            VariableDeclaration bdVar;
-            Expression bdVarExpr;
+  private SmtExpr translateLoneOf(ExprUnary expr, SmtEnv smtEnv)
+  {
+    // expression has pattern (lone A) where type of A is (Set E)
+    // the translation returns a set which satisfies
+    // (exists ((S (Set E)))
+    //      (and
+    //          (subset S A)
+    //          (exists ((x E)) (subset S (singleton x))) ))
 
-            bdVar = new VariableDeclaration(name, sort, false);
-            bdVarExpr = bdVar.getVariable();
+    SmtExpr A = exprTranslator.translateExpr(expr.sub, smtEnv);
+    SetSort setSort = (SetSort) A.getSort();
+    Sort elementSort = setSort.elementSort;
+    SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
+    SmtExpr subset1 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
 
-            bdVars.add(bdVar);
-            bdVarExprs.add(bdVarExpr);
-        }
-        Expression bdVarTupExpr     = ExprUnaryTranslator.this.mkOneTupleExprOutofAtoms(bdVarExprs);
-        Expression bodyExpr         = BinaryExpression.Op.MEMBER.make(bdVarTupExpr, someRel);
-        
-        // If the expression is a binary or ternary field, we need to make sure 
-        // there exists a var of type binaryIntTup such that the integer tuple equals to the bdVarTupExpr.
-//        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
-        
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(elementSort), elementSort, false);
 
-        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(bodyExpr, bdVars);
-        return tryAddingExistentialConstraint(exists);
-    }    
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
 
-    private Expression translateOne(ExprUnary exprUnary, Environment environment)
-    {
-        int arity           = exprUnary.sub.type().arity();
-        List<Sort> sorts    = AlloyUtils.getExprSorts(exprUnary.sub);
-        Expression set      = exprTranslator.translateExpr(exprUnary.sub, environment);  
-        List<VariableDeclaration>  bdVars      = new ArrayList<>();
-        List<Expression>                bdVarExprs  = new ArrayList<>();
-        
-        for(Sort sort : sorts)
-        {
-            String name = TranslatorUtils.getFreshName(sort);
-            VariableDeclaration bdVar;
-            Expression bdVarExpr;
-            
-            if(sort instanceof IntSort)
-            {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.uninterpretedInt,false);
-                bdVarExpr = mkTupleSelExpr(mkUnaryIntTupValue(bdVar.getVariable()), 0);
-            }
-            else
-            {
-                bdVar = new VariableDeclaration(name, AbstractTranslator.atomSort, false);
-                bdVarExpr = bdVar.getVariable();
-            }
-            bdVars.add(bdVar);
-            bdVarExprs.add(bdVarExpr);
-        }
-        Expression bdVarTupExpr = mkOneTupleExprOutofAtoms(bdVarExprs);
-        Expression bdVarSetExpr = mkSingleton(bdVarTupExpr);
-        Expression bodyExpr     = BinaryExpression.Op.EQ.make(bdVarSetExpr, set);
-//        bodyExpr = addConstraintForBinAndTerIntRel(bdVarTupExpr, exprUnary.sub, bodyExpr);
-        
-        QuantifiedExpression exists = QuantifiedExpression.Op.EXISTS.make(bodyExpr, bdVars);
-        return tryAddingExistentialConstraint(exists);
-    }
-    
-    private Expression translateOneOf(ExprUnary exprUnary, Environment environment)
-    {
-        Expression set = exprTranslator.translateExpr(exprUnary.sub, environment);
+    SmtExpr subset2 = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), singleton);
 
-        return set;
-    }    
+    SmtQtExpr exists1 = SmtQtExpr.Op.EXISTS.make(subset2, variable);
+    SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset1, exists1);
+    setVariable.setConstraint(andExpr);
+    smtEnv.addAuxiliaryVariable(setVariable);
+    return setVariable.getVariable();
+  }
 
-    private Expression translateLone(ExprUnary expr, Environment environment)
-    {
-        Expression expression = exprTranslator.translateExpr(expr.sub, environment);
+  private SmtExpr translateSomeOf(ExprUnary expr, SmtEnv smtEnv)
+  {
+    // expression has pattern (some A) where type of A is (Set E)
+    // the translation returns a set which satisfies
+    // (exists ((S (Set E)))
+    //      (and
+    //          (subset S A)
+    //          (not (= S (as emptyset (Set E))))
 
-        if(expr.type().is_bool)
-        {
-            SetSort sort = (SetSort) expression.getSort();
-            Expression emptySet = UnaryExpression.Op.EMPTYSET.make(sort);
-            Expression isEmpty = BinaryExpression.Op.EQ.make(emptySet, expression);
+    SmtExpr A = exprTranslator.translateExpr(expr.sub, smtEnv);
+    SetSort setSort = (SetSort) A.getSort();
+    SmtVariable setVariable = new SmtVariable(TranslatorUtils.getFreshName(setSort), setSort, false);
+    SmtExpr subset = SmtBinaryExpr.Op.SUBSET.make(setVariable.getVariable(), A);
 
-            VariableDeclaration element = new VariableDeclaration("s", sort.elementSort, false);
-            Expression singleton = UnaryExpression.Op.SINGLETON.make(element.getVariable());
-            Expression isSingleon = BinaryExpression.Op.EQ.make(singleton, expression);
-            Expression exists = QuantifiedExpression.Op.EXISTS.make(isSingleon, element);
-            Expression or = MultiArityExpression.Op.OR.make(isEmpty, exists);
-            return or;
-        }
-        else
-        {
-            return expression;
-            // (lone e(x, y)) is translated into
-            // declare a new set S(x, y)
-            // assert forall x, y (x, y constraints) either S(x, y) is singleton or S(x,y) is empty
-//            FunctionDeclaration multiplicitySet = translator.multiplicityVariableMap.get(expr);
-//
-//            if(multiplicitySet != null)
-//            {
-//                return multiplicitySet.getVariable();
-//            }
-//            LinkedHashMap<String, Expression> argumentsMap = environment.getVariables();
-//            List<VariableDeclaration> quantifiedArguments = new ArrayList<>();
-//            List<Expression> arguments = new ArrayList<>();
-//            List<Sort> argumentSorts = new ArrayList<>();
-//            Expression constraints = BoolConstant.True;
-//            for (Map.Entry<String, Expression> argument : argumentsMap.entrySet())
-//            {
-//                Variable variable = (Variable) argument.getValue();
-//
-//                VariableDeclaration declaration = (VariableDeclaration) variable.getDeclaration();
-//
-//                arguments.add(variable);
-//                Sort sort = variable.getSort();
-//                argumentSorts.add(sort);
-//
-//                // handle set sorts differently to avoid second order quantification
-//                if (sort instanceof SetSort)
-//                {
-//                    Sort elementSort = ((SetSort) sort).elementSort;
-//                    VariableDeclaration tuple = new VariableDeclaration(variable.getComment(), elementSort, null);
-//                    tuple.setOriginalName(argument.getKey());
-//                    quantifiedArguments.add(tuple);
-//                    Expression constraint = declaration.getConstraint().replace(variable, tuple.getVariable());
-//                    constraints = new BinaryExpression(constraints, BinaryExpression.Op.AND, constraint);
-//                }
-//                else if (sort instanceof TupleSort || sort instanceof UninterpretedSort)
-//                {
-//                    quantifiedArguments.add((VariableDeclaration) variable.getDeclaration());
-//                    constraints = new BinaryExpression(constraints, BinaryExpression.Op.AND, declaration.getConstraint());
-//                }
-//                else
-//                {
-//                    throw new UnsupportedOperationException();
-//                }
-//            }
-//             multiplicitySet = new FunctionDeclaration(TranslatorUtils.getFreshName(), argumentSorts, expression.getSort());
-//
-//            translator.smtProgram.addFunction(multiplicitySet);
-//            Expression setFunctionExpression;
-//
-//            if (argumentSorts.size() == 0)
-//            {
-//                setFunctionExpression = multiplicitySet.getVariable();
-//            }
-//            else
-//            {
-//                List<Expression> expressions = AlloyUtils.getFunctionCallArguments(quantifiedArguments, argumentsMap);
-//                setFunctionExpression = new FunctionCallExpression(multiplicitySet, expressions);
-//            }
-//
-//            SetSort sort = (SetSort) multiplicitySet.getSort();
-//            Expression emptySet = new UnaryExpression(UnaryExpression.Op.EMPTYSET, sort);
-//            Expression isEmpty = new BinaryExpression(emptySet, BinaryExpression.Op.EQ, setFunctionExpression);
-//
-//            VariableDeclaration element = new VariableDeclaration("__s__", sort.elementSort, null);
-//            Expression singleton = new UnaryExpression(UnaryExpression.Op.SINGLETON, element.getVariable());
-//            Expression isSingleon = new BinaryExpression(singleton, BinaryExpression.Op.EQ, setFunctionExpression);
-//            Expression exists = new QuantifiedExpression(QuantifiedExpression.Op.EXISTS, isSingleon, element);
-//            Expression or = new BinaryExpression(isEmpty, BinaryExpression.Op.OR, exists);
-//
-//            Expression implies = new BinaryExpression(constraints, BinaryExpression.Op.IMPLIES, or);
-//
-//            Expression forAll = new QuantifiedExpression(QuantifiedExpression.Op.FORALL, quantifiedArguments, implies);
-//
-//            Assertion assertion = new Assertion(expr.toString(), forAll);
-//            translator.smtProgram.addAssertion(assertion);
-//
-//            if (argumentSorts.size() == 0)
-//            {
-//                return multiplicitySet.getVariable();
-//            }
-//            else
-//            {
-//                return new FunctionCallExpression(multiplicitySet, arguments);
-//            }
-        }
-    }
-    
-    public MultiArityExpression mkTupleExpr(VariableDeclaration bdVarDecl)
-    {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, bdVarDecl.getVariable());
-    }
-    
-    public MultiArityExpression mkOneTupleExprOutofAtoms(Expression ... exprs)
-    {
-        return new MultiArityExpression(MultiArityExpression.Op.MKTUPLE, exprs);
-    } 
-    
-    public MultiArityExpression mkOneTupleExprOutofAtoms(List<Expression> exprs)
-    {
-        return MultiArityExpression.Op.MKTUPLE.make(exprs);
-    }
-    
-    public UnaryExpression mkSingleton(Expression tuple)
-    {
-        return UnaryExpression.Op.SINGLETON.make(tuple);
-    }
-    
-    public MultiArityExpression mkTupleExpr(List<VariableDeclaration> bdVarDecls)
-    {
-        List<Expression> constExprs = new ArrayList<>();
-        for(VariableDeclaration varDecl : bdVarDecls)
-        {
-            constExprs.add(varDecl.getVariable());
-        }
-        return MultiArityExpression.Op.MKTUPLE.make(constExprs);
-    }  
-    
-    public Expression mkTupleSelExpr(Expression expr, int index)
-    {
-        return BinaryExpression.Op.TUPSEL.make(IntConstant.getInstance(index), expr);
-    }
-    
-    public Expression mkUnaryIntTupValue(Expression expr)
-    {
-        return new FunctionCallExpression(AbstractTranslator.uninterpretedIntValue, expr);
-    }
+    SmtExpr emptyset = SmtUnaryExpr.Op.EMPTYSET.make(setSort);
+    SmtExpr equal = SmtBinaryExpr.Op.EQ.make(setVariable.getVariable(), emptyset);
+    SmtExpr notEmpty = SmtUnaryExpr.Op.NOT.make(equal);
+    SmtExpr andExpr = SmtMultiArityExpr.Op.AND.make(subset, notEmpty);
+    setVariable.setConstraint(andExpr);
+    smtEnv.addAuxiliaryVariable(setVariable);
+    return setVariable.getVariable();
+  }
+
+  private SmtExpr translateLone(ExprUnary exprUnary, SmtEnv smtEnv)
+  {
+    SmtEnv newSmtEnv = new SmtEnv(smtEnv);
+    SmtExpr set = exprTranslator.translateExpr(exprUnary.sub, newSmtEnv);
+    SmtExpr emptySet = SmtUnaryExpr.Op.EMPTYSET.make(set.getSort());
+    SmtExpr isEmpty = SmtBinaryExpr.Op.EQ.make(set, emptySet);
+    Sort sort = ((SetSort) set.getSort()).elementSort;
+    SmtVariable variable = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
+    SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(variable.getVariable());
+    SmtExpr isSingleton = SmtBinaryExpr.Op.EQ.make(set, singleton);
+    SmtExpr exists = SmtQtExpr.Op.EXISTS.make(isSingleton, variable);
+    SmtExpr or = SmtMultiArityExpr.Op.OR.make(isEmpty, exists);
+    SmtExpr finalSmtExpr = exprTranslator.addAuxiliaryVariables(or, newSmtEnv);
+    return finalSmtExpr;
+  }
 }

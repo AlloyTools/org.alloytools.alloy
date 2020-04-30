@@ -8,71 +8,85 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
 import edu.uiowa.smt.printers.SmtLibPrinter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-public class Sort extends Expression
+public class Sort extends SmtExpr
 {
-    private final String name;
-    private final int    arity;
+  private final String name;
+  private final int arity;
 
-    public Sort(String name, int arity)
-    {
-        this.name   = name;
-        this.arity  = arity;
-    }
+  public Sort(String name, int arity)
+  {
+    this.name = name;
+    this.arity = arity;
+  }
 
-    public String getName()
-    {
-        return this.name;
-    }
+  public String getName()
+  {
+    return this.name;
+  }
 
-    @Override
-    public String toString()
-    {
-        SmtLibPrinter printer = new SmtLibPrinter();
-        printer.visit(this);
-        return printer.getSmtLib();
-    }
+  @Override
+  public String toString()
+  {
+    SmtLibPrinter printer = new SmtLibPrinter();
+    printer.visit(this);
+    return printer.getSmtLib();
+  }
 
-    @Override
-    public void accept(SmtAstVisitor visitor)
-    {
-        visitor.visit(this);
-    }
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
 
-    @Override
-    public Sort getSort()
-    {
-        return this;
-    }
+  @Override
+  public Sort getSort()
+  {
+    return this;
+  }
 
-    @Override
-    public Expression evaluate(Map<String, FunctionDefinition> functions)
-    {
-        throw new UnsupportedOperationException();
-    }
-    @Override
-    public boolean equals(Object object)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public SmtExpr evaluate(Map<String, FunctionDefinition> functions)
+  {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public Expression substitute(Variable oldVariable, Variable newVariable)
-    {
-        return this;
-    }
+  @Override
+  public boolean equals(Object object)
+  {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public Expression replace(Expression oldExpression, Expression newExpression)
+  @Override
+  public List<Variable> getFreeVariables()
+  {
+    return new ArrayList<>();
+  }
+
+  @Override
+  public SmtExpr substitute(Variable oldVariable, Variable newVariable)
+  {
+    return this;
+  }
+
+  @Override
+  public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
+  {
+    if (oldSmtExpr.equals(this))
     {
-        if(oldExpression.equals(this))
-        {
-            return newExpression;
-        }
-        return this;
+      return newSmtExpr;
     }
+    return this;
+  }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    throw new UnsupportedOperationException();
+  }
 }

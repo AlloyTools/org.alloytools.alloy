@@ -18,31 +18,31 @@ import java.util.List;
 @XmlRootElement(name = "Field")
 public class MappingField
 {
-    @XmlAttribute(name = "label")
-    @JsonProperty("label")
-    public String label;
+  @XmlAttribute(name = "label")
+  @JsonProperty("label")
+  public String label;
 
-    @XmlAttribute(name = "functionName")
-    @JsonProperty("functionName")
-    public String functionName; // function name in SMT model
+  @XmlAttribute(name = "functionName")
+  @JsonProperty("functionName")
+  public String functionName; // function name in SMT model
 
-    @XmlAttribute(name = "id")
-    @JsonProperty("id")
-    public int id;
+  @XmlAttribute(name = "id")
+  @JsonProperty("id")
+  public int id;
 
-    @XmlAttribute(name = "parentId")
-    @JsonProperty("parentId")
-    public int parentId;
+  @XmlAttribute(name = "parentId")
+  @JsonProperty("parentId")
+  public int parentId;
 
-    @XmlAttribute(name = "isPrivate")
-    @JsonProperty("isPrivate")
-    public boolean isPrivate;
+  @XmlAttribute(name = "isPrivate")
+  @JsonProperty("isPrivate")
+  public boolean isPrivate;
 
-    @XmlAttribute(name = "isMeta")
-    @JsonProperty("isMeta")
-    public boolean isMeta;
+  @XmlAttribute(name = "isMeta")
+  @JsonProperty("isMeta")
+  public boolean isMeta;
 
-    @XmlAttribute(name = "types")
-    @JsonProperty("types")
-    public List<List<MappingType>> types = new ArrayList<>();
+  @XmlAttribute(name = "types")
+  @JsonProperty("types")
+  public List<List<MappingType>> types = new ArrayList<>();
 }

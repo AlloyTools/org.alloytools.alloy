@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,7 +70,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
 //            callbackBold("Translation time: " + (endTranslate - startTranslate) + " ms\n");
 
-            String smtScript = translation.getSmtScript();
+            String smtScript = translation.getOptimizedSmtScript().print(translation.getAlloySettings());
 
             if (smtScript != null)
             {
@@ -166,7 +167,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
     private CommandResult solveCommand(int index) throws Exception
     {
-        String commandTranslation = translation.translateCommand(index);
+        String commandTranslation = translation.getOptimizedSmtScript(index).toString();
 
         Command command = translation.getCommands().get(index);
 
@@ -177,7 +178,6 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             ErrorWarning warning = new ErrorWarning(command.pos, "The scope is ignored by cvc4");
             callbackWarning(warning);
         }
-
 
         final long startSolve   = System.currentTimeMillis();
 
@@ -325,6 +325,9 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 //        callbackPlain(smtModel + "\n");
 
         Command command = translation.getCommands().get(commandIndex);
+
+//        smtModel= showInputDialog(smtModel);
+
         SmtModel model = parseModel(smtModel);
 
         File xmlFile        = File.createTempFile("tmp", ".smt.xml", new File(tempDirectory));
@@ -491,11 +494,15 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         FunctionDefinition function = functionsMap.get(mappingSignature.functionName);
         if(function == null)
         {
-            throw new Exception("Can not find the function "+ mappingSignature.functionName
-                    + " for signature "+ signature.label + "in the model.") ;
-        }
+            // throw new Exception("Can not find the function "+ mappingSignature.functionName                   + " for signature "+ signature.label + "in the model.") ;
 
-        signature.atoms = getAtoms(function.expression, functionsMap);
+            // due to some optimization, some signatures may be lost. So here we assume empty atoms.
+            signature.atoms = new ArrayList<>();
+        }
+        else
+        {
+            signature.atoms = getAtoms(function.smtExpr, functionsMap);
+        }
         return signature;
     }
 
@@ -516,7 +523,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             throw new Exception("Can not find the function " + fieldName
                     + " for field " + field.label + "in the model.");
         }
-        field.tuples = getTuples(function.expression, functionsMap);
+        field.tuples = getTuples(function.smtExpr, functionsMap);
         field.types  = Collections.singletonList(new Types());
         //ToDo: refactor these magic numbers
         field.types.get(0).types = Arrays.stream(new int[]{parentId, parentId, parentId})
@@ -542,11 +549,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         FunctionDefinition function = functionsMap.get(mappingField.functionName);
         if(function == null)
         {
-            throw new Exception("Can not find the function "+ mappingField.functionName
-                    + " for field "+ field.label + "in the model.") ;
+            // throw new Exception("Can not find the function "+ mappingField.functionName                     + " for field "+ field.label + "in the model.") ;
+
+            // due to some optimization, some signatures may be lost. So here we assume empty atoms.
+            field.tuples = new ArrayList<>();
+        }
+        else
+        {
+            field.tuples = getTuples(function.smtExpr, functionsMap);
         }
 
-        field.tuples = getTuples(function.expression, functionsMap);
         field.types  = getTypes(mappingField);
 
         return field;
@@ -565,24 +577,24 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return types;
     }
 
-    private static List<Tuple> getTuples(Expression expression, Map<String,FunctionDefinition> functionsMap)
+    private static List<Tuple> getTuples(SmtExpr smtExpr, Map<String,FunctionDefinition> functionsMap)
     {
         List<Tuple> tuples = new ArrayList<>();
 
-        if(expression instanceof  UnaryExpression)
+        if(smtExpr instanceof SmtUnaryExpr)
         {
-            UnaryExpression unary = (UnaryExpression) expression;
+            SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
             switch (unary.getOP())
             {
                 case EMPTYSET: return new ArrayList<>();
                 case SINGLETON:
                 {
-                    Expression unaryExpression = unary.getExpression();
-                    if(unaryExpression instanceof MultiArityExpression)
+                    SmtExpr unarySmtExpr = unary.getExpression();
+                    if(unarySmtExpr instanceof SmtMultiArityExpr)
                     {
-                        MultiArityExpression multiArity = (MultiArityExpression) unaryExpression;
+                        SmtMultiArityExpr multiArity = (SmtMultiArityExpr) unarySmtExpr;
 
-                        if(multiArity.getOp() == MultiArityExpression.Op.MKTUPLE)
+                        if(multiArity.getOp() == SmtMultiArityExpr.Op.MKTUPLE)
                         {
                             List<Atom> atoms    = getAtoms(multiArity, functionsMap);
                             Tuple tuple         = new Tuple();
@@ -599,16 +611,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
-        if(expression instanceof  BinaryExpression)
+        if(smtExpr instanceof SmtBinaryExpr)
         {
-            BinaryExpression binary = (BinaryExpression) expression;
+            SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
 
             switch (binary.getOp())
             {
                 case UNION:
                 {
-                    tuples.addAll(getTuples(binary.getLhsExpr(), functionsMap));
-                    tuples.addAll(getTuples(binary.getRhsExpr(), functionsMap));
+                    tuples.addAll(getTuples(binary.getA(), functionsMap));
+                    tuples.addAll(getTuples(binary.getB(), functionsMap));
                     return tuples;
                 }
                 default:
@@ -619,13 +631,13 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         throw new UnsupportedOperationException();
     }
 
-    private static List<Atom> getAtoms(Expression expression, Map<String,FunctionDefinition> functions)
+    private static List<Atom> getAtoms(SmtExpr smtExpr, Map<String,FunctionDefinition> functions)
     {
         List<Atom> atoms = new ArrayList<>();
 
-        if(expression instanceof UninterpretedConstant)
+        if(smtExpr instanceof UninterpretedConstant)
         {
-            UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) expression;
+            UninterpretedConstant uninterpretedConstant = (UninterpretedConstant) smtExpr;
             if(uninterpretedConstant.getSort().equals(AbstractTranslator.atomSort))
             {
                 atoms.add(new Atom(uninterpretedConstant.getName()));
@@ -639,16 +651,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         }
 
         //ToDo: review removing this which is replaced with uninterpretedInt
-        if(expression instanceof IntConstant)
+        if(smtExpr instanceof IntConstant)
         {
-            IntConstant intConstant  = (IntConstant) expression;
+            IntConstant intConstant  = (IntConstant) smtExpr;
             atoms.add(new Atom(intConstant.getValue()));
             return atoms;
         }
 
-        if(expression instanceof  UnaryExpression)
+        if(smtExpr instanceof SmtUnaryExpr)
         {
-            UnaryExpression unary = (UnaryExpression) expression;
+            SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
             switch (unary.getOP())
             {
                 case EMPTYSET: return new ArrayList<>();
@@ -661,16 +673,16 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
-        if(expression instanceof  BinaryExpression)
+        if(smtExpr instanceof SmtBinaryExpr)
         {
-            BinaryExpression binary = (BinaryExpression) expression;
+            SmtBinaryExpr binary = (SmtBinaryExpr) smtExpr;
 
             switch (binary.getOp())
             {
                 case UNION:
                 {
-                    atoms.addAll(getAtoms(binary.getLhsExpr(), functions));
-                    atoms.addAll(getAtoms(binary.getRhsExpr(), functions));
+                    atoms.addAll(getAtoms(binary.getA(), functions));
+                    atoms.addAll(getAtoms(binary.getB(), functions));
                     return atoms;
                 }
                 default:
@@ -678,14 +690,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             }
         }
 
-        if(expression instanceof MultiArityExpression)
+        if(smtExpr instanceof SmtMultiArityExpr)
         {
-            MultiArityExpression multiArity = (MultiArityExpression) expression;
+            SmtMultiArityExpr multiArity = (SmtMultiArityExpr) smtExpr;
             switch (multiArity.getOp())
             {
                 case MKTUPLE:
                 {
-                    for (Expression expr: multiArity.getExpressions())
+                    for (SmtExpr expr: multiArity.getExpressions())
                     {
                         atoms.addAll(getAtoms(expr, functions));
                     }
@@ -711,22 +723,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         // callbackPlain(translation.getSmtScript());
 
         // output the smt file
-        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
-        String allCommands  = translation.translateAllCommandsWithCheckSat();
-        Formatter formatter = new Formatter(smtFile);
-        formatter.format("%s", allCommands);
-        formatter.close();
-
-        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
-
+        generateSmtFile(translation, false);
+        generateSmtFile(translation, true);
 
         // output the mapping
+        File jsonFile = File.createTempFile("tmp", ".mapping.json", new File(tempDirectory));
         translation.getMapper().writeToJson(jsonFile.getPath());
-
-        callbackPlain("\nGenerated smt2 file: ");
-
-        Object[] smtMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ smtFile.getAbsolutePath()};
-        workerCallback.callback(smtMessage);
 
         callbackPlain("\nGenerated json mapping file: ");
         Object[] jsonMessage = new Object []{"link", jsonFile.getAbsolutePath(), "CNF: "+ jsonFile.getAbsolutePath()};
@@ -735,14 +737,37 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return translation;
     }
 
+    private void generateSmtFile(Translation translation, boolean isOptimized) throws IOException
+    {
+        File smtFile        = File.createTempFile("tmp", ".smt2", new File(tempDirectory));
+        String allCommands  = translation.translateAllCommandsWithCheckSat(isOptimized);
+        Formatter formatter = new Formatter(smtFile);
+        formatter.format("%s", allCommands);
+        formatter.close();
+        if(isOptimized)
+        {
+            callbackPlain("\nGenerated optimized smt2 file: ");
+        }
+        else
+        {
+            callbackPlain("\nGenerated smt2 file: ");
+        }
+        Object[] smtMessage = new Object []{"link", smtFile.getAbsolutePath(), "CNF: "+ smtFile.getAbsolutePath()};
+        workerCallback.callback(smtMessage);
+    }
+
     public static void setAlloySettings()
     {
         // (set-option :tlimit 30000)
         alloySettings.putSolverOption(SmtSettings.TLIMIT, Cvc4Timeout.get().toString());
         //(set-option :produce-unsat-cores false)
         alloySettings.putSolverOption(SmtSettings.PRODUCE_UNSAT_CORES, Cvc4ProduceUnsatCores.get().toString());
+        //(set-option :finite-model-find false)
+        alloySettings.putSolverOption(SmtSettings.FINITE_MODEL_FIND, Cvc4FiniteModelFind.get().toString());
         alloySettings.includeCommandScope = Cvc4IncludeCommandScope.get();
         alloySettings.produceUnsatCore = Cvc4ProduceUnsatCores.get();
+        alloySettings.finiteModelFinding = Cvc4FiniteModelFind.get();
+        alloySettings.integerSingletonsOnly = Cvc4IntegerSingletonsOnly.get();
     }
 
     //ToDo: replace this with a call edu.uiowa.smt.Result.parseModel
@@ -778,6 +803,14 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         return smtUnsatCore;
     }
 
+    public static String showInputDialog(String text)
+    {
+        JTextArea textArea = new JTextArea(text);
+        textArea.setSize(textArea.getPreferredSize().width, textArea.getPreferredSize().height);
+        JOptionPane.showConfirmDialog(null, new JScrollPane(textArea), "Debugging", JOptionPane.OK_OPTION);
+        return textArea.getText();
+    }
+    
     private class CommandResult
     {
         public int index;

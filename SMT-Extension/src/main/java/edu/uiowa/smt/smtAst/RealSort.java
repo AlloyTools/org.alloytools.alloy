@@ -8,30 +8,40 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class RealSort extends Sort
 {
-    public RealSort()
-    {
-        super("Real", 0);
-    }
-    @Override
-    public void accept(SmtAstVisitor visitor) {
-        visitor.visit(this);
-    }
+  public RealSort()
+  {
+    super("Real", 0);
+  }
 
-    @Override
-    public boolean equals(Object object)
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
+
+  @Override
+  public boolean equals(Object object)
+  {
+    if (object == this)
     {
-        if(object == this)
-        {
-            return true;
-        }
-        if(!(object instanceof RealSort))
-        {
-            return false;
-        }
-        return true;
+      return true;
     }
+    if (!(object instanceof RealSort))
+    {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+    return false;
+  }
 }

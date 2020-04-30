@@ -8,84 +8,112 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-import edu.uiowa.smt.AbstractTranslator;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SmtModel extends SmtAst
 {
-    protected final List<FunctionDeclaration>    functions = new ArrayList<>();
-    protected final List<Sort>                   sorts     = new ArrayList<>();
+  protected final List<Sort> sorts = new ArrayList<>();
+  protected final List<FunctionDeclaration> functions = new ArrayList<>();
 
-    public SmtModel()
+  public SmtModel()
+  {
+  }
+
+  public SmtModel(SmtModel model)
+  {
+    this.sorts.addAll(model.sorts);
+    this.functions.addAll(model.functions);
+  }
+
+
+  public void addSort(Sort sort)
+  {
+    if (sort != null)
     {
+      this.sorts.add(sort);
     }
+  }
 
-    public SmtModel(SmtModel model)
+  public void removeSort(Sort sort)
+  {
+    if (sort != null)
     {
-        this.functions.addAll(model.functions);
-        this.sorts.addAll(model.sorts);
+      this.sorts.removeAll(Collections.singleton(sort));
     }
+  }
 
 
-    public void addSort(Sort sort)
+  public void addFunction(FunctionDeclaration function)
+  {
+    if (function != null)
     {
-        if(sort != null)
-        {
-            this.sorts.add(sort);
-        }
+      this.functions.add(function);
     }
+  }
 
-
-
-    public void addFunction(FunctionDeclaration function)
+  public void addFunctions(List<FunctionDeclaration> functions)
+  {
+    for (FunctionDeclaration function : functions)
     {
-        if(function != null)
-        {
-            this.functions.add(function);
-        }
+      addFunction(function);
     }
+  }
 
-    public List<Sort> getSorts()
+  public void removeFunction(FunctionDeclaration function)
+  {
+    if (function != null)
     {
-        return this.sorts;
+      this.functions.removeAll(Collections.singleton(function));
     }
+  }
 
-    public List<FunctionDeclaration> getFunctions()
+  public void removeFunctions(List<FunctionDeclaration> functions)
+  {
+    this.functions.removeAll(functions);
+  }
+
+  public List<Sort> getSorts()
+  {
+    return this.sorts;
+  }
+
+  public List<FunctionDeclaration> getFunctions()
+  {
+    return this.functions;
+  }
+
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  public FunctionDefinition evaluateUninterpretedInt(FunctionDefinition function)
+  {
+    Map<String, FunctionDefinition> functions = new HashMap<>();
+
+    if (function.inputVariables.size() > 0)
     {
-        return this.functions;
+      throw new UnsupportedOperationException();
     }
-
-    @Override
-    public void accept(SmtAstVisitor visitor)
+    // make sure this is a cvc4 model
+    for (FunctionDeclaration declaration : this.functions)
     {
-        throw new UnsupportedOperationException();
+      if (!(declaration instanceof FunctionDefinition))
+      {
+        throw new RuntimeException("The function " + declaration + " is not defined");
+      }
+      functions.put(declaration.getName(), (FunctionDefinition) declaration);
     }
+    SmtExpr body = function.smtExpr.evaluate(functions);
 
-    public FunctionDefinition evaluateUninterpretedInt(FunctionDefinition function)
-    {
-        Map<String, FunctionDefinition> functions = new HashMap<>();
+    return new FunctionDefinition(function.getName(), function.inputVariables,
+        function.getSort(), body, function.isOriginal());
+  }
 
-        if(function.inputVariables.size() > 0)
-        {
-            throw new UnsupportedOperationException();
-        }
-        // make sure this is a cvc4 model
-        for (FunctionDeclaration declaration: this.functions)
-        {
-            if(!(declaration instanceof FunctionDefinition))
-            {
-                throw new RuntimeException("The function " + declaration + " is not defined");
-            }
-            functions.put(declaration.getName(), (FunctionDefinition) declaration);
-        }
-        Expression body = function.expression.evaluate(functions);
-
-        return new FunctionDefinition(function.getName(), function.inputVariables,
-                    function.getSort(), body, function.isOriginal());
-    }
+  protected void reset()
+  {
+    this.sorts.clear();
+    this.functions.clear();
+  }
 }

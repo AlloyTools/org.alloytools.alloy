@@ -8,37 +8,46 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class SetSort extends Sort
 {
-    public Sort elementSort;
-    
-    public SetSort(Sort elementSort)
+  public Sort elementSort;
+
+  public SetSort(Sort elementSort)
+  {
+    super("Set", 0);
+    this.elementSort = elementSort;
+  }
+
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
+
+  @Override
+  public boolean equals(Object object)
+  {
+    if (object == this)
     {
-        super("Set", 0);
-        this.elementSort = elementSort;
+      return true;
     }
 
-    @Override
-    public void accept(SmtAstVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
-    public boolean equals(Object object)
+    if (!(object instanceof SetSort))
     {
-        if (object == this)
-        {
-            return true;
-        }
-
-        if (!(object instanceof SetSort))
-        {
-            return false;
-        }
-
-        SetSort sort = (SetSort) object;
-        return sort.elementSort.equals(this.elementSort);
+      return false;
     }
+
+    SetSort sort = (SetSort) object;
+    return sort.elementSort.equals(this.elementSort);
+  }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this) || elementSort.containsExpr(expr))
+    {
+      return true;
+    }
+    return false;
+  }
 }

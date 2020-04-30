@@ -4,178 +4,121 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
-import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
+import edu.uiowa.smt.optimizer.SmtOptimizer;
 import edu.uiowa.smt.printers.SmtLibPrinter;
-import edu.uiowa.smt.smtAst.*;
+import edu.uiowa.smt.smtAst.SmtScript;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class Translation
 {
 
-    private Alloy2SmtTranslator translator;
-    private final SmtProgram    smtAst;
-    private final Mapper        mapper;
-    private final String        smtScript;
-    private final AlloySettings alloySettings;
+  private Alloy2SmtTranslator translator;
+  private final Mapper mapper;
+  private final AlloySettings alloySettings;
+  private SmtScript optimizedSmtScript;
 
-    public Translation(Alloy2SmtTranslator translator, SmtProgram smtAst,
-                       Mapper mapper, String smtScript,
-                       AlloySettings alloySettings)
+  public Translation(Alloy2SmtTranslator translator, SmtScript smtScript,
+                     Mapper mapper,
+                     AlloySettings alloySettings)
+  {
+    this.translator = translator;
+    this.mapper = mapper;
+    this.alloySettings = alloySettings;
+  }
+
+  public AlloySettings getAlloySettings()
+  {
+    return alloySettings;
+  }
+
+  /**
+   * @return a mapper that maps alloy signatures and fields into their
+   * corresponding functions in the generated smt script
+   */
+  public Mapper getMapper()
+  {
+    return mapper;
+  }
+
+  /**
+   * @return an abstract syntax tree for the original smt translation
+   */
+  public SmtScript getOriginalSmtScript()
+  {
+    return translator.getSmtScript();
+  }
+
+  /**
+   * @return the optimized smt translation for alloy model without commands
+   */
+  public SmtScript getOptimizedSmtScript()
+  {
+    return optimizedSmtScript;
+  }
+
+  /**
+   * @return the optimized smt translation for the given command
+   */
+  public SmtScript getOptimizedSmtScript(int index)
+  {
+    return optimizedSmtScript.getChild(index);
+  }
+
+  public List<Command> getCommands()
+  {
+    return translator.commands;
+  }
+
+  /**
+   * @param isOptimized
+   * @return a translation for all commands in smt using (check-sat)
+   * without getting the models
+   */
+  public String translateAllCommandsWithCheckSat(boolean isOptimized)
+  {
+    StringBuilder stringBuilder = new StringBuilder();
+    if (isOptimized)
     {
-        this.translator = translator;
-        this.smtAst     = smtAst;
-        this.mapper     = mapper;
-        this.smtScript  = smtScript;
-        this.alloySettings = alloySettings;
+      stringBuilder.append(getOptimizedSmtScript().print(alloySettings));
     }
-
-    /**
-     * @return the satResult of translating the alloy model
-     * (excluding assertions and commands like check and run) into smt.
-     * Command translation is handled separately  by the method
-     * {@link Translation#translateCommand(int)}
-     */
-    public String getSmtScript()
+    else
     {
-        return smtScript;
+      stringBuilder.append(getOriginalSmtScript().print(alloySettings));
     }
-
-    /**
-     * @return a mapper that maps alloy signatures and fields into their
-     * corresponding functions in the generated smt script
-     */
-    public Mapper getMapper()
+    for (int i = 0; i < translator.commands.size(); i++)
     {
-        return mapper;
+      stringBuilder.append(SmtLibPrinter.PUSH + "\n");
+      if (isOptimized)
+      {
+        stringBuilder.append(getOptimizedSmtScript(i) + "\n");
+      }
+      else
+      {
+        stringBuilder.append(getOriginalSmtScript(i) + "\n");
+      }
+      stringBuilder.append(SmtLibPrinter.CHECK_SAT + "\n");
+      stringBuilder.append(SmtLibPrinter.POP + "\n");
     }
+    return stringBuilder.toString();
+  }
 
-    /**
-     * @return an abstract syntax tree for the smt translation
-     */
-    public SmtProgram getSmtAst()
-    {
-        return smtAst;
-    }
+  private SmtScript getOriginalSmtScript(int index)
+  {
+    return translator.smtScript.getChild(index);
+  }
 
-    public List<Command> getCommands()
-    {
-        return translator.commands;
-    }
+  /**
+   * @param expr can be Sig, Field, or Skolem
+   * @return the unique id of the expr it exists in the idMap, or generate  a new id
+   */
+  public int getSigId(Expr expr)
+  {
+    return translator.getSigId(expr);
+  }
 
-    /**
-     * @param commandIndex the index of the command
-     * @param includeScope whether to include scope in translation
-     * @return the satResult of translating the given command (ignoring
-     * scope constraints) into smt
-     */
-    public String translateCommand(int commandIndex)
-    {
-
-        Alloy2SmtTranslator commandTranslator = new Alloy2SmtTranslator(translator);
-
-        // store old declarations, definitions, and assertions
-        List<Sort>                sorts                 = new ArrayList<>(commandTranslator.smtProgram.getSorts());
-        List<ConstantDeclaration> constantDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getConstantDeclarations());
-        List<FunctionDeclaration> functionDeclarations  = new ArrayList<>(commandTranslator.smtProgram.getFunctions());
-        List<Assertion> assertions = new ArrayList<>(commandTranslator.smtProgram.getAssertions());
-
-
-        List<Assertion> commandAssertions = commandTranslator.translateCommand(commandIndex,
-                alloySettings.includeCommandScope);
-
-        // get new declarations, definitions, and assertions
-        List<Sort> newSorts = commandTranslator.smtProgram
-                .getSorts().stream()
-                .filter(((Predicate<Sort>) new HashSet<>(sorts)::contains).negate())
-                .collect(Collectors.toList());
-
-        List<ConstantDeclaration> newConstantDeclarations = commandTranslator.smtProgram
-                .getConstantDeclarations().stream()
-                .filter(((Predicate<ConstantDeclaration>) new HashSet<>(constantDeclarations)::contains).negate())
-                .collect(Collectors.toList());
-
-        List<FunctionDeclaration> newFunctionDeclarations = commandTranslator.smtProgram
-                .getFunctions().stream()
-                .filter(((Predicate<FunctionDeclaration>) new HashSet<>(functionDeclarations)::contains).negate())
-                .collect(Collectors.toList());
-
-        List<Assertion> newAssertions = commandTranslator.smtProgram
-                .getAssertions().stream()
-                .filter(((Predicate<Assertion>) new HashSet<>(assertions)::contains).negate())
-                .collect(Collectors.toList());
-
-
-        // get the translation for new declarations and definitions
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Sort sort : newSorts)
-        {
-            SmtLibPrinter printer = new SmtLibPrettyPrinter();
-            printer.visit(sort);
-            stringBuilder.append(printer.getSmtLib());
-        }
-
-        for (ConstantDeclaration declaration : newConstantDeclarations)
-        {
-            SmtLibPrinter printer = new SmtLibPrettyPrinter();
-            printer.visit(declaration);
-            stringBuilder.append(printer.getSmtLib());
-        }
-
-        for (FunctionDeclaration declaration : newFunctionDeclarations)
-        {
-            SmtLibPrinter printer = new SmtLibPrettyPrinter();
-            printer.visit(declaration);
-            stringBuilder.append(printer.getSmtLib());
-        }
-
-        for (Assertion newAssertion : newAssertions)
-        {
-            SmtLibPrinter printer = new SmtLibPrettyPrinter();
-            printer.visit(newAssertion);
-            stringBuilder.append(printer.getSmtLib());
-        }
-
-        // get the translation for the command assertion
-        SmtLibPrinter printer     = new SmtLibPrettyPrinter();
-        for (Assertion assertion: commandAssertions)
-        {
-            printer.visit(assertion);
-        }
-
-        stringBuilder.append(printer.getSmtLib());
-        
-        return stringBuilder.toString();
-    }
-
-    /**
-     * @return a translation for all commands in smt using (check-sat)
-     * without getting the models
-     */
-    public String translateAllCommandsWithCheckSat()
-    {
-        StringBuilder stringBuilder = new StringBuilder(getSmtScript());
-        for (int i = 0; i < translator.commands.size() ; i++)
-        {
-            stringBuilder.append(SmtLibPrinter.PUSH + "\n");
-            stringBuilder.append(translateCommand(i) + "\n");
-            stringBuilder.append(SmtLibPrinter.CHECK_SAT + "\n");
-            stringBuilder.append(SmtLibPrinter.POP + "\n");
-        }
-        return stringBuilder.toString();
-    }
-
-    /**
-     *
-     * @param expr can be Sig, Field, or Skolem
-     * @return the unique id of the expr it exists in the idMap, or generate  a new id
-     */
-    public int getSigId(Expr expr)
-    {
-        return  translator.getSigId(expr);
-    }
+  public void optimize()
+  {
+    this.optimizedSmtScript = SmtOptimizer.optimize(translator.smtScript);
+  }
 }

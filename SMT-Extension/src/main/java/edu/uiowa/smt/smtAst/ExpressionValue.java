@@ -1,31 +1,29 @@
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class ExpressionValue extends SmtAst
 {
-    private final Expression expression;
-    private final Expression value;
+  private final SmtExpr smtExpr;
+  private final SmtExpr value;
 
-    public ExpressionValue(Expression expression, Expression value)
-    {
-        this.expression = expression;
-        this.value = value;
-    }
+  public ExpressionValue(SmtExpr smtExpr, SmtExpr value)
+  {
+    this.smtExpr = smtExpr;
+    this.value = value;
+  }
 
-    public Expression getExpression()
-    {
-        return expression;
-    }
+  public SmtExpr getSmtExpr()
+  {
+    return smtExpr;
+  }
 
-    public Expression getValue()
-    {
-        return value;
-    }
+  public SmtExpr getValue()
+  {
+    return value;
+  }
 
-    @Override
-    public void accept(SmtAstVisitor visitor)
-    {
-        visitor.visit(this);
-    }
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
 }

@@ -8,41 +8,39 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class Assertion extends SmtAst
 {
-    private final Expression  expression;
+  private final SmtExpr smtExpr;
 
-    private final String comment;
+  private final String comment;
 
-    private final String symbolicName;
+  private final String symbolicName;
 
-    public Assertion(String symbolicName, String comment, Expression expression)
-    {
-        this.symbolicName = symbolicName;
-        this.comment = comment;
-        this.expression = expression;
-    }
+  public Assertion(String symbolicName, String comment, SmtExpr smtExpr)
+  {
+    this.symbolicName = symbolicName;
+    this.comment = comment;
+    this.smtExpr = smtExpr;
+  }
 
-    public String getComment()
-    {
-        return this.comment;
-    }
+  public String getComment()
+  {
+    return this.comment;
+  }
 
-    public Expression getExpression()
-    {
-        return this.expression;
-    }
+  public SmtExpr getSmtExpr()
+  {
+    return this.smtExpr;
+  }
 
-    public String getSymbolicName()
-    {
-        return symbolicName;
-    }
+  public String getSymbolicName()
+  {
+    return symbolicName;
+  }
 
-    @Override
-    public void accept(SmtAstVisitor visitor)
-    {
-        visitor.visit(this);
-    }
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
 }

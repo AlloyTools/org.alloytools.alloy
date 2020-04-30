@@ -19,59 +19,59 @@ import java.util.List;
 @XmlRootElement(name = "Signature")
 public class MappingSignature
 {
-    @XmlAttribute(name = "label")
-    @JsonProperty("label")
-    public String label;
+  @XmlAttribute(name = "label")
+  @JsonProperty("label")
+  public String label;
 
-    @XmlAttribute(name = "functionName")
-    @JsonProperty("functionName")
-    public String functionName; // function name in SMT model
+  @XmlAttribute(name = "functionName")
+  @JsonProperty("functionName")
+  public String functionName; // function name in SMT model
 
-    @XmlAttribute(name = "id")
-    @JsonProperty("id")
-    public int id;
+  @XmlAttribute(name = "id")
+  @JsonProperty("id")
+  public int id;
 
-    @XmlAttribute(name = "parents")
-    @JsonProperty("parents")
-    public List<Integer> parents = new ArrayList<>();
+  @XmlAttribute(name = "parents")
+  @JsonProperty("parents")
+  public List<Integer> parents = new ArrayList<>();
 
-    @XmlAttribute(name = "builtIn")
-    @JsonProperty("builtIn")
-    public boolean builtIn;
+  @XmlAttribute(name = "builtIn")
+  @JsonProperty("builtIn")
+  public boolean builtIn;
 
-    @XmlAttribute(name = "isAbstract")
-    @JsonProperty("isAbstract")
-    public boolean isAbstract;
+  @XmlAttribute(name = "isAbstract")
+  @JsonProperty("isAbstract")
+  public boolean isAbstract;
 
-    @XmlAttribute(name = "isOne")
-    @JsonProperty("isOne")
-    public boolean isOne;
+  @XmlAttribute(name = "isOne")
+  @JsonProperty("isOne")
+  public boolean isOne;
 
-    @XmlAttribute(name = "isLone")
-    @JsonProperty("isLone")
-    public boolean isLone;
+  @XmlAttribute(name = "isLone")
+  @JsonProperty("isLone")
+  public boolean isLone;
 
-    @XmlAttribute(name = "isSome")
-    @JsonProperty("isSome")
-    public boolean isSome;
+  @XmlAttribute(name = "isSome")
+  @JsonProperty("isSome")
+  public boolean isSome;
 
-    @XmlAttribute(name = "isPrivate")
-    @JsonProperty("isPrivate")
-    public boolean isPrivate;
+  @XmlAttribute(name = "isPrivate")
+  @JsonProperty("isPrivate")
+  public boolean isPrivate;
 
-    @XmlAttribute(name = "isMeta")
-    @JsonProperty("isMeta")
-    public boolean isMeta;
+  @XmlAttribute(name = "isMeta")
+  @JsonProperty("isMeta")
+  public boolean isMeta;
 
-    @XmlAttribute(name = "isExact")
-    @JsonProperty("isExact")
-    public boolean isExact;
+  @XmlAttribute(name = "isExact")
+  @JsonProperty("isExact")
+  public boolean isExact;
 
-    @XmlAttribute(name = "isEnum")
-    @JsonProperty("isEnum")
-    public boolean isEnum;
+  @XmlAttribute(name = "isEnum")
+  @JsonProperty("isEnum")
+  public boolean isEnum;
 
-    @XmlAttribute(name = "isSubset")
-    @JsonProperty("isSubset")
-    public boolean isSubset;
+  @XmlAttribute(name = "isSubset")
+  @JsonProperty("isSubset")
+  public boolean isSubset;
 }

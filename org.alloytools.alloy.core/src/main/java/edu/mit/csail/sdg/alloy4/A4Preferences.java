@@ -661,18 +661,29 @@ public class A4Preferences {
 
     public static final StringChoicePref RelationalSolver                   = new StringChoicePref("Relational Solver", Arrays.asList(KODKOD, CVC4), KODKOD);
 
-    public static final IntChoicePref                Cvc4Timeout            = new IntChoicePref("Cvc4Timeout", "CVC4 timeout", Arrays.asList(5000, 30000, 60000, 120000, 300000, 600000), 30000){
+    public static final IntChoicePref                Cvc4Timeout            = new IntChoicePref("Cvc4Timeout", "CVC4 timeout", Arrays.asList(5000, 30000, 60000, 120000, 300000, 600000, 0), 30000){
         @Override
         public Object renderValueShort(Integer value)
         {
-            double valueInMinutes = value / 1000.0;
-            return ((int) valueInMinutes) + " seconds";
+            if(value != 0)
+            {
+                double valueInMinutes = value / 1000.0;
+                return ((int) valueInMinutes) + " seconds";
+            }
+            else
+            {
+                return "Infinity";
+            }
         }
     };
 
     public static final BooleanPref Cvc4IncludeCommandScope = new BooleanPref("Cvc4IncludeCommandScope", "CVC4 include scope", false);
 
     public static final BooleanPref Cvc4ProduceUnsatCores = new BooleanPref("Cvc4ProduceUnsatCores", "CVC4 produce unsat cores", false);
+
+    public static final BooleanPref Cvc4FiniteModelFind = new BooleanPref("Cvc4FiniteModelFind", "Finite model find", true);
+
+    public static final BooleanPref Cvc4IntegerSingletonsOnly = new BooleanPref("Cvc4IntegerSingletonsOnly", "CVC4 integer singletons only", false);
 
     public static final DelayedChoicePref<SatSolver> Solver                 = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
 

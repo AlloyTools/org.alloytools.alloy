@@ -8,30 +8,41 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
-
 public class StringSort extends Sort
 {
-    public StringSort()
-    {
-        super("String", 0);
-    }
-    @Override
-    public void accept(SmtAstVisitor visitor) {
-        visitor.visit(this);
-    }
-    @Override
-    public boolean equals(Object object)
-    {
-        if(object == this)
-        {
-            return true;
-        }
-        if(!(object instanceof StringSort))
-        {
-            return false;
-        }
+  public StringSort()
+  {
+    super("String", 0);
+  }
 
-        return true;
+  @Override
+  public void accept(SmtAstVisitor visitor)
+  {
+    visitor.visit(this);
+  }
+
+  @Override
+  public boolean equals(Object object)
+  {
+    if (object == this)
+    {
+      return true;
     }
+    if (!(object instanceof StringSort))
+    {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public boolean containsExpr(SmtExpr expr)
+  {
+    if(expr.equals(this))
+    {
+      return true;
+    }
+    return false;
+  }
 }

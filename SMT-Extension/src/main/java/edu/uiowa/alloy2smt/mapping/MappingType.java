@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "Type")
 public class MappingType
 {
-    @XmlAttribute(name = "id")
-    @JsonProperty("id")
-    public int id;
+  @XmlAttribute(name = "id")
+  @JsonProperty("id")
+  public int id;
 }

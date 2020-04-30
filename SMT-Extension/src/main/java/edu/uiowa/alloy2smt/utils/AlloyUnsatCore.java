@@ -15,24 +15,24 @@ import java.util.stream.Collectors;
 @XmlRootElement(name = "AlloyUnsatCore")
 public class AlloyUnsatCore
 {
-    @XmlAttribute(name = "ranges")
-    @JsonProperty("ranges")
-    public List<Range> ranges = new ArrayList<>();
+  @XmlAttribute(name = "ranges")
+  @JsonProperty("ranges")
+  public List<Range> ranges = new ArrayList<>();
 
-    public Set<Pos> getPositions()
+  public Set<Pos> getPositions()
+  {
+    return ranges.stream().map(r -> r.toPos()).collect(Collectors.toSet());
+  }
+
+  public static AlloyUnsatCore fromSmtUnsatCore(SmtUnsatCore smtUnsatCore) throws IOException
+  {
+    AlloyUnsatCore alloyUnsatCore = new AlloyUnsatCore();
+    for (String json : smtUnsatCore.getCore())
     {
-        return ranges.stream().map(r -> r.toPos()).collect(Collectors.toSet());
+      Range range = Range.fromJson(json);
+      alloyUnsatCore.ranges.add(range);
     }
 
-    public static AlloyUnsatCore fromSmtUnsatCore(SmtUnsatCore smtUnsatCore) throws IOException
-    {
-        AlloyUnsatCore alloyUnsatCore = new AlloyUnsatCore();
-        for (String json: smtUnsatCore.getCore())
-        {
-            Range range = Range.fromJson(json);
-            alloyUnsatCore.ranges.add(range);
-        }
-
-        return alloyUnsatCore;
-    }
+    return alloyUnsatCore;
+  }
 }

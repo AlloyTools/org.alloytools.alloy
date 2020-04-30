@@ -8,9 +8,17 @@
 
 package edu.uiowa.smt.smtAst;
 
-import edu.uiowa.smt.printers.SmtAstVisitor;
+import edu.uiowa.smt.printers.SmtLibPrinter;
 
 public abstract class SmtAst
 {
-    public abstract void accept(SmtAstVisitor visitor);
+  public abstract void accept(SmtAstVisitor visitor);
+
+  @Override
+  public String toString()
+  {
+    SmtLibPrinter printer = new SmtLibPrinter();
+    printer.visit(this);
+    return printer.getSmtLib();
+  }
 }
