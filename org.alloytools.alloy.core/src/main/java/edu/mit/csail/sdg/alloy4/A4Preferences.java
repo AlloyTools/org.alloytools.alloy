@@ -683,7 +683,7 @@ public class A4Preferences {
 
     public static final BooleanPref Cvc4FiniteModelFind = new BooleanPref("Cvc4FiniteModelFind", "Finite model find", true);
 
-    public static final BooleanPref Cvc4IntegerSingletonsOnly = new BooleanPref("Cvc4IntegerSingletonsOnly", "CVC4 integer singletons only", true);
+    public static final BooleanPref Cvc4IntegerSingletonsOnly = new BooleanPref("Cvc4IntegerSingletonsOnly", "CVC4 integer singletons only", false);
 
     public static final DelayedChoicePref<SatSolver> Solver                 = new DelayedChoicePref<SatSolver>("SatSolver2", "Solver", SatSolver.values(), SatSolver.SAT4J) {
 
