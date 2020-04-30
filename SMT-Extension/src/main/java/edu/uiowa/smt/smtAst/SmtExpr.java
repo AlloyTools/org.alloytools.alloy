@@ -17,14 +17,6 @@ public abstract class SmtExpr extends SmtAst
 {
   private String comment = "";
 
-  @Override
-  public String toString()
-  {
-    SmtLibPrinter printer = new SmtLibPrinter();
-    printer.visit(this);
-    return printer.getSmtLib();
-  }
-
   public abstract Sort getSort();
 
   public String getComment()
