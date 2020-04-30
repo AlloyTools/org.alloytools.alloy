@@ -7,13 +7,41 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
   @Override
   public void visit(SmtAst smtAst)
   {
-    if (smtAst instanceof SmtScript)
+    if (smtAst instanceof Assertion)
     {
-      this.visit((SmtScript) smtAst);
+      this.visit((Assertion) smtAst);
     }
     else if (smtAst instanceof Declaration)
     {
       this.visit((Declaration) smtAst);
+    }
+    else if (smtAst instanceof ExpressionValue)
+    {
+      this.visit((ExpressionValue) smtAst);
+    }
+    else if (smtAst instanceof SmtExpr)
+    {
+      this.visit((SmtExpr) smtAst);
+    }
+    if (smtAst instanceof SmtScript)
+    {
+      this.visit((SmtScript) smtAst);
+    }
+    if (smtAst instanceof SmtModel)
+    {
+      this.visit((SmtModel) smtAst);
+    }
+    if (smtAst instanceof SmtSettings)
+    {
+      this.visit((SmtSettings) smtAst);
+    }
+    if (smtAst instanceof SmtUnsatCore)
+    {
+      this.visit((SmtUnsatCore) smtAst);
+    }
+    if (smtAst instanceof SmtValues)
+    {
+      this.visit((SmtValues) smtAst);
     }
     else
     {
@@ -138,6 +166,11 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     {
       throw new UnsupportedOperationException();
     }
+  }
+
+  @Override
+  public void visit(SmtModel model)
+  {
   }
 
   @Override

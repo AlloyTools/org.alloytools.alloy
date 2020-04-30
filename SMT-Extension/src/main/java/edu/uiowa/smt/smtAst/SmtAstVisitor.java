@@ -14,6 +14,8 @@ public interface SmtAstVisitor
 
   void visit(Declaration declaration);
 
+  void visit(SmtModel model);
+
   void visit(SmtScript script);
 
   void visit(SmtBinaryExpr expr);
