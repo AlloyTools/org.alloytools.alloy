@@ -1,5 +1,6 @@
 .DS_Store
 .gradle/
+.idea/
 generated/
 bin/
 bin_test/
@@ -23,6 +24,9 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.so
 *.dylib
 *.dll
+
+# SMT-Lib files
+*.smt2
 
 # Fortran module files
 *.mod
