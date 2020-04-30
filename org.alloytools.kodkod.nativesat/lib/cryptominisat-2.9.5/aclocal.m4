@@ -590,7 +590,7 @@ _LT_OUTPUT_LIBTOOL_INIT
 # _LT_GENERATED_FILE_INIT(FILE, [COMMENT])
 # ------------------------------------
 # Generate a child script FILE with all initialization necessary to
-# reuse the smtEnv learned by the parent script, and make the
+# reuse the environment learned by the parent script, and make the
 # file executable.  If COMMENT is supplied, it is inserted after the
 # `#!' sequence but before initialization text begins.  After this
 # macro, additional text can be appended to FILE to form the body of
@@ -753,7 +753,7 @@ _LT_EOF
   aix3*)
     cat <<\_LT_EOF >> "$cfgfile"
 # AIX sometimes has problems with the GCC collect2 program.  For some
-# reason, if we set the COLLECT_NAMES smtEnv variable, the problems
+# reason, if we set the COLLECT_NAMES environment variable, the problems
 # vanish in a puff of smoke.
 if test "X${COLLECT_NAMES+set}" != Xset; then
   COLLECT_NAMES=
@@ -990,7 +990,7 @@ m4_defun_once([_LT_REQUIRED_DARWIN_CHECKS],[
       [lt_cv_apple_cc_single_mod=no
       if test -z "${LT_MULTI_MODULE}"; then
 	# By default we will add the -single_module flag. You can override
-	# by either setting the smtEnv variable LT_MULTI_MODULE
+	# by either setting the environment variable LT_MULTI_MODULE
 	# non-empty at configure time, or by adding -multi_module to the
 	# link flags.
 	rm -rf libconftest.dylib*
@@ -9364,7 +9364,7 @@ AC_DEFUN([_AM_SET_OPTIONS],
 AC_DEFUN([_AM_IF_OPTION],
 [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
 
-# Check to make sure that the build smtEnv is sane.    -*- Autoconf -*-
+# Check to make sure that the build environment is sane.    -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 2000, 2001, 2003, 2005, 2008
 # Free Software Foundation, Inc.
@@ -9378,7 +9378,7 @@ AC_DEFUN([_AM_IF_OPTION],
 # AM_SANITY_CHECK
 # ---------------
 AC_DEFUN([AM_SANITY_CHECK],
-[AC_MSG_CHECKING([whether build smtEnv is sane])
+[AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
 echo timestamp > conftest.file
@@ -9412,10 +9412,10 @@ if (
 
       # If neither matched, then we have a broken ls.  This can happen
       # if, for instance, CONFIG_SHELL is bash and it inherits a
-      # broken ls alias from the smtEnv.  This has actually
+      # broken ls alias from the environment.  This has actually
       # happened.  Such a system could not be considered "sane".
       AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
-alias in your smtEnv])
+alias in your environment])
    fi
 
    test "$[2]" = conftest.file
@@ -9451,7 +9451,7 @@ AC_DEFUN([AM_PROG_INSTALL_STRIP],
 # Installed binaries are usually stripped using `strip' when the user
 # run `make install-strip'.  However `strip' might not be the right
 # tool to use in cross-compilation environments, therefore Automake
-# will honor the `STRIP' smtEnv variable to overrule this program.
+# will honor the `STRIP' environment variable to overrule this program.
 dnl Don't test for $cross_compiling = yes, because it might be `maybe'.
 if test "$cross_compiling" != no; then
   AC_CHECK_TOOL([STRIP], [strip], :)
