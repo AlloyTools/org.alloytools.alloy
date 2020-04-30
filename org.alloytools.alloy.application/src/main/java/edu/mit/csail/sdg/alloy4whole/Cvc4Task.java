@@ -326,7 +326,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
 
         Command command = translation.getCommands().get(commandIndex);
 
-        smtModel= showInputDialog(smtModel);
+//        smtModel= showInputDialog(smtModel);
 
         SmtModel model = parseModel(smtModel);
 

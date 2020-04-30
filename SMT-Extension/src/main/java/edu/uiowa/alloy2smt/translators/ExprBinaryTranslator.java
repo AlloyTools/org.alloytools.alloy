@@ -1674,6 +1674,10 @@ public class ExprBinaryTranslator
       {
         SmtExpr choose = SmtUnaryExpr.Op.CHOOSE.make(A);
         SmtExpr constraint = variable.getConstraint().replace(variable.getVariable(), choose);
+        // add a singleton constraint
+        SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(choose);
+        SmtExpr equal = SmtBinaryExpr.Op.EQ.make(singleton, A);
+        constraint = SmtMultiArityExpr.Op.AND.make(constraint, equal);
         return constraint;
       }
     }
