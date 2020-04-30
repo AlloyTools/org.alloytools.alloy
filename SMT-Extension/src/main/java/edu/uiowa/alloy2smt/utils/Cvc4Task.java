@@ -43,7 +43,7 @@ public class Cvc4Task
 
   public CommandResult run(Translation translation, boolean includeScope, int commandIndex) throws Exception
   {
-    String smtScript = translation.getOptimizedSmtScript().toString();
+    String smtScript = translation.getOptimizedSmtScript().print(translation.getAlloySettings());
     cvc4Process = Cvc4Process.start();
 
     cvc4Process.sendCommand(smtScript);

@@ -543,8 +543,12 @@ public class Alloy2SmtTranslator extends AbstractTranslator
 
   public FunctionDefinition getFuncTranslation(Func func)
   {
-    FunctionDefinition function = (FunctionDefinition) functionsMap.get(func.label);
-    if (function == null)
+    FunctionDefinition function;
+    if(functionsMap.containsKey(func.label))
+    {
+      function = (FunctionDefinition) functionsMap.get(func.label);
+    }
+    else
     {
       function = translateFunc(func);
     }
