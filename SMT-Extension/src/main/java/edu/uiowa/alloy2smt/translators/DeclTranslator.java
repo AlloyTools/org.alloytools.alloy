@@ -61,7 +61,8 @@ public class DeclTranslator
       expr = ((ExprUnary) expr).sub;
     }
 
-    SmtExpr set = exprTranslator.translateExpr(expr, smtEnv);
+    SmtEnv newEnv = new SmtEnv(smtEnv);
+    SmtExpr set = exprTranslator.translateExpr(expr, newEnv);
     SetSort setSort = (SetSort) set.getSort();
     Sort sort = setSort;
 
