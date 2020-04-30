@@ -62,7 +62,7 @@ public class ExprCallTranslator
   {
     Func func = exprCall.fun;
 
-    FunctionDefinition function = translator.getFuncTranslation(func);
+    FunctionDeclaration function = translator.getFuncTranslation(func);
 
     List<SmtExpr> arguments = new ArrayList<>();
 

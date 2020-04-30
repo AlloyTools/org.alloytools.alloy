@@ -541,12 +541,12 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     return scopeSum;
   }
 
-  public FunctionDefinition getFuncTranslation(Func func)
+  public FunctionDeclaration getFuncTranslation(Func func)
   {
-    FunctionDefinition function;
+    FunctionDeclaration function;
     if(functionsMap.containsKey(func.label))
     {
-      function = (FunctionDefinition) functionsMap.get(func.label);
+      function = functionsMap.get(func.label);
     }
     else
     {
