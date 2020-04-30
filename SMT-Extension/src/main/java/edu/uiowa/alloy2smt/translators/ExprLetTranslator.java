@@ -36,7 +36,7 @@ public class ExprLetTranslator
     SmtExpr let = new SmtLetExpr(map, body);
     if (let.getSort() instanceof BoolSort)
     {
-      SmtExpr finalExpr = exprTranslator.addAuxiliaryVaraibles(let, letEnv);
+      SmtExpr finalExpr = exprTranslator.addAuxiliaryVariables(let, letEnv);
       return finalExpr;
     }
     // add auxiliary variables to smtEnv

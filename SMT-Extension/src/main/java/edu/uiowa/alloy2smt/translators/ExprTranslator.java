@@ -56,13 +56,13 @@ public class ExprTranslator
     assert (expr.type() == Type.FORMULA);
     SmtEnv smtEnv = new SmtEnv();
     SmtExpr formula = translateExpr(expr, smtEnv);
-    formula = addAuxiliaryVaraibles(formula, smtEnv);
+    formula = addAuxiliaryVariables(formula, smtEnv);
     Assertion assertion = AlloyUtils.getAssertion(Collections.singletonList(expr.pos), label, formula);
     translator.smtScript.addAssertion(assertion);
     return formula;
   }
 
-  public SmtExpr addAuxiliaryVaraibles(SmtExpr booleanSmtExpr, SmtEnv smtEnv)
+  public SmtExpr addAuxiliaryVariables(SmtExpr booleanSmtExpr, SmtEnv smtEnv)
   {
     assert (booleanSmtExpr.getSort().equals(AbstractTranslator.boolSort));
     List<SmtVariable> variables = smtEnv.getAuxiliaryVariables();

@@ -34,7 +34,7 @@ public class ExprQtTranslator
     // translate the body of the quantified expression
     SmtEnv bodyEnv = new SmtEnv(declsEnv);
     SmtExpr body = exprTranslator.translateExpr(exprQt.sub, bodyEnv);
-    body = exprTranslator.addAuxiliaryVaraibles(body, bodyEnv);
+    body = exprTranslator.addAuxiliaryVariables(body, bodyEnv);
     switch (exprQt.op)
     {
       case ALL:

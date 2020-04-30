@@ -80,17 +80,17 @@ public class SmtEnv
 
   public LinkedHashMap<String, SmtExpr> getVariables()
   {
-    return getVariablesAuxiliary(this);
+    return getVariablesHelper(this);
   }
 
-  private LinkedHashMap<String, SmtExpr> getVariablesAuxiliary(SmtEnv smtEnv)
+  private LinkedHashMap<String, SmtExpr> getVariablesHelper(SmtEnv smtEnv)
   {
     if (smtEnv.parent == null)
     {
       return new LinkedHashMap<>(smtEnv.variablesMap);
     }
 
-    LinkedHashMap<String, SmtExpr> map = getVariablesAuxiliary(smtEnv.parent);
+    LinkedHashMap<String, SmtExpr> map = getVariablesHelper(smtEnv.parent);
     map.putAll(smtEnv.variablesMap);
     return map;
   }
