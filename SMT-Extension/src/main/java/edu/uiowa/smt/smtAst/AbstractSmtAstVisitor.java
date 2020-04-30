@@ -23,23 +23,23 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     {
       this.visit((SmtExpr) smtAst);
     }
-    if (smtAst instanceof SmtScript)
+    else if (smtAst instanceof SmtScript)
     {
       this.visit((SmtScript) smtAst);
     }
-    if (smtAst instanceof SmtModel)
+    else if (smtAst instanceof SmtModel)
     {
       this.visit((SmtModel) smtAst);
     }
-    if (smtAst instanceof SmtSettings)
+    else if (smtAst instanceof SmtSettings)
     {
       this.visit((SmtSettings) smtAst);
     }
-    if (smtAst instanceof SmtUnsatCore)
+    else if (smtAst instanceof SmtUnsatCore)
     {
       this.visit((SmtUnsatCore) smtAst);
     }
-    if (smtAst instanceof SmtValues)
+    else if (smtAst instanceof SmtValues)
     {
       this.visit((SmtValues) smtAst);
     }
