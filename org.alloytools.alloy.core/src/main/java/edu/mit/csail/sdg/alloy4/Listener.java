@@ -27,7 +27,7 @@ public interface Listener {
                 CTRL_PAGE_UP,
                 CTRL_PAGE_DOWN,
                 CARET_MOVED
-    };
+    }
 
     /**
      * This method is called when the given zero-argument-event occurs.

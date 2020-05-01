@@ -167,7 +167,7 @@ final class SimpleReporter extends A4Reporter {
                 span.setLength(len2);
                 String x = (String) (array[1]);
                 if (viz != null && x.length() > 0)
-                    OurDialog.alert(x);
+                    OurDialog.alert(gui.getFrame(), x);
             }
             if (array[0].equals("declare")) {
                 gui.doSetLatest((String) (array[1]));

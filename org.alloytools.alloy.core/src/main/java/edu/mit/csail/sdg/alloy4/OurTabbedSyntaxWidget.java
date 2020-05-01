@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -153,8 +154,11 @@ public final class OurTabbedSyntaxWidget {
                                                                  }
                                                              };
 
+    private final JFrame                parent;
+
     /** Constructs a tabbed editor pane. */
-    public OurTabbedSyntaxWidget(String fontName, int fontSize, int tabSize) {
+    public OurTabbedSyntaxWidget(String fontName, int fontSize, int tabSize, JFrame parent) {
+        this.parent = parent;
         component.setBorder(null);
         component.setLayout(new BorderLayout());
         JPanel glue = OurUtil.makeHB(new Object[] {
@@ -189,7 +193,8 @@ public final class OurTabbedSyntaxWidget {
             }
 
             @Override
-            public final void componentHidden(ComponentEvent e) {}
+            public final void componentHidden(ComponentEvent e) {
+            }
         });
     }
 
@@ -512,4 +517,7 @@ public final class OurTabbedSyntaxWidget {
     }
 
 
+    public JFrame getParent() {
+        return parent;
+    }
 }

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+rm -rf target/macos
+
+java -jar jar/packr.jar \
+     --verbose \
+     --platform mac \
+     --jdk ${JAVA_HOME} \
+     --executable Alloy \
+     --classpath target/org.alloytools.alloy.dist.jar \
+     --removelibs org.alloytools.alloy.dist.jar \
+     --mainclass  edu.mit.csail.sdg.alloy4whole.Alloy\
+     --vmargs Xmx1G \
+     --resources package/macosx \
+     --minimizejre hard \
+     --icon package/macosx/Alloy.icns \
+     --bundle org.alloytools.alloy \
+     --output target/macos/Alloy.app
+
+rm target/alloy.dmg
+ln -s /Applications target/macos/Applications
+hdiutil create -format UDZO -fs HFS+ -ov -srcfolder target/macos target/alloy.dmg
+     

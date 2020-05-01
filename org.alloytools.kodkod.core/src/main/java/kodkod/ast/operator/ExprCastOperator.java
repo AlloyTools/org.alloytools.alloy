@@ -40,6 +40,6 @@ public enum ExprCastOperator {
                                   public String toString() {
                                       return "sum";
                                   }
-                              };
+                              }
 
 }

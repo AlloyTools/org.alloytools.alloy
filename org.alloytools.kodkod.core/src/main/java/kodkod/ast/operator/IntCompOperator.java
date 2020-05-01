@@ -72,5 +72,5 @@ public enum IntCompOperator {
                                  public String toString() {
                                      return ">=";
                                  }
-                             };
+                             }
 }

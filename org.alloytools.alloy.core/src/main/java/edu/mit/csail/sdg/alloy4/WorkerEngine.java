@@ -170,7 +170,8 @@ public final class WorkerEngine {
     /**
      * Constructor is private since this class does not need to be instantiated.
      */
-    private WorkerEngine() {}
+    private WorkerEngine() {
+    }
 
     /**
      * This terminates the subprocess, and prevent any further results from reaching
@@ -241,8 +242,25 @@ public final class WorkerEngine {
      *             to it
      */
     public static void run(final WorkerTask task, int newmem, int newstack, String jniPath, String classPath, final WorkerCallback callback) throws IOException {
-        if (classPath == null || classPath.length() == 0)
+        String java = "java";
+        String javahome = System.getProperty("java.home");
+        if (javahome == null)
+            throw new IllegalArgumentException("java.home not set");
+
+        File jhome = new File(javahome);
+
+        if (classPath == null || classPath.isEmpty())
             classPath = System.getProperty("java.class.path");
+
+        if (classPath == null || classPath.isEmpty()) {
+            File dist = findInAncestors(jhome, "org.alloytools.alloy.dist.jar");
+            if (dist == null) {
+                throw new IllegalArgumentException("cannot establish classpath. Neither set for this java nor \"org.alloytools.alloy.dist.jar\" in an ancestor directory of $JAVA_HOME (" + jhome + ")");
+            }
+            System.out.println("Found jar in ancestors java_home " + dist);
+            classPath = dist.getAbsolutePath();
+        }
+
         synchronized (WorkerEngine.class) {
             final Process sub;
             if (latest_manager != null && latest_manager.isAlive())
@@ -252,21 +270,19 @@ public final class WorkerEngine {
                     latest_sub.exitValue();
                 latest_manager = null;
                 latest_sub = null;
-            } catch (IllegalThreadStateException ex) {}
+            } catch (IllegalThreadStateException ex) {
+            }
             if (latest_sub == null) {
-                String java = "java", javahome = System.getProperty("java.home");
-                if (javahome != null && javahome.length() > 0) {
-                    // First try "[JAVAHOME]/bin/java"
-                    File f = new File(javahome + File.separatorChar + "bin" + File.separatorChar + "java");
-                    // Then try "[JAVAHOME]/java"
-                    if (!f.isFile())
-                        f = new File(javahome + File.separatorChar + "java");
-                    // All else, try "java" (and let the Operating System search
-                    // the program path...)
-                    if (f.isFile())
-                        java = f.getAbsolutePath();
-                }
+                File f = new File(javahome + File.separatorChar + "bin" + File.separatorChar + "java");
+
+                if (!f.isFile())
+                    f = new File(javahome + File.separatorChar + "java");
+
+                if (f.isFile())
+                    java = f.getAbsolutePath();
+
                 String debug = AlloyCore.isDebug() ? "yes" : "no";
+
                 if (jniPath != null && jniPath.length() > 0)
                     sub = Runtime.getRuntime().exec(new String[] {
                                                                   java, "-Xmx" + newmem + "m", "-Xss" + newstack + "k", "-Djava.library.path=" + jniPath, "-Ddebug=" + debug, "-cp", classPath, WorkerEngine.class.getName(), Version.buildDate(), "" + Version.buildNumber()
@@ -375,13 +391,16 @@ public final class WorkerEngine {
         // prevent freezes
         try {
             System.loadLibrary("minisat");
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
         try {
             System.loadLibrary("minisatprover");
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
         try {
             System.loadLibrary("zchaff");
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
         // Now we repeat the following read-then-execute loop
         Thread t = null;
         while (true) {
@@ -439,10 +458,12 @@ public final class WorkerEngine {
                             }
 
                             @Override
-                            public void done() {}
+                            public void done() {
+                            }
 
                             @Override
-                            public void fail() {}
+                            public void fail() {
+                            }
                         };
                         task.run(y);
                         x.writeObject(null);
@@ -456,7 +477,8 @@ public final class WorkerEngine {
                                 System.gc();
                                 x.writeObject(t);
                                 x.flush();
-                            } catch (Throwable ex2) {} finally {
+                            } catch (Throwable ex2) {
+                            } finally {
                                 halt("Error: " + e, 2);
                             }
                         }
@@ -475,7 +497,8 @@ public final class WorkerEngine {
                             System.gc();
                             x.writeObject(e);
                             x.flush();
-                        } catch (Throwable t) {} finally {
+                        } catch (Throwable t) {
+                        } finally {
                             halt("Error: " + e, 1);
                         }
                     }
@@ -490,4 +513,18 @@ public final class WorkerEngine {
     private static void halt(String reason, int exitCode) {
         Runtime.getRuntime().halt(exitCode);
     }
+
+    private static File findInAncestors(File rover, String fileName) {
+        while (true) {
+            if (rover == null)
+                return null;
+
+            File f = new File(rover, fileName);
+            if (f.isFile())
+                return f;
+
+            rover = rover.getParentFile();
+        }
+    }
+
 }

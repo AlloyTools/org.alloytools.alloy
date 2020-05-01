@@ -39,6 +39,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -154,7 +155,7 @@ public final class VizGraphPanel extends JPanel {
          * @param type - the type being projected
          * @param atoms - the list of possible projection atom choices
          */
-        private TypePanel(AlloyType type, List<AlloyAtom> atoms, AlloyAtom initialValue) {
+        private TypePanel(JFrame parent, AlloyType type, List<AlloyAtom> atoms, AlloyAtom initialValue) {
             super();
             final JButton left, right;
             int initialIndex = 0;
@@ -215,7 +216,7 @@ public final class VizGraphPanel extends JPanel {
                 public final void actionPerformed(ActionEvent e) {
                     left.setEnabled(atomCombo.getSelectedIndex() > 0);
                     right.setEnabled(atomCombo.getSelectedIndex() < atomnames.length - 1);
-                    remakeAll();
+                    remakeAll(parent);
                     VizGraphPanel.this.getParent().invalidate();
                     VizGraphPanel.this.getParent().repaint();
                 }
@@ -254,7 +255,7 @@ public final class VizGraphPanel extends JPanel {
      * @param seeDot - true if we want to see the DOT source code, false if we want
      *            it rendered as a graph
      */
-    public VizGraphPanel(VizState vizState, boolean seeDot) {
+    public VizGraphPanel(JFrame parent, VizState vizState, boolean seeDot) {
         Border b = new EmptyBorder(0, 0, 0, 0);
         OurUtil.make(this, Color.BLACK, Color.WHITE, b);
         this.seeDot = seeDot;
@@ -273,7 +274,9 @@ public final class VizGraphPanel extends JPanel {
                 // since many Mac mouses do not have a right button.
                 if (viewer == null)
                     return;
-                else if (ev.getButton() == MouseEvent.BUTTON3) {} else if (ev.getButton() == MouseEvent.BUTTON1 && ev.isControlDown()) {} else
+                else if (ev.getButton() == MouseEvent.BUTTON3) {
+                } else if (ev.getButton() == MouseEvent.BUTTON1 && ev.isControlDown()) {
+                } else
                     return;
                 viewer.alloyPopup(graphPanel, ev.getX(), ev.getY());
             }
@@ -301,11 +304,11 @@ public final class VizGraphPanel extends JPanel {
         split.setResizeWeight(1.0);
         split.setDividerSize(0);
         add(split);
-        remakeAll();
+        remakeAll(parent);
     }
 
     /** Regenerate the comboboxes and the graph. */
-    public void remakeAll() {
+    public void remakeAll(JFrame parent) {
         Map<AlloyType,AlloyAtom> map = new LinkedHashMap<AlloyType,AlloyAtom>();
         navPanel.removeAll();
         for (AlloyType type : vizState.getProjectedTypes()) {
@@ -318,12 +321,12 @@ public final class VizGraphPanel extends JPanel {
             if (tp != null && !tp.upToDate(type, atoms))
                 tp = null;
             if (tp == null)
-                type2panel.put(type, tp = new TypePanel(type, atoms, null));
+                type2panel.put(type, tp = new TypePanel(parent, type, atoms, null));
             navPanel.add(tp);
             map.put(tp.getAlloyType(), tp.getAlloyAtom());
         }
         currentProjection = new AlloyProjection(map);
-        JPanel graph = vizState.getGraph(currentProjection);
+        JPanel graph = vizState.getGraph(parent, currentProjection);
         if (seeDot && (graph instanceof GraphViewer)) {
             viewer = null;
             JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
@@ -351,15 +354,15 @@ public final class VizGraphPanel extends JPanel {
     }
 
     /** Changes whether we are seeing the DOT source or not. */
-    public void seeDot(boolean yesOrNo) {
+    public void seeDot(JFrame parent, boolean yesOrNo) {
         if (seeDot == yesOrNo)
             return;
         seeDot = yesOrNo;
-        remakeAll();
+        remakeAll(parent);
     }
 
-    public String toDot() {
-        return vizState.getGraph(currentProjection).toString();
+    public String toDot(JFrame parent) {
+        return vizState.getGraph(parent, currentProjection).toString();
     }
 
     /**

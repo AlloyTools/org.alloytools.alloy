@@ -55,7 +55,7 @@ public final class ExprList extends Expr {
                            AND,
                            /** OR (meaning the logical disjunction of all arguments) */
                            OR
-    };
+    }
 
     /** The builtin operator. */
     public final Op              op;

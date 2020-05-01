@@ -4,7 +4,8 @@ module examples/case_studies/chord
  * Models the chord distributed hash table lookup protocol.
  *
  * For a detailed description, see:
- *   http://www.pdos.lcs.mit.edu/papers/chord:sigcomm01/
+ *   https://pdos.csail.mit.edu/papers/ton:chord/paper-ton.pdf or
+ *   http://www.pdos.lcs.mit.edu/papers/chord:sigcomm01/    - dead link 20191012
  */
 
 open util/relation as rel

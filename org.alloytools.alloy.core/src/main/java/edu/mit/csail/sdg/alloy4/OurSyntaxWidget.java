@@ -17,6 +17,7 @@ package edu.mit.csail.sdg.alloy4;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -68,10 +69,10 @@ public final class OurSyntaxWidget {
      * The current list of listeners; possible events are { STATUS_CHANGE, FOCUSED,
      * CTRL_PAGE_UP, CTRL_PAGE_DOWN, CARET_MOVED }.
      */
-    public final Listeners                  listeners = new Listeners();
+    public final Listeners                  listeners        = new Listeners();
 
     /** The JScrollPane containing everything. */
-    private final JScrollPane               component = OurUtil.make(new JScrollPane(), new EmptyBorder(0, 0, 0, 0));
+    private final JScrollPane               component        = OurUtil.make(new JScrollPane(), new EmptyBorder(0, 0, 0, 0));
 
     /** This is an optional JComponent annotation. */
     public final JComponent                 obj1;
@@ -83,19 +84,20 @@ public final class OurSyntaxWidget {
      * The underlying StyledDocument being displayed (changes will trigger the
      * STATUS_CHANGE event)
      */
-    private final OurSyntaxUndoableDocument doc       = new OurSyntaxUndoableDocument("Monospaced", 14);
+    private final OurSyntaxUndoableDocument doc              = new OurSyntaxUndoableDocument("Monospaced", 14);
 
     /** The underlying JTextPane being displayed. */
-    private final JTextPane                 pane      = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
+    private final JTextPane                 pane             = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
 
     /**
      * The filename for this JTextPane (changes will trigger the STATUS_CHANGE
      * event)
      */
-    private String                          filename  = "";
+    private String                          filename         = "";
 
     /**
-     * the file modification date for the file loaded. If no file is loaded (!isFile), this must be -1.
+     * the file modification date for the file loaded. If no file is loaded
+     * (!isFile), this must be -1.
      */
     private long                            fileModifiedDate = -1;
 
@@ -190,7 +192,8 @@ public final class OurSyntaxWidget {
                             public final void layout(int w, int h) {
                                 try {
                                     super.layout(30000, h);
-                                } catch (Throwable ex) {}
+                                } catch (Throwable ex) {
+                                }
                             }
                         };
                     }
@@ -297,7 +300,8 @@ public final class OurSyntaxWidget {
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {}
+            public void changedUpdate(DocumentEvent e) {
+            }
         });
         pane.addFocusListener(new FocusAdapter() {
 
@@ -536,7 +540,8 @@ public final class OurSyntaxWidget {
             painter = new OurHighlighter(color);
         try {
             pane.getHighlighter().addHighlight(start, end, painter);
-        } catch (Throwable ex) {} // exception is okay
+        } catch (Throwable ex) {
+        } // exception is okay
     }
 
     /** Returns the filename. */
@@ -685,7 +690,7 @@ public final class OurSyntaxWidget {
      * @return true if this text buffer is now a fresh empty text buffer
      */
     boolean discard(boolean askUser, Collection<String> bannedNames) {
-        char ans = (!modified || !askUser) ? 'd' : OurDialog.askSaveDiscardCancel("The file \"" + filename + "\"");
+        char ans = (!modified || !askUser) ? 'd' : OurDialog.askSaveDiscardCancel(parent.getParent(), "The file \"" + filename + "\"");
         if (ans == 'c' || (ans == 's' && save(false, bannedNames) == false))
             return false;
         for (int i = 1;; i++)
@@ -710,7 +715,7 @@ public final class OurSyntaxWidget {
             x = Util.readAll(filename);
             fileModifiedDate = Util.getModifiedDate(filename);
         } catch (Throwable ex) {
-            OurDialog.alert("Error reading the file \"" + filename + "\"");
+            OurDialog.alert(parent.getParent(), "Error reading the file \"" + filename + "\"");
             return false;
         }
         pane.setText(x);
@@ -731,14 +736,14 @@ public final class OurSyntaxWidget {
         if (!isFile)
             return; // "untitled" text buffer does not have a on-disk file to
                    // refresh from
-        if (modified && !OurDialog.yesno("You have unsaved changes to \"" + filename + "\"\nAre you sure you wish to discard " + "your changes and reload it from disk?", "Discard your changes", "Cancel this operation"))
+        if (modified && !OurDialog.yesno(parent.getParent(), "You have unsaved changes to \"" + filename + "\"\nAre you sure you wish to discard " + "your changes and reload it from disk?", "Discard your changes", "Cancel this operation"))
             return;
         String t;
         try {
             t = Util.readAll(filename);
             fileModifiedDate = Util.getModifiedDate(filename);
         } catch (Throwable ex) {
-            OurDialog.alert("Cannot read \"" + filename + "\"");
+            OurDialog.alert(parent.getParent(), "Cannot read \"" + filename + "\"");
             return;
         }
         if (modified == false && t.equals(pane.getText()))
@@ -757,13 +762,13 @@ public final class OurSyntaxWidget {
     boolean saveAs(String filename, Collection<String> bannedNames) {
         filename = Util.canon(filename);
         if (bannedNames.contains(filename)) {
-            OurDialog.alert("The filename \"" + filename + "\"\nis already open in another tab.");
+            OurDialog.alert(parent.getParent(), "The filename \"" + filename + "\"\nis already open in another tab.");
             return false;
         }
         try {
             Util.writeAll(filename, pane.getText());
         } catch (Throwable e) {
-            OurDialog.alert("Error writing to the file \"" + filename + "\"");
+            OurDialog.alert(parent.getParent(), "Error writing to the file \"" + filename + "\"");
             return false;
         }
         this.filename = Util.canon(filename); // a new file's canonical name may
@@ -771,7 +776,7 @@ public final class OurSyntaxWidget {
         fileModifiedDate = Util.getModifiedDate(this.filename);
         if (fileModifiedDate == 0)
             fileModifiedDate = new Date().getTime();
-        
+
         modified = false;
         isFile = true;
         listeners.fire(this, Event.STATUS_CHANGE);
@@ -788,21 +793,20 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(false, null, ".als", ".als files");
+            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, ".als", ".als files");
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
-            if (f.exists() && !OurDialog.askOverwrite(n))
+            if (f.exists() && !OurDialog.askOverwrite(parent.getParent(), n))
                 return false;
         }
 
         if (isFile && n.equals(this.filename) && Util.getModifiedDate(this.filename) > fileModifiedDate) {
-            if (!OurDialog.yesno("The file has been modified outside the editor.\n" +
-                                 "Do you want to overwrite it anyway?")) {
+            if (!OurDialog.yesno(parent.getParent(), "The file has been modified outside the editor.\n" + "Do you want to overwrite it anyway?")) {
                 return false;
             }
         }
-        
+
         if (saveAs(n, bannedNames)) {
             Util.setCurrentDirectory(new File(filename).getParentFile());
             return true;

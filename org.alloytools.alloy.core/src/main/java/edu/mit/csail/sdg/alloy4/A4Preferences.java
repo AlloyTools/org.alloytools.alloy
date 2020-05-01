@@ -762,7 +762,7 @@ public class A4Preferences {
             }
         }
         return ans;
-    };
+    }
 
     public static List<Pref< ? >> allUserPrefs() {
         List<Pref< ? >> ans = allPrefs();

@@ -388,7 +388,6 @@ public final class Bounds implements Cloneable {
                 Relation ar = Relation.atom(atom.toString());
                 boundExactly(ar, factory.setOf(atom));
             }
-            ;
         }
     }
 
