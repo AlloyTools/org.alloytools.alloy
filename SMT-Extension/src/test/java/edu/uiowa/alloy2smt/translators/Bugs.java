@@ -1,5 +1,6 @@
 package edu.uiowa.alloy2smt.translators;
 
+import edu.uiowa.alloy2smt.utils.AlloySettings;
 import edu.uiowa.alloy2smt.utils.AlloyUtils;
 import edu.uiowa.alloy2smt.utils.CommandResult;
 import edu.uiowa.smt.TranslatorUtils;
@@ -50,5 +51,24 @@ public class Bugs
 
     List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
     assertEquals("sat", commandResults.get(0).satResult);
+  }
+
+  @Test
+  public void Test4() throws Exception
+  {
+    String alloy = "sig A { id: Int }\n" +
+        "pred P1 [p : set A]\n" +
+        "{\n" +
+        "one a: p | a.id = 1\n" +
+        "}\n" +
+        "pred P2[p : set A] {\n" +
+        "P1[ { x : p | x.id > 0 } ]\n" +
+        "}\n" +
+        "run {\n" +
+        "some a : set A | P2[a]\n" +
+        "} for 1 Int";
+
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, true);
+    assertEquals("unsat", commandResults.get(0).satResult);
   }
 }
