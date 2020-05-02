@@ -154,10 +154,6 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     {
       this.visit((StringSort) sort);
     }
-    else if (sort instanceof StringSort)
-    {
-      this.visit((StringSort) sort);
-    }
     else if (sort instanceof BoolSort)
     {
       this.visit((BoolSort) sort);

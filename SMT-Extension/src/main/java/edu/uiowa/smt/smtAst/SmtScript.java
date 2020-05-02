@@ -9,7 +9,6 @@
 package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.AbstractTranslator;
-import edu.uiowa.smt.optimizer.UninterpretedIntVisitor;
 import edu.uiowa.smt.printers.SmtLibPrettyPrinter;
 
 import java.math.BigInteger;
@@ -35,6 +34,7 @@ public class SmtScript extends SmtModel
     this.assertions.addAll(smtScript.assertions);
     this.parent = smtScript.parent;
     this.integerConstants.putAll(smtScript.integerConstants);
+    copyChildren(smtScript);
   }
 
   private void copyChildren(SmtScript smtScript)
@@ -196,5 +196,10 @@ public class SmtScript extends SmtModel
     SmtLibPrettyPrinter prettyPrinter = new SmtLibPrettyPrinter(settings);
     prettyPrinter.visit(this);
     return prettyPrinter.getSmtLib();
+  }
+
+  public void clearChildren()
+  {
+    this.children.clear();
   }
 }

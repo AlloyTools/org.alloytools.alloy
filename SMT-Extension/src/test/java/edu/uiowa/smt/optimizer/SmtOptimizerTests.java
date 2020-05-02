@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SmtOptimizerTests
 {
   private SmtScript script = new SmtScript();
+  private SmtRewriter rewriter = new SmtRewriter();
 
   @BeforeEach
   private void reset()
@@ -33,7 +34,7 @@ class SmtOptimizerTests
     SmtExpr orTrue = SmtMultiArityExpr.Op.OR.make(BoolConstant.True);
     script.addAssertion(new Assertion("", "", orTrue));
 
-    script = SmtOptimizer.optimize(script);
+    script = (SmtScript) rewriter.visit(script).smtAst;
 
     // all trivial assertions should be filtered out.
     assertTrue(script.getAssertions().isEmpty());
@@ -44,7 +45,7 @@ class SmtOptimizerTests
   {
     script.addFunctions(AbstractTranslator.getUninterpretedIntFunctions(script));
 
-    script = SmtOptimizer.optimize(script);
+    script = (SmtScript) rewriter.visit(script).smtAst;
 
     // all trivial assertions should be filtered out.
     assertTrue(script.getFunctions().isEmpty());
@@ -88,7 +89,7 @@ class SmtOptimizerTests
     SmtExpr optimizedEqual = SmtBinaryExpr.Op.EQ.make(a.getVariable(), five);
     SmtExpr expected = new SmtLetExpr(variables, optimizedEqual);
 
-    SmtExpr actual = SmtOptimizer.optimizeExpr(letExpr);
+    SmtExpr actual = (SmtExpr) rewriter.visit(letExpr).smtAst;
     assertEquals(expected, actual);
   }
 
@@ -112,7 +113,7 @@ class SmtOptimizerTests
     SmtExpr optimizedEqual = SmtBinaryExpr.Op.EQ.make(a.getVariable(), five);
     SmtExpr expected = new SmtLetExpr(variables, optimizedEqual);
 
-    SmtExpr actual = SmtOptimizer.optimizeExpr(letExpr);
+    SmtExpr actual = (SmtExpr) rewriter.visit(letExpr).smtAst;
     assertEquals(expected, actual);
   }
 }

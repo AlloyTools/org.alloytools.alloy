@@ -4,7 +4,7 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.uiowa.alloy2smt.mapping.Mapper;
 import edu.uiowa.alloy2smt.utils.AlloySettings;
-import edu.uiowa.smt.optimizer.SmtOptimizer;
+import edu.uiowa.smt.optimizer.SmtRewriter;
 import edu.uiowa.smt.printers.SmtLibPrinter;
 import edu.uiowa.smt.smtAst.SmtScript;
 
@@ -119,6 +119,7 @@ public class Translation
 
   public void optimize()
   {
-    this.optimizedSmtScript = SmtOptimizer.optimize(translator.smtScript);
+    SmtRewriter smtRewriter = new SmtRewriter();
+    this.optimizedSmtScript = (SmtScript) smtRewriter.visit(translator.smtScript).smtAst;
   }
 }

@@ -1,4 +1,4 @@
-package edu.uiowa.smt.optimizer;
+package edu.uiowa.smt.smtAst;
 
 import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.smtAst.AbstractSmtAstVisitor;
