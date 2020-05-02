@@ -85,9 +85,8 @@ public class SmtRewriter implements ISmtRewriter
   @Override
   public SmtRewriteResult visit(SmtScript root)
   {
-    SmtScript optimizedScript = new SmtScript(root);
-    optimizedScript = optimizeHelper(root, optimizedScript);
-    return SmtRewriteResult.Status.Done.make(optimizedScript);
+    root = optimizeHelper(root, root);
+    return SmtRewriteResult.Status.Done.make(root);
   }
 
   public SmtScript optimizeHelper(SmtScript root, SmtScript optimizedScript)
@@ -95,7 +94,8 @@ public class SmtRewriter implements ISmtRewriter
     optimizedScript = visitAssertions(optimizedScript);
     optimizedScript = removeTrivialAssertions(optimizedScript);
     optimizedScript = removeUninterpretedIntIfNotUsed(root, optimizedScript);
-    List<SmtScript> children = new ArrayList<>(optimizedScript.getChildren());
+    List<SmtScript> children = new ArrayList<>();
+    children.addAll(optimizedScript.getChildren());
     optimizedScript.clearChildren();
     // optimize children as well
     for (SmtScript child : children)

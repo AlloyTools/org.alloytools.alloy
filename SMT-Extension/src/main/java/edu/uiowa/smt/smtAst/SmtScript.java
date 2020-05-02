@@ -34,17 +34,6 @@ public class SmtScript extends SmtModel
     this.assertions.addAll(smtScript.assertions);
     this.parent = smtScript.parent;
     this.integerConstants.putAll(smtScript.integerConstants);
-//    copyChildren(smtScript);
-  }
-
-  private void copyChildren(SmtScript smtScript)
-  {
-    for (SmtScript child : smtScript.children)
-    {
-      SmtScript copy = new SmtScript(child);
-      copy.parent = this;
-      this.children.add(copy);
-    }
   }
 
   public Map<BigInteger, FunctionDeclaration> getIntegerConstants()
