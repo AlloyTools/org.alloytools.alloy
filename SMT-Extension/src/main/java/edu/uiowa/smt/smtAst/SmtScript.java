@@ -34,7 +34,7 @@ public class SmtScript extends SmtModel
     this.assertions.addAll(smtScript.assertions);
     this.parent = smtScript.parent;
     this.integerConstants.putAll(smtScript.integerConstants);
-    copyChildren(smtScript);
+//    copyChildren(smtScript);
   }
 
   private void copyChildren(SmtScript smtScript)

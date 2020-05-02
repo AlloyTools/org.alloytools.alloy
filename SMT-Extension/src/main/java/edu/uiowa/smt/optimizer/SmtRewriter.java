@@ -79,14 +79,14 @@ public class SmtRewriter implements ISmtRewriter
   @Override
   public SmtRewriteResult visit(SmtModel model)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(model);
   }
 
   @Override
   public SmtRewriteResult visit(SmtScript root)
   {
     SmtScript optimizedScript = new SmtScript(root);
-    optimizedScript = optimizeHelper (root, optimizedScript);
+    optimizedScript = optimizeHelper(root, optimizedScript);
     return SmtRewriteResult.Status.Done.make(optimizedScript);
   }
 
@@ -133,12 +133,12 @@ public class SmtRewriter implements ISmtRewriter
       if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.AND)
       {
         // (assert (and))
-        if (smtMultiArity.getExpressions().isEmpty())
+        if (smtMultiArity.getExprs().isEmpty())
         {
           return true;
         }
         // (assert (and true))
-        if (smtMultiArity.getExpressions().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))
+        if (smtMultiArity.getExprs().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))
         {
           return true;
         }
@@ -147,7 +147,7 @@ public class SmtRewriter implements ISmtRewriter
       if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.OR)
       {
         // (assert (or true))
-        if (smtMultiArity.getExpressions().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))
+        if (smtMultiArity.getExprs().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))
         {
           return true;
         }
@@ -202,7 +202,7 @@ public class SmtRewriter implements ISmtRewriter
       // check if the tuple has arity 1
       if (expr instanceof SmtMultiArityExpr &&
           ((SmtMultiArityExpr) expr).getOp() == SmtMultiArityExpr.Op.MKTUPLE &&
-          ((SmtMultiArityExpr) expr).getExpressions().size() == 1)
+          ((SmtMultiArityExpr) expr).getExprs().size() == 1)
       {
         SmtMultiArityExpr makeTuple = (SmtMultiArityExpr) expr;
         SmtExpr tupleSelect = SmtBinaryExpr.Op.TUPSEL.make(zero, smtVariable.getVariable());
@@ -217,7 +217,18 @@ public class SmtRewriter implements ISmtRewriter
   @Override
   public SmtRewriteResult visit(SmtBinaryExpr expr)
   {
-    throw new UnsupportedOperationException();
+    SmtRewriteResult resultA = visit(expr.getA());
+    SmtRewriteResult resultB = visit(expr.getB());
+    SmtExpr smtAst = expr.getOp().make((SmtExpr) resultA.smtAst, (SmtExpr) resultB.smtAst);
+    if (resultA.status == SmtRewriteResult.Status.Done ||
+        resultB.status == SmtRewriteResult.Status.Done)
+    {
+      return SmtRewriteResult.Status.Done.make(smtAst);
+    }
+    else
+    {
+      return SmtRewriteResult.Status.RewriteAgain.make(smtAst);
+    }
   }
 
   @Override
@@ -260,37 +271,39 @@ public class SmtRewriter implements ISmtRewriter
   @Override
   public SmtRewriteResult visit(IntSort intSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(intSort);
   }
 
   @Override
-  public SmtRewriteResult visit(SmtQtExpr quantifiedExpression)
+  public SmtRewriteResult visit(SmtQtExpr smtQtExpr)
   {
-    throw new UnsupportedOperationException();
+    SmtRewriteResult bodyResult = visit(smtQtExpr.getExpr());
+    SmtExpr smtAst = smtQtExpr.getOp().make((SmtExpr) bodyResult.smtAst, smtQtExpr.getVariables());
+    return bodyResult.status.make(smtAst);
   }
 
   @Override
   public SmtRewriteResult visit(RealSort realSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(realSort);
   }
 
   @Override
   public SmtRewriteResult visit(SetSort setSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(setSort);
   }
 
   @Override
   public SmtRewriteResult visit(StringSort stringSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(stringSort);
   }
 
   @Override
   public SmtRewriteResult visit(TupleSort tupleSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(tupleSort);
   }
 
   @Override
@@ -359,45 +372,50 @@ public class SmtRewriter implements ISmtRewriter
   }
 
   @Override
-  public SmtRewriteResult visit(SmtUnaryExpr unaryExpression)
+  public SmtRewriteResult visit(SmtUnaryExpr expr)
   {
-    throw new UnsupportedOperationException();
+    SmtRewriteResult result = visit(expr.getExpr());
+
+    SmtExpr smtAst = expr.getOp().make((SmtExpr) result.smtAst);
+    return result.status.make(smtAst);
   }
 
   @Override
   public SmtRewriteResult visit(UninterpretedSort uninterpretedSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(uninterpretedSort);
   }
 
   @Override
   public SmtRewriteResult visit(IntConstant intConstant)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(intConstant);
   }
 
   @Override
   public SmtRewriteResult visit(Variable variable)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(variable);
   }
 
   @Override
   public SmtRewriteResult visit(FunctionDeclaration functionDeclaration)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(functionDeclaration);
   }
 
   @Override
   public SmtRewriteResult visit(FunctionDefinition functionDefinition)
   {
-    throw new UnsupportedOperationException();
+    SmtRewriteResult bodyResult = visit(functionDefinition.getBody());
+    functionDefinition.setBody((SmtExpr) bodyResult.smtAst);
+    return SmtRewriteResult.Status.Done.make(functionDefinition);
   }
 
   @Override
   public SmtRewriteResult visit(BoolConstant booleanConstant)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(booleanConstant);
   }
 
   @Override
@@ -410,27 +428,55 @@ public class SmtRewriter implements ISmtRewriter
   }
 
   @Override
-  public SmtRewriteResult visit(SmtMultiArityExpr expression)
+  public SmtRewriteResult visit(SmtMultiArityExpr multiArityExpr)
   {
-    throw new UnsupportedOperationException();
+    List<SmtRewriteResult> results = new ArrayList<>();
+    SmtRewriteResult.Status status = SmtRewriteResult.Status.Done;
+    for (SmtExpr expr : multiArityExpr.getExprs())
+    {
+      SmtRewriteResult exprResult = visit(expr);
+      results.add(exprResult);
+      if (exprResult.status != SmtRewriteResult.Status.Done)
+      {
+        status = SmtRewriteResult.Status.RewriteAgain;
+      }
+    }
+
+    List<SmtExpr> exprs = results.stream()
+                                 .map(r -> (SmtExpr) r.smtAst)
+                                 .collect(Collectors.toList());
+    SmtExpr smtAst = multiArityExpr.getOp().make(exprs);
+    return status.make(smtAst);
   }
 
   @Override
   public SmtRewriteResult visit(SmtCallExpr smtCallExpr)
   {
-    throw new UnsupportedOperationException();
+    List<SmtRewriteResult> results = new ArrayList<>();
+
+    for (SmtExpr expr : smtCallExpr.getArguments())
+    {
+      SmtRewriteResult exprResult = visit(expr);
+      results.add(exprResult);
+    }
+
+    List<SmtExpr> exprs = results.stream()
+                                 .map(r -> (SmtExpr) r.smtAst)
+                                 .collect(Collectors.toList());
+    SmtExpr smtAst = new SmtCallExpr(smtCallExpr.getFunction(), exprs);
+    return SmtRewriteResult.Status.Done.make(smtAst);
   }
 
   @Override
   public SmtRewriteResult visit(SmtVariable smtVariable)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(smtVariable);
   }
 
   @Override
   public SmtRewriteResult visit(BoolSort boolSort)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(boolSort);
   }
 
   @Override
@@ -440,38 +486,44 @@ public class SmtRewriter implements ISmtRewriter
   }
 
   @Override
-  public SmtRewriteResult visit(SmtIteExpr iteExpression)
+  public SmtRewriteResult visit(SmtIteExpr ite)
   {
-    throw new UnsupportedOperationException();
+    SmtRewriteResult conditionResult = visit(ite.getCondExpr());
+    SmtRewriteResult thenResult = visit(ite.getThenExpr());
+    SmtRewriteResult elseResult = visit(ite.getElseExpr());
+    SmtExpr smtAst = new SmtIteExpr((SmtExpr) conditionResult.smtAst,
+        (SmtExpr) thenResult.smtAst,
+        (SmtExpr) elseResult.smtAst);
+    return SmtRewriteResult.Status.Done.make(smtAst);
   }
 
   @Override
   public SmtRewriteResult visit(UninterpretedConstant uninterpretedConstant)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(uninterpretedConstant);
   }
 
   @Override
   public SmtRewriteResult visit(SmtSettings smtSettings)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(smtSettings);
   }
 
   @Override
   public SmtRewriteResult visit(SmtValues smtValues)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(smtValues);
   }
 
   @Override
   public SmtRewriteResult visit(ExpressionValue expressionValue)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(expressionValue);
   }
 
   @Override
   public SmtRewriteResult visit(SmtUnsatCore smtUnsatCore)
   {
-    throw new UnsupportedOperationException();
+    return SmtRewriteResult.Status.Done.make(smtUnsatCore);
   }
 }

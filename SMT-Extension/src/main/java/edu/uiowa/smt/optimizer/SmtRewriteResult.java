@@ -17,10 +17,8 @@ public class SmtRewriteResult
   {
     // rewriting is finished
     Done,
-    // rewrite the current node without rewriting its children
-    RewriteAgain,
-    // rewrite the current node along with its children
-    RewriteAgainFull;
+    // rewrite again
+    RewriteAgain;
 
     public SmtRewriteResult make(SmtAst smtAst)
     {

@@ -60,7 +60,7 @@ public class SmtQtExpr extends SmtExpr
     return this.variables;
   }
 
-  public SmtExpr getExpression()
+  public SmtExpr getExpr()
   {
     return this.expr;
   }

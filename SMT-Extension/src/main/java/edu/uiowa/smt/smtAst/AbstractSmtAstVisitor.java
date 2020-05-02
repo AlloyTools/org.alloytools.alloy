@@ -205,7 +205,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     {
       this.visit(boundVariable);
     }
-    this.visit(quantifiedExpression.getExpression());
+    this.visit(quantifiedExpression.getExpr());
   }
 
   @Override
@@ -237,7 +237,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
   @Override
   public void visit(SmtUnaryExpr unaryExpression)
   {
-    visit(unaryExpression.getExpression());
+    visit(unaryExpression.getExpr());
   }
 
   @Override
@@ -272,7 +272,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
     {
       visit(variable);
     }
-    visit(functionDefinition.getSmtExpr());
+    visit(functionDefinition.getBody());
     visit(functionDefinition.getSort());
   }
 
@@ -290,7 +290,7 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
   @Override
   public void visit(SmtMultiArityExpr expression)
   {
-    for (SmtExpr expr : expression.getExpressions())
+    for (SmtExpr expr : expression.getExprs())
     {
       visit(expr);
     }
@@ -330,9 +330,9 @@ abstract public class AbstractSmtAstVisitor implements SmtAstVisitor
   @Override
   public void visit(SmtIteExpr iteExpression)
   {
-    visit(iteExpression.getCondExpression());
-    visit(iteExpression.getThenExpression());
-    visit(iteExpression.getElseExpression());
+    visit(iteExpression.getCondExpr());
+    visit(iteExpression.getThenExpr());
+    visit(iteExpression.getElseExpr());
   }
 
   @Override

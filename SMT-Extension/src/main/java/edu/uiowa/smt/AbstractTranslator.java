@@ -94,14 +94,14 @@ public abstract class AbstractTranslator
   {
     if (smtExpr.getSort().equals(AbstractTranslator.intSortTuple))
     {
-      SmtExpr intConstant = ((SmtMultiArityExpr) smtExpr).getExpressions().get(0);
+      SmtExpr intConstant = ((SmtMultiArityExpr) smtExpr).getExprs().get(0);
       FunctionDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
       SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
       return tuple;
     }
     if (smtExpr.getSort().equals(AbstractTranslator.setOfIntSortTuple))
     {
-      SmtExpr intConstant = ((SmtMultiArityExpr) ((SmtUnaryExpr) smtExpr).getExpression()).getExpressions().get(0);
+      SmtExpr intConstant = ((SmtMultiArityExpr) ((SmtUnaryExpr) smtExpr).getExpr()).getExprs().get(0);
       FunctionDeclaration uninterpretedInt = this.getUninterpretedIntConstant((IntConstant) intConstant);
       SmtExpr tuple = new SmtMultiArityExpr(SmtMultiArityExpr.Op.MKTUPLE, uninterpretedInt.getVariable());
       SmtExpr singleton = SmtUnaryExpr.Op.SINGLETON.make(tuple);

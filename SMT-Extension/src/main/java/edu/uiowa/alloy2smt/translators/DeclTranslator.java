@@ -74,9 +74,9 @@ public class DeclTranslator
         sort = setSort.elementSort;
         SmtVariable smtVariable = new SmtVariable(name.label, sort, true);
         assert (set instanceof SmtUnaryExpr);
-        assert (((SmtUnaryExpr) set).getOP() == SmtUnaryExpr.Op.SINGLETON);
-        assert (((SmtUnaryExpr) set).getExpression() instanceof Variable);
-        Variable variable = (Variable) ((SmtUnaryExpr) set).getExpression();
+        assert (((SmtUnaryExpr) set).getOp() == SmtUnaryExpr.Op.SINGLETON);
+        assert (((SmtUnaryExpr) set).getExpr() instanceof Variable);
+        Variable variable = (Variable) ((SmtUnaryExpr) set).getExpr();
         SmtExpr constraint = ((SmtVariable) variable.getDeclaration()).getConstraint();
         smtVariable.setConstraint(constraint.replace(variable, smtVariable.getVariable()));
         return smtVariable;

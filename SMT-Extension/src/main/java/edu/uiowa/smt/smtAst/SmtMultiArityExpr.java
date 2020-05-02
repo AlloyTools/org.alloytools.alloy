@@ -128,7 +128,7 @@ public class SmtMultiArityExpr extends SmtExpr
     return this.op;
   }
 
-  public List<SmtExpr> getExpressions()
+  public List<SmtExpr> getExprs()
   {
     return this.exprs;
   }

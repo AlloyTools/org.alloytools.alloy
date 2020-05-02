@@ -157,20 +157,20 @@ public class TranslatorUtils
   public static int getInt(SmtExpr smtExpr)
   {
     SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
-    if (unary.getOP() == SmtUnaryExpr.Op.EMPTYSET)
+    if (unary.getOp() == SmtUnaryExpr.Op.EMPTYSET)
     {
       return 0; // zero is equivalent to an empty set
     }
-    assert (SmtUnaryExpr.Op.SINGLETON == unary.getOP());
-    SmtMultiArityExpr tuple = (SmtMultiArityExpr) unary.getExpression();
+    assert (SmtUnaryExpr.Op.SINGLETON == unary.getOp());
+    SmtMultiArityExpr tuple = (SmtMultiArityExpr) unary.getExpr();
     assert (SmtMultiArityExpr.Op.MKTUPLE == tuple.getOp());
-    IntConstant constant = (IntConstant) tuple.getExpressions().get(0);
+    IntConstant constant = (IntConstant) tuple.getExprs().get(0);
     return Integer.parseInt(constant.getValue());
   }
 
   public static Set<Integer> getIntSet(FunctionDefinition definition)
   {
-    return getIntSet(definition.getSmtExpr());
+    return getIntSet(definition.getBody());
   }
 
   public static Set<Integer> getIntSet(SmtExpr smtExpr)
@@ -189,7 +189,7 @@ public class TranslatorUtils
 
   public static Set<String> getAtomSet(FunctionDefinition definition)
   {
-    return getAtomSet(definition.getSmtExpr());
+    return getAtomSet(definition.getBody());
   }
 
   public static Set<String> getAtomSet(SmtExpr smtExpr)
@@ -202,14 +202,14 @@ public class TranslatorUtils
     if (smtExpr instanceof SmtUnaryExpr)
     {
       SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
-      if (unary.getOP() == SmtUnaryExpr.Op.EMPTYSET)
+      if (unary.getOp() == SmtUnaryExpr.Op.EMPTYSET)
       {
         return new HashSet<>();
       }
-      assert (SmtUnaryExpr.Op.SINGLETON == unary.getOP());
-      SmtMultiArityExpr tuple = (SmtMultiArityExpr) unary.getExpression();
+      assert (SmtUnaryExpr.Op.SINGLETON == unary.getOp());
+      SmtMultiArityExpr tuple = (SmtMultiArityExpr) unary.getExpr();
       assert (SmtMultiArityExpr.Op.MKTUPLE == tuple.getOp());
-      UninterpretedConstant constant = (UninterpretedConstant) tuple.getExpressions().get(0);
+      UninterpretedConstant constant = (UninterpretedConstant) tuple.getExprs().get(0);
       return new HashSet<>(Collections.singletonList(constant.getName()));
     }
     if (smtExpr instanceof SmtBinaryExpr)
@@ -236,7 +236,7 @@ public class TranslatorUtils
     {
       throw new UnsupportedOperationException(setSort.elementSort.toString());
     }
-    return getRelation(definition.getSmtExpr());
+    return getRelation(definition.getBody());
   }
 
   public static Set<List<String>> getRelation(SmtExpr smtExpr)
@@ -244,16 +244,16 @@ public class TranslatorUtils
     if (smtExpr instanceof SmtUnaryExpr)
     {
       SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
-      if (unary.getOP() == SmtUnaryExpr.Op.EMPTYSET)
+      if (unary.getOp() == SmtUnaryExpr.Op.EMPTYSET)
       {
         return new HashSet<>();
       }
-      assert (SmtUnaryExpr.Op.SINGLETON == unary.getOP());
-      SmtMultiArityExpr tupleExpression = (SmtMultiArityExpr) unary.getExpression();
+      assert (SmtUnaryExpr.Op.SINGLETON == unary.getOp());
+      SmtMultiArityExpr tupleExpression = (SmtMultiArityExpr) unary.getExpr();
       assert (SmtMultiArityExpr.Op.MKTUPLE == tupleExpression.getOp());
       List<String> tuple = new ArrayList<>();
 
-      for (SmtExpr expr : tupleExpression.getExpressions())
+      for (SmtExpr expr : tupleExpression.getExprs())
       {
         if (expr instanceof IntConstant)
         {
