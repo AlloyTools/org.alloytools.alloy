@@ -91,6 +91,7 @@ public class SmtRewriter implements ISmtRewriter
 
   public SmtScript optimizeHelper(SmtScript root, SmtScript optimizedScript)
   {
+    optimizedScript = visitFunctionDefinitions(optimizedScript);
     optimizedScript = visitAssertions(optimizedScript);
     optimizedScript = removeTrivialAssertions(optimizedScript);
     optimizedScript = removeUninterpretedIntIfNotUsed(root, optimizedScript);
@@ -110,50 +111,50 @@ public class SmtRewriter implements ISmtRewriter
   {
     List<Assertion> assertions = script.getAssertions()
                                        .stream()
-                                       .filter(a -> !isTrivial(a))
+                                       .filter(a -> !a.getSmtExpr().equals((BoolConstant.True)))
                                        .collect(Collectors.toList());
     script.setAssertions(assertions);
 
     return script;
   }
 
-  public static boolean isTrivial(Assertion assertion)
+  public SmtRewriteResult removeTrivialTerms(SmtMultiArityExpr smtMultiArity)
   {
-    SmtExpr expr = assertion.getSmtExpr();
-
-    // (assert true)
-    if (expr.equals(BoolConstant.True))
+    List<SmtExpr> exprs = smtMultiArity.getExprs();
+    SmtRewriteResult.Status status = SmtRewriteResult.Status.Done;
+    SmtExpr smtAst = smtMultiArity;
+    if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.AND)
     {
-      return true;
-    }
-
-    if (expr instanceof SmtMultiArityExpr)
-    {
-      SmtMultiArityExpr smtMultiArity = (SmtMultiArityExpr) expr;
-      if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.AND)
+      exprs = exprs.stream().filter(e -> !e.equals(BoolConstant.True)).collect(Collectors.toList());
+      if (exprs.size() != smtMultiArity.getExprs().size())
       {
-        // (assert (and))
-        if (smtMultiArity.getExprs().isEmpty())
+        status = SmtRewriteResult.Status.RewriteAgain;
+        // (and)
+        if (exprs.isEmpty())
         {
-          return true;
+          smtAst = BoolConstant.True;
         }
-        // (assert (and true))
-        if (smtMultiArity.getExprs().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))
+        else if(exprs.size() == 1)
         {
-          return true;
+          smtAst = exprs.get(0);
         }
-      }
-
-      if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.OR)
-      {
-        // (assert (or true))
-        if (smtMultiArity.getExprs().size() == 1 && smtMultiArity.get(0).equals(BoolConstant.True))
+        else
         {
-          return true;
+          smtAst = SmtMultiArityExpr.Op.AND.make(exprs);
         }
       }
     }
-    return false;
+    if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.OR)
+    {
+      //(or true ...)
+      if (exprs.contains(BoolConstant.True))
+      {
+        smtAst = BoolConstant.True;
+        status = SmtRewriteResult.Status.RewriteAgain;
+      }
+    }
+
+    return status.make(smtAst);
   }
 
 
@@ -182,6 +183,26 @@ public class SmtRewriter implements ISmtRewriter
     }
 
     script.setAssertions(assertions);
+    return script;
+  }
+
+  private SmtScript visitFunctionDefinitions(SmtScript script)
+  {
+    List<FunctionDeclaration> functions = new ArrayList<>();
+
+    for (FunctionDeclaration function: script.getFunctions())
+    {
+      if(function instanceof FunctionDefinition)
+      {
+        functions.add((FunctionDefinition) visit((FunctionDefinition) function).smtAst);
+      }
+      else
+      {
+        functions.add(function);
+      }
+    }
+
+    script.setFunctions(functions);
     return script;
   }
 
@@ -428,25 +449,21 @@ public class SmtRewriter implements ISmtRewriter
   }
 
   @Override
-  public SmtRewriteResult visit(SmtMultiArityExpr multiArityExpr)
+  public SmtRewriteResult visit(SmtMultiArityExpr original)
   {
     List<SmtRewriteResult> results = new ArrayList<>();
-    SmtRewriteResult.Status status = SmtRewriteResult.Status.Done;
-    for (SmtExpr expr : multiArityExpr.getExprs())
+    for (SmtExpr expr : original.getExprs())
     {
       SmtRewriteResult exprResult = visit(expr);
       results.add(exprResult);
-      if (exprResult.status != SmtRewriteResult.Status.Done)
-      {
-        status = SmtRewriteResult.Status.RewriteAgain;
-      }
     }
-
     List<SmtExpr> exprs = results.stream()
                                  .map(r -> (SmtExpr) r.smtAst)
                                  .collect(Collectors.toList());
-    SmtExpr smtAst = multiArityExpr.getOp().make(exprs);
-    return status.make(smtAst);
+
+    SmtMultiArityExpr multiArityExpr = original.getOp().make(exprs);
+    SmtRewriteResult result = removeTrivialTerms(multiArityExpr);
+    return result;
   }
 
   @Override
