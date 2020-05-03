@@ -13,7 +13,7 @@ import java.util.*;
 public class SmtModel extends SmtAst
 {
   protected final List<Sort> sorts = new ArrayList<>();
-  protected final List<FunctionDeclaration> functions = new ArrayList<>();
+  protected List<FunctionDeclaration> functions = new ArrayList<>();
 
   public SmtModel()
   {
@@ -115,5 +115,10 @@ public class SmtModel extends SmtAst
   {
     this.sorts.clear();
     this.functions.clear();
+  }
+
+  public void setFunctions(List<FunctionDeclaration> functions)
+  {
+    this.functions = functions;
   }
 }

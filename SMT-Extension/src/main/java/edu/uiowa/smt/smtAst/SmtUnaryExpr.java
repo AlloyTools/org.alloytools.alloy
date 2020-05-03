@@ -92,12 +92,12 @@ public class SmtUnaryExpr extends SmtExpr
     }
   }
 
-  public Op getOP()
+  public Op getOp()
   {
     return this.op;
   }
 
-  public SmtExpr getExpression()
+  public SmtExpr getExpr()
   {
     return this.expr;
   }

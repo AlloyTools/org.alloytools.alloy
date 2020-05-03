@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class FunctionDefinition extends FunctionDeclaration
 {
-  public final SmtExpr smtExpr;
+  public SmtExpr smtExpr;
   public final List<SmtVariable> inputVariables;
 
   public FunctionDefinition(String name, List<SmtVariable> inputVariables, Sort outputSort, SmtExpr smtExpr, boolean isOriginal)
@@ -46,7 +46,7 @@ public class FunctionDefinition extends FunctionDeclaration
     return this.inputVariables;
   }
 
-  public SmtExpr getSmtExpr()
+  public SmtExpr getBody()
   {
     return this.smtExpr;
   }
@@ -63,5 +63,10 @@ public class FunctionDefinition extends FunctionDeclaration
     SmtLibPrinter printer = new SmtLibPrinter();
     printer.visit(this);
     return printer.getSmtLib();
+  }
+
+  public void setBody(SmtExpr smtExpr)
+  {
+    this.smtExpr = smtExpr;
   }
 }

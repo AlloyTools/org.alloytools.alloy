@@ -33,9 +33,9 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     tabsCount++;
     stringBuilder.append("\n");
     printTabs();
-    stringBuilder.append("(" + unaryExpression.getOP() + " ");
+    stringBuilder.append("(" + unaryExpression.getOp() + " ");
     tabsCount++;
-    this.visit(unaryExpression.getExpression());
+    this.visit(unaryExpression.getExpr());
     stringBuilder.append(")");
     tabsCount -= 2;
 
@@ -75,18 +75,18 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     printTabs();
     stringBuilder.append("(" + multiArityExpression.getOp() + " ");
     tabsCount++;
-    if (multiArityExpression.getExpressions().size() == 1)
+    if (multiArityExpression.getExprs().size() == 1)
     {
-      this.visit(multiArityExpression.getExpressions().get(0));
+      this.visit(multiArityExpression.getExprs().get(0));
     }
-    else if (multiArityExpression.getExpressions().size() > 1)
+    else if (multiArityExpression.getExprs().size() > 1)
     {
-      for (int i = 0; i < multiArityExpression.getExpressions().size() - 1; ++i)
+      for (int i = 0; i < multiArityExpression.getExprs().size() - 1; ++i)
       {
-        this.visit(multiArityExpression.getExpressions().get(i));
+        this.visit(multiArityExpression.getExprs().get(i));
         stringBuilder.append(" ");
       }
-      this.visit(multiArityExpression.getExpressions().get(multiArityExpression.getExpressions().size() - 1));
+      this.visit(multiArityExpression.getExprs().get(multiArityExpression.getExprs().size() - 1));
     }
     else
     {
@@ -110,7 +110,7 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
     }
     stringBuilder.append(") ");
     tabsCount++;
-    this.visit(quantifiedExpression.getExpression());
+    this.visit(quantifiedExpression.getExpr());
     stringBuilder.append(")");
     tabsCount -= 2;
   }

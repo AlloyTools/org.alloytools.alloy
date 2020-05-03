@@ -120,7 +120,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
       this.visit(boundVariable);
     }
     stringBuilder.append(") ");
-    this.visit(quantifiedExpression.getExpression());
+    this.visit(quantifiedExpression.getExpr());
     stringBuilder.append(")");
   }
 
@@ -151,7 +151,7 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
     }
     if (letVariables.size() > 0)
     {
-      SmtExpr let = new SmtLetExpr(letVariables, quantifiedExpression.getExpression());
+      SmtExpr let = new SmtLetExpr(letVariables, quantifiedExpression.getExpr());
       return quantifiedExpression.getOp().make(let, declarations);
     }
     else
@@ -196,8 +196,8 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
   @Override
   public void visit(SmtUnaryExpr unaryExpression)
   {
-    stringBuilder.append("(" + unaryExpression.getOP() + " ");
-    this.visit(unaryExpression.getExpression());
+    stringBuilder.append("(" + unaryExpression.getOp() + " ");
+    this.visit(unaryExpression.getExpr());
     stringBuilder.append(")");
   }
 
@@ -297,18 +297,18 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
   public void visit(SmtMultiArityExpr multiArityExpression)
   {
     stringBuilder.append("(" + multiArityExpression.getOp() + " ");
-    if (multiArityExpression.getExpressions().size() == 1)
+    if (multiArityExpression.getExprs().size() == 1)
     {
-      this.visit(multiArityExpression.getExpressions().get(0));
+      this.visit(multiArityExpression.getExprs().get(0));
     }
-    else if (multiArityExpression.getExpressions().size() > 1)
+    else if (multiArityExpression.getExprs().size() > 1)
     {
-      for (int i = 0; i < multiArityExpression.getExpressions().size() - 1; ++i)
+      for (int i = 0; i < multiArityExpression.getExprs().size() - 1; ++i)
       {
-        this.visit(multiArityExpression.getExpressions().get(i));
+        this.visit(multiArityExpression.getExprs().get(i));
         stringBuilder.append(" ");
       }
-      this.visit(multiArityExpression.getExpressions().get(multiArityExpression.getExpressions().size() - 1));
+      this.visit(multiArityExpression.getExprs().get(multiArityExpression.getExprs().size() - 1));
     }
     else
     {
@@ -373,11 +373,11 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
   public void visit(SmtIteExpr ite)
   {
     stringBuilder.append("(ite ");
-    this.visit(ite.getCondExpression());
+    this.visit(ite.getCondExpr());
     stringBuilder.append(" ");
-    this.visit(ite.getThenExpression());
+    this.visit(ite.getThenExpr());
     stringBuilder.append(" ");
-    this.visit(ite.getElseExpression());
+    this.visit(ite.getElseExpr());
     stringBuilder.append(")");
 
   }

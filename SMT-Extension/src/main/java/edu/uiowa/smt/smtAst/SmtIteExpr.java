@@ -54,17 +54,17 @@ public class SmtIteExpr extends SmtExpr
   }
 
 
-  public SmtExpr getCondExpression()
+  public SmtExpr getCondExpr()
   {
     return this.condExpr;
   }
 
-  public SmtExpr getThenExpression()
+  public SmtExpr getThenExpr()
   {
     return this.thenExpr;
   }
 
-  public SmtExpr getElseExpression()
+  public SmtExpr getElseExpr()
   {
     return this.elseExpr;
   }

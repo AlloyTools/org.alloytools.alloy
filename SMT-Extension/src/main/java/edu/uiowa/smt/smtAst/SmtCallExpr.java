@@ -93,7 +93,7 @@ public class SmtCallExpr extends SmtExpr
         throw new UnsupportedOperationException();
       }
     }
-    return definition.getSmtExpr().evaluate(newScope);
+    return definition.getBody().evaluate(newScope);
   }
 
   @Override

@@ -584,12 +584,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         if(smtExpr instanceof SmtUnaryExpr)
         {
             SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
-            switch (unary.getOP())
+            switch (unary.getOp())
             {
                 case EMPTYSET: return new ArrayList<>();
                 case SINGLETON:
                 {
-                    SmtExpr unarySmtExpr = unary.getExpression();
+                    SmtExpr unarySmtExpr = unary.getExpr();
                     if(unarySmtExpr instanceof SmtMultiArityExpr)
                     {
                         SmtMultiArityExpr multiArity = (SmtMultiArityExpr) unarySmtExpr;
@@ -661,12 +661,12 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
         if(smtExpr instanceof SmtUnaryExpr)
         {
             SmtUnaryExpr unary = (SmtUnaryExpr) smtExpr;
-            switch (unary.getOP())
+            switch (unary.getOp())
             {
                 case EMPTYSET: return new ArrayList<>();
                 case SINGLETON:
                     {
-                        return getAtoms(unary.getExpression(), functions);
+                        return getAtoms(unary.getExpr(), functions);
                     }
                 default:
                     throw new UnsupportedOperationException();
@@ -697,7 +697,7 @@ public class Cvc4Task implements WorkerEngine.WorkerTask
             {
                 case MKTUPLE:
                 {
-                    for (SmtExpr expr: multiArity.getExpressions())
+                    for (SmtExpr expr: multiArity.getExprs())
                     {
                         atoms.addAll(getAtoms(expr, functions));
                     }

@@ -425,7 +425,7 @@ public class SmtBinaryExpr extends SmtExpr
     {
       throw new RuntimeException("Function " + variableName + " is undefined");
     }
-    SmtExpr leftValue = functions.get(variableName).getSmtExpr();
+    SmtExpr leftValue = functions.get(variableName).getBody();
     boolean isEqual = leftValue.equals(right);
     if (isEqual)
     {
