@@ -134,7 +134,7 @@ public class SmtRewriter implements ISmtRewriter
         {
           smtAst = BoolConstant.True;
         }
-        else if(exprs.size() == 1)
+        else if (exprs.size() == 1)
         {
           smtAst = exprs.get(0);
         }
@@ -157,6 +157,32 @@ public class SmtRewriter implements ISmtRewriter
     return status.make(smtAst);
   }
 
+  public SmtRewriteResult flattenNestedExprs(SmtMultiArityExpr smtMultiArity, SmtRewriteResult.Status status)
+  {
+    SmtExpr smtAst = smtMultiArity;
+    if (smtMultiArity.getOp() == SmtMultiArityExpr.Op.AND ||
+        smtMultiArity.getOp() == SmtMultiArityExpr.Op.OR)
+    {
+      // Original: (and (and p q) ... )
+      // Optimized: (and p q ...)
+      List<SmtExpr> exprs = new ArrayList<>();
+      for (SmtExpr expr : smtMultiArity.getExprs())
+      {
+        if (expr instanceof SmtMultiArityExpr &&
+            ((SmtMultiArityExpr) expr).getOp() == smtMultiArity.getOp())
+        {
+          exprs.addAll(((SmtMultiArityExpr) expr).getExprs());
+          status = SmtRewriteResult.Status.RewriteAgain;
+        }
+        else
+        {
+          exprs.add(expr);
+        }
+      }
+      smtAst = smtMultiArity.getOp().make(exprs);
+    }
+    return status.make(smtAst);
+  }
 
   public SmtScript removeUninterpretedIntIfNotUsed(SmtScript root, SmtScript script)
   {
@@ -190,9 +216,9 @@ public class SmtRewriter implements ISmtRewriter
   {
     List<FunctionDeclaration> functions = new ArrayList<>();
 
-    for (FunctionDeclaration function: script.getFunctions())
+    for (FunctionDeclaration function : script.getFunctions())
     {
-      if(function instanceof FunctionDefinition)
+      if (function instanceof FunctionDefinition)
       {
         functions.add((FunctionDefinition) visit((FunctionDefinition) function).smtAst);
       }
@@ -389,6 +415,7 @@ public class SmtRewriter implements ISmtRewriter
       return rewriteResult;
     }
 
+    System.out.println(rewriteResult.smtAst);
     return visit((SmtExpr) rewriteResult.smtAst);
   }
 
@@ -463,6 +490,10 @@ public class SmtRewriter implements ISmtRewriter
 
     SmtMultiArityExpr multiArityExpr = original.getOp().make(exprs);
     SmtRewriteResult result = removeTrivialTerms(multiArityExpr);
+    if(result.smtAst instanceof SmtMultiArityExpr)
+    {
+      result = flattenNestedExprs((SmtMultiArityExpr) result.smtAst, result.status);
+    }
     return result;
   }
 
