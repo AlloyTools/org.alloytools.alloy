@@ -414,8 +414,6 @@ public class SmtRewriter implements ISmtRewriter
     {
       return rewriteResult;
     }
-
-    System.out.println(rewriteResult.smtAst);
     return visit((SmtExpr) rewriteResult.smtAst);
   }
 
