@@ -11,6 +11,7 @@ package edu.uiowa.smt.smtAst;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SmtLetExpr extends SmtExpr
 {
@@ -109,7 +110,33 @@ public class SmtLetExpr extends SmtExpr
   @Override
   public SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr)
   {
-    throw new UnsupportedOperationException();
+    List<SmtExpr> variables = letVariables.keySet()
+                                          .stream()
+                                          .map(v -> v.getVariable())
+                                          .collect(Collectors.toList());
+    // oldSmtExpr is not free
+    if(variables.contains(oldSmtExpr))
+    {
+      // oldSmtExpr is not free
+      return this;
+    }
+    else
+    {
+      if(variables.contains(newSmtExpr))
+      {
+        // the newSmtExpr should be free
+        throw new UnsupportedOperationException(String.format("Expr '%1$s' is not free in '%2$s', " +
+            "therefore it can not be replaced with '%3$s'.", newSmtExpr, this, oldSmtExpr));
+      }
+
+      Map<SmtVariable, SmtExpr> newMap = new HashMap<>();
+      for (Map.Entry<SmtVariable, SmtExpr> entry: letVariables.entrySet())
+      {
+        newMap.put(entry.getKey(), entry.getValue().replace(oldSmtExpr, newSmtExpr));
+      }
+      SmtExpr newExpr = this.expr.replace(oldSmtExpr, newSmtExpr);
+      return new SmtLetExpr(newMap, newExpr);
+    }
   }
 
   @Override

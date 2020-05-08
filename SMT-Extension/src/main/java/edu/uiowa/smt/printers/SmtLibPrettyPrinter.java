@@ -97,20 +97,19 @@ public class SmtLibPrettyPrinter extends SmtLibPrinter
   }
 
   @Override
-  public void visit(SmtQtExpr quantifiedExpression)
+  public void visit(SmtQtExpr smtQtExpr)
   {
-    quantifiedExpression = optimize(quantifiedExpression);
     tabsCount++;
     stringBuilder.append("\n");
     printTabs();
-    stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-    for (SmtVariable boundVariable : quantifiedExpression.getVariables())
+    stringBuilder.append("(" + smtQtExpr.getOp() + " (");
+    for (SmtVariable boundVariable : smtQtExpr.getVariables())
     {
       this.visit(boundVariable);
     }
     stringBuilder.append(") ");
     tabsCount++;
-    this.visit(quantifiedExpression.getExpr());
+    this.visit(smtQtExpr.getExpr());
     stringBuilder.append(")");
     tabsCount -= 2;
   }

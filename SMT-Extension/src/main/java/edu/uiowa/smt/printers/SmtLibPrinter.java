@@ -111,53 +111,16 @@ public class SmtLibPrinter extends AbstractSmtAstVisitor
   }
 
   @Override
-  public void visit(SmtQtExpr quantifiedExpression)
+  public void visit(SmtQtExpr smtQtExpr)
   {
-    quantifiedExpression = optimize(quantifiedExpression);
-    stringBuilder.append("(" + quantifiedExpression.getOp() + " (");
-    for (SmtVariable boundVariable : quantifiedExpression.getVariables())
+    stringBuilder.append("(" + smtQtExpr.getOp() + " (");
+    for (SmtVariable boundVariable : smtQtExpr.getVariables())
     {
       this.visit(boundVariable);
     }
     stringBuilder.append(") ");
-    this.visit(quantifiedExpression.getExpr());
+    this.visit(smtQtExpr.getExpr());
     stringBuilder.append(")");
-  }
-
-  public SmtQtExpr optimize(SmtQtExpr quantifiedExpression)
-  {
-    List<SmtVariable> declarations = new ArrayList<>();
-    Map<SmtVariable, SmtExpr> letVariables = new LinkedHashMap<>();
-    for (SmtVariable variable : quantifiedExpression.getVariables())
-    {
-      if (variable.getSort() instanceof TupleSort)
-      {
-        List<SmtExpr> tupleSmtExprs = new ArrayList<>();
-        // convert tuple quantifiers to uninterpreted quantifiers
-        TupleSort tupleSort = (TupleSort) variable.getSort();
-        for (Sort sort : tupleSort.elementSorts)
-        {
-          SmtVariable declaration = new SmtVariable(TranslatorUtils.getFreshName(sort), sort, false);
-          declarations.add(declaration);
-          tupleSmtExprs.add(declaration.getVariable());
-        }
-        SmtExpr tuple = SmtMultiArityExpr.Op.MKTUPLE.make(tupleSmtExprs);
-        letVariables.put(variable, tuple);
-      }
-      else
-      {
-        declarations.add(variable);
-      }
-    }
-    if (letVariables.size() > 0)
-    {
-      SmtExpr let = new SmtLetExpr(letVariables, quantifiedExpression.getExpr());
-      return quantifiedExpression.getOp().make(let, declarations);
-    }
-    else
-    {
-      return quantifiedExpression;
-    }
   }
 
   @Override
