@@ -116,4 +116,14 @@ class SmtOptimizerTests
     SmtExpr actual = (SmtExpr) rewriter.visit(letExpr).smtAst;
     assertEquals(expected, actual);
   }
+
+  @Test
+  public void subsetMultiplicity() throws Exception
+  {
+    String alloy = "sig B, C, D, E {}\n" +
+        "sig A { f  : B -> C, g : B -> C -> D }";
+
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
+  }
 }
