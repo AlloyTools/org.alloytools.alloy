@@ -4,7 +4,10 @@ import edu.uiowa.smt.AbstractTranslator;
 import edu.uiowa.smt.TranslatorUtils;
 import edu.uiowa.smt.smtAst.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SmtRewriter implements ISmtRewriter
@@ -326,7 +329,7 @@ public class SmtRewriter implements ISmtRewriter
     SmtRewriteResult bodyResult = visit(smtQtExpr.getExpr());
     SmtQtExpr smtAst = smtQtExpr.getOp().make((SmtExpr) bodyResult.smtAst, smtQtExpr.getVariables());
     SmtRewriteResult result = optimizeTupleQuantifiers(smtAst);
-    if(result.status == SmtRewriteResult.Status.RewriteAgain)
+    if (result.status == SmtRewriteResult.Status.RewriteAgain)
     {
       return result;
     }
@@ -510,7 +513,7 @@ public class SmtRewriter implements ISmtRewriter
   {
     SmtRewriteResult result = visit(assertion.getSmtExpr());
     SmtExpr smtExpr = optimizeFunctionalRelation((SmtExpr) result.smtAst);
-
+    smtExpr = optimizeProductMultiplicity(smtExpr);
     Assertion optimizedAssertion = new Assertion(assertion.getSymbolicName(), assertion.getComment(), smtExpr);
     return SmtRewriteResult.Status.Done.make(optimizedAssertion);
   }
@@ -645,9 +648,9 @@ public class SmtRewriter implements ISmtRewriter
     }
 
     SmtExpr setB = operand1.getB();
-    TupleSort tupleSortA = (TupleSort)((SetSort) setA.getSort()).elementSort;
-    TupleSort tupleSortB = (TupleSort)((SetSort) setB.getSort()).elementSort;
-    if(tupleSortA.elementSorts.size() != 1 || tupleSortB.elementSorts.size() != 1)
+    TupleSort tupleSortA = (TupleSort) ((SetSort) setA.getSort()).elementSort;
+    TupleSort tupleSortB = (TupleSort) ((SetSort) setB.getSort()).elementSort;
+    if (tupleSortA.elementSorts.size() != 1 || tupleSortB.elementSorts.size() != 1)
     {
       return expr;
     }
@@ -670,7 +673,7 @@ public class SmtRewriter implements ISmtRewriter
     SmtExpr xzMember = SmtBinaryExpr.Op.MEMBER.make(xzTuple, f);
     SmtExpr xzNotMember = SmtUnaryExpr.Op.NOT.make(xzMember);
     SmtExpr implies2 = SmtBinaryExpr.Op.IMPLIES.make(and2, xzNotMember);
-    SmtExpr forall1 = SmtQtExpr.Op.FORALL.make(implies2, x, y , z);
+    SmtExpr forall1 = SmtQtExpr.Op.FORALL.make(implies2, x, y, z);
 
     SmtExpr xMember = SmtBinaryExpr.Op.MEMBER.make(xTuple, setA);
     SmtExpr yMember = SmtBinaryExpr.Op.MEMBER.make(yTuple, setB);
@@ -682,6 +685,138 @@ public class SmtRewriter implements ISmtRewriter
 
     SmtExpr and4 = SmtMultiArityExpr.Op.AND.make(forall1, forall2);
     return and4;
+  }
+
+  private SmtExpr optimizeProductMultiplicity(SmtExpr expr)
+  {
+    // change multiplicity translation for subset relations f: A -> B -> ...
+    // original:
+    // ---------
+    // ; field (A <: g) multiplicity
+    //(assert 
+    // (forall ((a Atom)) 
+    //   (let ((t (mkTuple a))) 
+    //     (=> 
+    //       (member t |A |) 
+    //       (let ( (s (join (singleton t) f ))) ; s = {t} . f 
+    //         (subset s (product B (product C D)))))))) ; s : A x B x C x D
+
+    // optimized:
+    // ---------
+    // (assert true)
+    // We return true here because we already generate the assertion below separately
+    // ; field f subset
+    //(assert (subset f (product A  (product B (product C D))))))
+
+    if (!(expr instanceof SmtQtExpr))
+    {
+      return expr;
+    }
+
+    SmtQtExpr smtQtExpr = (SmtQtExpr) expr;
+    if (smtQtExpr.getOp() != SmtQtExpr.Op.FORALL || smtQtExpr.getVariables().size() != 1)
+    {
+      return expr;
+    }
+    SmtExpr a = smtQtExpr.getVariables().get(0).getVariable();
+    SmtExpr aTuple = SmtMultiArityExpr.Op.MKTUPLE.make(a);
+    if (!(smtQtExpr.getExpr() instanceof SmtLetExpr))
+    {
+      return expr;
+    }
+    SmtLetExpr let1 = (SmtLetExpr) smtQtExpr.getExpr();
+    if (let1.getLetVariables().size() != 1)
+    {
+      return expr;
+    }
+    SmtExpr t = let1.getLetVariables().keySet().stream().findFirst().get().getVariable();
+    SmtExpr tExpr = let1.getLetVariables().values().stream().findFirst().get();
+    if (!tExpr.equals(aTuple))
+    {
+      return expr;
+    }
+    if (!(let1.getSmtExpr() instanceof SmtBinaryExpr))
+    {
+      return expr;
+    }
+    SmtBinaryExpr implies = (SmtBinaryExpr) let1.getSmtExpr();
+    if (implies.getOp() != SmtBinaryExpr.Op.IMPLIES)
+    {
+      return expr;
+    }
+    if (!(implies.getA() instanceof SmtBinaryExpr && implies.getB() instanceof SmtLetExpr))
+    {
+      return expr;
+    }
+    SmtBinaryExpr operand1 = (SmtBinaryExpr) implies.getA();
+    if (!(operand1.getOp() == SmtBinaryExpr.Op.MEMBER && operand1.getA().equals(t)))
+    {
+      return expr;
+    }
+    SmtExpr setA = operand1.getB();
+    if (!(implies.getB() instanceof SmtLetExpr))
+    {
+      return expr;
+    }
+    SmtLetExpr let2 = (SmtLetExpr) implies.getB();
+    if (let2.getLetVariables().size() != 1)
+    {
+      return expr;
+    }
+    SmtExpr s = let2.getLetVariables().keySet().stream().findFirst().get().getVariable();
+    SmtExpr sExpr = let2.getLetVariables().values().stream().findFirst().get();
+    if (!(sExpr instanceof SmtBinaryExpr))
+    {
+      return sExpr;
+    }
+    SmtExpr f = ((SmtBinaryExpr) sExpr).getB();
+    SmtExpr singletonT = SmtUnaryExpr.Op.SINGLETON.make(t);
+    SmtExpr join = SmtBinaryExpr.Op.JOIN.make(singletonT, f);
+    if (!sExpr.equals(join))
+    {
+      return expr;
+    }
+
+    if (!(let2.getSmtExpr() instanceof SmtBinaryExpr &&
+        ((SmtBinaryExpr) let2.getSmtExpr()).getOp() == SmtBinaryExpr.Op.SUBSET))
+    {
+      return expr;
+    }
+
+    SmtBinaryExpr subset = (SmtBinaryExpr) let2.getSmtExpr();
+
+    if (!(s.equals(subset.getA()) && subset.getB() instanceof SmtBinaryExpr))
+    {
+      return expr;
+    }
+
+    SmtBinaryExpr product = (SmtBinaryExpr) subset.getB();
+    if (!isProductExpr(product))
+    {
+      return expr;
+    }
+
+    return BoolConstant.True;
+  }
+
+  private boolean isProductExpr(SmtExpr expr)
+  {
+    // returns true if expr has the form (product A  (product B (product C (...))))
+    // where A, B, C are variables
+    if (expr instanceof Variable)
+    {
+      return true;
+    }
+    if (expr instanceof SmtBinaryExpr)
+    {
+      SmtBinaryExpr binaryExpr = (SmtBinaryExpr) expr;
+      if(binaryExpr.getOp() != SmtBinaryExpr.Op.PRODUCT)
+      {
+        return false;
+      }
+      return isProductExpr(binaryExpr.getA()) && isProductExpr(binaryExpr.getB());
+    }
+    return false;
   }
 
   @Override
