@@ -15,10 +15,6 @@
 
 package edu.mit.csail.sdg.alloy4;
 
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
-
-import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -34,9 +29,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -352,11 +344,17 @@ public final class Util {
     }
 
     public static void AppendCNFFile(String outFile, int primaryVars) throws IOException {
-
         byte[] comment = (indVarComment(primaryVars) + "\n").getBytes();
-        Path dest = FileSystems.getDefault().getPath(outFile);
-        OutputStream out = new BufferedOutputStream(Files.newOutputStream(dest, CREATE, APPEND));
-        out.write(comment, 0, comment.length);
+        //Path dest = FileSystems.getDefault().getPath(outFile);
+        //OutputStream out = new BufferedOutputStream(Files.newOutputStream(dest, CREATE, APPEND));
+        //out.write(comment, 0, comment.length);
+        RandomAccessFile f = new RandomAccessFile(new File(outFile), "rw");
+        byte[] text = new byte[(int) f.length()];
+        f.readFully(text);
+        f.seek(0);
+        f.write(comment);
+        f.write(text);
+        f.close();
     }
 
     public static String indVarComment(int max) {

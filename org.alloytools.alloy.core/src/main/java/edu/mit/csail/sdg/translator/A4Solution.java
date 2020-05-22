@@ -79,6 +79,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
+import kodkod.engine.Counter;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
@@ -186,11 +187,17 @@ public final class A4Solution {
     /** The Kodkod Solver object. */
     private final Solver            solver;
 
+    /** The Counter object. */
+    private final Counter           counter;
+
+    /** The Model Counter object. */
+    //private final Counter           counter;
+
     // ====== mutable fields (immutable after solve() has been called)
     // ===================================//
 
     /** True iff the problem is solved. */
-    private boolean                           solved      = false;
+    private boolean                           solved        = false;
 
     /** The Kodkod Bounds object. */
     private Bounds                            bounds;
@@ -199,7 +206,7 @@ public final class A4Solution {
      * The list of Kodkod formulas; can be empty if unknown; once a solution is
      * solved we must not modify this anymore
      */
-    private ArrayList<Formula>                formulas    = new ArrayList<Formula>();
+    private ArrayList<Formula>                formulas      = new ArrayList<Formula>();
 
     /** The list of known Alloy4 sigs. */
     private SafeList<Sig>                     sigs;
@@ -207,33 +214,33 @@ public final class A4Solution {
     /**
      * If solved==true and is satisfiable, then this is the list of known skolems.
      */
-    private SafeList<ExprVar>                 skolems     = new SafeList<ExprVar>();
+    private SafeList<ExprVar>                 skolems       = new SafeList<ExprVar>();
 
     /**
      * If solved==true and is satisfiable, then this is the list of actually used
      * atoms.
      */
-    private SafeList<ExprVar>                 atoms       = new SafeList<ExprVar>();
+    private SafeList<ExprVar>                 atoms         = new SafeList<ExprVar>();
 
     /**
      * If solved==true and is satisfiable, then this maps each Kodkod atom to a
      * short name.
      */
-    private Map<Object,String>                atom2name   = new LinkedHashMap<Object,String>();
+    private Map<Object,String>                atom2name     = new LinkedHashMap<Object,String>();
 
     /**
      * If solved==true and is satisfiable, then this maps each Kodkod atom to its
      * most specific sig.
      */
-    private Map<Object,PrimSig>               atom2sig    = new LinkedHashMap<Object,PrimSig>();
+    private Map<Object,PrimSig>               atom2sig      = new LinkedHashMap<Object,PrimSig>();
 
     /**
      * If solved==true and is satisfiable, then this is the Kodkod evaluator.
      */
-    private Evaluator                         eval        = null;
+    private Evaluator                         eval          = null;
 
     /** If not null, you can ask it to get another solution. */
-    private Iterator<Solution>                kEnumerator = null;
+    private Iterator<Solution>                kEnumerator   = null;
 
     /**
      * The map from each Sig/Field/Skolem/Atom to its corresponding Kodkod
@@ -262,6 +269,9 @@ public final class A4Solution {
      * The map from each Kodkod Variable to an Alloy Type and Alloy Pos.
      */
     private Map<Variable,Pair<Type,Pos>>      decl2type;
+
+    private String                            cnf_file_addr = null;
+
 
     // ===================================================================================================//
 
@@ -403,6 +413,8 @@ public final class A4Solution {
         solver.options().setSkolemDepth(opt.skolemDepth);
         solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
         solver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
+
+        counter = new Counter();
     }
 
     /**
@@ -428,6 +440,7 @@ public final class A4Solution {
         seqidxBounds = old.seqidxBounds;
         stringBounds = old.stringBounds;
         solver = old.solver;
+        counter = old.counter;
         bounds = old.bounds;
         formulas = old.formulas;
         sigs = old.sigs;
@@ -1406,7 +1419,7 @@ public final class A4Solution {
             rep.resultCNF(out);
             return null;
         }
-        if (opt.solver.equals(SatSolver.CNF)) {
+        if (opt.solver.equals(SatSolver.CNF) || cmd.count) {
             File tmpCNF = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
             String out = tmpCNF.getAbsolutePath();
             solver.options().setSolver(WriteCNF.factory(out));
@@ -1418,12 +1431,14 @@ public final class A4Solution {
                     if (opt.counter.equals(ModelCounter.ApproxMC)) {
                         AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
                         Util.AppendCNFFile(out, solver_reporter.getPrimaryVars());
-                        rep.resultCNF(out);
+                        File tmpLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
+                        counter.options().setCounter(ModelCounter.ApproxMC);
+                        counter.count();
+                        this.cnf_file_addr = out;
                     } else if (opt.counter.equals(ModelCounter.ProjMC)) {
                         //To be added
                     }
                 }
-
                 return null;
             }
             // The formula is trivial (otherwise, it would have thrown an
@@ -1695,6 +1710,13 @@ public final class A4Solution {
 
         Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
+    }
+
+    /** Get the address of the CNF file generated */
+    public String getCNFAddr() {
+        if (this.cnf_file_addr == null)
+            throw new NullPointerException();
+        return this.cnf_file_addr;
     }
 
 }
