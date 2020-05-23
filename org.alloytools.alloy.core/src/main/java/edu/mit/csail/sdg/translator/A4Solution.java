@@ -79,7 +79,6 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
-import kodkod.engine.Counter;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
@@ -187,11 +186,6 @@ public final class A4Solution {
     /** The Kodkod Solver object. */
     private final Solver            solver;
 
-    /** The Counter object. */
-    private final Counter           counter;
-
-    /** The Model Counter object. */
-    //private final Counter           counter;
 
     // ====== mutable fields (immutable after solve() has been called)
     // ===================================//
@@ -413,8 +407,6 @@ public final class A4Solution {
         solver.options().setSkolemDepth(opt.skolemDepth);
         solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
         solver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
-
-        counter = new Counter();
     }
 
     /**
@@ -440,7 +432,6 @@ public final class A4Solution {
         seqidxBounds = old.seqidxBounds;
         stringBounds = old.stringBounds;
         solver = old.solver;
-        counter = old.counter;
         bounds = old.bounds;
         formulas = old.formulas;
         sigs = old.sigs;
@@ -1432,8 +1423,6 @@ public final class A4Solution {
                         AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
                         Util.AppendCNFFile(out, solver_reporter.getPrimaryVars());
                         File tmpLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
-                        counter.options().setCounter(ModelCounter.ApproxMC);
-                        counter.count();
                         this.cnf_file_addr = out;
                     } else if (opt.counter.equals(ModelCounter.ProjMC)) {
                         //To be added
