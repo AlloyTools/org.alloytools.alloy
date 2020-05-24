@@ -540,14 +540,6 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
                 tr.makeFacts(cmd.formula);
                 tr.frame.solve(rep, cmd, new Simplifier(), false);
-                if (opt.counter == A4Options.ModelCounter.ApproxMC) {
-                    //get the file address of the cnf file
-                    String cnf_file_addr = tr.frame.getCNFAddr();
-
-                    //run approxmc counter
-                } else if (opt.counter == A4Options.ModelCounter.ProjMC) {
-
-                }
                 return null;
             } else {
                 tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);

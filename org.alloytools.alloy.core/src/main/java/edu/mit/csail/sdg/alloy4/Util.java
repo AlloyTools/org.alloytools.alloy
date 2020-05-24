@@ -343,8 +343,8 @@ public final class Util {
         }
     }
 
-    public static void AppendCNFFile(String outFile, int primaryVars) throws IOException {
-        byte[] comment = (indVarComment(primaryVars) + "\n").getBytes();
+    public static void appendCNFFile(String outFile, int primaryVars) throws IOException {
+        byte[] comment = (approxMCVarComment(primaryVars) + "\n").getBytes();
         //Path dest = FileSystems.getDefault().getPath(outFile);
         //OutputStream out = new BufferedOutputStream(Files.newOutputStream(dest, CREATE, APPEND));
         //out.write(comment, 0, comment.length);
@@ -357,7 +357,15 @@ public final class Util {
         f.close();
     }
 
-    public static String indVarComment(int max) {
+    public static void createVarFile(String outFile, int primaryVars) throws IOException {
+        byte[] comment = (projMCVarComment(primaryVars) + "\n").getBytes();
+        RandomAccessFile f = new RandomAccessFile(new File(outFile), "rw");
+        f.seek(0);
+        f.write(comment);
+        f.close();
+    }
+
+    public static String approxMCVarComment(int max) {
         StringBuilder sb = new StringBuilder();
         sb.append("c ind ");
         for (int i = 1; i <= max; i++) {
@@ -365,6 +373,17 @@ public final class Util {
             sb.append(" ");
         }
         sb.append(0);
+        return sb.toString();
+    }
+
+    public static String projMCVarComment(int max) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= max; i++) {
+            sb.append(i);
+            if (i < max) {
+                sb.append(",");
+            }
+        }
         return sb.toString();
     }
 

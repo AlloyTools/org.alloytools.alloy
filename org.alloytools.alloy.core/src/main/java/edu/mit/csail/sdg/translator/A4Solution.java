@@ -79,6 +79,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
+import kodkod.engine.Counter;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
@@ -191,7 +192,7 @@ public final class A4Solution {
     // ===================================//
 
     /** True iff the problem is solved. */
-    private boolean                           solved        = false;
+    private boolean                           solved      = false;
 
     /** The Kodkod Bounds object. */
     private Bounds                            bounds;
@@ -200,7 +201,7 @@ public final class A4Solution {
      * The list of Kodkod formulas; can be empty if unknown; once a solution is
      * solved we must not modify this anymore
      */
-    private ArrayList<Formula>                formulas      = new ArrayList<Formula>();
+    private ArrayList<Formula>                formulas    = new ArrayList<Formula>();
 
     /** The list of known Alloy4 sigs. */
     private SafeList<Sig>                     sigs;
@@ -208,33 +209,33 @@ public final class A4Solution {
     /**
      * If solved==true and is satisfiable, then this is the list of known skolems.
      */
-    private SafeList<ExprVar>                 skolems       = new SafeList<ExprVar>();
+    private SafeList<ExprVar>                 skolems     = new SafeList<ExprVar>();
 
     /**
      * If solved==true and is satisfiable, then this is the list of actually used
      * atoms.
      */
-    private SafeList<ExprVar>                 atoms         = new SafeList<ExprVar>();
+    private SafeList<ExprVar>                 atoms       = new SafeList<ExprVar>();
 
     /**
      * If solved==true and is satisfiable, then this maps each Kodkod atom to a
      * short name.
      */
-    private Map<Object,String>                atom2name     = new LinkedHashMap<Object,String>();
+    private Map<Object,String>                atom2name   = new LinkedHashMap<Object,String>();
 
     /**
      * If solved==true and is satisfiable, then this maps each Kodkod atom to its
      * most specific sig.
      */
-    private Map<Object,PrimSig>               atom2sig      = new LinkedHashMap<Object,PrimSig>();
+    private Map<Object,PrimSig>               atom2sig    = new LinkedHashMap<Object,PrimSig>();
 
     /**
      * If solved==true and is satisfiable, then this is the Kodkod evaluator.
      */
-    private Evaluator                         eval          = null;
+    private Evaluator                         eval        = null;
 
     /** If not null, you can ask it to get another solution. */
-    private Iterator<Solution>                kEnumerator   = null;
+    private Iterator<Solution>                kEnumerator = null;
 
     /**
      * The map from each Sig/Field/Skolem/Atom to its corresponding Kodkod
@@ -264,7 +265,6 @@ public final class A4Solution {
      */
     private Map<Variable,Pair<Type,Pos>>      decl2type;
 
-    private String                            cnf_file_addr = null;
 
 
     // ===================================================================================================//
@@ -1412,20 +1412,48 @@ public final class A4Solution {
         }
         if (opt.solver.equals(SatSolver.CNF) || cmd.count) {
             File tmpCNF = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
-            String out = tmpCNF.getAbsolutePath();
-            solver.options().setSolver(WriteCNF.factory(out));
+            String out_CNF = tmpCNF.getAbsolutePath();
+            solver.options().setSolver(WriteCNF.factory(out_CNF));
             try {
                 sol = solver.solve(fgoal, bounds);
             } catch (WriteCNF.WriteCNFCompleted ex) {
-                rep.resultCNF(out);
+                rep.resultCNF(out_CNF);
                 if (cmd.count) {
                     if (opt.counter.equals(ModelCounter.ApproxMC)) {
                         AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
-                        Util.AppendCNFFile(out, solver_reporter.getPrimaryVars());
-                        File tmpLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
-                        this.cnf_file_addr = out;
+                        Util.appendCNFFile(out_CNF, solver_reporter.getPrimaryVars());
+                        File tmpResultLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
+                        Counter counter = new Counter();
+                        counter.options().setCounterName("ApproxMC");
+                        counter.options().setCNFAddr(out_CNF);
+                        counter.options().setResultAddr(tmpResultLog.getAbsolutePath());
+                        counter.options().setBinaryDirectory(opt.solverDirectory);
+                        try {
+                            counter.count();
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        rep.approxCount(tmpResultLog.getAbsolutePath());
                     } else if (opt.counter.equals(ModelCounter.ProjMC)) {
-                        //To be added
+                        AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
+                        File tmpVar = File.createTempFile("tmp", ".var", new File(opt.tempDirectory));
+                        Util.createVarFile(tmpVar.getAbsolutePath(), solver_reporter.getPrimaryVars());
+                        File tmpResultLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
+                        Counter counter = new Counter();
+                        counter.options().setCounterName("ProjMC");
+                        counter.options().setCNFAddr(out_CNF);
+                        counter.options().setVarAddr(tmpVar.getAbsolutePath());
+                        counter.options().setResultAddr(tmpResultLog.getAbsolutePath());
+                        counter.options().setBinaryDirectory(opt.solverDirectory);
+                        try {
+                            counter.count();
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        rep.projCount(tmpResultLog.getAbsolutePath());
+                        //To do: set two different count result reporters
                     }
                 }
                 return null;
@@ -1434,8 +1462,8 @@ public final class A4Solution {
             // exception)
             // Since the user wants it in CNF format, we manually generate a
             // trivially satisfiable (or unsatisfiable) CNF file.
-            Util.writeAll(out, sol.instance() != null ? "p cnf 1 1\n1 0\n" : "p cnf 1 2\n1 0\n-1 0\n");
-            rep.resultCNF(out);
+            Util.writeAll(out_CNF, sol.instance() != null ? "p cnf 1 1\n1 0\n" : "p cnf 1 2\n1 0\n-1 0\n");
+            rep.resultCNF(out_CNF);
             return null;
         }
         if (!solver.options().solver().incremental() /*
@@ -1701,11 +1729,5 @@ public final class A4Solution {
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
-    /** Get the address of the CNF file generated */
-    public String getCNFAddr() {
-        if (this.cnf_file_addr == null)
-            throw new NullPointerException();
-        return this.cnf_file_addr;
-    }
 
 }
