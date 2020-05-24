@@ -129,6 +129,30 @@ public class A4Reporter {
     }
 
     /**
+     * This method is called by the solver just after it calculating the model count
+     * (which is done by the counter). Model counter choice: ApproxMC
+     *
+     * @param result_file - the address of the file that stores the model counting
+     *            result
+     */
+    public void approxCount(String result_file) {
+        if (parent != null)
+            parent.approxCount(result_file);
+    }
+
+    /**
+     * This method is called by the solver just after it calculating the model count
+     * (which is done by the counter). Model counter choice: ProjMC
+     *
+     * @param result_file - the address of the file that stores the model counting
+     *            result
+     */
+    public void projCount(String result_file) {
+        if (parent != null)
+            parent.approxCount(result_file);
+    }
+
+    /**
      * If solver==KK or solver==CNF, this method is called by the translator after
      * it constructed the Kodkod or CNF file.
      *

@@ -15,9 +15,12 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -200,7 +203,7 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultCNF")) {
                 results.add(null);
                 span.setLength(len3);
-                span.log("   File written to " + array[1] + "\n\n");
+                span.log("   CNF File written to " + array[1] + "\n\n");
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
@@ -217,6 +220,74 @@ final class SimpleReporter extends A4Reporter {
                 len3 = span.getLength();
                 span.logBold("   Solving...\n");
             }
+            if (array[0].equals("resultApproxCount")) {
+                results.add(null);
+                //span.setLength(len3);
+                span.log("   Model Count Result File written to " + array[1] + "\n");
+                FileInputStream inputStream = null;
+                BufferedReader bufferedReader = null;
+                try {
+                    String file_addr = (String) array[1];
+                    File file = new File(file_addr);
+                    inputStream = new FileInputStream(file);
+                    bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    String str = null;
+                    while ((str = bufferedReader.readLine()) != null) {
+                        if (str.startsWith("[appmc]")) {
+                            span.log("   " + str + "\n");
+                        }
+                    }
+
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    span.log(e.getMessage());
+                } finally {
+                    //close
+                    try {
+                        inputStream.close();
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (array[0].equals("resultProjCount")) {
+                results.add(null);
+                //span.setLength(len3);
+                span.log("   Model Count Result File written to " + array[1] + "\n");
+                FileInputStream inputStream = null;
+                BufferedReader bufferedReader = null;
+                try {
+                    String file_addr = (String) array[1];
+                    File file = new File(file_addr);
+                    inputStream = new FileInputStream(file);
+                    bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    String str = null;
+                    while ((str = bufferedReader.readLine()) != null) {
+                        //if (str.startsWith("[appmc]")) {
+                        span.log("   " + str + "\n");
+                        //}
+                    }
+
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    span.log(e.getMessage());
+                } finally {
+                    //close
+                    try {
+                        inputStream.close();
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+
             if (array[0].equals("warnings")) {
                 if (warnings.size() == 0)
                     span.setLength(len2);
@@ -370,6 +441,18 @@ final class SimpleReporter extends A4Reporter {
         minimized = 0;
         cb("solve", "" + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. " + (System.currentTimeMillis() - lastTime) + "ms.\n");
         lastTime = System.currentTimeMillis();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void approxCount(final String result_file) {
+        cb("resultApproxCount", result_file);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void projCount(final String result_file) {
+        cb("resultProjCount", result_file);
     }
 
     /** {@inheritDoc} */
@@ -638,7 +721,8 @@ final class SimpleReporter extends A4Reporter {
         public int                resolutionMode;
         public Map<String,String> map;
 
-        public SimpleTask1() {}
+        public SimpleTask1() {
+        }
 
         public void cb(WorkerCallback out, Object... objs) throws IOException {
             out.callback(objs);
