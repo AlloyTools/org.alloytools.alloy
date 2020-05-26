@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import kodkod.engine.config.CounterOptions;
 
@@ -49,6 +50,7 @@ public final class Counter {
      */
     public Counter() {
         this.options = new CounterOptions();
+
     }
 
     /**
@@ -117,6 +119,8 @@ public final class Counter {
         pb.redirectErrorStream(true);
         pb.redirectOutput(Redirect.appendTo(outputLog));
 
+        setUpEnvironment(pb);
+
         Process process;
         process = pb.start();
         process.waitFor();
@@ -132,5 +136,16 @@ public final class Counter {
     @Override
     public String toString() {
         return options.toString();
+    }
+
+    private void setUpEnvironment(ProcessBuilder builder) throws IOException {
+        if (this.options().OS().equals("linux") || this.options().OS().equals("mac")) {
+            Map<String,String> env = builder.environment();
+            String env_var_name = "LD_LIBRARY_PATH";
+            if (this.options().OS().equals("mac")) {
+                env_var_name = "DYLD_FALLBACK_LIBRARY_PATH";
+            }
+            env.put(env_var_name, this.options().binaryDirectory());
+        }
     }
 }

@@ -21,6 +21,8 @@
  */
 package kodkod.engine.config;
 
+import java.util.Locale;
+
 /**
  * Stores information about various user-level translation and analysis options.
  * It can be used to choose the Model Counter, control symmetry breaking, etc.
@@ -52,6 +54,7 @@ public final class CounterOptions implements Cloneable {
     private String cnf_file_addr    = null;
     private String var_file_addr    = null;
     private String binary_directory = null;
+    private String os               = null;
 
     // [AM]
     public static boolean isDebug() {
@@ -61,9 +64,16 @@ public final class CounterOptions implements Cloneable {
     /**
      * Constructs a CounterOptions object initialized with default values.
      *
-     * @ensures this.counter_name = "ApproxMC" Other parameters: to be added
+     * @ensures this.counter_name = "ApproxMC" Other parameters: to be added get the
+     *          current OS's name
      */
     public CounterOptions() {
+        String os = System.getProperty("os.name").toLowerCase(Locale.US).replace(' ', '-').toLowerCase();
+        if (os.startsWith("mac-"))
+            os = "mac";
+        else if (os.startsWith("windows-"))
+            os = "windows";
+        this.os = os;
     }
 
     /**
@@ -169,6 +179,15 @@ public final class CounterOptions implements Cloneable {
      */
     public String varAddr() {
         return this.var_file_addr;
+    }
+
+    /**
+     * Returns the OS's name.
+     *
+     * @return this.os
+     */
+    public String OS() {
+        return this.os;
     }
 
 
