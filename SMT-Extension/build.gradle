@@ -35,16 +35,17 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.4.0-M1'
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.2')
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.6.2')
 }
 
-task alloy2smtWithDependencies(type: Jar) {
+task smtExtension(type: Jar) {
     manifest {
         attributes 'Main-Class': 'edu.uiowa.alloy2smt.Main'
     }
-    baseName = 'alloy2smt_with_dependencies'
+    setArchiveBaseName('SMT-Extension')
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
-compileJava.finalizedBy alloy2smtWithDependencies
+compileJava.finalizedBy smtExtension
