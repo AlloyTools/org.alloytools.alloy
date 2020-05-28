@@ -849,7 +849,7 @@ public class SmtRewriter implements ISmtRewriter
     // ---------
     // (assert
     //  (forall ((x Atom))
-    //    (=> (and (member (mkTuple x) A) (exists ((y Atom) (z Atom)) (member (mkTuple x y z) f)))
+    //    (=> (member (mkTuple x) A)
     //        (forall ((y Atom))
     //          (=>
     //            (member (mkTuple y) C)
@@ -1085,8 +1085,8 @@ public class SmtRewriter implements ISmtRewriter
 
     SmtExpr xMember = SmtBinaryExpr.Op.MEMBER.make(xTuple, setA);
     SmtExpr xzyMember = SmtBinaryExpr.Op.MEMBER.make(xzyTuple, f);
-    SmtExpr exists1 = SmtQtExpr.Op.EXISTS.make(xzyMember, y, z);
-    SmtExpr and4 = SmtMultiArityExpr.Op.AND.make(xMember, exists1);
+//    SmtExpr exists1 = SmtQtExpr.Op.EXISTS.make(xzyMember, y, z);
+//    SmtExpr and4 = SmtMultiArityExpr.Op.AND.make(xMember, exists1);
 
 
     SmtExpr yMember = SmtBinaryExpr.Op.MEMBER.make(yTuple, setC);
@@ -1104,7 +1104,7 @@ public class SmtRewriter implements ISmtRewriter
     SmtExpr implies4 = SmtBinaryExpr.Op.IMPLIES.make(yMember, exists2);
     SmtExpr forall4 = SmtQtExpr.Op.FORALL.make(implies4, y);
 
-    SmtExpr implies5 = SmtBinaryExpr.Op.IMPLIES.make(and4, forall4);
+    SmtExpr implies5 = SmtBinaryExpr.Op.IMPLIES.make(xMember, forall4);
 
     SmtExpr forall6 = SmtQtExpr.Op.FORALL.make(implies5, x);
 
