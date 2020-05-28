@@ -126,4 +126,14 @@ class SmtOptimizerTests
     List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
     assertEquals("sat", commandResults.get(0).satResult);
   }
+
+  @Test
+  public void oneArrowAnyFieldMultiplicity() throws Exception
+  {
+    String alloy = "sig B, C{}\n" +
+        "sig A { f: B one -> C}";
+
+    List<CommandResult> commandResults = AlloyUtils.runAlloyString(alloy, false);
+    assertEquals("sat", commandResults.get(0).satResult);
+  }
 }
