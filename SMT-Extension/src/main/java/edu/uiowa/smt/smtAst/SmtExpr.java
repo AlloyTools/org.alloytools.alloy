@@ -53,4 +53,64 @@ public abstract class SmtExpr extends SmtAst
   public abstract SmtExpr replace(SmtExpr oldSmtExpr, SmtExpr newSmtExpr);
 
   public abstract boolean containsExpr(SmtExpr expr);
+
+  public SmtBinaryExpr implies(SmtExpr expr)
+  {
+    return SmtBinaryExpr.Op.IMPLIES.make(this, expr);
+  }
+
+  public SmtBinaryExpr member(SmtExpr set)
+  {
+    return SmtBinaryExpr.Op.MEMBER.make(this, set);
+  }
+
+  public SmtBinaryExpr subset(SmtExpr set)
+  {
+    return SmtBinaryExpr.Op.SUBSET.make(this, set);
+  }
+
+  public SmtBinaryExpr product(SmtExpr set)
+  {
+    return SmtBinaryExpr.Op.PRODUCT.make(this, set);
+  }
+
+  public SmtBinaryExpr join(SmtExpr set)
+  {
+    return SmtBinaryExpr.Op.JOIN.make(this, set);
+  }
+
+  public SmtBinaryExpr plus(SmtExpr expr)
+  {
+    return SmtBinaryExpr.Op.PLUS.make(this, expr);
+  }
+
+  public SmtBinaryExpr minus(SmtExpr expr)
+  {
+    return SmtBinaryExpr.Op.MINUS.make(this, expr);
+  }
+
+  public SmtBinaryExpr multiply(SmtExpr expr)
+  {
+    return SmtBinaryExpr.Op.MULTIPLY.make(this, expr);
+  }
+
+  public SmtBinaryExpr divide(SmtExpr expr)
+  {
+    return SmtBinaryExpr.Op.DIVIDE.make(this, expr);
+  }
+
+  public SmtBinaryExpr mod(SmtExpr expr)
+  {
+    return SmtBinaryExpr.Op.MOD.make(this, expr);
+  }
+
+  public SmtUnaryExpr singleton()
+  {
+    return SmtUnaryExpr.Op.SINGLETON.make(this);
+  }
+
+  public SmtUnaryExpr not()
+  {
+    return SmtUnaryExpr.Op.NOT.make(this);
+  }
 }
