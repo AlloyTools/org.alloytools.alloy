@@ -343,9 +343,9 @@ action code {:
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
         }
         if (n!=null)
-          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, n, o.label.equals("ct"), o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
         else
-          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, e, o.label.equals("ct"), o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
     }
     private Expr t(Pos pos, Pos oldClosing, Expr left, Expr right, Pos close) throws Err {
       if (right instanceof ExprVar) {

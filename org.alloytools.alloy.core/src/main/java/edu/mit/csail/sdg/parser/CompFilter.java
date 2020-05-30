@@ -24,6 +24,7 @@ import static edu.mit.csail.sdg.parser.CompSym.ARROW;
 import static edu.mit.csail.sdg.parser.CompSym.CHECK;
 import static edu.mit.csail.sdg.parser.CompSym.COLON;
 import static edu.mit.csail.sdg.parser.CompSym.COMMA;
+import static edu.mit.csail.sdg.parser.CompSym.COUNT;
 import static edu.mit.csail.sdg.parser.CompSym.DISJ;
 import static edu.mit.csail.sdg.parser.CompSym.EOF;
 import static edu.mit.csail.sdg.parser.CompSym.EQUALS;
@@ -229,8 +230,8 @@ final class CompFilter implements Scanner {
         L.alloy_filename = filename;
         L.alloy_lineoffset = lineOffset;
         L.alloy_seenDollar = seenDollar;
-        // Replace "ID : RUN/CHECK ID" with "RUN/CHECK ID ID"
-        // Replace "ID : RUN/CHECK {" WITH "RUN/CHECK ID {"
+        // Replace "ID : RUN/CHECK/COUNT ID" with "RUN/CHECK ID ID"
+        // Replace "ID : RUN/CHECK/COUNT {" WITH "RUN/CHECK/COUNT ID {"
         final Scanner A = new Scanner() {
 
             private Symbol a, b, c, d;
@@ -257,7 +258,7 @@ final class CompFilter implements Scanner {
                 }
                 if (d == null)
                     d = L.next_token();
-                if (a.sym == ID && b.sym == COLON && (c.sym == RUN || c.sym == CHECK) && (d.sym == ID || d.sym == LBRACE)) {
+                if (a.sym == ID && b.sym == COLON && (c.sym == RUN || c.sym == CHECK || c.sym == COUNT) && (d.sym == ID || d.sym == LBRACE)) {
                     Symbol x = c;
                     b = d;
                     c = null;
