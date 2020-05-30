@@ -16,12 +16,15 @@
 package edu.mit.csail.sdg.alloy4whole;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -209,7 +212,8 @@ final class SwingLogPanel {
             }
 
             @Override
-            public final void focusLost(FocusEvent e) {}
+            public final void focusLost(FocusEvent e) {
+            }
         });
         StyledDocument doc = log.getStyledDocument();
         styleRegular = doc.addStyle("regular", null);
@@ -267,10 +271,67 @@ final class SwingLogPanel {
             }
 
             @Override
-            public final void mouseClicked(MouseEvent e) {}
+            public final void mouseClicked(MouseEvent e) {
+            }
 
             @Override
-            public final void mouseReleased(MouseEvent e) {}
+            public final void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public final void mouseEntered(MouseEvent e) {
+                label.setForeground(hoverColor);
+            }
+
+            @Override
+            public final void mouseExited(MouseEvent e) {
+                label.setForeground(linkColor);
+            }
+        });
+        StyleConstants.setComponent(linkStyle, label);
+        links.add(label);
+        reallyLog(".", linkStyle); // Any character would do; the "." will be
+                                  // replaced by the JLabel
+        log.setCaretPosition(doc.getLength());
+        lastSize = doc.getLength();
+    }
+
+    /**
+     * Write a clickable link into the log window. (open the file explorer window)
+     */
+    public void logFileLink(final String link, final String linkDestination) {
+        if (log == null || link.length() == 0)
+            return;
+        if (linkDestination == null || linkDestination.length() == 0) {
+            log(link);
+            return;
+        }
+        clearError();
+        StyledDocument doc = log.getStyledDocument();
+        Style linkStyle = doc.addStyle("link", styleRegular);
+        final JLabel label = OurUtil.make(OurAntiAlias.label(link), new Font(fontName, Font.BOLD, fontSize), linkColor);
+        label.setAlignmentY(0.8f);
+        label.setMaximumSize(label.getPreferredSize());
+        label.addMouseListener(new MouseListener() {
+
+            @Override
+            public final void mousePressed(MouseEvent e) {
+                Desktop d = Desktop.getDesktop();
+                try {
+                    d.open(new File(linkDestination));
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public final void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public final void mouseReleased(MouseEvent e) {
+            }
 
             @Override
             public final void mouseEntered(MouseEvent e) {
@@ -466,7 +527,8 @@ final class SwingLogPanel {
         if (n > lastSize) {
             try {
                 doc.remove(lastSize, n - lastSize);
-            } catch (BadLocationException e) {}
+            } catch (BadLocationException e) {
+            }
         }
         if (batch.size() > 0) {
             for (String msg : batch) {

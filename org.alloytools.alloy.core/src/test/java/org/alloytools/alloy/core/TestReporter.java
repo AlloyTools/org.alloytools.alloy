@@ -68,7 +68,7 @@ public class TestReporter extends A4Reporter {
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+    public void translateForSolver(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
         out.printf("TRNS %s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry);
     }
 

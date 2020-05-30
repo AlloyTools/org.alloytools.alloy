@@ -110,9 +110,24 @@ public class A4Reporter {
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+    public void translateForSolver(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
         if (parent != null)
-            parent.translate(solver, bitwidth, maxseq, skolemDepth, symmetry);
+            parent.translateForSolver(solver, bitwidth, maxseq, skolemDepth, symmetry);
+    }
+
+    /**
+     * This method is called by the translator just before it begins generating CNF.
+     *
+     * @param counter - the counter chosen by the user (eg. ApproxMC, ProjMC...)
+     * @param bitwidth - the integer bitwidth chosen by the user
+     * @param maxseq - the scope on seq/Int chosen by the user
+     * @param skolemDepth - the skolem function depth chosen by the user (0, 1,
+     *            2...)
+     * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
+     */
+    public void translateForCounter(String counter, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        if (parent != null)
+            parent.translateForSolver(counter, bitwidth, maxseq, skolemDepth, symmetry);
     }
 
     /**

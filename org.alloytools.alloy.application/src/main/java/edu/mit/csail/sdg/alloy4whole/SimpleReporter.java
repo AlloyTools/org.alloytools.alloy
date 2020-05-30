@@ -222,8 +222,9 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("resultApproxCount")) {
                 results.add(null);
-                //span.setLength(len3);
-                span.log("   Model Count Result File written to " + array[1] + "\n");
+                int model_count = 0;
+                int first_num = 0, exponent = 0;
+                double exec_time = 0;
                 FileInputStream inputStream = null;
                 BufferedReader bufferedReader = null;
                 try {
@@ -233,15 +234,27 @@ final class SimpleReporter extends A4Reporter {
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                     String str = null;
                     while ((str = bufferedReader.readLine()) != null) {
-                        if (str.startsWith("[appmc]")) {
-                            span.log("   " + str + "\n");
+                        if (str.contains("FINISHED AppMC T")) {
+                            int start_index = str.indexOf(':');
+                            int end_index = str.lastIndexOf('s');
+                            exec_time = Double.valueOf(str.substring(start_index + 2, end_index - 1));
+                        } else if (str.contains("Number of solutions is")) {
+                            int start_index = str.indexOf(':');
+                            int mid_index = str.indexOf('x');
+                            int end_index = str.indexOf('^');
+                            first_num = Integer.valueOf(str.substring(start_index + 2, mid_index - 1));
+                            exponent = Integer.valueOf(str.substring(end_index + 1));
+                            model_count = (int) (first_num * Math.pow(2, exponent));
                         }
                     }
+                    span.log("   Model Count = " + model_count + ". ");
+                    span.logFileLink("Full model counting result", (String) array[1]);
+                    span.log(". " + exec_time + " s.\n");
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                    span.log(e.getMessage());
+                    //span.log(e.getMessage());
                 } finally {
                     //close
                     try {
@@ -430,9 +443,16 @@ final class SimpleReporter extends A4Reporter {
 
     /** {@inheritDoc} */
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+    public void translateForSolver(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
         lastTime = System.currentTimeMillis();
         cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void translateForCounter(String counter, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        lastTime = System.currentTimeMillis();
+        cb("translate", "Counter=" + counter + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
     }
 
     /** {@inheritDoc} */

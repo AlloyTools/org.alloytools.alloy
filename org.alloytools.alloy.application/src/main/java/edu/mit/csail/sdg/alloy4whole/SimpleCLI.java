@@ -114,7 +114,7 @@ public final class SimpleCLI {
         }
 
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        public void translateForSolver(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
             sb.append("   Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
         }
 
@@ -126,7 +126,8 @@ public final class SimpleCLI {
         }
 
         @Override
-        public void resultCNF(String filename) {}
+        public void resultCNF(String filename) {
+        }
 
         @Override
         public void resultSAT(Object command, long solvingTime, Object solution) {
@@ -174,7 +175,8 @@ public final class SimpleCLI {
         System.out.flush();
     }
 
-    private SimpleCLI() {}
+    private SimpleCLI() {
+    }
 
     private static void validate(A4Solution sol) throws Exception {
         StringWriter sw = new StringWriter();
