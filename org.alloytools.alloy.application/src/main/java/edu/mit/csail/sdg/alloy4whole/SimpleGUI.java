@@ -1138,7 +1138,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /**
-     * This method executes a particular RUN or CHECK command.
+     * This method executes a particular RUN or CHECK or COUNT command.
      */
     private Runner doRun(Integer commandIndex) {
         if (wrap)
@@ -1216,8 +1216,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /**
-     * This method stops the current run or check (how==0 means DONE, how==1 means
-     * FAIL, how==2 means STOP).
+     * This method stops the current run or check or count (how==0 means DONE,
+     * how==1 means FAIL, how==2 means STOP).
      */
     Runner doStop(Integer how) {
         if (wrap)
