@@ -267,9 +267,9 @@ public final class A4Options implements Serializable {
         /** ApproxMC */
         public static final ModelCounter ApproxMC = new ModelCounter("approxmc", "ApproxMC", true);
         /** ProjMC */
-        public static final ModelCounter ProjMC   = new ModelCounter("projmc", "ProjMC", true);
+        public static final ModelCounter ProjMC   = new ModelCounter("projmc", "ProjMC (linux only)", true);
         /** Ganak */
-        public static final ModelCounter Ganak    = new ModelCounter("ganak", "Ganak", true);
+        public static final ModelCounter Ganak    = new ModelCounter("ganak", "Ganak (not available yet)", true);
     }
 
 
