@@ -377,7 +377,7 @@ public final class A4SolutionReader {
         // create the A4Solution object
         A4Options opt = new A4Options();
         opt.originalFilename = inst.getAttribute("filename");
-        sol = new A4Solution(inst.getAttribute("command"), bitwidth, maxseq, strings, atoms, null, opt, 1);
+        sol = new A4Solution(inst.getAttribute("command"), bitwidth, maxseq, strings, atoms, null, opt, 1, inst.getAttribute("command").contains("count"));
         factory = sol.getFactory();
         // parse all the sigs, fields, and skolems
         for (Map.Entry<String,XMLNode> e : nmap.entrySet())

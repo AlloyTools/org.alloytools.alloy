@@ -156,6 +156,12 @@ public final class A4Solution {
      */
     private final String            originalCommand;
 
+    /**
+     * If the original Alloy command is a count command
+     */
+    private final boolean           is_count;
+
+
     /** The bitwidth; always between 1 and 30. */
     private final int               bitwidth;
 
@@ -265,6 +271,8 @@ public final class A4Solution {
      */
     private Map<Variable,Pair<Type,Pos>>      decl2type;
 
+    private String                            result_file_addr;
+
 
 
     // ===================================================================================================//
@@ -284,7 +292,7 @@ public final class A4Solution {
      * @param expected - whether the user expected an instance or not (1 means yes,
      *            0 means no, -1 means the user did not express an expectation)
      */
-    A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, int expected) throws Err {
+    A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, int expected, boolean is_count) throws Err {
         opt = opt.dup();
         this.unrolls = opt.unrolls;
         this.sigs = new SafeList<Sig>(Arrays.asList(UNIV, SIGINT, SEQIDX, STRING, NONE));
@@ -298,6 +306,7 @@ public final class A4Solution {
         this.originalCommand = (originalCommand == null ? "" : originalCommand);
         this.bitwidth = bitwidth;
         this.maxseq = maxseq;
+        this.is_count = is_count;
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0");
         if (bitwidth > 30)
@@ -439,6 +448,7 @@ public final class A4Solution {
         k2pos = old.k2pos;
         rel2type = old.rel2type;
         decl2type = old.decl2type;
+        is_count = old.is_count;
         if (inst != null) {
             eval = new Evaluator(inst, old.solver.options());
             a2k = new LinkedHashMap<Expr,Expression>();
@@ -1314,6 +1324,15 @@ public final class A4Solution {
      * Solve for the solution if not solved already; if cmd==null, we will simply
      * use the lowerbound of each relation as its value.
      */
+    /**
+     * @param rep
+     * @param cmd
+     * @param simp
+     * @param tryBookExamples
+     * @return
+     * @throws Err
+     * @throws IOException
+     */
     A4Solution solve(final A4Reporter rep, Command cmd, Simplifier simp, boolean tryBookExamples) throws Err, IOException {
         // If already solved, then return this object as is
         if (solved)
@@ -1421,7 +1440,6 @@ public final class A4Solution {
             try {
                 sol = solver.solve(fgoal, bounds);
             } catch (WriteCNF.WriteCNFCompleted ex) {
-                rep.resultCNF(out_CNF);
                 if (cmd.count) {
                     if (opt.counter.equals(ModelCounter.ApproxMC)) {
                         AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
@@ -1432,6 +1450,7 @@ public final class A4Solution {
                         counter.options().setCNFAddr(out_CNF);
                         counter.options().setResultAddr(tmpResultLog.getAbsolutePath());
                         counter.options().setBinaryDirectory(opt.solverDirectory);
+                        this.result_file_addr = tmpResultLog.getAbsolutePath();
                         try {
                             counter.count();
                         } catch (InterruptedException e) {
@@ -1450,6 +1469,7 @@ public final class A4Solution {
                         counter.options().setVarAddr(tmpVar.getAbsolutePath());
                         counter.options().setResultAddr(tmpResultLog.getAbsolutePath());
                         counter.options().setBinaryDirectory(opt.solverDirectory);
+                        this.result_file_addr = tmpResultLog.getAbsolutePath();
                         try {
                             counter.count();
                         } catch (InterruptedException e) {
@@ -1459,8 +1479,9 @@ public final class A4Solution {
                         rep.projCount(tmpResultLog.getAbsolutePath());
                         //To do: set two different count result reporters
                     }
+                    return this;
                 }
-                return null;
+                rep.resultCNF(out_CNF);
             }
             // The formula is trivial (otherwise, it would have thrown an
             // exception)
@@ -1607,6 +1628,13 @@ public final class A4Solution {
         return kEnumerator != null;
     }
 
+    /**
+     * Returns true if the original Alloy command is a count command.
+     */
+    public boolean isCount() {
+        return this.is_count;
+    }
+
     // ===================================================================================================//
 
     /**
@@ -1732,6 +1760,10 @@ public final class A4Solution {
         Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
+    // ===================================================================================================//
 
+    public String getResultFileAddr() {
+        return this.result_file_addr;
+    }
 
 }

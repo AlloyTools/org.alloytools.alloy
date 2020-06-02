@@ -394,17 +394,20 @@ final class ScopeComputer {
         // Derive the implicit scopes
         while (true) {
             if (derive_abstract_scope(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_abstract_scope(sigs));
                 continue;
             }
             if (derive_overall_scope(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_overall_scope(sigs));
                 continue;
             }
             if (derive_scope_from_parent(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_scope_from_parent(sigs));
                 continue;
             }
@@ -473,7 +476,7 @@ final class ScopeComputer {
         for (int i = 0; set.size() < sc.maxstring; i++)
             set.add("\"String" + i + "\"");
         sc.atoms.addAll(set);
-        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
+        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects, cmd.count);
         return new Pair<A4Solution,ScopeComputer>(sol, sc);
     }
 }

@@ -542,13 +542,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         try {
             if (cmd.parent != null || !cmd.getGrowableSigs().isEmpty())
                 return execute_greedyCommand(rep, sigs, cmd, opt);
-            if (cmd.count) {
-                opt.solver = A4Options.SatSolver.CNF;
-                tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
-                tr.makeFacts(cmd.formula);
-                tr.frame.solve(rep, cmd, new Simplifier(), false);
-                return null;
-            } else {
+            else {
                 tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
                 tr.makeFacts(cmd.formula);
                 return tr.frame.solve(rep, cmd, new Simplifier(), false);
