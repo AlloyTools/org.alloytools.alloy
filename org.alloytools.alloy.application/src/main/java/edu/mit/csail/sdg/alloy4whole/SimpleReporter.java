@@ -188,6 +188,9 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("link")) {
                 span.logLink((String) (array[1]), (String) (array[2]));
             }
+            if (array[0].equals("fileLink")) {
+                span.logFileLink((String) (array[1]), (String) (array[2]));
+            }
             if (array[0].equals("bold")) {
                 span.logBold("" + array[1]);
             }
@@ -221,7 +224,8 @@ final class SimpleReporter extends A4Reporter {
                 span.logBold("   Solving...\n");
             }
             if (array[0].equals("resultApproxCount")) {
-                results.add(null);
+                results.add((String) array[1]);
+                span.setLength(len3);
                 int model_count = 0;
                 int first_num = 0, exponent = 0;
                 double exec_time = 0;
@@ -254,7 +258,7 @@ final class SimpleReporter extends A4Reporter {
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                    //span.log(e.getMessage());
+                    span.log(e.getMessage());
                 } finally {
                     //close
                     try {
@@ -268,9 +272,10 @@ final class SimpleReporter extends A4Reporter {
             }
 
             if (array[0].equals("resultProjCount")) {
-                results.add(null);
-                //span.setLength(len3);
-                span.log("   Model Count Result File written to " + array[1] + "\n");
+                results.add((String) array[1]);
+                span.setLength(len3);
+                int model_count = 0;
+                double exec_time = 0;
                 FileInputStream inputStream = null;
                 BufferedReader bufferedReader = null;
                 try {
@@ -280,10 +285,17 @@ final class SimpleReporter extends A4Reporter {
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                     String str = null;
                     while ((str = bufferedReader.readLine()) != null) {
-                        //if (str.startsWith("[appmc]")) {
-                        span.log("   " + str + "\n");
-                        //}
+                        if (str.startsWith("s")) {
+                            int start_index = 2;
+                            model_count = Integer.valueOf(str.substring(start_index));
+                        } else if (str.contains("Final time")) {
+                            int start_index = str.indexOf(':');
+                            exec_time = Double.valueOf(str.substring(start_index + 2));
+                        }
                     }
+                    span.log("   Model Count = " + model_count + ". ");
+                    span.logFileLink("Full model counting result", (String) array[1]);
+                    span.log(". " + exec_time + " s.\n");
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -788,6 +800,8 @@ final class SimpleReporter extends A4Reporter {
                         A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
                         if (ai == null)
                             result.add(null);
+                        else if (ai.isCount())
+                            result.add(ai.getResultFileAddr());
                         else if (ai.satisfiable())
                             result.add(tempXML);
                         else if (ai.highLevelCore().a.size() > 0)
@@ -805,7 +819,11 @@ final class SimpleReporter extends A4Reporter {
                         rep.cb("", "   #" + (i + 1) + ": Unknown.\n");
                         continue;
                     }
-                    if (result.get(i).endsWith(".xml")) {
+                    if (result.get(i).endsWith(".log")) {
+                        rep.cb("", "   #" + (i + 1) + ": ");
+                        rep.cb("fileLink", "Full model counting result", result.get(i));
+
+                    } else if (result.get(i).endsWith(".xml")) {
                         rep.cb("", "   #" + (i + 1) + ": ");
                         rep.cb("link", r.check ? "Counterexample found. " : "Instance found. ", "XML: " + result.get(i));
                         rep.cb("", r.label + (r.check ? " is invalid" : " is consistent"));
