@@ -542,11 +542,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         try {
             if (cmd.parent != null || !cmd.getGrowableSigs().isEmpty())
                 return execute_greedyCommand(rep, sigs, cmd, opt);
-            else {
-                tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
-                tr.makeFacts(cmd.formula);
-                return tr.frame.solve(rep, cmd, new Simplifier(), false);
-            }
+            tr = new TranslateAlloyToKodkod(rep, opt, sigs, cmd);
+            tr.makeFacts(cmd.formula);
+            return tr.frame.solve(rep, cmd, new Simplifier(), false);
         } catch (UnsatisfiedLinkError ex) {
             throw new ErrorFatal("The required JNI library cannot be found: " + ex.toString().trim(), ex);
         } catch (CapacityExceededException ex) {

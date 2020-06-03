@@ -1409,9 +1409,9 @@ public final class A4Solution {
                 }
             }
         });
-        if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
-                                                                                                       // book
-                                                                                                       // examples
+        if (!opt.solver.equals(SatSolver.CNF) && !cmd.count && opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
+            // book
+            // examples
             A4Reporter r = AlloyCore.isDebug() ? rep : null;
             try {
                 sol = BookExamples.trial(r, this, fgoal, solver, cmd.check);
@@ -1482,6 +1482,7 @@ public final class A4Solution {
                     return this;
                 }
                 rep.resultCNF(out_CNF);
+                return null;
             }
             // The formula is trivial (otherwise, it would have thrown an
             // exception)
