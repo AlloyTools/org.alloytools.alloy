@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -226,8 +227,9 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultApproxCount")) {
                 results.add((String) array[1]);
                 span.setLength(len3);
-                int model_count = 0;
-                int first_num = 0, exponent = 0;
+                //int model_count = 0;
+                //Update: Set model_count as String type
+                String model_count = "";
                 double exec_time = 0;
                 FileInputStream inputStream = null;
                 BufferedReader bufferedReader = null;
@@ -243,17 +245,21 @@ final class SimpleReporter extends A4Reporter {
                             int end_index = str.lastIndexOf('s');
                             exec_time = Double.valueOf(str.substring(start_index + 2, end_index - 1));
                         } else if (str.contains("Number of solutions is")) {
+                            /*
+                             * Calculate model_count (as the int type) int start_index = str.indexOf(':');
+                             * int mid_index = str.indexOf('x'); int end_index = str.indexOf('^'); first_num
+                             * = Integer.valueOf(str.substring(start_index + 2, mid_index - 1)); exponent =
+                             * Integer.valueOf(str.substring(end_index + 1)); model_count = (int) (first_num
+                             * * Math.pow(2, exponent));
+                             */
                             int start_index = str.indexOf(':');
-                            int mid_index = str.indexOf('x');
-                            int end_index = str.indexOf('^');
-                            first_num = Integer.valueOf(str.substring(start_index + 2, mid_index - 1));
-                            exponent = Integer.valueOf(str.substring(end_index + 1));
-                            model_count = (int) (first_num * Math.pow(2, exponent));
+                            model_count = str.substring(start_index + 2);
                         }
                     }
+                    DecimalFormat df = new DecimalFormat("0.00");
                     span.log("   Model Count = " + model_count + ". ");
                     span.logFileLink("Full model counting result", (String) array[1]);
-                    span.log(". " + exec_time + " s.\n");
+                    span.log(". " + df.format(exec_time) + " s.\n");
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -274,7 +280,9 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultProjCount")) {
                 results.add((String) array[1]);
                 span.setLength(len3);
-                int model_count = 0;
+                //int model_count = 0;
+                //Update: Set model_count as String type
+                String model_count = "";
                 double exec_time = 0;
                 FileInputStream inputStream = null;
                 BufferedReader bufferedReader = null;
@@ -287,15 +295,20 @@ final class SimpleReporter extends A4Reporter {
                     while ((str = bufferedReader.readLine()) != null) {
                         if (str.startsWith("s")) {
                             int start_index = 2;
-                            model_count = Integer.valueOf(str.substring(start_index));
+                            /*
+                             * Calculate model_count (as the int type) model_count =
+                             * Integer.valueOf(str.substring(start_index));
+                             */
+                            model_count = str.substring(start_index);
                         } else if (str.contains("Final time")) {
                             int start_index = str.indexOf(':');
                             exec_time = Double.valueOf(str.substring(start_index + 2));
                         }
                     }
+                    DecimalFormat df = new DecimalFormat("0.00");
                     span.log("   Model Count = " + model_count + ". ");
                     span.logFileLink("Full model counting result", (String) array[1]);
-                    span.log(". " + exec_time + " s.\n");
+                    span.log(". " + df.format(exec_time) + " s.\n");
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
