@@ -181,7 +181,8 @@ public final class WorkerEngine {
         synchronized (WorkerEngine.class) {
             try {
                 if (latest_sub != null)
-                    latest_sub.destroy();
+                    //latest_sub.destroy();
+                    kill(latest_sub.toHandle());
             } finally {
                 latest_manager = null;
                 latest_sub = null;
@@ -307,7 +308,8 @@ public final class WorkerEngine {
                         main2sub.close();
                         sub2main = new ObjectInputStream(wrap(sub.getInputStream()));
                     } catch (Throwable ex) {
-                        sub.destroy();
+                        //sub.destroy();
+                        kill(sub.toHandle());
                         Util.close(main2sub);
                         Util.close(sub2main);
                         synchronized (WorkerEngine.class) {
@@ -326,7 +328,8 @@ public final class WorkerEngine {
                         try {
                             x = sub2main.readObject();
                         } catch (Throwable ex) {
-                            sub.destroy();
+                            //sub.destroy();
+                            kill(sub.toHandle());
                             Util.close(sub2main);
                             synchronized (WorkerEngine.class) {
                                 if (latest_sub != sub)
@@ -525,6 +528,11 @@ public final class WorkerEngine {
 
             rover = rover.getParentFile();
         }
+    }
+
+    private static void kill(ProcessHandle handle) {
+        handle.descendants().forEach((child) -> kill(child));
+        handle.destroy();
     }
 
 }
