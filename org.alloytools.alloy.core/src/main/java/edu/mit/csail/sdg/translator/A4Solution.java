@@ -1445,11 +1445,13 @@ public final class A4Solution {
                         AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
                         Util.appendCNFFile(out_CNF, solver_reporter.getPrimaryVars());
                         File tmpResultLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
+                        //File tmpPidFile = new File(opt.tempDirectory, "pid.txt");
                         Counter counter = new Counter();
                         counter.options().setCounterName("ApproxMC");
                         counter.options().setCNFAddr(out_CNF);
                         counter.options().setResultAddr(tmpResultLog.getAbsolutePath());
                         counter.options().setBinaryDirectory(opt.solverDirectory);
+                        //counter.options().setPidFileAddr(tmpPidFile.getAbsolutePath());
                         this.result_file_addr = tmpResultLog.getAbsolutePath();
                         try {
                             counter.count();
@@ -1463,12 +1465,14 @@ public final class A4Solution {
                         File tmpVar = File.createTempFile("tmp", ".var", new File(opt.tempDirectory));
                         Util.createVarFile(tmpVar.getAbsolutePath(), solver_reporter.getPrimaryVars());
                         File tmpResultLog = File.createTempFile("tmp", ".log", new File(opt.tempDirectory));
+                        //File tmpPidFile = File.createTempFile("tmp", ".txt", new File(opt.tempDirectory));
                         Counter counter = new Counter();
                         counter.options().setCounterName("ProjMC");
                         counter.options().setCNFAddr(out_CNF);
                         counter.options().setVarAddr(tmpVar.getAbsolutePath());
                         counter.options().setResultAddr(tmpResultLog.getAbsolutePath());
                         counter.options().setBinaryDirectory(opt.solverDirectory);
+                        //counter.options().setPidFileAddr(tmpPidFile.getAbsolutePath());
                         this.result_file_addr = tmpResultLog.getAbsolutePath();
                         try {
                             counter.count();

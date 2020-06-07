@@ -122,7 +122,9 @@ public final class Counter {
         setUpEnvironment(pb);
 
         Process process;
+
         process = pb.start();
+        //writePidToFile(process.pid());
         process.waitFor();
         //To do: timeout check
     }
@@ -148,4 +150,10 @@ public final class Counter {
             env.put(env_var_name, this.options().binaryDirectory());
         }
     }
+    /*
+     * private void writePidToFile(Long pid) throws IOException { byte[] pid_bytes =
+     * (pid + "\n").getBytes(); RandomAccessFile f = new RandomAccessFile(new
+     * File(this.options().pidAddr()), "rw"); f.seek(0); f.write(pid_bytes);
+     * f.close(); }
+     */
 }
