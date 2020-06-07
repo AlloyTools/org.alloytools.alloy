@@ -33,6 +33,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -73,6 +74,7 @@ import edu.mit.csail.sdg.alloy4.OurBorder;
 import edu.mit.csail.sdg.alloy4.OurUtil;
 import edu.mit.csail.sdg.alloy4.OurUtil.GridBagConstraintsBuilder;
 import edu.mit.csail.sdg.alloy4.Subprocess;
+import edu.mit.csail.sdg.translator.A4Options.ModelCounter;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 @SuppressWarnings({
@@ -252,6 +254,7 @@ public class PreferencesDialog extends JFrame {
         this.binary = binary;
         if (log != null && binary != null) {
             Solver.setChoices(testSolvers(), SatSolver.SAT4J);
+            Counter.setChoices(testCounters(), ModelCounter.ApproxMC);
         }
         initUI();
     }
@@ -295,6 +298,35 @@ public class PreferencesDialog extends JFrame {
             log.flush();
         }
         return satChoices;
+    }
+
+    protected Iterable<ModelCounter> testCounters() {
+        List<ModelCounter> counterChoices = ModelCounter.values().makeCopy();
+
+        if (!ifBinaryExist("ganak")) {
+            counterChoices.remove(ModelCounter.Ganak);
+            log.logBold("Warning: Ganak Model Counter does not work on this platform.\n");
+        }
+        if (!ifBinaryExist("projmc")) {
+            counterChoices.remove(ModelCounter.ProjMC);
+            log.logBold("Warning: ProjMC Model Counter does not work on this platform.\n");
+        }
+        /*
+         * if (!ifBinaryExist("approxmc")) {
+         * counterChoices.remove(ModelCounter.ApproxMC); log.
+         * logBold("Warning: ApproxMC Model Counter does not work on this platform.\n");
+         * log.logDivider(); log.flush(); }
+         */
+        ModelCounter now = Counter.get();
+        if (!counterChoices.contains(now)) {
+            now = ModelCounter.ApproxMC;
+        }
+        if (now.equals(ModelCounter.ApproxMC) && counterChoices.size() == 1) {
+            log.log("This is okay, since you can still use ApproxMC as the counter.\n");
+        }
+        log.logDivider();
+        log.flush();
+        return counterChoices;
     }
 
     /**
@@ -660,6 +692,13 @@ public class PreferencesDialog extends JFrame {
                 }
             });
         }
+    }
+
+    private boolean ifBinaryExist(String file_name) {
+        String fs = System.getProperty("file.separator");
+        File file1 = new File(this.binary + fs + file_name);
+        File file2 = new File(this.binary + fs + file_name + ".exe");
+        return file1.exists() || file2.exists();
     }
 
     public static void main(String[] args) {
