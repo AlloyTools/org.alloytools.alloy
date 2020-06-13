@@ -149,8 +149,17 @@ public final class Command extends Browsable {
             sb.append(first ? " " : ", ").append(e);
             first = false;
         }
-        if (expects >= 0)
-            sb.append(" expect ").append(expects);
+        if (expects >= 0) {
+            sb.append(" expect ");
+            if (boundsetting == 0) {
+                sb.append(">= ");
+            } else if (boundsetting == 1) {
+                sb.append("<= ");
+            } else if (boundsetting == 2) {
+                sb.append("= ");
+            }
+            sb.append(expects);
+        }
         return sb.toString();
     }
 
