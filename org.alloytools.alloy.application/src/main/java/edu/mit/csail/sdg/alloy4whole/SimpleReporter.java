@@ -259,22 +259,22 @@ final class SimpleReporter extends A4Reporter {
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count_str + " " + model_count);
+                    span.log("   Model Count = " + model_count_str);
                     if (boundsetting == 0) {
                         if (model_count < expects)
-                            span.log(", contrary to expectation" + ": " + expects);
+                            span.log(", contrary to expectation");
                         else if (expects >= 0)
-                            span.log(", as expected" + ": " + expects);
+                            span.log(", as expected");
                     } else if (boundsetting == 1) {
                         if (model_count > expects)
-                            span.log(", contrary to expectation" + ": " + expects);
+                            span.log(", contrary to expectation");
                         else if (expects >= 0)
-                            span.log(", as expected" + ": " + expects);
+                            span.log(", as expected");
                     } else if (boundsetting == 2) {
                         if (model_count != expects)
-                            span.log(", contrary to expectation" + ": " + expects);
+                            span.log(", contrary to expectation");
                         else if (expects >= 0)
-                            span.log(", as expected" + ": " + expects);
+                            span.log(", as expected");
                     }
                     span.logFileLink(". Full model counting result", (String) array[1]);
                     span.log(". " + df.format(exec_time) + " s.\n");
@@ -323,24 +323,24 @@ final class SimpleReporter extends A4Reporter {
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count_str + ". ");
+                    span.log("   Model Count = " + model_count_str);
                     if (boundsetting == 0) {
                         if (model_count < expects)
-                            span.log(", contrary to expectation" + ": " + expects);
+                            span.log(", contrary to expectation");
                         else if (expects >= 0)
-                            span.log(", as expected" + ": " + expects);
+                            span.log(", as expected");
                     } else if (boundsetting == 1) {
                         if (model_count > expects)
-                            span.log(", contrary to expectation" + ": " + expects);
+                            span.log(", contrary to expectation");
                         else if (expects >= 0)
-                            span.log(", as expected" + ": " + expects);
+                            span.log(", as expected");
                     } else if (boundsetting == 2) {
                         if (model_count != expects)
-                            span.log(", contrary to expectation" + ": " + expects);
+                            span.log(", contrary to expectation");
                         else if (expects >= 0)
-                            span.log(", as expected" + ": " + expects);
+                            span.log(", as expected");
                     }
-                    span.logFileLink("Full model counting result", (String) array[1]);
+                    span.logFileLink(". Full model counting result", (String) array[1]);
                     span.log(". " + df.format(exec_time) + " s.\n");
 
                 } catch (IOException e) {
