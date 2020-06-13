@@ -302,11 +302,11 @@ public class PreferencesDialog extends JFrame {
 
     protected Iterable<ModelCounter> testCounters() {
         List<ModelCounter> counterChoices = ModelCounter.values().makeCopy();
-
-        if (!ifBinaryExist("ganak")) {
-            counterChoices.remove(ModelCounter.Ganak);
-            log.logBold("Warning: Ganak Model Counter does not work on this platform.\n");
-        }
+        /*
+         * if (!ifBinaryExist("ganak")) { //counterChoices.remove(ModelCounter.Ganak);
+         * log.logBold("Warning: Ganak Model Counter does not work on this platform.\n"
+         * ); }
+         */
         if (!ifBinaryExist("projmc")) {
             counterChoices.remove(ModelCounter.ProjMC);
             log.logBold("Warning: ProjMC Model Counter does not work on this platform.\n");

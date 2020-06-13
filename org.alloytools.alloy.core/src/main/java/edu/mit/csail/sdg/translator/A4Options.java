@@ -269,7 +269,7 @@ public final class A4Options implements Serializable {
         /** ProjMC */
         public static final ModelCounter ProjMC   = new ModelCounter("projmc", "ProjMC (linux only)", true);
         /** Ganak */
-        public static final ModelCounter Ganak    = new ModelCounter("ganak", "Ganak (not available yet)", true);
+        //public static final ModelCounter Ganak    = new ModelCounter("ganak", "Ganak (not available yet)", true);
     }
 
 
@@ -283,7 +283,8 @@ public final class A4Options implements Serializable {
     }
 
     /**
-     * This option specifies the Model Counter to use (ApproxMC, ProjMC, Ganak ...)
+     * This option specifies the Model Counter to use (ApproxMC, ProjMC, Ganak(not
+     * yet available) ...)
      * <p>
      * Default value is ApproxMC.
      */
