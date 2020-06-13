@@ -1459,7 +1459,7 @@ public final class A4Solution {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                        rep.approxCount(tmpResultLog.getAbsolutePath());
+                        rep.approxCount(tmpResultLog.getAbsolutePath(), cmd);
                     } else if (opt.counter.equals(ModelCounter.ProjMC)) {
                         AbstractReporter solver_reporter = (AbstractReporter) (solver.options().reporter());
                         File tmpVar = File.createTempFile("tmp", ".var", new File(opt.tempDirectory));
@@ -1480,7 +1480,7 @@ public final class A4Solution {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                        rep.projCount(tmpResultLog.getAbsolutePath());
+                        rep.projCount(tmpResultLog.getAbsolutePath(), cmd);
                         //To do: set two different count result reporters
                     }
                     return this;

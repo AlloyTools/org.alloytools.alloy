@@ -227,14 +227,17 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultApproxCount")) {
                 results.add((String) array[1]);
                 span.setLength(len3);
-                //int model_count = 0;
+                int model_count = 0;
+                int first_num = 0, exponent = 0;
                 //Update: Set model_count as String type
-                String model_count = "";
+                String model_count_str = "";
                 double exec_time = 0;
                 FileInputStream inputStream = null;
                 BufferedReader bufferedReader = null;
                 try {
                     String file_addr = (String) array[1];
+                    int boundsetting = (Integer) (array[2]);
+                    int expects = (Integer) (array[3]);
                     File file = new File(file_addr);
                     inputStream = new FileInputStream(file);
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -245,20 +248,35 @@ final class SimpleReporter extends A4Reporter {
                             int end_index = str.lastIndexOf('s');
                             exec_time = Double.valueOf(str.substring(start_index + 2, end_index - 1));
                         } else if (str.contains("Number of solutions is")) {
-                            /*
-                             * Calculate model_count (as the int type) int start_index = str.indexOf(':');
-                             * int mid_index = str.indexOf('x'); int end_index = str.indexOf('^'); first_num
-                             * = Integer.valueOf(str.substring(start_index + 2, mid_index - 1)); exponent =
-                             * Integer.valueOf(str.substring(end_index + 1)); model_count = (int) (first_num
-                             * * Math.pow(2, exponent));
-                             */
+                            //Calculate model_count (as the int type)
                             int start_index = str.indexOf(':');
-                            model_count = str.substring(start_index + 2);
+                            int mid_index = str.indexOf('x');
+                            int end_index = str.indexOf('^');
+                            first_num = Integer.valueOf(str.substring(start_index + 2, mid_index - 1));
+                            exponent = Integer.valueOf(str.substring(end_index + 1));
+                            model_count = (int) (first_num * Math.pow(2, exponent));
+                            model_count_str = str.substring(start_index + 2);
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count + ". ");
-                    span.logFileLink("Full model counting result", (String) array[1]);
+                    span.log("   Model Count = " + model_count_str + " " + model_count);
+                    if (boundsetting == 0) {
+                        if (model_count < expects)
+                            span.log(", contrary to expectation" + ": " + expects);
+                        else if (expects >= 0)
+                            span.log(", as expected" + ": " + expects);
+                    } else if (boundsetting == 1) {
+                        if (model_count > expects)
+                            span.log(", contrary to expectation" + ": " + expects);
+                        else if (expects >= 0)
+                            span.log(", as expected" + ": " + expects);
+                    } else if (boundsetting == 2) {
+                        if (model_count != expects)
+                            span.log(", contrary to expectation" + ": " + expects);
+                        else if (expects >= 0)
+                            span.log(", as expected" + ": " + expects);
+                    }
+                    span.logFileLink(". Full model counting result", (String) array[1]);
                     span.log(". " + df.format(exec_time) + " s.\n");
 
                 } catch (IOException e) {
@@ -280,14 +298,15 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultProjCount")) {
                 results.add((String) array[1]);
                 span.setLength(len3);
-                //int model_count = 0;
-                //Update: Set model_count as String type
-                String model_count = "";
+                int model_count = 0;
+                String model_count_str = "";
                 double exec_time = 0;
                 FileInputStream inputStream = null;
                 BufferedReader bufferedReader = null;
                 try {
                     String file_addr = (String) array[1];
+                    int boundsetting = (Integer) (array[2]);
+                    int expects = (Integer) (array[3]);
                     File file = new File(file_addr);
                     inputStream = new FileInputStream(file);
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -295,18 +314,32 @@ final class SimpleReporter extends A4Reporter {
                     while ((str = bufferedReader.readLine()) != null) {
                         if (str.startsWith("s")) {
                             int start_index = 2;
-                            /*
-                             * Calculate model_count (as the int type) model_count =
-                             * Integer.valueOf(str.substring(start_index));
-                             */
-                            model_count = str.substring(start_index);
+                            //Calculate model_count (as the int type)
+                            model_count = Integer.valueOf(str.substring(start_index));
+                            model_count_str = str.substring(start_index);
                         } else if (str.contains("Final time")) {
                             int start_index = str.indexOf(':');
                             exec_time = Double.valueOf(str.substring(start_index + 2));
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count + ". ");
+                    span.log("   Model Count = " + model_count_str + ". ");
+                    if (boundsetting == 0) {
+                        if (model_count < expects)
+                            span.log(", contrary to expectation" + ": " + expects);
+                        else if (expects >= 0)
+                            span.log(", as expected" + ": " + expects);
+                    } else if (boundsetting == 1) {
+                        if (model_count > expects)
+                            span.log(", contrary to expectation" + ": " + expects);
+                        else if (expects >= 0)
+                            span.log(", as expected" + ": " + expects);
+                    } else if (boundsetting == 2) {
+                        if (model_count != expects)
+                            span.log(", contrary to expectation" + ": " + expects);
+                        else if (expects >= 0)
+                            span.log(", as expected" + ": " + expects);
+                    }
                     span.logFileLink("Full model counting result", (String) array[1]);
                     span.log(". " + df.format(exec_time) + " s.\n");
 
@@ -490,14 +523,22 @@ final class SimpleReporter extends A4Reporter {
 
     /** {@inheritDoc} */
     @Override
-    public void approxCount(final String result_file) {
-        cb("resultApproxCount", result_file);
+    public void approxCount(final String result_file, Object command) {
+        if (!(command instanceof Command)) {
+            return;
+        }
+        Command cmd = (Command) command;
+        cb("resultApproxCount", result_file, cmd.boundsetting, cmd.expects);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void projCount(final String result_file) {
-        cb("resultProjCount", result_file);
+    public void projCount(final String result_file, Object command) {
+        if (!(command instanceof Command)) {
+            return;
+        }
+        Command cmd = (Command) command;
+        cb("resultProjCount", result_file, cmd.boundsetting, cmd.expects);
     }
 
     /** {@inheritDoc} */

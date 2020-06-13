@@ -149,10 +149,11 @@ public class A4Reporter {
      *
      * @param result_file - the address of the file that stores the model counting
      *            result
+     * @param commad - the specific command related to this model counting result
      */
-    public void approxCount(String result_file) {
+    public void approxCount(String result_file, Object Command) {
         if (parent != null)
-            parent.approxCount(result_file);
+            parent.approxCount(result_file, Command);
     }
 
     /**
@@ -161,10 +162,11 @@ public class A4Reporter {
      *
      * @param result_file - the address of the file that stores the model counting
      *            result
+     * @param commad - the specific command related to this model counting result
      */
-    public void projCount(String result_file) {
+    public void projCount(String result_file, Object Command) {
         if (parent != null)
-            parent.approxCount(result_file);
+            parent.projCount(result_file, Command);
     }
 
     /**
