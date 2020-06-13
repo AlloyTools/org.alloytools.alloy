@@ -1825,7 +1825,7 @@ public final class CompModule extends Browsable implements Module {
 
     /** Add a COMMAND declaration. */
 
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean count, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean count, boolean check, int overall, int bitwidth, int seq, int boundsetting, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
         if (label != null)
@@ -1837,7 +1837,7 @@ public final class CompModule extends Browsable implements Module {
             throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
         String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(pos, name, labelName, count, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
+        Command newcommand = new Command(pos, name, labelName, count, check, overall, bitwidth, seq, boundsetting, exp, scopes, null, name, parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1845,7 +1845,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean count, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, Expr e, boolean count, boolean check, int overall, int bitwidth, int seq, int boundsetting, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
 
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
@@ -1861,7 +1861,7 @@ public final class CompModule extends Browsable implements Module {
             addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(e.span().merge(pos), e, labelName, count, check, overall, bitwidth, seq, expects, scopes, null, ExprVar.make(null, n), parent);
+        Command newcommand = new Command(e.span().merge(pos), e, labelName, count, check, overall, bitwidth, seq, boundsetting, expects, scopes, null, ExprVar.make(null, n), parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1871,7 +1871,7 @@ public final class CompModule extends Browsable implements Module {
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, false, 4, 4, 4, 1, null, null, ExprVar.make(null, "$$Default"), null));
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, false, 4, 4, 4, 0, 1, null, null, ExprVar.make(null, "$$Default"), null));
         }
     }
 
@@ -1923,7 +1923,7 @@ public final class CompModule extends Browsable implements Module {
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.count, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.count, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.boundsetting, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
 
     }
 

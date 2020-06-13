@@ -331,9 +331,10 @@ action code {:
     private void nod(List<ExprVar> names) throws Err {
         if (names!=null) for(ExprVar n:names) if (n!=null && n.label.indexOf('$')>=0) throw new ErrorSyntax(n.pos, "The name cannot contain the '$' symbol.");
     }
-    private void c(boolean follow, ExprVar o, ExprVar x, ExprVar n, Expr e, List<CommandScope> s, ExprConstant c) throws Err {
+    private void c(boolean follow, ExprVar o, ExprVar x, ExprVar n, Expr e, List<CommandScope> s, List<ExprConstant> c) throws Err {
         if (n!=null) nod(n);
-        int bitwidth=(-1), maxseq=(-1), overall=(-1), expects=(c==null ? -1 : c.num);
+        int boundsetting = (c==null || c.size()<=1) ? 0 : c.get(1).num;
+        int bitwidth=(-1), maxseq=(-1), overall=(-1), expects=(c==null ? -1 : c.get(0).num);
         Pos p = o.pos.merge(n!=null ? n.span() : e.span());
         for(int i=s.size()-1; i>=0; i--) {
           Sig j=s.get(i).sig;  int k=s.get(i).startingScope;
@@ -343,10 +344,30 @@ action code {:
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
         }
         if (n!=null)
-          parser.alloymodule.addCommand(follow, p, n, o.label.equals("ct"), o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, n, o.label.equals("ct"), o.label.equals("c"), overall, bitwidth, maxseq, boundsetting, expects, s, x);
         else
-          parser.alloymodule.addCommand(follow, p, e, o.label.equals("ct"), o.label.equals("c"), overall, bitwidth, maxseq, expects, s, x);
+          parser.alloymodule.addCommand(follow, p, e, o.label.equals("ct"), o.label.equals("c"), overall, bitwidth, maxseq, boundsetting, expects, s, x);
     }
+    
+    /*
+    private int parseStrExpr(String str) throws java.lang.Exception{
+		// This str is the string version of a number, which has the format of "a*b^c" (with or without spaces)
+		str.replaceAll(" ","");
+		//conditions for an invalid strexpr:
+		//1. the number it represents leads to the integer overflow (didn't check)
+		//2. doesn't match the format of "a*b^c" (with or without spaces): 1)doesn't include the two signs 2) can't parse it into three valid nums: NumberFormatException
+		int first_sign_index = str.indexOf('*');
+		if(first_sign_index==-1){ throw new java.lang.Exception("Invalid format.");}
+		int second_sign_index = str.indexOf('^');
+		if(second_sign_index==-1){ throw new java.lang.Exception("Invalid format.");}
+		int first_num = Integer.valueOf(str.substring(0,first_sign_index));
+		int second_num = Integer.valueOf(str.substring(first_sign_index+1,second_sign_index));
+		int third_num = Integer.valueOf(str.substring(second_sign_index+1));
+		int res = (int)(first_num*Math.pow(second_num,third_num));
+		return res;
+	}
+	*/
+	
     private Expr t(Pos pos, Pos oldClosing, Expr left, Expr right, Pos close) throws Err {
       if (right instanceof ExprVar) {
          String n = ((ExprVar)right).label;
@@ -505,7 +526,7 @@ nonterminal Expr                       DotExprA;
 nonterminal Expr                       DotExprB;
 nonterminal Expr                       EquivExprA;
 nonterminal Expr                       EquivExprB;
-nonterminal ExprConstant               Expects;
+nonterminal List<ExprConstant>         Expects;
 nonterminal Expr                       Expr;
 nonterminal Expr                       Super;
 nonterminal Expr                       SuperOpt;
@@ -606,7 +627,11 @@ Command ::= Command IMPLIES CommandPrefix:o Name:x Name:n   Scope:s  Expects:c {
 Command ::= Command IMPLIES CommandPrefix:o        Name:n   Scope:s  Expects:c {: c(true ,o,null,n   ,null,s,c); :};
 
 Expects    ::=                 {: RESULT=null; :};
-Expects    ::= EXPECT NUMBER:a {: RESULT=a;    :};
+Expects    ::= EXPECT NUMBER:a {:  RESULT=new ArrayList<ExprConstant>(); RESULT.add(a);   :};
+
+Expects    ::= EXPECT GTE:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 0));    :};
+Expects    ::= EXPECT LTE:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 1));     :};
+Expects    ::= EXPECT EQUALS:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 2));    :};
 
 Scope      ::= FOR NUMBER:a                  {: RESULT=new ArrayList<CommandScope>(); RESULT.add(new CommandScope(a.pos, new PrimSig("univ", AttrType.WHERE.make(a.pos)), true, a.num, a.num, 1)); :};
 Scope      ::= FOR NUMBER:a BUT Typescopes:b {: RESULT=b;                                  b.add(new CommandScope(a.pos, new PrimSig("univ", AttrType.WHERE.make(a.pos)), true, a.num, a.num, 1)); :};

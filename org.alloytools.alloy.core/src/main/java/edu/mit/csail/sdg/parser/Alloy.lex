@@ -107,6 +107,27 @@ import java_cup.runtime.*;
     }
     return new Symbol(CompSym.NUMBER, p, ExprConstant.Op.NUMBER.make(p, n));
  }
+ private final Symbol alloy_num_notation(String txt) throws Err {
+    Pos p=alloy_here(txt);
+    int res=-1;
+    try {
+        txt = txt.replaceAll(" ","");
+        //conditions for an invalid num_notation:
+		//1. the number it represents leads to the integer overflow (didn't check)
+		//2. doesn't match the format of "a*b^c" (with or without spaces): 1)doesn't include the two signs 2) can't parse it into three valid nums: NumberFormatException
+		int first_sign_index = txt.indexOf('*');
+		if(first_sign_index==-1){ throw new java.lang.Exception("has an invalid format.");}
+		int second_sign_index = txt.indexOf('^');
+		if(second_sign_index==-1){ throw new java.lang.Exception("has an invalid format.");}
+		int first_num = Integer.valueOf(txt.substring(0,first_sign_index));
+		int second_num = Integer.valueOf(txt.substring(first_sign_index+1,second_sign_index));
+		int third_num = Integer.valueOf(txt.substring(second_sign_index+1));
+		res = (int)(first_num*Math.pow(second_num,third_num));
+    } catch(java.lang.Exception ex) {
+       throw new ErrorSyntax(p, "The number notation "+txt+" " + ex);
+    }
+    return new Symbol(CompSym.NUMBER, p, ExprConstant.Op.NUMBER.make(p, res));
+ }
  private final Symbol alloy_hexnum(String txt) throws Err {
     Pos p=alloy_here(txt);
     int n=0;
@@ -220,6 +241,7 @@ import java_cup.runtime.*;
 "this"                { return alloy_sym(yytext(), CompSym.THIS        );}
 "univ"                { return alloy_sym(yytext(), CompSym.UNIV        );}
 
+[0-9][0-9]*(\s)*(\*)(\s)*[0-9][0-9]*(\s)*(\^)(\s)*[0-9][0-9]*		   { return alloy_num_notation (yytext()); }
 [\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\'\"] [\$0-9a-zA-Z_\'\"]* { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }
 [\"] ([^\\\"] | ("\\" .))* [\"]                                        { return alloy_string(yytext()); }
 [\"] ([^\\\"] | ("\\" .))*                                             { throw new ErrorSyntax(alloy_here(yytext()),"String literal is missing its closing \" character"); }

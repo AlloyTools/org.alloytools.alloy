@@ -90,7 +90,17 @@ public final class Command extends Browsable {
     public final int                     maxstring;
 
     /**
-     * The expected answer (either 0 or 1) (Or -1 if there is no expected answer).
+     * The value of boundsetting. Lowerbound : 0 (default), Upperbound: 1, Equals: 2
+     */
+
+    public final int                     boundsetting;
+
+    /**
+     * For sat solver: The expected answer (either 0 or 1) (Or -1 if there is no
+     * expected answer). For model counter: The expected model count (>=0) (Or -1 if
+     * there is no expected answer). It will be used with the boundsetting value (to
+     * treat this expects value as an "equals" bound, a lower bound or an upper
+     * bound).
      */
     public final int                     expects;
 
@@ -159,7 +169,7 @@ public final class Command extends Browsable {
      * @param formula - the formula that must be satisfied by this command
      */
     public Command(boolean count, boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
-        this(null, null, "", count, check, overall, bitwidth, maxseq, -1, null, null, formula, null);
+        this(null, null, "", count, check, overall, bitwidth, maxseq, 0, -1, null, null, formula, null);
     }
 
     /**
@@ -183,7 +193,7 @@ public final class Command extends Browsable {
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(Pos pos, Expr e, String label, boolean count, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
+    public Command(Pos pos, Expr e, String label, boolean count, boolean check, int overall, int bitwidth, int maxseq, int boundsetting, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.nameExpr = e;
@@ -196,7 +206,16 @@ public final class Command extends Browsable {
         this.bitwidth = (bitwidth < 0 ? -1 : bitwidth);
         this.maxseq = (maxseq < 0 ? -1 : maxseq);
         this.maxstring = (-1);
-        this.expects = (expects < 0 ? -1 : (expects > 0 ? 1 : 0));
+        if (count) {
+            this.boundsetting = boundsetting;
+        } else {
+            this.boundsetting = 0;
+        }
+        if (count) {
+            this.expects = (expects < 0 ? -1 : expects);
+        } else {
+            this.expects = (expects < 0 ? -1 : (expects > 0 ? 1 : 0));
+        }
         this.scope = ConstList.make(scope);
         this.additionalExactScopes = ConstList.make(additionalExactSig);
         this.parent = parent;
@@ -207,7 +226,7 @@ public final class Command extends Browsable {
      * except with a different formula.
      */
     public Command change(Expr newFormula) {
-        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent);
+        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, boundsetting, expects, scope, additionalExactScopes, newFormula, parent);
     }
 
     /**
@@ -215,7 +234,7 @@ public final class Command extends Browsable {
      * except with a different scope.
      */
     public Command change(ConstList<CommandScope> scope) {
-        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent);
+        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, boundsetting, expects, scope, additionalExactScopes, formula, parent);
     }
 
     /**
@@ -223,7 +242,7 @@ public final class Command extends Browsable {
      * except with a different list of "additional exact sigs".
      */
     public Command change(Sig... additionalExactScopes) {
-        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent);
+        return new Command(pos, nameExpr, label, count, check, overall, bitwidth, maxseq, boundsetting, expects, scope, Util.asList(additionalExactScopes), formula, parent);
     }
 
     /**
