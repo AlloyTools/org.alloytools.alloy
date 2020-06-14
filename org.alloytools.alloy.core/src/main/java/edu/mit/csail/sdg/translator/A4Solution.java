@@ -25,6 +25,7 @@ import static kodkod.engine.Solution.Outcome.UNSATISFIABLE;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -292,7 +293,7 @@ public final class A4Solution {
      * @param expected - whether the user expected an instance or not (1 means yes,
      *            0 means no, -1 means the user did not express an expectation)
      */
-    A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, int expected, boolean is_count) throws Err {
+    A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, BigInteger expected, boolean is_count) throws Err {
         opt = opt.dup();
         this.unrolls = opt.unrolls;
         this.sigs = new SafeList<Sig>(Arrays.asList(UNIV, SIGINT, SEQIDX, STRING, NONE));
@@ -360,7 +361,7 @@ public final class A4Solution {
         this.s2k = ConstMap.make(s2k);
         this.stringBounds = stringBounds.unmodifiableView();
         bounds.boundExactly(KK_STRING, this.stringBounds);
-        int sym = (expected == 1 ? 0 : opt.symmetry);
+        int sym = (expected.compareTo(BigInteger.ZERO) > 0 ? 0 : opt.symmetry);
         solver = new Solver();
         solver.options().setNoOverflow(opt.noOverflow);
         // solver.options().setFlatten(false); // added for now, since

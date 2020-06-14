@@ -811,7 +811,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                     throw new ErrorFatal(x.pos, "String literal " + x + " does not exist in this instance.\n");
                 return ans;
             case NUMBER :
-                int n = x.num();
+                int n = x.num().intValue();
                 // [am] const
                 // if (n<min) throw new ErrorType(x.pos, "Current bitwidth is
                 // set to "+bitwidth+", thus this integer constant "+n+" is
@@ -1179,8 +1179,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 // (likewise, when bitwidth==5, then +15 is the maximum allowed
                 // integer, and we want to allow 0-16 without throwing an
                 // exception)
-                if (a instanceof ExprConstant && ((ExprConstant) a).op == ExprConstant.Op.NUMBER && ((ExprConstant) a).num() == 0)
-                    if (b instanceof ExprConstant && ((ExprConstant) b).op == ExprConstant.Op.NUMBER && ((ExprConstant) b).num() == max + 1)
+                if (a instanceof ExprConstant && ((ExprConstant) a).op == ExprConstant.Op.NUMBER && ((ExprConstant) a).num().intValue() == 0)
+                    if (b instanceof ExprConstant && ((ExprConstant) b).op == ExprConstant.Op.NUMBER && ((ExprConstant) b).num().intValue() == max + 1)
                         return IntConstant.constant(min);
                 return cset(a).difference(cset(b));
             // [AM]
