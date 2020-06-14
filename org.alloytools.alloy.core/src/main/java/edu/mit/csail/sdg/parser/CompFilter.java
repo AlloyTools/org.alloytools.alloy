@@ -454,7 +454,7 @@ final class CompFilter implements Scanner {
                     if (y.sym == NUMBER) {
                         ExprConstant num = (ExprConstant) (y.value);
                         y.pos = x.pos.merge(y.pos);
-                        y.value = ExprConstant.Op.NUMBER.make(y.pos, 0 - num.num);
+                        y.value = ExprConstant.Op.NUMBER.make(y.pos, num.num.negate());
                         return last = y;
                     }
                     undo = y;
