@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -227,7 +228,7 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultApproxCount")) {
                 results.add((String) array[1]);
                 span.setLength(len3);
-                int model_count = 0;
+                BigInteger model_count = BigInteger.ZERO;
                 int first_num = 0, exponent = 0;
                 //Update: Set model_count as String type
                 String model_count_str = "";
@@ -237,7 +238,7 @@ final class SimpleReporter extends A4Reporter {
                 try {
                     String file_addr = (String) array[1];
                     int boundsetting = (Integer) (array[2]);
-                    int expects = (Integer) (array[3]);
+                    BigInteger expects = (BigInteger) (array[3]);
                     File file = new File(file_addr);
                     inputStream = new FileInputStream(file);
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -254,26 +255,45 @@ final class SimpleReporter extends A4Reporter {
                             int end_index = str.indexOf('^');
                             first_num = Integer.valueOf(str.substring(start_index + 2, mid_index - 1));
                             exponent = Integer.valueOf(str.substring(end_index + 1));
-                            model_count = (int) (first_num * Math.pow(2, exponent));
+                            model_count = BigInteger.valueOf(first_num).multiply(BigInteger.TWO.pow(exponent));
                             model_count_str = str.substring(start_index + 2);
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count_str);
+                    span.log("   Model Count = " + model_count_str + " = " + model_count);
+                    /*
+                     * boundsetting: GTE(>=): 0 LTE(<=): 1 EQUALS(=): 2 GT(>):3 LT(<):4
+                     * NOTEQUALS(!=):5
+                     */
                     if (boundsetting == 0) {
-                        if (model_count < expects)
+                        if (model_count.compareTo(expects) < 0)
                             span.log(", contrary to expectation");
-                        else if (expects >= 0)
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
                             span.log(", as expected");
                     } else if (boundsetting == 1) {
-                        if (model_count > expects)
+                        if (model_count.compareTo(expects) > 0)
                             span.log(", contrary to expectation");
-                        else if (expects >= 0)
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
                             span.log(", as expected");
                     } else if (boundsetting == 2) {
-                        if (model_count != expects)
+                        if (model_count.compareTo(expects) != 0)
                             span.log(", contrary to expectation");
-                        else if (expects >= 0)
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
+                            span.log(", as expected");
+                    } else if (boundsetting == 3) {
+                        if (model_count.compareTo(expects) <= 0)
+                            span.log(", contrary to expectation");
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
+                            span.log(", as expected");
+                    } else if (boundsetting == 4) {
+                        if (model_count.compareTo(expects) >= 0)
+                            span.log(", contrary to expectation");
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
+                            span.log(", as expected");
+                    } else if (boundsetting == 5) {
+                        if (model_count.compareTo(expects) == 0)
+                            span.log(", contrary to expectation");
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
                             span.log(", as expected");
                     }
                     span.logFileLink(". Full model counting result", (String) array[1]);
@@ -298,7 +318,7 @@ final class SimpleReporter extends A4Reporter {
             if (array[0].equals("resultProjCount")) {
                 results.add((String) array[1]);
                 span.setLength(len3);
-                int model_count = 0;
+                BigInteger model_count = BigInteger.ZERO;
                 String model_count_str = "";
                 double exec_time = 0;
                 FileInputStream inputStream = null;
@@ -306,7 +326,7 @@ final class SimpleReporter extends A4Reporter {
                 try {
                     String file_addr = (String) array[1];
                     int boundsetting = (Integer) (array[2]);
-                    int expects = (Integer) (array[3]);
+                    BigInteger expects = (BigInteger) (array[3]);
                     File file = new File(file_addr);
                     inputStream = new FileInputStream(file);
                     bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -315,7 +335,7 @@ final class SimpleReporter extends A4Reporter {
                         if (str.startsWith("s")) {
                             int start_index = 2;
                             //Calculate model_count (as the int type)
-                            model_count = Integer.valueOf(str.substring(start_index));
+                            model_count = new BigInteger(str.substring(start_index));
                             model_count_str = str.substring(start_index);
                         } else if (str.contains("Final time")) {
                             int start_index = str.indexOf(':');
@@ -324,20 +344,39 @@ final class SimpleReporter extends A4Reporter {
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
                     span.log("   Model Count = " + model_count_str);
+                    /*
+                     * boundsetting: GTE(>=): 0 LTE(<=): 1 EQUALS(=): 2 GT(>):3 LT(<):4
+                     * NOTEQUALS(!=):5
+                     */
                     if (boundsetting == 0) {
-                        if (model_count < expects)
+                        if (model_count.compareTo(expects) < 0)
                             span.log(", contrary to expectation");
-                        else if (expects >= 0)
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
                             span.log(", as expected");
                     } else if (boundsetting == 1) {
-                        if (model_count > expects)
+                        if (model_count.compareTo(expects) > 0)
                             span.log(", contrary to expectation");
-                        else if (expects >= 0)
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
                             span.log(", as expected");
                     } else if (boundsetting == 2) {
-                        if (model_count != expects)
+                        if (model_count.compareTo(expects) != 0)
                             span.log(", contrary to expectation");
-                        else if (expects >= 0)
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
+                            span.log(", as expected");
+                    } else if (boundsetting == 3) {
+                        if (model_count.compareTo(expects) <= 0)
+                            span.log(", contrary to expectation");
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
+                            span.log(", as expected");
+                    } else if (boundsetting == 4) {
+                        if (model_count.compareTo(expects) >= 0)
+                            span.log(", contrary to expectation");
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
+                            span.log(", as expected");
+                    } else if (boundsetting == 5) {
+                        if (model_count.compareTo(expects) == 0)
+                            span.log(", contrary to expectation");
+                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
                             span.log(", as expected");
                     }
                     span.logFileLink(". Full model counting result", (String) array[1]);
@@ -384,7 +423,8 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("sat")) {
                 boolean chk = Boolean.TRUE.equals(array[1]);
-                int expects = (Integer) (array[2]);
+                BigInteger expects_big_int = (BigInteger) (array[2]);
+                int expects = expects_big_int.intValue();
                 String filename = (String) (array[3]), formula = (String) (array[4]);
                 results.add(filename);
                 (new File(filename)).deleteOnExit();
@@ -411,7 +451,8 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("minimizing")) {
                 boolean chk = Boolean.TRUE.equals(array[1]);
-                int expects = (Integer) (array[2]);
+                BigInteger expects_big_int = (BigInteger) (array[2]);
+                int expects = expects_big_int.intValue();
                 span.setLength(len3);
                 span.log(chk ? "   No counterexample found." : "   No instance found.");
                 if (chk)
@@ -427,7 +468,8 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("unsat")) {
                 boolean chk = Boolean.TRUE.equals(array[1]);
-                int expects = (Integer) (array[2]);
+                BigInteger expects_big_int = (BigInteger) (array[2]);
+                int expects = expects_big_int.intValue();
                 String formula = (String) (array[4]);
                 span.setLength(len3);
                 span.log(chk ? "   No counterexample found. " : "   No instance found. ");
@@ -881,26 +923,26 @@ final class SimpleReporter extends A4Reporter {
                         rep.cb("", "   #" + (i + 1) + ": ");
                         rep.cb("link", r.check ? "Counterexample found. " : "Instance found. ", "XML: " + result.get(i));
                         rep.cb("", r.label + (r.check ? " is invalid" : " is consistent"));
-                        if (r.expects == 0)
+                        if (r.expects.compareTo(BigInteger.ZERO) == 0)
                             rep.cb("", ", contrary to expectation");
-                        else if (r.expects == 1)
+                        else if (r.expects.compareTo(BigInteger.ONE) == 0)
                             rep.cb("", ", as expected");
                     } else if (result.get(i).endsWith(".core")) {
                         rep.cb("", "   #" + (i + 1) + ": ");
                         rep.cb("link", r.check ? "No counterexample found. " : "No instance found. ", "CORE: " + result.get(i));
                         rep.cb("", r.label + (r.check ? " may be valid" : " may be inconsistent"));
-                        if (r.expects == 1)
+                        if (r.expects.compareTo(BigInteger.ONE) == 0)
                             rep.cb("", ", contrary to expectation");
-                        else if (r.expects == 0)
+                        else if (r.expects.compareTo(BigInteger.ZERO) == 0)
                             rep.cb("", ", as expected");
                     } else {
                         if (r.check)
                             rep.cb("", "   #" + (i + 1) + ": No counterexample found. " + r.label + " may be valid");
                         else
                             rep.cb("", "   #" + (i + 1) + ": No instance found. " + r.label + " may be inconsistent");
-                        if (r.expects == 1)
+                        if (r.expects.compareTo(BigInteger.ONE) == 0)
                             rep.cb("", ", contrary to expectation");
-                        else if (r.expects == 0)
+                        else if (r.expects.compareTo(BigInteger.ZERO) == 0)
                             rep.cb("", ", as expected");
                     }
                     rep.cb("", ".\n");

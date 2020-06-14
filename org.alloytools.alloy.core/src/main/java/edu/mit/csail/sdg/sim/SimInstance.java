@@ -20,6 +20,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -651,8 +652,8 @@ public final class SimInstance extends VisitReturn<Object> {
                 // (likewise, when bitwidth==5, then +15 is the maximum allowed
                 // integer, and we want to allow 0-16 without throwing an
                 // exception)
-                if (a instanceof ExprConstant && ((ExprConstant) a).op == ExprConstant.Op.NUMBER && ((ExprConstant) a).num() == 0)
-                    if (b instanceof ExprConstant && ((ExprConstant) b).op == ExprConstant.Op.NUMBER && ((ExprConstant) b).num() == max + 1)
+                if (a instanceof ExprConstant && ((ExprConstant) a).op == ExprConstant.Op.NUMBER && ((ExprConstant) a).num().intValue() == 0)
+                    if (b instanceof ExprConstant && ((ExprConstant) b).op == ExprConstant.Op.NUMBER && ((ExprConstant) b).num().intValue() == max + 1)
                         return min;
                 // [AM]
                 // if (x.left.type().is_int()) return
@@ -771,7 +772,7 @@ public final class SimInstance extends VisitReturn<Object> {
     public Object visit(ExprConstant x) throws Err {
         switch (x.op) {
             case NUMBER :
-                int n = x.num();
+                BigInteger n = x.num();
                 // [am] const
                 // if (n<min) throw new ErrorType(x.pos, "Current bitwidth is
                 // set to "+bitwidth+", thus this integer constant "+n+" is

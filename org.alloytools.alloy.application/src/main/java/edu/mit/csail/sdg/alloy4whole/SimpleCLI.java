@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,9 +142,9 @@ public final class SimpleCLI {
                 sb.append("Assertion is invalid");
             else
                 sb.append("Predicate is consistent");
-            if (cmd.expects == 0)
+            if (cmd.expects.compareTo(BigInteger.ZERO) == 0)
                 sb.append(", contrary to expectation");
-            else if (cmd.expects == 1)
+            else if (cmd.expects.compareTo(BigInteger.ONE) == 0)
                 sb.append(", as expected");
             sb.append(". " + solvingTime + "ms.\n\n");
         }
@@ -160,9 +161,9 @@ public final class SimpleCLI {
                 sb.append(" Assertion may be valid");
             else
                 sb.append(" Predicate may be inconsistent");
-            if (cmd.expects == 1)
+            if (cmd.expects.compareTo(BigInteger.ONE) == 0)
                 sb.append(", contrary to expectation");
-            else if (cmd.expects == 0)
+            else if (cmd.expects.compareTo(BigInteger.ZERO) == 0)
                 sb.append(", as expected");
             sb.append(". " + solvingTime + "ms.\n\n");
         }
