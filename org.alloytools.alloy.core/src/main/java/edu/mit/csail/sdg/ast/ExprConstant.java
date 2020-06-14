@@ -17,6 +17,7 @@ package edu.mit.csail.sdg.ast;
 
 import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,24 +31,25 @@ import edu.mit.csail.sdg.alloy4.Pos;
 public final class ExprConstant extends Expr {
 
     /** The type of constant. */
-    public final Op     op;
+    public final Op         op;
 
     /**
      * If this node is a String constant, then this field stores the String, else
      * this field stores "".
      */
-    public final String string;
+    public final String     string;
 
     /**
      * If this node is a number constant, then this field stores the number, else
      * this field stores 0.
      */
-    public final int    num;
+    //public final int    num;
+    public final BigInteger num;
 
     /**
      * Return the number if this node is a number constant, otherwise return 0.
      */
-    public int num() {
+    public BigInteger num() {
         return num;
     }
 
@@ -88,10 +90,10 @@ public final class ExprConstant extends Expr {
      * @param op - the choice of which constant it is
      * @param num - the number (this argument is ignored if op!=NUMBER)
      */
-    private ExprConstant(Pos pos, Op op, int num, String string) {
+    private ExprConstant(Pos pos, Op op, BigInteger num, String string) {
         super(pos, null, false, (op == Op.IDEN ? Type.make2(UNIV) : (op == Op.NEXT ? Type.make2(Sig.SIGINT) : (op == Op.TRUE || op == Op.FALSE ? Type.FORMULA : (op == Op.EMPTYNESS ? UNIV.type : (op == Op.STRING ? Sig.STRING.type : Type.smallIntType()))))), 0, 0, null);
         this.op = op;
-        this.num = (op == Op.NUMBER ? num : 0);
+        this.num = (op == Op.NUMBER ? num : BigInteger.valueOf(0));
         this.string = (op == Op.STRING ? string : "");
     }
 
@@ -115,37 +117,37 @@ public final class ExprConstant extends Expr {
     }
 
     /** The "TRUE" boolean value. */
-    public static final Expr TRUE      = new ExprConstant(null, Op.TRUE, 0, "");
+    public static final Expr TRUE      = new ExprConstant(null, Op.TRUE, BigInteger.valueOf(0), "");
 
     /** The "FALSE" boolean value. */
-    public static final Expr FALSE     = new ExprConstant(null, Op.FALSE, 0, "");
+    public static final Expr FALSE     = new ExprConstant(null, Op.FALSE, BigInteger.valueOf(0), "");
 
     /** The "iden" relation. */
-    public static final Expr IDEN      = new ExprConstant(null, Op.IDEN, 0, "");
+    public static final Expr IDEN      = new ExprConstant(null, Op.IDEN, BigInteger.valueOf(0), "");
 
     /**
      * The smallest integer value allowed by the current bitwidth.
      */
-    public static final Expr MIN       = new ExprConstant(null, Op.MIN, 0, "");
+    public static final Expr MIN       = new ExprConstant(null, Op.MIN, BigInteger.valueOf(0), "");
 
     /**
      * The largest integer value allowed by the current bitwidth.
      */
-    public static final Expr MAX       = new ExprConstant(null, Op.MAX, 0, "");
+    public static final Expr MAX       = new ExprConstant(null, Op.MAX, BigInteger.valueOf(0), "");
 
     /**
      * The "next" relation relating each integer to its next larger integer.
      */
-    public static final Expr NEXT      = new ExprConstant(null, Op.NEXT, 0, "");
+    public static final Expr NEXT      = new ExprConstant(null, Op.NEXT, BigInteger.valueOf(0), "");
 
     /** The "0" integer. */
-    public static final Expr ZERO      = new ExprConstant(null, Op.NUMBER, 0, "");
+    public static final Expr ZERO      = new ExprConstant(null, Op.NUMBER, BigInteger.valueOf(0), "");
 
     /** The "1" integer. */
-    public static final Expr ONE       = new ExprConstant(null, Op.NUMBER, 1, "");
+    public static final Expr ONE       = new ExprConstant(null, Op.NUMBER, BigInteger.valueOf(1), "");
 
     /** The "emptyness" constant. */
-    public static final Expr EMPTYNESS = new ExprConstant(null, Op.EMPTYNESS, 0, "");
+    public static final Expr EMPTYNESS = new ExprConstant(null, Op.EMPTYNESS, BigInteger.valueOf(0), "");
 
     /** Constructs the integer "n" */
     public static Expr makeNUMBER(int n) {
@@ -153,6 +155,11 @@ public final class ExprConstant extends Expr {
             return ZERO;
         if (n == 1)
             return ONE;
+        return new ExprConstant(null, Op.NUMBER, BigInteger.valueOf(n), "");
+    }
+
+    /** Constructs the integer "n" */
+    public static Expr makeNUMBER(BigInteger n) {
         return new ExprConstant(null, Op.NUMBER, n, "");
     }
 
@@ -193,6 +200,17 @@ public final class ExprConstant extends Expr {
          * @param number - the number (this argument is ignored if op!=NUMBER)
          */
         public final ExprConstant make(Pos pos, int number) {
+            return new ExprConstant(pos, this, BigInteger.valueOf(number), "");
+        }
+
+        /**
+         * Makes an ExprConstant node
+         *
+         * @param pos - the original position in the source file (can be null if
+         *            unknown)
+         * @param number - the number (this argument is ignored if op!=NUMBER)
+         */
+        public final ExprConstant make(Pos pos, BigInteger number) {
             return new ExprConstant(pos, this, number, "");
         }
 
@@ -204,7 +222,7 @@ public final class ExprConstant extends Expr {
          * @param string - the string (this argument is ignored if op!=STRING)
          */
         public final ExprConstant make(Pos pos, String string) {
-            return new ExprConstant(pos, this, 0, string);
+            return new ExprConstant(pos, this, BigInteger.valueOf(0), string);
         }
 
         /** Returns the human readable label for this operator. */
