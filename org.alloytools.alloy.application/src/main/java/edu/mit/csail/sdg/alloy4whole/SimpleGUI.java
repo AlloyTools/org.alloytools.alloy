@@ -39,6 +39,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Symmetry;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
@@ -1185,6 +1186,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.counter = Counter.get();
         opt.solver = Solver.get();
+        opt.symmetry = Symmetry.get();
         task.bundleIndex = i;
         task.bundleWarningNonFatal = WarningNonfatal.get();
         task.map = text.takeSnapshot();
@@ -1440,6 +1442,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 addToMenu(optmenu, Unrolls);
                 addToMenu(optmenu, ImplicitThis, NoOverflow, InferPartialInstance);
             }
+            addToMenu(optmenu, Symmetry);
             addToMenu(optmenu, Counter);
 
         } finally {
