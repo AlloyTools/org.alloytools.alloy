@@ -153,11 +153,11 @@ public final class Command extends Browsable {
         if (expects.compareTo(BigInteger.ZERO) >= 0) {
             sb.append(" expect ");
             if (boundsetting == 0) {
-                sb.append(">= ");
+                sb.append("= ");
             } else if (boundsetting == 1) {
                 sb.append("<= ");
             } else if (boundsetting == 2) {
-                sb.append("= ");
+                sb.append(">= ");
             } else if (boundsetting == 3) {
                 sb.append("> ");
             } else if (boundsetting == 4) {
