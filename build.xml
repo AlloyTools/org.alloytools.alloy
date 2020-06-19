@@ -5,7 +5,7 @@
 -->
 
 <project name="Alloy" basedir="."
-	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	xmlns:artifact="antlib:org.apache.maven.artifact.ant" xmlns:ivy="antlib:org.apache.ivy.ant">
   <!-- xmlns:artifact - for support downloading from Maven -->
 	<description>ANT build file for Alloy; Currently only for building OSX .app file.</description>
 
