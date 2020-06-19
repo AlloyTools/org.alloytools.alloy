@@ -260,41 +260,44 @@ final class SimpleReporter extends A4Reporter {
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count_str + " = " + model_count);
+                    int sym = (Integer) (array[4]);
+                    span.log("   Model Count " + "(w.r.t. Symmetry=" + sym + ")" + " = " + model_count_str + " = " + model_count);
                     /*
-                     * boundsetting: GTE(>=): 0 LTE(<=): 1 EQUALS(=): 2 GT(>):3 LT(<):4
+                     * boundsetting: EQUALS(=): 0 LTE(<=): 1 GTE(>=):2 GT(>):3 LT(<):4
                      * NOTEQUALS(!=):5
                      */
-                    if (boundsetting == 0) {
-                        if (model_count.compareTo(expects) < 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 1) {
-                        if (model_count.compareTo(expects) > 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 2) {
-                        if (model_count.compareTo(expects) != 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 3) {
-                        if (model_count.compareTo(expects) <= 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 4) {
-                        if (model_count.compareTo(expects) >= 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 5) {
-                        if (model_count.compareTo(expects) == 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
+                    if (expects.compareTo(BigInteger.ZERO) >= 0) {
+                        if (boundsetting == 0) {
+                            if (model_count.compareTo(expects) != 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 1) {
+                            if (model_count.compareTo(expects) > 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 2) {
+                            if (model_count.compareTo(expects) < 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 3) {
+                            if (model_count.compareTo(expects) <= 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 4) {
+                            if (model_count.compareTo(expects) >= 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 5) {
+                            if (model_count.compareTo(expects) == 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        }
                     }
                     span.logFileLink(". Full model counting result", (String) array[1]);
                     span.log(". " + df.format(exec_time) + " s.\n");
@@ -343,41 +346,44 @@ final class SimpleReporter extends A4Reporter {
                         }
                     }
                     DecimalFormat df = new DecimalFormat("0.00");
-                    span.log("   Model Count = " + model_count_str);
+                    int sym = (Integer) (array[4]);
+                    span.log("   Model Count " + "(w.r.t. Symmetry=" + sym + ")" + " = " + model_count_str);
                     /*
-                     * boundsetting: GTE(>=): 0 LTE(<=): 1 EQUALS(=): 2 GT(>):3 LT(<):4
+                     * boundsetting: EQUALS(=): 0 LTE(<=): 1 GTE(>=):2 GT(>):3 LT(<):4
                      * NOTEQUALS(!=):5
                      */
-                    if (boundsetting == 0) {
-                        if (model_count.compareTo(expects) < 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 1) {
-                        if (model_count.compareTo(expects) > 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 2) {
-                        if (model_count.compareTo(expects) != 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 3) {
-                        if (model_count.compareTo(expects) <= 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 4) {
-                        if (model_count.compareTo(expects) >= 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
-                    } else if (boundsetting == 5) {
-                        if (model_count.compareTo(expects) == 0)
-                            span.log(", contrary to expectation");
-                        else if (expects.compareTo(BigInteger.ZERO) >= 0)
-                            span.log(", as expected");
+                    if (expects.compareTo(BigInteger.ZERO) >= 0) {
+                        if (boundsetting == 0) {
+                            if (model_count.compareTo(expects) != 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 1) {
+                            if (model_count.compareTo(expects) > 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 2) {
+                            if (model_count.compareTo(expects) < 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 3) {
+                            if (model_count.compareTo(expects) <= 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 4) {
+                            if (model_count.compareTo(expects) >= 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        } else if (boundsetting == 5) {
+                            if (model_count.compareTo(expects) == 0)
+                                span.log(", contrary to expectation");
+                            else
+                                span.log(", as expected");
+                        }
                     }
                     span.logFileLink(". Full model counting result", (String) array[1]);
                     span.log(". " + df.format(exec_time) + " s.\n");
@@ -565,22 +571,22 @@ final class SimpleReporter extends A4Reporter {
 
     /** {@inheritDoc} */
     @Override
-    public void approxCount(final String result_file, Object command) {
+    public void approxCount(final String result_file, Object command, int symmetry) {
         if (!(command instanceof Command)) {
             return;
         }
         Command cmd = (Command) command;
-        cb("resultApproxCount", result_file, cmd.boundsetting, cmd.expects);
+        cb("resultApproxCount", result_file, cmd.boundsetting, cmd.expects, symmetry);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void projCount(final String result_file, Object command) {
+    public void projCount(final String result_file, Object command, int symmetry) {
         if (!(command instanceof Command)) {
             return;
         }
         Command cmd = (Command) command;
-        cb("resultProjCount", result_file, cmd.boundsetting, cmd.expects);
+        cb("resultProjCount", result_file, cmd.boundsetting, cmd.expects, symmetry);
     }
 
     /** {@inheritDoc} */

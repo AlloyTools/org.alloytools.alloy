@@ -151,9 +151,9 @@ public class A4Reporter {
      *            result
      * @param commad - the specific command related to this model counting result
      */
-    public void approxCount(String result_file, Object Command) {
+    public void approxCount(String result_file, Object Command, int symmetry) {
         if (parent != null)
-            parent.approxCount(result_file, Command);
+            parent.approxCount(result_file, Command, symmetry);
     }
 
     /**
@@ -164,9 +164,9 @@ public class A4Reporter {
      *            result
      * @param commad - the specific command related to this model counting result
      */
-    public void projCount(String result_file, Object Command) {
+    public void projCount(String result_file, Object Command, int symmetry) {
         if (parent != null)
-            parent.projCount(result_file, Command);
+            parent.projCount(result_file, Command, symmetry);
     }
 
     /**
