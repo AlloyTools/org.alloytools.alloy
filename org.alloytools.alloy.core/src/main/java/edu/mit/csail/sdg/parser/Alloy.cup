@@ -336,9 +336,9 @@ action code {:
     }
     private void c(boolean follow, ExprVar o, ExprVar x, ExprVar n, Expr e, List<CommandScope> s, List<ExprConstant> c) throws Err {
         if (n!=null) nod(n);
-        int boundsetting = (c == null || c.size() <= 1) ? 0 : c.get(1).num.intValue();
+        int boundsetting = (c == null) ? -1 : (c.size() <= 1) ? 0 : c.get(1).num.intValue();
         int bitwidth = (-1), maxseq = (-1), overall = (-1);
-        BigInteger expects = (c == null ? BigInteger.valueOf(-1) : c.get(0).num);
+        BigInteger expects = (c == null) ? BigInteger.valueOf(-1) : c.get(0).num;
         Pos p = o.pos.merge(n!=null ? n.span() : e.span());
         for(int i=s.size()-1; i>=0; i--) {
           Sig j=s.get(i).sig;  int k=s.get(i).startingScope;
@@ -633,9 +633,9 @@ Command ::= Command IMPLIES CommandPrefix:o        Name:n   Scope:s  Expects:c {
 Expects    ::=                 {: RESULT=null; :};
 Expects    ::= EXPECT NUMBER:a {:  RESULT=new ArrayList<ExprConstant>(); RESULT.add(a);   :};
 
-Expects    ::= EXPECT GTE:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 0));    :};
+Expects    ::= EXPECT EQUALS:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 0));    :};
 Expects    ::= EXPECT LTE:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 1));     :};
-Expects    ::= EXPECT EQUALS:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 2));    :};
+Expects    ::= EXPECT GTE:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 2));    :};
 Expects    ::= EXPECT GT:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 3));    :};
 Expects    ::= EXPECT LT:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 4));    :};
 Expects    ::= EXPECT NOTEQUALS:o NUMBER:a {: RESULT=new ArrayList<ExprConstant>(); RESULT.add(a); RESULT.add(ExprConstant.Op.NUMBER.make(a.pos, 5));    :};
