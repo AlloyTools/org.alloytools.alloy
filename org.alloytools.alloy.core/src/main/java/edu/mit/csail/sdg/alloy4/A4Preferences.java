@@ -679,6 +679,17 @@ public class A4Preferences {
                                                                                        return value.id;
                                                                                    }
                                                                                };
+    public static final IntChoicePref                   Symmetry               = new IntChoicePref("Symmetry", "Symmetry", Arrays.asList(0, 20, 40), 20) {
+
+                                                                                   @Override
+                                                                                   public Object renderValueShort(Integer value) {
+                                                                                       if (value == 20) {
+                                                                                           return value.toString() + " (default)";
+                                                                                       }
+                                                                                       return value.toString();
+                                                                                   }
+                                                                               };
+
 
     public enum Verbosity {
                            /** Level 0. */
