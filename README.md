@@ -1,5 +1,17 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
 [![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
+# AlloyMC
+
+AlloyMC is an updated version of Alloy with a new feature of model counting funtion. We integrate two state-of-art model counters (ApproxMC & ProjMC) into the back end of Alloy and integrated a new command "count" into original Alloy grammar. The new model counting function is partially based on the CNF solver in original Kodkod. We append the information of primary variables to the CNF instance (in standard DIMAC format) and pass the modified CNF instance to model counting process to get the counting results. To satisfy the users' requirements for comparing the exact model count with a specific value, we extend the grammar of expect clauses. Multiple relational operators (=, !=, <, >, <=, >=) and the number in the format of scientific notation (for more convenient large number expression) are introduced. Users are also allowed to adjust the symmetry breaking degree to calculate the model count under and make comparisions different symmetry breaking settings. The GUI of Alloy is extended correspondingly to support these settings and the new counting function.
+
+Details of ApproxMC can be found at: https://github.com/meelgroup/ApproxMC.
+Details of ProjMC can be found at: http://www.cril.univ-artois.fr/kc/projmc.html.
+
+The latest runnable JAR file of AlloyMC is located under the "AlloyMC_distributed_JAR" directory (will be updated when new updates are made). This JAR file can also be built in Eclipse IDE with Bndtools plugin and be found under org.alloytools.alloy.dist/target. The 10 selected Alloy models for model counting function's testing are uploaded to the "AlloyMC_expAlloyModels" directory.
+
+Note: Our design of AlloyMC also allows other model counters to be added in a convenient way. This part will be a future work.
+
+
 # Alloy
 
 Alloy 4 is a self-contained executable, which includes the Kodkod
@@ -19,6 +31,9 @@ It is made available as a runnable jar file with both a cross-platform SAT solve
 
 Note however that starting with macOS High Sierra, it is necessary to install a dedicated
 JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
+
+The model counting function requires 64-bit Linux/Mac/Windows Operating System and a JVM which is at least Java 9. 
+It is built into the runnable jar of Alloy. The counters supported include ApproxMC (cross-platform) and ProjMC (Linux only). 
 
 # TL;DR
 
@@ -40,6 +55,8 @@ Note: if you are behind a proxy, the call to `gradlew` is likely to fail, unless
           -Dhttps.proxyPort=XXXXX -Dhttp.proxyUser=XXXXX -Dhttp.proxyPassword=XXXXX \
           -Dhttps.proxyUser=XXXXX -Dhttps.proxyPassword=XXXXX \
           build
+
+Note: Since AlloyMC needs to be run with a java version of at least 1.9, the gradle may not work in this case. Currently we can still continuously build the runnable JAR file in Eclipse IDE. We're working on a better solution to make it compatible with this original way of building.
 
 ## Building Alloy
 
