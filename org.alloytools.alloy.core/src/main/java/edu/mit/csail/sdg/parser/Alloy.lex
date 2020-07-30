@@ -233,7 +233,7 @@ import java_cup.runtime.*;
 "triggered"           { return alloy_sym(yytext(), CompSym.TRIGGERED   );} // [HASLab] temporal tokens
 ";"                   { return alloy_sym(yytext(), CompSym.TRCSEQ      );} // [HASLab] temporal tokens
 "var"                 { return alloy_sym(yytext(), CompSym.VAR         );} // [HASLab] temporal tokens
-"Time"                { return alloy_sym(yytext(), CompSym.TIME        );} // [HASLab] temporal tokens
+"step"                { return alloy_sym(yytext(), CompSym.TIME        );} // [HASLab] temporal tokens
 "'"                   { return alloy_sym(yytext(), CompSym.PRIME       );} // [HASLab] temporal tokens
 
 [\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\"] [\$0-9a-zA-Z_\"]* 	   { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }  // [HASLab] protect primes

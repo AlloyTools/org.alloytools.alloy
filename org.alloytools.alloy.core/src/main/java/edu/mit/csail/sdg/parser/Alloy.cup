@@ -238,7 +238,7 @@ parser code {:
     ch.put(CompSym.TRIGGERED, "triggered");           // [HASLab] temporal tokens
     ch.put(CompSym.TRCSEQ, ";");	   	              // [HASLab] temporal tokens
     ch.put(CompSym.PRIME, "'"); 					  // [HASLab] temporal tokens
-    ch.put(CompSym.TIME, "Time"); 					  // [HASLab] temporal tokens
+    ch.put(CompSym.TIME, "step"); 					  // [HASLab] temporal tokens
     TreeSet<String> list = new TreeSet<String>();
     Pos p=Pos.UNKNOWN;
     if (x!=null && x.value instanceof Pos) p=(Pos)(x.value);
@@ -358,7 +358,7 @@ action code {:
           if (j.label.equals("univ")) { overall=k; s.remove(i); continue; }
           if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
-          if (j.label.equals("Time")) { // [HASLab] process time scopes
+          if (j.label.equals("step")) { // [HASLab] process time scopes
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "The time cannot be specified more than once."); 
         	  maxtime=k; 
         	  if (s.get(i).isExact) mintime = k; 
@@ -514,7 +514,7 @@ terminal Pos UNTIL;            //  until		 // [HASLab] ltl tokens
 terminal Pos SINCE;            //  since		 // [HASLab] ltl tokens
 terminal Pos TRIGGERED;        //  triggered   	 // [HASLab] ltl tokens
 terminal Pos TRCSEQ;           //  trace seq     // [HASLab] ltl tokens
-terminal Pos TIME;         	   //  Time		 	 // [HASLab] ltl tokens
+terminal Pos TIME;         	   //  step		 	 // [HASLab] ltl tokens
 terminal Pos PRIME; 	   	   // '		 		 // [HASLab] ltl tokens
 
 terminal ExprVar ID;
@@ -697,7 +697,7 @@ Typescope  ::= TypeNumber:a STRING:b  {: RESULT = new CommandScope(a.pos.merge(b
 // [HASLab] scope on Time
 Typescope  ::= TypeNumber:a TIME:b    {:
     Pos p = a.pos.merge(b);
-	RESULT = new CommandScope(p, new PrimSig("Time", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
+	RESULT = new CommandScope(p, new PrimSig("step", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
 :};
 
 //[AM] Typescope  ::= TypeNumber:e SIGINT:f  {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You can no longer set a scope on Int; the number of Int atoms is always exactly equal to 2^(integer bitwidth).\n"); :};
@@ -773,7 +773,7 @@ SigIn    ::=                          {: RESULT=null;                           
 SigRef   ::= Name:x                   {: RESULT=x;                                    :};
 SigRef   ::= UNIV:x                   {: RESULT=ExprVar.make(x, "univ");              :};
 SigRef   ::= STRING:x                 {: RESULT=ExprVar.make(x, "String");            :};
-SigRef   ::= TIME:x                   {: RESULT=ExprVar.make(x, "Time");              :};  // [HASLab]
+SigRef   ::= TIME:x                   {: RESULT=ExprVar.make(x, "step");              :};  // [HASLab]
 SigRef   ::= SIGINT:x                 {: RESULT=ExprVar.make(x, "Int");               :};
 SigRef   ::= SEQ:a SLASH SIGINT:b     {: RESULT=ExprVar.make(a.merge(b), "seq/Int");  :};
 SigRef   ::= NONE:x                   {: RESULT=ExprVar.make(x, "none");              :};
