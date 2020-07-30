@@ -19,7 +19,7 @@ pred init [t: Time] {
 	all p: Process | p.toSend.t = p
 	}
 
-pred step [t, t": Time, p: Process] {
+pred step" [t, t": Time, p: Process] {
 	let from = p.toSend, to = p.succ.toSend |
 		some id: from.t {
 			from.t" = from.t - id
@@ -37,7 +37,7 @@ fact traces {
 	all t: Time-last |
 		let t" = t.next |
 			all p: Process |
-				step [t, t", p] or step [t, t", succ.p] or skip [t, t", p]
+				step" [t, t", p] or step" [t, t", succ.p] or skip [t, t", p]
 	}
 
 pred skip [t, t": Time, p: Process] {

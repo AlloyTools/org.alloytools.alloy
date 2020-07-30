@@ -21,9 +21,9 @@ pred mostlyRed [s: LightState, j: Junction] {
 pred trans [s, s": LightState, j: Junction] {
 	lone x: j.lights | s.color[x] != s".color[x]
 	all x: j.lights |
-		let step = s.color[x] -> s".color[x] {
-			step in colorSequence
-			step in Red->(Color-Red) => j.lights in redLights[s]
+		let step" = s.color[x] -> s".color[x] {
+			step" in colorSequence
+			step" in Red->(Color-Red) => j.lights in redLights[s]
 		}
 	}
 
