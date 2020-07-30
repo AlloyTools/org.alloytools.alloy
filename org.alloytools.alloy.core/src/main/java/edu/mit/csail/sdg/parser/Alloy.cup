@@ -568,8 +568,8 @@ nonterminal ExprVar                    Name;
 nonterminal ExprVar                    NameHelper;
 nonterminal List<ExprVar>              Names;
 nonterminal List<ExprVar>              Namex;
-nonterminal Expr                       NegExprA;
-nonterminal Expr                       NegExprB;
+nonterminal Expr                       UnaryExprA;
+nonterminal Expr                       UnaryExprB;
 nonterminal Expr                       NumUnopExprA;
 nonterminal Expr                       NumUnopExprB;
 nonterminal Expr                       OrExprA;
@@ -605,15 +605,23 @@ nonterminal Expr                       UnionDiffExprB;
 nonterminal Expr                       UnopExprA;
 nonterminal Expr                       UnopExprB;
 nonterminal Pos                        Vis;
-nonterminal Expr                       TempUnaryA;  // [HASLab]
-nonterminal Expr                       TempUnaryB;  // [HASLab]
 nonterminal Expr                       TempBinaryA; // [HASLab]
 nonterminal Expr                       TempBinaryB; // [HASLab]
-nonterminal Expr                       TraceExprA; // [HASLab]
-nonterminal Expr                       TraceExprB; // [HASLab]
+nonterminal Expr                       Expr2; // [HASLab]
 
-precedence left PRIME;      // [HASLab]
-precedence right TRCSEQ;    // [HASLab]
+precedence right TRCSEQ;
+precedence nonassoc BAR;
+precedence left OR;
+precedence left IFF;
+precedence right IMPLIES;
+precedence left AND;
+precedence nonassoc RELEASES, SINCE, UNTIL, TRIGGERED;
+precedence nonassoc AFTER, ALWAYS, EVENTUALLY, BEFORE, HISTORICALLY, ONCE;
+precedence nonassoc NOT;
+precedence nonassoc EQUALS, NOTEQUALS, IN, NOTIN;
+precedence nonassoc NO, SOME, LONE, ONE;
+precedence nonassoc PRIME;
+precedence nonassoc TILDE, CARET, STAR;
 
 //===========================================================================//
 
@@ -873,9 +881,11 @@ Super    ::= LBRACE:a SuperP:x RBRACE:b    {: RESULT=ExprUnary.Op.NOOP.make(a.me
 Super    ::= LBRACE:a          RBRACE:b    {: RESULT=ExprConstant.Op.TRUE.make(a.merge(b), 0);  :};
 SuperP   ::= Expr:a                        {: RESULT=a;                                         :};
 SuperP   ::= SuperP:a Expr:b               {: RESULT=ExprBinary.Op.AND.make(null, null, a, b);  :};
+SuperP   ::= Expr:a TRCSEQ:o SuperP:b      {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :}; // [HASLab] temporal seq
 
-SuperOrBar ::= BAR Expr:x  {: RESULT=x; :};
-SuperOrBar ::= Super:x     {: RESULT=x; :};
+SuperOrBar ::= BAR Expr2:x  			   {: RESULT=x; :};
+SuperOrBar ::= Super:x     				   {: RESULT=x; :};
+SuperOrBar ::= BAR Expr2:x TRCSEQ:o Expr:y {: RESULT=ExprBinary.Op.AND.make(o, null, x, ExprUnary.Op.AFTER.make(o, y)); :}; // [HASLab] temporal seq
 
 Exprs ::=                       {: RESULT=new ArrayList<Expr>();                :};
 Exprs ::= Exprp:x               {: RESULT=x;                                    :};
@@ -884,9 +894,13 @@ Exprp ::= Exprp:a COMMA Expr:b  {: a.add(b); RESULT=a;                          
 
 //=============================================================================
 
-Expr ::= TraceExprA:x                 {: RESULT = x;                                  :}; // [HASLab] temporal seq
-Expr ::= TraceExprB:x                 {: RESULT = x;                                  :}; // [HASLab] temporal seq
-Expr ::= Bind:x                       {: RESULT = x;                                  :};
+// [HASLab] temporal seq
+Expr ::=                  Expr2:a  {: RESULT=a;                                   								:};
+Expr ::= Expr2:a TRCSEQ:o Expr:b   {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
+
+Expr2 ::= OrExprA:x            	  	  {: RESULT = x;                                  :};
+Expr2 ::= OrExprB:x                   {: RESULT = x;                                  :};
+Expr2 ::= Bind:x                      {: RESULT = x;                                  :};
 Bind ::= LET     Let:x                {: RESULT = x;                                  :};
 Bind ::= ALL2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ALL .make(o, null, a, b); :};
 Bind ::= NO2:o   Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.NO  .make(o, null, a, b); :};
@@ -894,12 +908,6 @@ Bind ::= SOME2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SOME.make(o, null, a
 Bind ::= LONE2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.LONE.make(o, null, a, b); :};
 Bind ::= ONE2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ONE .make(o, null, a, b); :};
 Bind ::= SUM2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SUM .make(o, null, a, b); :};
-
-// [HASLab] temporal seq
-TraceExprA ::=                    OrExprA:a    {: RESULT=a;                                                                 :};
-TraceExprA ::= OrExprB:a TRCSEQ:o Bind:b       {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
-TraceExprB ::=                    OrExprB:b    {: RESULT=b;                                                                 :};
-TraceExprB ::= OrExprB:a TRCSEQ:o TraceExprB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
 
 OrExprA ::=                EquivExprA:a  {: RESULT=a;                                    :};
 OrExprA ::= OrExprB:a OR:o Bind:b        {: RESULT=ExprBinary.Op.OR.make(o, null, a, b); :};
@@ -934,44 +942,41 @@ AndExprB ::=                  TempBinaryB:b {: RESULT=b;                        
 AndExprB ::= AndExprB:a AND:o TempBinaryB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :}; // [HASLab] temporal expressions
 
 // [HASLab] temporal expressions
-TempBinaryA ::=                           TempUnaryA:a  {: RESULT=a;                                                                       :};
+TempBinaryA ::=                           UnaryExprA:a  {: RESULT=a;                                                                       :};
 TempBinaryA ::= TempBinaryB:a UNTIL:o     Bind:b        {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
 TempBinaryA ::= TempBinaryB:a SINCE:o     Bind:b        {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
 TempBinaryA ::= TempBinaryB:a TRIGGERED:o Bind:b        {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
 TempBinaryA ::= TempBinaryB:a RELEASES:o  Bind:b        {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
-TempBinaryB ::=                           TempUnaryB:b  {: RESULT=b;                                                                       :};
-TempBinaryB ::= TempBinaryB:a UNTIL:o     TempUnaryB:b  {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a SINCE:o     TempUnaryB:b  {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a RELEASES:o  TempUnaryB:b  {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a TRIGGERED:o TempUnaryB:b  {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
+TempBinaryB ::=                           UnaryExprB:b  {: RESULT=b;                                                                       :};
+TempBinaryB ::= TempBinaryB:a UNTIL:o     UnaryExprB:b  {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a SINCE:o     UnaryExprB:b  {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a RELEASES:o  UnaryExprB:b  {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
+TempBinaryB ::= TempBinaryB:a TRIGGERED:o UnaryExprB:b  {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
 
 // [HASLab] temporal expressions
-TempUnaryA ::=                NegExprA:a     {: RESULT=a; 										:};
-TempUnaryA ::= ALWAYS:o       Bind:a         {: RESULT=ExprUnary.Op.ALWAYS      .make(o, a); 	:};
-TempUnaryA ::= EVENTUALLY:o   Bind:a         {: RESULT=ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
-TempUnaryA ::= AFTER:o        Bind:a         {: RESULT=ExprUnary.Op.AFTER       .make(o, a); 	:};
-TempUnaryA ::= HISTORICALLY:o Bind:a         {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
-TempUnaryA ::= ONCE:o         Bind:a         {: RESULT=ExprUnary.Op.ONCE        .make(o, a); 	:};
-TempUnaryA ::= BEFORE:o       Bind:a         {: RESULT=ExprUnary.Op.BEFORE      .make(o, a); 	:};
-TempUnaryA ::= ALWAYS:o       TempUnaryA:a   {: RESULT=ExprUnary.Op.ALWAYS      .make(o, a); 	:};
-TempUnaryA ::= EVENTUALLY:o   TempUnaryA:a   {: RESULT=ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
-TempUnaryA ::= AFTER:o        TempUnaryA:a   {: RESULT=ExprUnary.Op.AFTER       .make(o, a); 	:};
-TempUnaryA ::= HISTORICALLY:o TempUnaryA:a   {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
-TempUnaryA ::= ONCE:o         TempUnaryA:a   {: RESULT=ExprUnary.Op.ONCE        .make(o, a); 	:};
-TempUnaryA ::= BEFORE:o       TempUnaryA:a   {: RESULT=ExprUnary.Op.BEFORE      .make(o, a); 	:};
-TempUnaryB ::=                NegExprB:a     {: RESULT=a; 										:};
-TempUnaryB ::= ALWAYS:o       TempUnaryB:a   {: RESULT=ExprUnary.Op.ALWAYS      .make(o, a); 	:};
-TempUnaryB ::= EVENTUALLY:o   TempUnaryB:a 	 {: RESULT=ExprUnary.Op.EVENTUALLY  .make(o, a); 	:};
-TempUnaryB ::= AFTER:o        TempUnaryB:a 	 {: RESULT=ExprUnary.Op.AFTER       .make(o, a); 	:};
-TempUnaryB ::= HISTORICALLY:o TempUnaryB:a 	 {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, a); 	:};
-TempUnaryB ::= ONCE:o         TempUnaryB:a   {: RESULT=ExprUnary.Op.ONCE        .make(o, a); 	:};
-TempUnaryB ::= BEFORE:o       TempUnaryB:a   {: RESULT=ExprUnary.Op.BEFORE      .make(o, a); 	:};
-
-NegExprA ::=         CompareExprA:b         {: RESULT=b;                           :};
-NegExprA ::= NOT:o   Bind:b                 {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
-NegExprA ::= NOT:o   NegExprA:b             {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
-NegExprB ::=         CompareExprB:b         {: RESULT=b;                           :};
-NegExprB ::= NOT:o   NegExprB:b             {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
+UnaryExprA ::=         CompareExprA:b        	{: RESULT=b;                           :};
+UnaryExprA ::= NOT:o   Bind:b                 	{: RESULT=ExprUnary.Op.NOT.make(o, b); :};
+UnaryExprA ::= NOT:o   UnaryExprA:b             {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
+UnaryExprA ::= ALWAYS:o   Bind:b                {: RESULT=ExprUnary.Op.ALWAYS.make(o, b); :};
+UnaryExprA ::= ALWAYS:o   UnaryExprA:b          {: RESULT=ExprUnary.Op.ALWAYS.make(o, b); :};
+UnaryExprA ::= EVENTUALLY:o   Bind:b            {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b); :};
+UnaryExprA ::= EVENTUALLY:o   UnaryExprA:b      {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b); :};
+UnaryExprA ::= AFTER:o   Bind:b                 {: RESULT=ExprUnary.Op.AFTER.make(o, b); :};
+UnaryExprA ::= AFTER:o   UnaryExprA:b           {: RESULT=ExprUnary.Op.AFTER.make(o, b); :};
+UnaryExprA ::= HISTORICALLY:o   Bind:b          {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, b); :};
+UnaryExprA ::= HISTORICALLY:o   UnaryExprA:b    {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, b); :};
+UnaryExprA ::= ONCE:o   Bind:b                  {: RESULT=ExprUnary.Op.ONCE.make(o, b); :};
+UnaryExprA ::= ONCE:o   UnaryExprA:b            {: RESULT=ExprUnary.Op.ONCE.make(o, b); :};
+UnaryExprA ::= BEFORE:o   Bind:b                {: RESULT=ExprUnary.Op.BEFORE.make(o, b); :};
+UnaryExprA ::= BEFORE:o   UnaryExprA:b          {: RESULT=ExprUnary.Op.BEFORE.make(o, b); :};
+UnaryExprB ::=         CompareExprB:b        	{: RESULT=b;                           :};
+UnaryExprB ::= NOT:o   UnaryExprB:b             {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
+UnaryExprB ::= ALWAYS:o   UnaryExprB:b          {: RESULT=ExprUnary.Op.ALWAYS.make(o, b); :};
+UnaryExprB ::= EVENTUALLY:o   UnaryExprB:b      {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b); :};
+UnaryExprB ::= AFTER:o   UnaryExprB:b           {: RESULT=ExprUnary.Op.AFTER.make(o, b); :};
+UnaryExprB ::= HISTORICALLY:o   UnaryExprB:b    {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, b); :};
+UnaryExprB ::= ONCE:o   UnaryExprB:b            {: RESULT=ExprUnary.Op.ONCE.make(o, b); :};
+UnaryExprB ::= BEFORE:o   UnaryExprB:b          {: RESULT=ExprUnary.Op.BEFORE.make(o, b); :};
 
 CompareExprA ::= CompareExprB:a IN:o        ShiftExprA:b    {: RESULT=ExprBinary.Op.IN        .make(o, null, a, mult(b)); :};
 CompareExprA ::= CompareExprB:a EQUALS:o    ShiftExprA:b    {: RESULT=ExprBinary.Op.EQUALS    .make(o, null, a, b);       :};
