@@ -60,11 +60,11 @@ public class NativeCode {
             String file = platform.dir + "/" + libraryName;
             Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
             if (!enumeration.hasMoreElements()) {
-                System.out.println("Could not find native lib " + file);
+                //                System.out.println("Could not find native lib " + file);
                 return null;
             }
             URL resource = enumeration.nextElement();
-            System.out.println("Found native lib '" + resource + "'");
+            //            System.out.println("Found native lib '" + resource + "'");
 
             Path to = cached.computeIfAbsent(name, (k) -> {
                 try {
@@ -102,12 +102,12 @@ public class NativeCode {
             String file = platform.dir + "/" + libraryName;
             Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
             if (!enumeration.hasMoreElements()) {
-                System.out.println("Could not find native lib " + file);
+                //                System.out.println("Could not find native lib " + file);
                 return false;
             }
 
             URL resource = enumeration.nextElement();
-            System.out.println("Found native lib '" + resource + "'");
+            //            System.out.println("Found native lib '" + resource + "'");
 
             Path to = cached.computeIfAbsent(name, (k) -> {
                 try {
@@ -135,10 +135,10 @@ public class NativeCode {
     private static Platform findPlatform() {
         String os = System.getProperty("os.name");
         String arch = System.getProperty("os.arch");
-        System.out.println("OS _ ARCH = '" + os + "' - '" + arch + "'");
+        //        System.out.println("OS _ ARCH = '" + os + "' - '" + arch + "'");
         for (Platform p : platforms) {
             if (p.osarch.matcher(arch).matches() && p.osname.matcher(os).matches()) {
-                System.out.println("Found = '" + p.dir);
+                //                System.out.println("Found = '" + p.dir);
                 return platform = p;
             }
         }
