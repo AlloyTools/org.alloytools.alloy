@@ -343,7 +343,6 @@ public final class WorkerEngine {
                         try {  // [HASLab] needed to stop all child processes (electrod)
                             Field f = latest_sub.getClass().getDeclaredField("pid");
                             f.setAccessible(true);
-                            System.out.println("heu2");
                             Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
                         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
                             // TODO Auto-generated catch block
