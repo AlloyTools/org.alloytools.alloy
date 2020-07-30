@@ -11,11 +11,11 @@ sig Id {next: Id}
 fact {all i: Id | Id in i.*next}
 
 pred less_than [from, i,j: Id] {
-   let next' = Id<:next - (Id->from) | j in i.^next'
+   let next" = Id<:next - (Id->from) | j in i.^next"
 }
 
 pred less_than_eq [from, i,j: Id] {
-   let next' = Id<:next - (Id->from) | j in i.*next'
+   let next" = Id<:next - (Id->from) | j in i.*next"
 }
 
 sig Node {id: Id}
@@ -40,7 +40,7 @@ fact {
 
 pred NextCorrect [s: State] {
    all n: s.active | let succ = n.(s.data).next {
-      no n': s.active - n | less_than [n.id, n'.id, succ.id]
+      no n": s.active - n | less_than [n.id, n".id, succ.id]
       succ != n || #s.active = 1
       succ in s.active
    }
@@ -49,13 +49,13 @@ pred NextCorrect [s: State] {
 pred FingersCorrect [s: State] {
    all nd: s.active.(s.data) | all start: (nd.finger).Node |
       nd.finger[start] in s.active &&
-      (no n' : s.active | less_than [start, n'.id, nd.finger[start].id])
+      (no n" : s.active | less_than [start, n".id, nd.finger[start].id])
 }
 
 pred save_ClosestPrecedingFinger [s: State] {
    all n: s.active | let nd = n.(s.data) |
       all i: Id | let cpf = nd.closest_preceding_finger[i] {
-   no n': (nd.finger[Id] + n) - cpf | less_than [cpf.id, n'.id, i]
+   no n": (nd.finger[Id] + n) - cpf | less_than [cpf.id, n".id, i]
    cpf in nd.finger[Id] + n
    cpf.id != i || # s.active = 1
       }
@@ -98,7 +98,7 @@ pred FindSuccessorIsCorrect[s: State] {
    all i: Id | all n: s.active |
       let succ = (n.(s.data)).find_successor [i] {
          succ in s.active
-         no n': s.active | less_than [i, n'.id, succ.id]
+         no n": s.active | less_than [i, n".id, succ.id]
       }
 }
 
@@ -158,7 +158,7 @@ Suppose we change \tt<ClosestPrecedingFinger> as follows:
 pred ClosestPrecedingFinger [s: State] {
    all n: s.active | let nd = n.(s.data) |
       all i: Id | let cpf = nd.closest_preceding_finger[i] {
-   no n': (nd.finger[Id] + n) - cpf | less_than [cpf.id, n'.id, i]
+   no n": (nd.finger[Id] + n) - cpf | less_than [cpf.id, n".id, i]
    cpf in nd.finger[Id] + n
    cpf.id != i
       }
@@ -185,8 +185,8 @@ n.find_successor(id)
   if (id in (n, n.successor])
     return n.successor;
   else
-    n' = closest_preceding_finger(id);
-    return n'.find_successor(id);
+    n" = closest_preceding_finger(id);
+    return n".find_successor(id);
 
 In the buggy scenario with a single node, the \tt<if> loop
 always terminates at \cite{if-condition1}, leading to an
