@@ -1259,6 +1259,24 @@ public final class A4Solution {
         public void remove() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public T nextC() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public T nextP() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public T nextS(int state, int delta, Set<Relation> change) {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
 
     // ===================================================================================================//
