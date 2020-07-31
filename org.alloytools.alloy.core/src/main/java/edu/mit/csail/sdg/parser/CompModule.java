@@ -2185,8 +2185,11 @@ public final class CompModule extends Browsable implements Module {
             // root module's list of exact sigs
             for (String n : x.exactParams) {
                 Sig sig = x.params.get(n);
-                if (sig != null)
+                if (sig != null) {
+                    if (sig.isVariable != null) // [HASLab]
+                        errors = errors.make(new ErrorSyntax(root.opens.get(x.path).pos, "Module " + x.moduleName + " forces parameter to be exact but " + sig + " variable."));
                     root.exactSigs.add(sig);
+                }
             }
         }
         if (!errors.isEmpty())
