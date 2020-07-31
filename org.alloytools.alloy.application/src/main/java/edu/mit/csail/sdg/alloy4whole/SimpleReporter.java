@@ -375,9 +375,11 @@ final class SimpleReporter extends A4Reporter {
     // [HASLab]
     public void solve(final int step, final int primaryVars, final int totalVars, final int clauses) {
         minimized = 0;
+        if (startStep < 0)
+            startStep = step;
         StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
         if (step > 0)
-            sb.append("Step " + step + ". "); // [HASLab]
+            sb.append(startStep + ".." + step + " steps. "); // [HASLab]
         if (totalVars >= 0)
             sb.append("" + totalVars + " vars. ");
         if (primaryVars >= 0)
@@ -499,6 +501,8 @@ final class SimpleReporter extends A4Reporter {
      * System.currentTimeMillis() to determine the elapsed time.
      */
     private long          lastTime  = 0, startTime = 0; // [HASLab]
+
+    private int           startStep = -1; // [HASLab]
 
     /**
      * If we performed unsat core minimization, then this is the start of the
