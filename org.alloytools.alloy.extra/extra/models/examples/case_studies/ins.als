@@ -110,6 +110,6 @@ pred RemoveWildCard[me: Query, q: Query] {
 }
 
 assert MissingAttributeAsWildcard {
-  all db : DB, q, q' : Query, found: set Record |
-    db.Lookup[q, found] && q.RemoveWildCard[q'] => db.Lookup[q', found]
+  all db : DB, q, q" : Query, found: set Record |
+    db.Lookup[q, found] && q.RemoveWildCard[q"] => db.Lookup[q", found]
 }

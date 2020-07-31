@@ -123,9 +123,10 @@ public class A4Reporter {
      *            primary variables
      * @param clauses - the total number of clauses
      */
-    public void solve(int primaryVars, int totalVars, int clauses) {
+    // [HASLab]
+    public void solve(int step, int primaryVars, int totalVars, int clauses) {
         if (parent != null)
-            parent.solve(primaryVars, totalVars, clauses);
+            parent.solve(step, primaryVars, totalVars, clauses); // [HASLab]
     }
 
     /**

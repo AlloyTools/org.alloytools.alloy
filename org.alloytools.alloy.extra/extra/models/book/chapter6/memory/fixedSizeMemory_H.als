@@ -15,7 +15,7 @@ pred read [m: Memory_H, a: Addr, d: Data] {
 	memory/read [m, a, d]
 	}
 
-pred write [m, m': Memory_H, a: Addr, d: Data] {
-	memory/write [m, m', a, d]
-	m'.unwritten = m.unwritten - a
+pred write [m, m": Memory_H, a: Addr, d: Data] {
+	memory/write [m, m", a, d]
+	m".unwritten = m.unwritten - a
 	}
