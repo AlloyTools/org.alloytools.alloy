@@ -359,7 +359,8 @@ action code {:
           if (j.label.equals("int"))   { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
           if (j.label.equals("seq"))   { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
           if (j.label.equals("steps")) { // [HASLab] process time scopes
-        	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "The time cannot be specified more than once."); 
+          	  if (k<1) throw new ErrorSyntax(j.pos, "Trace solutions must contain at least one step.");
+        	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "Steps scope cannot be specified more than once."); 
         	  maxtime=k; 
         	  if (s.get(i).isExact) mintime = k; 
         	  else if (s.get(i).endingScope == s.get(i).startingScope) mintime = 1;
