@@ -93,13 +93,13 @@ fun delete[s: SeqIdx -> elem, i: SeqIdx] : SeqIdx -> elem {
 
 /** appended is the result of appending s2 to s1 */
 fun append [s1, s2: SeqIdx -> elem] : SeqIdx -> elem {
-  let shift = {i', i: SeqIdx | #ord/prevs[i'] = add[#ord/prevs[i], add[#ord/prevs[lastIdx[s1]], 1]] } |
+  let shift = {i", i: SeqIdx | #ord/prevs[i"] = add[#ord/prevs[i], add[#ord/prevs[lastIdx[s1]], 1]] } |
     s1 + shift.s2
 }
 
 /** returns the subsequence of s between from and to, inclusive */
 fun subseq [s: SeqIdx -> elem, from, to: SeqIdx] : SeqIdx -> elem {
-  let shift = {i', i: SeqIdx | #ord/prevs[i'] = sub[#ord/prevs[i], #ord/prevs[from]] } |
+  let shift = {i", i: SeqIdx | #ord/prevs[i"] = sub[#ord/prevs[i], #ord/prevs[from]] } |
     shift.((SeqIdx - ord/nexts[to]) <: s)
 }
 

@@ -16,8 +16,8 @@ sig Book {
 	all a: Alias | lone a.addr
 }
 
-pred add [b, b': Book, n: Name, t: Target] { b'.addr = b.addr + n->t }
-pred del [b, b': Book, n: Name, t: Target] { b'.addr = b.addr - n->t }
+pred add [b, b": Book, n: Name, t: Target] { b".addr = b.addr + n->t }
+pred del [b, b": Book, n: Name, t: Target] { b".addr = b.addr - n->t }
 fun lookup [b: Book, n: Name] : set Addr { n.^(b.addr) & Addr }
 
 pred init [b: Book]  { no b.addr }
@@ -25,18 +25,18 @@ pred init [b: Book]  { no b.addr }
 fact traces {
 	init [first]
 	all b: Book-last |
-	  let b' = b.next |
+	  let b" = b.next |
 	    some n: Name, t: Target |
-	      add [b, b', n, t] or del [b, b', n, t]
+	      add [b, b", n, t] or del [b, b", n, t]
 }
 
 ------------------------------------------------------
 
 assert delUndoesAdd {
-	all b, b', b'': Book, n: Name, t: Target |
-		no n.(b.addr) and add [b, b', n, t] and del [b', b'', n, t]
+	all b, b", b"": Book, n: Name, t: Target |
+		no n.(b.addr) and add [b, b", n, t] and del [b", b"", n, t]
 		implies
-		b.addr = b''.addr
+		b.addr = b"".addr
 }
 
 // This should not find any counterexample.
@@ -45,10 +45,10 @@ check delUndoesAdd for 3
 ------------------------------------------------------
 
 assert addIdempotent {
-	all b, b', b'': Book, n: Name, t: Target |
-		add [b, b', n, t] and add [b', b'', n, t]
+	all b, b", b"": Book, n: Name, t: Target |
+		add [b, b", n, t] and add [b", b"", n, t]
 		implies
-		b'.addr = b''.addr
+		b".addr = b"".addr
 }
 
 // This should not find any counterexample.
@@ -57,10 +57,10 @@ check addIdempotent for 3
 ------------------------------------------------------
 
 assert addLocal {
-	all b, b': Book, n, n': Name, t: Target |
-		add [b, b', n, t] and n != n'
+	all b, b": Book, n, n": Name, t: Target |
+		add [b, b", n, t] and n != n"
 		implies
-		lookup [b, n'] = lookup [b', n']
+		lookup [b, n"] = lookup [b", n"]
 }
 
 // This should not find any counterexample.

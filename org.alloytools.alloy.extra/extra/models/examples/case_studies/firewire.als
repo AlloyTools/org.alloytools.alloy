@@ -100,7 +100,7 @@ module examples/case_studies/firewire
  * skolemized away by the analyzer.
  *
  * The {\em functions} of the model are parameterized formulas. The function {\em
- * Trans} relates a pre-state {\tt s} to a post-state {\tt s'}. It has a case for
+ * Trans} relates a pre-state {\tt s} to a post-state {\tt s"}. It has a case for
  * each operation. Look at the clause for the operation {\em WriteReqOrAck}, for
  * example. If this operation is deemed to have occurred, each of the constraints
  * in the curly braces must hold. The first says that the labelling of links as
@@ -118,8 +118,8 @@ module examples/case_studies/firewire
  * new queue in the post-state (given the local name {\tt q}) contains the message
  * {\tt m} in its slot, and has no message in its overflow. Otherwise, some
  * message is placed arbitrarily in the overflow, and the slot is
- * unconstrained. In {\em WriteReqOrAck}, the arguments {\tt s} and {\tt s'} are
- * bound to the {\tt s} and {\tt s'} of {\em Trans}; {\tt x} is bound to one of
+ * unconstrained. In {\em WriteReqOrAck}, the arguments {\tt s} and {\tt s"} are
+ * bound to the {\tt s} and {\tt s"} of {\em Trans}; {\tt x} is bound to one of
  * the outgoing links from the set {\tt n.from}; and {\tt msg} is bound either to
  * the acknowledgment or request message.
  *
@@ -208,99 +208,99 @@ sig State {
   waiting + active + contending + elected = Node
 }
 
-pred SameState [s, s': State] {
-  s.waiting = s'.waiting
-  s.active = s'.active
-  s.contending = s'.contending
-  s.elected = s'.elected
-  s.parentLinks = s'.parentLinks
-  all x: Link | SameQueue [s.queue[x], s'.queue[x]]
+pred SameState [s, s": State] {
+  s.waiting = s".waiting
+  s.active = s".active
+  s.contending = s".contending
+  s.elected = s".elected
+  s.parentLinks = s".parentLinks
+  all x: Link | SameQueue [s.queue[x], s".queue[x]]
   }
 
-pred Trans [s, s': State] {
-  s'.op != Init
-  s'.op = Stutter => SameState [s, s']
-  s'.op = AssignParent => {
+pred Trans [s, s": State] {
+  s".op != Init
+  s".op = Stutter => SameState [s, s"]
+  s".op = AssignParent => {
     some x: Link {
-      x.target in s.waiting & s'.waiting
-      NoChangeExceptAt [s, s', x.target]
+      x.target in s.waiting & s".waiting
+      NoChangeExceptAt [s, s", x.target]
       ! IsEmptyQueue [s, x]
-      s'.parentLinks = s.parentLinks + x
-      ReadQueue [s, s', x]
+      s".parentLinks = s.parentLinks + x
+      ReadQueue [s, s", x]
       }}
-  s'.op = ReadReqOrAck => {
-    s'.parentLinks = s.parentLinks
+  s".op = ReadReqOrAck => {
+    s".parentLinks = s.parentLinks
     some x: Link {
-      x.target in s.(active + contending) & (PeekQueue [s, x, Ack] => s'.contending else s'.active)
-      NoChangeExceptAt [s, s', x.target]
+      x.target in s.(active + contending) & (PeekQueue [s, x, Ack] => s".contending else s".active)
+      NoChangeExceptAt [s, s", x.target]
       ! IsEmptyQueue [s, x]
-      ReadQueue [s', s, x]
+      ReadQueue [s", s, x]
       }}
-  s'.op = Elect => {
-    s'.parentLinks = s.parentLinks
+  s".op = Elect => {
+    s".parentLinks = s.parentLinks
     some n: Node {
-      n in s.active & s'.elected
-      NoChangeExceptAt [s, s', n]
+      n in s.active & s".elected
+      NoChangeExceptAt [s, s", n]
       n.to in s.parentLinks
-      QueuesUnchanged [s, s', Link]
+      QueuesUnchanged [s, s", Link]
       }}
-  s'.op = WriteReqOrAck => {
+  s".op = WriteReqOrAck => {
     -- note how this requires access to child ptr
-    s'.parentLinks = s.parentLinks
+    s".parentLinks = s.parentLinks
     some n: Node {
-      n in s.waiting & s'.active
+      n in s.waiting & s".active
       lone n.to - s.parentLinks
-      NoChangeExceptAt [s, s', n]
+      NoChangeExceptAt [s, s", n]
       all x: n.from |
         let msg = (x.reverse in s.parentLinks => Ack else Req) |
-          WriteQueue [s, s', x, msg]
-      QueuesUnchanged [s, s', Link - n.from]
+          WriteQueue [s, s", x, msg]
+      QueuesUnchanged [s, s", Link - n.from]
       }}
-  s'.op = ResolveContention => {
+  s".op = ResolveContention => {
     some x: Link {
       let contenders = x.(source + target) {
-        contenders in s.contending & s'.active
-        NoChangeExceptAt [s, s', contenders]
+        contenders in s.contending & s".active
+        NoChangeExceptAt [s, s", contenders]
         }
-      s'.parentLinks = s.parentLinks + x
+      s".parentLinks = s.parentLinks + x
       }
-    QueuesUnchanged [s, s', Link]
+    QueuesUnchanged [s, s", Link]
     }
 }
 
-pred NoChangeExceptAt [s, s': State, nodes: set Node] {
+pred NoChangeExceptAt [s, s": State, nodes: set Node] {
   let ns = Node - nodes {
-  ns & s.waiting = ns & s'.waiting
-  ns & s.active = ns & s'.active
-  ns & s.contending = ns & s'.contending
-  ns & s.elected = ns & s'.elected
+  ns & s.waiting = ns & s".waiting
+  ns & s.active = ns & s".active
+  ns & s.contending = ns & s".contending
+  ns & s.elected = ns & s".elected
   }}
 
 sig Queue {slot: lone Msg, overflow: lone Msg}
 
-pred SameQueue [q, q': Queue] {
-    q.slot = q'.slot && q.overflow = q'.overflow
+pred SameQueue [q, q": Queue] {
+    q.slot = q".slot && q.overflow = q".overflow
   }
 
-pred ReadQueue [s, s': State, x: Link] {
---  let q = s'.queue[x] | no q.(slot + overflow)
-  no s'.queue[x].(slot + overflow)
-  all x': Link - x | s'.queue[x'] = s.queue[x']
+pred ReadQueue [s, s": State, x: Link] {
+--  let q = s".queue[x] | no q.(slot + overflow)
+  no s".queue[x].(slot + overflow)
+  all x": Link - x | s".queue[x"] = s.queue[x"]
   }
 
 pred PeekQueue [s: State, x: Link, m: Msg] {
   m = s.queue[x].slot
   }
 
-pred WriteQueue [s, s': State, x: Link, m: Msg] {
-        let q = s'.queue[x] |
+pred WriteQueue [s, s": State, x: Link, m: Msg] {
+        let q = s".queue[x] |
   no s.queue[x].slot =>
     ( q.slot = m && no q.overflow) else
     some q.overflow
   }
 
-pred QueuesUnchanged [s, s': State, xs: set Link] {
-  all x: xs | s'.queue[x] = s.queue[x]
+pred QueuesUnchanged [s, s": State, xs: set Link] {
+  all x: xs | s".queue[x] = s.queue[x]
   }
 
 pred IsEmptyQueue [s: State, x: Link] {
@@ -317,7 +317,7 @@ pred Initialization [s: State] {
 
 pred Execution  {
   Initialization [ord/first]
-  all s: State - ord/last | let s' = ord/next[s] | Trans [s, s']
+  all s: State - ord/last | let s" = ord/next[s] | Trans [s, s"]
   }
 
 pred ElectionHappens {
@@ -328,7 +328,7 @@ pred ElectionHappens {
 
 pred NoRepeats {
   Execution
-  no s, s': State | s!=s' && SameState [s, s']
+  no s, s": State | s!=s" && SameState [s, s"]
   no s: State | s.op = Stutter
   }
 

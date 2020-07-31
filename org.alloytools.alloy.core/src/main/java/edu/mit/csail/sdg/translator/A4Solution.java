@@ -1519,14 +1519,16 @@ public final class A4Solution {
             }
 
             @Override
-            public void solvingCNF(int primaryVars, int vars, int clauses) {
-                if (solved[0])
-                    return;
-                else
-                    solved[0] = true; // initially solved[0] is true, so we
-                                     // won't report the # of vars/clauses
+            // [HASLab]
+            public void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+                // [HASLab] changed cb, will replace
+                //                if (solved[0])
+                //                    return;
+                //                else
+                solved[0] = true; // initially solved[0] is true, so we
+                                 // won't report the # of vars/clauses
                 if (rep != null)
-                    rep.solve(primaryVars, vars, clauses);
+                    rep.solve(step, primaryVars, vars, clauses); // [HASLab]
             }
 
         });
@@ -1577,7 +1579,7 @@ public final class A4Solution {
                 sol = kEnumerator.next();
         }
         if (!solved[0])
-            rep.solve(0, 0, 0);
+            rep.solve(0, 0, 0, 0); // [HASLab]
         Instance inst = sol.instance(); // [HASLab]
         if (inst != null && !(inst instanceof TemporalInstance))
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
