@@ -91,6 +91,7 @@ import kodkod.engine.config.Reporter;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
@@ -1574,7 +1575,12 @@ public final class A4Solution {
             sol = solver.solve(fgoal, bounds);
         } else {
             PardinusBounds b = bounds;
-            kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            try {
+                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            } catch (InvalidMutableExpressionException e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            }
             if (sol == null)
                 sol = kEnumerator.next();
         }
