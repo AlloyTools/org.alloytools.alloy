@@ -344,7 +344,7 @@ public final class WorkerEngine {
                             Field f = latest_sub.getClass().getDeclaredField("pid");
                             f.setAccessible(true);
                             Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
-                        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
+                        } catch (Exception e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
