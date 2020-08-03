@@ -249,7 +249,7 @@ final class BoundsComputer {
         Expression a = sol.a2k(sig);
         if (n <= 0)
             return a.no();
-        if (n == 1)
+        if (n == 1 && sig.isVariable == null) // [HASLab]
             return exact ? a.one() : a.lone();
         Formula f = exact ? Formula.TRUE : null;
         Decls d = null;
