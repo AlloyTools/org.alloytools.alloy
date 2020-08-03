@@ -1599,6 +1599,7 @@ public final class A4Solution {
                 throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
             } catch (InvalidSolverParamException e) {
                 throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
+            }
 
             if (sol == null)
                 sol = kEnumerator.next();
