@@ -697,10 +697,10 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(magicLayout = OurUtil.button("Magic Layout", "Automatic theme customization (will reset current theme)", "images/24_settings_apply2.gif", doMagicLayout()));
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
-            toolbar.add(enumerateButton = OurUtil.button("Next", "Show the next solution", "images/24_history.gif", doNext()));
-            toolbar.add(cnfgButton = OurUtil.button("Next Config", "Show the next initial state", "images/24_history.gif", doConfig())); // [HASLab]
-            toolbar.add(initButton = OurUtil.button("Next Init", "Show the next initial state", "images/24_history.gif", doInit())); // [HASLab]
-            toolbar.add(forkButton = OurUtil.button("Fork", "Show the next state", "images/24_history.gif", doFork())); // [HASLab]
+            toolbar.add(enumerateButton = OurUtil.button("Next", "Show a fresh solution", "images/24_history.gif", doNext()));
+            toolbar.add(cnfgButton = OurUtil.button("Fresh Config", "Show a fresh configuration", "images/24_history.gif", doConfig())); // [HASLab]
+            toolbar.add(initButton = OurUtil.button("Fresh Init", "Show a fresh initial state", "images/24_history.gif", doInit())); // [HASLab]
+            toolbar.add(forkButton = OurUtil.button("Fork", "Show a different post-state", "images/24_history.gif", doFork())); // [HASLab]
             toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
             toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the previous state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);
