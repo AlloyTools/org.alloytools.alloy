@@ -76,7 +76,7 @@ final class SimpleReporter extends A4Reporter {
         private final SwingLogPanel     span;
         private final Set<ErrorWarning> warnings = new HashSet<ErrorWarning>();
         private final List<String>      results  = new ArrayList<String>();
-        private int                     len2     = 0, len3 = 0, verbosity = 0;
+        private int                     len2     = 0, len3 = 0, len4 = 0, verbosity = 0; // [HASLab]
         private final String            latestName;
         private final int               latestVersion;
 
@@ -210,15 +210,15 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
-                len2 = len3 = span.getLength();
+                len2 = len3 = len4 = span.getLength(); // [HASLab]
             }
             if (array[0].equals("translate")) {
                 span.log("   " + array[1]);
-                len3 = span.getLength();
+                len3 = len4 = span.getLength(); // [HASLab]
                 span.logBold("   Generating CNF...\n");
             }
             if (array[0].equals("solve")) {
-                span.setLength(len3);
+                span.setLength(len4); // [HASLab]
                 span.log("   " + array[1]);
                 len3 = span.getLength();
                 span.logBold("   Solving...\n");
@@ -366,15 +366,20 @@ final class SimpleReporter extends A4Reporter {
     /** {@inheritDoc} */
     @Override
     public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        lastTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis(); // [HASLab]
         cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
     }
 
     /** {@inheritDoc} */
     @Override
-    public void solve(final int primaryVars, final int totalVars, final int clauses) {
+    // [HASLab]
+    public void solve(final int step, final int primaryVars, final int totalVars, final int clauses) {
         minimized = 0;
+        if (startStep < 0)
+            startStep = step;
         StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
+        if (step > 0)
+            sb.append(startStep + ".." + step + " steps. "); // [HASLab]
         if (totalVars >= 0)
             sb.append("" + totalVars + " vars. ");
         if (primaryVars >= 0)
@@ -383,7 +388,7 @@ final class SimpleReporter extends A4Reporter {
             sb.append(clauses + " clauses. ");
         if (sb.length() == 0)
             sb.append("No translation information available.");
-        sb.append((System.currentTimeMillis() - lastTime) + "ms.\n");
+        sb.append((System.currentTimeMillis() - startTime) + "ms.\n"); // [HASLab]
         cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
     }
@@ -495,7 +500,9 @@ final class SimpleReporter extends A4Reporter {
      * The time that the last action began; we subtract it from
      * System.currentTimeMillis() to determine the elapsed time.
      */
-    private long          lastTime  = 0;
+    private long          lastTime  = 0, startTime = 0; // [HASLab]
+
+    private int           startStep = -1; // [HASLab]
 
     /**
      * If we performed unsat core minimization, then this is the start of the

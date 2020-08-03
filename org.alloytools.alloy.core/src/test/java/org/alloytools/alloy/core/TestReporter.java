@@ -81,7 +81,8 @@ public class TestReporter extends A4Reporter {
      * @param clauses - the total number of clauses
      */
     @Override
-    public void solve(int primaryVars, int totalVars, int clauses) {
+    // [HASLab]
+    public void solve(int step, int primaryVars, int totalVars, int clauses) {
         out.printf("SOLV primary=%s total=%s clauses=%s%n", primaryVars, totalVars, clauses);
     }
 

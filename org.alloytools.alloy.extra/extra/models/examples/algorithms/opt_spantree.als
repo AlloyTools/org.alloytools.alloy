@@ -126,14 +126,14 @@ fact TransIfPossible {
 fact LegalTrans {
   Init
   all s : State - so/last |
-    let s' = so/next[s] | {
+    let s" = so/next[s] | {
       all p : Process |
-        p in s.runs => Trans[p, s, s'] else TRNop[p,s,s']
+        p in s.runs => Trans[p, s, s"] else TRNop[p,s,s"]
     }
 }
 
-pred PossTrans[s, s' : State] {
-  all p : Process | Trans[p,s,s']
+pred PossTrans[s, s" : State] {
+  all p : Process | Trans[p,s,s"]
 }
 
 pred SpanTreeAtState[s : State] {
@@ -155,23 +155,23 @@ pred SuccessfulRun {
 
 // show a trace without a loop
 pred TraceWithoutLoop {
-  all s, s' : State | s!=s' => {
-    !EquivStates[s, s']
-    (s' in so/nexts[s] && (s' != so/next[s])) => !PossTrans[s,s']
+  all s, s" : State | s!=s" => {
+    !EquivStates[s, s"]
+    (s" in so/nexts[s] && (s" != so/next[s])) => !PossTrans[s,s"]
   }
   all s: State | !SpanTreeAtState[s]
 }
 
 // defines equivalent states
-pred EquivStates[s, s' : State] {
-  s.lvl = s'.lvl
-  s.parent = s'.parent
+pred EquivStates[s, s" : State] {
+  s.lvl = s".lvl
+  s.parent = s".parent
 }
 
 // show a trace that violates liveness
 pred BadLivenessTrace {
   // two different states equivalent (loop)
-  some s, s' : State | s!=s' && EquivStates[s, s']
+  some s, s" : State | s!=s" && EquivStates[s, s"]
   all s : State | !SpanTreeAtState[s]
 }
 

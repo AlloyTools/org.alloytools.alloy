@@ -91,6 +91,7 @@ import kodkod.engine.config.Reporter;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
@@ -1535,14 +1536,16 @@ public final class A4Solution {
             }
 
             @Override
-            public void solvingCNF(int primaryVars, int vars, int clauses) {
-                if (solved[0])
-                    return;
-                else
-                    solved[0] = true; // initially solved[0] is true, so we
-                                     // won't report the # of vars/clauses
+            // [HASLab]
+            public void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+                // [HASLab] changed cb, will replace
+                //                if (solved[0])
+                //                    return;
+                //                else
+                solved[0] = true; // initially solved[0] is true, so we
+                                 // won't report the # of vars/clauses
                 if (rep != null)
-                    rep.solve(primaryVars, vars, clauses);
+                    rep.solve(step, primaryVars, vars, clauses); // [HASLab]
             }
 
         });
@@ -1588,12 +1591,17 @@ public final class A4Solution {
             sol = solver.solve(fgoal, bounds);
         } else {
             PardinusBounds b = bounds;
-            kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            try {
+                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            } catch (InvalidMutableExpressionException e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            }
             if (sol == null)
                 sol = kEnumerator.next();
         }
         if (!solved[0])
-            rep.solve(0, 0, 0);
+            rep.solve(0, 0, 0, 0); // [HASLab]
         Instance inst = sol.instance(); // [HASLab]
         if (inst != null && !(inst instanceof TemporalInstance))
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);

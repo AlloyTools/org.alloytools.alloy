@@ -14,7 +14,7 @@ assert Closed {
 
 fact SetGenerator {
 	some s: Set | no s.elements
-	all s: Set, e: Element | some s': Set | s'.elements = s.elements + e
+	all s: Set, e: Element | some s": Set | s".elements = s.elements + e
 	}
 
 // This check should not produce a counterexample
