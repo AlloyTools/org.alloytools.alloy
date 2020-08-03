@@ -82,6 +82,7 @@ import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
+import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
@@ -322,7 +323,7 @@ public final class A4Solution {
         this.maxtrace = maxtrace; // [HASLab]
         this.mintrace = mintrace; // [HASLab]
         if (maxtrace == Integer.MAX_VALUE && !(opt.solver.external() != null && opt.solver.external().equals("electrod"))) // [HASLab] unbounded solvers
-            throw new ErrorAPI("Can only have unbounded time scopes with complete model checkers.");
+            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
@@ -1596,7 +1597,10 @@ public final class A4Solution {
             } catch (InvalidMutableExpressionException e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            } catch (InvalidSolverParamException e) {
+                throw new ErrorAPI(cmd.pos, "Mutable expression not supported by solver.\n");
             }
+
             if (sol == null)
                 sol = kEnumerator.next();
         }
