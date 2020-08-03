@@ -1598,7 +1598,7 @@ public final class A4Solution {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
             } catch (InvalidSolverParamException e) {
-                throw new ErrorAPI(cmd.pos, "Mutable expression not supported by solver.\n");
+                throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
             }
 
             if (sol == null)

@@ -387,7 +387,7 @@ final class SimpleReporter extends A4Reporter {
         if (clauses > 0)
             sb.append(clauses + " clauses. ");
         if (sb.length() == 0)
-            sb.append("No translation information available.");
+            sb.append("No translation information available. ");
         sb.append((System.currentTimeMillis() - startTime) + "ms.\n"); // [HASLab]
         cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
@@ -678,6 +678,7 @@ final class SimpleReporter extends A4Reporter {
             if (rep.warn > 0 && !bundleWarningNonFatal)
                 return;
             List<String> result = new ArrayList<String>(cmds.size());
+            Exception exc = null; // [HASLab]
             if (bundleIndex == -2) {
                 final String outf = tempdir + File.separatorChar + "m.xml";
                 cb(out, "S2", "Generating the metamodel...\n");
@@ -692,7 +693,7 @@ final class SimpleReporter extends A4Reporter {
                 synchronized (SimpleReporter.class) {
                     latestMetamodelXML = outf;
                 }
-            } else
+            } else {
                 for (int i = 0; i < cmds.size(); i++)
                     if (bundleIndex < 0 || i == bundleIndex) {
                         synchronized (SimpleReporter.class) {
@@ -704,7 +705,12 @@ final class SimpleReporter extends A4Reporter {
                         final Command cmd = cmds.get(i);
                         rep.tempfile = tempCNF;
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
-                        A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
+                        A4Solution ai = null;
+                        try { // [HASLab] this allows other commands to still be solved
+                            ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
+                        } catch (Exception e1) {
+                            exc = e1;
+                        }
                         if (ai == null)
                             result.add(null);
                         else if (ai.satisfiable())
@@ -714,6 +720,7 @@ final class SimpleReporter extends A4Reporter {
                         else
                             result.add("");
                     }
+            }
             (new File(tempdir)).delete(); // In case it was UNSAT, or
                                          // canceled...
             if (result.size() > 1) {
@@ -758,6 +765,10 @@ final class SimpleReporter extends A4Reporter {
                 rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings. Please scroll up to see them.\n");
             if (rep.warn == 1)
                 rep.cb("bold", "Note: There was 1 compilation warning. Please scroll up to see it.\n");
+
+            if (exc != null) // [HASLab]
+                throw exc;
+
         }
     }
 }
