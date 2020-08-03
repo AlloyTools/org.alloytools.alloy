@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -453,19 +452,10 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
         if (state >= 0) { // [HASLab] simulator, this is a fork
-            Set<Relation> stas = new HashSet<Relation>();
-            Map<Relation,TupleSet> cfgs = new HashMap<Relation,TupleSet>();
-            for (Relation r : ((TemporalInstance) old.eval.instance()).state(0).relations()) {
-                if (!r.isVariable()) {
-                    stas.add(r);
-                    cfgs.put(r, ((TemporalInstance) old.eval.instance()).state(0).tuples(r));
-                }
-            }
-            inst = old.kEnumerator.branch(state, stas, cfgs, true).instance();
-        } else if (state == -1) // [HASLab] simulator, this is a next config
-            inst = old.kEnumerator.branch(state, ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(s -> s.isVariable()).collect(Collectors.toSet()), new HashMap<Relation,TupleSet>(), true).instance();
-        else
-            inst = old.kEnumerator.next().instance();
+            Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
+            inst = old.kEnumerator.nextS(state, 1, rels).instance();
+        } else // [HASLab] simulator, this is a next config
+            inst = old.kEnumerator.nextC().instance();
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
@@ -1264,20 +1254,17 @@ public final class A4Solution {
 
         @Override
         public T nextC() {
-            // TODO Auto-generated method stub
-            return null;
+            return iterator.nextC();
         }
 
         @Override
         public T nextP() {
-            // TODO Auto-generated method stub
-            return null;
+            return iterator.nextP();
         }
 
         @Override
         public T nextS(int state, int delta, Set<Relation> change) {
-            // TODO Auto-generated method stub
-            return null;
+            return iterator.nextS(state, delta, change);
         }
     }
 
