@@ -87,6 +87,7 @@ public final class VizState {
         edgeStyle.putAll(old.edgeStyle);
         edgeVisible.putAll(old.edgeVisible);
         changedSinceLastSave = false;
+        applyDefaultVar();
     }
 
     /** Clears the current theme. */
@@ -169,15 +170,16 @@ public final class VizState {
      */
     // [HASLab]
     void applyDefaultVar() {
-        for (AlloyType r : currentModel.getTypes()) // [HASLab] paint variable sigs differently
-            if (nodeStyle.get(r) == null)
-                nodeStyle.put(r, r.isVar ? DotStyle.DASHED : null);
-        for (AlloyRelation r : currentModel.getRelations()) // [HASLab] paint variable fields differently
-            if (edgeStyle.get(r) == null)
-                edgeStyle.put(r, r.isVar ? DotStyle.DASHED : null);
-        for (AlloySet r : currentModel.getSets()) // [HASLab] paint variable sets differently
-            if (nodeStyle.get(r) == null)
-                nodeStyle.put(r, r.isVar ? DotStyle.DASHED : null);
+        // if parent also var or has style, inherit, otherwise paint dashed
+        for (AlloyType r : currentModel.getTypes())
+            if (nodeStyle.get(r) == null && r.isVar && !(currentModel.getSuperType(r).isVar || nodeStyle.get(currentModel.getSuperType(r)) != null))
+                nodeStyle.put(r, DotStyle.DASHED);
+        for (AlloyRelation r : currentModel.getRelations())
+            if (edgeStyle.get(r) == null && r.isVar)
+                edgeStyle.put(r, DotStyle.DASHED);
+        for (AlloySet r : currentModel.getSets())
+            if (nodeStyle.get(r) == null && r.isVar && !(r.getType().isVar || nodeStyle.get(r.getType()) != null))
+                nodeStyle.put(r, DotStyle.DASHED);
     }
 
     /**
