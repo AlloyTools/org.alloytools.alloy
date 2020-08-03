@@ -1928,6 +1928,8 @@ public final class CompModule extends Browsable implements Module {
             Sig s = getRawSIG(et.sig.pos, et.sig.label);
             if (s == null)
                 throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
+            if (!s.isTopLevel() && s.isVariable != null) // [HASLab]
+                throw new ErrorSyntax(cmd.pos, "Mutable sig " + et.sig + " is not top-level thus cannot have scopes assigned.");
             if (et.isExact && s.isVariable != null) // [HASLab]
                 throw new ErrorSyntax(cmd.pos, "Sig " + et.sig + " is variable thus scope cannot be exact.");
             sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
