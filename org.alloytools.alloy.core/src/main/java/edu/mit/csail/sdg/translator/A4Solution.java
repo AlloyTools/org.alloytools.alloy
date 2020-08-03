@@ -82,6 +82,7 @@ import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
+import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
@@ -1580,6 +1581,8 @@ public final class A4Solution {
             } catch (InvalidMutableExpressionException e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            } catch (InvalidSolverParamException e) {
+                throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
             }
             if (sol == null)
                 sol = kEnumerator.next();
