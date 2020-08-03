@@ -84,6 +84,7 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Explorer;
+import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
@@ -93,6 +94,7 @@ import kodkod.engine.config.Reporter;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
@@ -1618,7 +1620,14 @@ public final class A4Solution {
             sol = solver.solve(fgoal, bounds);
         } else {
             PardinusBounds b = bounds;
-            kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            try {
+                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            } catch (InvalidMutableExpressionException e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            } catch (InvalidSolverParamException e) {
+                throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
+            }
             if (sol == null)
                 sol = kEnumerator.next();
         }

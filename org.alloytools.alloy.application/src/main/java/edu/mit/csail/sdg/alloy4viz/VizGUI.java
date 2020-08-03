@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,10 @@ import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4graph.GraphViewer;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
+import kodkod.ast.Node;
 import kodkod.ast.Relation;
+import kodkod.ast.Variable;
+import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.util.nodes.PrettyPrinter;
@@ -1446,7 +1450,22 @@ public final class VizGUI implements ComponentListener {
         Formula rels = Formula.TRUE;
         for (Relation r : inst.state(0).relations())
             rels = rels.and(r.eq(r));
-        Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap<Object,Expression>(), rels);
+        Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap<Object,Expression>(), rels, true);
+        AbstractReplacer repls = new AbstractReplacer(new HashSet<Node>()) {
+
+            @Override
+            public Expression visit(Variable v) {
+                final Expression ret = lookup(v);
+                if (ret != null)
+                    return ret;
+                String n = v.name().replace("$", "").replace("-", "n");
+                if (!Character.isAlphabetic(n.charAt(0)))
+                    n = "p" + n;
+                return cache(v, Variable.nary(n, v.arity()));
+            }
+
+        };
+        form = form.accept(repls);
         OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4));
         return null;
     }

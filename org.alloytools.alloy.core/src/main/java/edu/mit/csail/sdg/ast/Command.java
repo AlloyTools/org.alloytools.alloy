@@ -150,7 +150,7 @@ public final class Command extends Browsable {
             first = false;
         }
         if (maxtime >= 0) { // [HASLab]
-            sb.append(" ").append(mintime).append("..").append(maxtime).append(" Time");
+            sb.append(" ").append(mintime).append("..").append(maxtime).append(" steps");
             first = false;
         }
         for (CommandScope e : scope) {

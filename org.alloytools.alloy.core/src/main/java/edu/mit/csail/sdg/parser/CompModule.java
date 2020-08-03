@@ -1928,6 +1928,8 @@ public final class CompModule extends Browsable implements Module {
             Sig s = getRawSIG(et.sig.pos, et.sig.label);
             if (s == null)
                 throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
+            if (!s.isTopLevel() && s.isVariable != null) // [HASLab]
+                throw new ErrorSyntax(cmd.pos, "Mutable sig " + et.sig + " is not top-level thus cannot have scopes assigned.");
             if (et.isExact && s.isVariable != null) // [HASLab]
                 throw new ErrorSyntax(cmd.pos, "Sig " + et.sig + " is variable thus scope cannot be exact.");
             sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
@@ -2185,8 +2187,11 @@ public final class CompModule extends Browsable implements Module {
             // root module's list of exact sigs
             for (String n : x.exactParams) {
                 Sig sig = x.params.get(n);
-                if (sig != null)
+                if (sig != null) {
+                    if (sig.isVariable != null) // [HASLab]
+                        errors = errors.make(new ErrorSyntax(root.opens.get(x.path).pos, "Module " + x.moduleName + " forces parameter to be exact but " + sig + " variable."));
                     root.exactSigs.add(sig);
+                }
             }
         }
         if (!errors.isEmpty())
