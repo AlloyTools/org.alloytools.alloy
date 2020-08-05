@@ -451,6 +451,8 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
+        if (!(old.eval.instance() instanceof TemporalInstance))
+            inst = old.kEnumerator.next().instance();
         if (state >= 0) { // [HASLab] simulator, this is a fork
             Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
             inst = old.kEnumerator.nextS(state, 1, rels).instance();
@@ -1241,12 +1243,6 @@ public final class A4Solution {
         }
 
         /** {@inheritDoc} */
-        // [HASLab] simulator
-        public T branch(int i, Set<Relation> except, Map<Relation,TupleSet> force, boolean exclude) {
-            return iterator.branch(i, except, force, exclude);
-        }
-
-        /** {@inheritDoc} */
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
@@ -1265,6 +1261,16 @@ public final class A4Solution {
         @Override
         public T nextS(int state, int delta, Set<Relation> change) {
             return iterator.nextS(state, delta, change);
+        }
+
+        @Override
+        public boolean hasNextP() {
+            return iterator.hasNextP();
+        }
+
+        @Override
+        public boolean hasNextC() {
+            return iterator.hasNextC();
         }
     }
 
