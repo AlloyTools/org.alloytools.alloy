@@ -1741,7 +1741,11 @@ public final class A4Solution {
         if (eval == null)
             return this;
         if (nextCache == null)
-            nextCache = new A4Solution(this);
+            try { // [HASLab]
+                nextCache = new A4Solution(this);
+            } catch (UnsupportedOperationException e) {
+                throw new ErrorAPI(e.getMessage());
+            }
         return nextCache;
     }
 
