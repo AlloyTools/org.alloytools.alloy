@@ -451,13 +451,13 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
-        if (!(old.eval.instance() instanceof TemporalInstance))
-            inst = old.kEnumerator.next().instance();
+        if (state == -1) // [HASLab] simulator, this is a next config
+            inst = old.kEnumerator.nextC().instance();
         if (state >= 0) { // [HASLab] simulator, this is a fork
             Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
             inst = old.kEnumerator.nextS(state, 1, rels).instance();
-        } else // [HASLab] simulator, this is a next config
-            inst = old.kEnumerator.nextC().instance();
+        } else
+            inst = old.kEnumerator.next().instance();
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
