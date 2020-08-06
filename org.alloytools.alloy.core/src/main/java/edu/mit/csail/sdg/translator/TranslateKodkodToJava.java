@@ -307,10 +307,11 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * @param bounds - the Kodkod bounds object to use
      * @param atomMap - if nonnull, it is used to map the atom name before printing
      */
-    public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap) {
+    // [HASLab]
+    public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         StringWriter string = new StringWriter();
         PrintWriter file = new PrintWriter(string);
-        new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap);
+        new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap, mintrace, maxtrace); // [HASLab]
         if (file.checkError()) {
             return ""; // shouldn't happen
         } else {
@@ -348,7 +349,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * Constructor is private, so that the only way to access this class is via the
      * static convert() method.
      */
-    private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap) {
+    // [HASLab]
+    private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         file = pw;
         file.printf("import java.util.Arrays;%n");
         file.printf("import java.util.List;%n");
@@ -357,7 +359,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("import kodkod.instance.*;%n");
         file.printf("import kodkod.engine.*;%n");
         file.printf("import kodkod.engine.satlab.SATFactory;%n");
-        file.printf("import kodkod.engine.config.Options;%n%n");
+        file.printf("import kodkod.engine.config.ExtendedOptions;%n%n");
 
         file.printf("/* %n");
         file.printf("  ==================================================%n");
@@ -428,13 +430,15 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         }
         file.printf("%n");
         String result = make(x);
-        file.printf("%nSolver solver = new Solver();");
-        file.printf("%nsolver.options().setSolver(SATFactory.DefaultSAT4J);");
-        file.printf("%nsolver.options().setBitwidth(%d);", bitwidth != 0 ? bitwidth : 1);
-        file.printf("%nsolver.options().setFlatten(false);");
-        file.printf("%nsolver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);");
-        file.printf("%nsolver.options().setSymmetryBreaking(20);");
-        file.printf("%nsolver.options().setSkolemDepth(0);");
+        file.printf("%nExtendedOptions opt = new ExtendedOptions();");
+        file.printf("%nopt.setSolver(SATFactory.DefaultSAT4J);");
+        file.printf("%nopt.setBitwidth(%d);", bitwidth != 0 ? bitwidth : 1);
+        file.printf("%nopt.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);");
+        file.printf("%nopt.setSymmetryBreaking(20);");
+        file.printf("%nopt.setSkolemDepth(0);");
+        file.printf("%nopt.setMinTraceLength(%d);", mintrace);
+        file.printf("%nopt.setMaxTraceLength(%d);", maxtrace);
+        file.printf("%nPardinusSolver solver = new PardinusSolver(opt);");
         file.printf("%nSystem.out.println(\"Solving...\");");
         file.printf("%nSystem.out.flush();");
         file.printf("%nSolution sol = solver.solve(%s,bounds);", result);

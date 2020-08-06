@@ -590,9 +590,9 @@ public final class A4Solution {
      */
     public String debugExtractKInput() {
         if (solved)
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name, mintrace, maxtrace); // [HASLab]
         else
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null, mintrace, maxtrace); // [HASLab]
     }
 
     // ===================================================================================================//
