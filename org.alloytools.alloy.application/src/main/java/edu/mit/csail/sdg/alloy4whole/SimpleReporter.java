@@ -36,6 +36,7 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorAPI;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
@@ -366,7 +367,7 @@ final class SimpleReporter extends A4Reporter {
     /** {@inheritDoc} */
     @Override
     public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        startTime = System.currentTimeMillis(); // [HASLab]
+        startTime = System.currentTimeMillis();
         cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
     }
 
@@ -618,11 +619,16 @@ final class SimpleReporter extends A4Reporter {
             }
             int tries = 0;
             while (true) {
-                if (this.index >= -1) {
-                    latestKodkods.clear();
-                    sol = sol.fork(this.index); // [HASLab] simulator
-                } else
-                    sol = sol.next();
+                try {
+                    if (this.index >= -1) {
+                        latestKodkods.clear();
+                        sol = sol.fork(this.index); // [HASLab] simulator
+                    } else
+                        sol = sol.next();
+                } catch (ErrorAPI e) { // [HASLab]
+                    cb("pop", e.getMessage());
+                    return;
+                }
                 if (!sol.satisfiable()) {
                     cb("pop", "There are no more satisfying instances.\n\n" + "Note: due to symmetry breaking and other optimizations,\n" + "some equivalent solutions may have been omitted.");
                     return;

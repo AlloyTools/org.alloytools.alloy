@@ -451,13 +451,17 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
-        if (state == -1) // [HASLab] simulator, this is a next config
-            inst = old.kEnumerator.nextC().instance();
-        if (state >= 0) { // [HASLab] simulator, this is a fork
-            Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
-            inst = old.kEnumerator.nextS(state, 1, rels).instance();
-        } else
-            inst = old.kEnumerator.next().instance();
+        try {
+            if (state == -1) // [HASLab] simulator, this is a next config
+                inst = old.kEnumerator.nextC().instance();
+            if (state >= 0) { // [HASLab] simulator, this is a fork
+                Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
+                inst = old.kEnumerator.nextS(state, 1, rels).instance();
+            } else
+                inst = old.kEnumerator.next().instance();
+        } catch (UnsupportedOperationException e) {
+            throw new ErrorAPI(e.getMessage());
+        }
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
@@ -596,9 +600,9 @@ public final class A4Solution {
      */
     public String debugExtractKInput() {
         if (solved)
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name, mintrace, maxtrace); // [HASLab]
         else
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null, mintrace, maxtrace); // [HASLab]
     }
 
     // ===================================================================================================//
@@ -1539,7 +1543,6 @@ public final class A4Solution {
         };
         // [HASLab] sl4j reporter
         solver.options().setReporter(new SLF4JReporter() { // Set up a reporter to catch the type+pos of skolems
-            // [HASLab]
 
             @Override
             public void skolemizing(Decl decl, Relation skolem, List<Decl> predecl) {
