@@ -69,7 +69,7 @@ public class TestReporter extends A4Reporter {
      */
     @Override
     public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
+        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry);
     }
 
     /**
