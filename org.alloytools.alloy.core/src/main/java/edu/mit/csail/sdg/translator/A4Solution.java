@@ -1523,7 +1523,6 @@ public final class A4Solution {
         };
         // [HASLab] sl4j reporter
         solver.options().setReporter(new SLF4JReporter() { // Set up a reporter to catch the type+pos of skolems
-            // [HASLab]
 
             @Override
             public void skolemizing(Decl decl, Relation skolem, List<Decl> predecl) {
