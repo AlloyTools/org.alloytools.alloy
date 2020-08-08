@@ -79,7 +79,8 @@ import kodkod.util.ints.IntVector;
 /**
  * Translate an Alloy AST into Kodkod AST then attempt to solve it using Kodkod.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-decomposed
  */
 
 public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
@@ -457,9 +458,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 private boolean first = true;
 
                 @Override
-                public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+                public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) { // [HASLab]
                     if (first)
-                        super.translate(solver, bitwidth, maxseq, skolemDepth, symmetry);
+                        super.translate(solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
                     first = false;
                 }
 
@@ -815,7 +816,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case EMPTYNESS :
                 return Expression.NONE;
             case IDEN :
-                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
+                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
             case STRING :
                 Expression ans = s2k(x.string);
                 if (ans == null)
@@ -884,7 +885,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case CAST2INT :
                 return sum(cset(x.sub));
             case RCLOSURE :
-                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
+                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
                 return cset(x.sub).closure().union(iden);
             case CLOSURE :
                 return cset(x.sub).closure();

@@ -51,7 +51,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-decomposed
  */
 public final class SimpleCLI {
 
@@ -115,9 +115,10 @@ public final class SimpleCLI {
             sb.append(msg);
         }
 
+        // [HASLab]
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            debug("Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+            debug("Solver=" + solver + "Strategy=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n"); // [HASLab]
         }
 
         @Override
