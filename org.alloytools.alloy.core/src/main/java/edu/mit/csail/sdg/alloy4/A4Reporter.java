@@ -128,9 +128,9 @@ public class A4Reporter {
      * @param clauses - the total number of clauses
      */
     // [HASLab]
-    public void solve(int step, int primaryVars, int totalVars, int clauses) {
+    public void solve(int configs, int step, int primaryVars, int totalVars, int clauses) {
         if (parent != null)
-            parent.solve(step, primaryVars, totalVars, clauses); // [HASLab]
+            parent.solve(configs, step, primaryVars, totalVars, clauses); // [HASLab]
     }
 
     /**

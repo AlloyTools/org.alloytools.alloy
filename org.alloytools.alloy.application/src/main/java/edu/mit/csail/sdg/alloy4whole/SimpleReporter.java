@@ -375,11 +375,13 @@ final class SimpleReporter extends A4Reporter {
     /** {@inheritDoc} */
     @Override
     // [HASLab]
-    public void solve(final int step, final int primaryVars, final int totalVars, final int clauses) {
+    public void solve(final int configs, final int step, final int primaryVars, final int totalVars, final int clauses) {
         minimized = 0;
         if (startStep < 0)
             startStep = step;
         StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
+        if (configs > 0)
+            sb.append(configs + " configs. "); // [HASLab]
         if (step > 0)
             sb.append(startStep + ".." + step + " steps. "); // [HASLab]
         if (totalVars >= 0)

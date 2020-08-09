@@ -123,7 +123,7 @@ public final class SimpleCLI {
 
         @Override
         // [HASLab]
-        public void solve(int step, int primaryVars, int totalVars, int clauses) {
+        public void solve(int configs, int step, int primaryVars, int totalVars, int clauses) {
             if (db)
                 db("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses.\n");
             sb.append("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. 12345ms.\n");

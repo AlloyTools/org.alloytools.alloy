@@ -86,7 +86,7 @@ public class TestReporter extends A4Reporter {
      */
     @Override
     // [HASLab]
-    public void solve(int step, int primaryVars, int totalVars, int clauses) {
+    public void solve(int configs, int step, int primaryVars, int totalVars, int clauses) {
         out.printf("SOLV primary=%s total=%s clauses=%s%n", primaryVars, totalVars, clauses);
     }
 
