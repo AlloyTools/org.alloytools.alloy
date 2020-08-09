@@ -118,7 +118,7 @@ public final class SimpleCLI {
         // [HASLab]
         @Override
         public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            debug("Solver=" + solver + "Strategy=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n"); // [HASLab]
+            debug("Solver=" + solver + " Decomposed=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n"); // [HASLab]
         }
 
         @Override

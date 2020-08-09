@@ -630,7 +630,7 @@ public class A4Preferences {
                                                                       };
 
     // [HASLab]
-    public static final ChoicePref<Decomposed> DecomposedPref         = new ChoicePref<Decomposed>("Decomposed", Decomposed.values(), Decomposed.OFF) {
+    public static final ChoicePref<Decomposed> DecomposedPref         = new ChoicePref<Decomposed>("Decomposed strategy", Decomposed.values(), Decomposed.OFF) {
 
                                                                           @Override
                                                                           protected String serialize(Decomposed value) {
@@ -641,7 +641,7 @@ public class A4Preferences {
     // [HASLab]
     public enum Decomposed {
                             /** Level 0. */
-                            OFF("0", "off"),
+                            OFF("0", "disabled"),
                             /** Level 1. */
                             HYBRID("1", "hybrid"),
                             /** Level 2. */
