@@ -1598,7 +1598,7 @@ public final class A4Solution {
                 b = new PardinusBounds(bounds, true); // [HASLab] split bounds on temporal
             else
                 b = bounds;
-            try {
+            try { // [HASLab] better handling of runtime errors
                 kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));  // [HASLab]
             } catch (InvalidMutableExpressionException e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
