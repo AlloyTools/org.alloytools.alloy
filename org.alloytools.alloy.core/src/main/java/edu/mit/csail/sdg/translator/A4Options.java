@@ -188,26 +188,14 @@ public final class A4Options implements Serializable {
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
         /** Electrod through NuSMV */
         // [HASLab]
-        public static final SatSolver ElectrodS        = new SatSolver("electrodS", "Electrod/NuSMV", "electrod", null, true);
-
-        // [HASLab]
-        public static final SatSolver electrodS(String... args) {
-            return new SatSolver("electrodS", "Electrod_NuSMV", "electrod", args, false);
-        }
-
+        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true);
         /** Electrod through nuXmv */
         // [HASLab]
-        public static final SatSolver ElectrodX = new SatSolver("electrodX", "Electrod/nuXmv", "electrod", null, true);
-
-        // [HASLab]
-        public static final SatSolver electrodX(String... args) {
-            return new SatSolver("electrodX", "Electrod_nuXmv", "electrod", args, false);
-        }
-
+        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
         /** Outputs the raw CNF file only */
-        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
         /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
+        public static final SatSolver KK               = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
 
     }
 
