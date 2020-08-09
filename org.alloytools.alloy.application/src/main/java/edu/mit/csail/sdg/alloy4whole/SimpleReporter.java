@@ -381,14 +381,15 @@ final class SimpleReporter extends A4Reporter {
             startStep = step;
         if (startStep == step) // [HASLab] denotes a new config
             startCount++;
+        seenStep = Math.max(seenStep, step);
         primaryVars += pv; // [HASLab]
         totalVars += tv; // [HASLab]
         clauses += cl; // [HASLab]
         StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
         if (startCount > 1)
             sb.append(startCount + " configs. "); // [HASLab]
-        if (step > 0)
-            sb.append(startStep + ".." + step + " steps. "); // [HASLab]
+        if (seenStep > 0)
+            sb.append(startStep + ".." + seenStep + " steps. "); // [HASLab]
         if (totalVars >= 0)
             sb.append("" + totalVars + " vars. ");
         if (primaryVars >= 0)
@@ -511,7 +512,7 @@ final class SimpleReporter extends A4Reporter {
      */
     private long          lastTime  = 0, startTime = 0; // [HASLab]
 
-    private int           startStep = -1, primaryVars = 0, clauses = 0, totalVars = 0, startCount = 0; // [HASLab]
+    private int           startStep = -1, seenStep = -1, primaryVars = 0, clauses = 0, totalVars = 0, startCount = 0; // [HASLab]
 
     /**
      * If we performed unsat core minimization, then this is the start of the
