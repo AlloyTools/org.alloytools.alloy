@@ -5,6 +5,9 @@ import java.io.PrintStream;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
+/**
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ */
 public class TestReporter extends A4Reporter {
 
     PrintStream out = System.out;
