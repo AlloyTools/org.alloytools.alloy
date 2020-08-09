@@ -377,9 +377,9 @@ final class SimpleReporter extends A4Reporter {
     // [HASLab]
     public void solve(final int step, final int primaryVars, final int totalVars, final int clauses) {
         minimized = 0;
-        if (startStep < 0)
+        if (startStep < 0) // [HASLab] first report denotes initial step scope
             startStep = step;
-        if (startStep == step)
+        if (startStep == step) // [HASLab] denotes a new config
             startCount++;
         StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
         if (startCount > 0)
