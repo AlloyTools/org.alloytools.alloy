@@ -6,7 +6,8 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
 /**
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-decomposed
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-decomposed
  */
 public class TestReporter extends A4Reporter {
 
@@ -86,7 +87,7 @@ public class TestReporter extends A4Reporter {
      */
     @Override
     // [HASLab]
-    public void solve(int configs, int step, int primaryVars, int totalVars, int clauses) {
+    public void solve(int step, int primaryVars, int totalVars, int clauses) {
         out.printf("SOLV primary=%s total=%s clauses=%s%n", primaryVars, totalVars, clauses);
     }
 

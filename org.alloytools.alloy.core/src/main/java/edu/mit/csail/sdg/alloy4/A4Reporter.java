@@ -21,7 +21,7 @@ package edu.mit.csail.sdg.alloy4;
  * (This default implementation ignores all calls; you should subclass it to do
  * the appropriate screen output)
  *
- * @modified Nuno Macedo // [HASLab] electrum-decomposed
+ * @modified Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public class A4Reporter {
@@ -128,9 +128,9 @@ public class A4Reporter {
      * @param clauses - the total number of clauses
      */
     // [HASLab]
-    public void solve(int configs, int step, int primaryVars, int totalVars, int clauses) {
+    public void solve(int step, int primaryVars, int totalVars, int clauses) {
         if (parent != null)
-            parent.solve(configs, step, primaryVars, totalVars, clauses); // [HASLab]
+            parent.solve(step, primaryVars, totalVars, clauses); // [HASLab]
     }
 
     /**
@@ -204,15 +204,6 @@ public class A4Reporter {
     public void write(Object expr) {
         if (parent != null)
             parent.write(expr);
-    }
-
-    /**
-     * Called to report the number of configs found when running in decomposed mode.
-     */
-    // [HASLab]
-    public void configs(int configs) {
-        if (parent != null)
-            parent.configs(configs);
     }
 
 }

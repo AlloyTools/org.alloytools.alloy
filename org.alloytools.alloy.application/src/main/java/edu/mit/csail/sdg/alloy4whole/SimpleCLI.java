@@ -51,7 +51,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-decomposed
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 public final class SimpleCLI {
 
@@ -123,7 +123,7 @@ public final class SimpleCLI {
 
         @Override
         // [HASLab]
-        public void solve(int configs, int step, int primaryVars, int totalVars, int clauses) {
+        public void solve(int step, int primaryVars, int totalVars, int clauses) {
             if (db)
                 db("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses.\n");
             sb.append("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. 12345ms.\n");
