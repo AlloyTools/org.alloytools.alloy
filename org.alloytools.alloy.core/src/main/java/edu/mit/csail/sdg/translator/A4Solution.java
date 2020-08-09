@@ -1616,7 +1616,7 @@ public final class A4Solution {
             sol = solver.solve(fgoal, bounds);
         } else {
             PardinusBounds b = bounds;
-            try {
+            try { // [HASLab] better handling of runtime errors
                 kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
             } catch (InvalidMutableExpressionException e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
