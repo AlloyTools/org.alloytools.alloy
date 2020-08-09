@@ -430,8 +430,7 @@ public class PreferencesDialog extends JFrame {
     }
 
     protected Component initSolverPane() {
-        JPanel pp = OurUtil.makeH("PATH:", System.getenv("PATH")); // [HASLab] debug
-        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), pp, mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization));
+        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), OurUtil.makeH("PATH:", System.getenv("PATH")), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization)); // [HASLab]
         int r = 6; // [HASLab]
         addToGrid(p, mkCheckBox(NoOverflow), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(ImplicitThis), gbc().pos(0, r++).gridwidth(2));
