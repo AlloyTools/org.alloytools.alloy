@@ -1424,6 +1424,7 @@ public final class VizGUI implements ComponentListener {
             if (r.name().contains("this/"))
                 rels = rels.and(r.eq(r));
         Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap(), rels, true);
+        // [HASLab] normalize variable names
         AbstractReplacer repls = new AbstractReplacer(new HashSet<Node>()) {
 
             @Override
