@@ -106,6 +106,7 @@ public class A4Reporter {
     /**
      * This method is called by the translator just before it begins generating CNF.
      *
+     * @param strat - the decomposed solving strategy (disabled, parallel, hybrid)
      * @param solver - the solver chosen by the user (eg. SAT4J, MiniSat...)
      * @param bitwidth - the integer bitwidth chosen by the user
      * @param maxseq - the scope on seq/Int chosen by the user
