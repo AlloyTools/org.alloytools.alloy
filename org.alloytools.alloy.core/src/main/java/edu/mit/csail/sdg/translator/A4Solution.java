@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -461,7 +462,7 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
-        try {
+        try { // [HASLab] better reporting of unsupported iteration
             inst = old.kEnumerator.next().instance();
         } catch (UnsupportedOperationException e) {
             throw new ErrorAPI(e.getMessage());
@@ -1539,9 +1540,9 @@ public final class A4Solution {
             }
 
             @Override
-            // [HASLab]
+            // [HASLab] synchronized due to multiple parallel problems reporting
             public synchronized void solvingCNF(int step, int primaryVars, int vars, int clauses) {
-                // [HASLab] changed cb, will replace
+                // [HASLab] changed cb, will replace message when multiple reports
                 //                if (solved[0])
                 //                    return;
                 //                else
@@ -1883,6 +1884,10 @@ public final class A4Solution {
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
+    /**
+     * Extract symbolic bounds from the model's signatures and add them to the
+     * problem's bounds.
+     */
     // [HASLab]
     protected void addSymbolicBound(Sig s) {
         if (s.builtin || s.isTopLevel() || s instanceof PrimSig)
@@ -1905,6 +1910,10 @@ public final class A4Solution {
             bounds.bound(r, ke);
     }
 
+    /**
+     * Extract symbolic bounds from the model's fields and add them to the problem's
+     * bounds.
+     */
     // [HASLab]
     protected void addSymbolicBound(Field f) {
         Relation r;
