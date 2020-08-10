@@ -6,7 +6,8 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
 /**
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-decomposed
  */
 public class TestReporter extends A4Reporter {
 
@@ -70,9 +71,10 @@ public class TestReporter extends A4Reporter {
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
+    // [HASLab]
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry);
+    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
     }
 
     /**

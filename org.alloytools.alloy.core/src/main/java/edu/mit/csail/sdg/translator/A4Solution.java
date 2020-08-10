@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 import org.alloytools.util.table.Table;
 
+import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -88,6 +89,7 @@ import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
+import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
@@ -115,7 +117,7 @@ import kodkod.util.ints.IndexedEntry;
  * has been called, then this object becomes immutable after that.
  *
  * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-simulator, electrum-unbounded
+ *            electrum-simulator, electrum-unbounded, electrum-decomposed
  */
 
 public final class A4Solution {
@@ -388,6 +390,17 @@ public final class A4Solution {
         solver_opts.setMaxTraceLength(maxtrace); // [HASLab] propagate options
         solver_opts.setMinTraceLength(mintrace); // [HASLab] propagate options
         solver_opts.setRunUnbounded(maxtrace == Integer.MAX_VALUE); // [HASLab] propagate options
+        if (opt.decomposed_mode > 0) { // [HASLab] propagate options
+            solver_opts.setRunDecomposed(true);
+            if (opt.decomposed_mode == 1)
+                solver_opts.setDecomposedMode(DMode.HYBRID);
+            else
+                solver_opts.setDecomposedMode(DMode.PARALLEL);
+            if (opt.decomposed_threads > 0)
+                solver_opts.setThreads(opt.decomposed_threads);
+        } else {
+            solver_opts.setRunDecomposed(false);
+        }
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
         // [HASLab] pushed solver creation further below as solver choice is needed for initialization
@@ -1548,7 +1561,7 @@ public final class A4Solution {
         rep.debug("Simplifying the bounds...\n");
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
-        rep.translate(opt.solver.id(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking());
+        rep.translate(opt.solver.id(), A4Preferences.Decomposed.values()[opt.decomposed_mode].toString(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking()); // [HASLab]
         Formula fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
@@ -1577,8 +1590,8 @@ public final class A4Solution {
             }
 
             @Override
-            // [HASLab]
-            public void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+            // [HASLab] synchronized due to multiple parallel problems reporting
+            public synchronized void solvingCNF(int step, int primaryVars, int vars, int clauses) {
                 // [HASLab] changed cb, will replace message when multiple reports
                 //                if (solved[0])
                 //                    return;
@@ -1631,9 +1644,13 @@ public final class A4Solution {
         if (/* solver.options().solver()==SATFactory.ZChaffMincost || */ !solver.options().solver().incremental()) {
             sol = solver.solve(fgoal, bounds);
         } else {
-            PardinusBounds b = bounds;
+            PardinusBounds b;
+            if (solver.options().decomposed())
+                b = new PardinusBounds(bounds, true); // [HASLab] split bounds on temporal
+            else
+                b = bounds;
             try { // [HASLab] better handling of runtime errors
-                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));  // [HASLab]
             } catch (InvalidMutableExpressionException e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
