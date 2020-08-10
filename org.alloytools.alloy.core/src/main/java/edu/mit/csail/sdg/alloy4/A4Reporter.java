@@ -121,12 +121,13 @@ public class A4Reporter {
     /**
      * This method is called by the translator just after it generated the CNF.
      *
+     * @param step - the maximum prefix length
      * @param primaryVars - the total number of primary variables
      * @param totalVars - the total number of variables including the number of
      *            primary variables
      * @param clauses - the total number of clauses
      */
-    // [HASLab]
+    // [HASLab] prefix length
     public void solve(int step, int primaryVars, int totalVars, int clauses) {
         if (parent != null)
             parent.solve(step, primaryVars, totalVars, clauses); // [HASLab]

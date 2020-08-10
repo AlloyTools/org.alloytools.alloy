@@ -77,7 +77,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * Requirements: atoms must be String objects (since we cannot possibly output a
  * Java source code that can re-generate arbitrary Java objects).
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-unbounded
  */
 
 public final class TranslateKodkodToJava implements VoidVisitor {
@@ -430,16 +430,16 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         }
         file.printf("%n");
         String result = make(x);
-        file.printf("%nExtendedOptions opt = new ExtendedOptions();");
+        file.printf("%nExtendedOptions opt = new ExtendedOptions();"); // [HASLab]
         file.printf("%nopt.setSolver(SATFactory.DefaultSAT4J);");
         file.printf("%nopt.setBitwidth(%d);", bitwidth != 0 ? bitwidth : 1);
         file.printf("%nopt.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);");
         file.printf("%nopt.setSymmetryBreaking(20);");
         file.printf("%nopt.setSkolemDepth(0);");
-        file.printf("%nopt.setMinTraceLength(%d);", mintrace);
-        file.printf("%nopt.setMaxTraceLength(%d);", maxtrace);
-        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE);
-        file.printf("%nPardinusSolver solver = new PardinusSolver(opt);");
+        file.printf("%nopt.setMinTraceLength(%d);", mintrace); // [HASLab]
+        file.printf("%nopt.setMaxTraceLength(%d);", maxtrace); // [HASLab]
+        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE); // [HASLab]
+        file.printf("%nPardinusSolver solver = new PardinusSolver(opt);"); // [HASLab]
         file.printf("%nSystem.out.println(\"Solving...\");");
         file.printf("%nSystem.out.flush();");
         file.printf("%nSolution sol = solver.solve(%s,bounds);", result);
