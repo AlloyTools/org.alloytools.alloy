@@ -115,7 +115,7 @@ import kodkod.util.ints.IndexedEntry;
  * has been called, then this object becomes immutable after that.
  *
  * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-simulator
+ *            electrum-simulator, electrum-unbounded
  */
 
 public final class A4Solution {
@@ -325,14 +325,16 @@ public final class A4Solution {
         this.maxseq = maxseq;
         this.maxtrace = maxtrace; // [HASLab]
         this.mintrace = mintrace; // [HASLab]
+        if (maxtrace == Integer.MAX_VALUE && !(opt.solver.external() != null && opt.solver.external().equals("electrod"))) // [HASLab] unbounded solvers
+            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
-            throw new ErrorSyntax("Cannot specify a bitwidth less than 0");
+            throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
-            throw new ErrorSyntax("Cannot specify a bitwidth greater than 30");
+            throw new ErrorSyntax("Cannot specify a bitwidth greater than 30.");
         if (maxseq < 0)
             throw new ErrorSyntax("The maximum sequence length cannot be negative.");
         if (maxseq > 0 && maxseq > max())
-            throw new ErrorSyntax("With integer bitwidth of " + bitwidth + ", you cannot have sequence length longer than " + max());
+            throw new ErrorSyntax("With integer bitwidth of " + bitwidth + ", you cannot have sequence length longer than " + max() + ".");
         if (atoms.isEmpty()) {
             atoms = new ArrayList<String>(1);
             atoms.add("<empty>");
@@ -385,10 +387,23 @@ public final class A4Solution {
         solver_opts.setNoOverflow(opt.noOverflow);
         solver_opts.setMaxTraceLength(maxtrace); // [HASLab] propagate options
         solver_opts.setMinTraceLength(mintrace); // [HASLab] propagate options
+        solver_opts.setRunUnbounded(maxtrace == Integer.MAX_VALUE); // [HASLab] propagate options
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
         // [HASLab] pushed solver creation further below as solver choice is needed for initialization
-        if (opt.solver.external() != null) {
+        if (opt.solver.id().equals(A4Options.SatSolver.ElectrodS.id())) { // [HASLab]
+            String[] nopts = new String[opt.solver.options().length + 2];
+            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
+            nopts[0] = "-t";
+            nopts[1] = "NuSMV";
+            solver_opts.setSolver(SATFactory.electrod(nopts));
+        } else if (opt.solver.id().equals(A4Options.SatSolver.ElectrodX.id())) { // [HASLab]
+            String[] nopts = new String[opt.solver.options().length + 2];
+            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
+            nopts[0] = "-t";
+            nopts[1] = "nuXmv";
+            solver_opts.setSolver(SATFactory.electrod(nopts));
+        } else if (opt.solver.external() != null) {
             String ext = opt.solver.external();
             if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
                 ext = opt.solverDirectory + File.separatorChar + ext;
@@ -1625,6 +1640,7 @@ public final class A4Solution {
             } catch (InvalidSolverParamException e) {
                 throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
             }
+
             if (sol == null)
                 sol = kEnumerator.next();
         }

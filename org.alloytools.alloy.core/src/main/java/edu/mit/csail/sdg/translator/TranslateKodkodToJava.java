@@ -77,7 +77,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * Requirements: atoms must be String objects (since we cannot possibly output a
  * Java source code that can re-generate arbitrary Java objects).
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-unbounded
  */
 
 public final class TranslateKodkodToJava implements VoidVisitor {
@@ -438,6 +438,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("%nopt.setSkolemDepth(0);");
         file.printf("%nopt.setMinTraceLength(%d);", mintrace); // [HASLab]
         file.printf("%nopt.setMaxTraceLength(%d);", maxtrace); // [HASLab]
+        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE); // [HASLab]
         file.printf("%nPardinusSolver solver = new PardinusSolver(opt);"); // [HASLab]
         file.printf("%nSystem.out.println(\"Solving...\");");
         file.printf("%nSystem.out.flush();");
