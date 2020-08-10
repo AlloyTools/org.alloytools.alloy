@@ -293,7 +293,6 @@ public final class WorkerEngine {
                         main2sub.close();
                         sub2main = new ObjectInputStream(wrap(sub.getInputStream()));
                     } catch (Throwable ex) {
-                        ex.printStackTrace();
                         sub.destroy();
                         Util.close(main2sub);
                         Util.close(sub2main);
