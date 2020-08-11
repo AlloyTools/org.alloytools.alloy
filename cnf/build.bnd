@@ -22,7 +22,7 @@ Bundle-DocURL: 			http://alloytools.org
 Bundle-License:			MIT
 
 base.version:           5.0.0
-elec.version:           0.0.0
+elec.version:           2.1.0
 Bundle-Version:         ${elec.version}.${tstamp}
 Bundle-Description:		Electrum Analyzer ${Bundle-Version} (forked from Alloy Analyzer ${base.version})
 
