@@ -483,7 +483,7 @@ public final class A4Solution {
         try { // [HASLab] better reporting of unsupported iteration
             if (state == -1) // [HASLab] simulator, this is a next config
                 inst = old.kEnumerator.nextC().instance();
-            if (state >= 0) { // [HASLab] simulator, this is a fork
+            else if (state >= 0) { // [HASLab] simulator, this is a fork
                 Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
                 inst = old.kEnumerator.nextS(state, 1, rels).instance();
             } else
