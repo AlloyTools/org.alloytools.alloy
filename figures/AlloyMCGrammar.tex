@@ -1,0 +1,14 @@
+\begin{small}
+\begin{Verbatim}
+cmdDecl ::= [name ":"] ("run"|"check"|"count")
+            (name|block) scope
+scope ::= "for" number                   [expect]
+scope ::= "for" number "but" typescope,+ [expect]
+scope ::= "for"              typescope,+ [expect]
+scope ::=                                [expect]
+expect ::= "expect" [op] num
+typescope ::= ["exactly"] number [name|"int"|"seq"]
+op ::= ">=" | "<=" | "<" | ">" | "=" | "!=" 
+num ::= number | number "*" number "^" number
+\end{Verbatim}
+\end{small}

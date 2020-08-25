@@ -1,0 +1,23 @@
+\begin{Verbatim}
+ 1. \Blue{one sig} List \{
+ 2.	header: lone Node \}
+ 3. \Blue{sig} Node \{
+ 4.	link: lone Node \}
+ 5. \Blue{fact} \{ List.header.*link = Node \}
+ 6. \Blue{pred} Acyclic(l: List) \{
+ 7.	all n: l.header.*link | n !in n.^link \}
+ 8. \Blue{run} Acyclic for \Red{5}
+ 9. \Blue{run} Acyclic for \Red{5} \Blue{expect} \Red{1} \Green{-- 1 for sat, 0 for unsat}
+10. cmd1: \Blue{count} Acyclic for \Red{5}
+    \Green{-- simple count command}
+11. cmd2: \Blue{count} Acyclic for \Red{5} \Blue{expect} \Red{8}
+    \Green{-- expected count command}
+12. cmd3: \Blue{count} Acyclic for \Red{5} \Blue{expect} >= \Red{8}
+    \Green{-- operators for expected count: <=, >=, =, >, <, != }
+13. cmd4: \Blue{count} Acyclic for \Red{5} \Blue{expect} \Red{1}*\Red{2}^\Red{4}
+    \Green{-- expected count in x*y^z format}
+14. cmd5: \Blue{count} Acyclic for \Red{5} \Blue{expect} -\Red{1}
+    \Green{-- ignore negative expected count}
+\end{Verbatim}
+
+%%  LocalWords:  sig pred Acyclic cmd
