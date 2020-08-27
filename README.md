@@ -11,6 +11,42 @@ The latest runnable JAR file of AlloyMC is located under the "AlloyMC_distribute
 
 Note: Our design of AlloyMC also allows other model counters to be added in a convenient way. This part will be a future work.
 
+# AlloyMC demo
+
+The video demo can be found here: https://youtu.be/iogIrJ8kHI4.
+
+Here are the screeshots which could give you a walkthrough of AlloyMC in Mac System. The overall steps are similar to those covered in the video.
+
+Step 1. Download the JAR file from our github repository (https://github.com/jiayiyang1997/org.alloytools.alloy/tree/model\_count), and run it.
+![](figures/01_with_arrow.png)
+
+Step 2. The GUI shows up after running JAR file; ProjMC is not supported in MAC system as said in the warning message.
+![](figures/02.png)
+
+Step 3. Click on the "open" icon to open an Alloy model.
+![](figures/03_with_arrow.png)
+
+Step 4. The Alloy model is shown in the coding area. Users can also edit the model as needed. 
+![](figures/04.png)
+
+Step 5 (a). Users can do symmetry breaking setting in "Options" menu. 
+![](figures/05.png)
+
+Step 5 (b). Users can also select model counter in "Options" menu. ApproxMC is supported in Linux, MAC and Windows system; ProjMC is only supported in Linux system. 
+![](figures/06.png)
+
+Step 6. Users can select the command to execute in "Execute" menu
+![](figures/07.png)
+
+Step 7 (a). the output of model counting results including including the model count, the time usage, if it meets users' expectations, and the link to the file which stores the original output of the counter. (Users can run all the commands together. The result will be like the following one. Users can also run each command individually. Then the result for each command will also be shown individually.)
+![](figures/08.png)
+
+Step 7 (b). The file containing the full model counting results.
+![](figures/09.png)
+
+Step 8. Users can also use "Stop" icon during the counting to stop the execution.
+![](figures/10.png)
+
 
 # Alloy
 
