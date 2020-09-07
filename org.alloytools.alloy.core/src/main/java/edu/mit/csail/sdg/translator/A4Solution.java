@@ -98,6 +98,7 @@ import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
 import kodkod.engine.ucore.RCEStrategy;
+import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
@@ -1604,8 +1605,10 @@ public final class A4Solution {
                 throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
             } catch (InvalidSolverParamException e) {
                 throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
+            } catch (InvalidUnboundedProblem e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
             }
-
             if (sol == null)
                 sol = kEnumerator.next();
         }
