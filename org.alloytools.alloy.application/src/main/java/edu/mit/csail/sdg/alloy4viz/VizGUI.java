@@ -642,9 +642,9 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
-            cnfgMenu = menuItem(instanceMenu, "Show Next Configuration", 'C', 'C', doConfig()); // [HASLab]
-            initMenu = menuItem(instanceMenu, "Show Next Initial State", 'I', 'I', doInit()); // [HASLab]
-            forkMenu = menuItem(instanceMenu, "Fork Next State", 'F', 'F', doFork()); // [HASLab]
+            cnfgMenu = menuItem(instanceMenu, "Show Fresh Configuration", 'C', 'C', doConfig()); // [HASLab]
+            initMenu = menuItem(instanceMenu, "Show Fresh Initial State", 'I', 'I', doInit()); // [HASLab]
+            forkMenu = menuItem(instanceMenu, "Show Different Post-state", 'F', 'F', doFork()); // [HASLab]
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
             rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
@@ -701,8 +701,8 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(cnfgButton = OurUtil.button("Fresh Config", "Show a fresh configuration", "images/24_history.gif", doConfig())); // [HASLab]
             toolbar.add(initButton = OurUtil.button("Fresh Init", "Show a fresh initial state", "images/24_history.gif", doInit())); // [HASLab]
             toolbar.add(forkButton = OurUtil.button("Fork", "Show a different post-state", "images/24_history.gif", doFork())); // [HASLab]
-            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
-            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the previous state", "images/24_history.gif", rightNavListener));
+            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the previous state", "images/24_history.gif", leftNavListener));
+            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the next state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);
             toolbar.add(loadSettingsButton = OurUtil.button("Load", "Load the theme customization from a theme file", "images/24_open.gif", doLoadTheme()));
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
