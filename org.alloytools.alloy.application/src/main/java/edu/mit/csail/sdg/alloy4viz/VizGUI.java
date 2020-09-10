@@ -630,8 +630,8 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
-            leftNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
-            rightNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
+            leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
+            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
@@ -683,8 +683,8 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
             toolbar.add(enumerateButton = OurUtil.button("Next", "Show the next solution", "images/24_history.gif", doNext()));
-            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the next state", "images/24_history.gif", leftNavListener));
-            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the previous state", "images/24_history.gif", rightNavListener));
+            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the previous state", "images/24_history.gif", leftNavListener));
+            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the next state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);
             toolbar.add(loadSettingsButton = OurUtil.button("Load", "Load the theme customization from a theme file", "images/24_open.gif", doLoadTheme()));
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
