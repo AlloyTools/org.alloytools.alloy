@@ -354,6 +354,7 @@ public final class VizGraphPanel extends JPanel {
             map.put(tp.getAlloyType(), tp.getAlloyAtom());
         }
         currentProjection = new AlloyProjection(map);
+        List<GraphViewer> prevsv = viewer;
         viewer = new ArrayList<>(vizState.size()); // [HASLab]
         for (int i = 0; i < vizState.size(); i++) { // [HASLab]
             JPanel graph = vizState.get(i).getGraph(currentProjection);
@@ -362,9 +363,11 @@ public final class VizGraphPanel extends JPanel {
                 JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
                 diagramScrollPanels.get(i).setViewportView(txt);
             } else {
-                if (graph instanceof GraphViewer)
+                if (graph instanceof GraphViewer) {
                     viewer.add((GraphViewer) graph); // [HASLab]
-                else
+                    if (prevsv != null && i <= prevsv.size())
+                        viewer.get(i).setScale(prevsv.get(i).getScale());
+                } else
                     viewer = null;
                 graphPanels.get(i).removeAll();
                 graphPanels.get(i).add(graph);

@@ -694,6 +694,16 @@ public final strictfp class GraphViewer extends JPanel {
         return new Dimension((int) (graph.getTotalWidth() * scale), (int) (graph.getTotalHeight() * scale));
     }
 
+    // [HASLab]
+    public double getScale() {
+        return scale;
+    }
+
+    // [HASLab]
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+
     /**
      * This method is called by Swing to draw this component.
      */
