@@ -1421,7 +1421,8 @@ public final class VizGUI implements ComponentListener {
         TemporalInstance inst = (TemporalInstance) myStates.get(myStates.size() - 1).getOriginalInstance().originalA4.debugExtractKInstance();
         Formula rels = Formula.TRUE;
         for (Relation r : inst.state(0).relations())
-            rels = rels.and(r.eq(r));
+            if (!(r.toString().startsWith("Int/") || r.toString().startsWith("seq/")))
+                rels = rels.and(r.eq(r));
         Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap<Object,Expression>(), rels, true);
         // [HASLab] normalize variable names
         AbstractReplacer repls = new AbstractReplacer(new HashSet<Node>()) {
@@ -1431,9 +1432,9 @@ public final class VizGUI implements ComponentListener {
                 final Expression ret = lookup(v);
                 if (ret != null)
                     return ret;
-                String n = v.name().replace("$", "").replace("-", "n");
-                if (!Character.isAlphabetic(n.charAt(0)))
-                    n = "p" + n;
+                String n = v.name().replace("$", "");//.replace("-", "n");
+                //                if (!Character.isAlphabetic(n.charAt(0)))
+                //                    n = "p" + n;
                 return cache(v, Variable.nary(n, v.arity()));
             }
 
