@@ -367,17 +367,20 @@ final class SimpleReporter extends A4Reporter {
     /** {@inheritDoc} */
     @Override
     public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        startTime = System.currentTimeMillis(); // [HASLab]
+        startTime = System.currentTimeMillis();
         cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
     }
 
     /** {@inheritDoc} */
     @Override
-    // [HASLab]
-    public void solve(final int step, final int primaryVars, final int totalVars, final int clauses) {
+    // [HASLab] this may now be called multiple times in iterative temporal solving
+    public void solve(final int step, final int pv, final int tv, final int cl) {
         minimized = 0;
-        if (startStep < 0)
+        if (startStep < 0) // [HASLab] first report denotes initial step scope
             startStep = step;
+        primaryVars += pv; // [HASLab]
+        totalVars += tv; // [HASLab]
+        clauses += cl; // [HASLab]
         StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
         if (step > 0)
             sb.append(startStep + ".." + step + " steps. "); // [HASLab]
@@ -503,7 +506,7 @@ final class SimpleReporter extends A4Reporter {
      */
     private long          lastTime  = 0, startTime = 0; // [HASLab]
 
-    private int           startStep = -1; // [HASLab]
+    private int           startStep = -1, primaryVars = 0, clauses = 0, totalVars = 0; // [HASLab]
 
     /**
      * If we performed unsat core minimization, then this is the start of the

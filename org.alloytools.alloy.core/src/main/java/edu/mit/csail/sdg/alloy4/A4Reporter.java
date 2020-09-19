@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -19,6 +20,8 @@ package edu.mit.csail.sdg.alloy4;
  * This class receives diagnostic, progress, and warning messages from Alloy4.
  * (This default implementation ignores all calls; you should subclass it to do
  * the appropriate screen output)
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public class A4Reporter {
@@ -118,12 +121,13 @@ public class A4Reporter {
     /**
      * This method is called by the translator just after it generated the CNF.
      *
+     * @param step - the maximum prefix length
      * @param primaryVars - the total number of primary variables
      * @param totalVars - the total number of variables including the number of
      *            primary variables
      * @param clauses - the total number of clauses
      */
-    // [HASLab]
+    // [HASLab] prefix length
     public void solve(int step, int primaryVars, int totalVars, int clauses) {
         if (parent != null)
             parent.solve(step, primaryVars, totalVars, clauses); // [HASLab]
