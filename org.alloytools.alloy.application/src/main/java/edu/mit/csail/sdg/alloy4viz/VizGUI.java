@@ -1460,9 +1460,7 @@ public final class VizGUI implements ComponentListener {
                 final Expression ret = lookup(v);
                 if (ret != null)
                     return ret;
-                String n = v.name().replace("$", "");//.replace("-", "n");
-                //                if (!Character.isAlphabetic(n.charAt(0)))
-                //                    n = "p" + n;
+                String n = v.name().replace("$", "");
                 return cache(v, Variable.nary(n, v.arity()));
             }
 
