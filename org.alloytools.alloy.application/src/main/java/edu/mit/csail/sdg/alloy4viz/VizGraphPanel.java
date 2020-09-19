@@ -80,7 +80,8 @@ public final class VizGraphPanel extends JPanel {
     /**
      * The current GraphViewer (or null if we are not looking at a GraphViewer).
      */
-    private GraphViewer                    viewer              = null;
+    // [HASLab]
+    private List<GraphViewer>              viewer              = null;
 
     /**
      * The scrollpanes containing the upperhalf of the panel (showing the graphs).
@@ -304,11 +305,12 @@ public final class VizGraphPanel extends JPanel {
             public void mousePressed(MouseEvent ev) {
                 // We let Ctrl+LeftClick bring up the popup menu, just like RightClick,
                 // since many Mac mouses do not have a right button.
-                if (viewer == null)
+                if (viewer.size() <= i)
                     return;
                 else if (ev.getButton() == MouseEvent.BUTTON3) {} else if (ev.getButton() == MouseEvent.BUTTON1 && ev.isControlDown()) {} else
                     return;
-                viewer.alloyPopup(graphPanel, ev.getX(), ev.getY());
+                if (graphPanel.contains(ev.getX(), ev.getY()))
+                    viewer.get(i).alloyPopup(graphPanel, ev.getX(), ev.getY());
             }
         });
 
@@ -352,6 +354,8 @@ public final class VizGraphPanel extends JPanel {
             map.put(tp.getAlloyType(), tp.getAlloyAtom());
         }
         currentProjection = new AlloyProjection(map);
+        List<GraphViewer> prevsv = viewer;
+        viewer = new ArrayList<>(vizState.size()); // [HASLab]
         for (int i = 0; i < vizState.size(); i++) { // [HASLab]
             JPanel graph = vizState.get(i).getGraph(currentProjection);
             if (seeDot && (graph instanceof GraphViewer)) {
@@ -359,9 +363,11 @@ public final class VizGraphPanel extends JPanel {
                 JTextArea txt = OurUtil.textarea(graph.toString(), 10, 10, false, true, getFont());
                 diagramScrollPanels.get(i).setViewportView(txt);
             } else {
-                if (graph instanceof GraphViewer)
-                    viewer = (GraphViewer) graph;
-                else
+                if (graph instanceof GraphViewer) {
+                    viewer.add((GraphViewer) graph); // [HASLab]
+                    if (prevsv != null && i <= prevsv.size())
+                        viewer.get(i).setScale(prevsv.get(i).getScale());
+                } else
                     viewer = null;
                 graphPanels.get(i).removeAll();
                 graphPanels.get(i).add(graph);
@@ -400,7 +406,7 @@ public final class VizGraphPanel extends JPanel {
      * the graph hasn't loaded yet)
      */
     public GraphViewer alloyGetViewer() {
-        return viewer;
+        return viewer.get(0); // [HASLab]
     }
 
     /**
