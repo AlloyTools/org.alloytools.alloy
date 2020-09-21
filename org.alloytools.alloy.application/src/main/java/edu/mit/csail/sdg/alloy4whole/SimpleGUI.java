@@ -16,161 +16,53 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerHeight;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerWidth;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerX;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerY;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposedPref;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model0;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model1;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model2;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model3;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Welcome;
-import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
-import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
-import static java.awt.event.KeyEvent.VK_A;
-import static java.awt.event.KeyEvent.VK_ALT;
-import static java.awt.event.KeyEvent.VK_E;
-import static java.awt.event.KeyEvent.VK_PAGE_DOWN;
-import static java.awt.event.KeyEvent.VK_PAGE_UP;
-import static java.awt.event.KeyEvent.VK_SHIFT;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.Set;
-
-import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.plaf.FontUIResource;
-import javax.swing.text.html.HTMLDocument;
-
-import org.alloytools.alloy.core.AlloyCore;
-
-//import com.apple.eawt.Application;
-//import com.apple.eawt.ApplicationAdapter;
-//import com.apple.eawt.ApplicationEvent;
-//
-
-import edu.mit.csail.sdg.alloy4.A4Preferences;
-import edu.mit.csail.sdg.alloy4.A4Preferences.BooleanPref;
-import edu.mit.csail.sdg.alloy4.A4Preferences.ChoicePref;
-import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
-import edu.mit.csail.sdg.alloy4.A4Preferences.StringPref;
-import edu.mit.csail.sdg.alloy4.A4Preferences.Verbosity;
-import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.Computer;
-import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4.ErrorFatal;
-import edu.mit.csail.sdg.alloy4.ErrorType;
-import edu.mit.csail.sdg.alloy4.Listener;
-import edu.mit.csail.sdg.alloy4.MailBug;
-import edu.mit.csail.sdg.alloy4.OurAntiAlias;
-import edu.mit.csail.sdg.alloy4.OurBorder;
-import edu.mit.csail.sdg.alloy4.OurCombobox;
-import edu.mit.csail.sdg.alloy4.OurDialog;
-import edu.mit.csail.sdg.alloy4.OurSyntaxWidget;
-import edu.mit.csail.sdg.alloy4.OurTabbedSyntaxWidget;
-import edu.mit.csail.sdg.alloy4.OurTree;
-import edu.mit.csail.sdg.alloy4.OurUtil;
-import edu.mit.csail.sdg.alloy4.Pair;
-import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.Runner;
-import edu.mit.csail.sdg.alloy4.Util;
-import edu.mit.csail.sdg.alloy4.Version;
-import edu.mit.csail.sdg.alloy4.WorkerEngine;
-import edu.mit.csail.sdg.alloy4.XMLNode;
+import edu.mit.csail.sdg.alloy4.*;
+import edu.mit.csail.sdg.alloy4.A4Preferences.*;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask2;
-import edu.mit.csail.sdg.ast.Browsable;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Module;
-import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.sim.SimInstance;
 import edu.mit.csail.sdg.sim.SimTuple;
 import edu.mit.csail.sdg.sim.SimTupleset;
-import edu.mit.csail.sdg.translator.A4Options;
+import edu.mit.csail.sdg.translator.*;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
-import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.A4SolutionReader;
-import edu.mit.csail.sdg.translator.A4Tuple;
-import edu.mit.csail.sdg.translator.A4TupleSet;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
+import org.alloytools.alloy.core.AlloyCore;
+
+import javax.swing.Timer;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.FontUIResource;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.*;
+
+import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
+import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
+import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
+import static java.awt.Toolkit.getDefaultToolkit;
+import static java.awt.event.KeyEvent.*;
+import static javax.swing.KeyStroke.getKeyStroke;
+
+//import com.apple.eawt.Application;
+//import com.apple.eawt.ApplicationAdapter;
+//import com.apple.eawt.ApplicationEvent;
+//
 
 /**
  * Simple graphical interface for accessing various features of the analyzer.
@@ -187,8 +79,6 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  *            electrum-simulator, electrum-unbounded, electrum-decomposed
  */
 public final class SimpleGUI implements ComponentListener, Listener {
-
-    MacUtil macUtil;
 
     /**
      * The latest welcome screen; each time we update the welcome screen, we
@@ -221,16 +111,18 @@ public final class SimpleGUI implements ComponentListener, Listener {
     /**
      * The "File", "Edit", "Run", "Option", "Window", and "Help" menus.
      */
-    private JMenu                 filemenu, editmenu, runmenu, optmenu, windowmenu, windowmenu2, helpmenu;
+    private JMenu                 filemenu;
+    private JMenu editmenu;
+    private JMenu runmenu;
+    private JMenu optmenu;
+    private JMenu windowmenu;
+    private JMenu windowmenu2;
 
     /** The toolbar. */
     private JToolBar              toolbar;
 
     /** The various toolbar buttons. */
     private JButton               runbutton, stopbutton, showbutton;
-
-    /** The Splitpane. */
-    private JSplitPane            splitpane;
 
     /**
      * The JLabel that displays the current line/column position, etc.
@@ -247,9 +139,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     /** The "message panel" on the right. */
     private SwingLogPanel         log;
-
-    /** The scrollpane containing the "message panel". */
-    private JScrollPane           logpane;
 
     /** The last "find" that the user issued. */
     private String                lastFind               = "";
@@ -343,28 +232,31 @@ public final class SimpleGUI implements ComponentListener, Listener {
      */
     private void addHistory(String filename) {
         String name0 = Model0.get(), name1 = Model1.get(), name2 = Model2.get();
-        if (name0.equals(filename))
+        if (name0.equals(filename)) {
             return;
-        else {
-            Model0.set(filename);
-            Model1.set(name0);
         }
-        if (name1.equals(filename))
+
+        Model0.set(filename);
+        Model1.set(name0);
+        if (name1.equals(filename)) {
             return;
-        else
-            Model2.set(name1);
-        if (name2.equals(filename))
+        }
+
+        Model2.set(name1);
+        if (name2.equals(filename)) {
             return;
-        else
-            Model3.set(name2);
+        }
+
+        Model3.set(name2);
     }
 
     /** Sets the flag "lastFocusIsOnEditor" to be true. */
-    private Runner notifyFocusGained() {
-        if (wrap)
-            return wrapMe();
+    private void notifyFocusGained() {
+        if (wrap) {
+            wrapMe();
+            return;
+        }
         lastFocusIsOnEditor = true;
-        return null;
     }
 
     /** Sets the flag "lastFocusIsOnEditor" to be false. */
@@ -373,16 +265,18 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /** Updates the status bar at the bottom of the screen. */
-    private Runner notifyChange() {
-        if (wrap)
-            return wrapMe();
+    private void notifyChange() {
+        if (wrap) {
+            wrapMe();
+            return;
+        }
         commands = null;
         if (text == null)
-            return null; // If this was called prior to the "text" being fully
+            return; // If this was called prior to the "text" being fully
                         // initialized
         OurSyntaxWidget t = text.get();
         if (Util.onMac())
-            frame.getRootPane().putClientProperty("windowModified", Boolean.valueOf(t.modified()));
+            frame.getRootPane().putClientProperty("windowModified", t.modified());
         if (t.isFile())
             frame.setTitle(t.getFilename());
         else
@@ -392,7 +286,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
         int y = t.getLineOfOffset(c) + 1;
         int x = c - t.getLineStartOffset(y - 1) + 1;
         status.setText("<html>&nbsp; Line " + y + ", Column " + x + (t.modified() ? " <b style=\"color:#B43333;\">[modified]</b></html>" : "</html>"));
-        return null;
     }
 
     /**
@@ -445,7 +338,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         final String platformBinary = alloyHome() + fs + "binary";
         // Write a few test files
         try {
-            (new File(platformBinary)).mkdirs();
+            new File(platformBinary).mkdirs();
             Util.writeAll(platformBinary + fs + "tmp.cnf", "p cnf 3 1\n1 0\n");
         } catch (Err er) {
             // The error will be caught later by the "berkmin" or "spear" test
@@ -497,9 +390,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
         Method[] methods = getClass().getDeclaredMethods();
         Method m = null;
-        for (int i = 0; i < methods.length; i++)
-            if (methods[i].getName().equals(name)) {
-                m = methods[i];
+        for (Method value : methods)
+            if (value.getName().equals(name)) {
+                m = value;
                 break;
             }
         final Method method = m;
@@ -511,7 +404,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             public void run() {
                 try {
                     method.setAccessible(true);
-                    method.invoke(SimpleGUI.this, new Object[] {});
+                    method.invoke(SimpleGUI.this);
                 } catch (Throwable ex) {
                     ex = new IllegalArgumentException("Failed call to " + name + "()", ex);
                     Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex);
@@ -538,9 +431,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
         Method[] methods = getClass().getDeclaredMethods();
         Method m = null;
-        for (int i = 0; i < methods.length; i++)
-            if (methods[i].getName().equals(name)) {
-                m = methods[i];
+        for (Method value : methods)
+            if (value.getName().equals(name)) {
+                m = value;
                 break;
             }
         final Method method = m;
@@ -552,9 +445,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             public void run(Object arg) {
                 try {
                     method.setAccessible(true);
-                    method.invoke(SimpleGUI.this, new Object[] {
-                                                                arg
-                    });
+                    method.invoke(SimpleGUI.this, arg);
                 } catch (Throwable ex) {
                     ex = new IllegalArgumentException("Failed call to " + name + "(" + arg + ")", ex);
                     Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex);
@@ -748,10 +639,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     private File getFile(String home) {
-        File file = OurDialog.askFile(true, home, new String[] {
-                                                                ".ele", ".als", ".md", "*"
-        }, "Electrum (.ele), Alloy (.als) or Markdown (.md) files"); // [HASLab] ele extension
-        return file;
+        return OurDialog.askFile(true, home, new String[]{
+                ".ele", ".als", ".md", "*"
+        }, "Electrum (.ele), Alloy (.als) or Markdown (.md) files");
     }
 
     /** This method performs File->ReloadAll. */
@@ -1050,7 +940,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private Runner doRefreshRun() {
         if (wrap)
             return wrapMe();
-        KeyStroke ac = KeyStroke.getKeyStroke(VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         try {
             wrap = true;
             runmenu.removeAll();
@@ -1105,19 +994,21 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             for (int i = 0; i < cp.size(); i++) {
-                JMenuItem y = new JMenuItem(cp.get(i).toString(), null);
-                y.addActionListener(doRun(i));
+                JMenuItem menuItem = new JMenuItem(cp.get(i).toString(), null);
+                menuItem.addActionListener(doRun(i));
                 if (i == latestCommand) {
-                    y.setMnemonic(VK_E);
-                    y.setAccelerator(ac);
+                    menuItem.setMnemonic(VK_E);
+                    menuItem.setAccelerator(getKeyStroke(VK_E, getDefaultToolkit().getMenuShortcutKeyMask()));
                 }
-                runmenu.add(y, i);
+                runmenu.add(menuItem, i);
             }
-            if (cp.size() >= 2) {
-                JMenuItem y = new JMenuItem("Execute All", null);
-                y.setMnemonic(VK_A);
-                y.addActionListener(doRun(-1));
-                runmenu.add(y, 0);
+            if (cp.size() > 1) {
+                JMenuItem menuItem = new JMenuItem("Execute All", null);
+                final int mnemonic = Util.onMac() ? VK_U : VK_A;
+                menuItem.setMnemonic(mnemonic);
+                menuItem.setAccelerator(getKeyStroke(mnemonic, getDefaultToolkit().getMenuShortcutKeyMask()));
+                menuItem.addActionListener(doRun(-1));
+                runmenu.add(menuItem, 0);
                 runmenu.add(new JSeparator(), 1);
             }
         } finally {
@@ -1264,7 +1155,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         doRefreshRun();
         OurUtil.enableAll(runmenu);
         if (commands != null) {
-            Module world = null;
+            Module world;
             try {
                 int resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
                 A4Options opt = new A4Options();
@@ -1513,27 +1404,23 @@ public final class SimpleGUI implements ComponentListener, Listener {
             doc2.setAsynchronousLoadPriority(-1);
             html1.setPage(this.getClass().getResource("/help/Nav.html"));
             html2.setPage(this.getClass().getResource("/help/index.html"));
-            HyperlinkListener hl = new HyperlinkListener() {
-
-                @Override
-                public final void hyperlinkUpdate(HyperlinkEvent e) {
-                    try {
-                        if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
-                            return;
-                        if (e.getURL().getPath().endsWith("quit.htm")) {
-                            frame.dispose();
-                            return;
-                        }
-                        HTMLDocument doc = (HTMLDocument) (html2.getDocument());
-                        doc.setAsynchronousLoadPriority(-1); // So that we can
-                                                            // catch any
-                                                            // exception
-                                                            // that may
-                                                            // occur
-                        html2.setPage(e.getURL());
-                        html2.requestFocusInWindow();
-                    } catch (Throwable ex) {}
-                }
+            HyperlinkListener hl = event -> {
+                try {
+                    if (event.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
+                        return;
+                    if (event.getURL().getPath().endsWith("quit.htm")) {
+                        frame.dispose();
+                        return;
+                    }
+                    HTMLDocument doc = (HTMLDocument) (html2.getDocument());
+                    doc.setAsynchronousLoadPriority(-1); // So that we can
+                                                        // catch any
+                                                        // exception
+                                                        // that may
+                                                        // occur
+                    html2.setPage(event.getURL());
+                    html2.requestFocusInWindow();
+                } catch (Throwable ex) {}
             };
             html1.setEditable(false);
             html1.setBorder(new EmptyBorder(3, 3, 3, 3));
@@ -1601,12 +1488,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
         latestInstance = arg;
         latestAutoInstance = arg;
     }
-
-    /**
-     * The color to use for functions/predicate/paragraphs that contains part of the
-     * unsat core.
-     */
-    final Color supCoreColor = new Color(0.95f, 0.1f, 0.1f);
 
     /** The color to use for the unsat core. */
     final Color coreColor    = new Color(0.9f, 0.4f, 0.4f);
@@ -1704,7 +1585,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
             SimpleTask2 task = new SimpleTask2();
             task.filename = arg[0]; // [HASLab] simulator
-            task.index = Integer.valueOf(arg[1]); // [HASLab] simulator
+            task.index = Integer.parseInt(arg[1]); // [HASLab] simulator
             try {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
@@ -1735,7 +1616,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         A4TupleSet s = (A4TupleSet) object;
         if (s.size() == 0)
             return SimTupleset.EMPTY;
-        List<SimTuple> list = new ArrayList<SimTuple>(s.size());
+        List<SimTuple> list = new ArrayList<>(s.size());
         int arity = s.arity();
         for (A4Tuple t : s) {
             String[] array = new String[arity];
@@ -1764,12 +1645,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /** This object performs expression evaluation. */
-    private static Computer evaluator = new Computer() {
+    private static final Computer evaluator = new Computer() {
 
         private String filename = null;
 
         @Override
-        public final Object compute(final Object input) throws Exception {
+        public final Object compute(final Object input) {
             if (input instanceof File) {
                 filename = ((File) input).getAbsolutePath();
                 return "";
@@ -1779,10 +1660,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
             final String[] strs = (String[]) input; // [HASLab] state arg
             if (strs[0].trim().length() == 0)
                 return ""; // Empty line
-            Module root = null;
-            A4Solution ans = null;
+            Module root;
+            A4Solution ans;
             try {
-                Map<String,String> fc = new LinkedHashMap<String,String>();
+                Map<String,String> fc = new LinkedHashMap<>();
                 XMLNode x = new XMLNode(new File(filename));
                 if (!x.is("alloy"))
                     throw new Exception();
@@ -1818,7 +1699,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
-                return ans.eval(e, Integer.valueOf(strs[1])).toString(); // [HASLab] eval state
+                return ans.eval(e, Integer.parseInt(strs[1])).toString(); // [HASLab] eval state
             } catch (HigherOrderDeclException ex) {
                 throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
             }
@@ -1831,7 +1712,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Main method that launches the program; this method might be called by an
      * arbitrary thread.
      */
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String[] args) {
 
         List<String> remainingArgs = new ArrayList<>();
 
@@ -1886,13 +1767,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 return;
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                new SimpleGUI(args);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new SimpleGUI(args));
     }
 
     // ====== Constructor ====================================================//
@@ -1923,15 +1798,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.setProperty("com.apple.macos.useScreenMenuBar", "true");
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
-        // [HASLab] duplicated listeners
-        //        if (Util.onMac()) {
-        //            try {
-        //                macUtil = new MacUtil();
-        //                macUtil.addMenus(this);
-        //            } catch (NoClassDefFoundError e) {
-        //                // ignore
-        //            }
-        //        }
 
         doLookAndFeel();
 
@@ -2077,7 +1943,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             optmenu = menu(bar, "&Options", doRefreshOption());
             windowmenu = menu(bar, "&Window", doRefreshWindow(false));
             windowmenu2 = menu(null, "&Window", doRefreshWindow(true));
-            helpmenu = menu(bar, "&Help", null);
+            JMenu helpmenu = menu(bar, "&Help", null);
             if (!Util.onMac())
                 menuItem(helpmenu, "About Alloy...", 'A', doAbout());
             menuItem(helpmenu, "Quick Guide", 'Q', doHelp());
@@ -2115,7 +1981,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
         OurAntiAlias.enableAntiAlias(AntiAlias.get());
 
         // Create the message area
-        logpane = OurUtil.scrollpane(null);
+        /* The scrollpane containing the "message panel". */
+        JScrollPane logpane = OurUtil.scrollpane(null);
         log = new SwingLogPanel(logpane, fontName, fontSize, background, Color.BLACK, new Color(.7f, .2f, .2f), this);
 
         // Create loggers for preference changes
@@ -2134,7 +2001,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
         lefthalf.setLayout(new BorderLayout());
         lefthalf.add(toolbar, BorderLayout.NORTH);
         text.addTo(lefthalf, BorderLayout.CENTER);
-        splitpane = OurUtil.splitpane(JSplitPane.HORIZONTAL_SPLIT, lefthalf, logpane, width / 2);
+        /* The Splitpane. */
+        JSplitPane splitpane = OurUtil.splitpane(JSplitPane.HORIZONTAL_SPLIT, lefthalf, logpane, width / 2);
         splitpane.setResizeWeight(0.5D);
         status = OurUtil.make(OurAntiAlias.label(" "), new Font(fontName, Font.PLAIN, fontSize), Color.BLACK, background);
         status.setBorder(new OurBorder(true, false, false, false));
@@ -2335,12 +2203,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
      */
     private static ChangeListener wrapToChangeListener(final Runner r) {
         assert r != null;
-        return new ChangeListener() {
-
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                r.run();
-            }
-        };
+        return e -> r.run();
     }
 }
