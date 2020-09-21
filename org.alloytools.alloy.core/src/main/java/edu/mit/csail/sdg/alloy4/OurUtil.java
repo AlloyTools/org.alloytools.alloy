@@ -410,7 +410,7 @@ public final class OurUtil {
         for (int i = 0; i < menu.getMenuComponentCount(); i++) {
             Component x = menu.getMenuComponent(i);
             if (x instanceof JMenuItem)
-                ((JMenuItem) x).setEnabled(true);
+                x.setEnabled(true);
             else if (x instanceof JMenu)
                 enableAll((JMenu) x);
         }
@@ -491,7 +491,7 @@ public final class OurUtil {
         boolean hasMnemonic = false;
         for (Object x : attrs) {
             if (x instanceof Character || x instanceof Integer) {
-                int k = (x instanceof Character) ? ((int) ((Character) x)) : ((Integer) x).intValue();
+                int k = (x instanceof Character) ? ((int) ((Character) x)) : (Integer) x;
                 if (k < 0)
                     continue;
                 if (k == KeyEvent.VK_ALT) {
