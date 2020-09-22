@@ -1425,7 +1425,7 @@ public final class A4Solution {
             frame.atom2name.put(t.atom(0), x);
             ExprVar v = ExprVar.make(null, x, s.type());
             TupleSet ts = t.universe().factory().range(t, t);
-            Relation r = Relation.unary(x);
+            Relation r = Relation.atom(x);
             frame.eval.instance().add(r, ts);
             frame.a2k.put(v, r);
             frame.atoms.add(v);
