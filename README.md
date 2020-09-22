@@ -41,6 +41,8 @@ Checkout the project and type ./gradlew. You find the executable JAR in org.allo
      $ ./gradlew build -x test
      $ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
      # opens GUI
+     
+The `master` branch points the latest stable version, 2.0. For stable 2.1 release candidates, branch `v2.1` should be cloned instead. 
 
 Note: if you are behind a proxy, the call to `gradlew` is likely to fail, unless you pass it further options about the http and https proxies (and possibly your login and password on this proxy). There are several ways to pass these options, a simple one is to type (replace the `XXXXX`'s by the adequate settings):
 
