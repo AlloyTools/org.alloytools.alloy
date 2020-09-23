@@ -1427,10 +1427,6 @@ public final class VizGUI implements ComponentListener {
                 rels = rels.and(r.eq(r));
         Formula form = null;
         Map<Object,Expression> reifs = new HashMap<Object,Expression>();
-        //        for (int i = inst.prefixLength() - 1; i >= 0; i--) {
-        //            Formula aux = inst.state(i).formulate(new PardinusBounds(inst.state(0).universe()), reifs, rels, true);
-        //            form = form == null ? aux : aux.and(form.after());
-        //        }
         form = inst.formulate(new PardinusBounds(inst.state(0).universe()), reifs, rels, true, false);
         Expression unvs = Expression.UNIV;
         for (int i = 1; i < inst.prefixLength(); i++)
@@ -1457,7 +1453,7 @@ public final class VizGUI implements ComponentListener {
 
         };
         form = form.accept(repls);
-        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4));
+        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4).replaceFirst("some", "some disj"));
         return null;
     }
 
