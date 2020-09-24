@@ -85,9 +85,11 @@ import edu.mit.csail.sdg.alloy4.Runner;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4graph.GraphViewer;
+import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Node;
+import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.ast.visitor.AbstractReplacer;
@@ -1449,9 +1451,22 @@ public final class VizGUI implements ComponentListener {
         TemporalInstance inst = (TemporalInstance) myStates.get(myStates.size() - 1).getOriginalInstance().originalA4.debugExtractKInstance();
         Formula rels = Formula.TRUE;
         for (Relation r : inst.state(0).relations())
-            if (!(r.toString().startsWith("Int/") || r.toString().startsWith("seq/")))
+            if (!(r.toString().startsWith("Int/") || r.toString().startsWith("seq/") || r.isAtom()))
                 rels = rels.and(r.eq(r));
-        Formula form = inst.formulate(new PardinusBounds(inst.state(0).universe()), new HashMap<Object,Expression>(), rels, true);
+        Formula form = null;
+        Map<Object,Expression> reifs = new HashMap<Object,Expression>();
+        form = inst.formulate(new HashMap<Object,Expression>(), rels, true, new PardinusBounds(inst.state(0).universe()));
+        Expression unvs = Expression.UNIV;
+        for (int i = 1; i < inst.prefixLength(); i++)
+            unvs = Expression.UNIV.union(unvs.prime());
+        Decls decs = null;
+        for (Expression rs : reifs.values()) {
+            if (decs == null)
+                decs = ((Variable) rs).oneOf(unvs);
+            else
+                decs = decs.and(((Variable) rs).oneOf(unvs));
+        }
+        form = ((QuantifiedFormula) form).formula().forSome(decs);
         // [HASLab] normalize variable names
         AbstractReplacer repls = new AbstractReplacer(new HashSet<Node>()) {
 
@@ -1466,7 +1481,7 @@ public final class VizGUI implements ComponentListener {
 
         };
         form = form.accept(repls);
-        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4));
+        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4).replaceFirst("some", "some disj"));
         return null;
     }
 

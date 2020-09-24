@@ -37,3 +37,5 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.out
 *.app
 
+.idea
+*.iml
