@@ -54,6 +54,7 @@ import static java.awt.event.KeyEvent.VK_E;
 import static java.awt.event.KeyEvent.VK_PAGE_DOWN;
 import static java.awt.event.KeyEvent.VK_PAGE_UP;
 import static java.awt.event.KeyEvent.VK_SHIFT;
+import static java.awt.event.KeyEvent.VK_U;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -1050,7 +1051,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private Runner doRefreshRun() {
         if (wrap)
             return wrapMe();
-        KeyStroke ac = KeyStroke.getKeyStroke(VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         try {
             wrap = true;
             runmenu.removeAll();
@@ -1105,19 +1105,22 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             for (int i = 0; i < cp.size(); i++) {
-                JMenuItem y = new JMenuItem(cp.get(i).toString(), null);
-                y.addActionListener(doRun(i));
+                JMenuItem menuItem = new JMenuItem(cp.get(i).toString(), null);
+                menuItem.addActionListener(doRun(i));
                 if (i == latestCommand) {
-                    y.setMnemonic(VK_E);
-                    y.setAccelerator(ac);
+                    menuItem.setMnemonic(VK_E);
+                    menuItem.setAccelerator(KeyStroke.getKeyStroke(VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                 }
-                runmenu.add(y, i);
+                runmenu.add(menuItem, i);
             }
-            if (cp.size() >= 2) {
-                JMenuItem y = new JMenuItem("Execute All", null);
-                y.setMnemonic(VK_A);
-                y.addActionListener(doRun(-1));
-                runmenu.add(y, 0);
+            if (cp.size() > 1) {
+                JMenuItem menuItem = new JMenuItem("Execute All", null);
+                // [Electrum] cmd+u acc for mac
+                final int mnemonic = Util.onMac() ? VK_U : VK_A;
+                menuItem.setMnemonic(mnemonic);
+                menuItem.setAccelerator(KeyStroke.getKeyStroke(mnemonic, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                menuItem.addActionListener(doRun(-1));
+                runmenu.add(menuItem, 0);
                 runmenu.add(new JSeparator(), 1);
             }
         } finally {
