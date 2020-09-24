@@ -1427,7 +1427,7 @@ public final class VizGUI implements ComponentListener {
                 rels = rels.and(r.eq(r));
         Formula form = null;
         Map<Object,Expression> reifs = new HashMap<Object,Expression>();
-        form = inst.formulate(new PardinusBounds(inst.state(0).universe()), reifs, rels, true, false);
+        form = inst.formulate(new HashMap<Object,Expression>(), rels, true, new PardinusBounds(inst.state(0).universe()));
         Expression unvs = Expression.UNIV;
         for (int i = 1; i < inst.prefixLength(); i++)
             unvs = Expression.UNIV.union(unvs.prime());
