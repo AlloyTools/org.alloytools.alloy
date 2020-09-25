@@ -1415,6 +1415,7 @@ public final class VizGUI implements ComponentListener {
     }
 
     // [HASLab]
+    // reuses the Pardinus instance to formula translation, so needs some tweaks to the Alloy level
     private Runner doExportLTL() {
         if (wrap)
             return wrapMe();
@@ -1427,7 +1428,7 @@ public final class VizGUI implements ComponentListener {
                 rels = rels.and(r.eq(r));
         Formula form = null;
         Map<Object,Expression> reifs = new HashMap<Object,Expression>();
-        form = inst.formulate(new HashMap<Object,Expression>(), rels, true, new PardinusBounds(inst.state(0).universe()));
+        form = inst.formulate(reifs, rels, true, new PardinusBounds(inst.state(0).universe()), false);
         Expression unvs = Expression.UNIV;
         for (int i = 1; i < inst.prefixLength(); i++)
             unvs = Expression.UNIV.union(unvs.prime());
@@ -1453,7 +1454,7 @@ public final class VizGUI implements ComponentListener {
 
         };
         form = form.accept(repls);
-        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4).replaceFirst("some", "some disj"));
+        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4).replaceAll("Int\\[(-?\\d*)\\]", "$1").replaceFirst("some", "some disj"));
         return null;
     }
 
