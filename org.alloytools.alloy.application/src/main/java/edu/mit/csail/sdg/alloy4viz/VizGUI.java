@@ -46,11 +46,11 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.prefs.Preferences;
 
 import javax.swing.Box;
@@ -85,17 +85,13 @@ import edu.mit.csail.sdg.alloy4.Runner;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.alloy4graph.GraphViewer;
-import kodkod.ast.Decls;
-import kodkod.ast.Expression;
-import kodkod.ast.Formula;
-import kodkod.ast.Node;
-import kodkod.ast.QuantifiedFormula;
-import kodkod.ast.Relation;
-import kodkod.ast.Variable;
-import kodkod.ast.visitor.AbstractReplacer;
-import kodkod.instance.PardinusBounds;
-import kodkod.instance.TemporalInstance;
-import kodkod.util.nodes.PrettyPrinter;
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprConstant;
+import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.translator.A4Solution;
+import edu.mit.csail.sdg.translator.A4Tuple;
+import edu.mit.csail.sdg.translator.A4TupleSet;
 
 /**
  * GUI main window for the visualizer.
@@ -1443,46 +1439,105 @@ public final class VizGUI implements ComponentListener {
     }
 
     // [HASLab]
-    // reuses the Pardinus instance to formula translation, so needs some tweaks to the Alloy level
+    // ad hoc implementation since alloy lacks a proper pretty printer
+    // also, prints conjunctions as lists, which can't be parsed
     private Runner doExportLTL() {
         if (wrap)
             return wrapMe();
         if (myStates.isEmpty())
             return null;
-        TemporalInstance inst = (TemporalInstance) myStates.get(myStates.size() - 1).getOriginalInstance().originalA4.debugExtractKInstance();
-        Formula rels = Formula.TRUE;
-        for (Relation r : inst.state(0).relations())
-            if (!(r.toString().startsWith("Int/") || r.toString().startsWith("seq/") || r.isAtom()))
-                rels = rels.and(r.eq(r));
-        Formula form = null;
-        Map<Object,Expression> reifs = new HashMap<Object,Expression>();
-        form = inst.formulate(reifs, rels, true, new PardinusBounds(inst.state(0).universe()), false);
-        Expression unvs = Expression.UNIV;
-        for (int i = 1; i < inst.prefixLength(); i++)
-            unvs = Expression.UNIV.union(unvs.prime());
-        Decls decs = null;
-        for (Expression rs : reifs.values()) {
-            if (decs == null)
-                decs = ((Variable) rs).oneOf(unvs);
-            else
-                decs = decs.and(((Variable) rs).oneOf(unvs));
-        }
-        form = ((QuantifiedFormula) form).formula().forSome(decs);
-        // [HASLab] normalize variable names
-        AbstractReplacer repls = new AbstractReplacer(new HashSet<Node>()) {
 
-            @Override
-            public Expression visit(Variable v) {
-                final Expression ret = lookup(v);
-                if (ret != null)
-                    return ret;
-                String n = v.name().replace("$", "");
-                return cache(v, Variable.nary(n, v.arity()));
+        Map<String,ExprVar> reifs = new HashMap<String,ExprVar>();
+        A4Solution inst = myStates.get(myStates.size() - 1).getOriginalInstance().originalA4;
+
+        StringJoiner config = new StringJoiner(" and ");
+        for (Sig s : inst.getAllReachableSigs()) {
+            if (s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))
+                continue;
+            A4TupleSet ts = inst.eval(s);
+            Expr tupleset = null;
+            for (A4Tuple t : ts) {
+                Expr tuple = null;
+                for (int ai = 0; ai < t.arity(); ai++) {
+                    Expr atom;
+                    if (t.atom(ai).matches("-?\\d+")) {
+                        atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
+                    } else {
+                        atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
+                    }
+                    tuple = tuple == null ? atom : tuple.product(tuple);
+                }
+                tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
             }
+            if (tupleset == null) {
+                tupleset = ExprConstant.EMPTYNESS;
+                for (int ai = 0; ai < ts.arity() - 1; ai++)
+                    tupleset = tupleset.product(ExprConstant.EMPTYNESS);
+            }
+            config.add(s.equal(tupleset).toString());
+        }
 
-        };
-        form = form.accept(repls);
-        OurDialog.showtext("Text Viewer", PrettyPrinter.print(form, 4).replaceAll("Int\\[(-?\\d*)\\]", "$1").replaceFirst("some", "some disj"));
+        List<String> states = new ArrayList<String>();
+        for (int i = 0; i < inst.getTraceLength(); i++) {
+            StringJoiner state = new StringJoiner(" and ");
+            for (Sig s : inst.getAllReachableSigs()) {
+                if (s.isPrivate != null || (s.isVariable == null && !s.equals(Sig.UNIV)))
+                    continue;
+                A4TupleSet ts = inst.eval(s, i);
+                Expr tupleset = null;
+                for (A4Tuple t : ts) {
+                    Expr tuple = null;
+                    for (int ai = 0; ai < t.arity(); ai++) {
+                        Expr atom;
+                        if (t.atom(ai).matches("-?\\d+")) {
+                            atom = ExprConstant.makeNUMBER(Integer.valueOf(t.atom(ai)));
+                        } else {
+                            atom = reifs.computeIfAbsent("_" + t.atom(ai).replace("$", "").replace("/", "_"), k -> ExprVar.make(null, k));
+                        }
+                        tuple = tuple == null ? atom : tuple.product(tuple);
+                    }
+                    tupleset = tupleset == null ? tuple : tupleset.plus(tuple);
+                }
+                if (tupleset == null) {
+                    tupleset = ExprConstant.EMPTYNESS;
+                    for (int ai = 0; ai < ts.arity() - 1; ai++)
+                        tupleset = tupleset.product(ExprConstant.EMPTYNESS);
+                }
+                state.add(s.equal(tupleset).toString());
+            }
+            states.add(state.toString());
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("some disj ");
+        StringJoiner sj = new StringJoiner(",");
+        for (ExprVar v : reifs.values())
+            sj.add(v.toString());
+        sb.append(sj.toString());
+        sb.append(" : ");
+        Expr unvs = Sig.UNIV;
+        for (int i = 0; i < inst.getTraceLength() - 1; i++)
+            unvs = Sig.UNIV.plus(unvs.prime());
+        sb.append(unvs.toString());
+        sb.append(" {\n  ");
+        sb.append(config.toString());
+        sb.append("\n\n  ");
+        StringJoiner statesj = new StringJoiner(";\n  ");
+        for (String s : states)
+            statesj.add(s);
+        sb.append(statesj.toString());
+        sb.append("\n\n  ");
+        for (int i = 0; i < inst.getLoopState(); i++)
+            sb.append("after ");
+        sb.append(" {\n");
+        for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
+            StringBuilder sa = new StringBuilder("");
+            for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
+                sa.append("after ");
+            sa.append(states.get(i));
+            sb.append("    " + states.get(i) + " implies " + sa.toString() + "\n");
+        }
+        sb.append("  }\n}\n");
+        OurDialog.showtext("Text Viewer", sb.toString());
         return null;
     }
 
