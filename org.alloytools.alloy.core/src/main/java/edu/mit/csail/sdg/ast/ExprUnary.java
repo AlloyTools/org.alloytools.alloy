@@ -101,6 +101,11 @@ public final class ExprUnary extends Expr {
                     sub.toString(out, -1);
                     out.append(']');
                     return;
+                case PRIME : // [HASLab]
+                    out.append('(');
+                    sub.toString(out, -1);
+                    out.append(")'");
+                    return;
                 case NOOP :
                     break;
                 default :
