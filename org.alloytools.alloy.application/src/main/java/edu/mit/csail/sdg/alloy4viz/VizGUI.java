@@ -186,6 +186,9 @@ public final class VizGUI implements ComponentListener {
      */
     private int                 settingsOpen    = 0;
 
+    // [HASLab]
+    private boolean             seg_iteration   = false;
+
     /**
      * The current states and visualization settings; null if none is loaded.
      */
@@ -881,6 +884,10 @@ public final class VizGUI implements ComponentListener {
         initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         initMenu.setVisible(isTrace); // [HASLab]
         initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
+        pathMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && !seg_iteration); // [HASLab]
+        pathMenu.setVisible(isTrace); // [HASLab]
+        pathButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
+        pathButton.setEnabled(!seg_iteration); // [HASLab]
         cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         cnfgMenu.setVisible(isTrace); // [HASLab]
         cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
@@ -1132,6 +1139,8 @@ public final class VizGUI implements ComponentListener {
         current = state; // [HASLab]
         final String xmlFileName = Util.canon(fileName);
         File f = new File(xmlFileName);
+        if (!forcefully)
+            seg_iteration = false;
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
             for (int i = 0; i < statepanes; i++) { // [HASLab]
                 try {
@@ -1683,6 +1692,7 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
+                seg_iteration = false;
                 enumerator.compute(new String[] {
                                                  xmlFileName, -1 + ""
                 });
@@ -1708,6 +1718,7 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
+                seg_iteration = false;
                 enumerator.compute(new String[] {
                                                  xmlFileName, -2 + ""
                 });
@@ -1731,6 +1742,7 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
+                seg_iteration = true;
                 enumerator.compute(new String[] {
                                                  xmlFileName, current + 1 + ""
                 });
@@ -1754,6 +1766,7 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert("Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
+                seg_iteration = true;
                 enumerator.compute(new String[] {
                                                  xmlFileName, 0 + ""
                 });
