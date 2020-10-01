@@ -1505,8 +1505,10 @@ public final class VizGUI implements ComponentListener {
             StringBuilder sa = new StringBuilder("");
             for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
                 sa.append("after ");
+            sa.append("(");
             sa.append(states.get(i));
-            sb.append("    " + states.get(i) + " implies " + sa.toString() + "\n");
+            sa.append(")");
+            sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
         }
         sb.append("  }\n}\n");
         OurDialog.showtext("Text Viewer", sb.toString());
