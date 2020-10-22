@@ -1670,7 +1670,7 @@ public final class VizGUI implements ComponentListener {
         } else {
             try {
                 enumerator.compute(new String[] { // [HASLab]
-                                                 xmlFileName, -2 + ""
+                                                 xmlFileName, -3 + ""
                 });
             } catch (Throwable ex) {
                 OurDialog.alert(ex.getMessage());
