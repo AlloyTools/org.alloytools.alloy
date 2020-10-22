@@ -1803,7 +1803,7 @@ public final class A4Solution {
         if (eval == null)
             return this;
         if (nextCache == null)
-            nextCache = new A4Solution(this, -2);
+            nextCache = new A4Solution(this, -3);
         return nextCache;
     }
 
