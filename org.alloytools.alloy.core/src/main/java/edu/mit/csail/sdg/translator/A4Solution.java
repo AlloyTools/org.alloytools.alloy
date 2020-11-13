@@ -909,6 +909,22 @@ public final class A4Solution {
     }
 
     /**
+     * Checks whether the this solution's model contains any configuration (static)
+     * elements.
+     */
+    // [HASLab]
+    public boolean hasConfigs() {
+        for (Sig s : sigs) {
+            if (s.isVariable == null && !s.builtin)
+                return true;
+            for (edu.mit.csail.sdg.ast.Decl f : s.getFieldDecls())
+                if (f.isVar == null)
+                    return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns an unmodifiable copy of the list of all skolems if the problem is
      * solved and is satisfiable; else returns an empty list.
      */
