@@ -1,12 +1,20 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
-# Alloy
+<!--[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)-->
+# Electrum and Alloy
 
-Alloy 4 is a self-contained executable, which includes the Kodkod
-model finder and a variety of SAT solvers, as well as the standard
-Alloy library and a collection of tutorial examples. The same jar file
-can be incorporated into other applications to use Alloy as an API,
-and includes the source code. See the release notes for details of new
+Electrum is an extension to the Alloy Analyzer by
+[INESC TEC](https://www.inesctec.pt/en) (the Institute for Systems and
+Computer Engineering, Technology and Science) and
+[ONERA](https://www.onera.fr/en) (the French aerospace research center)
+provides an analyzer for Electrum models, a temporal extension to the
+Alloy modeling language. The Analyzer provides both bounded and
+unbounded model checking procedures.
+
+Alloy 5 is a self-contained executable, which includes the Kodkod's extension
+Pardinus model finder and a variety of SAT solvers, as well as the standard
+Alloy library and a collection of tutorial examples. The same jar file can be
+incorporated into other applications to use Alloy as an API, and includes the
+source code. See the release notes for details of new
 features. 
 
 More documentation can be found at: http://alloytools.org/documentation.html.
@@ -28,9 +36,9 @@ Checkout the project and type ./gradlew. You find the executable JAR in org.allo
      java version "1.8.0_144"
      Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
      Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
-     $ git clone git@github.com:AlloyTools/org.alloytools.alloy.git
-     $ cd org.alloytools.alloy
-     $ ./gradlew build
+     $ git clone --recursive https://github.com/haslab/Electrum2.git
+     $ cd Electrum2
+     $ ./gradlew build -x test
      $ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
      # opens GUI
 
@@ -53,8 +61,8 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.application](org.alloytools.alloy.application) – Main application code includes the parser, ast, visualiser, and application code
 * [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
-* [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
-* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
+* [org.alloytools.pardinus](org.alloytools.pardinus) – Kodkod's temporal extension without native code
+* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for Kodkod/Pardinus
 
 ### Relevant Project files
 
