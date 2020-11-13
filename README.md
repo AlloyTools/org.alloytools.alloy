@@ -1,5 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-<!--[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)-->
+[![Build Status](https://travis-ci.org/github/haslab/Electrum2?branch=master)](https://travis-ci.org/github/haslab/Electrum2)
 # Electrum and Alloy
 
 Electrum is an extension to the Alloy Analyzer by
@@ -105,7 +105,9 @@ In the root of this workspace type `./gradlew`. This is a script that will downl
 
 ### Continuous Integration
 
-The workspace is setup to build after every commit using Travis. It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.
+The workspace is setup to build after every commit using Travis. 
+
+<!--It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.-->
 
 ### Building the DMG file for OSX systems
 
