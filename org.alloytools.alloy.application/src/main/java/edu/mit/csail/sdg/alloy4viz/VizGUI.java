@@ -860,8 +860,10 @@ public final class VizGUI implements ComponentListener {
             default :
                 vizButton.setEnabled(false);
         }
-        final boolean isMeta = myStates.get(statepanes - 1).getOriginalInstance().isMetamodel; // [HASLab]
-        final boolean isTrace = myStates.get(statepanes - 1).getOriginalInstance().originalA4.getMaxTrace() >= 0; // [HASLab]
+        final AlloyInstance oInst = myStates.get(statepanes - 1).getOriginalInstance();
+        final boolean isMeta = oInst.isMetamodel; // [HASLab]
+        final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0; // [HASLab]
+        final boolean hasConfigs = oInst.originalA4.hasConfigs(); // [HASLab]
         vizButton.setVisible(frame != null);
         treeButton.setVisible(frame != null);
         txtButton.setVisible(frame != null);
@@ -888,9 +890,10 @@ public final class VizGUI implements ComponentListener {
         pathMenu.setVisible(isTrace); // [HASLab]
         pathButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
         pathButton.setEnabled(!seg_iteration); // [HASLab]
-        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
+        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && hasConfigs); // [HASLab]
         cnfgMenu.setVisible(isTrace); // [HASLab]
         cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
+        cnfgButton.setEnabled(hasConfigs); // [HASLab]
         forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
         forkMenu.setVisible(isTrace); // [HASLab]
         forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
@@ -949,7 +952,7 @@ public final class VizGUI implements ComponentListener {
                         mySplitTemporal.setVisible(true);
                     } else {
                         mySplitTemporal = null;
-                        myGraphPanel = new VizGraphPanel(myStates.subList(statepanes - 1, statepanes), false); // [HASLab]                        
+                        myGraphPanel = new VizGraphPanel(myStates.subList(statepanes - 1, statepanes), false); // [HASLab]
                     }
                 } else {
                     if (isTrace && !isMeta) { // [HASLab]
@@ -995,7 +998,7 @@ public final class VizGUI implements ComponentListener {
             left = myCustomPanel;
         } else if (settingsOpen > 1) {
             if (myEvaluatorPanel == null)
-                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab] 
+                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab]
             try {
                 evaluator.compute(new File(xmlFileName));
                 myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
