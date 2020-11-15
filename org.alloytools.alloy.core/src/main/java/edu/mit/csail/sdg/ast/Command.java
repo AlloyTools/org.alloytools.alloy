@@ -153,7 +153,7 @@ public final class Command extends Browsable {
             sb.append(" ").append(mintime).append("..");
             if (maxtime != Integer.MAX_VALUE)
                 sb.append(maxtime);
-            sb.append(" Time");
+            sb.append(" steps");
             first = false;
         }
         for (CommandScope e : scope) {

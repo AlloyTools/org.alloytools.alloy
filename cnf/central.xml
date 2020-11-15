@@ -4,7 +4,7 @@
 
 	<groupId>local</groupId>
 	<artifactId>central</artifactId>
-	<version>0.0.0</version>
+	<version>2.1.0</version>
 
 	<packaging>pom</packaging>
 

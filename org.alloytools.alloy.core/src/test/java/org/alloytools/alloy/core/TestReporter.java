@@ -5,6 +5,10 @@ import java.io.PrintStream;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
+/**
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-decomposed
+ */
 public class TestReporter extends A4Reporter {
 
     PrintStream out = System.out;
@@ -67,9 +71,10 @@ public class TestReporter extends A4Reporter {
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
+    // [HASLab]
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
+    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
     }
 
     /**
@@ -81,7 +86,8 @@ public class TestReporter extends A4Reporter {
      * @param clauses - the total number of clauses
      */
     @Override
-    public void solve(int primaryVars, int totalVars, int clauses) {
+    // [HASLab]
+    public void solve(int step, int primaryVars, int totalVars, int clauses) {
         out.printf("SOLV primary=%s total=%s clauses=%s%n", primaryVars, totalVars, clauses);
     }
 

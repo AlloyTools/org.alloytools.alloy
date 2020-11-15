@@ -115,13 +115,15 @@ public final class SimpleCLI {
             sb.append(msg);
         }
 
+        // [HASLab]
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            debug("Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+            debug("Solver=" + solver + " Decomposed=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n"); // [HASLab]
         }
 
         @Override
-        public void solve(int primaryVars, int totalVars, int clauses) {
+        // [HASLab]
+        public void solve(int step, int primaryVars, int totalVars, int clauses) {
             if (db)
                 db("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses.\n");
             sb.append("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. 12345ms.\n");

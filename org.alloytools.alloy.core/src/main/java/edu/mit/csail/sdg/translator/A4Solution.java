@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -33,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 import org.alloytools.util.table.Table;
 
+import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -84,19 +85,23 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Explorer;
+import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
+import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
 import kodkod.engine.ucore.RCEStrategy;
+import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
@@ -113,7 +118,7 @@ import kodkod.util.ints.IndexedEntry;
  * has been called, then this object becomes immutable after that.
  *
  * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-simulator, electrum-unbounded
+ *            electrum-simulator, electrum-unbounded, electrum-decomposed
  */
 
 public final class A4Solution {
@@ -324,7 +329,7 @@ public final class A4Solution {
         this.maxtrace = maxtrace; // [HASLab]
         this.mintrace = mintrace; // [HASLab]
         if (maxtrace == Integer.MAX_VALUE && !(opt.solver.external() != null && opt.solver.external().equals("electrod"))) // [HASLab] unbounded solvers
-            throw new ErrorAPI("Can only have unbounded time scopes with complete model checkers.");
+            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
@@ -386,6 +391,17 @@ public final class A4Solution {
         solver_opts.setMaxTraceLength(maxtrace); // [HASLab] propagate options
         solver_opts.setMinTraceLength(mintrace); // [HASLab] propagate options
         solver_opts.setRunUnbounded(maxtrace == Integer.MAX_VALUE); // [HASLab] propagate options
+        if (opt.decomposed_mode > 0) { // [HASLab] propagate options
+            solver_opts.setRunDecomposed(true);
+            if (opt.decomposed_mode == 1)
+                solver_opts.setDecomposedMode(DMode.HYBRID);
+            else
+                solver_opts.setDecomposedMode(DMode.PARALLEL);
+            if (opt.decomposed_threads > 0)
+                solver_opts.setThreads(opt.decomposed_threads);
+        } else {
+            solver_opts.setRunDecomposed(false);
+        }
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
         // [HASLab] pushed solver creation further below as solver choice is needed for initialization
@@ -465,20 +481,19 @@ public final class A4Solution {
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
         Instance inst;
-        if (state >= 0) { // [HASLab] simulator, this is a fork
-            Set<Relation> stas = new HashSet<Relation>();
-            Map<Relation,TupleSet> cfgs = new HashMap<Relation,TupleSet>();
-            for (Relation r : ((TemporalInstance) old.eval.instance()).state(0).relations()) {
-                if (!r.isVariable()) {
-                    stas.add(r);
-                    cfgs.put(r, ((TemporalInstance) old.eval.instance()).state(0).tuples(r));
-                }
-            }
-            inst = old.kEnumerator.branch(state, stas, cfgs, true).instance();
-        } else if (state == -1) // [HASLab] simulator, this is a next config
-            inst = old.kEnumerator.branch(state, ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(s -> s.isVariable()).collect(Collectors.toSet()), new HashMap<Relation,TupleSet>(), true).instance();
-        else
-            inst = old.kEnumerator.next().instance();
+        try { // [HASLab] better reporting of unsupported iteration
+            if (state == -1) // [HASLab] simulator, this is a next config
+                inst = old.kEnumerator.nextC().instance();
+            else if (state == -2) // [HASLab] simulator, this is a next path
+                inst = old.kEnumerator.nextP().instance();
+            else if (state >= 0) { // [HASLab] simulator, this is a fork
+                Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
+                inst = old.kEnumerator.nextS(state, 1, rels).instance();
+            } else
+                inst = old.kEnumerator.next().instance();
+        } catch (UnsupportedOperationException e) {
+            throw new ErrorAPI(e.getMessage());
+        }
         if (inst != null && !(inst instanceof TemporalInstance)) // [HASLab]
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
@@ -617,9 +632,9 @@ public final class A4Solution {
      */
     public String debugExtractKInput() {
         if (solved)
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name, mintrace, maxtrace); // [HASLab]
         else
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null, mintrace, maxtrace); // [HASLab]
     }
 
     // ===================================================================================================//
@@ -920,6 +935,22 @@ public final class A4Solution {
      */
     public SafeList<Sig> getAllReachableSigs() {
         return sigs.dup();
+    }
+
+    /**
+     * Checks whether the this solution's model contains any configuration (static)
+     * elements.
+     */
+    // [HASLab]
+    public boolean hasConfigs() {
+        for (Sig s : sigs) {
+            if (s.isVariable == null && !s.builtin)
+                return true;
+            for (edu.mit.csail.sdg.ast.Decl f : s.getFieldDecls())
+                if (f.isVar == null)
+                    return true;
+        }
+        return false;
     }
 
     /**
@@ -1264,15 +1295,34 @@ public final class A4Solution {
         }
 
         /** {@inheritDoc} */
-        // [HASLab] simulator
-        public T branch(int i, Set<Relation> except, Map<Relation,TupleSet> force, boolean exclude) {
-            return iterator.branch(i, except, force, exclude);
-        }
-
-        /** {@inheritDoc} */
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T nextC() {
+            return iterator.nextC();
+        }
+
+        @Override
+        public T nextP() {
+            return iterator.nextP();
+        }
+
+        @Override
+        public T nextS(int state, int delta, Set<Relation> change) {
+            return iterator.nextS(state, delta, change);
+        }
+
+        @Override
+        public boolean hasNextP() {
+            return iterator.hasNextP();
+        }
+
+        @Override
+        public boolean hasNextC() {
+            return iterator.hasNextC();
         }
     }
 
@@ -1530,7 +1580,7 @@ public final class A4Solution {
         rep.debug("Simplifying the bounds...\n");
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
-        rep.translate(opt.solver.id(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking());
+        rep.translate(opt.solver.id(), A4Preferences.Decomposed.values()[opt.decomposed_mode].toString(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking()); // [HASLab]
         Formula fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
@@ -1541,7 +1591,6 @@ public final class A4Solution {
         };
         // [HASLab] sl4j reporter
         solver.options().setReporter(new SLF4JReporter() { // Set up a reporter to catch the type+pos of skolems
-            // [HASLab]
 
             @Override
             public void skolemizing(Decl decl, Relation skolem, List<Decl> predecl) {
@@ -1560,14 +1609,16 @@ public final class A4Solution {
             }
 
             @Override
-            public void solvingCNF(int primaryVars, int vars, int clauses) {
-                if (solved[0])
-                    return;
-                else
-                    solved[0] = true; // initially solved[0] is true, so we
-                                     // won't report the # of vars/clauses
+            // [HASLab] synchronized due to multiple parallel problems reporting
+            public synchronized void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+                // [HASLab] changed cb, will replace message when multiple reports
+                //                if (solved[0])
+                //                    return;
+                //                else
+                solved[0] = true; // initially solved[0] is true, so we
+                                 // won't report the # of vars/clauses
                 if (rep != null)
-                    rep.solve(primaryVars, vars, clauses);
+                    rep.solve(step, primaryVars, vars, clauses); // [HASLab]
             }
 
         });
@@ -1612,13 +1663,27 @@ public final class A4Solution {
         if (/* solver.options().solver()==SATFactory.ZChaffMincost || */ !solver.options().solver().incremental()) {
             sol = solver.solve(fgoal, bounds);
         } else {
-            PardinusBounds b = bounds;
-            kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            PardinusBounds b;
+            if (solver.options().decomposed())
+                b = PardinusBounds.splitAtTemporal(bounds); // [HASLab] split bounds on temporal
+            else
+                b = bounds;
+            try { // [HASLab] better handling of runtime errors
+                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));  // [HASLab]
+            } catch (InvalidMutableExpressionException e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            } catch (InvalidSolverParamException e) {
+                throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
+            } catch (InvalidUnboundedProblem e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
+            }
             if (sol == null)
                 sol = kEnumerator.next();
         }
         if (!solved[0])
-            rep.solve(0, 0, 0);
+            rep.solve(0, 0, 0, 0); // [HASLab]
         Instance inst = sol.instance(); // [HASLab]
         if (inst != null && !(inst instanceof TemporalInstance))
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
@@ -1754,7 +1819,7 @@ public final class A4Solution {
         if (eval == null)
             return this;
         if (nextCache == null)
-            nextCache = new A4Solution(this, -2);
+            nextCache = new A4Solution(this, -3);
         return nextCache;
     }
 
@@ -1900,6 +1965,10 @@ public final class A4Solution {
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
+    /**
+     * Extract symbolic bounds from the model's signatures and add them to the
+     * problem's bounds.
+     */
     // [HASLab]
     protected void addSymbolicBound(Sig s) {
         if (s.builtin || s.isTopLevel() || s instanceof PrimSig)
@@ -1922,6 +1991,10 @@ public final class A4Solution {
             bounds.bound(r, ke);
     }
 
+    /**
+     * Extract symbolic bounds from the model's fields and add them to the problem's
+     * bounds.
+     */
     // [HASLab]
     protected void addSymbolicBound(Field f) {
         Relation r;

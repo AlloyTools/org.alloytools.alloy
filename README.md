@@ -1,5 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-<!--[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)-->
+[![Build Status](https://travis-ci.org/github/haslab/Electrum2?branch=master)](https://travis-ci.org/github/haslab/Electrum2)
 # Electrum and Alloy
 
 Electrum is an extension to the Alloy Analyzer by
@@ -10,11 +10,11 @@ provides an analyzer for Electrum models, a temporal extension to the
 Alloy modeling language. The Analyzer provides both bounded and
 unbounded model checking procedures.
 
-Alloy 4 is a self-contained executable, which includes the Kodkod
-model finder and a variety of SAT solvers, as well as the standard
-Alloy library and a collection of tutorial examples. The same jar file
-can be incorporated into other applications to use Alloy as an API,
-and includes the source code. See the release notes for details of new
+Alloy 5 is a self-contained executable, which includes the Kodkod's extension
+Pardinus model finder and a variety of SAT solvers, as well as the standard
+Alloy library and a collection of tutorial examples. The same jar file can be
+incorporated into other applications to use Alloy as an API, and includes the
+source code. See the release notes for details of new
 features. 
 
 More documentation can be found at: http://alloytools.org/documentation.html.
@@ -63,8 +63,8 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.application](org.alloytools.alloy.application) – Main application code includes the parser, ast, visualiser, and application code
 * [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
-* [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
-* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
+* [org.alloytools.pardinus](org.alloytools.pardinus) – Kodkod's temporal extension without native code
+* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for Kodkod/Pardinus
 
 ### Relevant Project files
 
@@ -107,7 +107,9 @@ In the root of this workspace type `./gradlew`. This is a script that will downl
 
 ### Continuous Integration
 
-The workspace is setup to build after every commit using Travis. It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.
+The workspace is setup to build after every commit using Travis. 
+
+<!--It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.-->
 
 ### Building the DMG file for OSX systems
 

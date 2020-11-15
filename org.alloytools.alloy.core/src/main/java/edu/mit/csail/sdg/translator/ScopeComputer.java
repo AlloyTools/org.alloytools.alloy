@@ -475,7 +475,7 @@ final class ScopeComputer {
         int tracelength = cmd.maxtime;
         if (!isVar) {
             if (tracelength > 0)
-                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"Time\" in static models.");
+                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
             tracelength = -1;
         } else if (tracelength < 1)
             tracelength = 10;
@@ -483,7 +483,7 @@ final class ScopeComputer {
         tracelength = cmd.mintime;
         if (!isVar) {
             if (tracelength > 0)
-                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"Time\" in static models.");
+                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
             tracelength = -1;
         } else if (tracelength > cmd.maxtime)
             tracelength = cmd.maxtime;

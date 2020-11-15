@@ -85,14 +85,14 @@ pred Forest [s: State] {
     all x: Style | lone x.replaces & s.context
     }
 
-pred AddStyleToContext [s, s': State, style: Style] {
+pred AddStyleToContext [s, s": State, style: Style] {
     all x: style.^parents | some x.replaces & s.context
-    s'.context = s.context - style.replaces + style
+    s".context = s.context - style.replaces + style
     }
 
 assert PreserveForest {
-    all s,s': State, z: Style |
-        Forest[s] && AddStyleToContext [s,s',z] => Forest[s']
+    all s,s": State, z: Style |
+        Forest[s] && AddStyleToContext [s,s",z] => Forest[s"]
     }
 
 check PreserveForest for 4 expect 0
@@ -107,22 +107,22 @@ sig NumberedState extends State {
 fact {Style = NumberedStyle}
 fact {State = NumberedState}
 
-pred AddStyleToNumbering [s, s': State, style: Style] {
-    s'.value[style] = (style in s.context => s.value[style].next else style.initial)
-    s'.context = s.context - style.replaces + style
+pred AddStyleToNumbering [s, s": State, style: Style] {
+    s".value[style] = (style in s.context => s.value[style].next else style.initial)
+    s".context = s.context - style.replaces + style
     all x: Style - style |
-        s'.value[x] = (style in x.^parents => x.initial else s.value[x])
+        s".value[x] = (style in x.^parents => x.initial else s.value[x])
     }
 
-pred AddStyle [s, s': State, style: Style] {
-    AddStyleToContext [s,s',style]
-    AddStyleToNumbering [s,s',style]
+pred AddStyle [s, s": State, style: Style] {
+    AddStyleToContext [s,s",style]
+    AddStyleToNumbering [s,s",style]
     }
 
 assert AddNeverReduces {
-    all s,s': State, z: Style |
-        Forest[s] && AddStyle [s,s',z] =>
-            (all y: s'.context | s'.value[y] in s.value[y].*next)
+    all s,s": State, z: Style |
+        Forest[s] && AddStyle [s,s",z] =>
+            (all y: s".context | s".value[y] in s.value[y].*next)
     }
 
 check AddNeverReduces for 5 expect 1

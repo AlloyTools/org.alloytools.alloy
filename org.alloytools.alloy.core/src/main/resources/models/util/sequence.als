@@ -50,7 +50,7 @@ pred noDuplicates {
 /** invoke if you want all sequences within scope to exist */
 pred allExist {
   (some s: Seq | s.isEmpty) &&
-  (all s: Seq | SeqIdx !in s.inds => (all e: elem | some s': Seq | s.add[e, s']))
+  (all s: Seq | SeqIdx !in s.inds => (all e: elem | some s": Seq | s.add[e, s"]))
 }
 
 /** invoke if you want all sequences within scope with no duplicates */
@@ -58,7 +58,7 @@ pred allExistNoDuplicates {
   some s: Seq | s.isEmpty
   all s: Seq {
     !s.hasDups
-    SeqIdx !in s.inds => (all e: elem - s.elems | some s': Seq | s.add[e, s'])
+    SeqIdx !in s.inds => (all e: elem - s.elems | some s": Seq | s.add[e, s"])
   }
 }
 
