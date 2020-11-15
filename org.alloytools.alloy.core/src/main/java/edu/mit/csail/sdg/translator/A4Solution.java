@@ -1596,7 +1596,7 @@ public final class A4Solution {
         } else {
             PardinusBounds b;
             if (solver.options().decomposed())
-                b = new PardinusBounds(bounds, true); // [HASLab] split bounds on temporal
+                b = PardinusBounds.splitAtTemporal(bounds); // [HASLab] split bounds on temporal
             else
                 b = bounds;
             try { // [HASLab] better handling of runtime errors
