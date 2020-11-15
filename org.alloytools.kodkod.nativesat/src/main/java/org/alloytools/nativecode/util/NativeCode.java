@@ -71,6 +71,7 @@ public class NativeCode {
                     if (cache == null) {
                         Path tox = Files.createTempFile(name, libraryName);
                         tox.toFile().deleteOnExit();
+                        Files.copy(resource.openStream(), tox, StandardCopyOption.REPLACE_EXISTING);
                         return tox;
                     } else {
                         cache.toFile().mkdirs();
@@ -81,7 +82,6 @@ public class NativeCode {
                 }
             });
 
-            Files.copy(resource.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
             to.toFile().setExecutable(true);
             return to.toFile().getAbsolutePath();
 
