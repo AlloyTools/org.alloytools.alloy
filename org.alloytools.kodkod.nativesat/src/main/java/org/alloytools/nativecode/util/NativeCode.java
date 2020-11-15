@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -70,8 +69,9 @@ public class NativeCode {
             Path to = cached.computeIfAbsent(name, (k) -> {
                 try {
                     if (cache == null) {
-                        Path tox = Files.createTempFile(name + UUID.randomUUID(), libraryName);
+                        Path tox = Files.createTempFile(name, libraryName);
                         tox.toFile().deleteOnExit();
+                        Files.copy(resource.openStream(), tox, StandardCopyOption.REPLACE_EXISTING);
                         return tox;
                     } else {
                         cache.toFile().mkdirs();
@@ -82,7 +82,6 @@ public class NativeCode {
                 }
             });
 
-            Files.copy(resource.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
             to.toFile().setExecutable(true);
             return to.toFile().getAbsolutePath();
 
