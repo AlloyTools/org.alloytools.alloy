@@ -1,20 +1,12 @@
-dist: trusty
-sudo: false
+dist: focal
 language: java
-jdk:
-- oraclejdk8
-install: "./gradlew --version"
-script: ./gradlew --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
-after_success:
-- git status
-- echo $REPOSITORY_USERNAME
-- echo $TRAVIS_PULL_REQUEST
-- echo $TRAVIS_BRANCH
-- if [ master == $TRAVIS_BRANCH -a $TRAVIS_PULL_REQUEST == false -a  ${REPOSITORY_USERNAME:=X}
-  != X ]; then ./gradlew -DGRADLE_OPTS="-Xms128m" release -i; fi
+before_install:
+  - curl -L "http://nusmv.fbk.eu/distrib/NuSMV-2.6.0-zchaff-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "NuSMV-2.6.0-Linux/bin/NuSMV" || true
+  - curl -N -L "http://es-static.fbk.eu/tools/nuxmv/downloads/nuXmv-2.0.0-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "nuXmv-2.0.0-Linux/bin/nuXmv" || true
+install: 
+  - "gradle --version"
+script: travis_wait gradle --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
 cache:
   directories:
   - "$HOME/.gradle"
-env:
-  secure: "iMLby/ptj+UObydTJmFj2VO3QoYOiLmNC6kl7HOeSek7Jeo1LNV/+PXZ01o72t2QszFVux2gDcUBlaZKFXsvN585rT0JGRf7R9EA5qiRzetPmWJaA4vdY+GSZR4O0DiOuBcp+KGS5rBHmi3NoKlLAeO/CrHLFyAv2qjofsECUwmsRsS47aCepC7qllla+8PiQbyse6wytJKIqvk4n7BDXXOfQLM6Y5LZ/5uFs6PKyiLlXBmlG5LzdMtxlEED1nOEmLKak7ZjP2VwpJ3KSFGyu7/l9lf+IFnnXAIZaGvARbTDUhF3cyoZgP2Ab5yWJEB1uYzkoNwczmW5ARfalKkjBAV8DuZJFSe39K7XcWVvWRMGTpUSUKA20BpD+wW3q1x8s8Vw+CLuRzCO6QD3uG+JZX2URIBt4F50SpS07HHAd0c6hzv9M4cjd5l9wBYH2nFX1uUuza6znuk3DJ69bM9INMQ+8A5fkSUaXEw/7ym3a+GQINrFtYftcDm915wAznS5Sa86tK2icDtV4vCdTikXLtu6xmYJ4raliGN0E3yL9agW0J1dMjzK+D6l6zXo/qVT+qjwN8+KSFaaYpGYGotqYT4ZnzR9gE85LZWAYLKgsyOOvMopl9MxRVDSKPomUW48aLpG4G80r2NDG3paxA8xS7esDJTBPNCYKuh7Gn3Cp8s="
-
+  - "$HOME/bin"
