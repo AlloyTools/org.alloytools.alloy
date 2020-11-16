@@ -1,5 +1,5 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.org/github/haslab/Electrum2?branch=master)](https://travis-ci.org/github/haslab/Electrum2)
+[![Build Status](https://travis-ci.com/github/haslab/Electrum2?branch=master)](https://travis-ci.com/github/haslab/Electrum2)
 # Electrum and Alloy
 
 Electrum is an extension to the Alloy Analyzer by
