@@ -28,8 +28,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Field;
-import java.util.Locale;
 
 import org.alloytools.alloy.core.AlloyCore;
 
@@ -174,8 +172,7 @@ public final class WorkerEngine {
     /**
      * Constructor is private since this class does not need to be instantiated.
      */
-    private WorkerEngine() {
-    }
+    private WorkerEngine() {}
 
     /**
      * This terminates the subprocess, and prevent any further results from reaching
@@ -285,8 +282,7 @@ public final class WorkerEngine {
                     latest_sub.exitValue();
                 latest_manager = null;
                 latest_sub = null;
-            } catch (IllegalThreadStateException ex) {
-            }
+            } catch (IllegalThreadStateException ex) {}
             if (latest_sub == null) {
                 File f = new File(javahome + File.separatorChar + "bin" + File.separatorChar + "java");
 
@@ -363,24 +359,6 @@ public final class WorkerEngine {
                 }
             });
             latest_manager.start();
-
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-
-                @Override
-                public void run() {
-                    if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
-                        try {  // [HASLab] needed to stop all child processes (electrod)
-                            Field f = latest_sub.getClass().getDeclaredField("pid");
-                            f.setAccessible(true);
-                            Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    else
-                        latest_sub.destroy();
-                }
-            });
         }
     }
 
@@ -424,16 +402,13 @@ public final class WorkerEngine {
         // prevent freezes
         try {
             System.loadLibrary("minisat");
-        } catch (Throwable ex) {
-        }
+        } catch (Throwable ex) {}
         try {
             System.loadLibrary("minisatprover");
-        } catch (Throwable ex) {
-        }
+        } catch (Throwable ex) {}
         try {
             System.loadLibrary("zchaff");
-        } catch (Throwable ex) {
-        }
+        } catch (Throwable ex) {}
         // Now we repeat the following read-then-execute loop
         Thread t = null;
         while (true) {
@@ -491,12 +466,10 @@ public final class WorkerEngine {
                             }
 
                             @Override
-                            public void done() {
-                            }
+                            public void done() {}
 
                             @Override
-                            public void fail() {
-                            }
+                            public void fail() {}
                         };
                         task.run(y);
                         x.writeObject(null);
@@ -510,8 +483,7 @@ public final class WorkerEngine {
                                 System.gc();
                                 x.writeObject(t);
                                 x.flush();
-                            } catch (Throwable ex2) {
-                            } finally {
+                            } catch (Throwable ex2) {} finally {
                                 halt("Error: " + e, 2);
                             }
                         }
@@ -530,8 +502,7 @@ public final class WorkerEngine {
                             System.gc();
                             x.writeObject(e);
                             x.flush();
-                        } catch (Throwable t) {
-                        } finally {
+                        } catch (Throwable t) {} finally {
                             halt("Error: " + e, 1);
                         }
                     }

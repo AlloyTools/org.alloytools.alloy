@@ -1542,7 +1542,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         + "<p>Alloy Community Forum: <a href='https://groups.google.com/forum/#!forum/alloytools'>https://groups.google.com/forum/#!forum/alloytools</a></p>"
         + "<p>Alloy experts also respond to <a href='https://stackoverflow.com/questions/tagged/alloy'>https://stackoverflow.com</a> questions tagged <code>alloy</code>.</p>"
         + "<p>Major contributions to earlier versions of Alloy were made by: Julien Brunel, David<br/>"
-        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>"
+        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>" // [HASLab]
         + "(Electrum); Felix Chang (v4); Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater,<br/>"
         + "Derek Rayside, Greg Dennis, Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz<br/>"
         + "Khurshid (v3); Manu Sridharan (v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip,<br/>"
@@ -2223,7 +2223,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold("Electrum Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
+        log.logBold("Electrum Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n"); // [HASLab]
 
         // If on Mac, then register an application listener
         try {
