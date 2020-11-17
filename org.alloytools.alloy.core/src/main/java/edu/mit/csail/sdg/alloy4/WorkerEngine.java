@@ -1,5 +1,4 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
- * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -174,8 +173,7 @@ public final class WorkerEngine {
     /**
      * Constructor is private since this class does not need to be instantiated.
      */
-    private WorkerEngine() {
-    }
+    private WorkerEngine() {}
 
     /**
      * This terminates the subprocess, and prevent any further results from reaching
@@ -285,8 +283,7 @@ public final class WorkerEngine {
                     latest_sub.exitValue();
                 latest_manager = null;
                 latest_sub = null;
-            } catch (IllegalThreadStateException ex) {
-            }
+            } catch (IllegalThreadStateException ex) {}
             if (latest_sub == null) {
                 File f = new File(javahome + File.separatorChar + "bin" + File.separatorChar + "java");
 
@@ -424,16 +421,13 @@ public final class WorkerEngine {
         // prevent freezes
         try {
             System.loadLibrary("minisat");
-        } catch (Throwable ex) {
-        }
+        } catch (Throwable ex) {}
         try {
             System.loadLibrary("minisatprover");
-        } catch (Throwable ex) {
-        }
+        } catch (Throwable ex) {}
         try {
             System.loadLibrary("zchaff");
-        } catch (Throwable ex) {
-        }
+        } catch (Throwable ex) {}
         // Now we repeat the following read-then-execute loop
         Thread t = null;
         while (true) {
@@ -491,12 +485,10 @@ public final class WorkerEngine {
                             }
 
                             @Override
-                            public void done() {
-                            }
+                            public void done() {}
 
                             @Override
-                            public void fail() {
-                            }
+                            public void fail() {}
                         };
                         task.run(y);
                         x.writeObject(null);
@@ -510,8 +502,7 @@ public final class WorkerEngine {
                                 System.gc();
                                 x.writeObject(t);
                                 x.flush();
-                            } catch (Throwable ex2) {
-                            } finally {
+                            } catch (Throwable ex2) {} finally {
                                 halt("Error: " + e, 2);
                             }
                         }
@@ -530,8 +521,7 @@ public final class WorkerEngine {
                             System.gc();
                             x.writeObject(e);
                             x.flush();
-                        } catch (Throwable t) {
-                        } finally {
+                        } catch (Throwable t) {} finally {
                             halt("Error: " + e, 1);
                         }
                     }
