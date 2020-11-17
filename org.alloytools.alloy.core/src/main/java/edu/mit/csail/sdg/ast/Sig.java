@@ -22,8 +22,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.alloytools.util.table.Table;
-
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -33,7 +31,6 @@ import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
-import edu.mit.csail.sdg.alloy4.TableView;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
@@ -780,7 +777,6 @@ public abstract class Sig extends Expr implements Clause {
         public String explain() {
 
             StringBuilder sb = new StringBuilder();
-            sb.append("relation ");
 
             if (isPrivate != null) {
                 sb.append("private ");
@@ -789,9 +785,7 @@ public abstract class Sig extends Expr implements Clause {
                 sb.append("meta ");
             }
             sb.append(clean(label));
-            sb.append(":\n");
-            Table table = TableView.toTable(type);
-            sb.append(table).append("\n");
+            sb.append(" : ").append(clean(type.explain()));
             return sb.toString();
         }
 
@@ -936,8 +930,6 @@ public abstract class Sig extends Expr implements Clause {
 
     @Override
     public String explain() {
-        Table t = new Table(2, 1 + realFields.size(), 1);
-
         StringBuilder sb = new StringBuilder();
         if (builtin)
             sb.append("builtin ");
@@ -957,20 +949,16 @@ public abstract class Sig extends Expr implements Clause {
             sb.append("sig ");
         if (isSubset != null)
             sb.append("subset ");
-        t.set(0, 0, sb);
-        t.set(1, 0, clean(label));
 
-        int n = 1;
+        sb.append(clean(label)).append(" { ");
+        String del = "";
         for (Field f : realFields) {
-            t.set(0, n++, clean(f.label));
+            String relation = clean(type.join(f.type).explain());
+            sb.append(del).append(f.label).append(" : ").append(relation);
+            del = ", ";
         }
-        n = 1;
-        for (Field f : realFields) {
-            String relation = clean(type.join(f.type).toString());
-            Table table = TableView.toTable(relation, false);
-            t.set(1, n++, table);
-        }
+        sb.append(" }");
 
-        return t.toString();
+        return sb.toString();
     }
 }
