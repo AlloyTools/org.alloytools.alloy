@@ -30,13 +30,13 @@ JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 # TL;DR
 
-Checkout the project and type ./gradlew. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
+Checkout the project and type `./gradlew build`. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
 
      $ java version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
      java version "1.8.0_144"
      Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
      Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
-     $ git clone git@github.com:AlloyTools/org.alloytools.alloy.git
+     $ git clone https://github.com/AlloyTools/org.alloytools.alloy.git
      $ cd org.alloytools.alloy
      $ ./gradlew build
      $ java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar
@@ -62,7 +62,7 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
 * [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
-* [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for kodkod
+* [org.alloytools.kodkod.nativesat](org.alloytools.kodkod.nativesat) – The native code libraries for kodkod
 
 ### Relevant Project files
 

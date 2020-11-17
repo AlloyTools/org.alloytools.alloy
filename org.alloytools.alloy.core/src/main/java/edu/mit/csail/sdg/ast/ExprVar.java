@@ -15,6 +15,8 @@
 
 package edu.mit.csail.sdg.ast;
 
+import static edu.mit.csail.sdg.alloy4.TableView.clean;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +24,6 @@ import java.util.List;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.TableView;
 
 /**
  * Immutable; represents a LET or QUANTIFICATION variable in the AST.
@@ -101,6 +102,6 @@ public final class ExprVar extends ExprHasName implements Clause {
 
     @Override
     public String explain() {
-        return "var " + label + "\n" + TableView.toTable(type);
+        return clean(type.explain()) + " : " + label;
     }
 }

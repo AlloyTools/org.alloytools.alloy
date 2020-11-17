@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.Icon;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -223,13 +224,13 @@ public final class VizState {
      * Generate a VizGraphPanel for a given projection choice, using the current
      * settings.
      */
-    public JPanel getGraph(AlloyProjection projectionChoice) {
+    public JPanel getGraph(JFrame parent, AlloyProjection projectionChoice) {
         JPanel ans = cache.get(projectionChoice);
         if (ans != null)
             return ans;
         AlloyInstance inst = originalInstance;
         try {
-            ans = StaticGraphMaker.produceGraph(inst, this, projectionChoice);
+            ans = StaticGraphMaker.produceGraph(parent, inst, this, projectionChoice);
             cache.put(projectionChoice, ans);
         } catch (Throwable ex) {
             String msg = "An error has occurred: " + ex + "\n\nStackTrace:\n" + MailBug.dump(ex) + "\n";
@@ -544,7 +545,8 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,Integer> map = new LinkedHashMap<AlloyElement,Integer>();
 
-        private MInt() {}
+        private MInt() {
+        }
 
         private void clear() {
             map.clear();
@@ -575,7 +577,8 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,String> map = new LinkedHashMap<AlloyElement,String>();
 
-        private MString() {}
+        private MString() {
+        }
 
         private void clear() {
             map.clear();
