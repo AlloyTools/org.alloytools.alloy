@@ -279,11 +279,6 @@ public final class CompUtil {
             } catch (IOException ex1) {
                 try {
                     String newCp = cp.replaceAll("\\.als$", ".md");
-                    try { // [HASLab] try .als built-ins and then .ele built-ins
-                        content = Util.readAll(newCp);
-                    } catch (IOException e) {
-                        newCp = (Util.jarPrefix() + "models/" + x.filename + ".ele").replace('/', File.separatorChar);
-                    }
                     content = Util.readAll(newCp);
                 } catch (IOException exx) {
 

@@ -1061,8 +1061,6 @@ public final class VizGUI implements ComponentListener {
         int n = filename.length();
         if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".als"))
             filename = filename.substring(0, n - 4);
-        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] .ele extension
-            filename = filename.substring(0, n - 4);
         if (filename.length() > 0)
             return "(" + filename + ") " + commandname;
         else

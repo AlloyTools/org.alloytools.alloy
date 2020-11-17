@@ -694,7 +694,7 @@ public final class OurSyntaxWidget {
         if (ans == 'c' || (ans == 's' && save(false, bannedNames) == false))
             return false;
         for (int i = 1;; i++)
-            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".ele"))) // [HASLab] ele extension
+            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".als")))
                 break;
         fileModifiedDate = -1;
         pane.setText("");
@@ -794,8 +794,8 @@ public final class OurSyntaxWidget {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
             File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, new String[] {
-                                                                                                  ".ele", ".als"
-            }, ".als and .ele files"); // [HASLab] ele extension
+                                                                                                  ".als"
+            }, ".als files");
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
