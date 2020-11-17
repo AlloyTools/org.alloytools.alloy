@@ -50,7 +50,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-decomposed
  */
 public final class SimpleCLI {
 
