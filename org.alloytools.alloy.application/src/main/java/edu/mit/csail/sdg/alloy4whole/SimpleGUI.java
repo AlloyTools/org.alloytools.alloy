@@ -59,6 +59,7 @@ import static java.awt.event.KeyEvent.VK_U;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
@@ -72,6 +73,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -100,6 +102,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -111,9 +114,12 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
 import org.alloytools.alloy.core.AlloyCore;
 
@@ -339,6 +345,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     // ====== helper methods =================================================//
 
+    public JFrame getFrame() {
+        return frame;
+    }
+
     /**
      * Inserts "filename" into the "recently opened file list".
      */
@@ -387,7 +397,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (t.isFile())
             frame.setTitle(t.getFilename());
         else
-            frame.setTitle("Electrum Analyzer " + Version.version()); // [HASLab]
+            frame.setTitle("Electrum Analyzer " + Version.getShortversion()); // [HASLab]
         toolbar.setBorder(new OurBorder(false, false, text.count() <= 1, false));
         int c = t.getCaret();
         int y = t.getLineOfOffset(c) + 1;
@@ -443,7 +453,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             arch = "x86-mac"; // our pre-compiled binaries are all universal
                              // binaries
                              // Find out the appropriate Alloy directory
-        final String platformBinary = alloyHome() + fs + "binary";
+        final String platformBinary = alloyHome(frame) + fs + "binary";
         // Write a few test files
         try {
             (new File(platformBinary)).mkdirs();
@@ -452,14 +462,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
             // The error will be caught later by the "berkmin" or "spear" test
         }
         // Copy the platform-dependent binaries
-        Util.copy(true, false, platformBinary, arch + "/libminisat.so", arch + "/libminisatx1.so", arch + "/libminisat.jnilib", arch + "/libminisat.dylib", arch + "/libminisatprover.so", arch + "/libminisatproverx1.so", arch + "/libminisatprover.jnilib", arch + "/libminisatprover.dylib", arch + "/libzchaff.so", arch + "/libzchaffmincost.so", arch + "/libzchaffx1.so", arch + "/libzchaff.jnilib", arch + "/liblingeling.so", arch + "/liblingeling.dylib", arch + "/liblingeling.jnilib", arch + "/plingeling", arch + "/libglucose.so", arch + "/libglucose.dylib", arch + "/libglucose.jnilib", arch + "/libcryptominisat.so", arch + "/libcryptominisat.la", arch + "/libcryptominisat.dylib", arch + "/libcryptominisat.jnilib", arch + "/berkmin", arch + "/spear", arch + "/cryptominisat", arch + "/electrod"); // [HASLab]
-        Util.copy(false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe");
+        Util.copy(frame, true, false, platformBinary, arch + "/libminisat.so", arch + "/libminisatx1.so", arch + "/libminisat.jnilib", arch + "/libminisat.dylib", arch + "/libminisatprover.so", arch + "/libminisatproverx1.so", arch + "/libminisatprover.jnilib", arch + "/libminisatprover.dylib", arch + "/libzchaff.so", arch + "/libzchaffmincost.so", arch + "/libzchaffx1.so", arch + "/libzchaff.jnilib", arch + "/liblingeling.so", arch + "/liblingeling.dylib", arch + "/liblingeling.jnilib", arch + "/plingeling", arch + "/libglucose.so", arch + "/libglucose.dylib", arch + "/libglucose.jnilib", arch + "/libcryptominisat.so", arch + "/libcryptominisat.la", arch + "/libcryptominisat.dylib", arch + "/libcryptominisat.jnilib", arch + "/berkmin", arch + "/spear", arch + "/cryptominisat", arch + "/electrod"); // [HASLab]
+        Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe");
         // Copy the model files
-        Util.copy(false, true, alloyHome(), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als", "models/examples/electrum/toys/railway.ele", "models/examples/electrum/toys/life.ele", "models/examples/electrum/toys/birthday.ele", // [HASLab] electrum examples
+        Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als", "models/examples/electrum/toys/railway.ele", "models/examples/electrum/toys/life.ele", "models/examples/electrum/toys/birthday.ele", // [HASLab] electrum examples
                   "models/examples/electrum/toys/ex1.ele", "models/examples/electrum/algorithms/messaging.ele", "models/examples/electrum/algorithms/stable_orient_ring.ele", "models/examples/electrum/algorithms/ring.ele", "models/examples/electrum/algorithms/span_tree.ele", "models/examples/electrum/algorithms/peterson.ele", "models/examples/electrum/algorithms/stable_mutex_ring.ele", "models/examples/electrum/algorithms/dijkstra.ele", "models/examples/electrum/puzzles/hanoi.ele", "models/examples/electrum/puzzles/hanoi.thm", "models/examples/electrum/puzzles/farmer.thm", "models/examples/electrum/puzzles/farmer.ele", "models/examples/electrum/systems/hotel.ele", "models/examples/electrum/systems/views.ele", "models/examples/electrum/systems/javatypes_soundness.ele", "models/examples/electrum/systems/lift_spl.ele", "models/examples/electrum/case_studies/train.ele", "models/examples/electrum/case_studies/train.thm", "models/examples/electrum/case_studies/firewire.ele");
         // Record the locations
-        System.setProperty("alloy.theme0", alloyHome() + fs + "models");
-        System.setProperty("alloy.home", alloyHome());
+        System.setProperty("alloy.theme0", alloyHome(frame) + fs + "models");
+        System.setProperty("alloy.home", alloyHome(frame));
     }
 
     /** Called when this window is resized. */
@@ -477,7 +487,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
         AnalyzerY.set(frame.getY());
     }
 
-    /** Called when this window is shown. */
+    /**
+     * Called when this window is shown.
+     */
     @Override
     public void componentShown(ComponentEvent e) {}
 
@@ -578,18 +590,18 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Find a temporary directory to store Alloy files; it's guaranteed to be a
      * canonical absolute path.
      */
-    private static synchronized String alloyHome() {
+    private static synchronized String alloyHome(JFrame parent) {
         if (alloyHome != null)
             return alloyHome;
         String temp = System.getProperty("java.io.tmpdir");
         if (temp == null || temp.length() == 0)
-            OurDialog.fatal("Error. JVM need to specify a temporary directory using java.io.tmpdir property.");
+            OurDialog.fatal(parent, "Error. JVM need to specify a temporary directory using java.io.tmpdir property.");
         String username = System.getProperty("user.name");
         File tempfile = new File(temp + File.separatorChar + "alloy4tmp40-" + (username == null ? "" : username));
         tempfile.mkdirs();
         String ans = Util.canon(tempfile.getPath());
         if (!tempfile.isDirectory()) {
-            OurDialog.fatal("Error. Cannot create the temporary directory " + ans);
+            OurDialog.fatal(parent, "Error. Cannot create the temporary directory " + ans);
         }
         if (!Util.onWindows()) {
             String[] args = {
@@ -606,11 +618,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Create an empty temporary directory for use, designate it "deleteOnExit",
      * then return it. It is guaranteed to be a canonical absolute path.
      */
-    private static String maketemp() {
+    private static String maketemp(JFrame parent) {
         Random r = new Random(new Date().getTime());
         while (true) {
             int i = r.nextInt(1000000);
-            String dest = alloyHome() + File.separatorChar + "tmp" + File.separatorChar + i;
+            String dest = alloyHome(parent) + File.separatorChar + "tmp" + File.separatorChar + i;
             File f = new File(dest);
             if (f.mkdirs()) {
                 f.deleteOnExit();
@@ -623,8 +635,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Return the number of bytes used by the Temporary Directory (or return -1 if
      * the answer exceeds "long")
      */
-    private static long computeTemporarySpaceUsed() {
-        long ans = iterateTemp(null, false);
+    private static long computeTemporarySpaceUsed(JFrame parent) {
+        long ans = iterateTemp(parent, null, false);
         if (ans < 0)
             return -1;
         else
@@ -632,8 +644,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /** Delete every file in the Temporary Directory. */
-    private static void clearTemporarySpace() {
-        iterateTemp(null, true);
+    private static void clearTemporarySpace(JFrame parent) {
+        iterateTemp(parent, null, true);
         // Also clear the temp dir from previous versions of Alloy4
         String temp = System.getProperty("java.io.tmpdir");
         if (temp == null || temp.length() == 0)
@@ -642,21 +654,21 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (username == null)
             username = "";
         for (int i = 1; i < 40; i++)
-            iterateTemp(temp + File.separatorChar + "alloy4tmp" + i + "-" + username, true);
+            iterateTemp(parent, temp + File.separatorChar + "alloy4tmp" + i + "-" + username, true);
     }
 
     /**
      * Helper method for performing either computeTemporarySpaceUsed() or
      * clearTemporarySpace()
      */
-    private static long iterateTemp(String filename, boolean delete) {
+    private static long iterateTemp(JFrame parent, String filename, boolean delete) {
         long ans = 0;
         if (filename == null)
-            filename = alloyHome() + File.separatorChar + "tmp";
+            filename = alloyHome(parent) + File.separatorChar + "tmp";
         File x = new File(filename);
         if (x.isDirectory()) {
             for (String subfile : x.list()) {
-                long tmp = iterateTemp(filename + File.separatorChar + subfile, delete);
+                long tmp = iterateTemp(parent, filename + File.separatorChar + subfile, delete);
                 if (ans >= 0)
                     ans = ans + tmp;
             }
@@ -741,7 +753,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private Runner doBuiltin() {
         if (wrap)
             return wrapMe();
-        File file = getFile(alloyHome() + fs + "models");
+        File file = getFile(alloyHome(frame) + fs + "models");
         if (file != null) {
             doOpenFile(file.getPath());
         }
@@ -749,8 +761,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     private File getFile(String home) {
-        File file = OurDialog.askFile(true, home, new String[] {
-                                                                ".ele", ".als", ".md", "*"
+        File file = OurDialog.askFile(frame, true, home, new String[] {
+                                                                       ".ele", ".als", ".md", "*"
         }, "Electrum (.ele), Alloy (.als) or Markdown (.md) files"); // [HASLab] ele extension
         return file;
     }
@@ -805,7 +817,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      */
     private Runner doClearTemp() {
         if (!wrap) {
-            clearTemporarySpace();
+            clearTemporarySpace(frame);
             copyFromJAR();
             log.logBold("Temporary directory has been cleared.\n\n");
             log.logDivider();
@@ -919,7 +931,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         c.setMnemonic('c');
         JCheckBox b = new JCheckBox("Search Backward?", !lastFindForward);
         b.setMnemonic('b');
-        if (!OurDialog.getInput("Find", "Text:", x, " ", c, b))
+        if (!OurDialog.getInput(frame, "Find", "Text:", x, " ", c, b))
             return null;
         if (x.getText().length() == 0)
             return null;
@@ -992,7 +1004,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             return wrapMe();
         JTextField y = OurUtil.textfield("", 10);
         JTextField x = OurUtil.textfield("", 10);
-        if (!OurDialog.getInput("Go To", "Line Number:", y, "Column Number (optional):", x))
+        if (!OurDialog.getInput(frame, "Go To", "Line Number:", y, "Column Number (optional):", x))
             return null;
         try {
             OurSyntaxWidget t = text.get();
@@ -1165,8 +1177,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
         SimpleCallback1 cb = new SimpleCallback1(this, null, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
         SimpleTask1 task = new SimpleTask1();
         A4Options opt = new A4Options();
-        opt.tempDirectory = alloyHome() + fs + "tmp";
-        opt.solverDirectory = alloyHome() + fs + "binary";
+        opt.tempDirectory = alloyHome(frame) + fs + "tmp";
+        opt.solverDirectory = alloyHome(frame) + fs + "binary";
         opt.recordKodkod = RecordKodkod.get();
         opt.noOverflow = NoOverflow.get();
         opt.unrolls = Version.experimental ? Unrolls.get() : (-1);
@@ -1182,7 +1194,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         task.map = text.takeSnapshot();
         task.options = opt.dup();
         task.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
-        task.tempdir = maketemp();
+        task.tempdir = maketemp(frame);
         try {
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
@@ -1194,7 +1206,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
                 WorkerEngine.runLocally(task, cb);
             else
-                WorkerEngine.run(task, newmem, newstack, alloyHome() + fs + "binary", "", cb);
+                WorkerEngine.run(task, newmem, newstack, alloyHome(frame) + fs + "binary", "", cb);
             subMemoryNow = newmem;
             subStackNow = newstack;
         } catch (Throwable ex) {
@@ -1271,8 +1283,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             try {
                 int resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
                 A4Options opt = new A4Options();
-                opt.tempDirectory = alloyHome() + fs + "tmp";
-                opt.solverDirectory = alloyHome() + fs + "binary";
+                opt.tempDirectory = alloyHome(frame) + fs + "tmp";
+                opt.solverDirectory = alloyHome(frame) + fs + "binary";
                 opt.originalFilename = Util.canon(text.get().getFilename());
                 world = CompUtil.parseEverything_fromFile(A4Reporter.NOP, text.takeSnapshot(), opt.originalFilename, resolutionMode);
             } catch (Err er) {
@@ -1446,7 +1458,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (wrap)
             return wrapMe();
         int size = FontSize.get();
-        String f = OurDialog.askFont();
+        String f = OurDialog.askFont(frame);
         if (f.length() > 0) {
             FontName.set(f);
             text.setFont(f, size, TabSize.get());
@@ -1491,12 +1503,74 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     // ===============================================================================================================//
 
-    /** This method displays the about box. */
+    /**
+     * This method displays the about box.
+     */
     public Runner doAbout() {
         if (wrap)
             return wrapMe();
-        OurDialog.showmsg("About Electrum Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), Version.aa_version(), // [HASLab]
-                          "Build date: " + Version.buildDate(), "git: " + Version.commit, " ", "Lead developer: Nuno Macedo", "Project lead: Alcino Cunha", "Thanks to: David Chemouil, Julien Brunel, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães.", " ", "Electrum is based on Alloy Analyzer", " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, " + "Manu Sridharan, " + "Derek Rayside, " + "Jonathan Edwards, " + "Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+
+        // Old about message
+        //        OurDialog.showmsg("About Electrum Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), Version.aa_version(), // [HASLab]
+        //                  "Build date: " + Version.buildDate(), "git: " + Version.commit, " ", "Lead developer: Nuno Macedo", "Project lead: Alcino Cunha", "Thanks to: David Chemouil, Julien Brunel, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães.", " ", "Electrum is based on Alloy Analyzer", " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, " + "Manu Sridharan, " + "Derek Rayside, " + "Jonathan Edwards, " + "Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+
+        HTMLEditorKit kit = new HTMLEditorKit();
+        StyleSheet styleSheet = kit.getStyleSheet();
+        styleSheet.addRule("body {color:#000; font-family:Verdana, Trebuchet MS,Geneva, sans-serif; font-size: 10px; margin: 4px; }");
+        styleSheet.addRule("h1 {color: blue;}");
+        styleSheet.addRule("h2 {color: #ff0000;}");
+        styleSheet.addRule("pre {font : 10px monaco; color : black; background-color: #C0C0C0; padding: 4px; margin: 4px; }");
+        styleSheet.addRule("th {text-align:left;}");
+
+        JTextPane ta = new JTextPane();
+        ta.setEditorKit(kit);
+        ta.setContentType("text/html");
+        ta.setBackground(null);
+        ta.setBorder(null);
+        ta.setFont(new JLabel().getFont());
+        // @formatter:off
+        ta.setText("<html><h1>Electrum Analyzer "+ Version.getShortversion() +"</h1>"
+        + "<br/>"
+        + "<html>"
+        + "<tr><th>Project Lead</th><td>Daniel Jackson</td></tr>"
+        + "<tr><th>Chief Developer</th><td>Aleksandar Milicevic</td></tr>"
+        + "<tr><th>Kodkod Engine</th><td>Emina Torlak</td></tr>"
+        + "<tr><th>Open Source</th><td>Peter Kriens</td></tr>"
+        + "</table><br/>"
+        + "<p>For more information about Alloy, <a href='http://alloytools.org'>http://alloytools.org</a></p>"
+        + "<p>Questions and comments about Alloy are welcome at the community forum:</p>"
+        + "<p>Alloy Community Forum: <a href='https://groups.google.com/forum/#!forum/alloytools'>https://groups.google.com/forum/#!forum/alloytools</a></p>"
+        + "<p>Alloy experts also respond to <a href='https://stackoverflow.com/questions/tagged/alloy'>https://stackoverflow.com</a> questions tagged <code>alloy</code>.</p>"
+        + "<p>Major contributions to earlier versions of Alloy were made by: Julien Brunel, David<br/>"
+        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>"
+        + "(Electrum); Felix Chang (v4); Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater,<br/>"
+        + "Derek Rayside, Greg Dennis, Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz<br/>"
+        + "Khurshid (v3); Manu Sridharan (v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip,<br/>"
+        + "Jongmin Baek, Ning Song, Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel,<br/>"
+        + "Ian Schechter, Uriel Schafer (v1).</p>"
+        + "<p>The development of Alloy was funded by part by the National Science Foundation under<br/>"
+        + "Grant Nos. 0325283, 0541183, 0438897 and 0707612; by the Air Force Research Laboratory<br/>"
+        + "(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence<br/>"
+        + "Community Information Assurance Research (NICIAR) Program; and by the Nokia<br/>"
+        + "Corporation as part of a collaboration between Nokia Research and MIT CSAIL.</p>"
+        + "<br/><pre>"
+        + "Build Date: " + Version.buildDate() + "<br/>"
+        + "Git Commit: " + Version.commit
+        + "</pre>");
+        // @formatter:on
+        ta.setEditable(false);
+        ta.addHyperlinkListener((e) -> {
+            if (e.getEventType() == EventType.ACTIVATED) {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (IOException | URISyntaxException e1) {
+                        // ignore
+                    }
+                }
+            }
+        });
+        OurDialog.showmsg("About Alloy Analyzer " + Version.version(), ta);
 
         return null;
     }
@@ -1712,7 +1786,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
                 else
-                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome() + fs + "binary", "", cb);
+                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), alloyHome(frame) + fs + "binary", "", cb);
                 // task.run(cb);
             } catch (Throwable ex) {
                 WorkerEngine.stop();
@@ -1916,7 +1990,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         UIManager.put("ToolTip.font", new FontUIResource("Courier New", Font.PLAIN, 14));
 
         // Register an exception handler for uncaught exceptions
-        MailBug.setup();
+        MailBug.setup(frame);
 
         // Enable better look-and-feel
         if (Util.onMac() || Util.onWindows()) {
@@ -1966,7 +2040,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             y = screenHeight - 100;
 
         // Put up a slash screen
-        final JFrame frame = new JFrame("Alloy Analyzer");
+        final JFrame frame = new JFrame("Electrum Analyzer"); // [HASLab]
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.pack();
         if (!Util.onMac() && !Util.onWindows()) {
@@ -1987,11 +2061,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
                     y = 30;
                 }
             }
-            if (width < 100)
-                width = 100;
-            if (height < 100)
-                height = 100;
         }
+
+        if (width < 500)
+            width = 500;
+        if (height < 500)
+            height = 500;
+
         frame.setSize(width, height);
         frame.setLocation(x, y);
         frame.setVisible(true);
@@ -2034,6 +2110,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
         // };
         // c.callback(null);
 
+        if (Util.onMac()) {
+            frame.getRootPane().putClientProperty("apple.awt.fullscreenable", true);
+        }
         SimpleGUI.this.frame = frame;
         finishInit(args, windowWidth);
     }
@@ -2068,7 +2147,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // Copy required files from the JAR
         copyFromJAR();
-        final String binary = alloyHome() + fs + "binary";
+        final String binary = alloyHome(frame) + fs + "binary";
 
         // Create the menu bar
         JMenuBar bar = new JMenuBar();
@@ -2081,8 +2160,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             windowmenu = menu(bar, "&Window", doRefreshWindow(false));
             windowmenu2 = menu(null, "&Window", doRefreshWindow(true));
             helpmenu = menu(bar, "&Help", null);
-            if (!Util.onMac())
-                menuItem(helpmenu, "About Alloy...", 'A', doAbout());
+            menuItem(helpmenu, "About Alloy...", 'A', doAbout());
             menuItem(helpmenu, "Quick Guide", 'Q', doHelp());
             menuItem(helpmenu, "See the Copyright Notices...", 'L', doLicense());
         } finally {
@@ -2125,7 +2203,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         PreferencesDialog.logOnChange(log, A4Preferences.allUserPrefs().toArray(new Pref< ? >[0]));
 
         // Create the text area
-        text = new OurTabbedSyntaxWidget(fontName, fontSize, TabSize.get());
+        text = new OurTabbedSyntaxWidget(fontName, fontSize, TabSize.get(), frame);
         text.listeners.add(this);
         text.enableSyntax(!SyntaxDisabled.get());
 
@@ -2145,7 +2223,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold(Version.aa_version() + " (build date: " + Version.buildDate() + " git " + Version.commit + ")\n\n"); // [HASLab]
+        log.logBold("Electrum Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
 
         // If on Mac, then register an application listener
         try {
@@ -2189,7 +2267,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // If the temporary directory has become too big, then tell the user
         // they can "clear temporary directory".
-        long space = computeTemporarySpaceUsed();
+        long space = computeTemporarySpaceUsed(frame);
         if (space < 0 || space >= 20 * 1024768) {
             if (space < 0)
                 log.logBold("Warning: Alloy4's temporary directory has exceeded 1024M.\n");
@@ -2260,7 +2338,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
         t.start();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object do_action(Object sender, Event e) {
         if (sender instanceof OurTabbedSyntaxWidget)

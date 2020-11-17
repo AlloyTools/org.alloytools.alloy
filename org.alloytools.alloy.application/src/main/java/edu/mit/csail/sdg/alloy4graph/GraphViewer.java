@@ -39,6 +39,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -165,7 +166,7 @@ public final strictfp class GraphViewer extends JPanel {
     /**
      * Construct a GraphViewer that displays the given graph.
      */
-    public GraphViewer(final Graph graph) {
+    public GraphViewer(JFrame parent, final Graph graph) {
         OurUtil.make(this, BLACK, WHITE, new EmptyBorder(0, 0, 0, 0));
         setBorder(null);
         this.scale = graph.defaultScale;
@@ -191,7 +192,7 @@ public final strictfp class GraphViewer extends JPanel {
                         c = c.getParent();
                 }
                 if (e.getSource() == print)
-                    alloySaveAs();
+                    alloySaveAs(parent);
                 if (e.getSource() == zoomIn) {
                     scale = scale * 1.33d;
                     if (!(scale < 500d))
@@ -399,7 +400,7 @@ public final strictfp class GraphViewer extends JPanel {
      * Export the current drawing as a PNG or PDF file by asking the user for the
      * filename and the image resolution.
      */
-    public void alloySaveAs() {
+    public void alloySaveAs(JFrame parent) {
         // Figure out the initial width, height, and DPI that we might want to
         // suggest to the user
         final double ratio = ((double) (graph.getTotalWidth())) / graph.getTotalHeight();
@@ -555,8 +556,8 @@ public final strictfp class GraphViewer extends JPanel {
         // Ask whether the user wants to change the width, height, and DPI
         double myScale;
         while (true) {
-            if (!OurDialog.getInput("Export as PNG or PDF", new Object[] {
-                                                                          b1, OurUtil.makeH(20, w, null), OurUtil.makeH(20, h, null), " ", b2, OurUtil.makeH(20, w0, w1, w2, null), OurUtil.makeH(20, h0, h1, h2, null), OurUtil.makeH(20, d0, d1, d2, null), OurUtil.makeH(20, msg, null), b3, OurUtil.makeH(20, dp0, dp1, dp2, null)
+            if (!OurDialog.getInput(parent, "Export as PNG or PDF", new Object[] {
+                                                                                  b1, OurUtil.makeH(20, w, null), OurUtil.makeH(20, h, null), " ", b2, OurUtil.makeH(20, w0, w1, w2, null), OurUtil.makeH(20, h0, h1, h2, null), OurUtil.makeH(20, d0, d1, d2, null), OurUtil.makeH(20, msg, null), b3, OurUtil.makeH(20, dp0, dp1, dp2, null)
             }))
                 return;
             // Let's validate the values
@@ -569,7 +570,7 @@ public final strictfp class GraphViewer extends JPanel {
                 myScale = ((double) widthInPixel) / graph.getTotalWidth();
                 int heightInPixel = (int) (graph.getTotalHeight() * myScale);
                 if (widthInPixel > 4000 || heightInPixel > 4000)
-                    if (!OurDialog.yesno("The image dimension (" + widthInPixel + "x" + heightInPixel + ") is very large. Are you sure?"))
+                    if (!OurDialog.yesno(parent, "The image dimension (" + widthInPixel + "x" + heightInPixel + ") is very large. Are you sure?"))
                         continue;
             } else if (b3.isSelected()) {
                 try {
@@ -578,7 +579,7 @@ public final strictfp class GraphViewer extends JPanel {
                     dpi = (-1);
                 }
                 if (dpi < 50 || dpi > 3000) {
-                    OurDialog.alert("The DPI must be between 50 and 3000.");
+                    OurDialog.alert(parent, "The DPI must be between 50 and 3000.");
                     continue;
                 }
                 myScale = 0; // This field is unused for PDF generation
@@ -591,12 +592,12 @@ public final strictfp class GraphViewer extends JPanel {
         // Ask the user for a filename
         File filename;
         if (b3.isSelected())
-            filename = OurDialog.askFile(false, null, ".pdf", "PDF file");
+            filename = OurDialog.askFile(parent, false, null, ".pdf", "PDF file");
         else
-            filename = OurDialog.askFile(false, null, ".png", "PNG file");
+            filename = OurDialog.askFile(parent, false, null, ".png", "PNG file");
         if (filename == null)
             return;
-        if (filename.exists() && !OurDialog.askOverwrite(filename.getAbsolutePath()))
+        if (filename.exists() && !OurDialog.askOverwrite(parent, filename.getAbsolutePath()))
             return;
         // Attempt to write the PNG or PDF file
         try {
@@ -611,7 +612,7 @@ public final strictfp class GraphViewer extends JPanel {
             }
             Util.setCurrentDirectory(filename.getParentFile());
         } catch (Throwable ex) {
-            OurDialog.alert("An error has occured in writing the output file:\n" + ex);
+            OurDialog.alert(parent, "An error has occured in writing the output file:\n" + ex);
         }
     }
 
