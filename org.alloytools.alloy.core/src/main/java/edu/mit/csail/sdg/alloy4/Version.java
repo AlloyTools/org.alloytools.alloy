@@ -39,7 +39,6 @@ public final class Version {
     private Version() {}
 
     public static String  version      = "unknown";
-    public static String  descritpion  = "unknown"; // [HASLab]
     public static long    buildnumber  = -1;
     public static Instant builddate    = Instant.ofEpochMilli(0);
     public static String  commit       = "unknown";
@@ -54,16 +53,16 @@ public final class Version {
         Manifest manifest = getManifest();
         if (manifest != null) {
 
-            // [HASLab]
-            String description = manifest.getMainAttributes().getValue("Bundle-Description");
-            if (description != null) {
-                Version.descritpion = description;
-                Version.shortversion = description.replaceAll("([0-9]*\\.[0-9]*)\\.[0-9]*(\\.[0-9]*)?", "$1");
-            }
-
             String version = manifest.getMainAttributes().getValue("Bundle-Version");
-            if (version != null)
+            if (version != null) {
                 Version.version = version;
+                int lastIndexOf = version.lastIndexOf('.');
+                if (lastIndexOf > 0) {
+                    Version.shortversion = version.substring(0, lastIndexOf);
+                } else {
+                    Version.shortversion = version;
+                }
+            }
 
             String commit = manifest.getMainAttributes().getValue("Git-SHA");
             if (commit != null)
@@ -86,12 +85,6 @@ public final class Version {
     /** Returns the version string. */
     public static String version() {
         return version;
-    }
-
-    /** Returns the description string. */
-    // [HASLab]
-    public static String aa_version() {
-        return descritpion;
     }
 
     private static Manifest getManifest() {

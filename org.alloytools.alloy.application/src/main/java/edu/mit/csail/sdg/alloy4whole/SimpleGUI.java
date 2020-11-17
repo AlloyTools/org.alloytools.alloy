@@ -397,7 +397,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (t.isFile())
             frame.setTitle(t.getFilename());
         else
-            frame.setTitle("Electrum Analyzer " + Version.getShortversion()); // [HASLab]
+            frame.setTitle("Alloy Analyzer " + Version.getShortversion());
         toolbar.setBorder(new OurBorder(false, false, text.count() <= 1, false));
         int c = t.getCaret();
         int y = t.getLineOfOffset(c) + 1;
@@ -1511,8 +1511,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             return wrapMe();
 
         // Old about message
-        //        OurDialog.showmsg("About Electrum Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), Version.aa_version(), // [HASLab]
-        //                  "Build date: " + Version.buildDate(), "git: " + Version.commit, " ", "Lead developer: Nuno Macedo", "Project lead: Alcino Cunha", "Thanks to: David Chemouil, Julien Brunel, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães.", " ", "Electrum is based on Alloy Analyzer", " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, " + "Manu Sridharan, " + "Derek Rayside, " + "Jonathan Edwards, " + "Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
+        // OurDialog.showmsg("About Alloy Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), "Alloy Analyzer " + Version.version(), "Build date: " + " git: " + Version.commit, " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, Manu Sridharan, Derek Rayside, Jonathan Edwards, Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
 
         HTMLEditorKit kit = new HTMLEditorKit();
         StyleSheet styleSheet = kit.getStyleSheet();
@@ -1529,7 +1528,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         ta.setBorder(null);
         ta.setFont(new JLabel().getFont());
         // @formatter:off
-        ta.setText("<html><h1>Electrum Analyzer "+ Version.getShortversion() +"</h1>"
+        ta.setText("<html><h1>Alloy Analyzer "+ Version.getShortversion() +"</h1>"
         + "<br/>"
         + "<html>"
         + "<tr><th>Project Lead</th><td>Daniel Jackson</td></tr>"
@@ -2040,7 +2039,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             y = screenHeight - 100;
 
         // Put up a slash screen
-        final JFrame frame = new JFrame("Electrum Analyzer"); // [HASLab]
+        final JFrame frame = new JFrame("Alloy Analyzer");
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.pack();
         if (!Util.onMac() && !Util.onWindows()) {
@@ -2071,7 +2070,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         frame.setSize(width, height);
         frame.setLocation(x, y);
         frame.setVisible(true);
-        frame.setTitle("Electrum Analyzer " + Version.version() + " loading... please wait..."); // [HASLab]
+        frame.setTitle("Alloy Analyzer " + Version.version() + " loading... please wait...");
         final int windowWidth = width;
         // We intentionally call setVisible(true) first before settings the
         // "please wait" title,
@@ -2223,7 +2222,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold("Electrum Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
+        log.logBold("Alloy Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
 
         // If on Mac, then register an application listener
         try {
