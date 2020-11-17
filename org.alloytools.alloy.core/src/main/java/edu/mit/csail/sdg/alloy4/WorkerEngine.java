@@ -28,6 +28,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.Field;
+import java.util.Locale;
 
 import org.alloytools.alloy.core.AlloyCore;
 
@@ -359,6 +361,24 @@ public final class WorkerEngine {
                 }
             });
             latest_manager.start();
+
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                @Override
+                public void run() {
+                    if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
+                        try {  // [HASLab] needed to stop all child processes (electrod)
+                            Field f = latest_sub.getClass().getDeclaredField("pid");
+                            f.setAccessible(true);
+                            Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    else
+                        latest_sub.destroy();
+                }
+            });
         }
     }
 
