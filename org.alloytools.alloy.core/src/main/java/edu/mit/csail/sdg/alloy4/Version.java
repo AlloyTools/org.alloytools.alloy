@@ -48,19 +48,22 @@ public final class Version {
      * version.
      */
     public static boolean experimental = true;
+    private static String shortversion = "";
 
     static {
         Manifest manifest = getManifest();
         if (manifest != null) {
 
+            // [HASLab]
+            String description = manifest.getMainAttributes().getValue("Bundle-Description");
+            if (description != null) {
+                Version.descritpion = description;
+                Version.shortversion = description.replaceAll("([0-9]*\\.[0-9]*)\\.[0-9]*(\\.[0-9]*)?", "$1");
+            }
+
             String version = manifest.getMainAttributes().getValue("Bundle-Version");
             if (version != null)
                 Version.version = version;
-
-            // [HASLab]
-            String description = manifest.getMainAttributes().getValue("Bundle-Description");
-            if (description != null)
-                Version.descritpion = description;
 
             String commit = manifest.getMainAttributes().getValue("Git-SHA");
             if (commit != null)
@@ -112,6 +115,10 @@ public final class Version {
     /** Returns the build date. */
     public static String buildDate() {
         return builddate.toString();
+    }
+
+    public static String getShortversion() {
+        return shortversion;
     }
 
 }

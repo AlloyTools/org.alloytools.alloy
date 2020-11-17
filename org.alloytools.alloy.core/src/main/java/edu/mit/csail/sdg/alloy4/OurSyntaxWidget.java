@@ -18,6 +18,7 @@ package edu.mit.csail.sdg.alloy4;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -689,7 +690,7 @@ public final class OurSyntaxWidget {
      * @return true if this text buffer is now a fresh empty text buffer
      */
     boolean discard(boolean askUser, Collection<String> bannedNames) {
-        char ans = (!modified || !askUser) ? 'd' : OurDialog.askSaveDiscardCancel("The file \"" + filename + "\"");
+        char ans = (!modified || !askUser) ? 'd' : OurDialog.askSaveDiscardCancel(parent.getParent(), "The file \"" + filename + "\"");
         if (ans == 'c' || (ans == 's' && save(false, bannedNames) == false))
             return false;
         for (int i = 1;; i++)
@@ -714,7 +715,7 @@ public final class OurSyntaxWidget {
             x = Util.readAll(filename);
             fileModifiedDate = Util.getModifiedDate(filename);
         } catch (Throwable ex) {
-            OurDialog.alert("Error reading the file \"" + filename + "\"");
+            OurDialog.alert(parent.getParent(), "Error reading the file \"" + filename + "\"");
             return false;
         }
         pane.setText(x);
@@ -735,14 +736,14 @@ public final class OurSyntaxWidget {
         if (!isFile)
             return; // "untitled" text buffer does not have a on-disk file to
                    // refresh from
-        if (modified && !OurDialog.yesno("You have unsaved changes to \"" + filename + "\"\nAre you sure you wish to discard " + "your changes and reload it from disk?", "Discard your changes", "Cancel this operation"))
+        if (modified && !OurDialog.yesno(parent.getParent(), "You have unsaved changes to \"" + filename + "\"\nAre you sure you wish to discard " + "your changes and reload it from disk?", "Discard your changes", "Cancel this operation"))
             return;
         String t;
         try {
             t = Util.readAll(filename);
             fileModifiedDate = Util.getModifiedDate(filename);
         } catch (Throwable ex) {
-            OurDialog.alert("Cannot read \"" + filename + "\"");
+            OurDialog.alert(parent.getParent(), "Cannot read \"" + filename + "\"");
             return;
         }
         if (modified == false && t.equals(pane.getText()))
@@ -761,13 +762,13 @@ public final class OurSyntaxWidget {
     boolean saveAs(String filename, Collection<String> bannedNames) {
         filename = Util.canon(filename);
         if (bannedNames.contains(filename)) {
-            OurDialog.alert("The filename \"" + filename + "\"\nis already open in another tab.");
+            OurDialog.alert(parent.getParent(), "The filename \"" + filename + "\"\nis already open in another tab.");
             return false;
         }
         try {
             Util.writeAll(filename, pane.getText());
         } catch (Throwable e) {
-            OurDialog.alert("Error writing to the file \"" + filename + "\"");
+            OurDialog.alert(parent.getParent(), "Error writing to the file \"" + filename + "\"");
             return false;
         }
         this.filename = Util.canon(filename); // a new file's canonical name may
@@ -792,20 +793,18 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(false, null, new String[] {
-                                                                  ".ele", ".als"
-            }, ".als and .ele files");
-            if (f == null)
-                return false;  // [HASLab] ele extension
+            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, new String[] {
+                                                                                                  ".ele", ".als"
+            }, ".als and .ele files"); // [HASLab] ele extension
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
-            if (f.exists() && !OurDialog.askOverwrite(n))
+            if (f.exists() && !OurDialog.askOverwrite(parent.getParent(), n))
                 return false;
         }
 
         if (isFile && n.equals(this.filename) && Util.getModifiedDate(this.filename) > fileModifiedDate) {
-            if (!OurDialog.yesno("The file has been modified outside the editor.\n" + "Do you want to overwrite it anyway?")) {
+            if (!OurDialog.yesno(parent.getParent(), "The file has been modified outside the editor.\n" + "Do you want to overwrite it anyway?")) {
                 return false;
             }
         }

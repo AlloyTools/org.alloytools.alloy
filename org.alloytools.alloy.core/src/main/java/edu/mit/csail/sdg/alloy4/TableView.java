@@ -1,6 +1,8 @@
 package edu.mit.csail.sdg.alloy4;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +154,25 @@ public class TableView {
             TupleSet instanceTuples = instance.tuples(s.label);
             if (instanceTuples != null) {
 
-                SimTupleset sigInstances = toSimTupleset(instanceTuples);
+                List<SimTuple> instancesArray = toList(instanceTuples);
+                Collections.sort(instancesArray, new Comparator<SimTuple>() {
+                    @Override
+                    public int compare(SimTuple simTuple1, SimTuple simTuple2) {
+                        String[] coll1 = simTuple1.get(0).toString().split("\\$");
+                        String[] coll2 = simTuple2.get(0).toString().split("\\$");
+                        if (coll1.length == 2 && coll2.length == 2) {
+                            try {
+                                return Integer.parseInt(coll1[1]) - Integer.parseInt(coll2[1]);
+                            }
+                            catch (NumberFormatException e) {
+                                return 0;
+                            }
+                        }
+                        return 0;
+                    }
+                });
+
+                SimTupleset sigInstances = SimTupleset.make(instancesArray);
                 Table table = new Table(sigInstances.size() + 1, s.getFields().size() + 1, 1);
                 table.set(0, 0, s.label);
 
@@ -253,6 +273,14 @@ public class TableView {
             atoms.add(atom);
         }
         return SimTuple.make(atoms);
+    }
+
+    private static List<SimTuple> toList(TupleSet tupleSet) {
+        List<SimTuple> l = new ArrayList<>(tupleSet.size());
+        for (Tuple tuple : tupleSet) {
+            l.add(toSimTuple(tuple));
+        }
+        return l;
     }
 
     private static SimTupleset toSimTupleset(TupleSet tupleSet) {
