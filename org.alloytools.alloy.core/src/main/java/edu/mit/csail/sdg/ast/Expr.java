@@ -424,7 +424,8 @@ public abstract class Expr extends Browsable {
             while (!todo.isEmpty()) {
                 q.visitThis(todo.remove(todo.size() - 1).getBody());
             }
-        } catch (Err ex) {} // Exception should not occur
+        } catch (Err ex) {
+        } // Exception should not occur
         return seen;
     }
 

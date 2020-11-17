@@ -20,8 +20,10 @@
   <string>Alloy</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>5.1.0</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0</string>
+  <string>5.1</string>
   <key>CFBundleSignature</key>
   <string>????</string>
   <!-- See http://developer.apple.com/library/mac/#releasenotes/General/SubmittingToMacAppStore/_index.html
@@ -29,13 +31,13 @@
   <key>LSApplicationCategoryType</key>
   <string>Unknown</string>
   <key>CFBundleVersion</key>
-  <string>100</string>
+  <string>101</string>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright (C) 2017</string>
+  <string>Copyright (C) 2019</string>
   <key>JVMRuntime</key>
-  <string>jdk1.8.0_25.jdk</string>
+  <string>jdk1.8.0_144.jdk</string>
   <key>JVMMainClassName</key>
-  <string>edu.mit.csail.sdg.alloy4whole.SimpleGUI</string>
+  <string>edu.mit.csail.sdg.alloy4whole.Alloy</string>
   <key>JVMAppClasspath</key>
   <string></string>
   <key>JVMMainJarName</key>
