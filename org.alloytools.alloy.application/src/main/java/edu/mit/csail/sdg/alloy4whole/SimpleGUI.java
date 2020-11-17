@@ -1535,12 +1535,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
         + "<p>Questions and comments about Alloy are welcome at the community forum:</p>"
         + "<p>Alloy Community Forum: <a href='https://groups.google.com/forum/#!forum/alloytools'>https://groups.google.com/forum/#!forum/alloytools</a></p>"
         + "<p>Alloy experts also respond to <a href='https://stackoverflow.com/questions/tagged/alloy'>https://stackoverflow.com</a> questions tagged <code>alloy</code>.</p>"
-        + "<p>Major contributions to earlier versions of Alloy were made by: Felix Chang (v4);<br/>"
-        + "Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater, Derek Rayside, Greg Dennis,<br/>"
-        + "Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz Khurshid (v3); Manu Sridharan<br/>"
-        + "(v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,<br/>"
-        + "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, Uriel<br/>"
-        + "Schafer (v1).</p>"
+        + "<p>Major contributions to earlier versions of Alloy were made by: Julien Brunel, David<br/>"
+        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>"
+        + "(Electrum); Felix Chang (v4); Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater,<br/>"
+        + "Derek Rayside, Greg Dennis, Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz<br/>"
+        + "Khurshid (v3); Manu Sridharan (v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip,<br/>"
+        + "Jongmin Baek, Ning Song, Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel,<br/>"
+        + "Ian Schechter, Uriel Schafer (v1).</p>"
         + "<p>The development of Alloy was funded by part by the National Science Foundation under<br/>"
         + "Grant Nos. 0325283, 0541183, 0438897 and 0707612; by the Air Force Research Laboratory<br/>"
         + "(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence<br/>"
@@ -2032,7 +2033,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             y = screenHeight - 100;
 
         // Put up a slash screen
-        final JFrame frame = new JFrame("Alloy Analyzer");
+        final JFrame frame = new JFrame("Electrum Analyzer"); // [HASLab]
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.pack();
         if (!Util.onMac() && !Util.onWindows()) {
