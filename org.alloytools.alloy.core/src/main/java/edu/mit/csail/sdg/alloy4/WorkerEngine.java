@@ -1,5 +1,4 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
- * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -28,8 +27,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Field;
-import java.util.Locale;
 
 import org.alloytools.alloy.core.AlloyCore;
 
@@ -50,8 +47,6 @@ import org.alloytools.alloy.core.AlloyCore;
  * subsequent task; however, if the subprocess crashed, the crash will be
  * reported to the parent process via callback, and if we try to execute another
  * task, then a new subprocess will be spawned automatically.
- *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 public final class WorkerEngine {
 
@@ -351,24 +346,6 @@ public final class WorkerEngine {
                 }
             });
             latest_manager.start();
-
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-
-                @Override
-                public void run() {
-                    if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
-                        try {  // [HASLab] needed to stop all child processes (electrod)
-                            Field f = latest_sub.getClass().getDeclaredField("pid");
-                            f.setAccessible(true);
-                            Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    else
-                        latest_sub.destroy();
-                }
-            });
         }
     }
 
