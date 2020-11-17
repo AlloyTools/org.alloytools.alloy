@@ -20,7 +20,7 @@ package edu.mit.csail.sdg.alloy4;
  * (This default implementation ignores all calls; you should subclass it to do
  * the appropriate screen output)
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [HASLab] electrum-temporal, electrum-decomposed
  */
 
 public class A4Reporter {
