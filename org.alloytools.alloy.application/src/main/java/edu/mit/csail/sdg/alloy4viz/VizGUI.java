@@ -955,7 +955,7 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab] 
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
+                myEvaluatorPanel.setCurrentState(current); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -1863,14 +1863,12 @@ public final class VizGUI implements ComponentListener {
                     path.moveTo(states.get(i).getMaxX(), states.get(i).getCenterY());
                     path.lineTo(states.get(i + 1).getMinX(), states.get(i + 1).getCenterY());
                     g2.draw(path);
-
                     AffineTransform tx = new AffineTransform();
                     tx.setToIdentity();
                     double angle = Math.atan2(0, 1);
                     tx.translate(states.get(i + 1).getMinX(), states.get(i + 1).getCenterY());
                     tx.rotate((angle - Math.PI / 2d));
                     g2.fill(tx.createTransformedShape(arrowHead));
-
                 }
 
                 Path2D path = new Path2D.Double();
