@@ -192,7 +192,8 @@ public final class OurSyntaxWidget {
                             public final void layout(int w, int h) {
                                 try {
                                     super.layout(30000, h);
-                                } catch (Throwable ex) {}
+                                } catch (Throwable ex) {
+                                }
                             }
                         };
                     }
@@ -299,7 +300,8 @@ public final class OurSyntaxWidget {
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {}
+            public void changedUpdate(DocumentEvent e) {
+            }
         });
         pane.addFocusListener(new FocusAdapter() {
 
@@ -538,7 +540,8 @@ public final class OurSyntaxWidget {
             painter = new OurHighlighter(color);
         try {
             pane.getHighlighter().addHighlight(start, end, painter);
-        } catch (Throwable ex) {} // exception is okay
+        } catch (Throwable ex) {
+        } // exception is okay
     }
 
     /** Returns the filename. */
