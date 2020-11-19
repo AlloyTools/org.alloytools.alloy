@@ -33,7 +33,8 @@ public final class Version {
     /**
      * The constructor is private, since this class never needs to be instantiated.
      */
-    private Version() {}
+    private Version() {
+    }
 
     public static String  version      = "unknown";
     public static long    buildnumber  = -1;
