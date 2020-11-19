@@ -278,12 +278,12 @@ public final class ExprUnary extends Expr {
                 case NOOP :
                     break;
                 case NOT :
-                case AFTER :
-                case ALWAYS :
-                case EVENTUALLY :
-                case BEFORE :
-                case HISTORICALLY :
-                case ONCE :         // [HASLab]
+                case AFTER : // [HASLab]
+                case ALWAYS : // [HASLab]
+                case EVENTUALLY : // [HASLab]
+                case BEFORE : // [HASLab]
+                case HISTORICALLY : // [HASLab]
+                case ONCE : // [HASLab]
                     sub = sub.typecheck_as_formula();
                     break;
                 case CAST2SIGINT :
@@ -326,12 +326,12 @@ public final class ExprUnary extends Expr {
                     case SOME :
                     case LONE :
                     case ONE :
-                    case AFTER :
-                    case ALWAYS :
-                    case EVENTUALLY :
-                    case BEFORE :
-                    case HISTORICALLY :
-                    case ONCE :         // [HASLab]
+                    case AFTER : // [HASLab]
+                    case ALWAYS : // [HASLab]
+                    case EVENTUALLY : // [HASLab]
+                    case BEFORE : // [HASLab]
+                    case HISTORICALLY : // [HASLab]
+                    case ONCE : // [HASLab]
                         type = Type.FORMULA;
                         break;
                     case TRANSPOSE :
@@ -391,11 +391,11 @@ public final class ExprUnary extends Expr {
         Type s = p;
         switch (op) {
             case NOT :
-            case AFTER :
-            case ALWAYS :
-            case EVENTUALLY :
-            case BEFORE :
-            case HISTORICALLY :
+            case AFTER : // [HASLab]
+            case ALWAYS : // [HASLab]
+            case EVENTUALLY : // [HASLab]
+            case BEFORE : // [HASLab]
+            case HISTORICALLY : // [HASLab]
             case ONCE : // [HASLab]
                 s = Type.FORMULA;
                 break;
