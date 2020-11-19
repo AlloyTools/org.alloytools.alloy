@@ -192,8 +192,7 @@ public final class OurSyntaxWidget {
                             public final void layout(int w, int h) {
                                 try {
                                     super.layout(30000, h);
-                                } catch (Throwable ex) {
-                                }
+                                } catch (Throwable ex) {}
                             }
                         };
                     }
@@ -300,8 +299,7 @@ public final class OurSyntaxWidget {
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
+            public void changedUpdate(DocumentEvent e) {}
         });
         pane.addFocusListener(new FocusAdapter() {
 
@@ -540,8 +538,7 @@ public final class OurSyntaxWidget {
             painter = new OurHighlighter(color);
         try {
             pane.getHighlighter().addHighlight(start, end, painter);
-        } catch (Throwable ex) {
-        } // exception is okay
+        } catch (Throwable ex) {} // exception is okay
     }
 
     /** Returns the filename. */
@@ -793,7 +790,7 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, new String[] {".als"}, ".als files");
+            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, ".als", ".als files");
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
