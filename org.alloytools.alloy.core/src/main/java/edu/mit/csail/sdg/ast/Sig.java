@@ -43,7 +43,7 @@ import edu.mit.csail.sdg.ast.Attr.AttrType;
 public abstract class Sig extends Expr implements Clause {
 
     /** The built-in "univ" signature. */
-    public static final PrimSig UNIV   = new PrimSig("univ", null, false, false); // [HASLab]
+    public static final PrimSig UNIV   = new PrimSig("univ", null, true, false); // [HASLab]
 
     /** The built-in "Int" signature. */
     public static final PrimSig SIGINT = new PrimSig("Int", UNIV, false, false); // [HASLab]
@@ -52,7 +52,7 @@ public abstract class Sig extends Expr implements Clause {
     public static final PrimSig SEQIDX = new PrimSig("seq/Int", SIGINT, false, true); // [HASLab]
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING = new PrimSig("String", UNIV, true, true); // [HASLab]
+    public static final PrimSig STRING = new PrimSig("String", UNIV, false, true); // [HASLab]
 
     /** The built-in "none" signature. */
     public static final PrimSig NONE   = new PrimSig("none", null, false, false); // [HASLab]
