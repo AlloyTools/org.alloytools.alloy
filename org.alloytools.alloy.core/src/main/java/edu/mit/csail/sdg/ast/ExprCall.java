@@ -133,8 +133,8 @@ public final class ExprCall extends Expr {
                 case IN :
                 case OR :
                 case AND :
-                case RELEASES : // [HASLab]
                 case UNTIL : // [HASLab]
+                case RELEASES : // [HASLab]
                 case SINCE : // [HASLab]
                 case TRIGGERED : // [HASLab]
                 case NOT_LT :

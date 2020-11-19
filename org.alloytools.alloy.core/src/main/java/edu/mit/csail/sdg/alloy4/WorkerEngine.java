@@ -190,7 +190,6 @@ public final class WorkerEngine {
                             f.setAccessible(true);
                             Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
                         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
                     else
@@ -362,7 +361,6 @@ public final class WorkerEngine {
                 }
             });
             latest_manager.start();
-
         }
     }
 

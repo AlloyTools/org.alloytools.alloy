@@ -183,7 +183,7 @@ public final class CompUtil {
     // [HASLab]
     public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
         for (Sig sig : sigs) {
-            if (sig.isVariable != null)
+            if (sig.isVariable != null && !sig.builtin)
                 return true;
             else {
                 for (Decl dec : sig.getFieldDecls()) {
