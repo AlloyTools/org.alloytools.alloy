@@ -39,10 +39,6 @@ public final class Version {
     public static long    buildnumber  = -1;
     public static Instant builddate    = Instant.ofEpochMilli(0);
     public static String  commit       = "unknown";
-    /**
-     * This is true if this is an experimental version rather than a release
-     * version.
-     */
     public static boolean experimental = true;
     private static String shortversion = "";
 
@@ -73,6 +69,11 @@ public final class Version {
         }
 
     }
+
+    /**
+     * This is true if this is an experimental version rather than a release
+     * version.
+     */
 
     /** Returns the build number. */
     public static long buildNumber() {
