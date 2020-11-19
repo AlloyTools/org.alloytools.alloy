@@ -49,24 +49,17 @@
             <groupId>com.github.vbmacher</groupId>
             <artifactId>java-cup</artifactId>
             <version>11b-20160615</version>
-<!--    		  	<groupId>net.sourceforge.czt.dev</groupId>
- 		   	<artifactId>java-cup</artifactId>
-		    <version>0.11-a-czt02-cdh</version> -->
 		</dependency>
    		<dependency>
-<!-- 	<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback-version}</version>
-			<scope>compile</scope> -->
     		<groupId>org.slf4j</groupId>
     		<artifactId>slf4j-api</artifactId>
     		<version>1.7.28</version>
     	</dependency>
-    <dependency>
+    	<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
 				<version>1.7.5</version>
-    </dependency>
-				    	</dependencies>
+    	</dependency>
+   	</dependencies>
 
 </project>
