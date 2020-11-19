@@ -1002,7 +1002,7 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab]
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrent(current); // [HASLab] set evaluator state
+                myEvaluatorPanel.setCurrentState(current); // [HASLab] set evaluator state
             } catch (Exception ex) {} // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
@@ -1910,31 +1910,17 @@ public final class VizGUI implements ComponentListener {
     // ========================================TRACES=====================================================//
 
     // [HASLab]
-    private int    current          = 0;
+    private int    current = 0;
 
     // [HASLab]
-    ActionListener leftNavListener  = new ActionListener() {
+    ActionListener leftNavListener=new ActionListener(){
 
-                                        public final void actionPerformed(ActionEvent e) {
-                                            if (current > 0) {
-                                                current--;
-                                                updateDisplay();
-                                            }
-                                        }
-                                    };
+    public final void actionPerformed(ActionEvent e){if(current>0){current--;updateDisplay();}}};
 
     // [HASLab]
-    ActionListener rightNavListener = new ActionListener() {
+    ActionListener rightNavListener=new ActionListener(){
 
-                                        public final void actionPerformed(ActionEvent e) {
-                                            int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-                                            int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-                                            int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
-                                            int lox = lmx - (lst - lop);
-                                            current = normalize(current + 1, lmx, lox);
-                                            updateDisplay();
-                                        }
-                                    };
+    public final void actionPerformed(ActionEvent e){int lst=getVizState().get(statepanes-1).getOriginalInstance().originalA4.getTraceLength();int lop=getVizState().get(statepanes-1).getOriginalInstance().originalA4.getLoopState();int lmx=current+1+statepanes>lst?current+1+statepanes:lst;int lox=lmx-(lst-lop);current=normalize(current+1,lmx,lox);updateDisplay();}};
 
     /**
      * Creates the panel for navigating the trace, in the lower side of the right
@@ -2009,11 +1995,18 @@ public final class VizGUI implements ComponentListener {
                 arrowHead.addPoint(-4, -4);
                 arrowHead.addPoint(4, -4);
 
+<<<<<<< HEAD
                 for (int i = 0; i < lmx - 1; i++) {
                     Path2D path = new Path2D.Double();
                     path.moveTo(states.get(i).getMaxX(), states.get(i).getCenterY());
                     path.lineTo(states.get(i + 1).getMinX(), states.get(i + 1).getCenterY());
                     g2.draw(path);
+=======
+                // set the base state for the evaluator
+                if (myEvaluatorPanel != null)
+                    myEvaluatorPanel.setCurrentState(comboTime.getSelectedIndex());
+            }
+>>>>>>> core
 
                     AffineTransform tx = new AffineTransform();
                     tx.setToIdentity();
@@ -2037,7 +2030,7 @@ public final class VizGUI implements ComponentListener {
                 g2.fill(tx.createTransformedShape(arrowHead));
             }
 
-            @Override
+    @Override
             public Dimension getPreferredSize() {
                 return new Dimension(Integer.MAX_VALUE, heighti);
             }
