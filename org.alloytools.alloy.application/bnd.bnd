@@ -16,7 +16,6 @@
     org.alloytools.kodkod.nativesat.x86-mac, \
     org.alloytools.kodkod.nativesat.x86-windows
 
-
 Private-Package: \
 	edu.mit.csail.sdg.alloy4graph,\
 	edu.mit.csail.sdg.alloy4viz,\
