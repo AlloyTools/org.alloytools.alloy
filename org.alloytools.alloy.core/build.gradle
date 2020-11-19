@@ -21,7 +21,7 @@ task cup(type: JavaExec ) {
     args(
             "-parser", "CompParser",
             "-symbols", "CompSym",
-            "-progress", 
+            "-progress",
             "-time",
             "-compact_red",
             "Alloy.cup")
