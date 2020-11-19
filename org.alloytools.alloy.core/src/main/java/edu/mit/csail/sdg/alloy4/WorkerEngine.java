@@ -497,7 +497,8 @@ public final class WorkerEngine {
                             System.gc();
                             x.writeObject(e);
                             x.flush();
-                        } catch (Throwable t) {} finally {
+                        } catch (Throwable t) {
+                        } finally {
                             halt("Error: " + e, 1);
                         }
                     }
