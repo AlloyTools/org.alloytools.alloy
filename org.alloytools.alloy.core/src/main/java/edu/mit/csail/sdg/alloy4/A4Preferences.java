@@ -629,6 +629,7 @@ public class A4Preferences {
                                                                           }
                                                                       };
 
+    /** The decomposed solving strategy. */
     // [HASLab]
     public static final ChoicePref<Decomposed> DecomposedPref         = new ChoicePref<Decomposed>("Decomposed strategy", Decomposed.values(), Decomposed.OFF) {
 
@@ -640,11 +641,11 @@ public class A4Preferences {
 
     // [HASLab]
     public enum Decomposed {
-                            /** Level 0. */
+                            /** regular amalgamated strategy. */
                             OFF("0", "disabled"),
-                            /** Level 1. */
+                            /** hybrid strategy, competitive parallel vs amalgamated. */
                             HYBRID("1", "hybrid"),
-                            /** Level 2. */
+                            /** purely parallel decomposed strategy. */
                             PARALLEL("2", "parallel");
 
         /** Returns true if it is greater than or equal to "other". */
@@ -660,16 +661,12 @@ public class A4Preferences {
         /** This is the label that the toString() method will return. */
         private final String label;
 
-        /** Constructs a new Verbosity value with the given id and label. */
+        /** Constructs a new Decomposed value with the given id and label. */
         private Decomposed(String id, String label) {
             this.id = id;
             this.label = label;
         }
 
-        /**
-         * Given an id, return the enum value corresponding to it (if there's no match,
-         * then return DEFAULT).
-         */
         /** Returns the human-readable label for this enum value. */
         @Override
         public final String toString() {
