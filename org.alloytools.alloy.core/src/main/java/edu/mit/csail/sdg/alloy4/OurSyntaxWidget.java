@@ -793,9 +793,7 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, new String[] {
-                                                                                                  ".als"
-            }, ".als files");
+            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, new String[] {".als"}, ".als files");
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
