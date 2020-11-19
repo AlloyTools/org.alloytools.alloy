@@ -125,7 +125,7 @@ public final class OurConsole extends JScrollPane {
      */
     private int browse  = 0;
 
-    /** The current state under which to evaluate the expressions. */
+    /** The current state under which to evaluate user commands. */
     // [HASLab]
     private int current = 0;
 
@@ -439,9 +439,9 @@ public final class OurConsole extends JScrollPane {
         } catch (BadLocationException ex) {}
     }
 
-    /** Set the current state under which to evaluate expressions. */
+    /** Set the current state under which to evaluate the user command. */
     // [HASLab]
-    public void setCurrent(int selectedIndex) {
-        current = selectedIndex;
+    public void setCurrentState(int state) {
+        current = state;
     }
 }
