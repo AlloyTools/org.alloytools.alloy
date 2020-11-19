@@ -52,7 +52,7 @@ public abstract class Sig extends Expr implements Clause {
     public static final PrimSig SEQIDX = new PrimSig("seq/Int", SIGINT, false, true); // [HASLab]
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING = new PrimSig("String", UNIV, false, true); // [HASLab]
+    public static final PrimSig STRING = new PrimSig("String", UNIV, true, true); // [HASLab]
 
     /** The built-in "none" signature. */
     public static final PrimSig NONE   = new PrimSig("none", null, false, false); // [HASLab]

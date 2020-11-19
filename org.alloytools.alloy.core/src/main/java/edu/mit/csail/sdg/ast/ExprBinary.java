@@ -331,9 +331,9 @@ public final class ExprBinary extends Expr {
                 }
                 case IFF :
                 case IMPLIES :
-                case RELEASES :
-                case UNTIL :
-                case SINCE :
+                case UNTIL : // [HASLab]
+                case RELEASES : // [HASLab]
+                case SINCE : // [HASLab]
                 case TRIGGERED : { // [HASLab]
                     left = left.typecheck_as_formula();
                     right = right.typecheck_as_formula();
@@ -389,8 +389,8 @@ public final class ExprBinary extends Expr {
                     case OR :
                     case IFF :
                     case IMPLIES :
-                    case RELEASES : // [HASLab]
                     case UNTIL : // [HASLab]
+                    case RELEASES : // [HASLab]
                     case SINCE : // [HASLab]
                     case TRIGGERED : // [HASLab]
                         type = Type.FORMULA;
@@ -509,9 +509,9 @@ public final class ExprBinary extends Expr {
             case OR :
             case IFF :
             case IMPLIES :
-            case RELEASES :
-            case UNTIL :
-            case SINCE :
+            case UNTIL : // [HASLab]
+            case RELEASES : // [HASLab]
+            case SINCE : // [HASLab]
             case TRIGGERED : { // [HASLab]
                 a = (b = Type.FORMULA);
                 break;
