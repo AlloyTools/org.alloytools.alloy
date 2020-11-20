@@ -283,6 +283,7 @@ public final class CompUtil {
                     String newCp = cp.replaceAll("\\.als$", ".md");
                     content = Util.readAll(newCp);
                 } catch (IOException exx) {
+
                     try {
                         String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
                         content = Util.readAll(newCp);
