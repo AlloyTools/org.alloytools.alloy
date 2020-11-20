@@ -152,7 +152,10 @@ public final class Command extends Browsable {
             first = false;
         }
         if (maxprefix >= 0) { // [HASLab]
-            sb.append(" ").append(minprefix).append("..").append(maxprefix).append(" steps");
+            sb.append(" ");
+            if (minprefix >= 0)
+                sb.append(minprefix).append("..");
+            sb.append(maxprefix).append(" steps");
             first = false;
         }
         for (CommandScope e : scope) {
