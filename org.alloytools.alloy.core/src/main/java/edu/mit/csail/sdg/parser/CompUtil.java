@@ -181,6 +181,10 @@ public final class CompUtil {
         return false;
     }
 
+    /**
+     * Whether the given command is a temporal model (either there are variable
+     * sigs/fields or temporal operators in the formula).
+     */
     // [HASLab]
     public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
         for (Sig sig : sigs) {
@@ -215,7 +219,6 @@ public final class CompUtil {
 
         return false;
     }
-
 
     // =============================================================================================================//
 
