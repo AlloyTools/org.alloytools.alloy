@@ -363,8 +363,8 @@ action code {:
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "Steps scope cannot be specified more than once."); 
         	  maxtime=k; 
         	  if (s.get(i).isExact) mintime = k; 
-        	  else if (s.get(i).endingScope == s.get(i).startingScope) mintime = 1;
-        	  else { maxtime = s.get(i).endingScope; mintime = s.get(i).startingScope; }
+        	  else if (s.get(i).endingScope != s.get(i).startingScope) { 
+        	  	maxtime = s.get(i).endingScope; mintime = s.get(i).startingScope; }
         	  s.remove(i); continue; 
       	  }
         }
