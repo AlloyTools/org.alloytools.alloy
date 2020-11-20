@@ -1511,7 +1511,7 @@ public final class CompModule extends Browsable implements Module {
             }
             realSig = new SubsetSig(fullname, parents, oldS.attributes.toArray(new Attr[0]));
             for (Sig n : parents)
-                if (n.isVariable != null && realSig.isVariable == null) // [HASLab]
+                if (n != UNIV && n.isVariable != null && realSig.isVariable == null) // [HASLab]
                     warns.add(new ErrorWarning(realSig.isSubset, "Part of " + n.label + " is static.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
         } else {
             Sig sup = ((PrimSig) oldS).parent;
@@ -1523,7 +1523,7 @@ public final class CompModule extends Browsable implements Module {
                 throw new ErrorSyntax(sup.pos, "Cannot extend the subset signature \"" + parent + "\".\n" + "A signature can only extend a toplevel signature or a subsignature.");
             PrimSig p = (PrimSig) parent;
             realSig = new PrimSig(fullname, p, oldS.attributes.toArray(new Attr[0]));
-            if (parent.isVariable != null && realSig.isVariable == null) // [HASLab]
+            if (parent != UNIV && parent.isVariable != null && realSig.isVariable == null) // [HASLab]
                 warns.add(new ErrorWarning(realSig.isSubsig, "Part of " + parent.label + " is static.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
             if (parent != UNIV && parent.isVariable == null && realSig.isVariable != null) // [HASLab]
                 warns.add(new ErrorWarning(realSig.isSubsig, "Marking sig " + realSig.label + " as var is redundant.\n" + "Sig " + realSig.label + " is variable but " + parent.label + " is static."));
