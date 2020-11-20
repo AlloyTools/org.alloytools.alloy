@@ -55,7 +55,7 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
  * This class provides convenience methods for calling the parser and the
  * compiler.
  *
- * @modified Nuno Macedo // [HASLab] electrum-base
+ * @modified Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class CompUtil {
@@ -281,12 +281,7 @@ public final class CompUtil {
             } catch (IOException ex1) {
                 try {
                     String newCp = cp.replaceAll("\\.als$", ".md");
-                    try { // [HASLab] try .als, then .md, then .ele local
-                        content = Util.readAll(newCp);
-                    } catch (IOException e) {
-                        newCp = cp.replaceAll("\\.als$", ".ele");
-                        content = Util.readAll(newCp);
-                    }
+                    content = Util.readAll(newCp);
                 } catch (IOException exx) {
                     try {
                         String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
