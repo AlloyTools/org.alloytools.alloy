@@ -122,7 +122,7 @@ public final class CompUtil {
                 for (int i = 0; i < moduleA.length(); i++)
                     if (moduleA.charAt(i) == '/')
                         numberOfSlash++;
-                return up(fileA, numberOfSlash + 1) + File.separatorChar + moduleB.replace('/', File.separatorChar) + fileA.substring(fileA.indexOf(".")); // [HASLab] use extension of local module
+                return up(fileA, numberOfSlash + 1) + File.separatorChar + moduleB.replace('/', File.separatorChar) + ".als";
             }
             moduleA = moduleA.substring(a + 1);
             moduleB = moduleB.substring(b + 1);
@@ -181,6 +181,10 @@ public final class CompUtil {
         return false;
     }
 
+    /**
+     * Whether the given command is a temporal model (either there are variable
+     * sigs/fields or temporal operators in the formula).
+     */
     // [HASLab]
     public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
         for (Sig sig : sigs) {
@@ -215,7 +219,6 @@ public final class CompUtil {
 
         return false;
     }
-
 
     // =============================================================================================================//
 
@@ -279,14 +282,13 @@ public final class CompUtil {
             } catch (IOException ex1) {
                 try {
                     String newCp = cp.replaceAll("\\.als$", ".md");
-                    try { // [HASLab] try .als built-ins and then .ele built-ins
+                    try { // [HASLab] try .als, then .md, then .ele local
                         content = Util.readAll(newCp);
                     } catch (IOException e) {
-                        newCp = (Util.jarPrefix() + "models/" + x.filename + ".ele").replace('/', File.separatorChar);
+                        newCp = cp.replaceAll("\\.als$", ".ele");
+                        content = Util.readAll(newCp);
                     }
-                    content = Util.readAll(newCp);
                 } catch (IOException exx) {
-
                     try {
                         String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
                         content = Util.readAll(newCp);
