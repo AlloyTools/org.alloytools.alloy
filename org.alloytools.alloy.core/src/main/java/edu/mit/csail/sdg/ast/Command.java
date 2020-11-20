@@ -155,7 +155,9 @@ public final class Command extends Browsable {
             sb.append(" ");
             if (minprefix >= 0)
                 sb.append(minprefix).append("..");
-            sb.append(maxprefix).append(" steps");
+            if (maxprefix != Integer.MAX_VALUE)
+                sb.append(maxprefix);
+            sb.append(" steps");
             first = false;
         }
         for (CommandScope e : scope) {
