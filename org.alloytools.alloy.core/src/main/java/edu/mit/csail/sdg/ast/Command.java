@@ -152,7 +152,9 @@ public final class Command extends Browsable {
             first = false;
         }
         if (maxprefix >= 0) { // [HASLab]
-            sb.append(" ").append(minprefix).append("..");
+            sb.append(" ");
+            if (minprefix >= 0)
+                sb.append(minprefix).append("..");
             if (maxprefix != Integer.MAX_VALUE)
                 sb.append(maxprefix);
             sb.append(" steps");
