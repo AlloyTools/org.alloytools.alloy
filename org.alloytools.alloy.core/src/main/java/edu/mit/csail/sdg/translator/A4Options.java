@@ -296,7 +296,7 @@ public final class A4Options implements Serializable {
     public int       unrolls              = (-1);
 
     /**
-     * This option specifies the decomposition mode (0=Off 1=Hybrid 2=Parallel)
+     * This option specifies the decomposed strategy (0=Off 1=Hybrid 2=Parallel)
      * <p>
      * Default value is off.
      */
@@ -304,7 +304,8 @@ public final class A4Options implements Serializable {
     public int       decomposed_mode      = 0;
 
     /**
-     * This option specifies the number of threads if in decomposed
+     * This option specifies the number of threads when following a decomposed
+     * strategy
      * <p>
      * Default value is 4.
      */
