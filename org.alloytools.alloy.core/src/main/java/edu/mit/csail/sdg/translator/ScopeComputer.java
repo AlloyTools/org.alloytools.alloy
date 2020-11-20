@@ -472,7 +472,7 @@ final class ScopeComputer {
             for (int i = min; i <= max; i++)
                 atoms.add("" + i);
         // [HASLab] handle trace lengths
-        int tracelength = cmd.maxtime;
+        int tracelength = cmd.maxprefix;
         if (!isVar) {
             if (tracelength > 0)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
@@ -480,13 +480,13 @@ final class ScopeComputer {
         } else if (tracelength < 1)
             tracelength = 10;
         setMaxTraceLength(cmd.pos, tracelength);
-        tracelength = cmd.mintime;
+        tracelength = cmd.minprefix;
         if (!isVar) {
             if (tracelength > 0)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
             tracelength = -1;
-        } else if (tracelength > cmd.maxtime)
-            tracelength = cmd.maxtime;
+        } else if (tracelength > cmd.maxprefix)
+            tracelength = cmd.maxprefix;
         else if (tracelength < 1)
             tracelength = 1;
         setMinTraceLength(cmd.pos, tracelength);

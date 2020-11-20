@@ -1938,7 +1938,7 @@ public final class CompModule extends Browsable implements Module {
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.mintime, cmd.maxtime, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent); // [HASLab]
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.minprefix, cmd.maxprefix, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent); // [HASLab]
 
     }
 
