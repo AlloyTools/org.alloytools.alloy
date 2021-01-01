@@ -68,7 +68,6 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
 * [org.alloytools.pardinus](org.alloytools.pardinus) – Kodkod's temporal extension without native code
-* [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
 * [org.alloytools.kodkod.nativesat](org.alloytools.kodkod.nativesat) – The native code libraries for kodkod
 
 ### Relevant Project files

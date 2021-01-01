@@ -753,7 +753,7 @@ public abstract class Sig extends Expr implements Clause {
         /** The declaration that this field came from. */
         private Decl         decl;
 
-        public final Pos labelPos;
+        public final Pos     labelPos;
 
         /** Return the declaration that this field came from. */
         public Decl decl() {
@@ -898,7 +898,7 @@ public abstract class Sig extends Expr implements Clause {
                                                          // multiplicity
                                                          // symbol, we assume
                                                          // it's oneOf
-        final Field f = new Field(null, null, null, null, null, null, this, label, bound); // [HASLab]
+        final Field f = new Field(null, null, null, null, null, null, this, null, label, bound); // [HASLab]
         final Decl d = new Decl(null, null, null, null, Arrays.asList(f), bound); // [HASLab]
         f.decl = d;
         fields.add(d);
@@ -939,7 +939,7 @@ public abstract class Sig extends Expr implements Clause {
                                                          // it's oneOf
         final Field[] f = new Field[labels.size()];
         for (int i = 0; i < f.length; i++)
-            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, this, labels.get(i).pos, labels.get(i).label, bound); // [HASLab]
+            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, isVar, this, labels.get(i).pos, labels.get(i).label, bound); // [HASLab]
         final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, isVar, Arrays.asList(f), bound); // [HASLab]
         for (int i = 0; i < f.length; i++) {
             f[i].decl = d;

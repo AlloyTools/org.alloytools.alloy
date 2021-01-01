@@ -709,23 +709,23 @@ Typescope  ::= TypeNumber:a STRING:b  {: RESULT = new CommandScope(a.pos.merge(b
 // [HASLab] scope on Time
 Typescope  ::= TypeNumber:a TIME:b    {:
     Pos p = a.pos.merge(b);
-	RESULT = new CommandScope(p, new PrimSig("steps", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
+	RESULT = new CommandScope(p, Pos.UNKNOWN, new PrimSig("steps", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
 :};
 
 //[AM] Typescope  ::= TypeNumber:e SIGINT:f  {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You can no longer set a scope on Int; the number of Int atoms is always exactly equal to 2^(integer bitwidth).\n"); :};
 
 Typescope  ::= TypeNumber:e NONE:f    {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You cannot set a scope on none."); :};
 
-TypeNumber ::= EXACTLY:e NUMBER:a                                  {:                                                                                RESULT = new CommandScope(    e.merge(a.pos), Sig.NONE, true,           a.num, a.num,             1    ); :};
-TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(b.pos), Sig.NONE, true,           a.num, b.num,             1    ); :};
-TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e             , Sig.NONE, true,           a.num, Integer.MAX_VALUE, 1    ); :}; // [HASLab] open ended scopes
-TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, b.num,             i.num); :};
-TypeNumber ::= EXACTLY:e NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, Integer.MAX_VALUE, i.num); :};
-TypeNumber ::=           NUMBER:a                                  {:                                                                                RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, a.num,             1    ); :};
-TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Sig.NONE, a.num == b.num, a.num, b.num,             1    ); :}; // [HASLab] distinguish "for n" from "from n..n" 
-TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, Integer.MAX_VALUE, 1    ); :}; // [HASLab] open ended scopes 
-TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :}; // [HASLab] distinguish "for n" from "from n..n"
-TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, false,          a.num, Integer.MAX_VALUE, i.num); :};
+TypeNumber ::= EXACTLY:e NUMBER:a                                  {:                                                                                RESULT = new CommandScope(    e.merge(a.pos), Pos.UNKNOWN, Sig.NONE, true,           a.num, a.num,             1    ); :};
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(b.pos), Pos.UNKNOWN, Sig.NONE, true,           a.num, b.num,             1    ); :};
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e             , Pos.UNKNOWN, Sig.NONE, true,           a.num, Integer.MAX_VALUE, 1    ); :}; // [HASLab] open ended scopes
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Pos.UNKNOWN, Sig.NONE, true,           a.num, b.num,             i.num); :};
+TypeNumber ::= EXACTLY:e NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Pos.UNKNOWN, Sig.NONE, true,           a.num, Integer.MAX_VALUE, i.num); :};
+TypeNumber ::=           NUMBER:a                                  {:                                                                                RESULT = new CommandScope(a.pos             , Pos.UNKNOWN, Sig.NONE, false,          a.num, a.num,             1    ); :};
+TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Pos.UNKNOWN, Sig.NONE, a.num == b.num, a.num, b.num,             1    ); :}; // [HASLab] distinguish "for n" from "from n..n" 
+TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos             , Pos.UNKNOWN, Sig.NONE, false,          a.num, Integer.MAX_VALUE, 1    ); :}; // [HASLab] open ended scopes 
+TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Pos.UNKNOWN, Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :}; // [HASLab] distinguish "for n" from "from n..n"
+TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Pos.UNKNOWN, Sig.NONE, false,          a.num, Integer.MAX_VALUE, i.num); :};
 
 Macro ::= Vis:p LET:o              Name:n LPAREN   Names:d RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, d     , v); :};
 Macro ::= Vis:p LET:o              Name:n LPAREN           RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.pos, n.label, null  , v); :};
