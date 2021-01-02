@@ -874,8 +874,8 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		// VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
 		SimpleTask1 task = new SimpleTask1();
 		A4Options opt = new A4Options();
-		opt.tempDirectory = AlloyAppUtil.alloyHome() + fs + "tmp";
-		opt.solverDirectory = AlloyAppUtil.alloyHome() + fs + "binary";
+		opt.tempDirectory = SimpleGUI.alloyHome(null) + fs + "tmp";
+		opt.solverDirectory = SimpleGUI.alloyHome(null) + fs + "binary";
 		opt.recordKodkod = RecordKodkod.get();
 		opt.noOverflow = NoOverflow.get();
 		opt.unrolls = Version.experimental ? Unrolls.get() : (-1);
@@ -903,7 +903,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 		// task.map = text.takeSnapshot();
 		task.options = opt.dup();
 		task.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
-		task.tempdir = AlloyAppUtil.maketemp();
+		task.tempdir = SimpleGUI.maketemp(null);
 
 		try {
 			int newmem = SubMemory.get(), newstack = SubStack.get();
@@ -916,7 +916,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			// if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
 			//WorkerEngine.runLocally(task, cb);
 			// else
-			WorkerEngine.run(task, newmem, newstack, AlloyAppUtil.alloyHome() + fs + "binary", "", cb);
+			WorkerEngine.run(task, newmem, newstack, SimpleGUI.alloyHome(null) + fs + "binary", "", cb);
 			subMemoryNow = newmem;
 			subStackNow = newstack;
 		} catch (Throwable ex) {
@@ -1417,7 +1417,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			// from SimpleGui
 			// VizGUI viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator);
 			if(viz == null)
-				viz = new VizGUI(false, "", null, enumerator, evaluator);
+				viz = new VizGUI(false, "", null, enumerator, evaluator, 1);
 			viz.loadXML(Util.canon(arg.substring(5)), false);
 		}
 	}
@@ -1439,7 +1439,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
                 else
-                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), AlloyAppUtil.alloyHome() + fs + "binary", "", cb);
+                    WorkerEngine.run(task, SubMemory.get(), SubStack.get(), SimpleGUI.alloyHome(null) + fs + "binary", "", cb);
                 // task.run(cb);
             } catch (Throwable ex) {
                 WorkerEngine.stop();
@@ -1511,7 +1511,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
             try {
                 Expr e = CompUtil.parseOneExpression_fromString(root, str);
                 if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
-                    SimInstance simInst = AlloyAppUtil.convert(root, ans);
+                    SimInstance simInst = SimpleGUI.convert(root, ans);
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
