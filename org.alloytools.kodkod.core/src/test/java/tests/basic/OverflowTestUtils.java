@@ -1,7 +1,7 @@
 package tests.basic;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import kodkod.ast.BinaryIntExpression;
 import kodkod.ast.IntExpression;

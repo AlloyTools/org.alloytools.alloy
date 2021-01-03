@@ -36,6 +36,8 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
 
+import org.alloytools.util.table.Table;
+
 /** Mutable; represents a signature. */
 
 public abstract class Sig extends Expr implements Clause {
