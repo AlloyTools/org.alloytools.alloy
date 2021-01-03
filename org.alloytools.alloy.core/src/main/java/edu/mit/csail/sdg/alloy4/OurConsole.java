@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -66,6 +67,8 @@ import org.alloytools.util.table.Table;
  * be displayed in red.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class OurConsole extends JScrollPane {
@@ -121,7 +124,11 @@ public final class OurConsole extends JScrollPane {
     /**
      * The position in this.history that is currently showing.
      */
-    private int browse = 0;
+    private int browse  = 0;
+
+    /** The current state under which to evaluate user commands. */
+    // [HASLab]
+    private int current = 0;
 
     /*
      * Helper method that construct a mutable style with the given font name, font
@@ -379,7 +386,9 @@ public final class OurConsole extends JScrollPane {
         boolean isBad = false;
         Object result;
         try {
-            result = computer.compute(cmd);
+            result = computer.compute(new String[] { // [HASLab] state arg
+                                                    cmd, current + ""
+            });
         } catch (Throwable ex) {
             result = ex.toString();
             isBad = true;
@@ -429,5 +438,11 @@ public final class OurConsole extends JScrollPane {
             } else
                 doc.insertString(where >= 0 ? where : doc.getLength(), text, style);
         } catch (BadLocationException ex) {}
+    }
+
+    /** Set the current state under which to evaluate the user command. */
+    // [HASLab]
+    public void setCurrentState(int state) {
+        current = state;
     }
 }

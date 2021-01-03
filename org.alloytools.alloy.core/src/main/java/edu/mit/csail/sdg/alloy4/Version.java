@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -26,6 +27,8 @@ import java.util.jar.Manifest;
  * customized Version.java with the correct buildnumber and date.
  * <p>
  * <b>Thread Safety:</b> Safe.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-base
  */
 
 public final class Version {
@@ -33,13 +36,17 @@ public final class Version {
     /**
      * The constructor is private, since this class never needs to be instantiated.
      */
-    private Version() {
-    }
+    private Version() {}
 
     public static String  version      = "unknown";
+    public static String  descritpion  = "unknown"; // [HASLab]
     public static long    buildnumber  = -1;
     public static Instant builddate    = Instant.ofEpochMilli(0);
     public static String  commit       = "unknown";
+    /**
+     * This is true if this is an experimental version rather than a release
+     * version.
+     */
     public static boolean experimental = true;
     private static String shortversion = "";
 
@@ -47,16 +54,16 @@ public final class Version {
         Manifest manifest = getManifest();
         if (manifest != null) {
 
-            String version = manifest.getMainAttributes().getValue("Bundle-Version");
-            if (version != null) {
-                Version.version = version;
-                int lastIndexOf = version.lastIndexOf('.');
-                if (lastIndexOf > 0) {
-                    Version.shortversion = version.substring(0, lastIndexOf);
-                } else {
-                    Version.shortversion = version;
-                }
+            // [HASLab]
+            String description = manifest.getMainAttributes().getValue("Bundle-Description");
+            if (description != null) {
+                Version.descritpion = description;
+                Version.shortversion = description.replaceAll("([0-9]*\\.[0-9]*)\\.[0-9]*(\\.[0-9]*)?", "$1");
             }
+
+            String version = manifest.getMainAttributes().getValue("Bundle-Version");
+            if (version != null)
+                Version.version = version;
 
             String commit = manifest.getMainAttributes().getValue("Git-SHA");
             if (commit != null)
@@ -71,11 +78,6 @@ public final class Version {
 
     }
 
-    /**
-     * This is true if this is an experimental version rather than a release
-     * version.
-     */
-
     /** Returns the build number. */
     public static long buildNumber() {
         return buildnumber;
@@ -84,6 +86,12 @@ public final class Version {
     /** Returns the version string. */
     public static String version() {
         return version;
+    }
+
+    /** Returns the description string. */
+    // [HASLab]
+    public static String aa_version() {
+        return descritpion;
     }
 
     private static Manifest getManifest() {

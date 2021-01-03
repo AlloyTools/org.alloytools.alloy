@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -35,6 +36,7 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorAPI;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
@@ -59,7 +61,12 @@ import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
-/** This helper method is used by SimpleGUI. */
+/**
+ * This helper method is used by SimpleGUI.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base,
+ *            electrum-temporal, electrum-simulator, electrum-decomposed
+ */
 
 final class SimpleReporter extends A4Reporter {
 
@@ -70,7 +77,7 @@ final class SimpleReporter extends A4Reporter {
         private final SwingLogPanel     span;
         private final Set<ErrorWarning> warnings = new HashSet<ErrorWarning>();
         private final List<String>      results  = new ArrayList<String>();
-        private int                     len2     = 0, len3 = 0, verbosity = 0;
+        private int                     len2     = 0, len3 = 0, len4 = 0, verbosity = 0; // [HASLab]
         private final String            latestName;
         private final int               latestVersion;
 
@@ -169,7 +176,7 @@ final class SimpleReporter extends A4Reporter {
                 span.setLength(len2);
                 String x = (String) (array[1]);
                 if (viz != null && x.length() > 0)
-                    OurDialog.alert(x);
+                    OurDialog.alert(gui.getFrame(), x);
             }
             if (array[0].equals("declare")) {
                 gui.doSetLatest((String) (array[1]));
@@ -204,15 +211,15 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
-                len2 = len3 = span.getLength();
+                len2 = len3 = len4 = span.getLength(); // [HASLab]
             }
             if (array[0].equals("translate")) {
                 span.log("   " + array[1]);
-                len3 = span.getLength();
+                len3 = len4 = span.getLength(); // [HASLab]
                 span.logBold("   Generating CNF...\n");
             }
             if (array[0].equals("solve")) {
-                span.setLength(len3);
+                span.setLength(len4); // [HASLab]
                 span.log("   " + array[1]);
                 len3 = span.getLength();
                 span.logBold("   Solving...\n");
@@ -357,18 +364,42 @@ final class SimpleReporter extends A4Reporter {
         cb("debug", msg.trim());
     }
 
+    // [HASLab]
     /** {@inheritDoc} */
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        lastTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
+    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+        startTime = System.currentTimeMillis();
+        cb("translate", "Solver=" + solver + " Decomposed=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');  // [HASLab]
     }
 
     /** {@inheritDoc} */
     @Override
-    public void solve(final int primaryVars, final int totalVars, final int clauses) {
+    // [HASLab] this may now be called multiple times in iterative temporal solving
+    public void solve(final int step, final int pv, final int tv, final int cl) {
         minimized = 0;
-        cb("solve", "" + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. " + (System.currentTimeMillis() - lastTime) + "ms.\n");
+        if (startStep < 0) // [HASLab] first report denotes initial step scope
+            startStep = step;
+        if (startStep == step) // [HASLab] denotes a new config
+            startCount++;
+        seenStep = Math.max(seenStep, step);
+        primaryVars += pv; // [HASLab]
+        totalVars += tv; // [HASLab]
+        clauses += cl; // [HASLab]
+        StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
+        if (startCount > 1)
+            sb.append(startCount + " configs. "); // [HASLab]
+        if (seenStep > 0)
+            sb.append(startStep + ".." + seenStep + " steps. "); // [HASLab]
+        if (totalVars >= 0)
+            sb.append("" + totalVars + " vars. ");
+        if (primaryVars >= 0)
+            sb.append(primaryVars + " primary vars. ");
+        if (clauses > 0)
+            sb.append(clauses + " clauses. ");
+        if (sb.length() == 0)
+            sb.append("No translation information available. ");
+        sb.append((System.currentTimeMillis() - startTime) + "ms.\n"); // [HASLab]
+        cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
     }
 
@@ -479,7 +510,9 @@ final class SimpleReporter extends A4Reporter {
      * The time that the last action began; we subtract it from
      * System.currentTimeMillis() to determine the elapsed time.
      */
-    private long          lastTime  = 0;
+    private long          lastTime  = 0, startTime = 0; // [HASLab]
+
+    private int           startStep = -1, seenStep = -1, primaryVars = 0, clauses = 0, totalVars = 0, startCount = 0; // [HASLab]
 
     /**
      * If we performed unsat core minimization, then this is the start of the
@@ -555,6 +588,7 @@ final class SimpleReporter extends A4Reporter {
     static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
+        public int                      index            = -1; // [HASLab] simulator
         public String                   filename         = "";
         public transient WorkerCallback out              = null;
 
@@ -594,7 +628,16 @@ final class SimpleReporter extends A4Reporter {
             }
             int tries = 0;
             while (true) {
-                sol = sol.next();
+                try {
+                    if (this.index >= -2) {
+                        latestKodkods.clear();
+                        sol = sol.fork(this.index); // [HASLab] simulator;  TODO: is this distinction needed?
+                    } else
+                        sol = sol.next();
+                } catch (ErrorAPI e) { // [HASLab]
+                    cb("pop", e.getMessage());
+                    return;
+                }
                 if (!sol.satisfiable()) {
                     cb("pop", "There are no more satisfying instances.\n\n" + "Note: due to symmetry breaking and other optimizations,\n" + "some equivalent solutions may have been omitted.");
                     return;
@@ -624,7 +667,7 @@ final class SimpleReporter extends A4Reporter {
      */
     private static void validate(String filename) throws Exception {
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new File(filename))).toString();
-        StaticInstanceReader.parseInstance(new File(filename));
+        StaticInstanceReader.parseInstance(new File(filename), 0); // [HASLab] only validates first
     }
 
     /** Task that perform one command. */
@@ -655,6 +698,7 @@ final class SimpleReporter extends A4Reporter {
             if (rep.warn > 0 && !bundleWarningNonFatal)
                 return;
             List<String> result = new ArrayList<String>(cmds.size());
+            Exception exc = null; // [HASLab]
             if (bundleIndex == -2) {
                 final String outf = tempdir + File.separatorChar + "m.xml";
                 cb(out, "S2", "Generating the metamodel...\n");
@@ -669,7 +713,7 @@ final class SimpleReporter extends A4Reporter {
                 synchronized (SimpleReporter.class) {
                     latestMetamodelXML = outf;
                 }
-            } else
+            } else {
                 for (int i = 0; i < cmds.size(); i++)
                     if (bundleIndex < 0 || i == bundleIndex) {
                         synchronized (SimpleReporter.class) {
@@ -681,7 +725,12 @@ final class SimpleReporter extends A4Reporter {
                         final Command cmd = cmds.get(i);
                         rep.tempfile = tempCNF;
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
-                        A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
+                        A4Solution ai = null;
+                        try { // [HASLab] this allows other commands to still be solved
+                            ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
+                        } catch (Exception e1) {
+                            exc = e1;
+                        }
                         if (ai == null)
                             result.add(null);
                         else if (ai.satisfiable())
@@ -691,6 +740,7 @@ final class SimpleReporter extends A4Reporter {
                         else
                             result.add("");
                     }
+            }
             (new File(tempdir)).delete(); // In case it was UNSAT, or
                                          // canceled...
             if (result.size() > 1) {
@@ -737,6 +787,10 @@ final class SimpleReporter extends A4Reporter {
                 rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings.\n");
             if (rep.warn == 1)
                 rep.cb("bold", "Note: There was 1 compilation warning.\n");
+
+            if (exc != null) // [HASLab]
+                throw exc;
+
         }
     }
 }

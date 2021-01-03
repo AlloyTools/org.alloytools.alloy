@@ -123,7 +123,7 @@ fun delete[s: Int -> univ, i: Int] : s {
  * (If the resulting sequence is too long, it will be truncated)
  */
 fun append [s1, s2: Int -> univ] : s1+s2 {
-  let shift = {i', i: seq/Int | int[i'] = ui/add[int[i], ui/add[int[lastIdx[s1]], 1]] } |
+  let shift = {i", i: seq/Int | int[i"] = ui/add[int[i], ui/add[int[lastIdx[s1]], 1]] } |
     no s1 => s2 else (s1 + shift.s2)
 }
 
@@ -132,6 +132,6 @@ fun append [s1, s2: Int -> univ] : s1+s2 {
  * Precondition: 0 <= from <= to < #s
  */
 fun subseq [s: Int -> univ, from, to: Int] : s {
-  let shift = {i', i: seq/Int | int[i'] = ui/sub[int[i], int[from]] } |
+  let shift = {i", i: seq/Int | int[i"] = ui/sub[int[i], int[from]] } |
     shift.((seq/Int - ui/nexts[to]) <: s)
 }

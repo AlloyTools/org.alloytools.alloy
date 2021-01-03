@@ -8,8 +8,8 @@ pred init [m: Memory] {
 	// This predicate is empty in order to allow non-deterministic initialization
 	}
 
-pred write [m, m': Memory, a: Addr, d: Data] {
-	m'.data = m.data ++ a -> d
+pred write [m, m": Memory, a: Addr, d: Data] {
+	m".data = m.data ++ a -> d
 	}
 
 pred read [m: Memory, a: Addr, d: Data] {
@@ -17,5 +17,5 @@ pred read [m: Memory, a: Addr, d: Data] {
 	}
 
 fact Canonicalize {
-	no disj m, m': Memory | m.data = m'.data
+	no disj m, m": Memory | m.data = m".data
 	}

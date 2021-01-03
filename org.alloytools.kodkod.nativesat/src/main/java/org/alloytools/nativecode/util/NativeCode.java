@@ -48,6 +48,48 @@ public class NativeCode {
 
     public static Platform   platform    = findPlatform();
 
+    // [HASLab]
+    public static String findexecutable(Path cache, String name) throws RuntimeException {
+        try {
+            if (platform.dir == null)
+                return null;
+
+            Platform p = platform;
+            String libraryName = name;
+
+            String file = platform.dir + "/" + libraryName;
+            Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
+            if (!enumeration.hasMoreElements()) {
+                //                System.out.println("Could not find native lib " + file);
+                return null;
+            }
+            URL resource = enumeration.nextElement();
+            //            System.out.println("Found native lib '" + resource + "'");
+
+            Path to = cached.computeIfAbsent(name, (k) -> {
+                try {
+                    if (cache == null) {
+                        Path tox = Files.createTempFile(name, libraryName);
+                        tox.toFile().deleteOnExit();
+                        Files.copy(resource.openStream(), tox, StandardCopyOption.REPLACE_EXISTING);
+                        return tox;
+                    } else {
+                        cache.toFile().mkdirs();
+                        return cache.resolve(libraryName);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            to.toFile().setExecutable(true);
+            return to.toFile().getAbsolutePath();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @SuppressWarnings("unused" )
     public static boolean loadlibrary(Path cache, String name) throws RuntimeException {
         try {
@@ -60,12 +102,12 @@ public class NativeCode {
             String file = platform.dir + "/" + libraryName;
             Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
             if (!enumeration.hasMoreElements()) {
-                System.out.println("Could not find native lib " + file);
+                //                System.out.println("Could not find native lib " + file);
                 return false;
             }
 
             URL resource = enumeration.nextElement();
-            System.out.println("Found native lib '" + resource + "'");
+            //            System.out.println("Found native lib '" + resource + "'");
 
             Path to = cached.computeIfAbsent(name, (k) -> {
                 try {
@@ -93,10 +135,10 @@ public class NativeCode {
     private static Platform findPlatform() {
         String os = System.getProperty("os.name");
         String arch = System.getProperty("os.arch");
-        System.out.println("OS _ ARCH = '" + os + "' - '" + arch + "'");
+        //        System.out.println("OS _ ARCH = '" + os + "' - '" + arch + "'");
         for (Platform p : platforms) {
             if (p.osarch.matcher(arch).matches() && p.osname.matcher(os).matches()) {
-                System.out.println("Found = '" + p.dir);
+                //                System.out.println("Found = '" + p.dir);
                 return platform = p;
             }
         }

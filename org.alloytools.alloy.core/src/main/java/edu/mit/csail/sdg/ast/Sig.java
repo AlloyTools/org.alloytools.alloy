@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -35,27 +36,29 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
-
 import org.alloytools.util.table.Table;
 
-/** Mutable; represents a signature. */
-
+/**
+ * Mutable; represents a signature.
+ *
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
+ */
 public abstract class Sig extends Expr implements Clause {
 
     /** The built-in "univ" signature. */
-    public static final PrimSig UNIV   = new PrimSig("univ", null, null, false);
+    public static final PrimSig UNIV   = new PrimSig("univ", null, null, false, false); // [HASLab]
 
     /** The built-in "Int" signature. */
-    public static final PrimSig SIGINT = new PrimSig("Int", Pos.UNKNOWN, UNIV, false);
+    public static final PrimSig SIGINT = new PrimSig("Int", Pos.UNKNOWN, UNIV, false, false); // [HASLab]
 
     /** The built-in "seq/Int" signature. */
-    public static final PrimSig SEQIDX = new PrimSig("seq/Int", Pos.UNKNOWN, SIGINT, true);
+    public static final PrimSig SEQIDX = new PrimSig("seq/Int", Pos.UNKNOWN, SIGINT, false, true); // [HASLab]
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING = new PrimSig("String", Pos.UNKNOWN, UNIV, true);
+    public static final PrimSig STRING = new PrimSig("String", Pos.UNKNOWN, UNIV, false, true); // [HASLab]
 
     /** The built-in "none" signature. */
-    public static final PrimSig NONE   = new PrimSig("none", null, null, false);
+    public static final PrimSig NONE   = new PrimSig("none", null, null, false, false); // [HASLab]
 
     /** The built-in "none" signature. */
     public static final PrimSig GHOST  = mkGhostSig();
@@ -220,9 +223,15 @@ public abstract class Sig extends Expr implements Clause {
     public final Pos             isMeta;
 
     /**
+     * Nonnull if this sig is variable.
+     */
+    // [HASLab]
+    public final Pos             isVariable;
+
+    /**
      * The position of the sig label
      */
-    public final Pos labelPos;
+    public final Pos            labelPos;
 
     /**
      * The label for this sig; this name does not need to be unique.
@@ -249,11 +258,12 @@ public abstract class Sig extends Expr implements Clause {
     }
 
     /** Constructs a new builtin PrimSig. */
-    private Sig(String label) {
+    // [HASLab]
+    private Sig(String label, boolean var) {
         super(Pos.UNKNOWN, null);
         Expr oneof = ExprUnary.Op.ONEOF.make(null, this);
         ExprVar v = ExprVar.make(null, "this", oneof.type);
-        this.decl = new Decl(null, null, null, Util.asList(v), oneof);
+        this.decl = new Decl(null, null, null, null, Util.asList(v), oneof); // [HASLab]
         this.builtin = true;
         this.isAbstract = null;
         this.isLone = null;
@@ -265,6 +275,7 @@ public abstract class Sig extends Expr implements Clause {
         this.isPrivate = null;
         this.isMeta = null;
         this.isEnum = null;
+        this.isVariable = var ? Pos.UNKNOWN : null; // [HASLab]
         this.labelPos = null;
         this.attributes = ConstList.make();
     }
@@ -275,9 +286,9 @@ public abstract class Sig extends Expr implements Clause {
         this.attributes = Util.asList(attributes);
         Expr oneof = ExprUnary.Op.ONEOF.make(null, this);
         ExprVar v = ExprVar.make(null, "this", oneof.type);
-        this.decl = new Decl(null, null, null, Util.asList(v), oneof);
+        this.decl = new Decl(null, null, null, null, Util.asList(v), oneof); // [HASLab]
         Pos isAbstract = null, isLone = null, isOne = null, isSome = null, isSubsig = null, isSubset = null,
-                        isPrivate = null, isMeta = null, isEnum = null;
+                        isPrivate = null, isMeta = null, isEnum = null, isVariable = null; // [HASLab]
         for (Attr a : attributes)
             if (a != null)
                 switch (a.type) {
@@ -308,6 +319,9 @@ public abstract class Sig extends Expr implements Clause {
                     case SUBSIG :
                         isSubsig = a.pos.merge(isSubsig);
                         break;
+                    case VARIABLE : // [HASLab]
+                        isVariable = a.pos.merge(isVariable);
+                        break;
                     default :
                         //TODO throw new ErrorWarning("Undefined case " + a);
                 }
@@ -320,6 +334,7 @@ public abstract class Sig extends Expr implements Clause {
         this.isSome = isSome;
         this.isSubset = isSubset;
         this.isSubsig = isSubsig;
+        this.isVariable = isVariable; // [HASLab]
         this.label = label;
         this.builtin = false;
         this.labelPos = labelPos;
@@ -487,8 +502,9 @@ public abstract class Sig extends Expr implements Clause {
         }
 
         /** Constructs a builtin PrimSig. */
-        private PrimSig(String label, Pos parentRefPos, PrimSig parent, boolean add) {
-            super(label);
+        // [HASLab]
+        private PrimSig(String label, Pos parentRefPos, PrimSig parent, boolean var, boolean add) {
+            super(label, var); // [HASLab]
             this.parent = parent;
             assert parent == null ? parentRefPos == null : parentRefPos != null;
             this.parentRefPos =  parentRefPos ;
@@ -728,13 +744,17 @@ public abstract class Sig extends Expr implements Clause {
         /** Nonnull if this field is a meta field. */
         public final Pos     isMeta;
 
+        /** Nonnull if this field is variable. */
+        // [HASLab]
+        public final Pos     isVariable;
+
         /** True if this is a defined field. */
         public final boolean defined;
 
         /** The declaration that this field came from. */
         private Decl         decl;
 
-        public final Pos labelPos;
+        public final Pos     labelPos;
 
         /** Return the declaration that this field came from. */
         public Decl decl() {
@@ -742,7 +762,8 @@ public abstract class Sig extends Expr implements Clause {
         }
 
         /** Constructs a new Field object. */
-        private Field(Pos pos, Pos isPrivate, Pos isMeta, Pos disjoint, Pos disjoint2, Sig sig, Pos labelPos, String label, Expr bound) throws Err {
+        // [HASLab] extended with variable attribute
+        private Field(Pos pos, Pos isPrivate, Pos isMeta, Pos disjoint, Pos disjoint2, Pos isVar, Sig sig, Pos labelPos, String label, Expr bound) throws Err {
             super(pos, label, sig.type.product(bound.type));
             this.defined = bound.mult() == ExprUnary.Op.EXACTLYOF;
             if (sig.builtin)
@@ -755,6 +776,7 @@ public abstract class Sig extends Expr implements Clause {
                 throw new ErrorType(pos, "Cannot bind field " + label + " to the empty set or empty relation.");
             this.isPrivate = (isPrivate != null ? isPrivate : sig.isPrivate);
             this.isMeta = (isMeta != null ? isMeta : sig.isMeta);
+            this.isVariable = isVar; // [HASLab]
             this.sig = sig;
             this.labelPos = labelPos;
         }
@@ -877,8 +899,8 @@ public abstract class Sig extends Expr implements Clause {
                                                          // multiplicity
                                                          // symbol, we assume
                                                          // it's oneOf
-        final Field f = new Field(null, null, null, null, null, this, null, label, bound);
-        final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
+        final Field f = new Field(null, null, null, null, null, null, this, null, label, bound); // [HASLab]
+        final Decl d = new Decl(null, null, null, null, Arrays.asList(f), bound); // [HASLab]
         f.decl = d;
         fields.add(d);
         realFields.add(f);
@@ -906,7 +928,8 @@ public abstract class Sig extends Expr implements Clause {
      * @throws ErrorType if the bound is not fully typechecked or is not a
      *             set/relation
      */
-    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, List<? extends ExprHasName> labels, Expr bound) throws Err {
+    // [HASLab] extended with variable attribute
+    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, Pos isVar, List<? extends ExprHasName> labels, Expr bound) throws Err {
         bound = bound.typecheck_as_set();
         if (bound.ambiguous)
             bound = bound.resolve_as_set(null);
@@ -917,8 +940,8 @@ public abstract class Sig extends Expr implements Clause {
                                                          // it's oneOf
         final Field[] f = new Field[labels.size()];
         for (int i = 0; i < f.length; i++)
-            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, this, labels.get(i).pos, labels.get(i).label, bound);
-        final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, Arrays.asList(f), bound);
+            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, isVar, this, labels.get(i).pos, labels.get(i).label, bound); // [HASLab]
+        final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, isVar, Arrays.asList(f), bound); // [HASLab]
         for (int i = 0; i < f.length; i++) {
             f[i].decl = d;
             realFields.add(f[i]);
@@ -956,8 +979,8 @@ public abstract class Sig extends Expr implements Clause {
             bound = bound.resolve_as_set(null);
         if (bound.mult() != ExprUnary.Op.EXACTLYOF)
             bound = ExprUnary.Op.EXACTLYOF.make(null, bound);
-        final Field f = new Field(pos, isPrivate, isMeta, null, null, this, null, label, bound);
-        final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
+        final Field f = new Field(pos, isPrivate, isMeta, null, null, null, this, null, label, bound); // [HASLab]
+        final Decl d = new Decl(null, null, null, null, Arrays.asList(f), bound); // [HASLab]
         f.decl = d;
         fields.add(d);
         realFields.add(f);

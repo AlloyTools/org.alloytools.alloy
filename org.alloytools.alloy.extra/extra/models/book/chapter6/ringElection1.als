@@ -19,11 +19,11 @@ pred init [t: Time] {
 	all p: Process | p.toSend.t = p
 	}
 
-pred step [t, t': Time, p: Process] {
+pred step" [t, t": Time, p: Process] {
 	let from = p.toSend, to = p.succ.toSend |
 		some id: from.t {
-			from.t' = from.t - id
-			to.t' = to.t + (id - p.succ.prevs)
+			from.t" = from.t - id
+			to.t" = to.t + (id - p.succ.prevs)
 		}
 	}
 
@@ -35,13 +35,13 @@ fact defineElected {
 fact traces {
 	init [first]
 	all t: Time-last |
-		let t' = t.next |
+		let t" = t.next |
 			all p: Process |
-				step [t, t', p] or step [t, t', succ.p] or skip [t, t', p]
+				step" [t, t", p] or step" [t, t", succ.p] or skip [t, t", p]
 	}
 
-pred skip [t, t': Time, p: Process] {
-	p.toSend.t = p.toSend.t'
+pred skip [t, t": Time, p: Process] {
+	p.toSend.t = p.toSend.t"
 	}
 
 pred show { some elected }

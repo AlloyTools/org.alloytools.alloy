@@ -72,7 +72,7 @@ public class AlloyLanguageServerUtil {
 	}
 
 	public static String filePathResolved(String filename) {
-		return filename.replace(Util.jarPrefix(), AlloyAppUtil.alloyHome() + fs);
+		return filename.replace(Util.jarPrefix(), SimpleGUI.alloyHome(null) + fs);
 	}
 
 	/**

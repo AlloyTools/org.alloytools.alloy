@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -21,6 +22,8 @@ import edu.mit.csail.sdg.alloy4.Util;
  * Immutable; represents an Alloy set in an instance.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class AlloySet extends AlloyNodeElement {
@@ -40,12 +43,21 @@ public final class AlloySet extends AlloyNodeElement {
      */
     public final boolean    isMeta;
 
+    /**
+     * Records whether this relation is known to be "variable"; NOTE: this value is
+     * NOT USED during equals() comparison.
+     */
+    // [HASLab]
+    public final boolean    isVar;
+
     /** Constructs a new AlloySet object. */
-    public AlloySet(String name, boolean isPrivate, boolean isMeta, AlloyType type) {
+    // [HASLab] variable info
+    public AlloySet(String name, boolean isPrivate, boolean isMeta, boolean isVar, AlloyType type) {
         super(name);
         this.type = type;
         this.isPrivate = isPrivate;
         this.isMeta = isMeta;
+        this.isVar = isVar; // [HASLab]
     }
 
     /** Returns the parent type of the AlloySet. */

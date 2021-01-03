@@ -65,7 +65,7 @@ public final class Func extends Expr implements Clause {
     /**
      * The position of the label
      */
-    public final Pos labelPos;
+    public final Pos             labelPos;
 
     /**
      * True if this is a predicate; false if this is a function.

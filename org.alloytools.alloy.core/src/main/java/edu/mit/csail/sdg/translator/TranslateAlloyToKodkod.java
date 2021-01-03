@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -71,6 +72,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
+import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -78,6 +80,9 @@ import kodkod.util.ints.IntVector;
 
 /**
  * Translate an Alloy AST into Kodkod AST then attempt to solve it using Kodkod.
+ *
+ * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
+ *            electrum-unbounded, electrum-decomposed
  */
 
 public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
@@ -256,32 +261,48 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                     Field f = (Field) n;
                     Expr form = s.decl.get().join(f).in(d.expr);
                     form = s.isOne == null ? form.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, form);
-                    frame.addFormula(cform(form), f);
+                    Formula ff = cform(form);
+                    if (TemporalTranslator.isTemporal(ff)) // [HASLab] always
+                        ff = ff.always();
+                    frame.addFormula(ff, f);
                     // Given the above, we can be sure that every column is
                     // well-bounded (except possibly the first column).
                     // Thus, we need to add a bound that the first column is a
                     // subset of s.
-                    if (s.isOne == null) {
+                    if (s.isOne == null || s.isVariable != null) { // [HASLab]
                         Expression sr = a2k(s), fr = a2k(f);
                         for (int i = f.type().arity(); i > 1; i--)
                             fr = fr.join(Expression.UNIV);
-                        frame.addFormula(fr.in(sr), f);
+                        ff = fr.in(sr);
+                        if (TemporalTranslator.isTemporal(ff)) // [HASLab] always
+                            ff = ff.always();
+                        frame.addFormula(ff, f);
                     }
                 }
                 if (s.isOne == null && d.disjoint2 != null)
                     for (ExprHasName f : d.names) {
                         Decl that = s.oneOf("that");
                         Expr formula = s.decl.get().equal(that.get()).not().implies(s.decl.get().join(f).intersect(that.get().join(f)).no());
-                        frame.addFormula(cform(formula.forAll(that).forAll(s.decl)), d.disjoint2);
+                        Formula ff = cform(formula.forAll(that).forAll(s.decl));
+                        if (d.isVar != null) // [HASLab] always
+                            ff = ff.always();
+                        frame.addFormula(ff, d.disjoint2);
                     }
                 if (d.names.size() > 1 && d.disjoint != null) {
-                    frame.addFormula(cform(ExprList.makeDISJOINT(d.disjoint, null, d.names)), d.disjoint);
+                    Formula ff = cform(ExprList.makeDISJOINT(d.disjoint, null, d.names));
+                    if (d.isVar != null) // [HASLab] always
+                        ff = ff.always();
+                    frame.addFormula(ff, d.disjoint);
                 }
             }
             k2pos_enabled = true;
             for (Expr f : s.getFacts()) {
-                Expr form = s.isOne == null ? f.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, f);
-                frame.addFormula(cform(form), f);
+                Expr form = s.isOne == null ? f.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, f); // [HASLab] always, avoids over total order predicate
+                Formula kdorm = cform(form);
+                // [HASLab] avoid always over statics (not only efficiency, total orders would not by detected in SB)
+                if (TemporalTranslator.isTemporal(kdorm))
+                    kdorm = kdorm.always();
+                frame.addFormula(kdorm, f);
             }
         }
         k2pos_enabled = true;
@@ -439,11 +460,13 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 private boolean first = true;
 
                 @Override
-                public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+                // [HASLab]
+                public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
                     if (first)
-                        super.translate(solver, bitwidth, maxseq, skolemDepth, symmetry);
+                        super.translate(solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
                     first = false;
                 }
+
 
                 @Override
                 public void resultSAT(Object command, long solvingTime, Object solution) {}
@@ -796,7 +819,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case EMPTYNESS :
                 return Expression.NONE;
             case IDEN :
-                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
+                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
             case STRING :
                 Expression ans = s2k(x.string);
                 if (ans == null)
@@ -834,6 +857,18 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 return visitThis(x.sub);
             case NOT :
                 return k2pos(cform(x.sub).not(), x);
+            case AFTER :
+                return k2pos(cform(x.sub).after(), x);         // [HASLab]
+            case ALWAYS :
+                return k2pos(cform(x.sub).always(), x);       // [HASLab]
+            case EVENTUALLY :
+                return k2pos(cform(x.sub).eventually(), x);   // [HASLab]
+            case BEFORE :
+                return k2pos(cform(x.sub).before(), x);     // [HASLab]
+            case HISTORICALLY :
+                return k2pos(cform(x.sub).historically(), x); // [HASLab]
+            case ONCE :
+                return k2pos(cform(x.sub).once(), x);         // [HASLab]
             case SOME :
                 return k2pos(cset(x.sub).some(), x);
             case LONE :
@@ -842,6 +877,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 return k2pos(cset(x.sub).one(), x);
             case NO :
                 return k2pos(cset(x.sub).no(), x);
+            case PRIME :
+                return cset(x.sub).prime();                   // [HASLab]
             case TRANSPOSE :
                 return cset(x.sub).transpose();
             case CARDINALITY :
@@ -851,7 +888,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case CAST2INT :
                 return sum(cset(x.sub));
             case RCLOSURE :
-                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
+                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
                 return cset(x.sub).closure().union(iden);
             case CLOSURE :
                 return cset(x.sub).closure();
@@ -1030,7 +1067,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         if (x.op == ExprList.Op.TOTALORDER) {
             Expression elem = cset(x.args.get(0)), first = cset(x.args.get(1)), next = cset(x.args.get(2));
             if (elem instanceof Relation && first instanceof Relation && next instanceof Relation) {
-                Relation lst = frame.addRel("", null, frame.query(true, elem, false));
+                Relation lst = frame.addRel(((Relation) elem).name() + "_last", null, frame.query(true, elem, false), false); // [HASLab] no unnamed rels for electrod
                 totalOrderPredicates.add((Relation) elem);
                 totalOrderPredicates.add((Relation) first);
                 totalOrderPredicates.add(lst);
@@ -1099,8 +1136,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         Formula f;
         Object objL, objR;
         switch (x.op) {
+            // [HASLab] changed from !a || b, was it relevant?
             case IMPLIES :
-                f = cform(a).not().or(cform(b));
+                f = cform(a).implies(cform(b));
                 return k2pos(f, x);
             case IN :
                 return k2pos(isIn(cset(a), b), x);
@@ -1146,6 +1184,22 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 f = cform(a);
                 f = f.or(cform(b));
                 return k2pos(f, x);
+            case UNTIL :
+                f = cform(a);
+                f = f.until(cform(b));
+                return k2pos(f, x);   // [HASLab]
+            case RELEASES :
+                f = cform(a);
+                f = f.releases(cform(b));
+                return k2pos(f, x); // [HASLab]
+            case SINCE :
+                f = cform(a);
+                f = f.since(cform(b));
+                return k2pos(f, x);   // [HASLab]
+            case TRIGGERED :
+                f = cform(a);
+                f = f.triggered(cform(b));
+                return k2pos(f, x); // [HASLab]
             case IFF :
                 f = cform(a);
                 f = f.iff(cform(b));

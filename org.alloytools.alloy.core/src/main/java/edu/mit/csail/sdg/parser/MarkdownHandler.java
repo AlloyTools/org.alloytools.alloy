@@ -64,7 +64,7 @@ public class MarkdownHandler {
 
         abstract State process(String line, Map<String,Object> yaml, StringBuilder sb);
 
-    };
+    }
 
     public static String strip(String content) {
         try {

@@ -40,6 +40,8 @@ org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/parser/CompSym.java
 *.out
 *.app
 
+.idea
+*.iml
 .classpath
 .project
 *.prefs

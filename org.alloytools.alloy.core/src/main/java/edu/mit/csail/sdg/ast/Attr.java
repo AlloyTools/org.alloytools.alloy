@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -20,6 +21,8 @@ import edu.mit.csail.sdg.alloy4.Pos;
 /**
  * Immutable; represents attributes that can be associated with Signatures and
  * some other AST objects.
+ *
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class Attr {
@@ -86,7 +89,14 @@ public final class Attr {
                            * ENUM; if a PrimSig has the ENUM attribute, it is toplevel and abstract and
                            * has only singleton children.
                            */
-                          ENUM("enum");
+                          ENUM("enum"),
+
+                          /**
+                           * VARIABLE; if a Sig has the VARIABLE attribute, it means its value may change
+                           * over time.
+                           */
+                          // [HASLab]
+                          VARIABLE("variable");
 
         /** The label for this attribute type. */
         private final String label;
@@ -193,6 +203,10 @@ public final class Attr {
      * has only singleton children.
      */
     public static final Attr ENUM     = new Attr(AttrType.ENUM, null);
+
+    /** VARIABLE; if a Sig is variable, changing in time. */
+    // [HASLab]
+    public static final Attr VARIABLE = new Attr(AttrType.VARIABLE, null);
 
     /**
      * Construct an attribute of the given type with the given position; if

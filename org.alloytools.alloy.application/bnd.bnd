@@ -3,6 +3,7 @@
 
 -buildpath: \
 	lib/apple-osx-ui.jar;version=file,\
+	org.alloytools.pardinus;version=latest,\
 	org.alloytools.alloy.core;version=latest,\
 	org.alloytools.kodkod.core;version=latest,\
 	org.eclipse.lsp4j,\
@@ -20,9 +21,8 @@
     org.alloytools.kodkod.nativesat.x86-linux, \
     org.alloytools.kodkod.nativesat.x86-mac, \
     org.alloytools.kodkod.nativesat.x86-windows
-	
+
 Private-Package: \
 	edu.mit.csail.sdg.alloy4graph,\
 	edu.mit.csail.sdg.alloy4viz,\
 	edu.mit.csail.sdg.alloy4whole,\
-
