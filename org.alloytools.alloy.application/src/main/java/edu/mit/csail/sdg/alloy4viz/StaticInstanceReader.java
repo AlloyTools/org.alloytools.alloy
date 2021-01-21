@@ -235,7 +235,13 @@ public final class StaticInstanceReader {
             sum = sum.plus(c);
             atoms(sol, c, state); // [HASLab]
         }
-        A4TupleSet ts = (A4TupleSet) (sol.eval(s.minus(sum), state)); // [HASLab] // This ensures that atoms will be associated with the most specific sig
+        A4TupleSet ts = (A4TupleSet) (sol.eval(s.minus(sum), state)); // [HASLab] 
+                                                              // This ensures 
+                                                              // that atoms
+                                                              // will be
+                                                              // associated
+                                                              // with the most
+                                                              // specific sig
         for (A4Tuple z : ts) {
             String atom = z.atom(0);
             int i, dollar = atom.lastIndexOf('$');

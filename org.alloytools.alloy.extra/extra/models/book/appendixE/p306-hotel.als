@@ -62,9 +62,6 @@ assert NoIntruder {
 		}
 	}
 
-run  {} for 3 but 1 Time, 1 Room, 2 Guest
-
-
 -- This check now succeeds without finding any counterexample.
 check NoIntruder for 3 but 6 Time, 1 Room, 2 Guest
 
