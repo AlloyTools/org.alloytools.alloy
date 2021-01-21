@@ -30,7 +30,6 @@ import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
@@ -106,7 +105,7 @@ public final class A4SolutionWriter {
             while (true) {
                 A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum), state)); // [HASLab]
                 int n = ts.size();
-                if (n <= 0 || expr instanceof ExprCall || expr instanceof ExprVar) // [HASLab] hack to allow temporal skolems that refer to atoms outside the current state
+                if (n <= 0 || expr instanceof ExprVar) // [HASLab] temporary fix for skolem variables than may not exist in all states, will still be printed
                     break;
                 if (lastSize > 0 && lastSize <= n)
                     throw new ErrorFatal("An internal error occurred in the evaluator.");
