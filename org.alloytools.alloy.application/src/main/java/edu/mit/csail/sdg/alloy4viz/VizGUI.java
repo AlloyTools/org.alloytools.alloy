@@ -217,14 +217,14 @@ public final class VizGUI implements ComponentListener {
     private OurConsole            myEvaluatorPanel = null;
 
     /**
-     * The graphical panel at the upper-side of the the right panel; null if it is
+     * The graphical panel at the lower-side of the the right panel; null if it is
      * not yet loaded.
      */
     private VizGraphPanel         myGraphPanel     = null;
 
     /**
      * The panel to the right, containing the graph and the temporal navigation
-     * panels; null if it is not yet loaded.
+     * panel; null if it is not yet loaded.
      */
     // [HASLab]
     private JPanel                mySplitTemporal  = null;
@@ -642,7 +642,7 @@ public final class VizGUI implements ComponentListener {
             JMenu exportMenu = menu(null, "&Export To", null);
             menuItem(exportMenu, "Dot...", 'D', 'D', doExportDot());
             menuItem(exportMenu, "XML...", 'X', 'X', doExportXml());
-            menuItem(exportMenu, "LTL", 'T', 'T', doExportLTL());
+            menuItem(exportMenu, "Predicate...", 'P', 'P', doExportPred());
             fileMenu.add(exportMenu);
             menuItem(fileMenu, "Close", 'W', 'W', doClose());
             if (standalone)
@@ -650,7 +650,7 @@ public final class VizGUI implements ComponentListener {
             else
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
-            enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
+            enumerateMenu = menuItem(instanceMenu, "Show a Fresh Solution", 'N', 'N', doNext());
             cnfgMenu = menuItem(instanceMenu, "Show Fresh Configuration", 'C', 'C', doConfig()); // [HASLab]
             pathMenu = menuItem(instanceMenu, "Show Fresh Path", 'P', 'P', doPath()); // [HASLab]
             initMenu = menuItem(instanceMenu, "Show Fresh Initial State", 'I', 'I', doInit()); // [HASLab]
@@ -789,11 +789,13 @@ public final class VizGUI implements ComponentListener {
 
     /** Invoked when the Visualizationwindow is shown. */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Invoked when the Visualizationwindow is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Helper method that repopulates the Projection popup menu.
@@ -910,7 +912,7 @@ public final class VizGUI implements ComponentListener {
             frame.setTitle(makeVizTitle());
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize); // [HASLab] only graph shows multiple
+                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current); // [HASLab]
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -920,18 +922,19 @@ public final class VizGUI implements ComponentListener {
                     }
 
                     @Override
-                    public final void focusLost(FocusEvent e) {}
+                    public final void focusLost(FocusEvent e) {
+                    }
                 });
                 content = scroll;
                 break;
             }
             case TEXT : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(); // [HASLab] only graph shows multiple
+                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current); // [HASLab]
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(); // [HASLab] only graph shows multiple
+                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current); // [HASLab]
                 content = getTextComponent(textualOutput);
                 break;
             }
@@ -942,36 +945,31 @@ public final class VizGUI implements ComponentListener {
             default : {
                 List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
                 if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanes()) { // [HASLab]
-                    if (isTrace && !isMeta) { // [HASLab]
+                    if (isTrace && !isMeta) // [HASLab]
                         myGraphPanel = new VizGraphPanel(frame, myStates, false);
-                        JPanel tmpNavScrollPanel = createTempNavPanel();
-                        final Box instanceTopBox = Box.createVerticalBox();
-                        instanceTopBox.add(tmpNavScrollPanel);
-                        mySplitTemporal = new JPanel(new BorderLayout());
-                        mySplitTemporal.add(instanceTopBox, BorderLayout.NORTH);
-                        mySplitTemporal.add(myGraphPanel, BorderLayout.CENTER);
-                        mySplitTemporal.setVisible(true);
-                    } else {
-                        mySplitTemporal = null;
+                    else
                         myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false); // [HASLab]
-                    }
                 } else {
-                    if (isTrace && !isMeta) { // [HASLab]
+                    if (isTrace && !isMeta) // [HASLab]
                         updateTempPanel();
-                        myGraphPanel.seeDot(frame, false);
-                        myGraphPanel.remakeAll(frame);
-                    } else {
-                        mySplitTemporal = null;
-                        myGraphPanel.seeDot(frame, false);
-                        myGraphPanel.remakeAll(frame);
-                    }
+                    myGraphPanel.seeDot(frame, false);
+                    myGraphPanel.remakeAll(frame);
                 }
+                content = myGraphPanel;
             }
-                if (isTrace && !isMeta) // [HASLab]
-                    content = mySplitTemporal;
-                else
-                    content = myGraphPanel;
         }
+
+        if (isTrace && !isMeta) { // [HASLab]
+            JComponent aux = content;
+            JPanel tmpNavScrollPanel = createTempNavPanel();
+            final Box instanceTopBox = Box.createVerticalBox();
+            instanceTopBox.add(tmpNavScrollPanel);
+            content = new JPanel(new BorderLayout());
+            content.add(instanceTopBox, BorderLayout.NORTH);
+            content.add(aux, BorderLayout.CENTER);
+            content.setVisible(true);
+        }
+
         // Now that we've re-constructed "content", let's set its font size
         if (currentMode != VisualizerMode.Tree) {
             content.setFont(OurUtil.getVizFont().deriveFont((float) fontSize));
@@ -1003,7 +1001,8 @@ public final class VizGUI implements ComponentListener {
             try {
                 evaluator.compute(new File(xmlFileName));
                 myEvaluatorPanel.setCurrentState(current); // [HASLab] set evaluator state
-            } catch (Exception ex) {} // exception should not happen
+            } catch (Exception ex) {
+            } // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
         }
@@ -1362,7 +1361,6 @@ public final class VizGUI implements ComponentListener {
                     return null;
             }
         }
-
         File file = OurDialog.askFile(frame, true, null, ".thm", ".thm theme files");
         if (file != null) {
             Util.setCurrentDirectory(file.getParentFile());
@@ -1463,7 +1461,7 @@ public final class VizGUI implements ComponentListener {
     // [HASLab]
     // ad hoc implementation since alloy lacks a proper pretty printer
     // also, prints conjunctions as lists, which can't be parsed
-    private Runner doExportLTL() {
+    private Runner doExportPred() {
         if (wrap)
             return wrapMe();
         if (myStates.isEmpty())
@@ -1600,7 +1598,8 @@ public final class VizGUI implements ComponentListener {
             try {
                 MagicLayout.magic(myState);
                 MagicColor.magic(myState);
-            } catch (Throwable ex) {}
+            } catch (Throwable ex) {
+            }
         }
         repopulateProjectionPopup();
         if (myCustomPanel != null)
@@ -1907,13 +1906,11 @@ public final class VizGUI implements ComponentListener {
     // return wrapMe();
     // }
 
-    // ========================================TRACES=====================================================//
-
     // [HASLab]
     private int    current          = 0;
 
     // [HASLab]
-    ActionListener leftNavListener  = new ActionListener() {
+    private ActionListener leftNavListener  = new ActionListener() {
 
                                         public final void actionPerformed(ActionEvent e) {
                                             if (current > 0) {
@@ -1924,7 +1921,7 @@ public final class VizGUI implements ComponentListener {
                                     };
 
     // [HASLab]
-    ActionListener rightNavListener = new ActionListener() {
+    private ActionListener rightNavListener = new ActionListener() {
 
                                         public final void actionPerformed(ActionEvent e) {
                                             int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
@@ -1944,7 +1941,6 @@ public final class VizGUI implements ComponentListener {
      */
     // [HASLab]
     private JPanel createTempNavPanel() {
-
         JPanel tmpNavPanel = new JPanel();
         tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.PAGE_AXIS));
         tmpNavPanel.add(traceGraph());
@@ -1952,6 +1948,10 @@ public final class VizGUI implements ComponentListener {
         return tmpNavPanel;
     }
 
+    /*
+     * Draws a graph depicting the shape of the trace being visualized. States are
+     * clickable easing navigation.
+     */
     // [HASLab]
     private JPanel traceGraph() {
 
@@ -2086,9 +2086,7 @@ public final class VizGUI implements ComponentListener {
                 doCloseAll();
                 return;
             }
-
         }
-
     }
 
     // [HASLab]
