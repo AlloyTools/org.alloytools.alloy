@@ -898,36 +898,31 @@ public final class VizGUI implements ComponentListener {
             default : {
                 List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
                 if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanes()) { // [HASLab]
-                    if (isTrace && !isMeta) { // [HASLab]
+                    if (isTrace && !isMeta) // [HASLab]
                         myGraphPanel = new VizGraphPanel(frame, myStates, false);
-                        JPanel tmpNavScrollPanel = createTempNavPanel();
-                        final Box instanceTopBox = Box.createVerticalBox();
-                        instanceTopBox.add(tmpNavScrollPanel);
-                        mySplitTemporal = new JPanel(new BorderLayout());
-                        mySplitTemporal.add(instanceTopBox, BorderLayout.NORTH);
-                        mySplitTemporal.add(myGraphPanel, BorderLayout.CENTER);
-                        mySplitTemporal.setVisible(true);
-                    } else {
-                        mySplitTemporal = null;
+                    else
                         myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false); // [HASLab]
-                    }
                 } else {
-                    if (isTrace && !isMeta) { // [HASLab]
+                    if (isTrace && !isMeta) // [HASLab]
                         updateTempPanel();
-                        myGraphPanel.seeDot(frame, false);
-                        myGraphPanel.remakeAll(frame);
-                    } else {
-                        mySplitTemporal = null;
-                        myGraphPanel.seeDot(frame, false);
-                        myGraphPanel.remakeAll(frame);
-                    }
+                    myGraphPanel.seeDot(frame, false);
+                    myGraphPanel.remakeAll(frame);
                 }
+                content = myGraphPanel;
             }
-                if (isTrace && !isMeta) // [HASLab]
-                    content = mySplitTemporal;
-                else
-                    content = myGraphPanel;
         }
+
+        if (isTrace && !isMeta) { // [HASLab]
+            JComponent aux = content;
+            JPanel tmpNavScrollPanel = createTempNavPanel();
+            final Box instanceTopBox = Box.createVerticalBox();
+            instanceTopBox.add(tmpNavScrollPanel);
+            content = new JPanel(new BorderLayout());
+            content.add(instanceTopBox, BorderLayout.NORTH);
+            content.add(aux, BorderLayout.CENTER);
+            content.setVisible(true);
+        }
+
         // Now that we've re-constructed "content", let's set its font size
         if (currentMode != VisualizerMode.Tree) {
             content.setFont(OurUtil.getVizFont().deriveFont((float) fontSize));
