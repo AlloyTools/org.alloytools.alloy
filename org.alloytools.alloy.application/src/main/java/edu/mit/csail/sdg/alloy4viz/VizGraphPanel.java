@@ -307,9 +307,10 @@ public final class VizGraphPanel extends JPanel {
                 // since many Mac mouses do not have a right button.
                 if (viewer.size() <= i)
                     return;
-                else if (ev.getButton() == MouseEvent.BUTTON3) {} else if (ev.getButton() == MouseEvent.BUTTON1 && ev.isControlDown()) {} else
+                else if (ev.getButton() == MouseEvent.BUTTON3) {
+                } else if (ev.getButton() == MouseEvent.BUTTON1 && ev.isControlDown()) {} else
                     return;
-                if (graphPanel.contains(ev.getX(), ev.getY()))
+                if (graphPanel.contains(ev.getX(), ev.getY())) // [HASLab] distinguish clicked panel
                     viewer.get(i).alloyPopup(graphPanel, ev.getX(), ev.getY());
             }
         });
@@ -317,6 +318,7 @@ public final class VizGraphPanel extends JPanel {
         JScrollPane diagramScrollPanel = OurUtil.scrollpane(graphPanel, new OurBorder(true, true, true, false));
         diagramScrollPanel.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
+            @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 diagramScrollPanel.invalidate();
                 diagramScrollPanel.repaint();
@@ -325,6 +327,7 @@ public final class VizGraphPanel extends JPanel {
         });
         diagramScrollPanel.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
+            @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 diagramScrollPanel.invalidate();
                 diagramScrollPanel.repaint();

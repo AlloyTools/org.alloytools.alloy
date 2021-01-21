@@ -33,7 +33,6 @@ import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.TemporalOperator;
-import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.TupleSet;
 
 /**
@@ -263,16 +262,12 @@ public class Simplifier {
      * discover the formula is unsat.
      */
     private final boolean simplify_in(Formula form) {
-        if (TemporalTranslator.isTemporal(form)) {
-            // [HASLab] allow only "always" formulas over non-variable relations
-            // TODO: handle variable relations
-            if (form instanceof UnaryTempFormula) {
-                UnaryTempFormula f = (UnaryTempFormula) form;
-                if (f.op() == TemporalOperator.ALWAYS) {
-                    return simplify_in(f.formula());
-                }
+        if (form instanceof UnaryTempFormula) {
+            // [HASLab] only simplify when under "always
+            UnaryTempFormula f = (UnaryTempFormula) form;
+            if (f.op() == TemporalOperator.ALWAYS) {
+                return simplify_in(f.formula());
             }
-            return true;
         }
         if (form instanceof NaryFormula) {
             NaryFormula f = (NaryFormula) form;
@@ -309,8 +304,13 @@ public class Simplifier {
      * discover the formula is unsat.
      */
     private final boolean simplify_eq(Formula form) {
-        if (TemporalTranslator.isTemporal(form)) // [HASLab]
-            return true;
+        if (form instanceof UnaryTempFormula) {
+            // [HASLab] only simplify when under "always
+            UnaryTempFormula f = (UnaryTempFormula) form;
+            if (f.op() == TemporalOperator.ALWAYS) {
+                return simplify_in(f.formula());
+            }
+        }
         if (form instanceof NaryFormula) {
             NaryFormula f = (NaryFormula) form;
             if (f.op() == FormulaOperator.AND) {

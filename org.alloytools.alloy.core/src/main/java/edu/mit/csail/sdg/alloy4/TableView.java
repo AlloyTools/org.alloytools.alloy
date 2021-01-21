@@ -27,6 +27,11 @@ import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 
+/**
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ *
+ */
 public class TableView {
 
     final static String  SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
@@ -158,7 +163,6 @@ public class TableView {
 
                 List<SimTuple> instancesArray = toList(instanceTuples);
                 Collections.sort(instancesArray, new Comparator<SimTuple>() {
-
                     @Override
                     public int compare(SimTuple simTuple1, SimTuple simTuple2) {
                         String[] coll1 = simTuple1.get(0).toString().split("\\$");
@@ -166,7 +170,8 @@ public class TableView {
                         if (coll1.length == 2 && coll2.length == 2) {
                             try {
                                 return Integer.parseInt(coll1[1]) - Integer.parseInt(coll2[1]);
-                            } catch (NumberFormatException e) {
+                            } 
+                            catch (NumberFormatException e) {
                                 return 0;
                             }
                         }

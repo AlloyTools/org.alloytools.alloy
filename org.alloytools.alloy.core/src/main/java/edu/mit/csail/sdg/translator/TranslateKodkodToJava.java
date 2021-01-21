@@ -36,7 +36,6 @@ import kodkod.ast.Decl;
 import kodkod.ast.Decls;
 import kodkod.ast.ExprToIntCast;
 import kodkod.ast.Expression;
-//import kodkod.ast.FixFormula;
 import kodkod.ast.Formula;
 import kodkod.ast.IfExpression;
 import kodkod.ast.IfIntExpression;
@@ -216,11 +215,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
                 return 1 + max(x.decls().accept(this), x.formula().accept(this));
             }
 
-            //            @Override // [HASLab]
-            //            public Integer visit(FixFormula x) {
-            //                return 1 + max(x.condition().accept(this), x.formula().accept(this));
-            //            }
-
             @Override
             public Integer visit(Comprehension x) {
                 return 1 + max(x.decls().accept(this), x.formula().accept(this));
@@ -284,7 +278,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
                 }
                 return max + 1;
             }
-
         };
         Object ans = node.accept(vis);
         if (ans instanceof Integer)
@@ -305,8 +298,10 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * @param atoms - an iterator over the set of all atoms
      * @param bounds - the Kodkod bounds object to use
      * @param atomMap - if nonnull, it is used to map the atom name before printing
+     * @param mintrace - the minimum trace length
+     * @param maxtrace - the maximum trace length
      */
-    // [HASLab]
+    // [HASLab] temporal params
     public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         StringWriter string = new StringWriter();
         PrintWriter file = new PrintWriter(string);
@@ -348,7 +343,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * Constructor is private, so that the only way to access this class is via the
      * static convert() method.
      */
-    // [HASLab]
+    // [HASLab] temporal params
     private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         file = pw;
         file.printf("import java.util.Arrays;%n");
@@ -358,7 +353,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("import kodkod.instance.*;%n");
         file.printf("import kodkod.engine.*;%n");
         file.printf("import kodkod.engine.satlab.SATFactory;%n");
-        file.printf("import kodkod.engine.config.ExtendedOptions;%n%n");
+        file.printf("import kodkod.engine.config.ExtendedOptions;%n%n"); // [HASLab]
 
         file.printf("/* %n");
         file.printf("  ==================================================%n");
@@ -379,8 +374,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             String name = makename(r);
             int a = r.arity();
             if (a == 1)
-                file.printf("Relation %s = Relation.unary%s(\"%s\");%n", name, r.isVariable() ? "_variable" : "", r.name());
-            else if (r.isVariable())
+                file.printf("Relation %s = Relation.unary%s(\"%s\");%n", name, r.isVariable() ? "_variable" : "", r.name()); // [HASLab]
+            else if (r.isVariable()) // [HASLab]
                 file.printf("Relation %s = Relation.variable(\"%s\", %d);%n", name, r.name(), a);
             else
                 file.printf("Relation %s = Relation.nary(\"%s\", %d);%n", name, r.name(), a);
@@ -922,17 +917,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
                 throw new RuntimeException("Unknown kodkod quantifier \"" + x.quantifier() + "\" encountered");
         }
     }
-
-    //    /** {@inheritDoc} */ [HASLab]
-    //    @Override
-    //    public void visit(FixFormula x) {
-    //        String newname = makename(x);
-    //        if (newname == null)
-    //            return;
-    //        String f = make(x.formula());
-    //        String c = make(x.condition());
-    //        file.printf("Formula %s=%s.fix(%s);%n", newname, f, c);
-    //    }
 
     /** {@inheritDoc} */
     @Override
