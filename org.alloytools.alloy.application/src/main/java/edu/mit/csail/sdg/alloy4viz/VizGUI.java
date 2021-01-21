@@ -1421,6 +1421,7 @@ public final class VizGUI implements ComponentListener {
         Map<String,ExprVar> reifs = new HashMap<String,ExprVar>();
         A4Solution inst = myStates.get(myStates.size() - 1).getOriginalInstance().originalA4;
 
+        // calculate the values of the static relations
         StringJoiner config = new StringJoiner(" and ");
         for (Sig s : inst.getAllReachableSigs()) {
             if (s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))
@@ -1448,6 +1449,7 @@ public final class VizGUI implements ComponentListener {
             config.add(s.equal(tupleset).toString());
         }
 
+        // calculate the values of the variable relations
         List<String> states = new ArrayList<String>();
         for (int i = 0; i < inst.getTraceLength(); i++) {
             StringJoiner state = new StringJoiner(" and ");
@@ -1479,16 +1481,18 @@ public final class VizGUI implements ComponentListener {
             states.add(state.toString());
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("some disj ");
-        StringJoiner sj = new StringJoiner(",");
-        for (ExprVar v : reifs.values())
-            sj.add(v.toString());
-        sb.append(sj.toString());
-        sb.append(" : ");
-        Expr unvs = Sig.UNIV;
-        for (int i = 0; i < inst.getTraceLength() - 1; i++)
-            unvs = Sig.UNIV.plus(unvs.prime());
-        sb.append(unvs.toString());
+        if (!reifs.isEmpty()) {
+            sb.append("some disj ");
+            StringJoiner sj = new StringJoiner(",");
+            for (ExprVar v : reifs.values())
+                sj.add(v.toString());
+            sb.append(sj.toString());
+            sb.append(" : ");
+            Expr unvs = Sig.UNIV;
+            for (int i = 0; i < inst.getTraceLength() - 1; i++)
+                unvs = Sig.UNIV.plus(unvs.prime());
+            sb.append(unvs.toString());
+        }
         sb.append(" {\n  ");
         sb.append(config.toString());
         sb.append("\n\n  ");
