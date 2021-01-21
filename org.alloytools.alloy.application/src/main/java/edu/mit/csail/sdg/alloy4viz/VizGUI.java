@@ -195,14 +195,14 @@ public final class VizGUI implements ComponentListener {
     private OurConsole            myEvaluatorPanel = null;
 
     /**
-     * The graphical panel at the upper-side of the the right panel; null if it is
+     * The graphical panel at the lower-side of the the right panel; null if it is
      * not yet loaded.
      */
     private VizGraphPanel         myGraphPanel     = null;
 
     /**
      * The panel to the right, containing the graph and the temporal navigation
-     * panels; null if it is not yet loaded.
+     * panel; null if it is not yet loaded.
      */
     // [HASLab]
     private JPanel                mySplitTemporal  = null;
@@ -620,7 +620,7 @@ public final class VizGUI implements ComponentListener {
             JMenu exportMenu = menu(null, "&Export To", null);
             menuItem(exportMenu, "Dot...", 'D', 'D', doExportDot());
             menuItem(exportMenu, "XML...", 'X', 'X', doExportXml());
-            menuItem(exportMenu, "LTL", 'T', 'T', doExportLTL());
+            menuItem(exportMenu, "Predicate...", 'P', 'P', doExportPred());
             fileMenu.add(exportMenu);
             menuItem(fileMenu, "Close", 'W', 'W', doClose());
             if (standalone)
@@ -906,7 +906,7 @@ public final class VizGUI implements ComponentListener {
                         mySplitTemporal.setVisible(true);
                     } else {
                         mySplitTemporal = null;
-                        myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false); // [HASLab]                        
+                        myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false); // [HASLab]
                     }
                 } else {
                     if (isTrace && !isMeta) { // [HASLab]
@@ -952,7 +952,7 @@ public final class VizGUI implements ComponentListener {
             left = myCustomPanel;
         } else if (settingsOpen > 1) {
             if (myEvaluatorPanel == null)
-                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab] 
+                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab]
             try {
                 evaluator.compute(new File(xmlFileName));
                 myEvaluatorPanel.setCurrentState(current); // [HASLab] set evaluator state
@@ -1313,7 +1313,6 @@ public final class VizGUI implements ComponentListener {
                     return null;
             }
         }
-
         File file = OurDialog.askFile(frame, true, null, ".thm", ".thm theme files");
         if (file != null) {
             Util.setCurrentDirectory(file.getParentFile());
@@ -1414,7 +1413,7 @@ public final class VizGUI implements ComponentListener {
     // [HASLab]
     // ad hoc implementation since alloy lacks a proper pretty printer
     // also, prints conjunctions as lists, which can't be parsed
-    private Runner doExportLTL() {
+    private Runner doExportPred() {
         if (wrap)
             return wrapMe();
         if (myStates.isEmpty())
@@ -1756,13 +1755,11 @@ public final class VizGUI implements ComponentListener {
     // return wrapMe();
     // }
 
-    // ========================================TRACES=====================================================//
-
     // [HASLab]
     private int    current          = 0;
 
     // [HASLab]
-    ActionListener leftNavListener  = new ActionListener() {
+    private ActionListener leftNavListener  = new ActionListener() {
 
                                         public final void actionPerformed(ActionEvent e) {
                                             if (current > 0) {
@@ -1773,7 +1770,7 @@ public final class VizGUI implements ComponentListener {
                                     };
 
     // [HASLab]
-    ActionListener rightNavListener = new ActionListener() {
+    private ActionListener rightNavListener = new ActionListener() {
 
                                         public final void actionPerformed(ActionEvent e) {
                                             int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
@@ -1793,7 +1790,6 @@ public final class VizGUI implements ComponentListener {
      */
     // [HASLab]
     private JPanel createTempNavPanel() {
-
         JPanel tmpNavPanel = new JPanel();
         tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.PAGE_AXIS));
         tmpNavPanel.add(traceGraph());
@@ -1801,6 +1797,10 @@ public final class VizGUI implements ComponentListener {
         return tmpNavPanel;
     }
 
+    /*
+     * Draws a graph depicting the shape of the trace being visualized. States are
+     * clickable easing navigation.
+     */
     // [HASLab]
     private JPanel traceGraph() {
 
@@ -1935,9 +1935,7 @@ public final class VizGUI implements ComponentListener {
                 doCloseAll();
                 return;
             }
-
         }
-
     }
 
     // [HASLab]
