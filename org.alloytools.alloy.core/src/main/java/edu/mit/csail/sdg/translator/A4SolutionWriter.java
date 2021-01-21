@@ -30,7 +30,6 @@ import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
@@ -106,7 +105,7 @@ public final class A4SolutionWriter {
             while (true) {
                 A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum), state)); // [HASLab]
                 int n = ts.size();
-                if (n <= 0 || expr instanceof ExprCall || expr instanceof ExprVar) // [HASLab] hack to allow temporal skolems that refer to atoms outside the current state
+                if (n <= 0 || expr instanceof ExprVar) // [HASLab] temporary fix for skolem variables than may not exist in all states, will still be printed
                     break;
                 if (lastSize > 0 && lastSize <= n)
                     throw new ErrorFatal("An internal error occurred in the evaluator.");
@@ -263,7 +262,7 @@ public final class A4SolutionWriter {
         for (Sig s : sigs)
             if (s instanceof PrimSig && ((PrimSig) s).parent == Sig.UNIV)
                 toplevels.add((PrimSig) s);
-        // [HASLab] write temporal metadata it not part of a trace
+        // [HASLab] write temporal metadata if not part of a trace
         out.print("<instance bitwidth=\"");
         out.print(bitwidth);
         out.print("\" maxseq=\"");
@@ -325,25 +324,7 @@ public final class A4SolutionWriter {
         if (!sol.satisfiable())
             throw new ErrorAPI("This solution is unsatisfiable.");
         try {
-            // [HASLab] write metadata in the header
-            Util.encodeXMLs(out, "<alloy builddate=\"", Version.buildDate());
-            out.print("\" bitwidth=\"");
-            out.print(sol.getBitwidth());
-            out.print("\" maxseq=\"");
-            out.print(sol.getMaxSeq());
-            out.print("\" mintrace=\""); // [HASLab]
-            out.print(sol.getMinTrace());
-            out.print("\" maxtrace=\""); // [HASLab]
-            out.print(sol.getMaxTrace());
-            out.print("\" command=\"");
-            Util.encodeXML(out, sol.getOriginalCommand());
-            out.print("\" filename=\"");
-            Util.encodeXML(out, sol.getOriginalFilename());
-            out.print("\" tracelength=\"");
-            out.print(sol.getTraceLength()); // [HASLab] the trace length of the instance
-            out.print("\" backloop=\"");
-            out.print(sol.getLoopState()); // [HASLab] the back loop of the instance
-            out.print("\">\n\n");
+            Util.encodeXMLs(out, "<alloy builddate=\"", Version.buildDate(), "\">\n\n");
 
             // [HASLab] write all relevant instances.
             for (int i = 0; i < sol.getTraceLength(); i++)

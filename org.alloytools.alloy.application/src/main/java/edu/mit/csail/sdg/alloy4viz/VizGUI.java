@@ -270,7 +270,7 @@ public final class VizGUI implements ComponentListener {
     private final Computer enumerator;
 
     /**
-     * Number of trace states to depict.
+     * Number of trace states to depict in graph mode.
      */
     // [HASLab]
     private final int      statepanes;
