@@ -1489,8 +1489,9 @@ public final class CompModule extends Browsable implements Module {
     // [HASLab] variable constructs warnings
     private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS, final List<ErrorWarning> warns) throws Err {
         // When typechecking each sig:
-        // * a static sig is NOT allowed to be included in a variable sig // [HASLab]
-        // * a static sig is NOT allowed to extended a variable sig // [HASLab]
+        // * a static sig should NOT be included in a variable sig // [HASLab]
+        // * a static sig should NOT extend a variable sig // [HASLab]
+        // * a variable sig should NOT extend a static sig // [HASLab]
         if (res.new2old.containsKey(oldS))
             return oldS;
         Sig realSig;
@@ -1980,8 +1981,8 @@ public final class CompModule extends Browsable implements Module {
         // visible ancestor sig
         // * it is allowed to refer to visible sigs
         // * it is NOT allowed to refer to any predicate or function
-        // * it is NOT allowed to refer to variable fields/sigs unless it is also variable // [HASLab]
-        // * a static field is NOT allowed inside a variable sig // [HASLab]
+        // * it should NOT to refer to variable fields/sigs unless it is also variable // [HASLab]
+        // * it should NOT to be defined in a variable sigs unless it is also variable // [HASLab]
         // For example, if A.als opens B.als, and B/SIGX extends A/SIGY,
         // then B/SIGX's fields cannot refer to A/SIGY, nor any fields in
         // A/SIGY)
