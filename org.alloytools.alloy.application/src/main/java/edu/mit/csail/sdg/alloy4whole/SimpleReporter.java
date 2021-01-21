@@ -623,11 +623,7 @@ final class SimpleReporter extends A4Reporter {
             int tries = 0;
             while (true) {
                 try {
-                    if (this.index >= -2) {
-                        latestKodkods.clear();
-                        sol = sol.fork(this.index); // [HASLab] simulator;  TODO: is this distinction needed?
-                    } else
-                        sol = sol.next();
+                    sol = sol.fork(this.index); // [HASLab] simulator
                 } catch (ErrorAPI e) { // [HASLab]
                     cb("pop", e.getMessage());
                     return;

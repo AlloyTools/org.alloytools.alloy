@@ -1791,13 +1791,7 @@ public final class A4Solution {
      * @throws ErrorAPI if the solver was not an incremental solver
      */
     public A4Solution next() throws Err {
-        if (!solved)
-            throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
-        if (eval == null)
-            return this;
-        if (nextCache == null)
-            nextCache = new A4Solution(this, -3);
-        return nextCache;
+        return fork(-3);
     }
 
     // [HASLab] simulator
@@ -1806,6 +1800,12 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (eval == null)
             return this;
+        if (p == -3) {
+            if (nextCache == null)
+                nextCache = new A4Solution(this, -3);
+            return nextCache;
+        }
+
         return new A4Solution(this, p); // [HASLab] simulator, do not cache, may have changed arguments
     }
 
