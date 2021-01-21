@@ -270,7 +270,7 @@ public final class VizGUI implements ComponentListener {
     private final Computer enumerator;
 
     /**
-     * Number of trace states to depict.
+     * Number of trace states to depict in graph mode.
      */
     // [HASLab]
     private final int      statepanes;
@@ -1470,6 +1470,7 @@ public final class VizGUI implements ComponentListener {
         Map<String,ExprVar> reifs = new HashMap<String,ExprVar>();
         A4Solution inst = myStates.get(myStates.size() - 1).getOriginalInstance().originalA4;
 
+        // calculate the values of the static relations
         StringJoiner config = new StringJoiner(" and ");
         for (Sig s : inst.getAllReachableSigs()) {
             if (s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))
@@ -1497,6 +1498,7 @@ public final class VizGUI implements ComponentListener {
             config.add(s.equal(tupleset).toString());
         }
 
+        // calculate the values of the variable relations
         List<String> states = new ArrayList<String>();
         for (int i = 0; i < inst.getTraceLength(); i++) {
             StringJoiner state = new StringJoiner(" and ");
@@ -1528,37 +1530,47 @@ public final class VizGUI implements ComponentListener {
             states.add(state.toString());
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("some disj ");
-        StringJoiner sj = new StringJoiner(",");
-        for (ExprVar v : reifs.values())
-            sj.add(v.toString());
-        sb.append(sj.toString());
-        sb.append(" : ");
-        Expr unvs = Sig.UNIV;
-        for (int i = 0; i < inst.getTraceLength() - 1; i++)
-            unvs = Sig.UNIV.plus(unvs.prime());
-        sb.append(unvs.toString());
+        if (!reifs.isEmpty()) {
+            // quantify over all atoms of all univs (univ changes over time)
+            sb.append("some disj ");
+            StringJoiner sj = new StringJoiner(",");
+            for (ExprVar v : reifs.values())
+                sj.add(v.toString());
+            sb.append(sj.toString());
+            sb.append(" : ");
+            Expr unvs = Sig.UNIV;
+            for (int i = 0; i < inst.getTraceLength() - 1; i++)
+                unvs = Sig.UNIV.plus(unvs.prime());
+            sb.append(unvs.toString());
+        }
         sb.append(" {\n  ");
+        // print config
         sb.append(config.toString());
         sb.append("\n\n  ");
+        // print prefix
         StringJoiner statesj = new StringJoiner(";\n  ");
         for (String s : states)
             statesj.add(s);
         sb.append(statesj.toString());
         sb.append("\n\n  ");
-        for (int i = 0; i < inst.getLoopState(); i++)
-            sb.append("after ");
-        sb.append(" {\n");
-        for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
-            StringBuilder sa = new StringBuilder("");
-            for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
-                sa.append("after ");
-            sa.append("(");
-            sa.append(states.get(i));
-            sa.append(")");
-            sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+        // print looping suffix
+        if (inst.getMaxTrace() >= 0) {
+            for (int i = 0; i < inst.getLoopState(); i++)
+                sb.append("after ");
+            sb.append(" {\n");
+            for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
+                StringBuilder sa = new StringBuilder("");
+                for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
+                    sa.append("after ");
+                sa.append("(");
+                sa.append(states.get(i));
+                sa.append(")");
+                sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+            }
+            sb.append("  }\n");
         }
-        sb.append("  }\n}\n");
+        sb.append("}\n");
+
         OurDialog.showtext("Text Viewer", sb.toString());
         return null;
     }
