@@ -32,8 +32,6 @@ import edu.mit.csail.sdg.alloy4.Runner;
  * platforms.
  * <p>
  * <b>Thread Safety:</b> Safe.
- *
- * @modified: Nuno Macedo // [HASLab] electrum-base
  */
 
 public final class MacUtil {
@@ -41,7 +39,8 @@ public final class MacUtil {
     /**
      * Constructor is private, since this class never needs to be instantiated.
      */
-    public MacUtil() {}
+    public MacUtil() {
+    }
 
     /** The cached Application object. */
     private Application         app      = null;
@@ -64,13 +63,11 @@ public final class MacUtil {
      * @param quit - when the user clicks on Quit, we'll call quit.run() using
      *            SwingUtilities.invokeAndWait
      */
-    // [HASLab]
-    public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runnable prefs, final Runner open, final Runnable quit) {
+    public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runner open, final Runnable quit) {
         if (app == null)
             app = new Application();
         else if (listener != null)
             app.removeApplicationListener(listener);
-        app.addPreferencesMenuItem();
         listener = new ApplicationAdapter() {
 
             @Override
@@ -82,12 +79,6 @@ public final class MacUtil {
             public void handleAbout(ApplicationEvent arg) {
                 arg.setHandled(true);
                 SwingUtilities.invokeLater(about);
-            }
-
-            @Override
-            // [HASLab]
-            public void handlePreferences(ApplicationEvent arg) {
-                SwingUtilities.invokeLater(prefs);
             }
 
             @Override
@@ -118,7 +109,6 @@ public final class MacUtil {
         app.addApplicationListener(listener);
     }
 
-    // [HASLab] duplicated listeners
     public void addMenus(SimpleGUI simpleGUI) {
         //        for (Method m : Application.class.getMethods()) {
         //            System.out.println(m);
