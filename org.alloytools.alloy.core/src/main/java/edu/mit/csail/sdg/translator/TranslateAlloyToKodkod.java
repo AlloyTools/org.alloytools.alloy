@@ -267,7 +267,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                     // well-bounded (except possibly the first column).
                     // Thus, we need to add a bound that the first column is a
                     // subset of s.
-                    if (s.isOne == null || s.isVariable != null) { // [HASLab]
+                    if (s.isOne == null || s.isVariable != null) { // [HASLab] one sigs always created when var
                         Expression sr = a2k(s), fr = a2k(f);
                         for (int i = f.type().arity(); i > 1; i--)
                             fr = fr.join(Expression.UNIV);
@@ -295,7 +295,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             }
             k2pos_enabled = true;
             for (Expr f : s.getFacts()) {
-                Expr form = s.isOne == null ? f.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, f); // [HASLab] always, avoids over total order predicate
+                Expr form = s.isOne == null ? f.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, f);
                 Formula kdorm = cform(form);
                 // [HASLab] avoid always over statics (not only efficiency, total orders would not by detected in SB)
                 if (TemporalTranslator.isTemporal(kdorm))
@@ -464,7 +464,6 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                         super.translate(solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
                     first = false;
                 }
-
 
                 @Override
                 public void resultSAT(Object command, long solvingTime, Object solution) {}
