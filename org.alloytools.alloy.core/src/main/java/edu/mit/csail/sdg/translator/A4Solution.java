@@ -1471,7 +1471,7 @@ public final class A4Solution {
         TemporalInstance prev = new TemporalInstance(instances, loop, 1);
         eval = new Evaluator(prev, solver.options());
         rename(this, null, null, new UniqueNameGenerator());
-        toStringCache = null;
+        toStringCache.clear(); // [HASLab]
         evalCache = new HashMap<>();
         solved();
         return this;
@@ -1649,7 +1649,8 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /** This caches the toString() output. */
-    private String toStringCache = null;
+    // [HASLab] cache per state
+    private final Map<Integer,String> toStringCache = new HashMap<Integer,String>();
 
     /** Dumps the Kodkod solution into String. */
     @Override
@@ -1663,7 +1664,7 @@ public final class A4Solution {
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
-        String answer = toStringCache;
+        String answer = toStringCache.get(state); // [HASLab]
         if (answer != null)
             return answer;
         Instance sol = eval.instance();
@@ -1716,9 +1717,12 @@ public final class A4Solution {
                 }
             }
         } catch (Err er) {
-            return toStringCache = ("<Evaluator error occurred: " + er + ">");
+            toStringCache.put(state, "<Evaluator error occurred: " + er + ">"); // [HASLab]
+            return toStringCache.get(state);
         }
-        return toStringCache = sb.toString();
+        toStringCache.put(state, sb.toString()); // [HASLab]
+        return toStringCache.get(state);
+
     }
 
     // ===================================================================================================//
