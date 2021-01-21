@@ -116,16 +116,12 @@ public final class A4SolutionWriter {
             }
             // Now, write out the tupleset
             A4TupleSet ts = (A4TupleSet) (sol.eval(expr, state)); // [HASLab]
-            // [HASLab] force printing of element even if empty, otherwise skolems missing from certain steps of the trace
-            if (ts.size() == 0) {
+            // [HASLab] force printing of element even if empty, otherwise skolem funs missing from certain steps
+            if (prefix.length() > 0) {
                 out.print(prefix);
                 prefix = "";
             }
             for (A4Tuple t : ts) {
-                if (prefix.length() > 0) {
-                    out.print(prefix);
-                    prefix = "";
-                }
                 out.print("   <tuple>");
                 for (int i = 0; i < t.arity(); i++)
                     Util.encodeXMLs(out, " <atom label=\"", t.atom(i), "\"/>");
