@@ -547,8 +547,7 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,Integer> map = new LinkedHashMap<AlloyElement,Integer>();
 
-        private MInt() {
-        }
+        private MInt() {}
 
         private void clear() {
             map.clear();
@@ -579,8 +578,7 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,String> map = new LinkedHashMap<AlloyElement,String>();
 
-        private MString() {
-        }
+        private MString() {}
 
         private void clear() {
             map.clear();
