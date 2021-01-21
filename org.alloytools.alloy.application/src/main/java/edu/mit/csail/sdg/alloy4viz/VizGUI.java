@@ -831,12 +831,12 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myState.getOriginalInstance().originalA4.toString(comboTime.getSelectedIndex());
+                String textualOutput = myState.getOriginalInstance().originalA4.toString(comboTime.getSelectedIndex()); // [HASLab]
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myState.getOriginalInstance().originalA4.format(comboTime.getSelectedIndex());
+                String textualOutput = myState.getOriginalInstance().originalA4.format(comboTime.getSelectedIndex()); // [HASLab]
                 content = getTextComponent(textualOutput);
                 break;
             }
