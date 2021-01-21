@@ -42,8 +42,7 @@ public final class MacUtil {
     /**
      * Constructor is private, since this class never needs to be instantiated.
      */
-    public MacUtil() {
-    }
+    public MacUtil() {}
 
     /** The cached Application object. */
     private Application         app      = null;

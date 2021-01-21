@@ -56,7 +56,7 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
  * This class provides convenience methods for calling the parser and the
  * compiler.
  *
- * @modified Nuno Macedo // [HASLab] electrum-base
+ * @modified Nuno Macedo // [HASLab] electrum-base, electrum-temporal
  */
 
 public final class CompUtil {
