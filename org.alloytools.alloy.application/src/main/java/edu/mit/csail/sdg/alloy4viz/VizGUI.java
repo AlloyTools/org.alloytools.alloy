@@ -1482,6 +1482,7 @@ public final class VizGUI implements ComponentListener {
         }
         StringBuilder sb = new StringBuilder();
         if (!reifs.isEmpty()) {
+            // quantify over all atoms of all univs (univ changes over time)
             sb.append("some disj ");
             StringJoiner sj = new StringJoiner(",");
             for (ExprVar v : reifs.values())
@@ -1494,26 +1495,33 @@ public final class VizGUI implements ComponentListener {
             sb.append(unvs.toString());
         }
         sb.append(" {\n  ");
+        // print config
         sb.append(config.toString());
         sb.append("\n\n  ");
+        // print prefix
         StringJoiner statesj = new StringJoiner(";\n  ");
         for (String s : states)
             statesj.add(s);
         sb.append(statesj.toString());
         sb.append("\n\n  ");
-        for (int i = 0; i < inst.getLoopState(); i++)
-            sb.append("after ");
-        sb.append(" {\n");
-        for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
-            StringBuilder sa = new StringBuilder("");
-            for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
-                sa.append("after ");
-            sa.append("(");
-            sa.append(states.get(i));
-            sa.append(")");
-            sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+        // print looping suffix
+        if (inst.getMaxTrace() >= 0) {
+            for (int i = 0; i < inst.getLoopState(); i++)
+                sb.append("after ");
+            sb.append(" {\n");
+            for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
+                StringBuilder sa = new StringBuilder("");
+                for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
+                    sa.append("after ");
+                sa.append("(");
+                sa.append(states.get(i));
+                sa.append(")");
+                sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+            }
+            sb.append("  }\n");
         }
-        sb.append("  }\n}\n");
+        sb.append("}\n");
+
         OurDialog.showtext("Text Viewer", sb.toString());
         return null;
     }
