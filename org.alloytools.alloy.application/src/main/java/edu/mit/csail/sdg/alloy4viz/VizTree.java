@@ -1,4 +1,5 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
+ * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -39,6 +40,8 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
  * GUI tree that displays an instance as a tree.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
  */
 
 public final class VizTree extends OurTree {
@@ -91,14 +94,14 @@ public final class VizTree extends OurTree {
             if (parent instanceof A4Solution) {
                 return toplevel;
             } else if (parent instanceof Sig || parent instanceof ExprVar) {
-                A4TupleSet ts = (A4TupleSet) (instance.eval((Expr) parent));
+                A4TupleSet ts = (A4TupleSet) (instance.eval((Expr) parent, state)); // [HASLab]
                 for (A4Tuple t : ts)
                     ans.add(t.atom(0));
             } else if (parent instanceof String) {
                 String atom = (String) parent;
                 for (Sig s : instance.getAllReachableSigs())
                     for (Field f : s.getFields())
-                        for (A4Tuple t : instance.eval(f)) {
+                        for (A4Tuple t : instance.eval(f, state)) { // [HASLab]
                             if (t.atom(0).equals(atom)) {
                                 ans.add(new Pair<String,ExprHasName>(atom, f));
                                 break;
@@ -106,7 +109,7 @@ public final class VizTree extends OurTree {
                         }
                 for (ExprVar f : instance.getAllSkolems())
                     if (f.type().arity() > 1)
-                        for (A4Tuple t : (A4TupleSet) (instance.eval(f))) {
+                        for (A4Tuple t : (A4TupleSet) (instance.eval(f, state))) { // [HASLab]
                             if (t.atom(0).equals(atom)) {
                                 ans.add(new Pair<String,ExprHasName>(atom, f));
                                 break;
@@ -116,7 +119,7 @@ public final class VizTree extends OurTree {
                 Pair< ? , ? > p = (Pair< ? , ? >) parent;
                 ExprHasName rel = (ExprHasName) (p.b);
                 String atom = (String) (p.a);
-                for (A4Tuple tuple : (A4TupleSet) (instance.eval(rel)))
+                for (A4Tuple tuple : (A4TupleSet) (instance.eval(rel, state))) // [HASLab]
                     if (tuple.atom(0).equals(atom)) {
                         if (tuple.arity() == 2)
                             ans.add(tuple.atom(1));
@@ -171,12 +174,18 @@ public final class VizTree extends OurTree {
     /** The list of toplevel nodes to show. */
     private final List<Object> toplevel;
 
+    /** The state in which the tree if focused. */
+    // [HASLab]
+    private final int          state;
+
     /** Constructs a tree to display the given instance. */
-    public VizTree(A4Solution instance, String title, int fontSize) {
+    // [HASLab] focus in particular state
+    public VizTree(A4Solution instance, String title, int fontSize, int state) {
         super(fontSize);
         this.instance = instance;
         this.title = title;
         this.onWindows = Util.onWindows();
+        this.state = state; // [HASLab]
         ArrayList<Object> toplevel = new ArrayList<Object>();
         for (Sig s : instance.getAllReachableSigs())
             if (s != Sig.UNIV && s != Sig.SEQIDX && s != Sig.NONE)

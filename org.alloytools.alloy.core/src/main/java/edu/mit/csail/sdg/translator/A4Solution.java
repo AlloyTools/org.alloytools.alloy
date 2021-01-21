@@ -1654,6 +1654,11 @@ public final class A4Solution {
     /** Dumps the Kodkod solution into String. */
     @Override
     public String toString() {
+        return toString(-1); // [HASLab]
+    }
+
+    // [HASLab] print particular state, if all
+    public String toString(int state) {
         if (!solved)
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
@@ -1684,7 +1689,8 @@ public final class A4Solution {
         }
         sb.append("}\n");
         try {
-            if (sol instanceof TemporalInstance) {
+            // [HASLab] if temporal instance and print all, print all
+            if (sol instanceof TemporalInstance && state < 0) {
                 for (int i = 0; i < getTraceLength(); i++) { // [HASLab]
                     sb.append("------State " + i + "-------\n");
                     for (Sig s : sigs) {
@@ -1696,14 +1702,17 @@ public final class A4Solution {
                         sb.append("skolem ").append(v.label).append("=").append(eval(v, i)).append("\n");
                     }
                 }
-            } else {
+            }
+            // [HASLab] else print the particular state (-1 for static prints single state)
+            else {
+                state = Math.max(0, state);
                 for (Sig s : sigs) {
-                    sb.append(s.label).append("=").append(eval(s)).append("\n");
+                    sb.append(s.label).append("=").append(eval(s, state)).append("\n");
                     for (Field f : s.getFields())
-                        sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f)).append("\n");
+                        sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f, state)).append("\n");
                 }
                 for (ExprVar v : skolems) {
-                    sb.append("skolem ").append(v.label).append("=").append(eval(v)).append("\n");
+                    sb.append("skolem ").append(v.label).append("=").append(eval(v, state)).append("\n");
                 }
             }
         } catch (Err er) {
@@ -1857,12 +1866,17 @@ public final class A4Solution {
     }
 
     public String format() {
+        return format(-1);
+    }
+
+    // [HASLab] print particular state, -1 if default
+    public String format(int state) {
         if (!solved)
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state); // [HASLab]
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
