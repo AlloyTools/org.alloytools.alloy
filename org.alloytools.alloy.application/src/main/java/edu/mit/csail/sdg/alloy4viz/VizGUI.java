@@ -814,7 +814,7 @@ public final class VizGUI implements ComponentListener {
             frame.setTitle(makeVizTitle());
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myState.getOriginalInstance().originalA4, makeVizTitle(), fontSize);
+                final VizTree t = new VizTree(myState.getOriginalInstance().originalA4, makeVizTitle(), fontSize, comboTime.getSelectedIndex()); // [HASLab]
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -831,12 +831,12 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myState.getOriginalInstance().originalA4.toString();
+                String textualOutput = myState.getOriginalInstance().originalA4.toString(comboTime.getSelectedIndex());
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myState.getOriginalInstance().originalA4.format();
+                String textualOutput = myState.getOriginalInstance().originalA4.format(comboTime.getSelectedIndex());
                 content = getTextComponent(textualOutput);
                 break;
             }
