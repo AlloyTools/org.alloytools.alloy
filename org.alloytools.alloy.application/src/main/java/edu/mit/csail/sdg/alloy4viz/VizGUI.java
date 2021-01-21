@@ -716,11 +716,13 @@ public final class VizGUI implements ComponentListener {
 
     /** Invoked when the Visualizationwindow is shown. */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Invoked when the Visualizationwindow is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Helper method that repopulates the Porjection popup menu.
@@ -822,7 +824,8 @@ public final class VizGUI implements ComponentListener {
                     }
 
                     @Override
-                    public final void focusLost(FocusEvent e) {}
+                    public final void focusLost(FocusEvent e) {
+                    }
                 });
                 content = scroll;
                 break;
@@ -882,7 +885,8 @@ public final class VizGUI implements ComponentListener {
             try {
                 evaluator.compute(new File(xmlFileName));
                 myEvaluatorPanel.setCurrentState(comboTime.getSelectedIndex()); // [HASLab] set evaluator state
-            } catch (Exception ex) {} // exception should not happen
+            } catch (Exception ex) {
+            } // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
         }
@@ -1356,7 +1360,8 @@ public final class VizGUI implements ComponentListener {
         try {
             MagicLayout.magic(myState);
             MagicColor.magic(myState);
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
         repopulateProjectionPopup();
         if (myCustomPanel != null)
             myCustomPanel.remakeAll();

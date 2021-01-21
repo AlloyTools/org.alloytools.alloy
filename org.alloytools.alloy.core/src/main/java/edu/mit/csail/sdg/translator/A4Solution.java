@@ -1862,7 +1862,15 @@ public final class A4Solution {
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
+        if (eval.instance() instanceof TemporalInstance) { // [HASLab]
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < ((TemporalInstance) eval.instance()).prefixLength(); i++) {
+                Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, i);
+                sb.append(String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet())));
+            }
+            return sb.toString();
+        }
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, -1); // [HASLab]
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
