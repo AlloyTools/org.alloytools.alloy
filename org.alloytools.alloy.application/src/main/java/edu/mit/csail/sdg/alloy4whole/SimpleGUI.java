@@ -285,8 +285,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private static final Color    background             = new Color(0.9f, 0.9f, 0.9f);
 
     /**
-     * If subrunning==true: 0 means SAT solving; 1 means metamodel; 2 means
-     * enumeration.
+     * If subrunning==true: 0 means SAT solving; 1 means metamodel; 2 means global
+     * enumeration; 3 means local enumeration.
      */
     private int                   subrunningTask         = 0;
 
