@@ -81,6 +81,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
+import kodkod.engine.AbstractKodkodSolver;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
 import kodkod.engine.InvalidSolverParamException;
@@ -867,17 +868,7 @@ public final class A4Solution {
         }
     }
 
-    /** Returns the back loop instance of this instance (should always exist). */
-    // [HASLab]
-    public int getLoopState() {
-        return ((TemporalInstance) eval.instance()).loop;
-    }
 
-    /** Returns the length of the finite prefix. */
-    // [HASLab]
-    public int getTraceLength() {
-        return ((TemporalInstance) eval.instance()).prefixLength();
-    }
 
     // ===================================================================================================//
 
@@ -910,6 +901,18 @@ public final class A4Solution {
      */
     public Iterable<ExprVar> getAllAtoms() {
         return atoms.dup();
+    }
+
+    /** Returns the back loop instance of this instance (should always exist). */
+    // [HASLab]
+    public int getLoopState() {
+        return ((TemporalInstance) eval.instance()).loop;
+    }
+
+    /** Returns the length of the finite prefix. */
+    // [HASLab]
+    public int getTraceLength() {
+        return ((TemporalInstance) eval.instance()).prefixLength();
     }
 
     /**
@@ -1539,11 +1542,14 @@ public final class A4Solution {
             }
 
         });
-        // [HASLab] TODO: how to handle non-temporal examples?
-        //      if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples && !isTemporal) { // try book examples
-        //          A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
-        //          try { sol = BookExamples.trial(r, this, fgoal, (Solver) solver, cmd.check); } catch(Throwable ex) { sol = null; }
-        //      }
+        if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try book examples
+            A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
+            try {
+                sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
+            } catch (Throwable ex) {
+                sol = null;
+            }
+        }
 
         solved[0] = false; // this allows the reporter to report the # of
                           // vars/clauses
