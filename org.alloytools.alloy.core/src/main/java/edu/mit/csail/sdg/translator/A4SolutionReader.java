@@ -382,7 +382,7 @@ public final class A4SolutionReader {
                 atoms.add(Integer.toString(i));
             }
 
-        // [HASLab] get all atoms of the universe, must traverse all steps
+        // [HASLab] get all atoms of the universe, must traverse all states
         for (XMLNode sub : xml)
             if (sub.is("instance")) {
                 inst = sub;
@@ -448,7 +448,7 @@ public final class A4SolutionReader {
                         if (ts == null)
                             ts = factory.noneOf(1); // If the sig was NOT mentioned in the XML file...
                         Relation r;
-                        // [HASLab] if first set create the relation
+                        // [HASLab] if first state create the relation
                         if (prev == null)
                             r = sol.addRel(s.label, ts, ts, s.isVariable != null);
                         // [HASLab] otherwise use previously created
@@ -461,7 +461,7 @@ public final class A4SolutionReader {
                             ts = expr2ts.remove(f);
                             if (ts == null)
                                 ts = factory.noneOf(f.type().arity()); // If the field was NOT mentioned in the XML file...
-                            // [HASLab] if first set create the relation
+                            // [HASLab] if first state create the relation
                             if (prev == null)
                                 r = sol.addRel(s.label + "." + f.label, ts, ts, f.isVariable != null);
                             // [HASLab] otherwise use previously created
@@ -479,7 +479,7 @@ public final class A4SolutionReader {
                     if (prev == null)
                         r = sol.addRel(v.label, ts, ts, true);
                     else {
-                        // [HASLab] try to use previously created relation for skolem, not mapped anywhere
+                        // [HASLab] search for skolem relation, not mapped anywhere, but skolems always present in all instances
                         for (Expr exp : prev.a2k().keySet())
                             if (exp instanceof ExprVar && ((Relation) prev.a2k(exp)).name().equals(v.label)) {
                                 r = (Relation) prev.a2k(exp);
@@ -493,7 +493,6 @@ public final class A4SolutionReader {
                 sol.solve(null, prev, backloop); // [HASLab] merge current solution with previous, if any
             }
     }
-
 
     /**
      * Parse the XML element into an AlloyInstance.
