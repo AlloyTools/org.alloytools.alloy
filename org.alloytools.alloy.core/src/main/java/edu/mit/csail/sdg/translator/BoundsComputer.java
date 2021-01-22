@@ -141,7 +141,7 @@ final class BoundsComputer {
         // them
         Expression sum = null;
         boolean all_static = true;
-        Formula f = null;
+        List<Formula> extra_fs = new ArrayList<Formula>();
         Variable v = Variable.unary("v");
         for (PrimSig child : sig.children()) {
             if (child.isVariable != null)
@@ -152,18 +152,17 @@ final class BoundsComputer {
                 continue;
             }
             // subsigs are disjoint
-            if (!all_static) { // [HASLab] disjointness when variable sigs
+            if (!all_static) { // [HASLab] disjointness when some variable sig
                 Expression c = sol.a2k(child);
                 // eventually v in sig => always v not in parent - sig
                 Formula ff = (v.in(c).eventually()).implies(((v.in(sum)).not().always()));
-                f = f == null ? ff : f.and(ff);
+                extra_fs.add(ff);
             } else {
-                sol.addFormula(sum.intersection(childexpr).no(), child.isSubsig); // [HASLab]
+                sol.addFormula(sum.intersection(childexpr).no(), child.isSubsig);
             }
             sum = sum.union(childexpr);
         }
         TupleSet lower = lb.get(sig).clone(), upper = ub.get(sig).clone();
-        Relation rem = null;
         if (sum == null) {
             // If sig doesn't have children, then sig should make a fresh
             // relation for itself
@@ -183,17 +182,17 @@ final class BoundsComputer {
                 lower.removeAll(childTS);
                 upper.removeAll(childTS);
             }
-            rem = sol.addRel(sig.label + "_remainder", lower, upper, sig.isVariable != null);
-            // [HASLab] disjointness when variable sigs
+            Relation rem = sol.addRel(sig.label + "_remainder", lower, upper, sig.isVariable != null);
+            // [HASLab] disjointness when some variable sig
             if (!all_static) {
                 Formula ff = (v.in(sum).eventually()).implies(((v.in(rem)).not().always()));
-                f = f == null ? ff : f.and(ff);
+                extra_fs.add(ff);
             }
             sum = sum.union(rem);
         }
-        if (f != null) // [HASLab] disjointness when variable sigs
-            sol.addFormula(f.forAll(v.oneOf(Expression.UNIV)), sig.pos); // always all v : parent | f
-        if (sig.isVariable == null && f != null) // [HASLab]
+        if (!extra_fs.isEmpty()) // [HASLab] disjointness when some variable sig
+            sol.addFormula(Formula.and(extra_fs).forAll(v.oneOf(Expression.UNIV)), sig.pos); // always all v : parent | f
+        if (sig.isVariable == null && !extra_fs.isEmpty()) // [HASLab] since the static top relation is not created
             sol.addFormula((sum.prime().eq(sum)).always(), sig.isVariable);
         sol.addSig(sig, sum);
         return sum;
@@ -249,7 +248,7 @@ final class BoundsComputer {
         Expression a = sol.a2k(sig);
         if (n <= 0)
             return a.no();
-        if (n == 1 && sig.isVariable == null) // [HASLab]
+        if (n == 1 && sig.isVariable == null) // [HASLab] variable sigs are never exact
             return exact ? a.one() : a.lone();
         Formula f = exact ? Formula.TRUE : null;
         Decls d = null;
@@ -272,7 +271,7 @@ final class BoundsComputer {
         }
         if (f != null)
             return sum.eq(a).and(f).forSome(d);
-        else if (sig.isVariable == null)
+        else if (sig.isVariable == null) // [HASLab]
             return a.no().or(sum.eq(a).forSome(d));
         else
             return Expression.UNIV.no().or(a.in(sum).always().forSome(d)); // [HASLab]

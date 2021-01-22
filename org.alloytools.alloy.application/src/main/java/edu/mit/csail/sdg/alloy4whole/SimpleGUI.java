@@ -489,11 +489,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Called when this window is shown.
      */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Called when this window is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Wraps the calling method into a Runnable whose run() will call the calling
@@ -522,7 +524,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             public void run() {
                 try {
                     method.setAccessible(true);
-                    method.invoke(SimpleGUI.this, new Object[] {});
+                    method.invoke(SimpleGUI.this, new Object[] {
+});
                 } catch (Throwable ex) {
                     ex = new IllegalArgumentException("Failed call to " + name + "()", ex);
                     Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex);
@@ -607,7 +610,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             };
             try {
                 Runtime.getRuntime().exec(args).waitFor();
-            } catch (Throwable ex) {} // We only intend to make a best effort.
+            } catch (Throwable ex) {
+            } // We only intend to make a best effort.
         }
         return alloyHome = ans;
     }
@@ -992,7 +996,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             SwingUtilities.updateComponentTreeUI(frame);
             SwingUtilities.updateComponentTreeUI(prefDialog);
             SwingUtilities.updateComponentTreeUI(viz.getFrame());
-        } catch (Throwable e) {}
+        } catch (Throwable e) {
+        }
         return null;
     }
 
@@ -1603,7 +1608,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
                                                             // occur
                         html2.setPage(e.getURL());
                         html2.requestFocusInWindow();
-                    } catch (Throwable ex) {}
+                    } catch (Throwable ex) {
+                    }
                 }
             };
             html1.setEditable(false);
@@ -1993,7 +1999,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.setProperty("com.apple.macos.useScreenMenuBar", "true");
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
-        // [HASLab] duplicated listeners
         if (Util.onMac()) {
             try {
                 macUtil = new MacUtil();
@@ -2222,7 +2227,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             if (Util.onMac()) {
-                macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit()); // [HASLab]
+                macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
             }
         } catch (Throwable t) {
             System.out.println("Mac classes not there");
@@ -2243,7 +2248,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             java.lang.reflect.Field old = ClassLoader.class.getDeclaredField("usr_paths");
             old.setAccessible(true);
             old.set(null, newarray);
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
 
         // Pre-load the preferences dialog
         prefDialog = new PreferencesDialog(log, binary);
