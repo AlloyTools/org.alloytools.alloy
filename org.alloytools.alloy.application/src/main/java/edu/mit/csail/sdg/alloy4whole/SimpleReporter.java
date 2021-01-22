@@ -628,11 +628,7 @@ final class SimpleReporter extends A4Reporter {
             int tries = 0;
             while (true) {
                 try {
-                    if (this.index >= -2) {
-                        latestKodkods.clear();
-                        sol = sol.fork(this.index); // [HASLab] simulator;  TODO: is this distinction needed?
-                    } else
-                        sol = sol.next();
+                    sol = sol.fork(this.index); // [HASLab] simulator
                 } catch (ErrorAPI e) { // [HASLab]
                     cb("pop", e.getMessage());
                     return;
@@ -712,7 +708,7 @@ final class SimpleReporter extends A4Reporter {
                 synchronized (SimpleReporter.class) {
                     latestMetamodelXML = outf;
                 }
-            } else {
+            } else
                 for (int i = 0; i < cmds.size(); i++)
                     if (bundleIndex < 0 || i == bundleIndex) {
                         synchronized (SimpleReporter.class) {
@@ -725,7 +721,7 @@ final class SimpleReporter extends A4Reporter {
                         rep.tempfile = tempCNF;
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
                         A4Solution ai = null;
-                        try { // [HASLab] this allows other commands to still be solved
+                        try { // [HASLab] postpones error throwing, allows other commands to still be solved
                             ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
                         } catch (Exception e1) {
                             exc = e1;
@@ -739,7 +735,6 @@ final class SimpleReporter extends A4Reporter {
                         else
                             result.add("");
                     }
-            }
             (new File(tempdir)).delete(); // In case it was UNSAT, or
                                          // canceled...
             if (result.size() > 1) {
