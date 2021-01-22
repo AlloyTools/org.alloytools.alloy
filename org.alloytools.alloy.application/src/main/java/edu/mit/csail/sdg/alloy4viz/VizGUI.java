@@ -650,7 +650,7 @@ public final class VizGUI implements ComponentListener {
             else
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
-            enumerateMenu = menuItem(instanceMenu, "Show a Fresh Solution", 'N', 'N', doNext());
+            enumerateMenu = menuItem(instanceMenu, "Show Fresh Solution", 'N', 'N', doNext());
             cnfgMenu = menuItem(instanceMenu, "Show Fresh Configuration", 'C', 'C', doConfig()); // [HASLab]
             pathMenu = menuItem(instanceMenu, "Show Fresh Path", 'P', 'P', doPath()); // [HASLab]
             initMenu = menuItem(instanceMenu, "Show Fresh Initial State", 'I', 'I', doInit()); // [HASLab]
@@ -1460,7 +1460,7 @@ public final class VizGUI implements ComponentListener {
 
     // [HASLab]
     // ad hoc implementation since alloy lacks a proper pretty printer
-    // also, prints conjunctions as lists, which can't be parsed
+    // also, conjunctions are printed as lists, which can't be parsed back
     private Runner doExportPred() {
         if (wrap)
             return wrapMe();

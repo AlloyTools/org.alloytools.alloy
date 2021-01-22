@@ -1,0 +1,113 @@
+/**
+	A model of a distributed social network
+**/
+
+sig User {}
+sig Post {}
+sig DistributedSocialNetwork {
+	servers : set Server,
+	friends : User -> User
+}
+sig Server {
+	posts : User -> Post,
+	capacity : Int
+}
+
+pred invariant[n : DistributedSocialNetwork] {
+	// A user cannot be his or her own friend
+	all u : User | u -> u not in n.friends
+	// Friendship is a symmetric relation
+	all disj u1, u2 : User | u1 -> u2 in n.friends implies u2 -> u1 in n.friends
+	// The number of posts stored on each server does not exceed its capacity
+	all s : n.servers | #s.posts <= s.capacity	
+	// The capacity is a positive number
+	all s : n.servers | 0 <= s.capacity	
+	// Each user's post is stored on exactly one of the servers
+	no p : Post, s1, s2 : n.servers |
+		s1 != s2 and p in s1.posts[User] and p in s2.posts[User]
+	// Can also write as:
+	// no disj s1, s2 : n.servers | some s1.posts[User] & s2.posts[User]
+}
+
+// Local operation
+// Add a post to a server
+pred addPostToServer[s1, s2 : Server, u : User, p : Post] {
+	// precondition
+	// This server still has space to store a post 
+	#s1.posts < s1.capacity
+	// post condition
+	s2.posts = s1.posts + u -> p
+	// frame condition
+	// Server capacity remains fixed
+	s2.capacity = s1.capacity
+}
+
+// Local operation
+// Remove a post from a server
+pred removePostFromServer[s1, s2 : Server, u : User, p : Post] {
+	// precondition
+	u -> p in s1.posts
+	// post condition
+	s2.posts = s1.posts - u -> p
+	// frame condition
+	s2.capacity = s1.capacity
+}
+
+// Relate local changes to global changes
+pred promotion[n1, n2 : DistributedSocialNetwork, s1, s2 : Server] {
+	// precondition
+	s1 in n1.servers
+	// postcondition
+	n2.servers = n1.servers + s2 - s1	
+	// frame condition
+	n2.friends = n1.friends
+}
+
+// Global operation for adding a post
+// Uses a local operation "addPostToServer"
+pred addPostConc[n1, n2 : DistributedSocialNetwork, u : User, p : Post] {
+	// precondition	
+	// New post doesn't already exist in any of the servers
+	no s : n1.servers | p in s.posts[User]
+	some s1, s2 : Server {
+		addPostToServer[s1,s2,u,p]
+		promotion[n1, n2, s1, s2]
+	}
+}
+
+// Global operation for removing a post
+// Uses a local operation "removePostFromServer"
+pred removePostConc[n1, n2 : DistributedSocialNetwork, u : User, p : Post] {
+	// precondition
+	// Post already exists in one of the servers
+	some s : n1.servers | p in s.posts[u]
+	some s1, s2 : Server {
+		removePostFromServer[s1,s2,u,p]
+		promotion[n1, n2, s1, s2]
+	}
+}
+
+// Add operation preserves the invariant
+assert AddConcPreservesInv {
+	all n1, n2 : DistributedSocialNetwork, u : User, p : Post |
+		invariant[n1] and addPostConc[n1, n2, u, p] implies
+			invariant[n2]		
+}
+check AddConcPreservesInv for 10
+
+// Remove operation preserves the invariant
+assert RemoveConcPreservesInv {
+	all n1, n2 : DistributedSocialNetwork, u : User, p : Post |
+		invariant[n1] and removePostConc[n1, n2, u, p] implies
+			invariant[n2]		
+}
+check RemoveConcPreservesInv for 10
+
+run {
+	some n1, n2 : DistributedSocialNetwork | invariant[n1] and invariant[n2] and some n1.servers & n2.servers
+} for 10
+
+run addPostConc for 5
+run removePostConc for 5
+
+
