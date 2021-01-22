@@ -170,7 +170,7 @@ public class TableView {
                         if (coll1.length == 2 && coll2.length == 2) {
                             try {
                                 return Integer.parseInt(coll1[1]) - Integer.parseInt(coll2[1]);
-                            } 
+                            }
                             catch (NumberFormatException e) {
                                 return 0;
                             }
