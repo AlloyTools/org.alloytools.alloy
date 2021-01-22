@@ -1460,7 +1460,7 @@ public final class VizGUI implements ComponentListener {
 
     // [HASLab]
     // ad hoc implementation since alloy lacks a proper pretty printer
-    // also, prints conjunctions as lists, which can't be parsed
+    // also, conjunctions are printed as lists, which can't be parsed back
     private Runner doExportPred() {
         if (wrap)
             return wrapMe();
