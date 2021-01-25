@@ -286,8 +286,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private static final Color    background             = new Color(0.9f, 0.9f, 0.9f);
 
     /**
-     * If subrunning==true: 0 means SAT solving; 1 means metamodel; 2 means
-     * enumeration.
+     * If subrunning==true: 0 means SAT solving; 1 means metamodel; 2 means global
+     * enumeration; 3 means local enumeration.
      */
     private int                   subrunningTask         = 0;
 
@@ -463,10 +463,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
         // Copy the platform-dependent binaries
         Util.copy(frame, true, false, platformBinary, arch + "/libminisat.so", arch + "/libminisatx1.so", arch + "/libminisat.jnilib", arch + "/libminisat.dylib", arch + "/libminisatprover.so", arch + "/libminisatproverx1.so", arch + "/libminisatprover.jnilib", arch + "/libminisatprover.dylib", arch + "/libzchaff.so", arch + "/libzchaffmincost.so", arch + "/libzchaffx1.so", arch + "/libzchaff.jnilib", arch + "/liblingeling.so", arch + "/liblingeling.dylib", arch + "/liblingeling.jnilib", arch + "/plingeling", arch + "/libglucose.so", arch + "/libglucose.dylib", arch + "/libglucose.jnilib", arch + "/libcryptominisat.so", arch + "/libcryptominisat.la", arch + "/libcryptominisat.dylib", arch + "/libcryptominisat.jnilib", arch + "/berkmin", arch + "/spear", arch + "/cryptominisat", arch + "/electrod"); // [HASLab]
-        Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe");
+        Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe", arch + "/electrod.exe"); // [HASLab]
         // Copy the model files
-        Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als", "models/examples/electrum/toys/railway.ele", "models/examples/electrum/toys/life.ele", "models/examples/electrum/toys/birthday.ele", // [HASLab] electrum examples
-                  "models/examples/electrum/toys/ex1.ele", "models/examples/electrum/algorithms/messaging.ele", "models/examples/electrum/algorithms/stable_orient_ring.ele", "models/examples/electrum/algorithms/ring.ele", "models/examples/electrum/algorithms/span_tree.ele", "models/examples/electrum/algorithms/peterson.ele", "models/examples/electrum/algorithms/stable_mutex_ring.ele", "models/examples/electrum/algorithms/dijkstra.ele", "models/examples/electrum/puzzles/hanoi.ele", "models/examples/electrum/puzzles/hanoi.thm", "models/examples/electrum/puzzles/farmer.thm", "models/examples/electrum/puzzles/farmer.ele", "models/examples/electrum/systems/hotel.ele", "models/examples/electrum/systems/views.ele", "models/examples/electrum/systems/javatypes_soundness.ele", "models/examples/electrum/systems/lift_spl.ele", "models/examples/electrum/case_studies/train.ele", "models/examples/electrum/case_studies/train.thm", "models/examples/electrum/case_studies/firewire.ele");
+        Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als",
+                  "models/examples/electrum/buffer.ele", "models/examples/electrum/leader.ele", "models/examples/electrum/leader_events.ele", "models/examples/electrum/trash.ele"); // [HASLab] electrum examples
         // Record the locations
         System.setProperty("alloy.theme0", alloyHome(frame) + fs + "models");
         System.setProperty("alloy.home", alloyHome(frame));
@@ -491,11 +491,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Called when this window is shown.
      */
     @Override
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /** Called when this window is hidden. */
     @Override
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
     /**
      * Wraps the calling method into a Runnable whose run() will call the calling
@@ -524,7 +526,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             public void run() {
                 try {
                     method.setAccessible(true);
-                    method.invoke(SimpleGUI.this, new Object[] {});
+                    method.invoke(SimpleGUI.this, new Object[] {
+});
                 } catch (Throwable ex) {
                     ex = new IllegalArgumentException("Failed call to " + name + "()", ex);
                     Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex);
@@ -609,7 +612,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             };
             try {
                 Runtime.getRuntime().exec(args).waitFor();
-            } catch (Throwable ex) {} // We only intend to make a best effort.
+            } catch (Throwable ex) {
+            } // We only intend to make a best effort.
         }
         return alloyHome = ans;
     }
@@ -994,7 +998,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             SwingUtilities.updateComponentTreeUI(frame);
             SwingUtilities.updateComponentTreeUI(prefDialog);
             SwingUtilities.updateComponentTreeUI(viz.getFrame());
-        } catch (Throwable e) {}
+        } catch (Throwable e) {
+        }
         return null;
     }
 
@@ -1609,7 +1614,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
                                                             // occur
                         html2.setPage(e.getURL());
                         html2.requestFocusInWindow();
-                    } catch (Throwable ex) {}
+                    } catch (Throwable ex) {
+                    }
                 }
             };
             html1.setEditable(false);
@@ -2000,15 +2006,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.setProperty("com.apple.macos.useScreenMenuBar", "true");
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
-        // [HASLab] duplicated listeners
-        //        if (Util.onMac()) {
-        //            try {
-        //                macUtil = new MacUtil();
-        //                macUtil.addMenus(this);
-        //            } catch (NoClassDefFoundError e) {
-        //                // ignore
-        //            }
-        //        }
+        if (Util.onMac()) {
+            try {
+                macUtil = new MacUtil();
+                macUtil.addMenus(this);
+            } catch (NoClassDefFoundError e) {
+                // ignore
+            }
+        }
 
         doLookAndFeel();
 
@@ -2229,7 +2234,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             if (Util.onMac()) {
-                new MacUtil().registerApplicationListener(doShow(), doAbout(), doPreferences(), doOpenFile(""), doQuit()); // [HASLab]
+                macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
             }
         } catch (Throwable t) {
             System.out.println("Mac classes not there");
@@ -2250,7 +2255,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             java.lang.reflect.Field old = ClassLoader.class.getDeclaredField("usr_paths");
             old.setAccessible(true);
             old.set(null, newarray);
-        } catch (Throwable ex) {}
+        } catch (Throwable ex) {
+        }
 
         // Pre-load the preferences dialog
         prefDialog = new PreferencesDialog(log, binary);

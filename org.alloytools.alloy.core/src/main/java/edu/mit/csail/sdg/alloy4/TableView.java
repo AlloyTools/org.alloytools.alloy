@@ -23,9 +23,15 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4Tuple;
 import edu.mit.csail.sdg.translator.A4TupleSet;
 import kodkod.instance.Instance;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 
+/**
+ *
+ * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ *
+ */
 public class TableView {
 
     final static String  SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
@@ -142,7 +148,8 @@ public class TableView {
      * @param sigs
      * @return
      */
-    public static Map<String,Table> toTable(A4Solution solution, Instance instance, SafeList<Sig> sigs) {
+    // [HASLab] added state to print, -1 for static
+    public static Map<String,Table> toTable(A4Solution solution, Instance instance, SafeList<Sig> sigs, int state) {
 
         Map<String,Table> map = new HashMap<String,Table>();
 
@@ -151,7 +158,7 @@ public class TableView {
             if (!s.label.startsWith("this/"))
                 continue;
 
-            TupleSet instanceTuples = instance.tuples(s.label);
+            TupleSet instanceTuples = (state > -1 ? ((TemporalInstance) instance).state(state) : instance).tuples(s.label); // [HASLab]
             if (instanceTuples != null) {
 
                 List<SimTuple> instancesArray = toList(instanceTuples);
@@ -194,7 +201,7 @@ public class TableView {
                     c = 1;
                     for (Field f : s.getFields()) {
 
-                        SimTupleset relations = toSimTupleset(solution.eval(f));
+                        SimTupleset relations = toSimTupleset(state > -1 ? solution.eval(f, state) : solution.eval(f)); // [HASLab]
                         SimTupleset joined = leftJoin.join(relations);
 
                         Table relationTable = toTable(joined);

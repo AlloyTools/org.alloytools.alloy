@@ -43,7 +43,7 @@ import edu.mit.csail.sdg.ast.Attr.AttrType;
 public abstract class Sig extends Expr implements Clause {
 
     /** The built-in "univ" signature. */
-    public static final PrimSig UNIV   = new PrimSig("univ", null, false, false); // [HASLab]
+    public static final PrimSig UNIV   = new PrimSig("univ", null, true, false); // [HASLab]
 
     /** The built-in "Int" signature. */
     public static final PrimSig SIGINT = new PrimSig("Int", UNIV, false, false); // [HASLab]
@@ -860,6 +860,7 @@ public abstract class Sig extends Expr implements Clause {
      *            "private"
      * @param isMeta - if nonnull, that means the user intended this field to be
      *            "meta"
+     * @param isVar - if nonnull, then this field has been declared as variable
      * @param labels - the names of the fields to be added (these names does not
      *            need to be unique)
      * @param bound - the new field will be bound by "all x: one ThisSig |

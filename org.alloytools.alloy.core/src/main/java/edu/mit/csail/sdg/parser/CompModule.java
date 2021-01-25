@@ -1490,8 +1490,9 @@ public final class CompModule extends Browsable implements Module {
     // [HASLab] variable constructs warnings
     private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS, final List<ErrorWarning> warns) throws Err {
         // When typechecking each sig:
-        // * a static sig is NOT allowed to be included in a variable sig // [HASLab]
-        // * a static sig is NOT allowed to extended a variable sig // [HASLab]
+        // * a static sig should NOT be included in a variable sig // [HASLab]
+        // * a static sig should NOT extend a variable sig // [HASLab]
+        // * a variable sig should NOT extend a static sig // [HASLab]
         if (res.new2old.containsKey(oldS))
             return oldS;
         Sig realSig;
@@ -1511,7 +1512,7 @@ public final class CompModule extends Browsable implements Module {
             }
             realSig = new SubsetSig(fullname, parents, oldS.attributes.toArray(new Attr[0]));
             for (Sig n : parents)
-                if (n.isVariable != null && realSig.isVariable == null) // [HASLab]
+                if (n != UNIV && n.isVariable != null && realSig.isVariable == null) // [HASLab]
                     warns.add(new ErrorWarning(realSig.isSubset, "Part of " + n.label + " is static.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
         } else {
             Sig sup = ((PrimSig) oldS).parent;
@@ -1523,7 +1524,7 @@ public final class CompModule extends Browsable implements Module {
                 throw new ErrorSyntax(sup.pos, "Cannot extend the subset signature \"" + parent + "\".\n" + "A signature can only extend a toplevel signature or a subsignature.");
             PrimSig p = (PrimSig) parent;
             realSig = new PrimSig(fullname, p, oldS.attributes.toArray(new Attr[0]));
-            if (parent.isVariable != null && realSig.isVariable == null) // [HASLab]
+            if (parent != UNIV && parent.isVariable != null && realSig.isVariable == null) // [HASLab]
                 warns.add(new ErrorWarning(realSig.isSubsig, "Part of " + parent.label + " is static.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
             if (parent != UNIV && parent.isVariable == null && realSig.isVariable != null) // [HASLab]
                 warns.add(new ErrorWarning(realSig.isSubsig, "Marking sig " + realSig.label + " as var is redundant.\n" + "Sig " + realSig.label + " is variable but " + parent.label + " is static."));
@@ -1938,7 +1939,7 @@ public final class CompModule extends Browsable implements Module {
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.mintime, cmd.maxtime, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent); // [HASLab]
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.minprefix, cmd.maxprefix, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent); // [HASLab]
 
     }
 
@@ -1981,8 +1982,8 @@ public final class CompModule extends Browsable implements Module {
         // visible ancestor sig
         // * it is allowed to refer to visible sigs
         // * it is NOT allowed to refer to any predicate or function
-        // * it is NOT allowed to refer to variable fields/sigs unless it is also variable // [HASLab]
-        // * a static field is NOT allowed inside a variable sig // [HASLab]
+        // * it should NOT to refer to variable fields/sigs unless it is also variable // [HASLab]
+        // * it should NOT to be defined in a variable sigs unless it is also variable // [HASLab]
         // For example, if A.als opens B.als, and B/SIGX extends A/SIGY,
         // then B/SIGX's fields cannot refer to A/SIGY, nor any fields in
         // A/SIGY)

@@ -192,16 +192,12 @@ final class ScopeComputer {
     /** Modifies the maximum trace length of this solution's model. */
     // [HASLab]
     private void setMaxTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
-        //        if (newTracelength < 0)
-        //            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
         maxtrace = newTracelength;
     }
 
     /** Modifies the minimum trace length of this solution's model. */
     // [HASLab]
     private void setMinTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
-        //        if (newTracelength < 0)
-        //            throw new ErrorSyntax(pos, "Cannot specify a trace less than 0");
         mintrace = newTracelength;
     }
 
@@ -382,7 +378,6 @@ final class ScopeComputer {
         this.rep = rep;
         this.cmd = cmd;
         boolean shouldUseInts = true; // TODO CompUtil.areIntsUsed(sigs, cmd);
-        boolean isVar = CompUtil.isTemporalModel(sigs, cmd);
 
         // Process each sig listed in the command
         for (CommandScope entry : cmd.scope) {
@@ -407,11 +402,11 @@ final class ScopeComputer {
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"none\".");
             if (s.isEnum != null)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on the enum \"" + s.label + "\"");
-            if (s.isOne != null && s.isVariable == null && scope != 1) // [HASLab] if var, the atom may change
+            if (s.isOne != null && s.isVariable == null && scope != 1) // [HASLab] if var, the atom may change along the trace
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1, and cannot be " + scope);
-            if (s.isOne != null && s.isVariable != null && scope < 1)
-                throw new ErrorSyntax(cmd.pos, "Var sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1 or above, and cannot be " + scope); // [HASLab] if var, the atom may change
-            if (s.isLone != null && s.isVariable == null && scope > 1) // [HASLab] if var, the atom may change
+            if (s.isOne != null && s.isVariable != null && scope < 1) // [HASLab] if var, the atom may change along the trace but must at least exist one atom
+                throw new ErrorSyntax(cmd.pos, "Var sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1 or above, and cannot be " + scope);
+            if (s.isLone != null && s.isVariable == null && scope > 1) // [HASLab] if var, the atom may change along the trace
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"lone\", so its scope must 0 or 1, and cannot be " + scope);
             if (s.isSome != null && scope < 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"some\", so its scope must 1 or above, and cannot be " + scope);
@@ -422,10 +417,10 @@ final class ScopeComputer {
         // Force "one" sigs to be exactly one, and "lone" to be at most one
         for (Sig s : sigs)
             if (s instanceof PrimSig) {
-                if (s.isOne != null && s.isVariable == null) { // [HASLab] variables may vary
+                if (s.isOne != null && s.isVariable == null) { // [HASLab] in var sigs atom may vary
                     makeExact(cmd.pos, s);
                     sig2scope(s, 1);
-                } else if (s.isLone != null && s.isVariable == null && sig2scope(s) != 0)
+                } else if (s.isLone != null && s.isVariable == null && sig2scope(s) != 0) // [HASLab] in var sigs atom may vary
                     sig2scope(s, 1);
             }
         // Derive the implicit scopes
@@ -472,7 +467,8 @@ final class ScopeComputer {
             for (int i = min; i <= max; i++)
                 atoms.add("" + i);
         // [HASLab] handle trace lengths
-        int tracelength = cmd.maxtime;
+        boolean isVar = CompUtil.isTemporalModel(sigs, cmd);
+        int tracelength = cmd.maxprefix;
         if (!isVar) {
             if (tracelength > 0)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
@@ -480,13 +476,13 @@ final class ScopeComputer {
         } else if (tracelength < 1)
             tracelength = 10;
         setMaxTraceLength(cmd.pos, tracelength);
-        tracelength = cmd.mintime;
+        tracelength = cmd.minprefix;
         if (!isVar) {
             if (tracelength > 0)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
             tracelength = -1;
-        } else if (tracelength > cmd.maxtime)
-            tracelength = cmd.maxtime;
+        } else if (tracelength > cmd.maxprefix)
+            tracelength = cmd.maxprefix;
         else if (tracelength < 1)
             tracelength = 1;
         setMinTraceLength(cmd.pos, tracelength);

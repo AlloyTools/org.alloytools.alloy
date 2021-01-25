@@ -316,7 +316,7 @@ public final strictfp class Graph {
                 grOUT.get(n.pos()).remove(x);
             for (GraphNode n : grOUT.get(x.pos()))
                 grIN.get(n.pos()).remove(x);
-            // [HASLab] hack to get nodes sorted lexicographically in each layer
+            // [HASLab] hack to get nodes sorted lexicographically within each layer
             // can't fast join since read-only
             //          Iterable<GraphNode> aux = Util.fastJoin(grIN.get(x.pos()), );
             List<GraphNode> aux = new ArrayList<GraphNode>(grIN.get(x.pos()));
@@ -336,7 +336,6 @@ public final strictfp class Graph {
                     bins.get(b).add(n);
                 }
             }
-
         }
         sortNodes(Util.fastJoin(s1, s2));
     }

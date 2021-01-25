@@ -82,6 +82,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
+import kodkod.engine.AbstractKodkodSolver;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Explorer;
@@ -908,17 +909,7 @@ public final class A4Solution {
         }
     }
 
-    /** Returns the back loop instance of this instance (should always exist). */
-    // [HASLab]
-    public int getLoopState() {
-        return ((TemporalInstance) eval.instance()).loop;
-    }
 
-    /** Returns the length of the finite prefix. */
-    // [HASLab]
-    public int getTraceLength() {
-        return ((TemporalInstance) eval.instance()).prefixLength();
-    }
 
     // ===================================================================================================//
 
@@ -967,6 +958,18 @@ public final class A4Solution {
      */
     public Iterable<ExprVar> getAllAtoms() {
         return atoms.dup();
+    }
+
+    /** Returns the back loop instance of this instance (should always exist). */
+    // [HASLab]
+    public int getLoopState() {
+        return ((TemporalInstance) eval.instance()).loop;
+    }
+
+    /** Returns the length of the finite prefix. */
+    // [HASLab]
+    public int getTraceLength() {
+        return ((TemporalInstance) eval.instance()).prefixLength();
     }
 
     /**
@@ -1554,7 +1557,7 @@ public final class A4Solution {
         TemporalInstance prev = new TemporalInstance(instances, loop, 1);
         eval = new Evaluator(prev, solver.options());
         rename(this, null, null, new UniqueNameGenerator());
-        toStringCache = null;
+        toStringCache.clear(); // [HASLab]
         evalCache = new HashMap<>();
         solved();
         return this;
@@ -1622,11 +1625,14 @@ public final class A4Solution {
             }
 
         });
-        // [HASLab] TODO: how to handle non-temporal examples?
-        //      if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples && !isTemporal) { // try book examples
-        //          A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
-        //          try { sol = BookExamples.trial(r, this, fgoal, (Solver) solver, cmd.check); } catch(Throwable ex) { sol = null; }
-        //      }
+        if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try book examples
+            A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
+            try {
+                sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
+            } catch (Throwable ex) {
+                sol = null;
+            }
+        }
 
         solved[0] = false; // this allows the reporter to report the # of
                           // vars/clauses
@@ -1739,16 +1745,22 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /** This caches the toString() output. */
-    private String toStringCache = null;
+    // [HASLab] cache per state
+    private final Map<Integer,String> toStringCache = new HashMap<Integer,String>();
 
     /** Dumps the Kodkod solution into String. */
     @Override
     public String toString() {
+        return toString(-1); // [HASLab]
+    }
+
+    // [HASLab] print particular state, if all
+    public String toString(int state) {
         if (!solved)
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
-        String answer = toStringCache;
+        String answer = toStringCache.get(state); // [HASLab]
         if (answer != null)
             return answer;
         Instance sol = eval.instance();
@@ -1774,7 +1786,8 @@ public final class A4Solution {
         }
         sb.append("}\n");
         try {
-            if (sol instanceof TemporalInstance) {
+            // [HASLab] if temporal instance and print all, print all
+            if (sol instanceof TemporalInstance && state < 0) {
                 for (int i = 0; i < getTraceLength(); i++) { // [HASLab]
                     sb.append("------State " + i + "-------\n");
                     for (Sig s : sigs) {
@@ -1786,20 +1799,26 @@ public final class A4Solution {
                         sb.append("skolem ").append(v.label).append("=").append(eval(v, i)).append("\n");
                     }
                 }
-            } else {
+            }
+            // [HASLab] else print the particular state (-1 for static prints single state)
+            else {
+                state = Math.max(0, state);
                 for (Sig s : sigs) {
-                    sb.append(s.label).append("=").append(eval(s)).append("\n");
+                    sb.append(s.label).append("=").append(eval(s, state)).append("\n");
                     for (Field f : s.getFields())
-                        sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f)).append("\n");
+                        sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f, state)).append("\n");
                 }
                 for (ExprVar v : skolems) {
-                    sb.append("skolem ").append(v.label).append("=").append(eval(v)).append("\n");
+                    sb.append("skolem ").append(v.label).append("=").append(eval(v, state)).append("\n");
                 }
             }
         } catch (Err er) {
-            return toStringCache = ("<Evaluator error occurred: " + er + ">");
+            toStringCache.put(state, "<Evaluator error occurred: " + er + ">"); // [HASLab]
+            return toStringCache.get(state);
         }
-        return toStringCache = sb.toString();
+        toStringCache.put(state, sb.toString()); // [HASLab]
+        return toStringCache.get(state);
+
     }
 
     // ===================================================================================================//
@@ -1814,13 +1833,7 @@ public final class A4Solution {
      * @throws ErrorAPI if the solver was not an incremental solver
      */
     public A4Solution next() throws Err {
-        if (!solved)
-            throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
-        if (eval == null)
-            return this;
-        if (nextCache == null)
-            nextCache = new A4Solution(this, -3);
-        return nextCache;
+        return fork(-3);
     }
 
     // [HASLab] simulator
@@ -1829,6 +1842,12 @@ public final class A4Solution {
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (eval == null)
             return this;
+        if (p == -3) {
+            if (nextCache == null)
+                nextCache = new A4Solution(this, -3);
+            return nextCache;
+        }
+
         return new A4Solution(this, p); // [HASLab] simulator, do not cache, may have changed arguments
     }
 
@@ -1956,12 +1975,17 @@ public final class A4Solution {
     }
 
     public String format() {
+        return format(-1);
+    }
+
+    // [HASLab] print particular state, -1 if default
+    public String format(int state) {
         if (!solved)
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state); // [HASLab]
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
