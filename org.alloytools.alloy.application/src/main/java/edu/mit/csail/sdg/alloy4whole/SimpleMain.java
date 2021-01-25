@@ -92,8 +92,8 @@ public class SimpleMain {
         }
 
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            info("Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        public void translate(String solver, String mode, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+            info("Solver=" + solver + " Mode=" + mode + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
         }
 
         int totalVars = 0, totalPvars = 0, totalClauses = 0, lastStep = 0;
@@ -209,6 +209,8 @@ public class SimpleMain {
 
         options.addOption(Option.builder().longOpt("cli").hasArg(false).desc("force CLI mode").build());
 
+        options.addOption(Option.builder("d").longOpt("decomposed").hasArg(true).argName("threads").optionalArg(true).required(false).desc("run in decomposed mode").build());
+
         OptionGroup g = new OptionGroup();
         g.addOption(Option.builder("m").longOpt("miniSAT").hasArg(false).desc("select miniSAT bounded solver").build());
         g.addOption(Option.builder("g").longOpt("glucose").hasArg(false).desc("select glucose unbounded solver").build());
@@ -257,6 +259,13 @@ public class SimpleMain {
                     options.solver = A4Options.SatSolver.SAT4J;
                 else if (clargs.hasOption("glucose"))
                     options.solver = A4Options.SatSolver.GlucoseJNI;
+
+                if (clargs.hasOption("decomposed"))
+                    options.decomposed_mode = 1;
+                if (clargs.getOptionValue("decomposed") != null)
+                    options.decomposed_threads = Integer.valueOf(clargs.getOptionValue("decomposed"));
+                else
+                    options.decomposed_mode = 0;
 
                 int i0 = 0, i1 = cmds.size();
                 if (clargs.hasOption("command")) {
