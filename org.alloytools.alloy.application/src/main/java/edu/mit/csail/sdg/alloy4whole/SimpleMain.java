@@ -211,10 +211,14 @@ public class SimpleMain {
 
         options.addOption(Option.builder("d").longOpt("decomposed").hasArg(true).argName("threads").optionalArg(true).required(false).desc("run in decomposed mode").build());
 
+        options.addOption(Option.builder("so").longOpt("solver-options").hasArg(true).required(false).desc("additional solver-specific options").build());
+
         OptionGroup g = new OptionGroup();
         g.addOption(Option.builder("m").longOpt("miniSAT").hasArg(false).desc("select miniSAT bounded solver").build());
         g.addOption(Option.builder("g").longOpt("glucose").hasArg(false).desc("select glucose unbounded solver").build());
         g.addOption(Option.builder("s").longOpt("SAT4J").hasArg(false).desc("select SAT4J bounded solver").build());
+        g.addOption(Option.builder("x").longOpt("nuXmv").hasArg(false).desc("select nuXmv unbounded solver").build());
+        g.addOption(Option.builder("n").longOpt("NuSMV").hasArg(false).desc("select NuSMV unbounded solver").build());
         g.setRequired(false);
 
         options.addOptionGroup(g);
@@ -259,6 +263,10 @@ public class SimpleMain {
                     options.solver = A4Options.SatSolver.SAT4J;
                 else if (clargs.hasOption("glucose"))
                     options.solver = A4Options.SatSolver.GlucoseJNI;
+                else if (clargs.hasOption("NuSMV"))
+                    options.solver = A4Options.SatSolver.electrodS(clargs.hasOption("so") ? clargs.getOptionValue("so").split(",") : new String[0]);
+                else if (clargs.hasOption("nuXmv"))
+                    options.solver = A4Options.SatSolver.electrodX(clargs.hasOption("so") ? clargs.getOptionValue("so").split(",") : new String[0]);
 
                 if (clargs.hasOption("decomposed"))
                     options.decomposed_mode = 1;
@@ -285,8 +293,9 @@ public class SimpleMain {
                 rep.info("Shutting down.");
                 System.exit(0);
             } catch (Throwable ex) {
-                rep.info("An error occurred.");
-                rep.debug("\n\nException: " + ex);
+                rep.info("An error occurred: " + ex.getMessage());
+                if (System.getProperty("debug", "no").equals("yes"))
+                    ex.printStackTrace();
             }
         }
     }

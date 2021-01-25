@@ -189,13 +189,23 @@ public final class A4Options implements Serializable {
         /** Electrod through NuSMV */
         // [HASLab]
         public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true);
+
+        public static final SatSolver electrodS(String[] opts) {
+            return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true);
+        }
+
         /** Electrod through nuXmv */
         // [HASLab]
-        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
+        public static final SatSolver ElectrodX = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
+
+        public static final SatSolver electrodX(String[] opts) {
+            return new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", opts, true);
+        }
+
         /** Outputs the raw CNF file only */
-        public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true);
         /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK               = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
+        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
 
     }
 
@@ -205,7 +215,8 @@ public final class A4Options implements Serializable {
     /**
      * Constructs an A4Options object with default values for everything.
      */
-    public A4Options() {}
+    public A4Options() {
+    }
 
     public boolean   inferPartialInstance = true;
 
