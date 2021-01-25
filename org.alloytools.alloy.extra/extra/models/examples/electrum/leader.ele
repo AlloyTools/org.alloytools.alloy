@@ -50,13 +50,13 @@ fact transitions {
 	always (skip or some n : Node | send[n] or compute[n])
 }
 
-run {} for 4 but exactly 4 Node, 10 Time
-run example {eventually some elected} for 3 but exactly 3 Node, 6 Time
+run {} for 4 but exactly 4 Node, 10 steps
+run example {eventually some elected} for 3 but exactly 3 Node, 6 steps
 
 assert safety {
 	always lone elected
 }
-check safety for 3 but 15 Time
+check safety for 3 but 15 steps
 
 
 pred sendEnabled [n : Node] {

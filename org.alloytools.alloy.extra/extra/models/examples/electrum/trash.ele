@@ -42,8 +42,8 @@ assert restoreAfterDelete {
 	always (all f : File | restore[f] implies once delete[f])
 }
 
-check restoreAfterDelete for 10 Time
-check restoreAfterDelete for 1.. Time
+check restoreAfterDelete for 10 steps
+check restoreAfterDelete for 1.. steps
 
 assert deleteAll {
 //	always ((File in Trash and empty) implies always no File)
@@ -79,4 +79,4 @@ assert restoreIsPossibleBeforeEmpty {
   always (all f:File | delete[f] implies after ((empty or restore[f]) releases restoreEnabled[f]))
 }
 
-check restoreIsPossibleBeforeEmpty for 3 but 1.. Time
+check restoreIsPossibleBeforeEmpty for 3 but 1.. steps
