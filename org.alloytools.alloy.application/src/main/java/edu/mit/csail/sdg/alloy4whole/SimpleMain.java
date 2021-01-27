@@ -210,7 +210,7 @@ public class SimpleMain {
 
         options.addOption(Option.builder().longOpt("cli").hasArg(false).desc("force CLI mode").build());
 
-        options.addOption(Option.builder("d").longOpt("decomposed").hasArg(true).argName("threads").optionalArg(true).required(false).desc("run in decomposed mode").build());
+        options.addOption(Option.builder("d").longOpt("decompose").hasArg(true).argName("threads").optionalArg(true).required(false).desc("run in decompose mode").build());
 
         OptionGroup g = new OptionGroup();
         g.addOption(Option.builder("m").longOpt("miniSAT").hasArg(false).desc("select miniSAT bounded solver").build());
@@ -261,12 +261,12 @@ public class SimpleMain {
                 else if (clargs.hasOption("glucose"))
                     options.solver = A4Options.SatSolver.GlucoseJNI;
 
-                if (clargs.hasOption("decomposed"))
-                    options.decomposed_mode = 1;
-                if (clargs.getOptionValue("decomposed") != null)
-                    options.decomposed_threads = Integer.valueOf(clargs.getOptionValue("decomposed"));
+                if (clargs.hasOption("decompose"))
+                    options.decompose_mode = 1;
+                if (clargs.getOptionValue("decompose") != null)
+                    options.decompose_threads = Integer.valueOf(clargs.getOptionValue("decompose"));
                 else
-                    options.decomposed_mode = 0;
+                    options.decompose_mode = 0;
 
                 int i0 = 0, i1 = cmds.size();
                 if (clargs.hasOption("command")) {
