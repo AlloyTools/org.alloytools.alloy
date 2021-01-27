@@ -67,14 +67,16 @@ public class TestReporter extends A4Reporter {
      * @param solver - the solver chosen by the user (eg. SAT4J, MiniSat...)
      * @param bitwidth - the integer bitwidth chosen by the user
      * @param maxseq - the scope on seq/Int chosen by the user
+     * @param mintrace - the minimum trace length
+     * @param maxtrace - the maximum trace length
      * @param skolemDepth - the skolem function depth chosen by the user (0, 1,
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
-    // [HASLab]
     @Override
-    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        out.printf("TRNS %s strategy=%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
+    // [HASLab] trace params
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
+        out.printf("TRNS %s steps=%s..%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, mintrace, maxtrace, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
     }
 
     /**
