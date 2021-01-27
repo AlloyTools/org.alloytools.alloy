@@ -457,9 +457,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 private boolean first = true;
 
                 @Override
-                public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+                public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) { // [HASLab]
                     if (first)
-                        super.translate(solver, bitwidth, maxseq, skolemDepth, symmetry);
+                        super.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry); // [HASLab]
                     first = false;
                 }
 
