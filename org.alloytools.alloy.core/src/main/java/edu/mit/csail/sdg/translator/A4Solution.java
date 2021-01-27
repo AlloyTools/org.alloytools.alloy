@@ -392,14 +392,14 @@ public final class A4Solution {
         solver_opts.setMaxTraceLength(maxtrace); // [HASLab] propagate options
         solver_opts.setMinTraceLength(mintrace); // [HASLab] propagate options
         solver_opts.setRunUnbounded(maxtrace == Integer.MAX_VALUE); // [HASLab] propagate options
-        if (opt.decomposed_mode > 0) { // [HASLab] propagate options
+        if (opt.decompose_mode > 0) { // [HASLab] propagate options
             solver_opts.setRunDecomposed(true);
-            if (opt.decomposed_mode == 1)
+            if (opt.decompose_mode == 1)
                 solver_opts.setDecomposedMode(DMode.HYBRID);
             else
                 solver_opts.setDecomposedMode(DMode.PARALLEL);
-            if (opt.decomposed_threads > 0)
-                solver_opts.setThreads(opt.decomposed_threads);
+            if (opt.decompose_threads > 0)
+                solver_opts.setThreads(opt.decompose_threads);
         } else {
             solver_opts.setRunDecomposed(false);
         }
@@ -1583,7 +1583,7 @@ public final class A4Solution {
         rep.debug("Simplifying the bounds...\n");
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
-        rep.translate(opt.solver.id(), A4Preferences.Decomposed.values()[opt.decomposed_mode].toString(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking()); // [HASLab]
+        rep.translate(opt.solver.id(), bitwidth, maxseq, mintrace, maxtrace, solver.options().skolemDepth(), solver.options().symmetryBreaking(), A4Preferences.Decompose.values()[opt.decompose_mode].toString()); // [HASLab]
         Formula fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
