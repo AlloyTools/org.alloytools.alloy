@@ -649,11 +649,11 @@ public final class VizGUI implements ComponentListener {
             else
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
-            enumerateMenu = menuItem(instanceMenu, "Show Fresh Solution", 'N', 'N', doNext());
-            cnfgMenu = menuItem(instanceMenu, "Show Fresh Configuration", 'C', 'C', doConfig()); // [HASLab]
-            pathMenu = menuItem(instanceMenu, "Show Fresh Path", 'P', 'P', doPath()); // [HASLab]
-            initMenu = menuItem(instanceMenu, "Show Fresh Initial State", 'I', 'I', doInit()); // [HASLab]
-            forkMenu = menuItem(instanceMenu, "Show Different Post-state", 'F', 'F', doFork()); // [HASLab]
+            enumerateMenu = menuItem(instanceMenu, "Show New Solution", 'N', 'N', doNext());
+            cnfgMenu = menuItem(instanceMenu, "Show New Configuration", 'C', 'C', doConfig()); // [HASLab]
+            pathMenu = menuItem(instanceMenu, "Show New Path", 'P', 'P', doPath()); // [HASLab]
+            initMenu = menuItem(instanceMenu, "Show New Initial State", 'I', 'I', doInit()); // [HASLab]
+            forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork()); // [HASLab]
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
             rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
             thememenu = menu(mb, "&Theme", doRefreshTheme());
@@ -706,11 +706,11 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(magicLayout = OurUtil.button("Magic Layout", "Automatic theme customization (will reset current theme)", "images/24_settings_apply2.gif", doMagicLayout()));
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
-            toolbar.add(enumerateButton = OurUtil.button("Next", "Show a fresh solution", "images/24_history.gif", doNext()));
-            toolbar.add(cnfgButton = OurUtil.button("Fresh Config", "Show a fresh configuration", "images/24_history.gif", doConfig())); // [HASLab]
-            toolbar.add(pathButton = OurUtil.button("Fresh Path", "Show a fresh path", "images/24_history.gif", doPath())); // [HASLab]
-            toolbar.add(initButton = OurUtil.button("Fresh Init", "Show a fresh initial state", "images/24_history.gif", doInit())); // [HASLab]
-            toolbar.add(forkButton = OurUtil.button("Fork", "Show a different post-state", "images/24_history.gif", doFork())); // [HASLab]
+            toolbar.add(enumerateButton = OurUtil.button("New", "Show a new solution", "images/24_history.gif", doNext()));
+            toolbar.add(cnfgButton = OurUtil.button("New Config", "Show a new configuration", "images/24_history.gif", doConfig())); // [HASLab]
+            toolbar.add(pathButton = OurUtil.button("New Path", "Show a new path", "images/24_history.gif", doPath())); // [HASLab]
+            toolbar.add(initButton = OurUtil.button("New Init", "Show a new initial state", "images/24_history.gif", doInit())); // [HASLab]
+            toolbar.add(forkButton = OurUtil.button("New Fork", "Show a new fork", "images/24_history.gif", doFork())); // [HASLab]
             toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the previous state", "images/24_history.gif", leftNavListener));
             toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the next state", "images/24_history.gif", rightNavListener));
             toolbar.add(projectionButton);

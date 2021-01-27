@@ -363,12 +363,12 @@ final class SimpleReporter extends A4Reporter {
         cb("debug", msg.trim());
     }
 
-    // [HASLab]
     /** {@inheritDoc} */
     @Override
-    public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+    // [HASLab] trace + decompose params
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
         startTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Decomposed=" + strat + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');  // [HASLab]
+        cb("translate", "Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n"); // [HASLab]
     }
 
     /** {@inheritDoc} */

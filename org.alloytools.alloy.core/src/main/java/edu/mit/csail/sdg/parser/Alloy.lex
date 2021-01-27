@@ -234,6 +234,8 @@ import java_cup.runtime.*;
 "var"                 { return alloy_sym(yytext(), CompSym.VAR         );} // [HASLab] temporal tokens
 "steps"               { return alloy_sym(yytext(), CompSym.TIME        );} // [HASLab] temporal tokens
 "'"                   { return alloy_sym(yytext(), CompSym.PRIME       );} // [HASLab] temporal tokens
+"‘"                   { return alloy_sym(yytext(), CompSym.PRIME       );} // [HASLab] temporal tokens
+"’"                   { return alloy_sym(yytext(), CompSym.PRIME       );} // [HASLab] temporal tokens
 
 [\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\"] [\$0-9a-zA-Z_\"]* 	   { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }  // [HASLab] protect primes
 [\"] ([^\\\"] | ("\\" .))* [\"]                                        { return alloy_string(yytext()); }

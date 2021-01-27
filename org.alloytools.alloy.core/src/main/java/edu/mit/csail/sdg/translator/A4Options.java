@@ -187,14 +187,24 @@ public final class A4Options implements Serializable {
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
         /** Electrod through NuSMV */
         // [HASLab]
-        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "NuSMV", "electrod", null, true);
+        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true);
+
+        public static final SatSolver electrodS(String[] opts) {
+            return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true);
+        }
+
         /** Electrod through nuXmv */
         // [HASLab]
-        public static final SatSolver ElectrodX        = new SatSolver("nuXmv", "nuXmv", "electrod", null, true);
+        public static final SatSolver ElectrodX = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
+
+        public static final SatSolver electrodX(String[] opts) {
+            return new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", opts, true);
+        }
+
         /** Outputs the raw CNF file only */
-        public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true);
         /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK               = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
+        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
 
     }
 
@@ -204,7 +214,8 @@ public final class A4Options implements Serializable {
     /**
      * Constructs an A4Options object with default values for everything.
      */
-    public A4Options() {}
+    public A4Options() {
+    }
 
     public boolean   inferPartialInstance = true;
 
@@ -296,21 +307,21 @@ public final class A4Options implements Serializable {
     public int       unrolls              = (-1);
 
     /**
-     * This option specifies the decomposed strategy (0=Off 1=Hybrid 2=Parallel)
+     * This option specifies the decompose strategy (0=Off 1=Hybrid 2=Parallel)
      * <p>
      * Default value is off.
      */
     // [HASLab]
-    public int       decomposed_mode      = 0;
+    public int       decompose_mode       = 0;
 
     /**
-     * This option specifies the number of threads when following a decomposed
+     * This option specifies the number of threads when following a decompose
      * strategy
      * <p>
      * Default value is 4.
      */
     // [HASLab]
-    public int       decomposed_threads   = 4;
+    public int       decompose_threads    = 4;
 
     /** This method makes a copy of this Options object. */
     public A4Options dup() {
@@ -327,8 +338,8 @@ public final class A4Options implements Serializable {
         x.recordKodkod = recordKodkod;
         x.noOverflow = noOverflow;
         x.coreGranularity = coreGranularity;
-        x.decomposed_mode = decomposed_mode; // [HASLab]
-        x.decomposed_threads = decomposed_threads; // [HASLab]
+        x.decompose_mode = decompose_mode; // [HASLab]
+        x.decompose_threads = decompose_threads; // [HASLab]
         return x;
     }
 }
