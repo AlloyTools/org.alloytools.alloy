@@ -92,8 +92,9 @@ public class SimpleMain {
         }
 
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            info("Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        // [HASLab] trace params
+        public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
+            info("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n"); // [HASLab]
         }
 
         int totalVars = 0, totalPvars = 0, totalClauses = 0, lastStep = 0;

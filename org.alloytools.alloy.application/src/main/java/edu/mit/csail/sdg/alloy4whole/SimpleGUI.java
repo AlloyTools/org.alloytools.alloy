@@ -1130,7 +1130,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
             if (cp.size() > 1) {
                 JMenuItem menuItem = new JMenuItem("Execute All", null);
-                // [Electrum] cmd+u acc for mac
+                // [HASLab] cmd+u acc for mac
                 final int mnemonic = Util.onMac() ? VK_U : VK_A;
                 menuItem.setMnemonic(mnemonic);
                 menuItem.setAccelerator(KeyStroke.getKeyStroke(mnemonic, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
