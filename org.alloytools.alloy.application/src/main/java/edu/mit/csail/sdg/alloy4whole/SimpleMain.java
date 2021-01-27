@@ -92,9 +92,9 @@ public class SimpleMain {
         }
 
         @Override
-        // [HASLab] trace params
-        public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
-            info("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n"); // [HASLab]
+        // [HASLab] trace + decompose params
+        public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
+            info("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n"); // [HASLab]
         }
 
         int totalVars = 0, totalPvars = 0, totalClauses = 0, lastStep = 0;
@@ -210,7 +210,7 @@ public class SimpleMain {
 
         options.addOption(Option.builder().longOpt("cli").hasArg(false).desc("force CLI mode").build());
 
-        options.addOption(Option.builder("d").longOpt("decomposed").hasArg(true).argName("threads").optionalArg(true).required(false).desc("run in decomposed mode").build());
+        options.addOption(Option.builder("d").longOpt("decompose").hasArg(true).argName("threads").optionalArg(true).required(false).desc("run in decompose mode").build());
 
         options.addOption(Option.builder("so").longOpt("solver-options").hasArg(true).required(false).desc("additional solver-specific options").build());
 
@@ -269,12 +269,12 @@ public class SimpleMain {
                 else if (clargs.hasOption("nuXmv"))
                     options.solver = A4Options.SatSolver.electrodX(clargs.hasOption("so") ? clargs.getOptionValue("so").split(",") : new String[0]);
 
-                if (clargs.hasOption("decomposed"))
-                    options.decomposed_mode = 1;
-                if (clargs.getOptionValue("decomposed") != null)
-                    options.decomposed_threads = Integer.valueOf(clargs.getOptionValue("decomposed"));
+                if (clargs.hasOption("decompose"))
+                    options.decompose_mode = 1;
+                if (clargs.getOptionValue("decompose") != null)
+                    options.decompose_threads = Integer.valueOf(clargs.getOptionValue("decompose"));
                 else
-                    options.decomposed_mode = 0;
+                    options.decompose_mode = 0;
 
                 int i0 = 0, i1 = cmds.size();
                 if (clargs.hasOption("command")) {

@@ -114,11 +114,12 @@ public class A4Reporter {
      * @param skolemDepth - the skolem function depth chosen by the user (0, 1,
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
+     * @param strat - selected decompose solving strategy
      */
-    // [HASLab] trace params
-    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
+    // [HASLab] trace + decompose params
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
         if (parent != null)
-            parent.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry); // [HASLab]
+            parent.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry, strat); // [HASLab]
     }
 
     /**

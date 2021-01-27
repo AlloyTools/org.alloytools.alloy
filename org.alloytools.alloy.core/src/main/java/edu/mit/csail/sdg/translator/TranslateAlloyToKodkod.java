@@ -328,7 +328,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         private ConstList<Sig> growableSigs         = null;
         private A4Solution     partial              = null;
 
-        public GreedySimulator() {}
+        public GreedySimulator() {
+        }
 
         private TupleSet convert(TupleFactory factory, Expr f) throws Err {
             TupleSet old = ((A4TupleSet) (partial.eval(f))).debugGetKodkodTupleset();
@@ -459,17 +460,19 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
 
                 @Override
                 // [HASLab]
-                public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) { // [HASLab]
+                public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) { // [HASLab]
                     if (first)
-                        super.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry); // [HASLab]
+                        super.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry, strat); // [HASLab]
                     first = false;
                 }
 
                 @Override
-                public void resultSAT(Object command, long solvingTime, Object solution) {}
+                public void resultSAT(Object command, long solvingTime, Object solution) {
+                }
 
                 @Override
-                public void resultUNSAT(Object command, long solvingTime, Object solution) {}
+                public void resultUNSAT(Object command, long solvingTime, Object solution) {
+                }
             };
             // Form the list of commands
             List<Command> commands = new ArrayList<Command>();
