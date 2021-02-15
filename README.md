@@ -99,7 +99,7 @@ In the root of this workspace type `./gradlew`. This is a script that will downl
 
 The workspace is setup to build after every commit using Travis. 
 
-<!--It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.-->
+It releases snapshots to `https://oss.sonatype.org/content/repositories/snapshots/org/alloytools/` for every CI build on Travis.
 
 ### Building the DMG file for OSX systems
 
