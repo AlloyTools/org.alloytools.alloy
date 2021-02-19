@@ -23,7 +23,8 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [electrum-temporal] changed to register whether a
+ *           sig is mutable in the viz;
  */
 
 public final class AlloyType extends AlloyNodeElement {
@@ -32,34 +33,33 @@ public final class AlloyType extends AlloyNodeElement {
      * This caches an instance of the "univ" AlloyType, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyType UNIV   = new AlloyType("univ", false, false, true, false, false, false, false);    // [HASLab]
+    public static final AlloyType UNIV   = new AlloyType("univ", false, false, true, false, false, false, false);
 
     /**
      * This caches an instance of the "Int" AlloyType, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyType INT    = new AlloyType("Int", false, false, true, false, false, false, false);     // [HASLab]
+    public static final AlloyType INT    = new AlloyType("Int", false, false, true, false, false, false, false);
 
     /**
      * This caches an instance of the "seq/Int" AlloyType, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyType SEQINT = new AlloyType("seq/Int", false, false, true, false, false, false, false); // [HASLab]
+    public static final AlloyType SEQINT = new AlloyType("seq/Int", false, false, true, false, false, false, false);
 
     /**
      * This caches an instance of the "String" AlloyType, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyType STRING = new AlloyType("String", false, false, true, false, false, false, false);  // [HASLab]
+    public static final AlloyType STRING = new AlloyType("String", false, false, true, false, false, false, false);
 
     /**
      * This caches an instance of the "set" AlloyType, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyType SET    = new AlloyType("set", false, false, false, false, false, false, false);    // [HASLab]
+    public static final AlloyType SET    = new AlloyType("set", false, false, false, false, false, false, false);
 
     /** Constructs an AlloyType object with that name. */
-    // [HASLab] variable info
     public AlloyType(String name, boolean isOne, boolean isAbstract, boolean isBuiltin, boolean isPrivate, boolean isMeta, boolean isEnum, boolean isVar) {
         super(name);
         this.isOne = isOne;
@@ -68,7 +68,7 @@ public final class AlloyType extends AlloyNodeElement {
         this.isPrivate = isPrivate;
         this.isMeta = isMeta;
         this.isEnum = isEnum;
-        this.isVar = isVar; // [HASLab]
+        this.isVar = isVar;
     }
 
     /**
@@ -111,7 +111,6 @@ public final class AlloyType extends AlloyNodeElement {
      * Records whether this sig is known to be "var"; NOTE: this value is NOT USED
      * during equals() comparison.
      */
-    // [HASLab]
     public final boolean isVar;
 
     /**

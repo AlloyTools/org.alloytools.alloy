@@ -21,7 +21,10 @@ package edu.mit.csail.sdg.alloy4;
  * (This default implementation ignores all calls; you should subclass it to do
  * the appropriate screen output)
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [electrum-temporal] the solving process now reports
+ *           in which step of the temporal analysis is (reported info should
+ *           regard that step only); translation also reports temporal
+ *           parameters (max/min trace length)
  */
 
 public class A4Reporter {
@@ -115,10 +118,9 @@ public class A4Reporter {
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
-    // [HASLab] trace params
     public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
         if (parent != null)
-            parent.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry); // [HASLab]
+            parent.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry);
     }
 
     /**
@@ -130,10 +132,9 @@ public class A4Reporter {
      *            primary variables
      * @param clauses - the total number of clauses
      */
-    // [HASLab] prefix length
     public void solve(int plength, int primaryVars, int totalVars, int clauses) {
         if (parent != null)
-            parent.solve(plength, primaryVars, totalVars, clauses); // [HASLab]
+            parent.solve(plength, primaryVars, totalVars, clauses);
     }
 
     /**
