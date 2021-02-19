@@ -48,7 +48,8 @@ import kodkod.instance.TupleSet;
  * (2) When it sees "A = B", it will try to simplify A assuming "A in B", and
  * then simplify B assuming "B in A".
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [electrum-temporal] allow simplification when inside
+ *           always temporal operator
  */
 
 public class Simplifier {
@@ -60,7 +61,8 @@ public class Simplifier {
     private A4Solution sol = null;
 
     /** Construct a Simplifier object. */
-    public Simplifier() {}
+    public Simplifier() {
+    }
 
     /* Stores the equivalence relation discovered so far. */
     // private final IdentityHashMap<Node,List<Expression>> equiv = new
@@ -167,7 +169,8 @@ public class Simplifier {
                     rep.debug("Comment: Simplify " + b + " " + (b1.size() - b0.size()) + "->" + (a1.size() - b0.size()) + "\n");
                     sol.shrink((Relation) b, b0, b1 = a1);
                 }
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
         }
         return true;
     }
@@ -264,7 +267,6 @@ public class Simplifier {
      */
     private final boolean simplify_in(Formula form) {
         if (form instanceof UnaryTempFormula) {
-            // [HASLab] only simplify when under "always
             UnaryTempFormula f = (UnaryTempFormula) form;
             if (f.op() == TemporalOperator.ALWAYS) {
                 return simplify_in(f.formula());
@@ -306,7 +308,6 @@ public class Simplifier {
      */
     private final boolean simplify_eq(Formula form) {
         if (form instanceof UnaryTempFormula) {
-            // [HASLab] only simplify when under "always
             UnaryTempFormula f = (UnaryTempFormula) form;
             if (f.op() == TemporalOperator.ALWAYS) {
                 return simplify_in(f.formula());

@@ -83,8 +83,11 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-base
+ * @modified Nuno Macedo, Eduardo Pessoa // [electrum-base] support for .ele
+ *           file extension; register electrum version; [electrum-temporal]
+ *           support for visualization of traces; single state focused at any
+ *           time, navigation panel to change state; evaluator also acts on
+ *           focused state; if the model is static, should revert to classic viz
  */
 
 public final class VizGUI implements ComponentListener {
@@ -547,7 +550,7 @@ public final class VizGUI implements ComponentListener {
         this.enumerator = enumerator;
         this.standalone = standalone;
         this.evaluator = evaluator;
-        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null; // [HASLab]
+        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null;
 
         // Figure out the desired x, y, width, and height
         int screenWidth = OurUtil.getScreenWidth(), screenHeight = OurUtil.getScreenHeight();
@@ -645,7 +648,7 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
             toolbar.add(saveAsSettingsButton = OurUtil.button("Save As", "Save the current theme customization as a new theme file", "images/24_save.gif", doSaveThemeAs()));
             toolbar.add(resetSettingsButton = OurUtil.button("Reset", "Reset the theme customization", "images/24_settings_close2.gif", doResetTheme()));
-            addTemporalJPanel(); // [HASLab] the JPanel for trace navigation
+            addTemporalJPanel(); // [electrum] the JPanel for trace navigation
         } finally {
             wrap = false;
         }
@@ -812,9 +815,10 @@ public final class VizGUI implements ComponentListener {
         // on the right
         if (frame != null)
             frame.setTitle(makeVizTitle());
+        // [electrum] all visualizations focus on current state
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myState.getOriginalInstance().originalA4, makeVizTitle(), fontSize, comboTime.getSelectedIndex()); // [HASLab]
+                final VizTree t = new VizTree(myState.getOriginalInstance().originalA4, makeVizTitle(), fontSize, comboTime.getSelectedIndex());
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -831,12 +835,12 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myState.getOriginalInstance().originalA4.toString(comboTime.getSelectedIndex()); // [HASLab]
+                String textualOutput = myState.getOriginalInstance().originalA4.toString(comboTime.getSelectedIndex());
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myState.getOriginalInstance().originalA4.format(comboTime.getSelectedIndex()); // [HASLab]
+                String textualOutput = myState.getOriginalInstance().originalA4.format(comboTime.getSelectedIndex());
                 content = getTextComponent(textualOutput);
                 break;
             }
@@ -884,7 +888,8 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values.\nFor example, ", true, "univ", false, " shows the list of all atoms.\n(You can press UP and DOWN to recall old inputs).\n");
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrentState(comboTime.getSelectedIndex()); // [HASLab] set evaluator state
+                // [electrum] evaluator acts on current state
+                myEvaluatorPanel.setCurrentState(comboTime.getSelectedIndex());
             } catch (Exception ex) {
             } // exception should not happen
             left = myEvaluatorPanel;
@@ -944,7 +949,7 @@ public final class VizGUI implements ComponentListener {
         int n = filename.length();
         if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".als"))
             filename = filename.substring(0, n - 4);
-        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] .ele extension
+        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele"))
             filename = filename.substring(0, n - 4);
         if (filename.length() > 0)
             return "(" + filename + ") " + commandname;
@@ -1017,12 +1022,11 @@ public final class VizGUI implements ComponentListener {
 
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
-        loadXML(fileName, forcefully, 0); // [HASLab] first state
-        repopulateTemporalPanel(); // [HASLab] must only be initially and not whenever the state changes
+        loadXML(fileName, forcefully, 0);
+        repopulateTemporalPanel(); // [electrum] must only be initially and not whenever the state changes
     }
 
     /** Load the XML instance. */
-    // [HASLab] considers particular state
     public void loadXML(final String fileName, boolean forcefully, int state) {
         final String xmlFileName = Util.canon(fileName);
         File f = new File(xmlFileName);
@@ -1031,13 +1035,13 @@ public final class VizGUI implements ComponentListener {
             try {
                 if (!f.exists())
                     throw new IOException("File " + xmlFileName + " does not exist.");
-                myInstance = StaticInstanceReader.parseInstance(f, state); // [HASLab] state
+                myInstance = StaticInstanceReader.parseInstance(f, state);
             } catch (Throwable e) {
                 xmlLoaded.remove(fileName);
                 xmlLoaded.remove(xmlFileName);
                 OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
                 if (xmlLoaded.size() > 0) {
-                    loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state); // [HASLab] state
+                    loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state);
                     return;
                 }
                 doCloseAll();
@@ -1061,7 +1065,7 @@ public final class VizGUI implements ComponentListener {
         windowmenu.setEnabled(true);
         if (frame != null) {
             frame.setVisible(true);
-            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait..."); // [HASLab]
+            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait...");
             OurUtil.show(frame);
         }
         updateDisplay();
@@ -1561,24 +1565,20 @@ public final class VizGUI implements ComponentListener {
     // ========================================TRACES=====================================================//
 
     /** Trace navigation combo box. */
-    // [HASLab]
     private JComboBox<String> comboTime;
 
     /** Trace navigation buttons. */
     private JButton           leftTime, rightTime;
 
     /** Index of the back loop, or -1 if none. */
-    // [HASLab]
     private int               backindex = -1;
 
     /** Optional message to be displayed. */
-    // [HASLab]
     private JLabel            tempMsg;
 
     /**
      * Populates the JPanel with the objects for trace navigation.
      */
-    // [HASLab]
     private final void addTemporalJPanel() {
 
         tempMsg = new JLabel();
@@ -1670,7 +1670,6 @@ public final class VizGUI implements ComponentListener {
     /**
      * Updates the state of trace navigation pane given a new trace length.
      */
-    // [HASLab]
     private final void repopulateTemporalPanel() {
         if (getVizState().getOriginalInstance().originalA4.getMaxTrace() < 0) {
             comboTime.setVisible(false);
@@ -1703,7 +1702,6 @@ public final class VizGUI implements ComponentListener {
      *
      * @param n number of states
      */
-    // [HASLab]
     private String[] createTimeAtoms(int n) {
         String[] times = new String[n];
         for (int i = 0; i < n; i++)
@@ -1712,7 +1710,6 @@ public final class VizGUI implements ComponentListener {
     }
 
     /** Paints the label of the loop and last states differently. */
-    // [HASLab]
     private class TimePainter extends JLabel implements ListCellRenderer<Object> {
 
         private static final long serialVersionUID = -7905186538514458958L;

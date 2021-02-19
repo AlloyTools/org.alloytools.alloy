@@ -61,7 +61,8 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [electrum-temporal] apply default style for mutable
+ *           elements
  */
 
 public final class VizGraphPanel extends JPanel {
@@ -346,7 +347,7 @@ public final class VizGraphPanel extends JPanel {
             diagramScrollPanel.repaint();
             diagramScrollPanel.validate();
         }
-        vizState.applyDefaultVar(); // [HASLab] dashed variable elements
+        vizState.applyDefaultVar();
     }
 
     /** Changes the font. */
