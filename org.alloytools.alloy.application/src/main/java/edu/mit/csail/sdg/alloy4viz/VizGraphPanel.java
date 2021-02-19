@@ -61,7 +61,8 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-vizualizer
+ * @modified Nuno Macedo // [electrum-temporal] apply default style for mutable
+ *           elements; [electrum-vizualizer]
  */
 
 public final class VizGraphPanel extends JPanel {

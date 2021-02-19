@@ -98,8 +98,11 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-base
+ * @modified Nuno Macedo, Eduardo Pessoa // [electrum-base] support for .ele
+ *           file extension; register electrum version; [electrum-temporal]
+ *           support for visualization of traces; single state focused at any
+ *           time, navigation panel to change state; evaluator also acts on
+ *           focused state; if the model is static, should revert to classic viz
  */
 
 public final class VizGUI implements ComponentListener {
@@ -586,7 +589,7 @@ public final class VizGUI implements ComponentListener {
         this.enumerator = enumerator;
         this.standalone = standalone;
         this.evaluator = evaluator;
-        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null; // [HASLab]
+        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null;
 
         // Figure out the desired x, y, width, and height
         int screenWidth = OurUtil.getScreenWidth(), screenHeight = OurUtil.getScreenHeight();
@@ -863,9 +866,10 @@ public final class VizGUI implements ComponentListener {
         // on the right
         if (frame != null)
             frame.setTitle(makeVizTitle());
+        // [electrum] all visualizations focus on current state
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current); // [HASLab]
+                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current);
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -882,12 +886,12 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current); // [HASLab]
+                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current);
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current); // [HASLab]
+                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current);
                 content = getTextComponent(textualOutput);
                 break;
             }
@@ -953,7 +957,8 @@ public final class VizGUI implements ComponentListener {
                 myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab]
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrentState(current); // [HASLab] set evaluator state
+                // [electrum] evaluator acts on current state
+                myEvaluatorPanel.setCurrentState(current);
             } catch (Exception ex) {
             } // exception should not happen
             left = myEvaluatorPanel;
@@ -1013,7 +1018,7 @@ public final class VizGUI implements ComponentListener {
         int n = filename.length();
         if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".als"))
             filename = filename.substring(0, n - 4);
-        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] .ele extension
+        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele"))
             filename = filename.substring(0, n - 4);
         if (filename.length() > 0)
             return "(" + filename + ") " + commandname;
@@ -1086,11 +1091,10 @@ public final class VizGUI implements ComponentListener {
 
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
-        loadXML(fileName, forcefully, 0); // [HASLab] first state
+        loadXML(fileName, forcefully, 0);
     }
 
     /** Load the XML instance. */
-    // [HASLab] considers particular state
     public void loadXML(final String fileName, boolean forcefully, int state) {
         current = state; // [HASLab]
         final String xmlFileName = Util.canon(fileName);
@@ -1138,7 +1142,7 @@ public final class VizGUI implements ComponentListener {
         windowmenu.setEnabled(true);
         if (frame != null) {
             frame.setVisible(true);
-            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait..."); // [HASLab]
+            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait...");
             OurUtil.show(frame);
         }
         updateDisplay();

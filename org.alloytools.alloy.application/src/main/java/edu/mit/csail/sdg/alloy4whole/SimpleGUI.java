@@ -189,7 +189,11 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  * (2) the run() method in the instance watcher (in constructor) is launched
  * from a fresh thread
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base
+ * @modified Nuno Macedo, Eduardo Pessoa // [electrum-base] support for .ele
+ *           file format; register electrum version; added electrum example
+ *           models; added accelerator for execute all on mac; updated about
+ *           message; [electrum-temporal] evaluator now takes a second argument
+ *           denoting the focused state
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -395,7 +399,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (t.isFile())
             frame.setTitle(t.getFilename());
         else
-            frame.setTitle("Electrum Analyzer " + Version.getShortversion()); // [HASLab]
+            frame.setTitle("Electrum Analyzer " + Version.getShortversion());
         toolbar.setBorder(new OurBorder(false, false, text.count() <= 1, false));
         int c = t.getCaret();
         int y = t.getLineOfOffset(c) + 1;
@@ -408,7 +412,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Helper method that returns a hopefully very short name for a file name.
      */
     public static String slightlyShorterFilename(String name) {
-        if (name.toLowerCase(Locale.US).endsWith(".als") || name.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] .ele extension
+        if (name.toLowerCase(Locale.US).endsWith(".als") || name.toLowerCase(Locale.US).endsWith(".ele")) {
             int i = name.lastIndexOf('/');
             if (i >= 0)
                 name = name.substring(i + 1);
@@ -464,7 +468,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe");
         // Copy the model files
         Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als",
-                  "models/examples/electrum/buffer.ele", "models/examples/electrum/leader.ele", "models/examples/electrum/leader_events.ele", "models/examples/electrum/trash.ele"); // [HASLab] electrum examples
+                  "models/examples/electrum/buffer.ele", "models/examples/electrum/leader.ele", "models/examples/electrum/leader_events.ele", "models/examples/electrum/trash.ele");
         // Record the locations
         System.setProperty("alloy.theme0", alloyHome(frame) + fs + "models");
         System.setProperty("alloy.home", alloyHome(frame));
@@ -765,7 +769,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private File getFile(String home) {
         File file = OurDialog.askFile(frame, true, home, new String[] {
                                                                        ".ele", ".als", ".md", "*"
-        }, "Electrum (.ele), Alloy (.als) or Markdown (.md) files"); // [HASLab] ele extension
+        }, "Electrum (.ele), Alloy (.als) or Markdown (.md) files");
         return file;
     }
 
@@ -1130,7 +1134,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
             if (cp.size() > 1) {
                 JMenuItem menuItem = new JMenuItem("Execute All", null);
-                // [HASLab] cmd+u acc for mac
+                // [electrum] cmd+u acc for mac
                 final int mnemonic = Util.onMac() ? VK_U : VK_A;
                 menuItem.setMnemonic(mnemonic);
                 menuItem.setAccelerator(KeyStroke.getKeyStroke(mnemonic, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -1510,7 +1514,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             return wrapMe();
 
         // Old about message
-        //        OurDialog.showmsg("About Electrum Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), Version.aa_version(), // [HASLab]
+        //        OurDialog.showmsg("About Electrum Analyzer " + Version.version(), OurUtil.loadIcon("images/logo.gif"), Version.aa_version(),
         //                  "Build date: " + Version.buildDate(), "git: " + Version.commit, " ", "Lead developer: Nuno Macedo", "Project lead: Alcino Cunha", "Thanks to: David Chemouil, Julien Brunel, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães.", " ", "Electrum is based on Alloy Analyzer", " ", "Lead developer: Felix Chang", "Engine developer: Emina Torlak", "Graphic design: Julie Pelaez", "Project lead: Daniel Jackson", " ", "Please post comments and questions to the Alloy Community Forum at http://alloy.mit.edu/", " ", "Thanks to: Ilya Shlyakhter, " + "Manu Sridharan, " + "Derek Rayside, " + "Jonathan Edwards, " + "Gregory Dennis,", "Robert Seater, Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,", "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, and Uriel Schafer.");
 
         HTMLEditorKit kit = new HTMLEditorKit();
@@ -1541,7 +1545,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         + "<p>Alloy Community Forum: <a href='https://groups.google.com/forum/#!forum/alloytools'>https://groups.google.com/forum/#!forum/alloytools</a></p>"
         + "<p>Alloy experts also respond to <a href='https://stackoverflow.com/questions/tagged/alloy'>https://stackoverflow.com</a> questions tagged <code>alloy</code>.</p>"
         + "<p>Major contributions to earlier versions of Alloy were made by: Julien Brunel, David<br/>"
-        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>" // [HASLab]
+        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>" // [electrum] electrum contributors
         + "(Electrum); Felix Chang (v4); Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater,<br/>"
         + "Derek Rayside, Greg Dennis, Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz<br/>"
         + "Khurshid (v3); Manu Sridharan (v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip,<br/>"
@@ -1852,7 +1856,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
             if (!(input instanceof String[]))
                 return "";
-            final String[] strs = (String[]) input; // [HASLab] state arg
+            // [electrum] evaluator takes two arguments, the second is the focused state
+            final String[] strs = (String[]) input;
             if (strs[0].trim().length() == 0)
                 return ""; // Empty line
             Module root = null;
@@ -1888,13 +1893,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 throw new ErrorFatal("Failed to read or parse the XML file.");
             }
             try {
-                Expr e = CompUtil.parseOneExpression_fromString(root, strs[0]); // [HASLab]
+                Expr e = CompUtil.parseOneExpression_fromString(root, strs[0]);
                 if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
                     SimInstance simInst = convert(root, ans);
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
-                return ans.eval(e, Integer.valueOf(strs[1])).toString(); // [HASLab] eval state
+                return ans.eval(e, Integer.valueOf(strs[1])).toString();
             } catch (HigherOrderDeclException ex) {
                 throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
             }
@@ -1945,7 +1950,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                         break;
 
                     default :
-                        if (cmd.endsWith(".als") || cmd.endsWith(".ele")) // [HASLab] .ele extension
+                        if (cmd.endsWith(".als") || cmd.endsWith(".ele"))
                             remainingArgs.add(cmd);
                         else {
                             System.out.println("Unknown cmd " + cmd);
@@ -2038,7 +2043,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             y = screenHeight - 100;
 
         // Put up a slash screen
-        final JFrame frame = new JFrame("Electrum Analyzer"); // [HASLab]
+        final JFrame frame = new JFrame("Electrum Analyzer");
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.pack();
         if (!Util.onMac() && !Util.onWindows()) {
@@ -2069,7 +2074,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         frame.setSize(width, height);
         frame.setLocation(x, y);
         frame.setVisible(true);
-        frame.setTitle("Electrum Analyzer " + Version.version() + " loading... please wait..."); // [HASLab]
+        frame.setTitle("Electrum Analyzer " + Version.version() + " loading... please wait...");
         final int windowWidth = width;
         // We intentionally call setVisible(true) first before settings the
         // "please wait" title,
@@ -2221,7 +2226,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         all.add(status, BorderLayout.SOUTH);
 
         // Generate some informative log messages
-        log.logBold("Electrum Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n"); // [HASLab]
+        log.logBold("Electrum Analyzer " + Version.getShortversion() + " built " + Version.buildDate() + "\n\n");
 
         // If on Mac, then register an application listener
         try {
@@ -2291,7 +2296,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // Open the given file, if a filename is given in the command line
         for (String f : args)
-            if (f.toLowerCase(Locale.US).endsWith(".als") || f.toLowerCase(Locale.US).endsWith(".ele")) { // [HASLab] ele extension
+            if (f.toLowerCase(Locale.US).endsWith(".als") || f.toLowerCase(Locale.US).endsWith(".ele")) {
                 File file = new File(f);
                 if (file.exists() && file.isFile())
                     doOpenFile(file.getPath());

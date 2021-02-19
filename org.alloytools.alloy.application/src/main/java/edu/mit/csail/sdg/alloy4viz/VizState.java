@@ -43,7 +43,8 @@ import edu.mit.csail.sdg.alloy4graph.DotStyle;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [electrum-temporal] apply a default style to mutable
+ *           elements (dashed)
  */
 
 public final class VizState {
@@ -159,7 +160,7 @@ public final class VizState {
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
-        applyDefaultVar(); // [HASLab] dashed variable elements
+        applyDefaultVar(); // [electrum] dashed style for variable elements
         // Done
         cache.clear();
         changedSinceLastSave = false;
@@ -169,7 +170,6 @@ public final class VizState {
      * Paints variable items as dashed if no other style has been set by the user.
      * Must be run every time since new elements may have been introduced.
      */
-    // [HASLab]
     void applyDefaultVar() {
         // if parent also var or has style, inherit, otherwise paint dashed
         for (AlloyType r : currentModel.getTypes())
