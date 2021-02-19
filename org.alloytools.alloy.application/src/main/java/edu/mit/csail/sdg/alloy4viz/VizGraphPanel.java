@@ -62,7 +62,9 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
  * @modified Nuno Macedo // [electrum-temporal] apply default style for mutable
- *           elements; [electrum-vizualizer]
+ *           elements; [electrum-vizualizer] a graph panel now holds a list of
+ *           graphs (and associated components), each with its own viz state;
+ *           assumes that cannot project over mutable variables
  */
 
 public final class VizGraphPanel extends JPanel {
@@ -71,7 +73,6 @@ public final class VizGraphPanel extends JPanel {
     private static final long              serialVersionUID    = 0;
 
     /** This is the current customization settings of each graph panel. */
-    // [HASLab]
     private final List<VizState>           vizState;
 
     /**
@@ -82,17 +83,14 @@ public final class VizGraphPanel extends JPanel {
     /**
      * The current GraphViewer (or null if we are not looking at a GraphViewer).
      */
-    // [HASLab]
     private List<GraphViewer>              viewer              = null;
 
     /**
      * The scrollpanes containing the upperhalf of the panel (showing the graphs).
      */
-    // [HASLab]
     private final List<JScrollPane>        diagramScrollPanels = new ArrayList<JScrollPane>();
 
     /** The upperhalf of the panel (showing the graphs). */
-    // [HASLab]
     private final List<JPanel>             graphPanels         = new ArrayList<JPanel>();
 
     /**
@@ -150,7 +148,7 @@ public final class VizGraphPanel extends JPanel {
             if (!this.atoms.equals(atoms))
                 return false;
             for (int i = 0; i < this.atoms.size(); i++) {
-                String n = this.atoms.get(i).getVizName(vizState.get(0), true); // [HASLab] TODO: what if the projected sig is variable?
+                String n = this.atoms.get(i).getVizName(vizState.get(0), true);
                 if (!atomnames[i].equals(n))
                     return false;
             }
@@ -175,7 +173,7 @@ public final class VizGraphPanel extends JPanel {
             setBorder(null);
             this.atomnames = new String[this.atoms.size()];
             for (int i = 0; i < this.atoms.size(); i++) {
-                atomnames[i] = this.atoms.get(i).getVizName(vizState.get(0), true); // [HASLab] TODO: what if the projected sig is variable?
+                atomnames[i] = this.atoms.get(i).getVizName(vizState.get(0), true);
                 if (this.atoms.get(i).equals(initialValue))
                     initialIndex = i;
             }
@@ -263,7 +261,6 @@ public final class VizGraphPanel extends JPanel {
      * @param seeDot - true if we want to see the DOT source code, false if we want
      *            it rendered as a graph
      */
-    // [HASLab] list of states
     public VizGraphPanel(JFrame parent, List<VizState> vizState, boolean seeDot) {
         Border b = new EmptyBorder(0, 0, 0, 0);
         OurUtil.make(this, Color.BLACK, Color.WHITE, b);
@@ -274,15 +271,17 @@ public final class VizGraphPanel extends JPanel {
         navPanel = new JPanel();
         JScrollPane navscroll = OurUtil.scrollpane(navPanel);
 
-        JPanel diagramsScrollPanels = new JPanel(); // [HASLab] container for all diagram scroll panels
-        diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS)); // [HASLab]
-        for (int i = 0; i < vizState.size(); i++) { // [HASLab]
+        // [electrum] container for all (diagram scroll) graph panels
+        JPanel diagramsScrollPanels = new JPanel();
+        diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
+        for (int i = 0; i < vizState.size(); i++) {
             JScrollPane diagramScrollPanel = createGraphPanel(i);
+            diagramScrollPanels.add(diagramScrollPanel);
             diagramsScrollPanels.add(diagramScrollPanel);
             diagramScrollPanel.setPreferredSize(new Dimension(0, 0));
         }
 
-        split = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, diagramsScrollPanels, navscroll, 0); // [HASLab]
+        split = OurUtil.splitpane(JSplitPane.VERTICAL_SPLIT, diagramsScrollPanels, navscroll, 0);
         split.setResizeWeight(1.0);
         split.setDividerSize(0);
         add(split);
@@ -292,15 +291,15 @@ public final class VizGraphPanel extends JPanel {
     /**
      * Creates a particular diagram scroll panel.
      *
-     * @param i
-     * @return
+     * @param i the i-th panel in the visualizer
+     * @return the i-th diagram graph panel
      */
-    // [HASLab] refactored from VizGraphPanel constructor
+    // [electrum] refactored from VizGraphPanel constructor so that multiple can be created
     private JScrollPane createGraphPanel(int i) {
-        Border b = new EmptyBorder(0, 0, 0, 0); // [HASLab]
+        Border b = new EmptyBorder(0, 0, 0, 0);
 
         JPanel graphPanel = OurUtil.make(new JPanel(), Color.BLACK, Color.WHITE, b);
-        graphPanels.add(graphPanel); // [HASLab]
+        graphPanels.add(graphPanel);
         graphPanel.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -333,7 +332,6 @@ public final class VizGraphPanel extends JPanel {
                 diagramScrollPanel.validate();
             }
         });
-        diagramScrollPanels.add(diagramScrollPanel); // [HASLab]
         return diagramScrollPanel;
     }
 
@@ -341,7 +339,8 @@ public final class VizGraphPanel extends JPanel {
     public void remakeAll(JFrame parent) {
         Map<AlloyType,AlloyAtom> map = new LinkedHashMap<AlloyType,AlloyAtom>();
         navPanel.removeAll();
-        for (AlloyType type : vizState.get(vizState.size() - 1).getProjectedTypes()) { // [HASLab]
+        // [electrum] this info is the same in all viz states
+        for (AlloyType type : vizState.get(vizState.size() - 1).getProjectedTypes()) {
             List<AlloyAtom> atoms = vizState.get(vizState.size() - 1).getOriginalInstance().type2atoms(type);
             TypePanel tp = type2panel.get(type);
             if (tp != null && tp.getAlloyAtom() != null && !atoms.contains(tp.getAlloyAtom()))
@@ -357,8 +356,9 @@ public final class VizGraphPanel extends JPanel {
         }
         currentProjection = new AlloyProjection(map);
         List<GraphViewer> prevsv = viewer;
-        viewer = new ArrayList<>(vizState.size()); // [HASLab]
-        for (int i = 0; i < vizState.size(); i++) { // [HASLab]
+        // [electrum] update all graph panels
+        viewer = new ArrayList<>(vizState.size());
+        for (int i = 0; i < vizState.size(); i++) {
             JPanel graph = vizState.get(i).getGraph(parent, currentProjection);
             if (seeDot && (graph instanceof GraphViewer)) {
                 viewer = null;
@@ -366,14 +366,14 @@ public final class VizGraphPanel extends JPanel {
                 diagramScrollPanels.get(i).setViewportView(txt);
             } else {
                 if (graph instanceof GraphViewer) {
-                    viewer.add((GraphViewer) graph); // [HASLab]
+                    viewer.add((GraphViewer) graph);
                     if (prevsv != null && i <= prevsv.size())
                         viewer.get(i).setScale(prevsv.get(i).getScale());
                 } else
                     viewer = null;
                 graphPanels.get(i).removeAll();
                 graphPanels.get(i).add(graph);
-                graphPanels.get(i).setBackground(Color.WHITE); // [HASLab]
+                graphPanels.get(i).setBackground(Color.WHITE);
                 diagramScrollPanels.get(i).setViewportView(graphPanels.get(i));
                 diagramScrollPanels.get(i).invalidate();
                 diagramScrollPanels.get(i).repaint();
@@ -386,8 +386,8 @@ public final class VizGraphPanel extends JPanel {
     @Override
     public void setFont(Font font) {
         super.setFont(font);
-        if (diagramScrollPanels != null) // [HASLab] called before initialization
-            for (JScrollPane diagramScrollPanel : diagramScrollPanels) // [HASLab]
+        if (diagramScrollPanels != null) // [electrum] called before initialization
+            for (JScrollPane diagramScrollPanel : diagramScrollPanels)
                 diagramScrollPanel.getViewport().getView().setFont(font);
     }
 
@@ -400,7 +400,8 @@ public final class VizGraphPanel extends JPanel {
     }
 
     public String toDot(JFrame parent) {
-        return vizState.get(0).getGraph(parent, currentProjection).toString(); // [HASLab] converts the first shown state
+        // [electrum] only converts the first shown state
+        return vizState.get(0).getGraph(parent, currentProjection).toString();
     }
 
     /**
@@ -408,7 +409,7 @@ public final class VizGraphPanel extends JPanel {
      * the graph hasn't loaded yet)
      */
     public GraphViewer alloyGetViewer() {
-        return viewer.get(0); // [HASLab]
+        return viewer.get(0);
     }
 
     /**
@@ -427,8 +428,12 @@ public final class VizGraphPanel extends JPanel {
         }
     }
 
-    // [HASLab]
-    public int numPanes() {
+    /**
+     * The number of graph panels in the viz.
+     * 
+     * @return the number of graph panels
+     */
+    public int numPanels() {
         return vizState.size();
     }
 }

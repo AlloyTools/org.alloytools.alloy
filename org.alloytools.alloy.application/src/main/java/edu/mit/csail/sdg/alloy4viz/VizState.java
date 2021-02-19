@@ -346,7 +346,7 @@ public final class VizState {
      * Returns true iff the type is not univ, and it is a toplevel type.
      */
     public boolean canProject(final AlloyType type) {
-        return isTopLevel(type) && !type.isVar; // [HASLab] can't project var
+        return isTopLevel(type) && !type.isVar; // [electrum] can't project over mutable variable
     }
 
     /**

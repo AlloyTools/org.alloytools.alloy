@@ -193,7 +193,8 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  *           file format; register electrum version; added electrum example
  *           models; added accelerator for execute all on mac; updated about
  *           message; [electrum-temporal] evaluator now takes a second argument
- *           denoting the focused state
+ *           denoting the focused state; [electrum-vizualizer] visualize traces
+ *           with 2 states, 1 otherwise
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -1753,7 +1754,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
         }
         if (arg.startsWith("XML: ")) { // XML: filename
-            viz.loadXML(Util.canon(arg.substring(5)), false, 0); // [HASLab]
+            viz.loadXML(Util.canon(arg.substring(5)), false, 0);
         }
         return null;
     }
@@ -2171,7 +2172,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
 
         // Pre-load the visualizer
-        viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator, 2); // [HASLab]
+        viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator, 2);
         viz.doSetFontSize(FontSize.get());
 
         // Create the toolbar
