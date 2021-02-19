@@ -25,7 +25,8 @@ import edu.mit.csail.sdg.alloy4.SafeList;
  * Mutable; this class encapsulates the customizable options of the
  * Alloy-to-Kodkod translator.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-decomposed
+ * @modified Nuno Macedo // [electrum-decomposed] decompose strategy options,
+ *           mode and cores
  */
 
 public final class A4Options implements Serializable {
@@ -199,7 +200,8 @@ public final class A4Options implements Serializable {
     /**
      * Constructs an A4Options object with default values for everything.
      */
-    public A4Options() {}
+    public A4Options() {
+    }
 
     public boolean   inferPartialInstance = true;
 
@@ -295,7 +297,6 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is off.
      */
-    // [HASLab]
     public int       decompose_mode       = 0;
 
     /**
@@ -304,7 +305,6 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is 4.
      */
-    // [HASLab]
     public int       decompose_threads    = 4;
 
     /** This method makes a copy of this Options object. */
@@ -322,8 +322,8 @@ public final class A4Options implements Serializable {
         x.recordKodkod = recordKodkod;
         x.noOverflow = noOverflow;
         x.coreGranularity = coreGranularity;
-        x.decompose_mode = decompose_mode; // [HASLab]
-        x.decompose_threads = decompose_threads; // [HASLab]
+        x.decompose_mode = decompose_mode;
+        x.decompose_threads = decompose_threads;
         return x;
     }
 }

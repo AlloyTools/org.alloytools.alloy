@@ -6,8 +6,8 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
 /**
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-decomposed
+ * @modified Nuno Macedo // [electrum-temporal] updated reporting;
+ *           [electrum-decomposed] updated reporting;
  */
 public class TestReporter extends A4Reporter {
 
@@ -75,9 +75,8 @@ public class TestReporter extends A4Reporter {
      * @param strat - selected decompose solving strategy
      */
     @Override
-    // [HASLab] trace + decompose params
     public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
-        out.printf("TRNS %s steps=%s..%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s mode=%s%n", solver, mintrace, maxtrace, bitwidth, maxseq, skolemDepth, symmetry, strat); // [HASLab]
+        out.printf("TRNS %s steps=%s..%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s mode=%s%n", solver, mintrace, maxtrace, bitwidth, maxseq, skolemDepth, symmetry, strat);
     }
 
     /**
@@ -89,7 +88,6 @@ public class TestReporter extends A4Reporter {
      * @param clauses - the total number of clauses
      */
     @Override
-    // [HASLab]
     public void solve(int step, int primaryVars, int totalVars, int clauses) {
         out.printf("SOLV primary=%s total=%s clauses=%s%n", primaryVars, totalVars, clauses);
     }
