@@ -73,6 +73,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  *           steps finishes; the SimpleReporter overrides these messages in the
  *           log panel and shows only the most recent one; the translation also
  *           reports the relevant temporal options; [electrum-simulator]
+ *           enumeration task enriched with alternative iteration operations
  */
 
 final class SimpleReporter extends A4Reporter {
@@ -594,7 +595,7 @@ final class SimpleReporter extends A4Reporter {
     static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
-        public int                      index            = -1; // [HASLab] simulator
+        public int                      index            = -1; // [electrum] registers which iteration operation to perform
         public String                   filename         = "";
         public transient WorkerCallback out              = null;
 
@@ -635,7 +636,7 @@ final class SimpleReporter extends A4Reporter {
             int tries = 0;
             while (true) {
                 try {
-                    sol = sol.fork(this.index); // [HASLab] simulator
+                    sol = sol.fork(this.index); // [electrum] call the enumerator with appropriate operation
                 } catch (ErrorAPI e) {
                     cb("pop", e.getMessage());
                     return;

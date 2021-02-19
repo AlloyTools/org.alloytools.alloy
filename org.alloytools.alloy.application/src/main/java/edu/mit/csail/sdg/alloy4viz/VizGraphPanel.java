@@ -64,7 +64,7 @@ import edu.mit.csail.sdg.alloy4graph.GraphViewer;
  * @modified Nuno Macedo // [electrum-temporal] apply default style for mutable
  *           elements; [electrum-vizualizer] a graph panel now holds a list of
  *           graphs (and associated components), each with its own viz state;
- *           assumes that cannot project over mutable variables
+ *           assumes that cannot project over mutable variables;
  */
 
 public final class VizGraphPanel extends JPanel {
@@ -311,7 +311,7 @@ public final class VizGraphPanel extends JPanel {
                 else if (ev.getButton() == MouseEvent.BUTTON3) {
                 } else if (ev.getButton() == MouseEvent.BUTTON1 && ev.isControlDown()) {} else
                     return;
-                if (graphPanel.contains(ev.getX(), ev.getY())) // [HASLab] distinguish clicked panel
+                if (graphPanel.contains(ev.getX(), ev.getY())) // [electrum] distinguish clicked panel
                     viewer.get(i).alloyPopup(graphPanel, ev.getX(), ev.getY());
             }
         });

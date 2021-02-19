@@ -124,7 +124,8 @@ import kodkod.util.ints.IndexedEntry;
  *           elements); invalid steps scope for solvers (eg, open intervals not
  *           starting in 1); invalid iteration operations;
  *
- *           [electrum-simulator]
+ *           [electrum-simulator] supports additional iteration operations
+ *           provided by the kodkod backend
  */
 
 public final class A4Solution {
@@ -265,7 +266,6 @@ public final class A4Solution {
     private Evaluator                         eval        = null;
 
     /** If not null, you can ask it to get another solution. */
-    // [HASLab]
     private Explorer<Solution>                kEnumerator = null;
 
     /**
@@ -446,9 +446,9 @@ public final class A4Solution {
 
     /**
      * Construct a new A4Solution that is the continuation of the old one, but with
-     * the "next" instance.
+     * the "next" instance. An additional parameter determines how to calculate this
+     * "next" (-3 standard next, -2 next path, -1 next config, >=0 fork at state).
      */
-    // [HASLab]
     private A4Solution(A4Solution old, int state) throws Err {
         if (!old.solved)
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
@@ -459,11 +459,11 @@ public final class A4Solution {
         Instance inst;
         // [electrum] better reporting of unsupported iterations
         try {
-            if (state == -1) // [HASLab] simulator, this is a next config
+            if (state == -1) // [electrum] this is a next config
                 inst = old.kEnumerator.nextC().instance();
-            else if (state == -2) // [HASLab] simulator, this is a next path
+            else if (state == -2) // [electrum] this is a next path
                 inst = old.kEnumerator.nextP().instance();
-            else if (state >= 0) { // [HASLab] simulator, this is a fork
+            else if (state >= 0) { // [electrum] this is a fork at "state"
                 Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
                 inst = old.kEnumerator.nextS(state, 1, rels).instance();
             } else
@@ -906,7 +906,6 @@ public final class A4Solution {
      * Checks whether the this solution's model contains any configuration (static)
      * elements.
      */
-    // [HASLab]
     public boolean hasConfigs() {
         for (Sig s : sigs) {
             if (s.isVariable == null && !s.builtin)
@@ -1224,7 +1223,6 @@ public final class A4Solution {
      * Helper class that wraps an iterator up where it will pre-fetch the first
      * element (note: it will not prefetch subsequent elements).
      */
-    // [HASLab]
     private static final class Peeker<T> implements Explorer<T> {
 
         /** The encapsulated iterator. */
@@ -1797,7 +1795,12 @@ public final class A4Solution {
         return fork(-3);
     }
 
-    // [HASLab] simulator
+    /**
+     * If this solution is UNSAT, return itself; else return the next solution
+     * according to the selected operation (which could be SAT or UNSAT).
+     *
+     * @throws ErrorAPI if the solver was not an incremental solver
+     */
     public A4Solution fork(int p) throws Err {
         if (!solved)
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
@@ -1809,7 +1812,7 @@ public final class A4Solution {
             return nextCache;
         }
 
-        return new A4Solution(this, p); // [HASLab] simulator, do not cache, may have changed arguments
+        return new A4Solution(this, p); // [electrum] do not cache, may have different arguments
     }
 
     /**

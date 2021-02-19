@@ -107,7 +107,11 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
  *           states presented side-by-side (each with own viz state);
  *           (navigable) overview of the trace shape; all theme management
  *           applies to all graphs; support for exporting an instance as an
- *           Alloy formula; [electrum-simulator]
+ *           Alloy formula; [electrum-simulator] added support for new
+ *           operations over traces, next config, next path, next init, fork at
+ *           given state (toolbar/menu buttons); communicates with the
+ *           enumerator which is now expecting an additional parameter with
+ *           selected operation to be passed too the A4Solution
  */
 
 public final class VizGUI implements ComponentListener {
@@ -166,19 +170,15 @@ public final class VizGUI implements ComponentListener {
     private final JMenuItem     enumerateMenu;
 
     /** The "fresh config" menu item. */
-    // [HASLab]
     private final JMenuItem     cnfgMenu;
 
     /** The "fresh path" menu item. */
-    // [HASLab]
     private final JMenuItem     pathMenu;
 
     /** The "fork next" menu item. */
-    // [HASLab]
     private final JMenuItem     forkMenu;
 
     /** The "fork init" menu item. */
-    // [HASLab]
     private final JMenuItem     initMenu;
 
     /** The trace navigation menu items. */
@@ -193,7 +193,10 @@ public final class VizGUI implements ComponentListener {
      */
     private int                 settingsOpen    = 0;
 
-    // [HASLab]
+    /**
+     * Whether the previous iteration operation was a next init/fork (which disables
+     * next path until a next config).
+     */
     private boolean             seg_iteration   = false;
 
     /**
@@ -652,10 +655,11 @@ public final class VizGUI implements ComponentListener {
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
             enumerateMenu = menuItem(instanceMenu, "Show New Solution", 'N', 'N', doNext());
-            cnfgMenu = menuItem(instanceMenu, "Show New Configuration", 'C', 'C', doConfig()); // [HASLab]
-            pathMenu = menuItem(instanceMenu, "Show New Path", 'P', 'P', doPath()); // [HASLab]
-            initMenu = menuItem(instanceMenu, "Show New Initial State", 'I', 'I', doInit()); // [HASLab]
-            forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork()); // [HASLab]
+            // [electrum] new iteration operation buttons
+            cnfgMenu = menuItem(instanceMenu, "Show New Configuration", 'C', 'C', doConfig());
+            pathMenu = menuItem(instanceMenu, "Show New Path", 'P', 'P', doPath());
+            initMenu = menuItem(instanceMenu, "Show New Initial State", 'I', 'I', doInit());
+            forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork());
             // [electrum] trace navigation buttons
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, doNavLeft());
             rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, doNavRight());
@@ -710,10 +714,12 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
             toolbar.add(enumerateButton = OurUtil.button("New", "Show a new solution", "images/24_history.gif", doNext()));
-            toolbar.add(cnfgButton = OurUtil.button("New Config", "Show a new configuration", "images/24_history.gif", doConfig())); // [HASLab]
-            toolbar.add(pathButton = OurUtil.button("New Path", "Show a new path", "images/24_history.gif", doPath())); // [HASLab]
-            toolbar.add(initButton = OurUtil.button("New Init", "Show a new initial state", "images/24_history.gif", doInit())); // [HASLab]
-            toolbar.add(forkButton = OurUtil.button("New Fork", "Show a new fork", "images/24_history.gif", doFork())); // [HASLab]
+            // [electrum] new iteration operation buttons
+            toolbar.add(cnfgButton = OurUtil.button("New Config", "Show a new configuration", "images/24_history.gif", doConfig()));
+            toolbar.add(pathButton = OurUtil.button("New Path", "Show a new path", "images/24_history.gif", doPath()));
+            toolbar.add(initButton = OurUtil.button("New Init", "Show a new initial state", "images/24_history.gif", doInit()));
+            toolbar.add(forkButton = OurUtil.button("New Fork", "Show a new fork", "images/24_history.gif", doFork()));
+            // [electrum] trace navigation buttons
             toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the previous state", "images/24_history.gif", doNavLeft()));
             toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the next state", "images/24_history.gif", doNavRight()));
             toolbar.add(projectionButton);
@@ -868,9 +874,9 @@ public final class VizGUI implements ComponentListener {
         }
         // [electrum] this info is the same in all states
         final AlloyInstance oInst = myStates.get(statepanes - 1).getOriginalInstance();
-        final boolean isMeta = oInst.isMetamodel; // [HASLab]
-        final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0; // [HASLab]
-        final boolean hasConfigs = oInst.originalA4.hasConfigs(); // [HASLab]
+        final boolean isMeta = oInst.isMetamodel;
+        final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0;
+        final boolean hasConfigs = oInst.originalA4.hasConfigs();
         vizButton.setVisible(frame != null);
         treeButton.setVisible(frame != null);
         txtButton.setVisible(frame != null);
@@ -889,28 +895,30 @@ public final class VizGUI implements ComponentListener {
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
         // [electrum] hide buttons if static; disable previous at first state
-        enumerateMenu.setVisible(!isTrace); // [HASLab]
-        enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && !isTrace); // [HASLab]
-        initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        initMenu.setVisible(isTrace); // [HASLab]
-        initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        pathMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && !seg_iteration); // [HASLab]
-        pathMenu.setVisible(isTrace); // [HASLab]
-        pathButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        pathButton.setEnabled(!seg_iteration); // [HASLab]
-        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && hasConfigs); // [HASLab]
-        cnfgMenu.setVisible(isTrace); // [HASLab]
-        cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        cnfgButton.setEnabled(hasConfigs); // [HASLab]
-        forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        forkMenu.setVisible(isTrace); // [HASLab]
-        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        leftNavButton.setEnabled(current > 0); // [HASLab]
-        leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
+        enumerateMenu.setVisible(!isTrace);
+        enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && !isTrace);
+        initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
+        initMenu.setVisible(isTrace);
+        initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        // [electrum] after fork cannot iterate path (would not guarantee non-isomorphic solutions)
+        pathMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && !seg_iteration);
+        pathMenu.setVisible(isTrace);
+        pathButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        pathButton.setEnabled(!seg_iteration);
+        // [electrum] if no static relations, do not allow next config (would always return the same solution)
+        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && hasConfigs);
+        cnfgMenu.setVisible(isTrace);
+        cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        cnfgButton.setEnabled(hasConfigs);
+        forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
+        forkMenu.setVisible(isTrace);
+        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        leftNavButton.setVisible(!isMeta && isTrace);
+        leftNavButton.setEnabled(current > 0);
+        leftNavMenu.setEnabled(!isMeta && current > 0);
         leftNavButton.setText(new String(current > 0 ? Character.toChars(0x2190) : Character.toChars(0x21e4)));
-        rightNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        rightNavMenu.setEnabled(!isMeta); // [HASLab]
+        rightNavButton.setVisible(!isMeta && isTrace);
+        rightNavMenu.setEnabled(!isMeta);
         toolbar.setVisible(true);
         // Now, generate the graph or tree or textarea that we want to display
         // on the right
@@ -1754,7 +1762,7 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert(frame, "Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
-                enumerator.compute(new String[] { // [HASLab]
+                enumerator.compute(new String[] {
                                                  xmlFileName, -3 + ""
                 });
             } catch (Throwable ex) {
@@ -1765,9 +1773,9 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
-     * This method attempts to derive the next satisfying instance.
+     * This method attempts to derive the next satisfying instance with a distinct
+     * configuration.
      */
-    // [HASLab]
     private Runner doConfig() {
         if (wrap)
             return wrapMe();
@@ -1791,9 +1799,9 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
-     * This method attempts to derive the next satisfying instance.
+     * This method attempts to derive the next satisfying instance with a distinct
+     * path (but same configuration).
      */
-    // [HASLab]
     private Runner doPath() {
         if (wrap)
             return wrapMe();
@@ -1816,8 +1824,10 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
-    /** This method attempts to derive the next satisfying instance. */
-    // [HASLab] simulator
+    /**
+     * This method attempts to derive the next satisfying instance with a distinct
+     * focused state (but same configuration and prefix).
+     */
     private Runner doFork() {
         if (wrap)
             return wrapMe();
@@ -1840,8 +1850,10 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
-    /** This method attempts to derive the next satisfying instance. */
-    // [HASLab] simulator
+    /**
+     * This method attempts to derive the next satisfying instance with a distinct
+     * initial state (but same configuration).
+     */
     private Runner doInit() {
         if (wrap)
             return wrapMe();

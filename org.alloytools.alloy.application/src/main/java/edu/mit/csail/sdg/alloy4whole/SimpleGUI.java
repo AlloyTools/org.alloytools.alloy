@@ -194,7 +194,10 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  *           models; added accelerator for execute all on mac; updated about
  *           message; [electrum-temporal] evaluator now takes a second argument
  *           denoting the focused state; [electrum-vizualizer] visualize traces
- *           with 2 states, 1 otherwise; [electrum-simulator]
+ *           with 2 states, 1 otherwise; [electrum-simulator] enumerator now
+ *           takes as additional argument the operation to apply; also
+ *           distinguishes between global and local iterations, the former
+ *           resets the visualizer
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -1249,9 +1252,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (latestAutoInstance.length() > 0) {
             String f = latestAutoInstance;
             latestAutoInstance = "";
-            if (subrunningTask == 2) // [HASLab] move to first state
+            // [electrum] move to first state if global iteration
+            if (subrunningTask == 2)
                 viz.loadXML(f, true, 0);
-            else if (subrunningTask == 3) // [HASLab]
+            else if (subrunningTask == 3)
                 viz.loadXML(f, true);
             else if (AutoVisualize.get() || subrunningTask == 1)
                 doVisualize("XML: " + f);
@@ -1781,14 +1785,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         @Override
         public String compute(Object input) {
-            final String[] arg = (String[]) input; // [HASLab] simulator
+            final String[] arg = (String[]) input; // [electrum] additional argument to set the iteration operation
             OurUtil.show(frame);
             if (WorkerEngine.isBusy())
                 throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
             SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
             SimpleTask2 task = new SimpleTask2();
-            task.filename = arg[0]; // [HASLab] simulator
-            task.index = Integer.valueOf(arg[1]); // [HASLab] simulator
+            task.filename = arg[0];
+            task.index = Integer.valueOf(arg[1]);
             try {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
@@ -1801,14 +1805,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 log.logDivider();
                 log.flush();
                 doStop(2);
-                return arg[0]; // [HASLab]
+                return arg[0];
             }
-            subrunningTask = task.index < 1 ? 2 : 3; // [HASLab]
+            subrunningTask = task.index < 1 ? 2 : 3; // [electrum] whether global iteration
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
             stopbutton.setVisible(true);
-            return arg[0]; // [HASLab]
+            return arg[0];
         }
     };
 
