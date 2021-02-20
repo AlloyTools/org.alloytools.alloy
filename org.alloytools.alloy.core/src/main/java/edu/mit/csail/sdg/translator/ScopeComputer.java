@@ -73,7 +73,8 @@ import edu.mit.csail.sdg.parser.CompUtil;
  *           max scope); also, some errors on scopes are relaxed: eg, one var
  *           sigs may still have a scope larger than 1, since the multiplicity
  *           is imposed state by state, thus the atom may change; also, scopes
- *           for such sigs are not made exact
+ *           for such sigs are not made exact; new syntax error, setting trace
+ *           scope for static models
  *
  */
 final class ScopeComputer {
@@ -475,6 +476,7 @@ final class ScopeComputer {
         // [electrum] handle trace lengths
         boolean isVar = CompUtil.isTemporalModel(sigs, cmd);
         int tracelength = cmd.maxprefix;
+        // [electrum] do not allow trace scopes for static models
         if (!isVar) {
             if (tracelength > 0)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
