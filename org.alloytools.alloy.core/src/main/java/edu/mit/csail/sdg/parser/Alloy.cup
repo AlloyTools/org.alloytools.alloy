@@ -60,12 +60,13 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 
-// @modified Nuno Macedo // [electrum-temporal] added temporal operators to the AST (unary
-//			 temporal operators have the same precedence as other unary operators, binary 
-//			 ones have the highest precedence); also added a trace sequence operator which
-//			 has the lowest precedence (not actually translated into AST but expanded
-//			 during parsing) added time scopes to commands (reused scope ranges but 
-//			 extended to open ranges);
+// @modified Nuno Macedo // [electrum-temporal] added temporal operators to the AST
+//			 (unary temporal operators have the same precedence as other unary operators,
+//			 binary ones have the highest precedence); also added a trace sequence
+//			 operator which has the lowest precedence (not actually translated into AST
+//			 but expanded during parsing) added time scopes to commands (reused scope
+//			 ranges but  extended to open ranges); additional syntax errors: trace scope
+//			 increments must be 1; trace scope must be larger than 0;
 
 //===========================================================================//
 
@@ -365,6 +366,7 @@ action code {:
           if (j.label.equals("seq"))   { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
           // [electrum] process time scopes
           if (j.label.equals("steps")) {
+	      	  if (s.get(i).increment != 1) throw new ErrorSyntax(j.pos, "Step scopes must be incremented by 1.");
           	  if (k<1) throw new ErrorSyntax(j.pos, "Trace solutions must contain at least one step.");
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "Steps scope cannot be specified more than once."); 
         	  maxtime=k; 
@@ -719,7 +721,7 @@ Typescope  ::= TypeNumber:a TIME:b    {:
 
 Typescope  ::= TypeNumber:e NONE:f    {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You cannot set a scope on none."); :};
 
-// [electrum] open ended scopes "n.."; distinguish between "n" and "n..n", the latter become exact
+// [electrum] distinguish between "n" and "n..n", the latter become exact
 TypeNumber ::= EXACTLY:e NUMBER:a                                  {:                                                                                RESULT = new CommandScope(    e.merge(a.pos), Sig.NONE, true,  a.num, a.num,             1    ); :};
 TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(b.pos), Sig.NONE, true,  a.num, b.num,             1    ); :};
 TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,  a.num, b.num,             i.num); :};
