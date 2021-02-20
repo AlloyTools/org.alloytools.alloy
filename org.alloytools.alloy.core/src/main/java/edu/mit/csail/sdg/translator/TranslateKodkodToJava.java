@@ -77,7 +77,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * Java source code that can re-generate arbitrary Java objects).
  *
  * @modified Nuno Macedo // [electrum-temporal] added temporal nodes and solving
- *           parameters
+ *           parameters; [electrum-unbounded] solver options;
  */
 
 public final class TranslateKodkodToJava implements VoidVisitor {
@@ -429,6 +429,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("%nopt.setSkolemDepth(0);");
         file.printf("%nopt.setMinTraceLength(%d);", mintrace);
         file.printf("%nopt.setMaxTraceLength(%d);", maxtrace);
+        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE);
         file.printf("%nPardinusSolver solver = new PardinusSolver(opt);");
         file.printf("%nSystem.out.println(\"Solving...\");");
         file.printf("%nSystem.out.flush();");

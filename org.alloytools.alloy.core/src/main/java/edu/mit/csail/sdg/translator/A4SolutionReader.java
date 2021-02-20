@@ -56,7 +56,7 @@ import kodkod.instance.TupleSet;
  * @modified Nuno Macedo, Eduardo Pessoa // [electrum-temporal] incrementally
  *           builds a solution by iteratively reading states from the XML; must
  *           start by collecting all used atoms, since univ varies from state to
- *           state
+ *           state; [electrum-unbounded]
  */
 
 public final class A4SolutionReader {
@@ -430,7 +430,8 @@ public final class A4SolutionReader {
                 // create the A4Solution object
                 A4Options opt = new A4Options();
                 opt.originalFilename = inst.getAttribute("filename");
-                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace, maxtrace, maxseq, strings, atoms, null, opt, 1);
+                // [electrum] do not use actual max trace, solution would identify unbounded solving but no unbounded solver
+                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace, tracelength, maxseq, strings, atoms, null, opt, 1);
                 factory = sol.getFactory();
                 // parse all the sigs, fields, and skolems
                 for (Map.Entry<String,XMLNode> e : nmap.entrySet())

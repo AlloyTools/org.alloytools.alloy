@@ -126,7 +126,9 @@ import kodkod.util.ints.IndexedEntry;
  *           starting in 1); invalid iteration operations;
  *
  *           [electrum-simulator] supports additional iteration operations
- *           provided by the kodkod backend
+ *           provided by the kodkod backend; [electrum-unbounded] additional
+ *           runtime error, setting an unbounded steps scope with a bounded
+ *           solver
  */
 
 public final class A4Solution {
@@ -330,6 +332,9 @@ public final class A4Solution {
         this.maxseq = maxseq;
         this.maxtrace = maxtrace;
         this.mintrace = mintrace;
+        // [electrum] test whether unbounded solver
+        if (maxtrace == Integer.MAX_VALUE && !(opt.solver.external() != null && opt.solver.external().equals("electrod")))
+            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
             throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
@@ -391,10 +396,23 @@ public final class A4Solution {
         solver_opts.setNoOverflow(opt.noOverflow);
         solver_opts.setMaxTraceLength(maxtrace);
         solver_opts.setMinTraceLength(mintrace);
+        solver_opts.setRunUnbounded(maxtrace == Integer.MAX_VALUE);
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
         // [electrum] pushed solver creation further below as solver choice is needed for initialization
-        if (opt.solver.external() != null) {
+        if (opt.solver.id().equals(A4Options.SatSolver.ElectrodS.id())) {
+            String[] nopts = new String[opt.solver.options().length + 2];
+            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
+            nopts[0] = "-t";
+            nopts[1] = "NuSMV";
+            solver_opts.setSolver(SATFactory.electrod(nopts));
+        } else if (opt.solver.id().equals(A4Options.SatSolver.ElectrodX.id())) {
+            String[] nopts = new String[opt.solver.options().length + 2];
+            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
+            nopts[0] = "-t";
+            nopts[1] = "nuXmv";
+            solver_opts.setSolver(SATFactory.electrod(nopts));
+        } else if (opt.solver.external() != null) {
             String ext = opt.solver.external();
             if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
                 ext = opt.solverDirectory + File.separatorChar + ext;

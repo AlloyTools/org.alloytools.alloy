@@ -60,7 +60,6 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 
-<<<<<<< HEAD
 // @modified Nuno Macedo // [electrum-temporal] added temporal operators to the AST
 //			 (unary temporal operators have the same precedence as other unary operators,
 //			 binary ones have the highest precedence); also added a trace sequence
@@ -68,6 +67,8 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
 //			 but expanded during parsing) added time scopes to commands (reused scope
 //			 ranges but  extended to open ranges); additional syntax errors: trace scope
 //			 increments must be 1; trace scope must be larger than 0;
+//			 [electrum-unbounded] support for open ended time scopes; additional syntax
+//			 error: open ended trace scopes must start at 1;
 
 //===========================================================================//
 
@@ -362,11 +363,12 @@ action code {:
         for(int i=s.size()-1; i>=0; i--) {
           Sig j=s.get(i).sig;  int k=s.get(i).startingScope;
           p=p.merge(j.pos);
-          if (j.label.equals("univ"))  { overall=k; s.remove(i); continue; }
-          if (j.label.equals("int"))   { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
-          if (j.label.equals("seq"))   { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
+          if (j.label.equals("univ")) { overall=k; s.remove(i); continue; }
+          if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
+          if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
           // [electrum] process time scopes
           if (j.label.equals("steps")) {
+              if (s.get(i).endingScope == Integer.MAX_VALUE && s.get(i).startingScope != 1) throw new ErrorSyntax(j.pos, "Unbounded time scope must start at 1.");
 	      	  if (s.get(i).increment != 1) throw new ErrorSyntax(j.pos, "Step scopes must be incremented by 1.");
           	  if (k<1) throw new ErrorSyntax(j.pos, "Trace solutions must contain at least one step.");
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "Steps scope cannot be specified more than once."); 
@@ -722,15 +724,17 @@ Typescope  ::= TypeNumber:a TIME:b    {:
 
 Typescope  ::= TypeNumber:e NONE:f    {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You cannot set a scope on none."); :};
 
-// [electrum] distinguish between "n" and "n..n", the latter become exact
-TypeNumber ::= EXACTLY:e NUMBER:a                                  {:                                                                                RESULT = new CommandScope(    e.merge(a.pos), Sig.NONE, true,  a.num, a.num,             1    ); :};
-TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(b.pos), Sig.NONE, true,  a.num, b.num,             1    ); :};
-TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,  a.num, b.num,             i.num); :};
-TypeNumber ::= EXACTLY:e NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,  a.num, Integer.MAX_VALUE, i.num); :};
-TypeNumber ::=           NUMBER:a                                  {:                                                                                RESULT = new CommandScope(a.pos             , Sig.NONE, false, a.num, a.num,             1    ); :};
-TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Sig.NONE, a.num == b.num, a.num, b.num,    1    ); :}; 
-TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,    i.num); :};
-TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, false, a.num, Integer.MAX_VALUE, i.num); :};
+// [electrum] distinguish between "n" and "n..n", the latter become exact; open ended scopes "n.."
+TypeNumber ::= EXACTLY:e NUMBER:a                                  {:                                                                                RESULT = new CommandScope(    e.merge(a.pos), Sig.NONE, true,           a.num, a.num,             1    ); :};
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(b.pos), Sig.NONE, true,           a.num, b.num,             1    ); :};
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e             , Sig.NONE, true,           a.num, Integer.MAX_VALUE, 1    ); :};
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, b.num,             i.num); :};
+TypeNumber ::= EXACTLY:e NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, Integer.MAX_VALUE, i.num); :};
+TypeNumber ::=           NUMBER:a                                  {:                                                                                RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, a.num,             1    ); :};
+TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Sig.NONE, a.num == b.num, a.num, b.num,             1    ); :}; 
+TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, Integer.MAX_VALUE, 1    ); :}; 
+TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :};
+TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, false,          a.num, Integer.MAX_VALUE, i.num); :};
 
 Macro ::= Vis:p LET:o              Name:n LPAREN   Names:d RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, d     , v); :};
 Macro ::= Vis:p LET:o              Name:n LPAREN           RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, null  , v); :};
