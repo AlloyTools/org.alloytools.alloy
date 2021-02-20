@@ -52,7 +52,8 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * "ExampleUsingTheCompiler.java"
  *
  * @modified Nuno Macedo // [electrum-temporal] updated reporting (solving
- *           reports current state, translation the trace parameters)
+ *           reports current state, translation the trace parameters);
+ *           [electrum-decomposed] updated reporting
  */
 public final class SimpleCLI {
 
@@ -117,8 +118,8 @@ public final class SimpleCLI {
         }
 
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
-            debug("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
+            debug("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n");
         }
 
         @Override

@@ -198,7 +198,9 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  *           with 2 states, 1 otherwise; [electrum-simulator] enumerator now
  *           takes as additional argument the operation to apply; also
  *           distinguishes between global and local iterations, the former
- *           resets the visualizer; [electrum-unbounded] added electrod binaries
+ *           resets the visualizer; [electrum-unbounded] added electrod
+ *           binaries; [electrum-decomposed] added the option to select the
+ *           decompose strategy
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -1198,7 +1200,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.coreMinimization = CoreMinimization.get();
         opt.inferPartialInstance = InferPartialInstance.get();
         opt.coreGranularity = CoreGranularity.get();
-        opt.decompose_mode = DecomposePref.get().ordinal(); // [HASLab]
+        opt.decompose_mode = DecomposePref.get().ordinal();
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.solver = Solver.get();
         task.bundleIndex = i;
@@ -1457,7 +1459,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
             if (Version.experimental) {
                 addToMenu(optmenu, Unrolls);
-                addToMenu(optmenu, DecomposePref); // [HASLab]
+                addToMenu(optmenu, DecomposePref);
                 addToMenu(optmenu, ImplicitThis, NoOverflow, InferPartialInstance);
             }
 

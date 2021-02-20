@@ -84,7 +84,7 @@ import kodkod.util.ints.IntVector;
  *           constraints over sigs and fields (sig facts are also implicitly
  *           globally quantified); also, variable singleton sigs are not
  *           collapsed like static ones; [electrum-unbounded] name all relations
- *           of total order
+ *           of total order; [electrum-decomposed] updated reporting
  */
 
 public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
@@ -464,9 +464,9 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 private boolean first = true;
 
                 @Override
-                public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
+                public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
                     if (first)
-                        super.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry);
+                        super.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry, strat);
                     first = false;
                 }
 
@@ -823,7 +823,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case EMPTYNESS :
                 return Expression.NONE;
             case IDEN :
-                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
+                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [electrum] this is bad for decompositions, makes static expressions variable
             case STRING :
                 Expression ans = s2k(x.string);
                 if (ans == null)
@@ -892,7 +892,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case CAST2INT :
                 return sum(cset(x.sub));
             case RCLOSURE :
-                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
+                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [electrum] this is bad for decompositions, makes static expressions variable
                 return cset(x.sub).closure().union(iden);
             case CLOSURE :
                 return cset(x.sub).closure();

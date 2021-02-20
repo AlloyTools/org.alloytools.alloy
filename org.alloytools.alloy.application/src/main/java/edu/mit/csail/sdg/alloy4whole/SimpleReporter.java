@@ -73,7 +73,12 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  *           steps finishes; the SimpleReporter overrides these messages in the
  *           log panel and shows only the most recent one; the translation also
  *           reports the relevant temporal options; [electrum-simulator]
- *           enumeration task enriched with alternative iteration operations
+ *           enumeration task enriched with alternative iteration operations;
+ *           [electrum-decomposed] reporting updated with the decompose
+ *           strategy; a call is made every time one of the parallel problems
+ *           performs a step; the number of seen configurations is thus also
+ *           logged (the presented step is the maximum step seen by any parallel
+ *           problem)
  */
 
 final class SimpleReporter extends A4Reporter {
@@ -375,24 +380,30 @@ final class SimpleReporter extends A4Reporter {
 
     /** {@inheritDoc} */
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
         startTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
+        cb("translate", "Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n");
     }
 
     /** {@inheritDoc} */
     @Override
     public void solve(final int step, final int pv, final int tv, final int cl) {
         // [electrum] this may now be called multiple times in iterative temporal solving, variables are accumulated
+        // [electrum] in decomposed mode it also reports how many configs have been explored (and only presents the largest step seen)
         minimized = 0;
         if (startStep < 0)
             startStep = step;
+        if (startStep == step) // [electrum] denotes a new config
+            startCount++;
+        seenStep = Math.max(seenStep, step);
         primaryVars += pv;
         totalVars += tv;
         clauses += cl;
         StringBuilder sb = new StringBuilder();
-        if (step > 0)
-            sb.append(startStep + ".." + step + " steps. ");
+        if (startCount > 1)
+            sb.append(startCount + " configs. ");
+        if (seenStep > 0)
+            sb.append(startStep + ".." + seenStep + " steps. ");
         if (totalVars >= 0)
             sb.append("" + totalVars + " vars. ");
         if (primaryVars >= 0)
@@ -516,10 +527,10 @@ final class SimpleReporter extends A4Reporter {
     private long          lastTime  = 0, startTime = 0;
 
     /**
-     * Variables to accumulate solving data for each call to
+     * Variables to log and accumulate solving data for each call to
      * {@link #solve(int, int, int, int)}
      */
-    private int           startStep = -1, primaryVars = 0, clauses = 0, totalVars = 0;
+    private int           startStep = -1, seenStep = -1, primaryVars = 0, clauses = 0, totalVars = 0, startCount = 0;
 
     /**
      * If we performed unsat core minimization, then this is the start of the

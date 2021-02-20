@@ -24,7 +24,8 @@ package edu.mit.csail.sdg.alloy4;
  * @modified Nuno Macedo // [electrum-temporal] the solving process now reports
  *           in which step of the temporal analysis is (reported info should
  *           regard that step only); translation also reports temporal
- *           parameters (max/min trace length)
+ *           parameters (max/min trace length); [electrum-decomposed]
+ *           translation also considers decompose strategy employed
  */
 
 public class A4Reporter {
@@ -119,9 +120,9 @@ public class A4Reporter {
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      * @param strat - selected decompose solving strategy
      */
-    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
         if (parent != null)
-            parent.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry);
+            parent.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry, strat);
     }
 
     /**
