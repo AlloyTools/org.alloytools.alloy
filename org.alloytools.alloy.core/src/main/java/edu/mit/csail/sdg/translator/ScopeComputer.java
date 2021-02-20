@@ -69,7 +69,13 @@ import edu.mit.csail.sdg.parser.CompUtil;
  * Please see ScopeComputer.java for the exact rules for deriving the missing
  * scopes.
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal
+ * @modified Nuno Macedo // [electrum-temporal] store the trace scope (min and
+ *           max scope); also, some errors on scopes are relaxed: eg, one var
+ *           sigs may still have a scope larger than 1, since the multiplicity
+ *           is imposed state by state, thus the atom may change; also, scopes
+ *           for such sigs are not made exact; new syntax error, setting trace
+ *           scope for static models
+ *
  */
 final class ScopeComputer {
 
@@ -103,13 +109,11 @@ final class ScopeComputer {
     /**
      * Maximum trace length to be handled by bounded temporal solvers.
      */
-    // [HASLab]
     private int                                    maxtrace  = 10;
 
     /**
      * Minimum trace length to be handled by bounded temporal solvers.
      */
-    // [HASLab]
     private int                                    mintrace  = 1;
 
     /** The scope for each sig. */
@@ -190,13 +194,11 @@ final class ScopeComputer {
 
 
     /** Modifies the maximum trace length of this solution's model. */
-    // [HASLab]
     private void setMaxTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
         maxtrace = newTracelength;
     }
 
     /** Modifies the minimum trace length of this solution's model. */
-    // [HASLab]
     private void setMinTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
         mintrace = newTracelength;
     }
@@ -402,11 +404,12 @@ final class ScopeComputer {
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"none\".");
             if (s.isEnum != null)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on the enum \"" + s.label + "\"");
-            if (s.isOne != null && s.isVariable == null && scope != 1) // [HASLab] if var, the atom may change along the trace
+            // [electrum] rules relaxed if mutable, the atom may change along the trace
+            if (s.isOne != null && s.isVariable == null && scope != 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1, and cannot be " + scope);
-            if (s.isOne != null && s.isVariable != null && scope < 1) // [HASLab] if var, the atom may change along the trace but must at least exist one atom
+            if (s.isOne != null && s.isVariable != null && scope < 1)
                 throw new ErrorSyntax(cmd.pos, "Var sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1 or above, and cannot be " + scope);
-            if (s.isLone != null && s.isVariable == null && scope > 1) // [HASLab] if var, the atom may change along the trace
+            if (s.isLone != null && s.isVariable == null && scope > 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"lone\", so its scope must 0 or 1, and cannot be " + scope);
             if (s.isSome != null && scope < 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"some\", so its scope must 1 or above, and cannot be " + scope);
@@ -415,28 +418,32 @@ final class ScopeComputer {
                 makeExact(cmd.pos, s);
         }
         // Force "one" sigs to be exactly one, and "lone" to be at most one
+        // [electrum] except in mutable sigs, where atom may vary
         for (Sig s : sigs)
             if (s instanceof PrimSig) {
-                if (s.isOne != null && s.isVariable == null) { // [HASLab] in var sigs atom may vary
+                if (s.isOne != null && s.isVariable == null) {
                     makeExact(cmd.pos, s);
                     sig2scope(s, 1);
-                } else if (s.isLone != null && s.isVariable == null && sig2scope(s) != 0) // [HASLab] in var sigs atom may vary
+                } else if (s.isLone != null && s.isVariable == null && sig2scope(s) != 0)
                     sig2scope(s, 1);
             }
         // Derive the implicit scopes
         while (true) {
             if (derive_abstract_scope(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_abstract_scope(sigs));
                 continue;
             }
             if (derive_overall_scope(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_overall_scope(sigs));
                 continue;
             }
             if (derive_scope_from_parent(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_scope_from_parent(sigs));
                 continue;
             }
@@ -466,9 +473,10 @@ final class ScopeComputer {
         if (max >= min)
             for (int i = min; i <= max; i++)
                 atoms.add("" + i);
-        // [HASLab] handle trace lengths
+        // [electrum] handle trace lengths
         boolean isVar = CompUtil.isTemporalModel(sigs, cmd);
         int tracelength = cmd.maxprefix;
+        // [electrum] do not allow trace scopes for static models
         if (!isVar) {
             if (tracelength > 0)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
@@ -526,7 +534,7 @@ final class ScopeComputer {
         for (int i = 0; set.size() < sc.maxstring; i++)
             set.add("\"String" + i + "\"");
         sc.atoms.addAll(set);
-        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects); // [HASLab]
+        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
         return new Pair<A4Solution,ScopeComputer>(sol, sc);
     }
 }

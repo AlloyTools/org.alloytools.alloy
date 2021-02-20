@@ -81,8 +81,7 @@ import edu.mit.csail.sdg.alloy4.Subprocess;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
- * @modified: Nuno Macedo // [HASLab] electrum-base, electrum-unbounded,
- *            electrum-decomposed
+ * @modified Nuno Macedo // [electrum-base] only log when debugging
  */
 @SuppressWarnings({
                    "serial"
@@ -362,7 +361,7 @@ public class PreferencesDialog extends JFrame {
     private static boolean loadLibrary(String library) {
         boolean loaded = _loadLibrary(library);
         String libName = System.mapLibraryName(library);
-        if ("yes".equals(System.getProperty("debug"))) // [HASLab]
+        if ("yes".equals(System.getProperty("debug")))
             if (loaded)
                 System.out.println("Loaded: " + libName);
             else

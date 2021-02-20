@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+/**
+ * @modified Nuno Macedo // [electrum-base] find executable binaries
+ */
 public class NativeCode {
 
     static class Platform {
@@ -48,7 +51,6 @@ public class NativeCode {
 
     public static Platform   platform    = findPlatform();
 
-    // [HASLab]
     public static String findexecutable(Path cache, String name) throws RuntimeException {
         try {
             if (platform.dir == null)

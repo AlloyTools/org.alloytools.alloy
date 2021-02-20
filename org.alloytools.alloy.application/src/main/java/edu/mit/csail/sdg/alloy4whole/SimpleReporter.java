@@ -64,8 +64,16 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 /**
  * This helper method is used by SimpleGUI.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-base,
- *            electrum-temporal, electrum-simulator, electrum-decomposed
+ * @modified Nuno Macedo, Eduardo Pessoa // [electrum-base] changed so that all
+ *           commands can be executed even when some throw errors;
+ *           [electrum-temporal] the solving process now reports in which step
+ *           of the temporal analysis is; since temporal analysis is
+ *           incremental, solving the command from 1 to the maximum number of
+ *           steps defined in the scope, and reports whenever each of these
+ *           steps finishes; the SimpleReporter overrides these messages in the
+ *           log panel and shows only the most recent one; the translation also
+ *           reports the relevant temporal options; [electrum-simulator]
+ *           enumeration task enriched with alternative iteration operations
  */
 
 final class SimpleReporter extends A4Reporter {
@@ -77,7 +85,7 @@ final class SimpleReporter extends A4Reporter {
         private final SwingLogPanel     span;
         private final Set<ErrorWarning> warnings = new HashSet<ErrorWarning>();
         private final List<String>      results  = new ArrayList<String>();
-        private int                     len2     = 0, len3 = 0, len4 = 0, verbosity = 0; // [HASLab]
+        private int                     len2     = 0, len3 = 0, len4 = 0, verbosity = 0;
         private final String            latestName;
         private final int               latestVersion;
 
@@ -211,15 +219,16 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
-                len2 = len3 = len4 = span.getLength(); // [HASLab]
+                len2 = len3 = len4 = span.getLength();
             }
             if (array[0].equals("translate")) {
                 span.log("   " + array[1]);
-                len3 = len4 = span.getLength(); // [HASLab]
+                len3 = len4 = span.getLength();
                 span.logBold("   Generating CNF...\n");
             }
             if (array[0].equals("solve")) {
-                span.setLength(len4); // [HASLab]
+                // [electrum] len4 allows solving step info to be overwritten
+                span.setLength(len4);
                 span.log("   " + array[1]);
                 len3 = span.getLength();
                 span.logBold("   Solving...\n");
@@ -366,30 +375,24 @@ final class SimpleReporter extends A4Reporter {
 
     /** {@inheritDoc} */
     @Override
-    // [HASLab] trace + decompose params
-    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry) {
         startTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n"); // [HASLab]
+        cb("translate", "Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
     }
 
     /** {@inheritDoc} */
     @Override
-    // [HASLab] this may now be called multiple times in iterative temporal solving
     public void solve(final int step, final int pv, final int tv, final int cl) {
+        // [electrum] this may now be called multiple times in iterative temporal solving, variables are accumulated
         minimized = 0;
-        if (startStep < 0) // [HASLab] first report denotes initial step scope
+        if (startStep < 0)
             startStep = step;
-        if (startStep == step) // [HASLab] denotes a new config
-            startCount++;
-        seenStep = Math.max(seenStep, step);
-        primaryVars += pv; // [HASLab]
-        totalVars += tv; // [HASLab]
-        clauses += cl; // [HASLab]
-        StringBuilder sb = new StringBuilder(); // [HASLab] detect if no info available
-        if (startCount > 1)
-            sb.append(startCount + " configs. "); // [HASLab]
-        if (seenStep > 0)
-            sb.append(startStep + ".." + seenStep + " steps. "); // [HASLab]
+        primaryVars += pv;
+        totalVars += tv;
+        clauses += cl;
+        StringBuilder sb = new StringBuilder();
+        if (step > 0)
+            sb.append(startStep + ".." + step + " steps. ");
         if (totalVars >= 0)
             sb.append("" + totalVars + " vars. ");
         if (primaryVars >= 0)
@@ -398,7 +401,7 @@ final class SimpleReporter extends A4Reporter {
             sb.append(clauses + " clauses. ");
         if (sb.length() == 0)
             sb.append("No translation information available. ");
-        sb.append((System.currentTimeMillis() - startTime) + "ms.\n"); // [HASLab]
+        sb.append((System.currentTimeMillis() - startTime) + "ms.\n");
         cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
     }
@@ -510,9 +513,13 @@ final class SimpleReporter extends A4Reporter {
      * The time that the last action began; we subtract it from
      * System.currentTimeMillis() to determine the elapsed time.
      */
-    private long          lastTime  = 0, startTime = 0; // [HASLab]
+    private long          lastTime  = 0, startTime = 0;
 
-    private int           startStep = -1, seenStep = -1, primaryVars = 0, clauses = 0, totalVars = 0, startCount = 0; // [HASLab]
+    /**
+     * Variables to accumulate solving data for each call to
+     * {@link #solve(int, int, int, int)}
+     */
+    private int           startStep = -1, primaryVars = 0, clauses = 0, totalVars = 0;
 
     /**
      * If we performed unsat core minimization, then this is the start of the
@@ -588,7 +595,7 @@ final class SimpleReporter extends A4Reporter {
     static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
-        public int                      index            = -1; // [HASLab] simulator
+        public int                      index            = -1; // [electrum] registers which iteration operation to perform
         public String                   filename         = "";
         public transient WorkerCallback out              = null;
 
@@ -629,8 +636,8 @@ final class SimpleReporter extends A4Reporter {
             int tries = 0;
             while (true) {
                 try {
-                    sol = sol.fork(this.index); // [HASLab] simulator
-                } catch (ErrorAPI e) { // [HASLab]
+                    sol = sol.fork(this.index); // [electrum] call the enumerator with appropriate operation
+                } catch (ErrorAPI e) {
                     cb("pop", e.getMessage());
                     return;
                 }
@@ -663,7 +670,7 @@ final class SimpleReporter extends A4Reporter {
      */
     private static void validate(String filename) throws Exception {
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new File(filename))).toString();
-        StaticInstanceReader.parseInstance(new File(filename), 0); // [HASLab] only validates first
+        StaticInstanceReader.parseInstance(new File(filename), 0);
     }
 
     /** Task that perform one command. */
@@ -694,7 +701,7 @@ final class SimpleReporter extends A4Reporter {
             if (rep.warn > 0 && !bundleWarningNonFatal)
                 return;
             List<String> result = new ArrayList<String>(cmds.size());
-            Exception exc = null; // [HASLab]
+            Exception exc = null;
             if (bundleIndex == -2) {
                 final String outf = tempdir + File.separatorChar + "m.xml";
                 cb(out, "S2", "Generating the metamodel...\n");
@@ -722,7 +729,7 @@ final class SimpleReporter extends A4Reporter {
                         rep.tempfile = tempCNF;
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
                         A4Solution ai = null;
-                        try { // [HASLab] postpones error throwing, allows other commands to still be solved
+                        try { // [electrum] postpones error throwing, allows other commands to still be solved
                             ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
                         } catch (Exception e1) {
                             exc = e1;
@@ -781,7 +788,7 @@ final class SimpleReporter extends A4Reporter {
             if (rep.warn == 1)
                 rep.cb("bold", "Note: There was 1 compilation warning. Please scroll up to see it.\n");
 
-            if (exc != null) // [HASLab]
+            if (exc != null)
                 throw exc;
 
         }
