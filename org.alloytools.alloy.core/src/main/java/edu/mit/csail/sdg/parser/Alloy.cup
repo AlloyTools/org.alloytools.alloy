@@ -17,6 +17,7 @@
 /*
  * Warning: this file alone is not enough to correctly parse Alloy4 since the actual
  * language is not LALR(1); instead, we have to pre-process the token stream
+ * using CompFilter.java to rearrange/transform the token stream, and then we can
  * parse the transformed token stream using this LALR(1) grammar.  For more information,
  * please refer to CompFilter.java
  */
@@ -59,7 +60,13 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 
-// @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-unbounded
+// @modified Nuno Macedo // [electrum-temporal] added temporal operators to the AST 
+//			 (unary temporal operators have the same precedence as other unary operators,
+//			 binary ones have the highest precedence); also added a trace sequence
+//			 operator which has the lowest precedence (not actually translated into AST
+//		     but expanded during parsing) added time scopes to commands (reused scope
+//			 ranges but extended to open ranges); [electrum-unbounded] support for open
+//			 ended time scopes;
 
 //===========================================================================//
 
@@ -85,13 +92,13 @@ parser code {:
      for (_done_parsing = false; !_done_parsing; ) {
         act = get_action(((Symbol)stack.peek()).parse_state, cur_token.sym);
         if (act > 0) { // "shift"; thus, we shift to the encoded state by pushing it on the stack
-           // if (logging) System.out.println("shift " + cur_token.sym); // [HASLab]
+           // if (logging) System.out.println("shift " + cur_token.sym);
            cur_token.parse_state = act-1;
            stack.push(cur_token);
            tos++;
            cur_token = scan();
         } else if (act<0) { // "reduce"
-           // if (logging) System.out.println("reduce " + ((-act)-1)); // [HASLab]
+           // if (logging) System.out.println("reduce " + ((-act)-1));
            lhs_sym = do_action((-act)-1, this, stack, tos);
            lhs_sym_num = production_tab[(-act)-1][0];
            handle_size = production_tab[(-act)-1][1];
@@ -225,20 +232,20 @@ parser code {:
     ch.put(CompSym.ID, "NAME");
     ch.put(CompSym.NUMBER, "NUMBER");
     ch.put(CompSym.STR, "STRING");
-    ch.put(CompSym.VAR, "var");                       // [HASLab] temporal tokens
-    ch.put(CompSym.ALWAYS, "always");                 // [HASLab] temporal tokens
-    ch.put(CompSym.EVENTUALLY, "eventually");         // [HASLab] temporal tokens
-    ch.put(CompSym.AFTER, "after");                   // [HASLab] temporal tokens
-    ch.put(CompSym.BEFORE, "before");                 // [HASLab] temporal tokens
-    ch.put(CompSym.HISTORICALLY, "historically");     // [HASLab] temporal tokens
-    ch.put(CompSym.ONCE, "once");                     // [HASLab] temporal tokens
-    ch.put(CompSym.RELEASES, "releases");             // [HASLab] temporal tokens
-    ch.put(CompSym.UNTIL, "until");                   // [HASLab] temporal tokens
-    ch.put(CompSym.SINCE, "since");                   // [HASLab] temporal tokens
-    ch.put(CompSym.TRIGGERED, "triggered");           // [HASLab] temporal tokens
-    ch.put(CompSym.TRCSEQ, ";");	   	              // [HASLab] temporal tokens
-    ch.put(CompSym.PRIME, "'"); 					  // [HASLab] temporal tokens
-    ch.put(CompSym.TIME, "steps"); 					  // [HASLab] temporal tokens
+    ch.put(CompSym.VAR, "var");
+    ch.put(CompSym.ALWAYS, "always");
+    ch.put(CompSym.EVENTUALLY, "eventually");
+    ch.put(CompSym.AFTER, "after");
+    ch.put(CompSym.BEFORE, "before");
+    ch.put(CompSym.HISTORICALLY, "historically");
+    ch.put(CompSym.ONCE, "once");
+    ch.put(CompSym.RELEASES, "releases");
+    ch.put(CompSym.UNTIL, "until");
+    ch.put(CompSym.SINCE, "since");
+    ch.put(CompSym.TRIGGERED, "triggered");
+    ch.put(CompSym.TRCSEQ, ";");
+    ch.put(CompSym.PRIME, "'");
+    ch.put(CompSym.TIME, "steps");
     TreeSet<String> list = new TreeSet<String>();
     Pos p=Pos.UNKNOWN;
     if (x!=null && x.value instanceof Pos) p=(Pos)(x.value);
@@ -346,11 +353,10 @@ action code {:
     private void nod(List<ExprVar> names) throws Err {
         if (names!=null) for(ExprVar n:names) if (n!=null && n.label.indexOf('$')>=0) throw new ErrorSyntax(n.pos, "The name cannot contain the '$' symbol.");
     }
-    // [HASLab] extended with time scopes
     private void c(boolean follow, ExprVar o, ExprVar x, ExprVar n, Expr e, List<CommandScope> s, ExprConstant c) throws Err {
         if (n!=null) nod(n);
         int bitwidth=(-1), maxseq=(-1), overall=(-1), expects=(c==null ? -1 : c.num);
-        int maxtime = (-1), mintime = (-1); // [HASLab]
+        int maxtime = (-1), mintime = (-1);
         Pos p = o.pos.merge(n!=null ? n.span() : e.span());
         for(int i=s.size()-1; i>=0; i--) {
           Sig j=s.get(i).sig;  int k=s.get(i).startingScope;
@@ -358,9 +364,10 @@ action code {:
           if (j.label.equals("univ")) { overall=k; s.remove(i); continue; }
           if (j.label.equals("int"))  { if (bitwidth>=0) throw new ErrorSyntax(j.pos, "The bitwidth cannot be specified more than once."); bitwidth=k; s.remove(i); continue; }
           if (j.label.equals("seq"))  { if (maxseq>=0) throw new ErrorSyntax(j.pos, "The maximum sequence length cannot be specified more than once."); maxseq=k; s.remove(i); continue; }
-          if (j.label.equals("steps")) { // [HASLab] process time scopes
+          // [electrum] process time scopes
+          if (j.label.equals("steps")) {
               if (s.get(i).endingScope == Integer.MAX_VALUE && s.get(i).startingScope != 1) throw new ErrorSyntax(j.pos, "Unbounded time scope must start at 1.");
-        	  if (s.get(i).increment != 1) throw new ErrorSyntax(j.pos, "Unbounded time must increment by 1."); 
+        	  if (s.get(i).increment != 1) throw new ErrorSyntax(j.pos, "Unbounded time must increment by 1.");
           	  if (k<1) throw new ErrorSyntax(j.pos, "Trace solutions must contain at least one step.");
         	  if (maxtime>=0) throw new ErrorSyntax(j.pos, "Steps scope cannot be specified more than once."); 
         	  maxtime=k; 
@@ -371,9 +378,9 @@ action code {:
       	  }
         }
         if (n!=null)
-          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, mintime, maxtime, expects, s, x); // [HASLab]
+          parser.alloymodule.addCommand(follow, p, n, o.label.equals("c"), overall, bitwidth, maxseq, mintime, maxtime, expects, s, x);
         else
-          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, mintime, maxtime, expects, s, x); // [HASLab]
+          parser.alloymodule.addCommand(follow, p, e, o.label.equals("c"), overall, bitwidth, maxseq, mintime, maxtime, expects, s, x);
     }
     private Expr t(Pos pos, Pos oldClosing, Expr left, Expr right, Pos close) throws Err {
       if (right instanceof ExprVar) {
@@ -505,20 +512,20 @@ terminal Pos THIS;             //  this
 terminal Pos TILDE;            //  ~
 terminal Pos UNIV;             //  univ
 
-terminal Pos VAR;              //  var   		 // [HASLab] ltl tokens  
-terminal Pos ALWAYS;           //  always      	 // [HASLab] ltl tokens
-terminal Pos EVENTUALLY;       //  eventually  	 // [HASLab] ltl tokens
-terminal Pos AFTER;            //  after  	  	 // [HASLab] ltl tokens
-terminal Pos ONCE;             //  once   	 	 // [HASLab] ltl tokens
-terminal Pos HISTORICALLY;     //  historically	 // [HASLab] ltl tokens
-terminal Pos BEFORE;           //  before		 // [HASLab] ltl tokens
-terminal Pos RELEASES;         //  releases		 // [HASLab] ltl tokens
-terminal Pos UNTIL;            //  until		 // [HASLab] ltl tokens
-terminal Pos SINCE;            //  since		 // [HASLab] ltl tokens
-terminal Pos TRIGGERED;        //  triggered   	 // [HASLab] ltl tokens
-terminal Pos TRCSEQ;           //  trace seq     // [HASLab] ltl tokens
-terminal Pos TIME;         	   //  steps	 	 // [HASLab] ltl tokens
-terminal Pos PRIME; 	   	   // '		 		 // [HASLab] ltl tokens
+terminal Pos VAR;              //  var  
+terminal Pos ALWAYS;           //  always
+terminal Pos EVENTUALLY;       //  eventually
+terminal Pos AFTER;            //  after
+terminal Pos ONCE;             //  once
+terminal Pos HISTORICALLY;     //  historically
+terminal Pos BEFORE;           //  before
+terminal Pos RELEASES;         //  releases
+terminal Pos UNTIL;            //  until
+terminal Pos SINCE;            //  since
+terminal Pos TRIGGERED;        //  triggered
+terminal Pos TRCSEQ;           //  trace seq
+terminal Pos TIME;         	   //  steps
+terminal Pos PRIME; 	   	   //  '
 
 terminal ExprVar ID;
 
@@ -608,9 +615,9 @@ nonterminal Expr                       UnionDiffExprB;
 nonterminal Expr                       UnopExprA;
 nonterminal Expr                       UnopExprB;
 nonterminal Pos                        Vis;
-nonterminal Expr                       TempBinaryA; // [HASLab]
-nonterminal Expr                       TempBinaryB; // [HASLab]
-nonterminal Expr                       Expr2; // [HASLab]
+nonterminal Expr                       TempBinaryA;
+nonterminal Expr                       TempBinaryB;
+nonterminal Expr                       ExprNoSeq;
 
 precedence right TRCSEQ;
 precedence nonassoc BAR;
@@ -705,7 +712,7 @@ Typescope  ::= TypeNumber:e UNIV:f    {: if (1==1) throw new ErrorSyntax(e.pos.m
 
 Typescope  ::= TypeNumber:a STRING:b  {: RESULT = new CommandScope(a.pos.merge(b), new PrimSig("String", AttrType.WHERE.make(a.pos.merge(b))), a.isExact, a.startingScope, a.endingScope, a.increment); :};
 
-// [HASLab] scope on Time
+// [electrum] scope on Time
 Typescope  ::= TypeNumber:a TIME:b    {:
     Pos p = a.pos.merge(b);
 	RESULT = new CommandScope(p, new PrimSig("steps", AttrType.WHERE.make(p)), a.isExact, a.startingScope, a.endingScope, a.increment); 
@@ -715,15 +722,16 @@ Typescope  ::= TypeNumber:a TIME:b    {:
 
 Typescope  ::= TypeNumber:e NONE:f    {: if (1==1) throw new ErrorSyntax(e.pos.merge(f), "You cannot set a scope on none."); :};
 
+// [electrum] open ended scopes "n.."; distinguish between "n" and "n..n", the latter become exact
 TypeNumber ::= EXACTLY:e NUMBER:a                                  {:                                                                                RESULT = new CommandScope(    e.merge(a.pos), Sig.NONE, true,           a.num, a.num,             1    ); :};
 TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(b.pos), Sig.NONE, true,           a.num, b.num,             1    ); :};
-TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e             , Sig.NONE, true,           a.num, Integer.MAX_VALUE, 1    ); :}; // [HASLab] open ended scopes
+TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e             , Sig.NONE, true,           a.num, Integer.MAX_VALUE, 1    ); :};
 TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, b.num,             i.num); :};
 TypeNumber ::= EXACTLY:e NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, Integer.MAX_VALUE, i.num); :};
 TypeNumber ::=           NUMBER:a                                  {:                                                                                RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, a.num,             1    ); :};
-TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Sig.NONE, a.num == b.num, a.num, b.num,             1    ); :}; // [HASLab] distinguish "for n" from "from n..n" 
-TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, Integer.MAX_VALUE, 1    ); :}; // [HASLab] open ended scopes 
-TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :}; // [HASLab] distinguish "for n" from "from n..n"
+TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Sig.NONE, a.num == b.num, a.num, b.num,             1    ); :}; 
+TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, Integer.MAX_VALUE, 1    ); :}; 
+TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :};
 TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, false,          a.num, Integer.MAX_VALUE, i.num); :};
 
 Macro ::= Vis:p LET:o              Name:n LPAREN   Names:d RPAREN   MacroBody:v {: nod(n); parser.alloymodule.addMacro(o.merge(v.span()), p, n.label, d     , v); :};
@@ -764,19 +772,20 @@ Sig ::= SigQuals:a Names:b SigIn:c LBRACE Decls:d RBRACE:o SuperOpt:e
          AttrType.ONE     .makenull(a.get(2)),
          AttrType.SOME    .makenull(a.get(3)),
          AttrType.PRIVATE .makenull(a.get(4)),
-         AttrType.VARIABLE.makenull(a.get(5)));  // [HASLab]
+         AttrType.VARIABLE.makenull(a.get(5)));
    }
  :};
 
-SigQual  ::= ABSTRACT:x               {: RESULT=new ArrayList<Pos>(6); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
-SigQual  ::= LONE:x                   {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
-SigQual  ::= ONE:x                    {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
-SigQual  ::= SOME:x                   {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
-SigQual  ::= PRIVATE:x                {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);  	 RESULT.add(null); :}; // [HASLab] variable sigs
-SigQual  ::= VAR:x            	      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    :}; // [HASLab] variable sigs
+// [electrum] additional attribute for variable sigs
+SigQual  ::= ABSTRACT:x               {: RESULT=new ArrayList<Pos>(6); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
+SigQual  ::= LONE:x                   {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
+SigQual  ::= ONE:x                    {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
+SigQual  ::= SOME:x                   {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    RESULT.add(null); RESULT.add(null); :};
+SigQual  ::= PRIVATE:x                {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);  	 RESULT.add(null); :};
+SigQual  ::= VAR:x            	      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    :};
 
-SigQuals ::= SIG                      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :}; // [HASLab] variable sigs
-SigQuals ::= SigQual:a SigQuals:b     {: RESULT=a; for(int i=0;i<6;i++) if (a.get(i)==null) a.set(i,b.get(i)); else if (b.get(i)!=null) throw new ErrorSyntax(b.get(i), "The same qualifer cannot be specified more than once for the same sig."); :}; // [HASLab] variable sigs
+SigQuals ::= SIG                      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
+SigQuals ::= SigQual:a SigQuals:b     {: RESULT=a; for(int i=0;i<6;i++) if (a.get(i)==null) a.set(i,b.get(i)); else if (b.get(i)!=null) throw new ErrorSyntax(b.get(i), "The same qualifer cannot be specified more than once for the same sig."); :};
 
 SigIn    ::= EXTENDS:a SigRef:x       {: RESULT=new ArrayList<ExprVar>(2); RESULT.add(x); RESULT.add(ExprVar.make(a, "extends")); :};
 SigIn    ::= IN:a SigRefu:x           {: RESULT=x;  x.add(ExprVar.make(a,"in"));                                                  :};
@@ -786,7 +795,7 @@ SigIn    ::=                          {: RESULT=null;                           
 SigRef   ::= Name:x                   {: RESULT=x;                                    :};
 SigRef   ::= UNIV:x                   {: RESULT=ExprVar.make(x, "univ");              :};
 SigRef   ::= STRING:x                 {: RESULT=ExprVar.make(x, "String");            :};
-SigRef   ::= TIME:x                   {: RESULT=ExprVar.make(x, "steps");             :};  // [HASLab]
+SigRef   ::= TIME:x                   {: RESULT=ExprVar.make(x, "steps");             :};
 SigRef   ::= SIGINT:x                 {: RESULT=ExprVar.make(x, "Int");               :};
 SigRef   ::= SEQ:a SLASH SIGINT:b     {: RESULT=ExprVar.make(a.merge(b), "seq/Int");  :};
 SigRef   ::= NONE:x                   {: RESULT=ExprVar.make(x, "none");              :};
@@ -815,41 +824,42 @@ Namex ::= EXACTLY Name:x               {: nod(x); RESULT=new ArrayList<ExprVar>(
 Namex ::= Namex:a COMMA         Name:b {: nod(b);              a.add(b); RESULT=a;                                   :};
 Namex ::= Namex:a COMMA EXACTLY Name:b {: nod(b); a.add(null); a.add(b); RESULT=a;                                   :};
 
+// [electrum] additional parameter for variable declarations (for fields)
 Decla ::=           PART:k Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, null, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, null, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, null, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, null, a, mult(b)); :};
+Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, null, a, mult(b)); :};
+Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, null, a, mult(b)); :};
+Decla ::=                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, null, a, mult(b)); :};
 
-Decla ::= VAR:v 		  DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, v, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, v, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= VAR:v PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, v, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= VAR:v                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v 		  DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, v, a, mult(b)); :};
+Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, v, a, mult(b)); :};
+Decla ::= VAR:v PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, v, a, mult(b)); :};
+Decla ::= VAR:v                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, v, a, mult(b)); :};
 
 Decla ::=           PART:k Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
 Decla ::=           EXH:k  Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
-Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, null, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, null, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, null, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, null, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, null, a, mult(b)); :};
+Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, null, a, mult(b)); :};
+Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, null, a, mult(b)); :};
+Decla ::=                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, null, a, mult(b)); :};
 
-Decla ::= VAR:v           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, v, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, v, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= VAR:v PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, v, a, mult(b)); :}; // [HASLab] variable decls
-Decla ::= VAR:v                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, v, a, mult(b)); :}; // [HASLab] variable decls
+Decla ::= VAR:v           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, v, a, mult(b)); :};
+Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, v, a, mult(b)); :};
+Decla ::= VAR:v PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, v, a, mult(b)); :};
+Decla ::= VAR:v                  Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, null, d, v, a, mult(b)); :};
 
 Declb ::= Decla:x {: RESULT=x; :};
 
-Declb ::=           PART:k Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "part");                                      :};
-Declb ::=           EXH:k  Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                       :};
-Declb ::=           DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
-Declb ::= PRIVATE   DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");    :};
-Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab] variable decls
-Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :}; // [HASLab] variable decls
+Declb ::=           PART:k Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "part");                                       :};
+Declb ::=           EXH:k  Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                        :};
+Declb ::=           DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");         :};
+Declb ::= PRIVATE   DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");         :};
+Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :};
+Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :};
 
-Declb ::=           PART:k Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "part");                                   :};
-Declb ::=           EXH:k  Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                    :};
+Declb ::=           PART:k Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "part");                               :};
+Declb ::=           EXH:k  Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                :};
 Declb ::=           DISJ   Names   EQUALS DISJ:d   Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint."); :};
 Declb ::= PRIVATE   DISJ   Names   EQUALS DISJ:d   Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint."); :};
 Declb ::= PRIVATE          Names   EQUALS DISJ:d   Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint."); :};
@@ -880,17 +890,18 @@ Let ::= Name:a EQUALS:o Expr:b COMMA Let:x {:
   RESULT = ExprLet.make(o, ExprVar.make(a.pos, a.label), b, x);
 :};
 
-SuperOpt ::=                               {: RESULT=null;                                      :};
-SuperOpt ::= Super:x                       {: RESULT=x;                                         :};
-Super    ::= LBRACE:a SuperP:x RBRACE:b    {: RESULT=ExprUnary.Op.NOOP.make(a.merge(b), x);     :};
-Super    ::= LBRACE:a          RBRACE:b    {: RESULT=ExprConstant.Op.TRUE.make(a.merge(b), 0);  :};
-SuperP   ::= Expr:a                        {: RESULT=a;                                         :};
-SuperP   ::= SuperP:a Expr:b               {: RESULT=ExprBinary.Op.AND.make(null, null, a, b);  :};
-SuperP   ::= Expr:a TRCSEQ:o SuperP:b      {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :}; // [HASLab] temporal seq
+// [electrum] temporal seq expressions have the lowest precedence
+SuperOpt ::=                               {: RESULT=null;                                                              :};
+SuperOpt ::= Super:x                       {: RESULT=x;                                                                 :};
+Super    ::= LBRACE:a SuperP:x RBRACE:b    {: RESULT=ExprUnary.Op.NOOP.make(a.merge(b), x);                             :};
+Super    ::= LBRACE:a          RBRACE:b    {: RESULT=ExprConstant.Op.TRUE.make(a.merge(b), 0);                          :};
+SuperP   ::= Expr:a                        {: RESULT=a;                                                                 :};
+SuperP   ::= SuperP:a Expr:b               {: RESULT=ExprBinary.Op.AND.make(null, null, a, b);                          :};
+SuperP   ::= Expr:a TRCSEQ:o SuperP:b      {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
 
-SuperOrBar ::= BAR Expr2:x  			   {: RESULT=x; :};
-SuperOrBar ::= Super:x     				   {: RESULT=x; :};
-SuperOrBar ::= BAR Expr2:x TRCSEQ:o Expr:y {: RESULT=ExprBinary.Op.AND.make(o, null, x, ExprUnary.Op.AFTER.make(o, y)); :}; // [HASLab] temporal seq
+SuperOrBar ::= BAR ExprNoSeq:x  			   {: RESULT=x;                                                                 :};
+SuperOrBar ::= Super:x     				       {: RESULT=x;                                                                 :};
+SuperOrBar ::= BAR ExprNoSeq:x TRCSEQ:o Expr:y {: RESULT=ExprBinary.Op.AND.make(o, null, x, ExprUnary.Op.AFTER.make(o, y)); :};
 
 Exprs ::=                       {: RESULT=new ArrayList<Expr>();                :};
 Exprs ::= Exprp:x               {: RESULT=x;                                    :};
@@ -899,20 +910,19 @@ Exprp ::= Exprp:a COMMA Expr:b  {: a.add(b); RESULT=a;                          
 
 //=============================================================================
 
-// [HASLab] temporal seq
-Expr ::=                  Expr2:a  {: RESULT=a;                                   								:};
-Expr ::= Expr2:a TRCSEQ:o Expr:b   {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
+Expr ::=                      ExprNoSeq:a  {: RESULT=a;                                   								:};
+Expr ::= ExprNoSeq:a TRCSEQ:o Expr:b       {: RESULT=ExprBinary.Op.AND.make(o, null, a, ExprUnary.Op.AFTER.make(o, b)); :};
 
-Expr2 ::= OrExprA:x            	  	  {: RESULT = x;                                  :};
-Expr2 ::= OrExprB:x                   {: RESULT = x;                                  :};
-Expr2 ::= Bind:x                      {: RESULT = x;                                  :};
-Bind ::= LET     Let:x                {: RESULT = x;                                  :};
-Bind ::= ALL2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ALL .make(o, null, a, b); :};
-Bind ::= NO2:o   Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.NO  .make(o, null, a, b); :};
-Bind ::= SOME2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SOME.make(o, null, a, b); :};
-Bind ::= LONE2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.LONE.make(o, null, a, b); :};
-Bind ::= ONE2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ONE .make(o, null, a, b); :};
-Bind ::= SUM2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SUM .make(o, null, a, b); :};
+ExprNoSeq ::= OrExprA:x            	  	   {: RESULT = x;                                  :};
+ExprNoSeq ::= OrExprB:x                    {: RESULT = x;                                  :};
+ExprNoSeq ::= Bind:x                       {: RESULT = x;                                  :};
+Bind      ::= LET     Let:x                {: RESULT = x;                                  :};
+Bind      ::= ALL2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ALL .make(o, null, a, b); :};
+Bind      ::= NO2:o   Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.NO  .make(o, null, a, b); :};
+Bind      ::= SOME2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SOME.make(o, null, a, b); :};
+Bind      ::= LONE2:o Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.LONE.make(o, null, a, b); :};
+Bind      ::= ONE2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.ONE .make(o, null, a, b); :};
+Bind      ::= SUM2:o  Declp:a SuperOrBar:b {: RESULT = ExprQt.Op.SUM .make(o, null, a, b); :};
 
 OrExprA ::=                EquivExprA:a  {: RESULT=a;                                    :};
 OrExprA ::= OrExprB:a OR:o Bind:b        {: RESULT=ExprBinary.Op.OR.make(o, null, a, b); :};
@@ -941,47 +951,47 @@ ImpliesExprCloseB ::= AndExprB:a IMPLIES:o ImpliesExprCloseB:b ELSE ImpliesExprC
 ImpliesExprOpenB  ::= AndExprB:a IMPLIES:o ImpliesExprCloseB:b ELSE ImpliesExprOpenB:c  {: RESULT = ExprITE.make(o,a,b,c);                     :};
 ImpliesExprOpenB  ::= AndExprB:a IMPLIES:o ImpliesExprB:b                               {: RESULT = ExprBinary.Op.IMPLIES.make(o, null, a, b); :};
 
-AndExprA ::= TempBinaryA:a                  {: RESULT=a;                                     :}; // [HASLab] temporal expressions
+AndExprA ::= TempBinaryA:a                  {: RESULT=a;                                     :};
 AndExprA ::= AndExprB:a AND:o Bind:b        {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :};
-AndExprB ::=                  TempBinaryB:b {: RESULT=b;                                     :}; // [HASLab] temporal expressions
-AndExprB ::= AndExprB:a AND:o TempBinaryB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :}; // [HASLab] temporal expressions
+AndExprB ::=                  TempBinaryB:b {: RESULT=b;                                     :};
+AndExprB ::= AndExprB:a AND:o TempBinaryB:b {: RESULT=ExprBinary.Op.AND.make(o, null, a, b); :};
 
-// [HASLab] temporal expressions
-TempBinaryA ::=                           UnaryExprA:a  {: RESULT=a;                                                                       :};
-TempBinaryA ::= TempBinaryB:a UNTIL:o     Bind:b        {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
-TempBinaryA ::= TempBinaryB:a SINCE:o     Bind:b        {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
-TempBinaryA ::= TempBinaryB:a TRIGGERED:o Bind:b        {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
-TempBinaryA ::= TempBinaryB:a RELEASES:o  Bind:b        {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
-TempBinaryB ::=                           UnaryExprB:b  {: RESULT=b;                                                                       :};
-TempBinaryB ::= TempBinaryB:a UNTIL:o     UnaryExprB:b  {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a SINCE:o     UnaryExprB:b  {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a RELEASES:o  UnaryExprB:b  {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b);                             :};
-TempBinaryB ::= TempBinaryB:a TRIGGERED:o UnaryExprB:b  {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b);                             :};
+// [electrum] binary temporal formulas, highest precedence among binary operators
+TempBinaryA ::=                           UnaryExprA:a  {: RESULT=a;                                           :};
+TempBinaryA ::= TempBinaryB:a UNTIL:o     Bind:b        {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b); :};
+TempBinaryA ::= TempBinaryB:a SINCE:o     Bind:b        {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b); :};
+TempBinaryA ::= TempBinaryB:a TRIGGERED:o Bind:b        {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b); :};
+TempBinaryA ::= TempBinaryB:a RELEASES:o  Bind:b        {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b); :};
+TempBinaryB ::=                           UnaryExprB:b  {: RESULT=b;                                           :};
+TempBinaryB ::= TempBinaryB:a UNTIL:o     UnaryExprB:b  {: RESULT=ExprBinary.Op.UNTIL    .make(o, null, a, b); :};
+TempBinaryB ::= TempBinaryB:a SINCE:o     UnaryExprB:b  {: RESULT=ExprBinary.Op.SINCE    .make(o, null, a, b); :};
+TempBinaryB ::= TempBinaryB:a RELEASES:o  UnaryExprB:b  {: RESULT=ExprBinary.Op.RELEASES .make(o, null, a, b); :};
+TempBinaryB ::= TempBinaryB:a TRIGGERED:o UnaryExprB:b  {: RESULT=ExprBinary.Op.TRIGGERED.make(o, null, a, b); :};
 
-// [HASLab] temporal expressions
-UnaryExprA ::=         CompareExprA:b        	{: RESULT=b;                           :};
-UnaryExprA ::= NOT:o   Bind:b                 	{: RESULT=ExprUnary.Op.NOT.make(o, b); :};
-UnaryExprA ::= NOT:o   UnaryExprA:b             {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
-UnaryExprA ::= ALWAYS:o   Bind:b                {: RESULT=ExprUnary.Op.ALWAYS.make(o, b); :};
-UnaryExprA ::= ALWAYS:o   UnaryExprA:b          {: RESULT=ExprUnary.Op.ALWAYS.make(o, b); :};
-UnaryExprA ::= EVENTUALLY:o   Bind:b            {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b); :};
-UnaryExprA ::= EVENTUALLY:o   UnaryExprA:b      {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b); :};
-UnaryExprA ::= AFTER:o   Bind:b                 {: RESULT=ExprUnary.Op.AFTER.make(o, b); :};
-UnaryExprA ::= AFTER:o   UnaryExprA:b           {: RESULT=ExprUnary.Op.AFTER.make(o, b); :};
+// [electrum] unary temporal formulas, same precedence as other unary operators
+UnaryExprA ::=         CompareExprA:b        	{: RESULT=b;                                    :};
+UnaryExprA ::= NOT:o   Bind:b                 	{: RESULT=ExprUnary.Op.NOT.make(o, b);          :};
+UnaryExprA ::= NOT:o   UnaryExprA:b             {: RESULT=ExprUnary.Op.NOT.make(o, b);          :};
+UnaryExprA ::= ALWAYS:o   Bind:b                {: RESULT=ExprUnary.Op.ALWAYS.make(o, b);       :};
+UnaryExprA ::= ALWAYS:o   UnaryExprA:b          {: RESULT=ExprUnary.Op.ALWAYS.make(o, b);       :};
+UnaryExprA ::= EVENTUALLY:o   Bind:b            {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b);   :};
+UnaryExprA ::= EVENTUALLY:o   UnaryExprA:b      {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b);   :};
+UnaryExprA ::= AFTER:o   Bind:b                 {: RESULT=ExprUnary.Op.AFTER.make(o, b);        :};
+UnaryExprA ::= AFTER:o   UnaryExprA:b           {: RESULT=ExprUnary.Op.AFTER.make(o, b);        :};
 UnaryExprA ::= HISTORICALLY:o   Bind:b          {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, b); :};
 UnaryExprA ::= HISTORICALLY:o   UnaryExprA:b    {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, b); :};
-UnaryExprA ::= ONCE:o   Bind:b                  {: RESULT=ExprUnary.Op.ONCE.make(o, b); :};
-UnaryExprA ::= ONCE:o   UnaryExprA:b            {: RESULT=ExprUnary.Op.ONCE.make(o, b); :};
-UnaryExprA ::= BEFORE:o   Bind:b                {: RESULT=ExprUnary.Op.BEFORE.make(o, b); :};
-UnaryExprA ::= BEFORE:o   UnaryExprA:b          {: RESULT=ExprUnary.Op.BEFORE.make(o, b); :};
-UnaryExprB ::=         CompareExprB:b        	{: RESULT=b;                           :};
-UnaryExprB ::= NOT:o   UnaryExprB:b             {: RESULT=ExprUnary.Op.NOT.make(o, b); :};
-UnaryExprB ::= ALWAYS:o   UnaryExprB:b          {: RESULT=ExprUnary.Op.ALWAYS.make(o, b); :};
-UnaryExprB ::= EVENTUALLY:o   UnaryExprB:b      {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b); :};
-UnaryExprB ::= AFTER:o   UnaryExprB:b           {: RESULT=ExprUnary.Op.AFTER.make(o, b); :};
+UnaryExprA ::= ONCE:o   Bind:b                  {: RESULT=ExprUnary.Op.ONCE.make(o, b);         :};
+UnaryExprA ::= ONCE:o   UnaryExprA:b            {: RESULT=ExprUnary.Op.ONCE.make(o, b);         :};
+UnaryExprA ::= BEFORE:o   Bind:b                {: RESULT=ExprUnary.Op.BEFORE.make(o, b);       :};
+UnaryExprA ::= BEFORE:o   UnaryExprA:b          {: RESULT=ExprUnary.Op.BEFORE.make(o, b);       :};
+UnaryExprB ::=         CompareExprB:b        	{: RESULT=b;                                    :};
+UnaryExprB ::= NOT:o   UnaryExprB:b             {: RESULT=ExprUnary.Op.NOT.make(o, b);          :};
+UnaryExprB ::= ALWAYS:o   UnaryExprB:b          {: RESULT=ExprUnary.Op.ALWAYS.make(o, b);       :};
+UnaryExprB ::= EVENTUALLY:o   UnaryExprB:b      {: RESULT=ExprUnary.Op.EVENTUALLY.make(o, b);   :};
+UnaryExprB ::= AFTER:o   UnaryExprB:b           {: RESULT=ExprUnary.Op.AFTER.make(o, b);        :};
 UnaryExprB ::= HISTORICALLY:o   UnaryExprB:b    {: RESULT=ExprUnary.Op.HISTORICALLY.make(o, b); :};
-UnaryExprB ::= ONCE:o   UnaryExprB:b            {: RESULT=ExprUnary.Op.ONCE.make(o, b); :};
-UnaryExprB ::= BEFORE:o   UnaryExprB:b          {: RESULT=ExprUnary.Op.BEFORE.make(o, b); :};
+UnaryExprB ::= ONCE:o   UnaryExprB:b            {: RESULT=ExprUnary.Op.ONCE.make(o, b);         :};
+UnaryExprB ::= BEFORE:o   UnaryExprB:b          {: RESULT=ExprUnary.Op.BEFORE.make(o, b);       :};
 
 CompareExprA ::= CompareExprB:a IN:o        ShiftExprA:b    {: RESULT=ExprBinary.Op.IN        .make(o, null, a, mult(b)); :};
 CompareExprA ::= CompareExprB:a EQUALS:o    ShiftExprA:b    {: RESULT=ExprBinary.Op.EQUALS    .make(o, null, a, b);       :};
@@ -1130,6 +1140,7 @@ DotExprB ::= BracketExprB:a DOT:o TOTALORDER:b {: RESULT=t(o, null, a, ExprVar.m
 DotExprB ::= BracketExprB:a DOT:o INT       {: RESULT=ExprUnary.Op.CAST2SIGINT.make(o, ExprUnary.Op.CAST2INT.make(o, a)); :};
 DotExprB ::= BracketExprB:a DOT:o SUM       {: RESULT=ExprUnary.Op.CAST2SIGINT.make(o, ExprUnary.Op.CAST2INT.make(o, a)); :};
 
+// [electrum] unary temporal expressions, same precedence as other unary operators
 UnopExprA ::= TILDE:o  Bind:b       {: RESULT=ExprUnary.Op.TRANSPOSE.make(o,b); :};
 UnopExprA ::= STAR:o   Bind:b       {: RESULT=ExprUnary.Op.RCLOSURE .make(o,b); :};
 UnopExprA ::= CARET:o  Bind:b       {: RESULT=ExprUnary.Op.CLOSURE  .make(o,b); :};
@@ -1140,9 +1151,9 @@ UnopExprB ::=          BaseExpr:b   {: RESULT=b;                                
 UnopExprB ::= TILDE:o  UnopExprB:b  {: RESULT=ExprUnary.Op.TRANSPOSE.make(o,b); :};
 UnopExprB ::= STAR:o   UnopExprB:b  {: RESULT=ExprUnary.Op.RCLOSURE .make(o,b); :};
 UnopExprB ::= CARET:o  UnopExprB:b  {: RESULT=ExprUnary.Op.CLOSURE  .make(o,b); :};
-UnopExprA ::= Bind:b PRIME:o        {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab] temporal expressions
-UnopExprA ::= UnopExprA:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab] temporal expressions
-UnopExprB ::= UnopExprB:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :}; // [HASLab] temporal expressions
+UnopExprA ::= Bind:b PRIME:o        {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :};
+UnopExprA ::= UnopExprA:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :};
+UnopExprB ::= UnopExprB:b PRIME:o   {: RESULT=ExprUnary.Op.PRIME    .make(o,b); :};
 
 BaseExpr ::= NUMBER:x                               {: RESULT = x;                                                        :};
 BaseExpr ::= STR:x                                  {: RESULT = x;                                                        :};

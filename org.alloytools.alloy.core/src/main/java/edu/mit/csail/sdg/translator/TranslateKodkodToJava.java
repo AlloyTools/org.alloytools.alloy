@@ -76,7 +76,8 @@ import kodkod.util.nodes.PrettyPrinter;
  * Requirements: atoms must be String objects (since we cannot possibly output a
  * Java source code that can re-generate arbitrary Java objects).
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-unbounded
+ * @modified Nuno Macedo // [electrum-temporal] added temporal nodes and solving
+ *           parameters; [electrum-unbounded] solver options;
  */
 
 public final class TranslateKodkodToJava implements VoidVisitor {
@@ -124,7 +125,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             }
 
             @Override
-            // [HASLab] temporal nodes
             public Integer visit(UnaryTempFormula x) {
                 return 1 + x.formula().accept(this);
             }
@@ -150,7 +150,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             }
 
             @Override
-            // [HASLab] temporal nodes
             public Integer visit(TempExpression x) {
                 return 1 + x.expression().accept(this);
             }
@@ -181,7 +180,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             }
 
             @Override
-            // [HASLab] temporal nodes
             public Integer visit(BinaryTempFormula x) {
                 return 1 + max(x.left().accept(this), x.right().accept(this));
             }
@@ -302,11 +300,10 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * @param mintrace - the minimum trace length
      * @param maxtrace - the maximum trace length
      */
-    // [HASLab] temporal params
     public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         StringWriter string = new StringWriter();
         PrintWriter file = new PrintWriter(string);
-        new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap, mintrace, maxtrace); // [HASLab]
+        new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap, mintrace, maxtrace);
         if (file.checkError()) {
             return ""; // shouldn't happen
         } else {
@@ -344,7 +341,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * Constructor is private, so that the only way to access this class is via the
      * static convert() method.
      */
-    // [HASLab] temporal params
     private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         file = pw;
         file.printf("import java.util.Arrays;%n");
@@ -354,7 +350,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("import kodkod.instance.*;%n");
         file.printf("import kodkod.engine.*;%n");
         file.printf("import kodkod.engine.satlab.SATFactory;%n");
-        file.printf("import kodkod.engine.config.ExtendedOptions;%n%n"); // [HASLab]
+        file.printf("import kodkod.engine.config.ExtendedOptions;%n%n");
 
         file.printf("/* %n");
         file.printf("  ==================================================%n");
@@ -375,8 +371,8 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             String name = makename(r);
             int a = r.arity();
             if (a == 1)
-                file.printf("Relation %s = Relation.unary%s(\"%s\");%n", name, r.isVariable() ? "_variable" : "", r.name()); // [HASLab]
-            else if (r.isVariable()) // [HASLab]
+                file.printf("Relation %s = Relation.unary%s(\"%s\");%n", name, r.isVariable() ? "_variable" : "", r.name());
+            else if (r.isVariable())
                 file.printf("Relation %s = Relation.variable(\"%s\", %d);%n", name, r.name(), a);
             else
                 file.printf("Relation %s = Relation.nary(\"%s\", %d);%n", name, r.name(), a);
@@ -425,16 +421,16 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         }
         file.printf("%n");
         String result = make(x);
-        file.printf("%nExtendedOptions opt = new ExtendedOptions();"); // [HASLab]
+        file.printf("%nExtendedOptions opt = new ExtendedOptions();");
         file.printf("%nopt.setSolver(SATFactory.DefaultSAT4J);");
         file.printf("%nopt.setBitwidth(%d);", bitwidth != 0 ? bitwidth : 1);
         file.printf("%nopt.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);");
         file.printf("%nopt.setSymmetryBreaking(20);");
         file.printf("%nopt.setSkolemDepth(0);");
-        file.printf("%nopt.setMinTraceLength(%d);", mintrace); // [HASLab]
-        file.printf("%nopt.setMaxTraceLength(%d);", maxtrace); // [HASLab]
-        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE); // [HASLab]
-        file.printf("%nPardinusSolver solver = new PardinusSolver(opt);"); // [HASLab]
+        file.printf("%nopt.setMinTraceLength(%d);", mintrace);
+        file.printf("%nopt.setMaxTraceLength(%d);", maxtrace);
+        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE);
+        file.printf("%nPardinusSolver solver = new PardinusSolver(opt);");
         file.printf("%nSystem.out.println(\"Solving...\");");
         file.printf("%nSystem.out.flush();");
         file.printf("%nSolution sol = solver.solve(%s,bounds);", result);
@@ -600,7 +596,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
-    // [HASLab] temporal nodes
     public void visit(BinaryTempFormula temporalFormula) {
         String newname = makename(temporalFormula);
         if (newname == null)
@@ -720,7 +715,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
-    // [HASLab] temporal nodes
     public void visit(TempExpression temporalExpr) {
         String newname = makename(temporalExpr);
         if (newname == null)
@@ -770,7 +764,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
-    // [HASLab] temporal nodes
     public void visit(UnaryTempFormula temporalFormula) {
         String newname = makename(temporalFormula);
         if (newname == null)
