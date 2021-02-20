@@ -430,8 +430,8 @@ public final class A4SolutionReader {
                 // create the A4Solution object
                 A4Options opt = new A4Options();
                 opt.originalFilename = inst.getAttribute("filename");
-                // [electrum] do not use actual max trace, would flag as unbounded and the used solver is unknown
-                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace < 1 ? mintrace : tracelength, maxtrace < 1 ? maxtrace : tracelength, maxseq, strings, atoms, null, opt, 1);
+                // [electrum] do not use actual max trace, solution would identify unbounded solving but no unbounded solver
+                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace, tracelength, maxseq, strings, atoms, null, opt, 1);
                 factory = sol.getFactory();
                 // parse all the sigs, fields, and skolems
                 for (Map.Entry<String,XMLNode> e : nmap.entrySet())
