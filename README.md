@@ -61,13 +61,8 @@ The workspace is divided into a number of projects:
 * [org.alloytools.alloy.application](org.alloytools.alloy.application) – Main application code includes the parser, ast, visualiser, and application code
 * [org.alloytools.alloy.dist](org.alloytools.alloy.dist) – Project to create the distribution executable JAR
 * [org.alloytools.alloy.extra](org.alloytools.alloy.extra) – Models and examples
-<<<<<<< HEAD
 * [org.alloytools.pardinus](org.alloytools.pardinus) – Kodkod's temporal extension without native code
 * [org.alloytools.kodkod.native](org.alloytools.kodkod.native) – The native code libraries for Kodkod/Pardinus
-=======
-* [org.alloytools.kodkod.core](org.alloytools.kodkod.core) – Kodkod without native code
-* [org.alloytools.kodkod.nativesat](org.alloytools.kodkod.nativesat) – The native code libraries for kodkod
->>>>>>> simulator
 
 ### Relevant Project files
 
