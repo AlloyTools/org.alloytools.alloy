@@ -1974,8 +1974,10 @@ public final class A4Solution {
         else
             for (Sig ss : ((SubsetSig) s).parents)
                 ke = ke.union(a2k.get(ss));
-        if (ke != Expression.NONE && ke != null)
+        if (ke != Expression.NONE && ke != null) {
+            bounds.relations().remove(r);
             bounds.bound(r, ke);
+        }
     }
 
     /**
@@ -2012,6 +2014,7 @@ public final class A4Solution {
             else
                 ub = ub.union(upper);
         }
+        bounds.relations().remove(r);
         bounds.bound(r, ub);
     }
 

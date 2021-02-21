@@ -51,8 +51,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
  *
- * @modified Nuno Macedo // [electrum-temporal] updated reporting (solving
- *           reports current state, translation the trace parameters)
+ * @modified Nuno Macedo // [electrum-temporal] updated (temporal) reporting
  */
 public final class SimpleCLI {
 
