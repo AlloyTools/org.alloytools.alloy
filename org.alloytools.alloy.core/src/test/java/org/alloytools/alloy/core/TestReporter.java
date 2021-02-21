@@ -6,7 +6,7 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
 /**
- * @modified Nuno Macedo // [electrum-temporal] updated reporting
+ * @modified Nuno Macedo // [electrum-temporal] updated (temporal) reporting
  */
 public class TestReporter extends A4Reporter {
 

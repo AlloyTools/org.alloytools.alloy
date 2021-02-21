@@ -83,7 +83,7 @@ import kodkod.util.ints.IntVector;
  *           translation of temporal operators and quantifies globally over time
  *           constraints over sigs and fields (sig facts are also implicitly
  *           globally quantified); also, variable singleton sigs are not
- *           collapsed like static ones
+ *           collapsed like static ones; updated (temporal) reporting
  */
 
 public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
