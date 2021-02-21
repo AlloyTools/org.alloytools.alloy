@@ -63,7 +63,7 @@ import edu.mit.csail.sdg.parser.CompUtil;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread
  *
- * @modified Nuno Macedo // [HASLab] electrum-base
+ * @modified Nuno Macedo // [electrum-base] support for .ele file extension
  */
 
 public final class OurSyntaxWidget {
@@ -697,7 +697,7 @@ public final class OurSyntaxWidget {
         if (ans == 'c' || (ans == 's' && save(false, bannedNames) == false))
             return false;
         for (int i = 1;; i++)
-            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".ele"))) // [HASLab] ele extension
+            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".ele")))
                 break;
         fileModifiedDate = -1;
         pane.setText("");
@@ -798,7 +798,7 @@ public final class OurSyntaxWidget {
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
             File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, new String[] {
                                                                                                   ".ele", ".als"
-            }, ".als and .ele files"); // [HASLab] ele extension
+            }, ".als and .ele files");
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());

@@ -44,7 +44,7 @@ import org.alloytools.alloy.core.AlloyCore;
  * This class asks the user for permission to email a bug report when an
  * uncaught exception occurs.
  *
- * @modified Nuno Macedo // [HASLab] electrum-base
+ * @modified Nuno Macedo // [electrum-base] electrum version
  */
 
 public final class MailBug implements UncaughtExceptionHandler, Runnable {
@@ -158,7 +158,6 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
     private static String prepareCrashReport(Thread thread, Throwable ex, String email, String problem) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        // [HASLab]
         pw.printf("Electrum Analyzer %s crash report (Build Date = %s) (Commit = %s)\n", Version.version(), Version.commit);
         pw.printf("\n========================= Email ============================\n%s\n", Util.convertLineBreak(email).trim());
         pw.printf("\n========================= Problem ==========================\n%s\n", Util.convertLineBreak(problem).trim());

@@ -41,7 +41,8 @@ import javax.swing.text.TabStop;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
+ * @modified Nuno Macedo, Eduardo Pessoa // [electrum-temporal] added the new
+ *           language keywords and forbids primes in identifiers
  */
 
 class OurSyntaxDocument extends DefaultStyledDocument {
@@ -182,7 +183,6 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     /**
      * This stores the currently recognized set of reserved keywords.
      */
-    // [HASLab] temporal keywords
     private static final String[]     keywords = new String[] {
                                                                "abstract", "var", "all", "and", "as", "assert", "but", "check", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "String", "sum", "this", "univ", "eventually", "always", "after", "once", "historically", "since", "triggered", "before", "until", "releases", "steps"
     };
@@ -192,7 +192,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * keyword.
      */
     private static final boolean do_keyword(String array, int start, int len) {
-        if (len >= 2 && len <= 12) // [HASLab] historically is larger
+        if (len >= 2 && len <= 12)
             for (int i = keywords.length - 1; i >= 0; i--) {
                 String str = keywords[i];
                 if (str.length() == len)
@@ -209,8 +209,8 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * Returns true if "c" can be in the start or middle or end of an identifier.
      */
     private static final boolean do_iden(char c) {
-        // [HASLab] primed expressions
-        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '$' || (c >= '0' && c <= '9') || c == '_' /* || c=='\'' */ || c == '\"';
+        // [electrum] forbid primes in identifiers
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '$' || (c >= '0' && c <= '9') || c == '_' || c == '\"';
     }
 
     /** Constructor. */
@@ -510,11 +510,13 @@ class OurSyntaxDocument extends DefaultStyledDocument {
                 }
                 setCharacterAttributes(oldi, i - oldi, styleString, false);
             } else if (do_iden(c)) {
-                for (i++; i < n && do_iden(txt.charAt(i)); i++) {}
+                for (i++; i < n && do_iden(txt.charAt(i)); i++) {
+                }
                 AttributeSet style = (c >= '0' && c <= '9') ? styleNumber : (do_keyword(txt, oldi, i - oldi) ? styleKeyword : styleNormal);
                 setCharacterAttributes(oldi, i - oldi, style, false);
             } else {
-                for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-' && txt.charAt(i) != '/'; i++) {}
+                for (i++; i < n && !do_iden(txt.charAt(i)) && txt.charAt(i) != '\n' && txt.charAt(i) != '-' && txt.charAt(i) != '/'; i++) {
+                }
                 setCharacterAttributes(oldi, i - oldi, styleSymbol, false);
             }
         }
