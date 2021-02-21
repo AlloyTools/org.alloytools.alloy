@@ -24,6 +24,7 @@ import java.util.Map;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
@@ -451,6 +452,15 @@ final class BoundsComputer {
                 sol.addField(f, isOne && !isVar ? sol.a2k(s).product(r) : r);
             }
         }
+
+        // [electrum] Add possible symbolic bounds
+        if (Version.experimental)
+            for (Sig s : sigs) {
+                sol.addSymbolicBound(s);
+                for (Field f : s.getFields())
+                    sol.addSymbolicBound(f);
+            }
+
         // Add any additional SIZE constraints
         for (Sig s : sigs)
             if (!s.builtin) {

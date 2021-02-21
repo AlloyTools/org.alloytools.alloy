@@ -63,7 +63,7 @@ import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -300,7 +300,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * @param mintrace - the minimum trace length
      * @param maxtrace - the maximum trace length
      */
-    public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
+    public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, PardinusBounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         StringWriter string = new StringWriter();
         PrintWriter file = new PrintWriter(string);
         new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap, mintrace, maxtrace);
@@ -341,7 +341,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * Constructor is private, so that the only way to access this class is via the
      * static convert() method.
      */
-    private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
+    private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, PardinusBounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         file = pw;
         file.printf("import java.util.Arrays;%n");
         file.printf("import java.util.List;%n");
@@ -399,16 +399,31 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("Bounds bounds = new Bounds(universe);%n%n");
         for (Relation r : bounds.relations()) {
             String n = map.get(r);
-            TupleSet upper = bounds.upperBound(r);
-            TupleSet lower = bounds.lowerBound(r);
-            printTupleset(n + "_upper", upper, atomMap);
-            if (upper.equals(lower)) {
-                file.printf("bounds.boundExactly(%s, %s_upper);%n%n", n, n);
-            } else if (lower.size() == 0) {
-                file.printf("bounds.bound(%s, %s_upper);%n%n", n, n);
+            // [electrum] print symbolic bounds
+            if (bounds.lowerSymbBound(r) != null) {
+                Expression upper = bounds.upperSymbBound(r);
+                Expression lower = bounds.lowerSymbBound(r);
+                file.printf("Expression %s_upper = %s;%n%n", n, upper);
+                if (upper.equals(lower)) {
+                    file.printf("bounds.boundExactly(%s, %s_upper);%n%n", n, n);
+                    //                } else if (lower.size() == 0) {
+                    //                    file.printf("bounds.bound(%s, %s_upper);%n%n", n, n);
+                } else {
+                    file.printf("Expression %s_lower = %s;%n%n", n, lower);
+                    file.printf("bounds.bound(%s, %s_lower, %s_upper);%n%n", n, n, n);
+                }
             } else {
-                printTupleset(n + "_lower", lower, atomMap);
-                file.printf("bounds.bound(%s, %s_lower, %s_upper);%n%n", n, n, n);
+                TupleSet upper = bounds.upperBound(r);
+                TupleSet lower = bounds.lowerBound(r);
+                printTupleset(n + "_upper", upper, atomMap);
+                if (upper.equals(lower)) {
+                    file.printf("bounds.boundExactly(%s, %s_upper);%n%n", n, n);
+                } else if (lower.size() == 0) {
+                    file.printf("bounds.bound(%s, %s_upper);%n%n", n, n);
+                } else {
+                    printTupleset(n + "_lower", lower, atomMap);
+                    file.printf("bounds.bound(%s, %s_lower, %s_upper);%n%n", n, n, n);
+                }
             }
         }
         for (IndexedEntry<TupleSet> i : bounds.intBounds()) {
