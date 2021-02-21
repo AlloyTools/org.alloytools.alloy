@@ -38,7 +38,8 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified Nuno Macedo // [HASLab] electrum-base
+ * @modified [electrum] changed so that nodes are sorted lexicographically
+ *           within each layer of the graph
  */
 
 public final strictfp class Graph {
@@ -315,7 +316,7 @@ public final strictfp class Graph {
                 grOUT.get(n.pos()).remove(x);
             for (GraphNode n : grOUT.get(x.pos()))
                 grIN.get(n.pos()).remove(x);
-            // [HASLab] hack to get nodes sorted lexicographically within each layer
+            // [electrum] hack to get nodes sorted lexicographically within each layer
             // can't fast join since read-only
             //          Iterable<GraphNode> aux = Util.fastJoin(grIN.get(x.pos()), );
             List<GraphNode> aux = new ArrayList<GraphNode>(grIN.get(x.pos()));

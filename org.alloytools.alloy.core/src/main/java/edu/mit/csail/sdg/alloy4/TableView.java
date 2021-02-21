@@ -29,7 +29,7 @@ import kodkod.instance.TupleSet;
 
 /**
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] adapted to focus on particular state
  *
  */
 public class TableView {
@@ -146,9 +146,10 @@ public class TableView {
      * @param solution
      * @param instance
      * @param sigs
+     * @param state
      * @return
      */
-    // [HASLab] added state to print, -1 for static
+    // [electrum] added state to print, -1 for static
     public static Map<String,Table> toTable(A4Solution solution, Instance instance, SafeList<Sig> sigs, int state) {
 
         Map<String,Table> map = new HashMap<String,Table>();
@@ -158,11 +159,12 @@ public class TableView {
             if (!s.label.startsWith("this/"))
                 continue;
 
-            TupleSet instanceTuples = (state > -1 ? ((TemporalInstance) instance).state(state) : instance).tuples(s.label); // [HASLab]
+            TupleSet instanceTuples = (state > -1 ? ((TemporalInstance) instance).state(state) : instance).tuples(s.label);
             if (instanceTuples != null) {
 
                 List<SimTuple> instancesArray = toList(instanceTuples);
                 Collections.sort(instancesArray, new Comparator<SimTuple>() {
+
                     @Override
                     public int compare(SimTuple simTuple1, SimTuple simTuple2) {
                         String[] coll1 = simTuple1.get(0).toString().split("\\$");
@@ -170,8 +172,7 @@ public class TableView {
                         if (coll1.length == 2 && coll2.length == 2) {
                             try {
                                 return Integer.parseInt(coll1[1]) - Integer.parseInt(coll2[1]);
-                            }
-                            catch (NumberFormatException e) {
+                            } catch (NumberFormatException e) {
                                 return 0;
                             }
                         }
@@ -201,7 +202,7 @@ public class TableView {
                     c = 1;
                     for (Field f : s.getFields()) {
 
-                        SimTupleset relations = toSimTupleset(state > -1 ? solution.eval(f, state) : solution.eval(f)); // [HASLab]
+                        SimTupleset relations = toSimTupleset(state > -1 ? solution.eval(f, state) : solution.eval(f));
                         SimTupleset joined = leftJoin.join(relations);
 
                         Table relationTable = toTable(joined);

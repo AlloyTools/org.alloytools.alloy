@@ -27,7 +27,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] changed to register whether a relation is mutable
  */
 
 public final class AlloyRelation extends AlloyElement {
@@ -36,13 +36,13 @@ public final class AlloyRelation extends AlloyElement {
      * This caches an instance of the "extends" AlloyRelation, so we don't have to
      * keep re-constructing it.
      */
-    public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV)); // [HASLab]
+    public static final AlloyRelation  EXTENDS = new AlloyRelation("extends", false, false, false, Util.asList(AlloyType.UNIV, AlloyType.UNIV));
 
     /**
      * This caches an instance of the "in" AlloyRelation, so we don't have to keep
      * re-constructing it.
      */
-    public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));       // [HASLab]
+    public static final AlloyRelation  IN      = new AlloyRelation("in", false, false, false, Util.asList(AlloyType.SET, AlloyType.UNIV));
 
     /** The unmodifiable list of types. */
     private final ConstList<AlloyType> types;
@@ -63,14 +63,12 @@ public final class AlloyRelation extends AlloyElement {
      * Records whether this relation is known to be "var"; NOTE: this value is NOT
      * USED during equals() comparison.
      */
-    // [HASLab]
     public final boolean               isVar;
 
     /**
      * Constructs a new AlloyRelation with that name and that list of types;
      * types.size() must be 2 or above.
      */
-    // [HASLab] variable info
     public AlloyRelation(String name, boolean isPrivate, boolean isMeta, boolean isVar, List<AlloyType> types) {
         super(name);
         if (types == null || types.size() < 2)
@@ -78,7 +76,7 @@ public final class AlloyRelation extends AlloyElement {
         this.types = ConstList.make(types);
         this.isPrivate = isPrivate;
         this.isMeta = isMeta;
-        this.isVar = isVar; // [HASLab]
+        this.isVar = isVar;
     }
 
     /**

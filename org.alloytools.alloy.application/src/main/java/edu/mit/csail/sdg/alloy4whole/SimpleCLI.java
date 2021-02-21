@@ -50,7 +50,8 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal, electrum-decomposed
+ * @modified [electrum] updated reporting (solving reports current state,
+ *           translation the trace parameters, decompose strategy);
  */
 public final class SimpleCLI {
 
@@ -115,13 +116,11 @@ public final class SimpleCLI {
         }
 
         @Override
-        // [HASLab] trace + decompose params
         public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
-            debug("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n"); // [HASLab]
+            debug("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n");
         }
 
         @Override
-        // [HASLab]
         public void solve(int step, int primaryVars, int totalVars, int clauses) {
             if (db)
                 db("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses.\n");
@@ -187,7 +186,7 @@ public final class SimpleCLI {
         sw.flush();
         String txt = sw.toString();
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new StringReader(txt))).toString();
-        StaticInstanceReader.parseInstance(new StringReader(txt), 0); // [HASLab] only validates first
+        StaticInstanceReader.parseInstance(new StringReader(txt), 0);
     }
 
     public static void main(String[] args) throws Exception {
@@ -261,7 +260,7 @@ public final class SimpleCLI {
                 metasb.flush();
                 String metaxml = metasb.toString();
                 A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new StringReader(metaxml)));
-                StaticInstanceReader.parseInstance(new StringReader(metaxml), 0); // [HASLab] only parses first
+                StaticInstanceReader.parseInstance(new StringReader(metaxml), 0);
                 // Okay, now solve the commands
                 A4Options options = new A4Options();
                 options.originalFilename = filename;

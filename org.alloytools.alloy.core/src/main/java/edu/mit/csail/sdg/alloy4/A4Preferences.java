@@ -32,7 +32,7 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
  *
- * @modified Nuno Macedo // [HASLab] electrum-decomposed
+ * @modified [electrum] added decompose strategy option
  *
  */
 @SuppressWarnings({
@@ -630,7 +630,6 @@ public class A4Preferences {
                                                                      };
 
     /** The decompose solving strategy. */
-    // [HASLab]
     public static final ChoicePref<Decompose> DecomposePref          = new ChoicePref<Decompose>("Decompose strategy", Decompose.values(), Decompose.OFF) {
 
                                                                          @Override
@@ -639,7 +638,6 @@ public class A4Preferences {
                                                                          }
                                                                      };
 
-    // [HASLab]
     public enum Decompose {
                            /** regular amalgamated strategy. */
                            OFF("0", "batch"),
@@ -792,7 +790,8 @@ public class A4Preferences {
             if (Pref.class.isAssignableFrom(f.getType())) {
                 try {
                     ans.add((Pref< ? >) f.get(self));
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
         return ans;

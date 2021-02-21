@@ -24,7 +24,8 @@ import edu.mit.csail.sdg.alloy4.SafeList;
  * Mutable; this class encapsulates the customizable options of the
  * Alloy-to-Kodkod translator.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-unbounded, electrum-decomposed
+ * @modified [electrum] electrod smv solvers; decompose strategy options, mode
+ *           and cores
  */
 
 public final class A4Options implements Serializable {
@@ -186,7 +187,6 @@ public final class A4Options implements Serializable {
         /** SAT4J using native Java */
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
         /** Electrod through NuSMV */
-        // [HASLab]
         public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true);
 
         public static final SatSolver electrodS(String[] opts) {
@@ -194,7 +194,6 @@ public final class A4Options implements Serializable {
         }
 
         /** Electrod through nuXmv */
-        // [HASLab]
         public static final SatSolver ElectrodX = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
 
         public static final SatSolver electrodX(String[] opts) {
@@ -311,7 +310,6 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is off.
      */
-    // [HASLab]
     public int       decompose_mode       = 0;
 
     /**
@@ -320,7 +318,6 @@ public final class A4Options implements Serializable {
      * <p>
      * Default value is 4.
      */
-    // [HASLab]
     public int       decompose_threads    = 4;
 
     /** This method makes a copy of this Options object. */
@@ -338,8 +335,8 @@ public final class A4Options implements Serializable {
         x.recordKodkod = recordKodkod;
         x.noOverflow = noOverflow;
         x.coreGranularity = coreGranularity;
-        x.decompose_mode = decompose_mode; // [HASLab]
-        x.decompose_threads = decompose_threads; // [HASLab]
+        x.decompose_mode = decompose_mode;
+        x.decompose_threads = decompose_threads;
         return x;
     }
 }

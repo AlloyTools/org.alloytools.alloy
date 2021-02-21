@@ -55,7 +55,8 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
  * This class provides convenience methods for calling the parser and the
  * compiler.
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] helper method to determine whether a model is fully
+ *           static (classic Alloy);
  */
 
 public final class CompUtil {
@@ -63,7 +64,8 @@ public final class CompUtil {
     /**
      * Constructor is private, since this class never needs to be instantiated.
      */
-    private CompUtil() {}
+    private CompUtil() {
+    }
 
     // =============================================================================================================//
 
@@ -175,7 +177,8 @@ public final class CompUtil {
             });
             if (intTriggerNode != null)
                 return true;
-        } catch (Err e) {}
+        } catch (Err e) {
+        }
 
         return false;
     }
@@ -184,7 +187,6 @@ public final class CompUtil {
      * Whether the given command is a temporal model (either there are variable
      * sigs/fields or temporal operators in the formula).
      */
-    // [HASLab]
     public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
         for (Sig sig : sigs) {
             if (sig.isVariable != null && !sig.builtin)
@@ -288,7 +290,8 @@ public final class CompUtil {
                         String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
                         content = Util.readAll(newCp);
                         cp = newCp;
-                    } catch (IOException ex) {}
+                    } catch (IOException ex) {
+                    }
                 }
             }
             loaded.put(cp, content);

@@ -40,7 +40,7 @@ import junit.framework.TestCase;
  * API-specific regression test suite; the larger collection of models that test
  * both the compiler and translator are in models/tests/*.als
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] adapted to trace instance XML format
  */
 
 public class InternalTest extends TestCase {

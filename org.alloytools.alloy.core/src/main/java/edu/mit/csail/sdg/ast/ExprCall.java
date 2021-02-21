@@ -37,7 +37,7 @@ import edu.mit.csail.sdg.ast.Sig.Field;
  * <p>
  * <b>Invariant:</b> type!=EMPTY => (all x:args | x.mult==0)
  *
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] add temporal operators to type inference
  */
 
 public final class ExprCall extends Expr {
@@ -109,7 +109,8 @@ public final class ExprCall extends Expr {
 
         private final Env<ExprVar,Type> env = new Env<ExprVar,Type>();
 
-        private DeduceType() {}
+        private DeduceType() {
+        }
 
         @Override
         public Type visit(ExprITE x) throws Err {
@@ -133,10 +134,10 @@ public final class ExprCall extends Expr {
                 case IN :
                 case OR :
                 case AND :
-                case UNTIL : // [HASLab]
-                case RELEASES : // [HASLab]
-                case SINCE : // [HASLab]
-                case TRIGGERED : // [HASLab]
+                case UNTIL :
+                case RELEASES :
+                case SINCE :
+                case TRIGGERED :
                 case NOT_LT :
                 case NOT_GT :
                 case NOT_LTE :
@@ -195,7 +196,7 @@ public final class ExprCall extends Expr {
                 case SETOF :
                 case SOMEOF :
                 case EXACTLYOF :
-                case PRIME : // [HASLab]
+                case PRIME :
                     return t;
                 case CARDINALITY :
                 case CAST2INT :

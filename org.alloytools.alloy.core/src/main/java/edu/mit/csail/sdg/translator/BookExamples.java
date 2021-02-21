@@ -39,7 +39,7 @@ import kodkod.instance.TupleSet;
  * purpose, so that users of the tool will see the same illustration as the book
  * and not get confused by SAT solver nondeterminism.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-base
+ * @modified [electrum] adapted to extended kodkod solver hierarchy
  */
 
 final class BookExamples {
@@ -62,7 +62,6 @@ final class BookExamples {
      * If one of the solution is a solution to the given problem, return it, else
      * return null.
      */
-    // [HASLab] pardinus solver hierarchy
     static Solution trial(A4Reporter rep, A4Solution frame, Formula formula, AbstractKodkodSolver<Bounds,Options> solver, boolean check) {
         TupleFactory fac = frame.getFactory();
         Solution sol = null;
@@ -211,7 +210,6 @@ final class BookExamples {
     }
 
     /** This tries a particular solution against the formula. */
-    // [HASLab] pardinus solver hierarchy
     private static Solution trial(A4Reporter rep, TupleFactory fac, AbstractKodkodSolver<Bounds,Options> solver, Iterable<Sig> sigs, Formula f, A4Solution frame, Object[] t) {
         try {
             frame.kr2typeCLEAR();

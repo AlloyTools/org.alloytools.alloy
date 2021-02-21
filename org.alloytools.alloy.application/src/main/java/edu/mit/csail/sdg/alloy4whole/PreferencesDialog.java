@@ -81,8 +81,8 @@ import edu.mit.csail.sdg.alloy4.Subprocess;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
- * @modified: Nuno Macedo // [HASLab] electrum-base, electrum-unbounded,
- *            electrum-decomposed
+ * @modified [electrum] only log when debugging; load electrod binary
+ *           executables; added decompose strategy option
  */
 @SuppressWarnings({
                    "serial"
@@ -288,7 +288,7 @@ public class PreferencesDialog extends JFrame {
             satChoices.remove(SatSolver.GlucoseJNI);
         if (!loadLibrary("cryptominisat"))
             satChoices.remove(SatSolver.CryptoMiniSatJNI);
-        // [HASLab] load unbounded model checking backend
+        // [electrum] load unbounded model checking backend
         if (!staticLibrary("electrod")) {
             satChoices.remove(SatSolver.ElectrodX);
             satChoices.remove(SatSolver.ElectrodS);
@@ -331,7 +331,6 @@ public class PreferencesDialog extends JFrame {
         return output.substring(i).startsWith("s SATISFIABLE");
     }
 
-    // [HASLab]
     private static boolean staticLibrary(String name) {
         // check if in java library path
         final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
@@ -362,7 +361,7 @@ public class PreferencesDialog extends JFrame {
     private static boolean loadLibrary(String library) {
         boolean loaded = _loadLibrary(library);
         String libName = System.mapLibraryName(library);
-        if ("yes".equals(System.getProperty("debug"))) // [HASLab]
+        if ("yes".equals(System.getProperty("debug")))
             if (loaded)
                 System.out.println("Loaded: " + libName);
             else
@@ -432,8 +431,8 @@ public class PreferencesDialog extends JFrame {
     }
 
     protected Component initSolverPane() {
-        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization), mkSlider(DecomposePref)); // [HASLab]);
-        int r = 6; // [HASLab]
+        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization), mkSlider(DecomposePref));
+        int r = 6;
         addToGrid(p, mkCheckBox(NoOverflow), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(ImplicitThis), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(InferPartialInstance), gbc().pos(0, r++).gridwidth(2));

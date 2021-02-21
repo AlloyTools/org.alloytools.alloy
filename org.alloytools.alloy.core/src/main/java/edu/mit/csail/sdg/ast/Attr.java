@@ -21,7 +21,8 @@ import edu.mit.csail.sdg.alloy4.Pos;
  * Immutable; represents attributes that can be associated with Signatures and
  * some other AST objects.
  *
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] added a new attribute AST objects, whether they are
+ *           variable/mutable in time
  */
 
 public final class Attr {
@@ -94,7 +95,6 @@ public final class Attr {
                            * VARIABLE; if a Sig has the VARIABLE attribute, it means its value may change
                            * over time.
                            */
-                          // [HASLab]
                           VARIABLE("variable");
 
         /** The label for this attribute type. */
@@ -204,7 +204,6 @@ public final class Attr {
     public static final Attr ENUM     = new Attr(AttrType.ENUM, null);
 
     /** VARIABLE; if a Sig is variable, changing in time. */
-    // [HASLab]
     public static final Attr VARIABLE = new Attr(AttrType.VARIABLE, null);
 
     /**

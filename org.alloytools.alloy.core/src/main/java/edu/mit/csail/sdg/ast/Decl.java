@@ -23,7 +23,10 @@ import edu.mit.csail.sdg.alloy4.Pos;
 /**
  * Immutable; this declaration binds a list of names to an expression.
  *
- * @modified Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] added a new attribute to declarations, whether a
+ *           variable/mutable expression is being declared. this is used for the
+ *           declaration of variable fields (declarations elsewhere cannot be
+ *           variable).
  */
 
 public final class Decl {
@@ -49,7 +52,6 @@ public final class Decl {
     /**
      * Nonnull if this decl is variable (to be used for fields).
      */
-    // [HASLab]
     public final Pos                               isVar;
 
     /** The list of names. */
@@ -79,12 +81,11 @@ public final class Decl {
     /**
      * This constructs a declaration; the list of names must not be empty.
      */
-    // [HASLab]: extended with variable declarations for fields
     public Decl(Pos isPrivate, Pos disjoint, Pos disjoint2, Pos isVar, List< ? extends ExprHasName> names, Expr expr) {
         if (names.size() == 0)
             throw new NullPointerException();
         this.isPrivate = isPrivate;
-        this.isVar = isVar; // [HASLab]
+        this.isVar = isVar;
         this.disjoint = (names.size() > 1 ? disjoint : null);
         this.disjoint2 = disjoint2;
         this.names = ConstList.make(names);

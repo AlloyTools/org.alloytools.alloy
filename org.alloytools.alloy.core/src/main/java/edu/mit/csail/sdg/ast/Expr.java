@@ -41,7 +41,11 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * <b>Invariant:</b> mult==0 || mult==1 || mult==2 <br>
  * <b>Invariant:</b> weight>0
  *
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] adds convenience methods to create temporal formulas
+ *           (unary always, eventually, after, once, historically, before and
+ *           binary until, releases, since, triggered) and expressions (primes);
+ *           also update Decl creations which are always immutable (null isVar)
+ *           in this context
  */
 
 public abstract class Expr extends Browsable {
@@ -423,7 +427,8 @@ public abstract class Expr extends Browsable {
             while (!todo.isEmpty()) {
                 q.visitThis(todo.remove(todo.size() - 1).getBody());
             }
-        } catch (Err ex) {} // Exception should not occur
+        } catch (Err ex) {
+        } // Exception should not occur
         return seen;
     }
 
@@ -983,7 +988,7 @@ public abstract class Expr extends Browsable {
     public final Decl someOf(String label) throws Err {
         Expr x = ExprUnary.Op.SOMEOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
+        return new Decl(null, null, null, null, Arrays.asList(v), x);
     }
 
     /**
@@ -1005,7 +1010,7 @@ public abstract class Expr extends Browsable {
     public final Decl loneOf(String label) throws Err {
         Expr x = ExprUnary.Op.LONEOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
+        return new Decl(null, null, null, null, Arrays.asList(v), x);
     }
 
     /**
@@ -1027,7 +1032,7 @@ public abstract class Expr extends Browsable {
     public final Decl oneOf(String label) throws Err {
         Expr x = ExprUnary.Op.ONEOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
+        return new Decl(null, null, null, null, Arrays.asList(v), x);
     }
 
     /**
@@ -1049,7 +1054,7 @@ public abstract class Expr extends Browsable {
     public final Decl setOf(String label) throws Err {
         Expr x = ExprUnary.Op.SETOF.make(span(), this);
         ExprVar v = ExprVar.make(x.span(), label, type);
-        return new Decl(null, null, null, null, Arrays.asList(v), x); // [HASLab]
+        return new Decl(null, null, null, null, Arrays.asList(v), x);
     }
 
     /**
@@ -1157,7 +1162,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    // [HASLab]
     public final Expr always() {
         return ExprUnary.Op.ALWAYS.make(span(), this);
     }
@@ -1167,7 +1171,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    // [HASLab]
     public final Expr eventually() {
         return ExprUnary.Op.EVENTUALLY.make(span(), this);
     }
@@ -1177,7 +1180,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    // [HASLab]
     public final Expr after() {
         return ExprUnary.Op.AFTER.make(span(), this);
     }
@@ -1187,7 +1189,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    // [HASLab]
     public final Expr before() {
         return ExprUnary.Op.BEFORE.make(span(), this);
     }
@@ -1197,7 +1198,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    // [HASLab]
     public final Expr historically() {
         return ExprUnary.Op.HISTORICALLY.make(span(), this);
     }
@@ -1207,7 +1207,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    // [HASLab]
     public final Expr once() {
         return ExprUnary.Op.ONCE.make(span(), this);
     }
@@ -1220,7 +1219,6 @@ public abstract class Expr extends Browsable {
      * Note: as a special guarantee, if x==null, then the method will return this
      * Expr object as-is.
      */
-    // [HASLab]
     public final Expr until(Expr x) {
         return (x == null) ? this : ExprBinary.Op.UNTIL.make(span().merge(x.span()), null, this, x);
     }
@@ -1233,7 +1231,6 @@ public abstract class Expr extends Browsable {
      * Note: as a special guarantee, if x==null, then the method will return this
      * Expr object as-is.
      */
-    // [HASLab]
     public final Expr releases(Expr x) {
         return (x == null) ? this : ExprBinary.Op.RELEASES.make(span().merge(x.span()), null, this, x);
     }
@@ -1246,7 +1243,6 @@ public abstract class Expr extends Browsable {
      * Note: as a special guarantee, if x==null, then the method will return this
      * Expr object as-is.
      */
-    // [HASLab]
     public final Expr since(Expr x) {
         return (x == null) ? this : ExprBinary.Op.SINCE.make(span().merge(x.span()), null, this, x);
     }
@@ -1259,7 +1255,6 @@ public abstract class Expr extends Browsable {
      * Note: as a special guarantee, if x==null, then the method will return this
      * Expr object as-is.
      */
-    // [HASLab]
     public final Expr triggered(Expr x) {
         return (x == null) ? this : ExprBinary.Op.TRIGGERED.make(span().merge(x.span()), null, this, x);
     }
@@ -1269,7 +1264,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a set or relation
      */
-    // [HASLab]
     public final Expr prime() {
         return ExprUnary.Op.PRIME.make(span(), this);
     }
