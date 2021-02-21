@@ -66,13 +66,12 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  *
  * @modified Nuno Macedo, Eduardo Pessoa // [electrum-base] changed so that all
  *           commands can be executed even when some throw errors;
- *           [electrum-temporal] the solving process now reports in which step
- *           of the temporal analysis is; since temporal analysis is
- *           incremental, solving the command from 1 to the maximum number of
- *           steps defined in the scope, and reports whenever each of these
- *           steps finishes; the SimpleReporter overrides these messages in the
- *           log panel and shows only the most recent one; the translation also
- *           reports the relevant temporal options
+ *           [electrum-temporal] updated (temporal) reporting; since temporal
+ *           analysis is incremental, solving the command from 1 to the maximum
+ *           number of steps defined in the scope, and reports whenever each of
+ *           these steps finishes; the SimpleReporter overrides these messages
+ *           in the log panel and shows only the most recent one; the
+ *           translation also reports the relevant temporal options
  */
 
 final class SimpleReporter extends A4Reporter {
