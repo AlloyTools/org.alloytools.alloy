@@ -56,7 +56,8 @@ import kodkod.instance.TupleSet;
  * @modified Nuno Macedo, Eduardo Pessoa // [electrum-temporal] incrementally
  *           builds a solution by iteratively reading states from the XML; must
  *           start by collecting all used atoms, since univ varies from state to
- *           state; [electrum-unbounded]
+ *           state; [electrum-unbounded] support solutions created from
+ *           unbounded
  */
 
 public final class A4SolutionReader {

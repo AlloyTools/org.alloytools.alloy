@@ -109,8 +109,8 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
  *           applies to all graphs; support for exporting an instance as an
  *           Alloy formula; [electrum-simulator] added support for new
  *           operations over traces, next config, next path, next init, fork at
- *           given state (toolbar/menu buttons); communicates with the
- *           enumerator which is now expecting an additional parameter with
+ *           given state (toolbar/menu buttons); communication with the
+ *           enumerator which now expects an additional parameter with the
  *           selected operation to be passed too the A4Solution
  */
 
