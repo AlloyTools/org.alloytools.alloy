@@ -40,7 +40,8 @@ import kodkod.instance.TupleSet;
  * purpose, so that users of the tool will see the same illustration as the book
  * and not get confused by SAT solver nondeterminism.
  *
- * @modified Nuno Macedo // [electrum-base] adapted to pardinus solver hierarchy
+ * @modified Nuno Macedo // [electrum-base] adapted to extended kodkod solver
+ *           hierarchy
  */
 
 final class BookExamples {
