@@ -50,8 +50,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
  *
- * @modified [electrum] updated reporting (solving reports current state,
- *           translation the trace parameters, decompose strategy);
+ * @modified [electrum] updated reporting
  */
 public final class SimpleCLI {
 
