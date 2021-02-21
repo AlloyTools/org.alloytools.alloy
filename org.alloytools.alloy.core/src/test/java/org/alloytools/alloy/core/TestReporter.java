@@ -7,7 +7,7 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
 /**
  * @modified Nuno Macedo // [electrum-temporal] updated (temporal) reporting;
- *           [electrum-decomposed] updated reporting;
+ *           [electrum-decomposed] updated (decomposed) reporting;
  */
 public class TestReporter extends A4Reporter {
 

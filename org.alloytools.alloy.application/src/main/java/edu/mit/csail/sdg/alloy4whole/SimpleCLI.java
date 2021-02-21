@@ -52,7 +52,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * "ExampleUsingTheCompiler.java"
  *
  * @modified Nuno Macedo // [electrum-temporal] updated (temporal) reporting;
- *           [electrum-decomposed] updated reporting
+ *           [electrum-decomposed] updated (decomposed) reporting
  */
 public final class SimpleCLI {
 

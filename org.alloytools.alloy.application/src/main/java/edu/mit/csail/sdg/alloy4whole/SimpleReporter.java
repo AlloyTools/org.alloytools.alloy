@@ -73,11 +73,11 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  *           in the log panel and shows only the most recent one; the
  *           translation also reports the relevant temporal options;
  *           [electrum-simulator] enumeration task enriched with alternative
- *           iteration operations; [electrum-decomposed] reporting updated with
- *           the decompose strategy; a call is made every time one of the
- *           parallel problems performs a step; the number of seen
- *           configurations is thus also logged (the presented step is the
- *           maximum step seen by any parallel problem)
+ *           iteration operations; [electrum-decomposed] updated (decomposed)
+ *           reporting; a call is made every time one of the parallel problems
+ *           performs a step; the number of seen configurations is thus also
+ *           logged (the presented step is the maximum step seen by any parallel
+ *           problem)
  */
 
 final class SimpleReporter extends A4Reporter {

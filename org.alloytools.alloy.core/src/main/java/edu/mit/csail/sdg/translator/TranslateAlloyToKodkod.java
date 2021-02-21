@@ -85,7 +85,7 @@ import kodkod.util.ints.IntVector;
  *           globally quantified); also, variable singleton sigs are not
  *           collapsed like static ones; updated (temporal) reporting;
  *           [electrum-unbounded] name all relations of total order;
- *           [electrum-decomposed] updated reporting
+ *           [electrum-decomposed] updated (decomposed) reporting
  */
 
 public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
