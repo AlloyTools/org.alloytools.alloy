@@ -28,8 +28,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Field;
-import java.util.Locale;
 
 import org.alloytools.alloy.core.AlloyCore;
 
@@ -185,16 +183,22 @@ public final class WorkerEngine {
         synchronized (WorkerEngine.class) {
             try {
                 if (latest_sub != null) {
-                    if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
-                        try {  // [electrod] needed to stop all child processes (electrod)
-                            Field f = latest_sub.getClass().getDeclaredField("pid");
-                            f.setAccessible(true);
-                            Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
-                        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
-                            e.printStackTrace();
-                        }
-                    else
-                        latest_sub.destroy();
+                    // [electrum] this replaces the currently WorkerTask so that it exits gracefully
+                    try {
+                        ObjectOutputStream main2sub = new ObjectOutputStream(wrap(latest_sub.getOutputStream()));
+                        main2sub.writeObject(new WorkerTask() {
+
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public void run(WorkerCallback out) throws Exception {
+                            }
+                        });
+                        main2sub.close();
+                    } catch (IOException e) {
+                    }
+
+                    latest_sub.destroy();
                 }
             } finally {
                 latest_manager = null;
