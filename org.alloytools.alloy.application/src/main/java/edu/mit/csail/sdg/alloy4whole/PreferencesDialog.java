@@ -338,7 +338,7 @@ public class PreferencesDialog extends JFrame {
         for (int i = dirs.length - 1; i >= 0; i--) {
             final File file = new File(dirs[i] + File.separator + name);
             if (file.canExecute()) {
-                if ("yes".equals(System.getProperty("debug")))
+                if (isDebug)
                     System.out.println("Loaded: " + name + " at " + file);
                 return true;
             }
@@ -347,13 +347,13 @@ public class PreferencesDialog extends JFrame {
         for (String str : (System.getenv("PATH")).split(Pattern.quote(File.pathSeparator))) {
             Path pth = Paths.get(str);
             if (Files.exists(pth.resolve(name))) {
-                if ("yes".equals(System.getProperty("debug")))
+                if (isDebug)
                     System.out.println("Loaded: " + name + " at " + pth);
                 return true;
             }
         }
 
-        if ("yes".equals(System.getProperty("debug")))
+        if (isDebug)
             System.out.println("Failed to load: " + name);
         return false;
     }
