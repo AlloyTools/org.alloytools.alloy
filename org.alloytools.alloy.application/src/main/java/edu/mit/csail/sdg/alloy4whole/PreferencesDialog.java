@@ -94,6 +94,8 @@ public class PreferencesDialog extends JFrame {
     // private JPanel solverPane;
     // private JPanel miscPane;
 
+    final static boolean isDebug = "yes".equals(System.getProperty("debug"));
+
     private static class MyIntSpinnerModel extends AbstractSpinnerModel {
 
         private final IntPref pref;
@@ -360,7 +362,7 @@ public class PreferencesDialog extends JFrame {
     private static boolean loadLibrary(String library) {
         boolean loaded = _loadLibrary(library);
         String libName = System.mapLibraryName(library);
-        if ("yes".equals(System.getProperty("debug")))
+        if (isDebug)
             if (loaded)
                 System.out.println("Loaded: " + libName);
             else
