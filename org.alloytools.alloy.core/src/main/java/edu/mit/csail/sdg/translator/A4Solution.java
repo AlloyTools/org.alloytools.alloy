@@ -90,6 +90,7 @@ import kodkod.engine.InvalidSolverParamException;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -863,7 +864,10 @@ public final class A4Solution {
      * given expression.
      */
     TupleSet approximate(Expression expression) {
-        return factory.setOf(expression.arity(), Translator.approximate(expression, bounds, solver.options()).denseIndices());
+        PardinusBounds b = bounds.clone();
+        b.resolve(new AbstractReporter() {
+        });
+        return factory.setOf(expression.arity(), Translator.approximate(expression, b, solver.options()).denseIndices());
     }
 
     /**
@@ -880,6 +884,8 @@ public final class A4Solution {
         if (expr == KK_STRING)
             return makeMutable ? stringBounds.clone() : stringBounds;
         if (expr instanceof Relation) {
+            if (bounds.lowerSymbBound((Relation) expr) != null)
+                return query(findUpper, findUpper ? bounds.upperSymbBound((Relation) expr) : bounds.lowerSymbBound((Relation) expr), makeMutable);
             TupleSet ans = findUpper ? bounds.upperBound((Relation) expr) : bounds.lowerBound((Relation) expr);
             if (ans != null)
                 return makeMutable ? ans.clone() : ans;
