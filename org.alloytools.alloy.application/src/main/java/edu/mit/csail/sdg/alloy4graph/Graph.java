@@ -37,6 +37,9 @@ import edu.mit.csail.sdg.alloy4.Util;
  * Mutable; represents a graph.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified [electrum] changed so that nodes are sorted lexicographically
+ *           within each layer of the graph
  */
 
 public final strictfp class Graph {
@@ -313,7 +316,18 @@ public final strictfp class Graph {
                 grOUT.get(n.pos()).remove(x);
             for (GraphNode n : grOUT.get(x.pos()))
                 grIN.get(n.pos()).remove(x);
-            for (GraphNode n : Util.fastJoin(grIN.get(x.pos()), grOUT.get(x.pos()))) {
+            // [electrum] hack to get nodes sorted lexicographically within each layer
+            // can't fast join since read-only
+            //          Iterable<GraphNode> aux = Util.fastJoin(grIN.get(x.pos()), );
+            List<GraphNode> aux = new ArrayList<GraphNode>(grIN.get(x.pos()));
+            aux.addAll(grOUT.get(x.pos()));
+            aux.sort(new Comparator<GraphNode>() {
+
+                public int compare(GraphNode o1, GraphNode o2) {
+                    return -o1.uuid.toString().compareTo(o2.uuid.toString());
+                }
+            });
+            for (GraphNode n : aux) {
                 int ni = n.pos(), out = grOUT.get(ni).size(), in = grIN.get(ni).size();
                 int b = (out == 0) ? 0 : (in == 0 ? (2 * num) : (out - in + num));
                 if (grBIN[ni] != b) {

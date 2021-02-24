@@ -47,8 +47,9 @@ import org.alloytools.alloy.core.AlloyCore;
  * subsequent task; however, if the subprocess crashed, the crash will be
  * reported to the parent process via callback, and if we try to execute another
  * task, then a new subprocess will be spawned automatically.
+ *
+ * @modified [electrum] handle external executables
  */
-
 public final class WorkerEngine {
 
     /**
@@ -180,8 +181,24 @@ public final class WorkerEngine {
     public static void stop() {
         synchronized (WorkerEngine.class) {
             try {
-                if (latest_sub != null)
+                if (latest_sub != null) {
+                    // [electrum] this replaces the currently WorkerTask so that it exits gracefully
+                    try {
+                        ObjectOutputStream main2sub = new ObjectOutputStream(wrap(latest_sub.getOutputStream()));
+                        main2sub.writeObject(new WorkerTask() {
+
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public void run(WorkerCallback out) throws Exception {
+                            }
+                        });
+                        main2sub.close();
+                    } catch (IOException e) {
+                    }
+
                     latest_sub.destroy();
+                }
             } finally {
                 latest_manager = null;
                 latest_sub = null;

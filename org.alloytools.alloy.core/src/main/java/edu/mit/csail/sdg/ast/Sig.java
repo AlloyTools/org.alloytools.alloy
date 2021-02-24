@@ -34,24 +34,30 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
 
-/** Mutable; represents a signature. */
-
+/**
+ * Mutable; represents a signature.
+ *
+ * @modified [electrum] support the creation of variable/mutable sigs and
+ *           fields; constructors adapted accordingly, as are the creation of
+ *           Decl objects (in this case only those of tricky fields are ever
+ *           variable, the ones arising from parsed field declarations)
+ */
 public abstract class Sig extends Expr implements Clause {
 
     /** The built-in "univ" signature. */
-    public static final PrimSig UNIV   = new PrimSig("univ", null, false);
+    public static final PrimSig UNIV   = new PrimSig("univ", null, true, false);
 
     /** The built-in "Int" signature. */
-    public static final PrimSig SIGINT = new PrimSig("Int", UNIV, false);
+    public static final PrimSig SIGINT = new PrimSig("Int", UNIV, false, false);
 
     /** The built-in "seq/Int" signature. */
-    public static final PrimSig SEQIDX = new PrimSig("seq/Int", SIGINT, true);
+    public static final PrimSig SEQIDX = new PrimSig("seq/Int", SIGINT, false, true);
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING = new PrimSig("String", UNIV, true);
+    public static final PrimSig STRING = new PrimSig("String", UNIV, false, true);
 
     /** The built-in "none" signature. */
-    public static final PrimSig NONE   = new PrimSig("none", null, false);
+    public static final PrimSig NONE   = new PrimSig("none", null, false, false);
 
     /** The built-in "none" signature. */
     public static final PrimSig GHOST  = mkGhostSig();
@@ -216,6 +222,11 @@ public abstract class Sig extends Expr implements Clause {
     public final Pos             isMeta;
 
     /**
+     * Nonnull if this sig is variable.
+     */
+    public final Pos             isVariable;
+
+    /**
      * The label for this sig; this name does not need to be unique.
      */
     public final String          label;
@@ -240,11 +251,11 @@ public abstract class Sig extends Expr implements Clause {
     }
 
     /** Constructs a new builtin PrimSig. */
-    private Sig(String label) {
+    private Sig(String label, boolean var) {
         super(Pos.UNKNOWN, null);
         Expr oneof = ExprUnary.Op.ONEOF.make(null, this);
         ExprVar v = ExprVar.make(null, "this", oneof.type);
-        this.decl = new Decl(null, null, null, Util.asList(v), oneof);
+        this.decl = new Decl(null, null, null, null, Util.asList(v), oneof);
         this.builtin = true;
         this.isAbstract = null;
         this.isLone = null;
@@ -256,6 +267,7 @@ public abstract class Sig extends Expr implements Clause {
         this.isPrivate = null;
         this.isMeta = null;
         this.isEnum = null;
+        this.isVariable = var ? Pos.UNKNOWN : null;
         this.attributes = ConstList.make();
     }
 
@@ -265,9 +277,9 @@ public abstract class Sig extends Expr implements Clause {
         this.attributes = Util.asList(attributes);
         Expr oneof = ExprUnary.Op.ONEOF.make(null, this);
         ExprVar v = ExprVar.make(null, "this", oneof.type);
-        this.decl = new Decl(null, null, null, Util.asList(v), oneof);
+        this.decl = new Decl(null, null, null, null, Util.asList(v), oneof);
         Pos isAbstract = null, isLone = null, isOne = null, isSome = null, isSubsig = null, isSubset = null,
-                        isPrivate = null, isMeta = null, isEnum = null;
+                        isPrivate = null, isMeta = null, isEnum = null, isVariable = null;
         for (Attr a : attributes)
             if (a != null)
                 switch (a.type) {
@@ -298,6 +310,9 @@ public abstract class Sig extends Expr implements Clause {
                     case SUBSIG :
                         isSubsig = a.pos.merge(isSubsig);
                         break;
+                    case VARIABLE :
+                        isVariable = a.pos.merge(isVariable);
+                        break;
                     default :
                         //TODO throw new ErrorWarning("Undefined case " + a);
                 }
@@ -310,6 +325,7 @@ public abstract class Sig extends Expr implements Clause {
         this.isSome = isSome;
         this.isSubset = isSubset;
         this.isSubsig = isSubsig;
+        this.isVariable = isVariable;
         this.label = label;
         this.builtin = false;
         if (isLone != null && isOne != null)
@@ -454,8 +470,8 @@ public abstract class Sig extends Expr implements Clause {
         public final PrimSig parent;
 
         /** Constructs a builtin PrimSig. */
-        private PrimSig(String label, PrimSig parent, boolean add) {
-            super(label);
+        private PrimSig(String label, PrimSig parent, boolean var, boolean add) {
+            super(label, var);
             this.parent = parent;
             if (add)
                 this.parent.children.add(this);
@@ -671,6 +687,9 @@ public abstract class Sig extends Expr implements Clause {
         /** Nonnull if this field is a meta field. */
         public final Pos     isMeta;
 
+        /** Nonnull if this field is variable. */
+        public final Pos     isVariable;
+
         /** True if this is a defined field. */
         public final boolean defined;
 
@@ -683,7 +702,7 @@ public abstract class Sig extends Expr implements Clause {
         }
 
         /** Constructs a new Field object. */
-        private Field(Pos pos, Pos isPrivate, Pos isMeta, Pos disjoint, Pos disjoint2, Sig sig, String label, Expr bound) throws Err {
+        private Field(Pos pos, Pos isPrivate, Pos isMeta, Pos disjoint, Pos disjoint2, Pos isVar, Sig sig, String label, Expr bound) throws Err {
             super(pos, label, sig.type.product(bound.type));
             this.defined = bound.mult() == ExprUnary.Op.EXACTLYOF;
             if (sig.builtin)
@@ -696,6 +715,7 @@ public abstract class Sig extends Expr implements Clause {
                 throw new ErrorType(pos, "Cannot bind field " + label + " to the empty set or empty relation.");
             this.isPrivate = (isPrivate != null ? isPrivate : sig.isPrivate);
             this.isMeta = (isMeta != null ? isMeta : sig.isMeta);
+            this.isVariable = isVar;
             this.sig = sig;
         }
 
@@ -817,8 +837,8 @@ public abstract class Sig extends Expr implements Clause {
                                                          // multiplicity
                                                          // symbol, we assume
                                                          // it's oneOf
-        final Field f = new Field(null, null, null, null, null, this, label, bound);
-        final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
+        final Field f = new Field(null, null, null, null, null, null, this, label, bound);
+        final Decl d = new Decl(null, null, null, null, Arrays.asList(f), bound);
         f.decl = d;
         fields.add(d);
         realFields.add(f);
@@ -837,6 +857,7 @@ public abstract class Sig extends Expr implements Clause {
      *            "private"
      * @param isMeta - if nonnull, that means the user intended this field to be
      *            "meta"
+     * @param isVar - if nonnull, then this field has been declared as variable
      * @param labels - the names of the fields to be added (these names does not
      *            need to be unique)
      * @param bound - the new field will be bound by "all x: one ThisSig |
@@ -846,7 +867,7 @@ public abstract class Sig extends Expr implements Clause {
      * @throws ErrorType if the bound is not fully typechecked or is not a
      *             set/relation
      */
-    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, String[] labels, Expr bound) throws Err {
+    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, Pos isVar, String[] labels, Expr bound) throws Err {
         bound = bound.typecheck_as_set();
         if (bound.ambiguous)
             bound = bound.resolve_as_set(null);
@@ -857,8 +878,8 @@ public abstract class Sig extends Expr implements Clause {
                                                          // it's oneOf
         final Field[] f = new Field[labels.length];
         for (int i = 0; i < f.length; i++)
-            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, this, labels[i], bound);
-        final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, Arrays.asList(f), bound);
+            f[i] = new Field(pos, isPrivate, isMeta, isDisjoint, isDisjoint2, isVar, this, labels[i], bound);
+        final Decl d = new Decl(isPrivate, isDisjoint, isDisjoint2, isVar, Arrays.asList(f), bound);
         for (int i = 0; i < f.length; i++) {
             f[i].decl = d;
             realFields.add(f[i]);
@@ -896,8 +917,8 @@ public abstract class Sig extends Expr implements Clause {
             bound = bound.resolve_as_set(null);
         if (bound.mult() != ExprUnary.Op.EXACTLYOF)
             bound = ExprUnary.Op.EXACTLYOF.make(null, bound);
-        final Field f = new Field(pos, isPrivate, isMeta, null, null, this, label, bound);
-        final Decl d = new Decl(null, null, null, Arrays.asList(f), bound);
+        final Field f = new Field(pos, isPrivate, isMeta, null, null, null, this, label, bound);
+        final Decl d = new Decl(null, null, null, null, Arrays.asList(f), bound);
         f.decl = d;
         fields.add(d);
         realFields.add(f);

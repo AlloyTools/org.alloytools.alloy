@@ -49,8 +49,9 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  * This class is used by the Alloy developers to drive the regression test
  * suite. For a more detailed guide on how to use Alloy API, please see
  * "ExampleUsingTheCompiler.java"
+ *
+ * @modified [electrum] updated reporting
  */
-
 public final class SimpleCLI {
 
     private static final class SimpleReporter extends A4Reporter {
@@ -114,12 +115,12 @@ public final class SimpleCLI {
         }
 
         @Override
-        public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-            sb.append("   Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + "\n");
+        public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
+            debug("Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n");
         }
 
         @Override
-        public void solve(int primaryVars, int totalVars, int clauses) {
+        public void solve(int step, int primaryVars, int totalVars, int clauses) {
             if (db)
                 db("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses.\n");
             sb.append("   " + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. 12345ms.\n");
@@ -184,7 +185,7 @@ public final class SimpleCLI {
         sw.flush();
         String txt = sw.toString();
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new StringReader(txt))).toString();
-        StaticInstanceReader.parseInstance(new StringReader(txt));
+        StaticInstanceReader.parseInstance(new StringReader(txt), 0);
     }
 
     public static void main(String[] args) throws Exception {
@@ -258,7 +259,7 @@ public final class SimpleCLI {
                 metasb.flush();
                 String metaxml = metasb.toString();
                 A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new StringReader(metaxml)));
-                StaticInstanceReader.parseInstance(new StringReader(metaxml));
+                StaticInstanceReader.parseInstance(new StringReader(metaxml), 0);
                 // Okay, now solve the commands
                 A4Options options = new A4Options();
                 options.originalFilename = filename;

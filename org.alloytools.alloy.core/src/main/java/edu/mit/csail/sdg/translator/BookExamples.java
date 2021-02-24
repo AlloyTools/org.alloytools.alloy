@@ -25,8 +25,9 @@ import kodkod.ast.BinaryExpression;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.AbstractKodkodSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.Tuple;
@@ -37,6 +38,8 @@ import kodkod.instance.TupleSet;
  * Immutable; this class stores the set of solutions from the book, for teaching
  * purpose, so that users of the tool will see the same illustration as the book
  * and not get confused by SAT solver nondeterminism.
+ *
+ * @modified [electrum] adapted to extended kodkod solver hierarchy
  */
 
 final class BookExamples {
@@ -59,7 +62,7 @@ final class BookExamples {
      * If one of the solution is a solution to the given problem, return it, else
      * return null.
      */
-    static Solution trial(A4Reporter rep, A4Solution frame, Formula formula, Solver solver, boolean check) {
+    static Solution trial(A4Reporter rep, A4Solution frame, Formula formula, AbstractKodkodSolver<Bounds,Options> solver, boolean check) {
         TupleFactory fac = frame.getFactory();
         Solution sol = null;
         Iterable<Sig> sigs = frame.getAllReachableSigs();
@@ -207,7 +210,7 @@ final class BookExamples {
     }
 
     /** This tries a particular solution against the formula. */
-    private static Solution trial(A4Reporter rep, TupleFactory fac, Solver solver, Iterable<Sig> sigs, Formula f, A4Solution frame, Object[] t) {
+    private static Solution trial(A4Reporter rep, TupleFactory fac, AbstractKodkodSolver<Bounds,Options> solver, Iterable<Sig> sigs, Formula f, A4Solution frame, Object[] t) {
         try {
             frame.kr2typeCLEAR();
             Bounds b = null;

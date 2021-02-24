@@ -15,6 +15,7 @@ task cup(type: JavaExec ) {
     outputs.files("src/main/java/edu/mit/csail/sdg/parser/CompParser.java", "src/main/java/edu/mit/csail/sdg/parser/CompSym.java")
 
     classpath file( '../cnf/jars/java-cup-11a.jar' )
+    classpath file( '../cnf/jars/java-cup-runtime-0.11-a-czt01-cdh.jar' )
     main = 'java_cup.Main'
     workingDir( "src/main/java/edu/mit/csail/sdg/parser")
     args(

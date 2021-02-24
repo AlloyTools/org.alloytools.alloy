@@ -41,6 +41,8 @@ import edu.mit.csail.sdg.alloy4graph.DotStyle;
  * customization.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified [electrum] apply a default style to mutable elements (dashed)
  */
 
 public final class VizState {
@@ -85,6 +87,7 @@ public final class VizState {
         edgeStyle.putAll(old.edgeStyle);
         edgeVisible.putAll(old.edgeVisible);
         changedSinceLastSave = false;
+        applyDefaultVar();
     }
 
     /** Clears the current theme. */
@@ -155,9 +158,27 @@ public final class VizState {
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
+        applyDefaultVar(); // [electrum] dashed style for variable elements
         // Done
         cache.clear();
         changedSinceLastSave = false;
+    }
+
+    /**
+     * Paints variable items as dashed if no other style has been set by the user.
+     * Must be run every time since new elements may have been introduced.
+     */
+    void applyDefaultVar() {
+        // if parent also var or has style, inherit, otherwise paint dashed
+        for (AlloyType r : currentModel.getTypes())
+            if (nodeStyle.get(r) == null && r.isVar && !(currentModel.getSuperType(r).isVar || nodeStyle.get(currentModel.getSuperType(r)) != null))
+                nodeStyle.put(r, DotStyle.DASHED);
+        for (AlloyRelation r : currentModel.getRelations())
+            if (edgeStyle.get(r) == null && r.isVar)
+                edgeStyle.put(r, DotStyle.DASHED);
+        for (AlloySet r : currentModel.getSets())
+            if (nodeStyle.get(r) == null && r.isVar && !(r.getType().isVar || nodeStyle.get(r.getType()) != null))
+                nodeStyle.put(r, DotStyle.DASHED);
     }
 
     /**
@@ -323,7 +344,7 @@ public final class VizState {
      * Returns true iff the type is not univ, and it is a toplevel type.
      */
     public boolean canProject(final AlloyType type) {
-        return isTopLevel(type);
+        return isTopLevel(type) && !type.isVar; // [electrum] can't project over mutable variable
     }
 
     /**
@@ -524,8 +545,7 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,Integer> map = new LinkedHashMap<AlloyElement,Integer>();
 
-        private MInt() {
-        }
+        private MInt() {}
 
         private void clear() {
             map.clear();
@@ -556,8 +576,7 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,String> map = new LinkedHashMap<AlloyElement,String>();
 
-        private MString() {
-        }
+        private MString() {}
 
         private void clear() {
             map.clear();

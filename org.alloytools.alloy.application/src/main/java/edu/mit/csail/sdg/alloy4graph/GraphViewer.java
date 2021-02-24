@@ -61,6 +61,9 @@ import edu.mit.csail.sdg.alloy4.Util;
  * This class displays the graph.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified [electrum] added the ability to update the scale (needed to be
+ *           preserved when navigating traces)
  */
 
 public final strictfp class GraphViewer extends JPanel {
@@ -693,6 +696,16 @@ public final strictfp class GraphViewer extends JPanel {
     @Override
     public Dimension getPreferredSize() {
         return new Dimension((int) (graph.getTotalWidth() * scale), (int) (graph.getTotalHeight() * scale));
+    }
+
+    /** Returns the zoom level of this graph. */
+    public double getScale() {
+        return scale;
+    }
+
+    /** Updates the zoom level of this graph. */
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 
     /**

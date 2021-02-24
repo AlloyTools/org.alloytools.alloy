@@ -85,12 +85,33 @@ import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
+import edu.mit.csail.sdg.ast.VisitQuery;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
 import edu.mit.csail.sdg.ast.VisitReturn;
 
 /**
  * Mutable; this class represents an Alloy module; equals() uses object
  * identity.
+ *
+ * @modified [electrum] adapted methods to support commands with trace prefix
+ *           length scopes; added the detection of errors and warnings during
+ *           signature/field/command resolution; note that up Alloy5 signature
+ *           resolution did not throw warnings since those arose only from type
+ *           system warnings
+ *
+ *           the following warnings are thrown: if a static sig is in a variable
+ *           sig (since this makes part of the parent immutable); if a static
+ *           sig extends a variable sig (since this makes part of the parent
+ *           immutable); if a variable sig extends a static sig (redundant since
+ *           it will be immutable anyway); if a static field is declared in a
+ *           variable sig (since this makes part of the sig immutable); if a
+ *           static field is declared with a variable bounding expression (since
+ *           this makes part bounding expression immutable)
+ *
+ *           the following errors are thrown: if scopes are assigned to
+ *           non-top-level variable sigs; if exact scopes are assigned to
+ *           variable sigs; if a module declares a parameter as exact and a
+ *           variable argument is passed
  */
 
 public final class CompModule extends Browsable implements Module {
@@ -588,7 +609,7 @@ public final class CompModule extends Browsable implements Module {
                 TempList<ExprVar> n = new TempList<ExprVar>(d.names.size());
                 for (ExprHasName v : d.names)
                     n.add(ExprVar.make(v.pos, v.label, exp.type()));
-                Decl dd = new Decl(d.isPrivate, d.disjoint, d.disjoint2, n.makeConst(), exp);
+                Decl dd = new Decl(d.isPrivate, d.disjoint, d.disjoint2, null, n.makeConst(), exp);
                 for (ExprHasName newname : dd.names)
                     put(newname.label, newname);
                 decls.add(dd);
@@ -1483,7 +1504,11 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** The given Sig will now point to a nonnull Sig. */
-    private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS) throws Err {
+    private static Sig resolveSig(CompModule res, Set<Object> topo, Sig oldS, final List<ErrorWarning> warns) throws Err {
+        // When typechecking each sig:
+        // * a static sig should NOT be included in a variable sig [electrum]
+        // * a static sig should NOT extend a variable sig [electrum]
+        // * a variable sig should NOT extend a static sig [electrum]
         if (res.new2old.containsKey(oldS))
             return oldS;
         Sig realSig;
@@ -1499,19 +1524,26 @@ public final class CompModule extends Browsable implements Module {
                 Sig parentAST = u.getRawSIG(n.pos, n.label);
                 if (parentAST == null)
                     throw new ErrorSyntax(n.pos, "The sig \"" + n.label + "\" cannot be found.");
-                parents.add(resolveSig(res, topo, parentAST));
+                parents.add(resolveSig(res, topo, parentAST, warns));
             }
             realSig = new SubsetSig(fullname, parents, oldS.attributes.toArray(new Attr[0]));
+            for (Sig n : parents)
+                if (n != UNIV && n.isVariable != null && realSig.isVariable == null)
+                    warns.add(new ErrorWarning(realSig.isSubset, "Part of " + n.label + " is static.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
         } else {
             Sig sup = ((PrimSig) oldS).parent;
             Sig parentAST = u.getRawSIG(sup.pos, sup.label);
             if (parentAST == null)
                 throw new ErrorSyntax(sup.pos, "The sig \"" + sup.label + "\" cannot be found.");
-            Sig parent = resolveSig(res, topo, parentAST);
+            Sig parent = resolveSig(res, topo, parentAST, warns);
             if (!(parent instanceof PrimSig))
                 throw new ErrorSyntax(sup.pos, "Cannot extend the subset signature \"" + parent + "\".\n" + "A signature can only extend a toplevel signature or a subsignature.");
             PrimSig p = (PrimSig) parent;
             realSig = new PrimSig(fullname, p, oldS.attributes.toArray(new Attr[0]));
+            if (parent != UNIV && parent.isVariable != null && realSig.isVariable == null)
+                warns.add(new ErrorWarning(realSig.isSubsig, "Part of " + parent.label + " is static.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
+            if (parent != UNIV && parent.isVariable == null && realSig.isVariable != null)
+                warns.add(new ErrorWarning(realSig.isSubsig, "Marking sig " + realSig.label + " as var is redundant.\n" + "Sig " + realSig.label + " is variable but " + parent.label + " is static."));
         }
         res.new2old.put(realSig, oldS);
         res.sig2module.put(realSig, u);
@@ -1566,7 +1598,7 @@ public final class CompModule extends Browsable implements Module {
         else
             decls = new ArrayList<Decl>(decls);
         if (f != null)
-            decls.add(0, new Decl(null, null, null, Util.asList(ExprVar.make(f.span(), "this")), f));
+            decls.add(0, new Decl(null, null, null, null, Util.asList(ExprVar.make(f.span(), "this")), f));
         for (Decl d : decls) {
             if (d.isPrivate != null) {
                 ExprHasName name = d.names.get(0);
@@ -1618,7 +1650,7 @@ public final class CompModule extends Browsable implements Module {
                         tmpvars.add(v);
                         rep.typecheck((f.isPred ? "pred " : "fun ") + fullname + ", Param " + n.label + ": " + v.type() + "\n");
                     }
-                    tmpdecls.add(new Decl(d.isPrivate, d.disjoint, d.disjoint2, tmpvars.makeConst(), val));
+                    tmpdecls.add(new Decl(d.isPrivate, d.disjoint, d.disjoint2, null, tmpvars.makeConst(), val));
                 }
                 Expr ret = null;
                 if (!f.isPred) {
@@ -1819,8 +1851,7 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a COMMAND declaration. */
-
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
         if (label != null)
@@ -1832,7 +1863,7 @@ public final class CompModule extends Browsable implements Module {
             throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
         String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, exp, scopes, null, name, parent);
+        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, tmn, tmx, exp, scopes, null, name, parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1840,7 +1871,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
 
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
@@ -1856,7 +1887,7 @@ public final class CompModule extends Browsable implements Module {
             addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, expects, scopes, null, ExprVar.make(null, n), parent);
+        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, tmn, tmx, expects, scopes, null, ExprVar.make(null, n), parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1866,7 +1897,7 @@ public final class CompModule extends Browsable implements Module {
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, 1, null, null, ExprVar.make(null, "$$Default"), null));
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, -1, -1, 1, null, null, ExprVar.make(null, "$$Default"), null));
         }
     }
 
@@ -1912,13 +1943,17 @@ public final class CompModule extends Browsable implements Module {
             Sig s = getRawSIG(et.sig.pos, et.sig.label);
             if (s == null)
                 throw new ErrorSyntax(et.sig.pos, "The sig \"" + et.sig.label + "\" cannot be found.");
+            if (!s.isTopLevel() && s.isVariable != null)
+                throw new ErrorSyntax(cmd.pos, "Mutable sig " + et.sig + " is not top-level thus cannot have scopes assigned.");
+            if (et.isExact && s.isVariable != null)
+                throw new ErrorSyntax(cmd.pos, "Sig " + et.sig + " is variable thus scope cannot be exact.");
             sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
         }
 
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.minprefix, cmd.maxprefix, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
 
     }
 
@@ -1961,6 +1996,8 @@ public final class CompModule extends Browsable implements Module {
         // visible ancestor sig
         // * it is allowed to refer to visible sigs
         // * it is NOT allowed to refer to any predicate or function
+        // * it should NOT to refer to variable fields/sigs unless it is also variable [electrum]
+        // * it should NOT to be defined in a variable sigs unless it is also variable [electrum]
         // For example, if A.als opens B.als, and B/SIGX extends A/SIGY,
         // then B/SIGX's fields cannot refer to A/SIGY, nor any fields in
         // A/SIGY)
@@ -1990,7 +2027,22 @@ public final class CompModule extends Browsable implements Module {
             String[] names = new String[d.names.size()];
             for (int i = 0; i < names.length; i++)
                 names[i] = d.names.get(i).label;
-            Field[] fields = s.addTrickyField(d.span(), d.isPrivate, d.disjoint, d.disjoint2, null, names, bound);
+            Field[] fields = s.addTrickyField(d.span(), d.isPrivate, d.disjoint, d.disjoint2, null, d.isVar, names, bound);
+            final VisitQuery<Sig> q = new VisitQuery<Sig>() {
+
+                @Override
+                public final Sig visit(Sig x) {
+                    if (x.isVariable != null)
+                        return x;
+                    else
+                        return null;
+                }
+            };
+            Sig qr = q.visitThis(bound);
+            if (d.isVar == null && qr != null)
+                warns.add(new ErrorWarning(d.span(), "Static field types with variable bound.\n" + "Field " + d.names.get(0) + " is static but " + qr.label + " is variable."));
+            if (d.isVar == null && s.isVariable != null)
+                warns.add(new ErrorWarning(d.span(), "Static field inside variable sig.\n" + "Field " + d.names.get(0) + " is static but " + s.label + " is variable."));
             for (Field f : fields) {
                 rep.typecheck("Sig " + s + ", Field " + f.label + ": " + f.type() + "\n");
             }
@@ -2122,7 +2174,7 @@ public final class CompModule extends Browsable implements Module {
         HashSet<Object> topo = new HashSet<Object>();
         for (CompModule m : root.allModules)
             for (Sig s : m.sigs.values())
-                resolveSig(root, topo, s);
+                resolveSig(root, topo, s, warns); // [electrum] sigs may also throw warnings
         // Add the non-defined fields to the sigs in topologically sorted order
         // (since fields in subsigs are allowed to refer to parent's fields)
         for (Sig oldS : root.new2old.keySet())
@@ -2150,8 +2202,11 @@ public final class CompModule extends Browsable implements Module {
             // root module's list of exact sigs
             for (String n : x.exactParams) {
                 Sig sig = x.params.get(n);
-                if (sig != null)
+                if (sig != null) {
+                    if (sig.isVariable != null)
+                        errors = errors.make(new ErrorSyntax(root.opens.get(x.path).pos, "Module " + x.moduleName + " forces parameter to be exact but " + sig + " variable."));
                     root.exactSigs.add(sig);
+                }
             }
         }
         if (!errors.isEmpty())

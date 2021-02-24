@@ -39,7 +39,7 @@ sig Slot {}
 
 abstract sig Statement {}
 sig Assignment extends Statement {
-  var: Variable,
+  var": Variable,
   expr: Expr
   }
 sig Setter extends Statement {
@@ -81,19 +81,19 @@ sig State {
 pred RuntimeTypesOK [s: State] {
   all o: s.objects, f: o.type.fields |
     let v = s.holds [o.slot [f]] | HasType [v, f.declType]
-  all var: s.vars |
-    let v = s.holds [var] | HasType [v, var.declType]
+  all var": s.vars |
+    let v = s.holds [var"] | HasType [v, var".declType]
   }
 
 pred HasType [v: Value, t: Type] {
   v in Null or Subtype [v.type, t]
   }
 
-pred Subtype [t, t': Type] {
+pred Subtype [t, t": Type] {
   t in Class =>
      (let supers = (t & Class).*(Class<:xtends) |
-        t' in (supers + supers.implements.*(Interface<:xtends)))
-  t in Interface => t' in (t & Interface).*(Interface<:xtends)
+        t" in (supers + supers.implements.*(Interface<:xtends)))
+  t in Interface => t" in (t & Interface).*(Interface<:xtends)
   }
 
 pred TypeChecksSetter [stmt: Setter] {
@@ -102,24 +102,24 @@ pred TypeChecksSetter [stmt: Setter] {
   Subtype [stmt.rexpr.type, stmt.field.declType]
   }
 
-pred ExecuteSetter [s, s': State, stmt: Setter] {
+pred ExecuteSetter [s, s": State, stmt: Setter] {
   stmt.(rexpr+lexpr).subexprs & Variable in s.vars
-  s'.objects = s.objects and s'.vars = s.vars
+  s".objects = s.objects and s".vars = s.vars
   let rval = s.val [stmt.rexpr], lval = s.val [stmt.lexpr] {
     no lval & Null
-    s'.holds = s.holds ++ (lval.slot[stmt.field] -> rval)
+    s".holds = s.holds ++ (lval.slot[stmt.field] -> rval)
    }
   }
 
 assert TypeSoundness {
-  all s, s': State, stmt: Setter |
+  all s, s": State, stmt: Setter |
     {RuntimeTypesOK[s]
-    ExecuteSetter [s, s', stmt]
+    ExecuteSetter [s, s", stmt]
     TypeChecksSetter[stmt]
-    } => RuntimeTypesOK[s']
+    } => RuntimeTypesOK[s"]
   }
 
-fact {all o, o': Object | some o.slot[Field] & o'.slot[Field] => o = o'}
+fact {all o, o": Object | some o.slot[Field] & o".slot[Field] => o = o"}
 fact {all g: Getter | no g & g.^subexprs}
 
 fact ScopeFact {

@@ -5,6 +5,9 @@ import java.io.PrintStream;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 
+/**
+ * @modified [electrum] updated reporting
+ */
 public class TestReporter extends A4Reporter {
 
     PrintStream out = System.out;
@@ -63,13 +66,15 @@ public class TestReporter extends A4Reporter {
      * @param solver - the solver chosen by the user (eg. SAT4J, MiniSat...)
      * @param bitwidth - the integer bitwidth chosen by the user
      * @param maxseq - the scope on seq/Int chosen by the user
+     * @param mintrace - the minimum trace length
+     * @param maxtrace - the maximum trace length
      * @param skolemDepth - the skolem function depth chosen by the user (0, 1,
      *            2...)
      * @param symmetry - the amount of symmetry breaking chosen by the user (0...)
      */
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        out.printf("TRNS %s bitwidth=%s maxseq=%s skolem=%s symmetry=%s%n", solver, bitwidth, maxseq, skolemDepth, symmetry);
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
+        out.printf("TRNS %s steps=%s..%s bitwidth=%s maxseq=%s skolem=%s symmetry=%s mode=%s%n", solver, mintrace, maxtrace, bitwidth, maxseq, skolemDepth, symmetry, strat);
     }
 
     /**
@@ -81,7 +86,7 @@ public class TestReporter extends A4Reporter {
      * @param clauses - the total number of clauses
      */
     @Override
-    public void solve(int primaryVars, int totalVars, int clauses) {
+    public void solve(int step, int primaryVars, int totalVars, int clauses) {
         out.printf("SOLV primary=%s total=%s clauses=%s%n", primaryVars, totalVars, clauses);
     }
 

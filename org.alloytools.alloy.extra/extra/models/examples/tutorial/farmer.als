@@ -51,24 +51,24 @@ fact initialState {
  * Constrains at most one item to move from 'from' to 'to'.
  * Also constrains which objects get eaten.
  */
-pred crossRiver [from, from', to, to': set Object] {
+pred crossRiver [from, from", to, to": set Object] {
    // either the Farmer takes no items
-   (from' = from - Farmer - from'.eats and
-    to' = to + Farmer) or
+   (from" = from - Farmer - from".eats and
+    to" = to + Farmer) or
     // or the Farmer takes one item
     (one x : from - Farmer | {
-       from' = from - Farmer - x - from'.eats
-       to' = to + Farmer + x })
+       from" = from - Farmer - x - from".eats
+       to" = to + Farmer + x })
 }
 
 /**
  * crossRiver transitions between states
  */
 fact stateTransition {
-  all s: State, s': ord/next[s] {
+  all s: State, s": ord/next[s] {
     Farmer in s.near =>
-      crossRiver[s.near, s'.near, s.far, s'.far] else
-      crossRiver[s.far, s'.far, s.near, s'.near]
+      crossRiver[s.near, s".near, s.far, s".far] else
+      crossRiver[s.far, s".far, s.near, s".near]
   }
 }
 

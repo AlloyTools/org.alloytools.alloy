@@ -49,6 +49,9 @@ import edu.mit.csail.sdg.ast.Type.ProductType;
  * <p>
  * <b>Invariant:</b> type!=EMPTY => (right.mult==2 => (this.op==IN || this.op is
  * one of the 17 arrow operators))
+ *
+ * @modified [electrum] add binary temporal operators (until, releases, since,
+ *           triggered) to the AST
  */
 
 public final class ExprBinary extends Expr {
@@ -257,7 +260,15 @@ public final class ExprBinary extends Expr {
                            /** || */
                            OR("||", false),
                            /** &lt;=&gt; */
-                           IFF("<=>", false);
+                           IFF("<=>", false),
+                           /** until; */
+                           UNTIL("until", false),
+                           /** release; */
+                           RELEASES("releases", false),
+                           /** since; */
+                           SINCE("since", false),
+                           /** trigger */
+                           TRIGGERED("triggered", false);
 
         /**
          * The constructor.
@@ -319,7 +330,11 @@ public final class ExprBinary extends Expr {
                     break;
                 }
                 case IFF :
-                case IMPLIES : {
+                case IMPLIES :
+                case UNTIL :
+                case RELEASES :
+                case SINCE :
+                case TRIGGERED : {
                     left = left.typecheck_as_formula();
                     right = right.typecheck_as_formula();
                     break;
@@ -374,6 +389,10 @@ public final class ExprBinary extends Expr {
                     case OR :
                     case IFF :
                     case IMPLIES :
+                    case UNTIL :
+                    case RELEASES :
+                    case SINCE :
+                    case TRIGGERED :
                         type = Type.FORMULA;
                         break;
                     case MUL :
@@ -489,7 +508,11 @@ public final class ExprBinary extends Expr {
             case AND :
             case OR :
             case IFF :
-            case IMPLIES : {
+            case IMPLIES :
+            case UNTIL :
+            case RELEASES :
+            case SINCE :
+            case TRIGGERED : {
                 a = (b = Type.FORMULA);
                 break;
             }
