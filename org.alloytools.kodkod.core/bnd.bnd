@@ -1,0 +1,38 @@
+
+Specification-Title: Kodkod API (with arithmetic overflow prevention and higher-order solving extensions)
+Specification-Version: 2.0.1
+Specification-Vendor: Emina Torlak
+Implementation-Title: Kodkod API
+Implementation-Version: 2.0
+Implementation-Vendor: Emina Torlak
+
+Export-Package: \
+	kodkod.ast,\
+	kodkod.ast.operator,\
+	kodkod.ast.visitor,\
+	kodkod.engine,\
+	kodkod.engine.bool,\
+	kodkod.engine.config,\
+	kodkod.engine.fol2sat,\
+	kodkod.engine.hol,\
+	kodkod.engine.satlab,\
+	kodkod.engine.ucore,\
+	kodkod.instance,\
+	kodkod.util.collections,\
+	kodkod.util.ints,\
+	kodkod.util.nodes
+
+-buildpath: \
+	org.sat4j.core,\
+	org.alloytools.kodkod.nativesat.util;version=latest,\
+	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
+	org.alloytools.kodkod.nativesat.x86-windows;version=latest
+
+-testpath: \
+	osgi.enroute.junit.wrapper, \
+	osgi.enroute.hamcrest.wrapper
+
+-includeresource: LICENSE
+

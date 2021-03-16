@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component id="org.sat4j.core" version="2">
+    <resource path="src/main/java/org/sat4j/minisat/core/DataStructureFactory.java" type="org.sat4j.minisat.core.DataStructureFactory">
+        <filter id="1211105284">
+            <message_arguments>
+                <message_argument value="conflictDetectedInWatchesFor(int, int)"/>
+            </message_arguments>
+        </filter>
+        <filter id="1211105284">
+            <message_arguments>
+                <message_argument value="getWatchesFor(int)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/main/java/org/sat4j/minisat/core/ILits.java" type="org.sat4j.minisat.core.ILits">
+        <filter id="1211105284">
+            <message_arguments>
+                <message_argument value="watches(int)"/>
+            </message_arguments>
+        </filter>
+        <filter id="1211105284">
+            <message_arguments>
+                <message_argument value="watch(int, Propagatable)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/ModelIteratorTest.java" type="org.sat4j.ModelIteratorTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.ModelIteratorTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/SingleSolutionTest.java" type="org.sat4j.SingleSolutionTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.SingleSolutionTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/TestConstrGroup.java" type="org.sat4j.TestConstrGroup">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.TestConstrGroup"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/TestFreeId.java" type="org.sat4j.TestFreeId">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.TestFreeId"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/TestQuickExplain.java" type="org.sat4j.TestQuickExplain">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.TestQuickExplain"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/core/VecTest.java" type="org.sat4j.core.VecTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.core.VecTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/AbstractAcceptanceTestCase.java" type="org.sat4j.minisat.AbstractAcceptanceTestCase">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.AbstractAcceptanceTestCase"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/AbstractM2Test.java" type="org.sat4j.minisat.AbstractM2Test">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.AbstractM2Test"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/AllTests.java" type="org.sat4j.minisat.AllTests">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.AllTests"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/GenericM2Test.java" type="org.sat4j.minisat.GenericM2Test">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.GenericM2Test"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2AtLeastTest.java" type="org.sat4j.minisat.M2AtLeastTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2AtLeastTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2BackjumpingTest.java" type="org.sat4j.minisat.M2BackjumpingTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2BackjumpingTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2CardMaxYannTest.java" type="org.sat4j.minisat.M2CardMaxYannTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2CardMaxYannTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2CardMinYannTest.java" type="org.sat4j.minisat.M2CardMinYannTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2CardMinYannTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2MiniLearningCBTest.java" type="org.sat4j.minisat.M2MiniLearningCBTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2MiniLearningCBTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2MiniLearningTest.java" type="org.sat4j.minisat.M2MiniLearningTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2MiniLearningTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2MiniSATTest.java" type="org.sat4j.minisat.M2MiniSATTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2MiniSATTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/M2RelsatTest.java" type="org.sat4j.minisat.M2RelsatTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.M2RelsatTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/TestAssertion.java" type="org.sat4j.minisat.TestAssertion">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.TestAssertion"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/TestLubyFunction.java" type="org.sat4j.minisat.TestLubyFunction">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.TestLubyFunction"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/TestsFonctionnels.java" type="org.sat4j.minisat.TestsFonctionnels">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.TestsFonctionnels"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/VarOrderTest.java" type="org.sat4j.minisat.VarOrderTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.VarOrderTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/constraints/LitTest.java" type="org.sat4j.minisat.constraints.LitTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.constraints.LitTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/core/Bug275101.java" type="org.sat4j.minisat.core.Bug275101">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.core.Bug275101"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/core/BugThomas.java" type="org.sat4j.minisat.core.BugThomas">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.core.BugThomas"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/core/HeapTest.java" type="org.sat4j.minisat.core.HeapTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.core.HeapTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/core/LboolTest.java" type="org.sat4j.minisat.core.LboolTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.core.LboolTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/core/QueueTest.java" type="org.sat4j.minisat.core.QueueTest">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.core.QueueTest"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/test/java/org/sat4j/minisat/core/TestAtMost.java" type="org.sat4j.minisat.core.TestAtMost">
+        <filter id="1110441988">
+            <message_arguments>
+                <message_argument value="org.sat4j.minisat.core.TestAtMost"/>
+            </message_arguments>
+        </filter>
+    </resource>
+</component>

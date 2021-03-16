@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="binary">
+	<property file="src/release.properties" />
+	<tstamp>
+		<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+	</tstamp>
+	<macrodef name="buildJar">
+		<attribute name="dir"/>
+		<attribute name="ext"/>
+		<attribute name="suffix" default=""/>
+		<sequential>
+			<jar jarfile="kodkod.${kodkod.version}@{suffix}.jar">
+				<fileset dir="@{dir}">
+					<include name="**/*.@{ext}" />
+					<exclude name="**/taglet/*" />
+				</fileset>
+				<manifest>
+					<attribute name="Built-By" value="${kodkod.author}" />
+					<attribute name="Built-Date" value="${TODAY}" />
+					<attribute name="Specification-Vendor" value="${kodkod.author}" />
+					<attribute name="Specification-Title" value="${kodkod.specification.title}" />
+					<attribute name="Specification-Version" value="${kodkod.version}" />
+					<attribute name="Implementation-Vendor" value="${kodkod.author}" />
+					<attribute name="Implementation-Title" value="${kodkod.specification.title}" />
+					<attribute name="Implementation-Version" value="${kodkod.version}" />
+				</manifest>
+			</jar>
+		</sequential>
+	</macrodef>
+	<target name="binary">
+		<buildJar dir="bin" ext="class" />
+	</target>
+	<target name="source">
+		<buildJar dir="src" ext="java" suffix="-src"/>
+	</target>
+</project>

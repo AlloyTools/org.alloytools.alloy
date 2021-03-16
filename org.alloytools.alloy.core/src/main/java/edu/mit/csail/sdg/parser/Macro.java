@@ -1,3 +1,4 @@
+
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
@@ -88,6 +89,23 @@ final class Macro extends ExprCustom {
      *            null if we wish to ignore warnings
      */
     Expr instantiate(Context cx, List<ErrorWarning> warnings) throws Err {
+        if (cx.unrolls <= 0) {
+            Pos p = span();
+            return new ExprBad(p, toString(), new ErrorType(p, "Macro substitution too deep; possibly indicating an infinite recursion."));
+        }
+        if (params.size() != args.size())
+            return this;
+        Context cx2 = new Context(realModule, warnings, cx.unrolls - 1);
+        for (int n = params.size(), i = 0; i < n; i++) {
+            Expr tmp = args.get(i);
+            if (!(tmp instanceof Macro))
+                tmp = tmp.resolve(tmp.type(), warnings);
+            cx2.put(params.get(i).label, tmp);
+        }
+        return cx2.check(body);
+    }
+
+    Expr instantiate(edu.mit.csail.sdg.parser.DashModule.Context cx, List<ErrorWarning> warnings) throws Err {
         if (cx.unrolls <= 0) {
             Pos p = span();
             return new ExprBad(p, toString(), new ErrorType(p, "Macro substitution too deep; possibly indicating an infinite recursion."));

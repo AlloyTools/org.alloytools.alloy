@@ -15,16 +15,17 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
+import java.io.File;
+import java.util.LinkedHashMap;
+
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.parser.CompUtil;
-import edu.mit.csail.sdg.translator.A4Options;
-import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
+import edu.mit.csail.sdg.parser.CoreDashGenerator;
+import edu.mit.csail.sdg.parser.DashModule;
+import edu.mit.csail.sdg.parser.UnitTest;
 
 /**
  * This class demonstrates how to access Alloy4 via the compiler methods.
@@ -60,41 +61,37 @@ public final class ExampleUsingTheCompiler {
             }
         };
 
-        for (String filename : args) {
+        boolean parse = true;
+        String filename = "D:/util/integer.als";
+
+        UnitTest.testStates();
+        UnitTest.testConcStates();
+        UnitTest.testTransitions();
+
+        System.out.println("Before parsing");
+
+
+        if (parse) {
+
+            System.out.println("Parsing Model");
 
             // Parse+typecheck the model
             System.out.println("=========== Parsing+Typechecking " + filename + " =============");
-            Module world = CompUtil.parseEverything_fromFile(rep, null, filename);
 
-            // Choose some default options for how you want to execute the
-            // commands
-            A4Options options = new A4Options();
+            DashModule world = CompUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), "D:/DashModels/Mutex.dsh");
 
-            options.solver = A4Options.SatSolver.SAT4J;
-
-            for (Command command : world.getAllCommands()) {
-                // Execute the command
-                System.out.println("============ Command " + command + ": ============");
-                A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, options);
-                // Print the outcome
-                System.out.println(ans);
-                // If satisfiable...
-                if (ans.satisfiable()) {
-                    // You can query "ans" to find out the values of each set or
-                    // type.
-                    // This can be useful for debugging.
-                    //
-                    // You can also write the outcome to an XML file
-                    ans.writeXML("alloy_example_output.xml");
-                    //
-                    // You can then visualize the XML file by calling this:
-                    if (viz == null) {
-                        viz = new VizGUI(false, "alloy_example_output.xml", null);
-                    } else {
-                        viz.loadXML("alloy_example_output.xml", true);
-                    }
-                }
-            }
+            printDashModel(world);
         }
+    }
+
+    public static void printDashModel(DashModule module) {
+        File myObj = new File("D:/dashModel.txt");
+        String dashModel = "";
+
+        CoreDashGenerator gen = new CoreDashGenerator(module.concStates, module.concStateNames, module.states, module.transitions);
+
+        System.out.println("Printing Dash Model");
+
+        gen.printCoreDash();
     }
 }

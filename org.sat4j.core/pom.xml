@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.ow2.sat4j</groupId>
+    <artifactId>org.ow2.sat4j.pom</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>org.ow2.sat4j.core</artifactId>
+  <name>SAT4J core</name>
+  <description>
+  The core library contains a flexible implementation in Java of the initial Minisat specification.
+  The library is regularly updated with latest SAT technologies. It is a mature software that target
+  Java developer willing to use SAT capability in their software.
+  </description>
+  <developers>
+    <developer>
+      <id>leberre</id>
+      <name>Daniel Le Berre</name>
+      <email>leberre@cril.fr</email>
+      <url>http://www.cril.fr/~leberre/</url>
+      <organization>CRIL CNRS UMR 8189</organization>
+      <organizationUrl>http://www.cril.fr</organizationUrl>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+        <developer>
+      <id>sroussel</id>
+      <name>Stephanie Roussel</name>
+      <email>sroussel@cril.fr</email>
+      <organization>CRIL CNRS 8188</organization>
+      <organizationUrl>http://www.cril.fr</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>lonca</id>
+      <name>Emmanuel Lonca</name>
+      <email>lonca@cril.fr</email>
+      <url>http://www.sat4j.org/</url>
+      <organization>CRIL CNRS 8188</organization>
+      <organizationUrl>http://www.cril.fr</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Carsten Fuhs</name>
+      <email>fuhs@informatik.rwth-aachen.de</email>
+      <url>http://verify.rwth-aachen.de/fuhs/</url>
+     </contributor>
+    <contributor>
+      <name>Dieter von Holten</name>
+     </contributor>
+  </contributors>
+</project>

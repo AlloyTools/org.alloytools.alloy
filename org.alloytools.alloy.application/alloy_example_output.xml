@@ -1,0 +1,19 @@
+<alloy builddate="1970-01-01T00:00:00Z">
+
+<instance bitwidth="4" maxseq="4" command="Run Default for 4 but 4 int, 4 seq expect 1" filename="">
+
+<sig label="seq/Int" ID="0" parentID="1" builtin="yes">
+</sig>
+
+<sig label="Int" ID="1" parentID="2" builtin="yes">
+</sig>
+
+<sig label="String" ID="3" parentID="2" builtin="yes">
+</sig>
+
+<sig label="univ" ID="2" builtin="yes">
+</sig>
+
+</instance>
+
+</alloy>

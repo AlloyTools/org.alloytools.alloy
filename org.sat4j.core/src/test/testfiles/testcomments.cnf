@@ -1,0 +1,12 @@
+c test 3 clauses unitaires et deux clauses binaires
+p cnf 4 5
+1 0
+c first comment
+-2 0
+c second comment
+-3 0
+c third comment
+2 -4 0
+c fourth comment
+3 4 0
+c ending comment

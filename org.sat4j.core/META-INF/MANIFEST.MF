@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %bundleName
+Bundle-SymbolicName: org.sat4j.core
+Bundle-Version: 9.9.9.token
+Export-Package: org.sat4j;version="9.9.9.token",
+ org.sat4j.core;version="9.9.9.token",
+ org.sat4j.minisat;version="9.9.9.token",
+ org.sat4j.minisat.constraints;version="9.9.9.token",
+ org.sat4j.minisat.constraints.card;version="9.9.9.token",
+ org.sat4j.minisat.constraints.cnf;version="9.9.9.token",
+ org.sat4j.minisat.core;version="9.9.9.token",
+ org.sat4j.minisat.learning;version="9.9.9.token",
+ org.sat4j.minisat.orders;version="9.9.9.token",
+ org.sat4j.minisat.restarts;version="9.9.9.token",
+ org.sat4j.opt;version="9.9.9.token",
+ org.sat4j.reader;version="9.9.9.token",
+ org.sat4j.specs;version="9.9.9.token",
+ org.sat4j.tools;version="9.9.9.token",
+ org.sat4j.tools.encoding;version="9.9.9.token",
+ org.sat4j.tools.xplain;version="9.9.9.token"
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
+Built-By: Daniel Le Berre
+Main-Class: org.sat4j.BasicLauncher
+Specification-Title: SAT4J
+Specification-Version: NA
+Specification-Vendor: Daniel Le Berre
+Implementation-Title: SAT4J
+Implementation-Version: 9.9.9.token 
+Implementation-Vendor: CRIL CNRS UMR 8188 - Universite d'Artois
+Automatic-Module-Name: org.ow2.sat4j.core
+Bundle-RequiredExecutionEnvironment: J2SE-1.5

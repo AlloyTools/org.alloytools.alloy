@@ -1,0 +1,7 @@
+c test 3 clauses unitaires et deux clauses binaires
+p cnf 4 5
+1 0
+-2 0
+-3 0
+2 4 0
+3 4 0
