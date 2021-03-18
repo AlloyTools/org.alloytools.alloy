@@ -61,7 +61,9 @@ import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
-import edu.mit.csail.sdg.ast.ConcState;
+import edu.mit.csail.sdg.ast.DashConcState;
+import edu.mit.csail.sdg.ast.DashState;
+import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
@@ -85,8 +87,6 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.Sig.SubsetSig;
-import edu.mit.csail.sdg.ast.State;
-import edu.mit.csail.sdg.ast.Trans;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitQuery;
 import edu.mit.csail.sdg.ast.VisitQueryOnce;
@@ -115,6 +115,13 @@ import edu.mit.csail.sdg.ast.VisitReturn;
  *           non-top-level variable sigs; if exact scopes are assigned to
  *           variable sigs; if a module declares a parameter as exact and a
  *           variable argument is passed
+ * 
+ * @modified [dsh] added methods to read a top level concurrent state in a Dash
+ *           model, iterate through states and transitions declared within that
+ *           concurrent state, and stores these items in respective containers
+ *           declared within this class. These are later used to convert to
+ *           CoreDash once every top level concurrent state has been read, and
+ *           their items stored in the containers
  */
 
 public final class DashModule extends Browsable implements Module {
@@ -266,22 +273,22 @@ public final class DashModule extends Browsable implements Module {
     /**
      * Each conc state name is mapped to its respective Conc State AST
      */
-    public final Map<String,ConcState> concStates     = new LinkedHashMap<String,ConcState>();
+    public final Map<String,DashConcState> concStates     = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Stores the name for every concurrent state in the model
      */
-    public List<String>                concStateNames = new ArrayList<String>();
+    public List<String>                    concStateNames = new ArrayList<String>();
 
     /**
      * Each state name is mapped to its respective State AST
      */
-    public final Map<String,State>     states         = new LinkedHashMap<String,State>();
+    public final Map<String,DashState>     states         = new LinkedHashMap<String,DashState>();
 
     /**
      * Each transition name is mapped to its respective Transiton AST
      */
-    public final Map<String,Trans>     transitions    = new LinkedHashMap<String,Trans>();
+    public final Map<String,DashTrans>     transitions    = new LinkedHashMap<String,DashTrans>();
 
     // ============================================================================================================================//
 
@@ -1259,19 +1266,19 @@ public final class DashModule extends Browsable implements Module {
      * passed in as arguments
      */
     public void addTopLevelConcState(Pos pos, String name, List<Object> stateItems) {
-        ConcState topLevelConcState = new ConcState(pos, name, stateItems);
+        DashConcState topLevelConcState = new DashConcState(pos, name, stateItems);
         topLevelConcState.modifiedName = name;
 
         concStates.put(topLevelConcState.modifiedName, topLevelConcState);
         concStateNames.add(topLevelConcState.modifiedName);
 
         for (Object item : stateItems) {
-            if (item instanceof ConcState)
-                addConcState(name, (ConcState) item);
-            if (item instanceof State)
-                addState(name, (State) item);
-            if (item instanceof Trans)
-                addTrans(topLevelConcState, (Trans) item);
+            if (item instanceof DashConcState)
+                addConcState(name, (DashConcState) item);
+            if (item instanceof DashState)
+                addState(name, (DashState) item);
+            if (item instanceof DashTrans)
+                addTrans(topLevelConcState, (DashTrans) item);
         }
     }
 
@@ -1282,15 +1289,15 @@ public final class DashModule extends Browsable implements Module {
      * states and transitions in the concurrent state and call respective functions
      * for adding these items to the DASH Internal Data Structure
      */
-    public void addConcState(String parentName, ConcState concState) {
+    public void addConcState(String parentName, DashConcState concState) {
         concState.modifiedName = parentName + '_' + concState.name;
 
         concStates.put(concState.modifiedName, concState);
         concStateNames.add(concState.modifiedName);
 
-        for (State state : concState.states)
+        for (DashState state : concState.states)
             addState(concState.modifiedName, state);
-        for (Trans transition : concState.transitions)
+        for (DashTrans transition : concState.transitions)
             addTrans(concState, transition);
     }
 
@@ -1298,17 +1305,17 @@ public final class DashModule extends Browsable implements Module {
      * This is called by the addTopLevelConcState/addConcState function once it
      * finds a state inside a conc state/OR state
      */
-    public void addState(String parent, State state) {
+    public void addState(String parent, DashState state) {
         String modifiedStateName = parent + '_' + state.name;
         state.modifiedName = modifiedStateName;
         state.parentConc = parent;
 
         states.put(modifiedStateName, state);
 
-        for (State innerState : state.states) {
+        for (DashState innerState : state.states) {
             addState(modifiedStateName, innerState);
         }
-        for (Trans transition : state.transitions) {
+        for (DashTrans transition : state.transitions) {
             addTrans(state, transition);
         }
     }
@@ -1317,7 +1324,7 @@ public final class DashModule extends Browsable implements Module {
      * This is called by the addState function once it finds a transition inside an
      * OR state
      */
-    public void addTrans(State parent, Trans transition) {
+    public void addTrans(DashState parent, DashTrans transition) {
         String modifiedTransName = parent.modifiedName + '_' + transition.name;
         transition.modifiedName = modifiedTransName;
         transition.parentState = parent;
@@ -1329,7 +1336,7 @@ public final class DashModule extends Browsable implements Module {
      * This is called by the addConcState function once it finds a transition inside
      * an OR state
      */
-    public void addTrans(ConcState parent, Trans transition) {
+    public void addTrans(DashConcState parent, DashTrans transition) {
         String modifiedTransName = parent.modifiedName + '_' + transition.name;
         transition.modifiedName = modifiedTransName;
         transition.parentState = parent;

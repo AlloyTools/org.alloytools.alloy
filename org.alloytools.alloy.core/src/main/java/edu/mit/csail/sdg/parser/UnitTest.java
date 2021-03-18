@@ -20,13 +20,13 @@ public class UnitTest {
         //System.out.println("Size of stateNames: " + DASHValidation.stateNames.get("concState").size());
 
 
-        if (!expectedStateNames.equals(DASHValidation.stateNames.get("concState")))
+        if (!expectedStateNames.equals(DashValidation.stateNames.get("concState")))
             throw new ErrorSyntax("Every state has not been stored in the IDS");
         if (!module.states.get("concState_topStateA").states.get(0).name.equals("innerState"))
             throw new ErrorSyntax("Child state has not been stored in the IDS");
 
 
-        DASHValidation.clearContainers();
+        DashValidation.clearContainers();
     }
 
     public static void testConcStates() {
@@ -44,7 +44,7 @@ public class UnitTest {
         if (!(module.concStates.get("topConcStateB").name.equals("topConcStateB")))
             throw new ErrorSyntax("Top level concurrent state not stored in the IDS");
 
-        DASHValidation.clearContainers();
+        DashValidation.clearContainers();
     }
 
     public static void testTransitions() {
@@ -62,7 +62,7 @@ public class UnitTest {
         if (!(module.transitions.get("topConcStateA_B_B").onExpr.equals("A")))
             throw new ErrorSyntax("Transition event not stored in the IDS");
 
-        DASHValidation.clearContainers();
+        DashValidation.clearContainers();
     }
 
 

@@ -5,31 +5,31 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.mit.csail.sdg.ast.ConcState;
 import edu.mit.csail.sdg.ast.DashAction;
+import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.DashCondition;
 import edu.mit.csail.sdg.ast.DashInit;
 import edu.mit.csail.sdg.ast.DashInvariant;
+import edu.mit.csail.sdg.ast.DashState;
+import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Event;
-import edu.mit.csail.sdg.ast.State;
-import edu.mit.csail.sdg.ast.Trans;
 
 public class CoreDashGenerator {
 
-    private Map<String,ConcState> concStates     = new LinkedHashMap<String,ConcState>();
+    private Map<String,DashConcState> concStates     = new LinkedHashMap<String,DashConcState>();
 
-    private List<String>          concStateNames = new ArrayList<String>();
+    private List<String>              concStateNames = new ArrayList<String>();
 
-    private Map<String,State>     states         = new LinkedHashMap<String,State>();
+    private Map<String,DashState>     states         = new LinkedHashMap<String,DashState>();
 
-    private Map<String,Trans>     transitions    = new LinkedHashMap<String,Trans>();
+    private Map<String,DashTrans>     transitions    = new LinkedHashMap<String,DashTrans>();
 
-    public String                 coreDashModel  = "";
+    public String                     coreDashModel  = "";
 
-    public int                    tabCount       = 0;
+    public int                        tabCount       = 0;
 
-    public CoreDashGenerator(Map<String,ConcState> concStates, List<String> concStateNames, Map<String,State> states, Map<String,Trans> transitions) {
+    public CoreDashGenerator(Map<String,DashConcState> concStates, List<String> concStateNames, Map<String,DashState> states, Map<String,DashTrans> transitions) {
         this.concStates = concStates;
         this.concStateNames = concStateNames;
         this.states = states;
@@ -46,7 +46,7 @@ public class CoreDashGenerator {
     }
 
     void printConcState(String name) {
-        ConcState current = concStates.get(name);
+        DashConcState current = concStates.get(name);
 
         coreDashModel += ("conc state " + name + " {" + '\n');
 
@@ -89,33 +89,33 @@ public class CoreDashGenerator {
             coreDashModel += ("}\n");
         }
 
-        for (State state : current.states) {
+        for (DashState state : current.states) {
             printState(state);
             coreDashModel += '\n';
         }
 
-        for (Trans trans : current.transitions) {
+        for (DashTrans trans : current.transitions) {
             printTransition(trans);
             coreDashModel += '\n';
         }
     }
 
-    void printState(State state) {
+    void printState(DashState state) {
         coreDashModel += (tabLine(++tabCount) + "state " + state.name + "{" + '\n');
 
-        for (State innerState : state.states) {
+        for (DashState innerState : state.states) {
             printState(innerState);
             coreDashModel += '\n';
         }
 
-        for (Trans transition : state.transitions) {
+        for (DashTrans transition : state.transitions) {
             printTransition(transition);
             coreDashModel += '\n';
         }
         coreDashModel += (tabLine(--tabCount) + "}" + '\n');
     }
 
-    void printTransition(Trans transition) {
+    void printTransition(DashTrans transition) {
         coreDashModel += (tabLine(++tabCount) + "trans " + transition.name + "{" + '\n');
 
         for (String fromExpr : transition.fromExpr.fromExpr)
@@ -139,7 +139,6 @@ public class CoreDashGenerator {
         for (int i = 0; i < count; i++) {
             tabs += '\t';
         }
-
         return tabs;
     }
 }

@@ -47,8 +47,6 @@ import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Decl;
-import edu.mit.csail.sdg.ast.DashExpr;
-import edu.mit.csail.sdg.ast.Trans;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBadJoin;
 import edu.mit.csail.sdg.ast.ExprITE;
@@ -61,8 +59,8 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.ast.State;
-import edu.mit.csail.sdg.ast.ConcState;
+import edu.mit.csail.sdg.ast.DashState;
+import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.Event;
 import edu.mit.csail.sdg.ast.DashInit;
 import edu.mit.csail.sdg.ast.DashInvariant;
@@ -76,8 +74,10 @@ import edu.mit.csail.sdg.ast.DashOn;
 import edu.mit.csail.sdg.ast.DashFrom;
 import edu.mit.csail.sdg.ast.DashTransTemplate;
 import edu.mit.csail.sdg.ast.DashTemplateCall;
+import edu.mit.csail.sdg.ast.DashExpr;
+import edu.mit.csail.sdg.ast.DashTrans;
 
-import edu.mit.csail.sdg.parser.DASHValidation;
+import edu.mit.csail.sdg.parser.DashValidation;
  
 //===========================================================================//
 
@@ -652,18 +652,18 @@ nonterminal Expr                       ExprNoSeq;
 
 //=================================DASH======================================//
 
-nonterminal                            ConcA;
-nonterminal                            ConcB;
+nonterminal                            ConcA; //This represents a top level conc state
+nonterminal                            ConcB; //This reprents a conc state inside a conc state
 
 nonterminal List<Object>               StateItems;
 
 nonterminal Event                      Event;
 
-nonterminal State                      StateA;
+nonterminal DashState                  StateA;
 
 nonterminal                            Trans;
 nonterminal List<Object>               TransItems;
-nonterminal List<Trans>                AllTrans;
+nonterminal List<DashTrans>            AllTrans;
 
 nonterminal                            StateInit;
 nonterminal                            Invariant;
@@ -672,10 +672,10 @@ nonterminal                            Condition;
 
 nonterminal                            From;
 nonterminal                            On;
-nonterminal                            WhenA; 
-nonterminal                            WhenB;
-nonterminal                            DoA;
-nonterminal                            DoB;
+nonterminal                            WhenA; //This is a when statement with braces
+nonterminal                            WhenB; //This is a when statement without braces
+nonterminal                            DoA; //This is a do statement with braces
+nonterminal                            DoB; //This is a do statement without braces
 nonterminal                            GoTo;
 nonterminal                            Send;
 nonterminal                            TemplateCall;
@@ -687,7 +687,7 @@ File ::= Spec {: parser.dashmodule.doneParsing(); :};
 
 Spec ::= Spec MODULE:o Name:n                                                  {: nod(n);         parser.dashmodule.addModelName(o.merge(n.pos) , n.label , new ArrayList<ExprVar>()); :};
 Spec ::= Spec MODULE:o Name:n LBRACKET Namex:b RBRACKET:r                      {: nod(n); nod(b); parser.dashmodule.addModelName(o.merge(r)     , n.label , b                       ); :};
-Spec ::= Spec Vis:p OPEN:o Name:a                                              {: nod(a);         DASHValidation.importModule(a.label); parser.dashmodule.addOpen(o.merge(a.pos), p, a, null, null); :};
+Spec ::= Spec Vis:p OPEN:o Name:a                                              {: nod(a);         DashValidation.importModule(a.label); parser.dashmodule.addOpen(o.merge(a.pos), p, a, null, null); :};
 Spec ::= Spec Vis:p OPEN:o Name:a                               AS Name:c      {: nod(a); nod(c); parser.dashmodule.addOpen(o.merge(c.pos), p, a, null, c);    :};
 Spec ::= Spec Vis:p OPEN:o Name:a LBRACKET SigRefs:b RBRACKET:c                {: nod(a);         parser.dashmodule.addOpen(o.merge(c),     p, a, b,    null); :};
 Spec ::= Spec Vis:p OPEN:o Name:a LBRACKET SigRefs:b RBRACKET   AS Name:c      {: nod(a); nod(c); parser.dashmodule.addOpen(o.merge(c.pos), p, a, b,    c);    :};
@@ -784,19 +784,19 @@ TypeNumber ::=           NUMBER:a                  COLON NUMBER:i  {: if (!Versi
 
  
 
-Function ::= Vis:p FUN:o              Name:n LPAREN   Decls:d RPAREN   COLON Expr:r Super:v {: DASHValidation.funcNames.add(n.label); nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , mult(r), v); :};
-Function ::= Vis:p FUN:o              Name:n LBRACKET Decls:d RBRACKET COLON Expr:r Super:v {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , mult(r), v); :};
-Function ::= Vis:p FUN:o              Name:n                           COLON Expr:r Super:v {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, null , mult(r), v); :};
-Function ::= Vis:p FUN:o SigRef:f DOT Name:n LPAREN   Decls:d RPAREN   COLON Expr:r Super:v {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , mult(r), v); :};
-Function ::= Vis:p FUN:o SigRef:f DOT Name:n LBRACKET Decls:d RBRACKET COLON Expr:r Super:v {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , mult(r), v); :};
-Function ::= Vis:p FUN:o SigRef:f DOT Name:n                           COLON Expr:r Super:v {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , null , mult(r), v); :};
+Function ::= Vis:p FUN:o              Name:n LPAREN   Decls:d RPAREN   COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label); nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , mult(r), v); :};
+Function ::= Vis:p FUN:o              Name:n LBRACKET Decls:d RBRACKET COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , mult(r), v); :};
+Function ::= Vis:p FUN:o              Name:n                           COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, null , mult(r), v); :};
+Function ::= Vis:p FUN:o SigRef:f DOT Name:n LPAREN   Decls:d RPAREN   COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , mult(r), v); :};
+Function ::= Vis:p FUN:o SigRef:f DOT Name:n LBRACKET Decls:d RBRACKET COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , mult(r), v); :};
+Function ::= Vis:p FUN:o SigRef:f DOT Name:n                           COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , null , mult(r), v); :};
 
-Predicate ::= Vis:p PRED:o              Name:n LPAREN   Decls:d RPAREN   Super:v             {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
-Predicate ::= Vis:p PRED:o              Name:n LBRACKET Decls:d RBRACKET Super:v             {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
-Predicate ::= Vis:p PRED:o              Name:n                           Super:v             {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, null , null, v); :};
-Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n LPAREN   Decls:d RPAREN   Super:v             {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , null, v); :};
-Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n LBRACKET Decls:d RBRACKET Super:v             {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , null, v); :};
-Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n                           Super:v             {: DASHValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , null , null, v); :};
+Predicate ::= Vis:p PRED:o              Name:n LPAREN   Decls:d RPAREN   Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
+Predicate ::= Vis:p PRED:o              Name:n LBRACKET Decls:d RBRACKET Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
+Predicate ::= Vis:p PRED:o              Name:n                           Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, null , null, v); :};
+Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n LPAREN   Decls:d RPAREN   Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , null, v); :};
+Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n LBRACKET Decls:d RBRACKET Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , null, v); :};
+Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n                           Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , null , null, v); :};
 
 Vis ::=           {: RESULT=null; :};
 Vis ::= PRIVATE:p {: RESULT=p;    :};
@@ -805,10 +805,10 @@ Vis ::= PRIVATE:p {: RESULT=p;    :};
 //This is the top level conc state. StateItems are specific items that can appear inside a Concurrent State (Conc State, State, Event, Trans, etc)
 ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: 								        
 										parser.dashmodule.addTopLevelConcState(o, n.label, c);    
-										DASHValidation.validateDashModel(parser.dashmodule);  :};
+										DashValidation.validateDashModel(parser.dashmodule);  :};
 
 //This represents a concurrent state inside a concurrent state
-ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new ConcState(o, n.label, c);  :};
+ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c);  :};
 
 StateItems::= ConcB:x 				    {: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= ConcB:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
@@ -817,25 +817,25 @@ StateItems::= ConcB:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
 Event::= EVENT:o  				    Name:n LBRACE RBRACE {: RESULT=new Event(o, n.label, "event");  :}
 	 | ENV EVENT:o				    Name:n LBRACE RBRACE {: RESULT=new Event(o, n.label, "env event");  :} 
 	 | ENV:o			        	Name:n LBRACE RBRACE {: RESULT=new Event(o, n.label, "env event");   :}
-	 | ENV:o			        	Declb:d {: RESULT=new Event(o, d, "env event"); DASHValidation.declarations.add(d);  :};
+	 | ENV:o			        	Declb:d {: RESULT=new Event(o, d, "env event"); DashValidation.declarations.add(d);  :};
 	 	 
 StateItems::= Event:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= Event:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
 
 //State Declaration
-StateA::= STATE:o 		        	Name:n LBRACE                  RBRACE {: RESULT= new State(o, n.label, null, false); :}
-	| STATE:o 		        	    Name:n LBRACE StateItems:c     RBRACE {: RESULT= new State(o, n.label, c, false);    :}
+StateA::= STATE:o 		        	Name:n LBRACE                  RBRACE {: RESULT= new DashState(o, n.label, null, false); :}
+	| STATE:o 		        	    Name:n LBRACE StateItems:c     RBRACE {: RESULT= new DashState(o, n.label, c, false);    :}
 
-	| DEFAULT STATE:o 		        Name:n LBRACE                  RBRACE {: RESULT= new State(o, n.label, null, true);   :}
-	| DEFAULT STATE:o 		        Name:n LBRACE StateItems:c     RBRACE {:  RESULT= new State(o, n.label, c, true);   :};
+	| DEFAULT STATE:o 		        Name:n LBRACE                  RBRACE {: RESULT= new DashState(o, n.label, null, true);   :}
+	| DEFAULT STATE:o 		        Name:n LBRACE StateItems:c     RBRACE {:  RESULT= new DashState(o, n.label, c, true);   :};
 
  
 StateItems::= StateA:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= StateA:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
 
 //Transition Declaration
-Trans ::= TRANS:o				    Name:n LBRACE TransItems:c RBRACE {: RESULT = new Trans(o, n.label, c);  :}
- 	 |TRANS:o                                   LBRACE TransItems:c RBRACE        {: RESULT = new Trans(o, null, c);       :}
+Trans ::= TRANS:o				    Name:n LBRACE TransItems:c RBRACE {: RESULT = new DashTrans(o, n.label, c);  :}
+ 	 |TRANS:o                                   LBRACE TransItems:c RBRACE        {: RESULT = new DashTrans(o, null, c);       :}
  	 |DEF:o        Name:n                       LBRACKET Decls:d RBRACKET    LBRACE TransItems:c RBRACE {: RESULT = new DashTransTemplate(o, n.label, c, d); :}
 ; 
 
@@ -896,7 +896,7 @@ Sig ::= SigQuals:a Names:b SigIn:c LBRACE Decls:d RBRACE:o SuperOpt:e
    if (e==null) e = ExprConstant.Op.TRUE.make(o, 0);
    ExprVar cc = (c!=null && c.size()>0) ? c.remove(c.size()-1) : null;
    for(ExprVar bb:b) {
-      DASHValidation.sigNames.add(bb.label);
+      DashValidation.sigNames.add(bb.label);
       parser.dashmodule.addSig(bb.label, cc, c, d, e,
          AttrType.WHERE   .makenull(bb.pos.merge(e==null ? o : e.span())),
          AttrType.ABSTRACT.makenull(a.get(0)),
@@ -1006,8 +1006,8 @@ Decls ::=         COMMA Decls:y  {: RESULT=y;                                   
 
 /* FOR DASH */
 
-StateItems ::= Declb:x               	{: RESULT=new ArrayList<Object>(); RESULT.add(x); DASHValidation.declarations.add(x);  :};
-StateItems ::= Declb:x StateItems:y     {: RESULT=y; RESULT.add(0,x); DASHValidation.declarations.add(x);                      :};
+StateItems ::= Declb:x               	{: RESULT=new ArrayList<Object>(); RESULT.add(x);  :};
+StateItems ::= Declb:x StateItems:y     {: RESULT=y; RESULT.add(0,x);                      :};
 
 
 Let ::= Name:a EQUALS:o Expr:b SuperOrBar:x {:

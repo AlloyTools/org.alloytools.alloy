@@ -12,11 +12,13 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.ast.ConcState;
 import edu.mit.csail.sdg.ast.DashAction;
+import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.DashCondition;
 import edu.mit.csail.sdg.ast.DashInit;
 import edu.mit.csail.sdg.ast.DashInvariant;
+import edu.mit.csail.sdg.ast.DashState;
+import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Event;
 import edu.mit.csail.sdg.ast.Expr;
@@ -26,13 +28,44 @@ import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.State;
-import edu.mit.csail.sdg.ast.Trans;
 
-/* Write comments to specify the checks and what functions they map to */
-public class DASHValidation {
+/**
+ * This class represents is used to check for well-formedness conditions for a
+ * parsed Dash model.
+ *
+ * The DashParser calls the validateDashModel function once it completes parsing
+ * a concurrent state. It will iterate through the states, transitions, etc in
+ * the conc state and store them in HashMaps for later use. Once the required
+ * information is stored (state names, transition names, Alloy expressions,
+ * etc), we will check for issues in the Dash model.
+ *
+ * The issues being checked for are:
+ *
+ * Two or more states with the same name with in the same level:
+ * hasSameStateName
+ *
+ * Two or more transitions with the same name with in the same level:
+ * hasSameTransName
+ *
+ * Two or more events with the same name with in the same conc state:
+ * hasSameEventName
+ *
+ * Illegal transitions (check function for examples of illegal transitions):
+ * hasLegalTransCommand
+ *
+ * Reference to a variable that does not exist in the concurrent state:
+ * validateExprVar This requires us to break up an Alloy expression until we
+ * reach a variable name (ExprVar)
+ *
+ * Conc States/States without a default state: hasDefaultState
+ *
+ * This class also parses an imported module such that we references to items in
+ * an imported module are found to be legal references: importModule
+ *
+ **/
+public class DashValidation {
 
-    static ConcState                       currentConcStateValidated;
+    static DashConcState                   currentConcStateValidated;
 
     static int                             orStateCount           = 0;
 
@@ -40,7 +73,7 @@ public class DASHValidation {
      * A list of all the transitions in the DASH model. This is used for validation
      * purposes. This is accessed by Alloy.cup when parsing a transition.
      */
-    static Map<String,List<Trans>>         transitions            = new LinkedHashMap<String,List<Trans>>();
+    static Map<String,List<DashTrans>>     transitions            = new LinkedHashMap<String,List<DashTrans>>();
 
     /*
      * A list of all the signature names in the DASH model. This is used for
@@ -108,7 +141,7 @@ public class DASHValidation {
         for (String name : eventNames.get(concStateName))
             System.out.println("Event: " + name);
 
-        for (Trans transition : transitions.get(concStateName)) {
+        for (DashTrans transition : transitions.get(concStateName)) {
             if (transition.onExpr != null) {
                 validateTransRef(transition.onExpr.name, transition.onExpr.pos, eventNames.get(concStateName));
             }
@@ -163,7 +196,7 @@ public class DASHValidation {
     }
 
 
-    public static void validateExprVar(ConcState concState) {
+    public static void validateExprVar(DashConcState concState) {
         for (Expr expr : expressions.get(concState.modifiedName)) {
             System.out.println("\nLooking at: " + expr.toString());
 
@@ -363,7 +396,7 @@ public class DASHValidation {
     }
 
     /* Ensure that conc states have a default state */
-    public static Boolean hasDefaultState(List<State> states) {
+    public static Boolean hasDefaultState(List<DashState> states) {
         orStateCount = 0;
 
         /*
@@ -373,7 +406,7 @@ public class DASHValidation {
         if (states.size() == 0)
             return true;
 
-        for (State item : states) {
+        for (DashState item : states) {
             if (item.isDefault)
                 return true;
         }
@@ -381,14 +414,14 @@ public class DASHValidation {
     }
 
     /* Ensure that conc states do not have orstates with the same name */
-    public static void hasSameStateName(String name, List<State> states) {
+    public static void hasSameStateName(String name, List<DashState> states) {
         String stateName = "";
         String currentStateName = "";
         Boolean sameStateFound = false;
 
-        for (State stateA : states) {
+        for (DashState stateA : states) {
             stateName = stateA.name;
-            for (State stateB : states) {
+            for (DashState stateB : states) {
                 if (stateName.equals(stateB.name) && sameStateFound)
                     throw new ErrorSyntax(stateB.pos, "This state has already been declared.");
                 if (stateName.equals(stateB.name) && !sameStateFound)
@@ -400,14 +433,14 @@ public class DASHValidation {
 
 
     /* Ensure that conc states do not have orstates with the trans name */
-    public static void hasSameTransName(String name, List<Trans> transitions) {
+    public static void hasSameTransName(String name, List<DashTrans> transitions) {
         String transName = "";
         String currentTransName = "";
         Boolean sameTransFound = false;
 
-        for (Trans transA : transitions) {
+        for (DashTrans transA : transitions) {
             transName = transA.name;
-            for (Trans transB : transitions) {
+            for (DashTrans transB : transitions) {
                 if (transName.equals(transB.name) && sameTransFound)
                     throw new ErrorSyntax(transB.pos, "This transition has already been declared.");
                 if (transName.equals(transB.name) && !sameTransFound)
@@ -459,18 +492,10 @@ public class DASHValidation {
      */
     public static void addConcStates(DashModule dashModule) {
         /* Get all the concurrent states */
-        for (ConcState concState : dashModule.concStates.values()) {
-            //System.out.println("Name: " + concState.name);
-            System.out.println("Modified Name: " + concState.modifiedName);
+        for (DashConcState concState : dashModule.concStates.values()) {
             concStateNames.add(concState.name);
             concStateNamesModified.add(concState.modifiedName);
         }
-
-        System.out.println("concStateNames size: " + concStateNames.size());
-        System.out.println("concStateNamesModified size: " + concStateNamesModified.size());
-
-        for (String name : concStateNamesModified)
-            System.out.println("Modified Name: " + name);
 
         for (String concStateName : concStateNamesModified)
             initializeNameContainers(concStateName, dashModule);
@@ -479,10 +504,10 @@ public class DASHValidation {
 
     public static void initializeNameContainers(String concStateName, DashModule dashModule) {
         List<String> names = new ArrayList<String>();
-        List<Trans> transitionList = new ArrayList<Trans>();
+        List<DashTrans> transitionList = new ArrayList<DashTrans>();
         List<Expr> expressionList = new ArrayList<Expr>();
 
-        for (State state : dashModule.concStates.get(concStateName).states)
+        for (DashState state : dashModule.concStates.get(concStateName).states)
             names.add(state.name);
         stateNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
@@ -496,7 +521,7 @@ public class DASHValidation {
         declarationNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
 
-        for (Trans trans : dashModule.concStates.get(concStateName).transitions) {
+        for (DashTrans trans : dashModule.concStates.get(concStateName).transitions) {
             transitionList.add(trans);
 
             //The only kind of transition that will have declarations (decl) is a
@@ -510,7 +535,7 @@ public class DASHValidation {
 
         }
         expressions.put(concStateName, new ArrayList<Expr>(expressionList));
-        transitions.put(concStateName, new ArrayList<Trans>(transitionList));
+        transitions.put(concStateName, new ArrayList<DashTrans>(transitionList));
         expressionList.clear();
         transitionList.clear();
 
@@ -519,7 +544,7 @@ public class DASHValidation {
 
     public static void validateConcStates(DashModule dashModule) {
         for (String concStateName : concStateNamesModified) {
-            ConcState currentConcState = dashModule.concStates.get(concStateName);
+            DashConcState currentConcState = dashModule.concStates.get(concStateName);
             currentConcStateValidated = currentConcState;
 
             if (!hasDefaultState(currentConcState.states))
@@ -529,7 +554,7 @@ public class DASHValidation {
             hasSameTransName(concStateName, currentConcState.transitions);
             hasSameEventName(concStateName, currentConcState.events);
 
-            for (State state : currentConcState.states) {
+            for (DashState state : currentConcState.states) {
                 if (!hasDefaultState(state.states))
                     throw new ErrorSyntax(state.pos, "A default state is required.");
 
@@ -539,7 +564,7 @@ public class DASHValidation {
         }
     }
 
-    public static void addExprFromConcState(ConcState currentConcState) {
+    public static void addExprFromConcState(DashConcState currentConcState) {
         List<Expr> localExpressions = new ArrayList<Expr>(expressions.get(currentConcState.modifiedName));
 
         if (currentConcState.init.size() > 0) {
@@ -570,7 +595,7 @@ public class DASHValidation {
         orStateCount = 0;
         concStateNames = new ArrayList<String>();
         concStateNamesModified = new ArrayList<String>();
-        transitions = new HashMap<String,List<Trans>>();
+        transitions = new HashMap<String,List<DashTrans>>();
         sigNames = new ArrayList<String>();
         funcNames = new ArrayList<String>();
         stateNames = new HashMap<String,List<String>>();
