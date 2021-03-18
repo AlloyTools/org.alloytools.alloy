@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 
+/* Separate this file into different files */
 /* This stores about init, action, condition, do, when, etc. declarations inside a Dash Model  */
 public final class DashExpr {
 

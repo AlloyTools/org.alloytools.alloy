@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import edu.mit.csail.sdg.ast.ConcState;
-import edu.mit.csail.sdg.ast.DashExpr;
+import edu.mit.csail.sdg.ast.DashAction;
+import edu.mit.csail.sdg.ast.DashCondition;
+import edu.mit.csail.sdg.ast.DashInit;
+import edu.mit.csail.sdg.ast.DashInvariant;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Event;
 import edu.mit.csail.sdg.ast.State;
@@ -58,7 +61,7 @@ public class CoreDashGenerator {
         coreDashModel += '\n';
 
         if (current.invariant.size() > 0) {
-            for (DashExpr dashExpr : current.invariant) {
+            for (DashInvariant dashExpr : current.invariant) {
                 coreDashModel += ("invariant " + dashExpr.name + "{\n");
                 coreDashModel += (dashExpr.expr.toString());
                 coreDashModel += ("}\n");
@@ -67,21 +70,21 @@ public class CoreDashGenerator {
 
         if (current.init.size() > 0) {
             coreDashModel += ("init {\n");
-            for (DashExpr dashExpr : current.init)
+            for (DashInit dashExpr : current.init)
                 coreDashModel += (dashExpr.expr.toString());
             coreDashModel += ("}\n");
         }
 
         if (current.action.size() > 0) {
             coreDashModel += ("action {\n");
-            for (DashExpr dashExpr : current.action)
+            for (DashAction dashExpr : current.action)
                 coreDashModel += (dashExpr.expr.toString());
             coreDashModel += ("}\n");
         }
 
         if (current.condition.size() > 0) {
             coreDashModel += ("v {\n");
-            for (DashExpr dashExpr : current.condition)
+            for (DashCondition dashExpr : current.condition)
                 coreDashModel += (dashExpr.expr.toString());
             coreDashModel += ("}\n");
         }
@@ -115,7 +118,7 @@ public class CoreDashGenerator {
     void printTransition(Trans transition) {
         coreDashModel += (tabLine(++tabCount) + "trans " + transition.name + "{" + '\n');
 
-        for (String fromExpr : transition.fromExpr)
+        for (String fromExpr : transition.fromExpr.fromExpr)
             coreDashModel += (tabLine(tabCount) + "from " + fromExpr + '\n');
         if ((transition.onExpr != null))
             coreDashModel += (tabLine(tabCount) + "on " + transition.onExpr + '\n');
@@ -123,7 +126,7 @@ public class CoreDashGenerator {
             coreDashModel += (tabLine(tabCount) + "when " + transition.whenExpr.toString() + '\n');
         if (transition.doExpr != null)
             coreDashModel += (tabLine(tabCount) + "do " + transition.doExpr.toString() + '\n');
-        for (String gotoExpr : transition.gotoExpr)
+        for (String gotoExpr : transition.gotoExpr.gotoExpr)
             coreDashModel += (tabLine(tabCount) + "goto " + gotoExpr + '\n');
 
 

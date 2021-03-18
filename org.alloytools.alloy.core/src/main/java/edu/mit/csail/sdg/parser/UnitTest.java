@@ -9,7 +9,7 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 
 public class UnitTest {
 
-    static List<String> expectedStateNames = Arrays.asList("innerState", "topStateA", "topStateB");
+    static List<String> expectedStateNames = Arrays.asList("topStateA", "topStateB");
 
     public static void testStates() {
 
@@ -17,7 +17,10 @@ public class UnitTest {
 
         DashModule module = CompUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
 
-        if (!expectedStateNames.equals(DASHValidation.stateNames))
+        //System.out.println("Size of stateNames: " + DASHValidation.stateNames.get("concState").size());
+
+
+        if (!expectedStateNames.equals(DASHValidation.stateNames.get("concState")))
             throw new ErrorSyntax("Every state has not been stored in the IDS");
         if (!module.states.get("concState_topStateA").states.get(0).name.equals("innerState"))
             throw new ErrorSyntax("Child state has not been stored in the IDS");
@@ -28,7 +31,7 @@ public class UnitTest {
 
     public static void testConcStates() {
 
-        String dashModel = "conc state topConcStateA { conc state innerConcState{ default state A {} } } conc state topConcStateB { default state B{} }";
+        String dashModel = "conc state topConcStateA { conc state innerConcState{  default state A {} } } conc state topConcStateB { default state B{} }";
 
         DashModule module = CompUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
 
@@ -54,7 +57,7 @@ public class UnitTest {
             throw new ErrorSyntax("Transition not stored in the IDS");
         if (!(module.transitions.get("topConcStateA_B_B").name.equals("B")))
             throw new ErrorSyntax("Transition not stored in the IDS");
-        if (!(module.transitions.get("topConcStateA_A").gotoExpr.get(0).equals("B")))
+        if (!(module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0).equals("B")))
             throw new ErrorSyntax("Transition event not stored in the IDS");
         if (!(module.transitions.get("topConcStateA_B_B").onExpr.equals("A")))
             throw new ErrorSyntax("Transition event not stored in the IDS");

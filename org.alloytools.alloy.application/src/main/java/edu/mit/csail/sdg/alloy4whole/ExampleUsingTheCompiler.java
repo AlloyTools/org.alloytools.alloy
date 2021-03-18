@@ -78,9 +78,10 @@ public final class ExampleUsingTheCompiler {
             // Parse+typecheck the model
             System.out.println("=========== Parsing+Typechecking " + filename + " =============");
 
-            DashModule world = CompUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), "D:/DashModels/Mutex.dsh");
+            DashModule world = CompUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), "D:/DashModels/BitCounter.dsh");
 
-            printDashModel(world);
+
+            //printDashModel(world);
         }
     }
 

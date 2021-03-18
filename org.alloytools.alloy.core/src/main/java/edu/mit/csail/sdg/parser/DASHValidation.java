@@ -3,13 +3,20 @@ package edu.mit.csail.sdg.parser;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.ast.ConcState;
+import edu.mit.csail.sdg.ast.DashAction;
+import edu.mit.csail.sdg.ast.DashCondition;
+import edu.mit.csail.sdg.ast.DashInit;
+import edu.mit.csail.sdg.ast.DashInvariant;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Event;
 import edu.mit.csail.sdg.ast.Expr;
@@ -22,45 +29,50 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.State;
 import edu.mit.csail.sdg.ast.Trans;
 
+/* Write comments to specify the checks and what functions they map to */
 public class DASHValidation {
 
-    static int          orStateCount     = 0;
+    static ConcState                       currentConcStateValidated;
+
+    static int                             orStateCount           = 0;
 
     /*
      * A list of all the transitions in the DASH model. This is used for validation
      * purposes. This is accessed by Alloy.cup when parsing a transition.
      */
-    static List<Trans>  transitions      = new ArrayList<Trans>();
+    static Map<String,List<Trans>>         transitions            = new LinkedHashMap<String,List<Trans>>();
 
     /*
      * A list of all the signature names in the DASH model. This is used for
      * validation purposes. This is accessed by Alloy.cup when parsing a signature.
      */
-    static List<String> sigNames         = new ArrayList<String>();
+    static List<String>                    sigNames               = new ArrayList<String>();
 
     /*
      * A list of all the func and pred names in the DASH model. This is used for
      * validation purposes. This is accessed by Alloy.cup when parsing a signature.
      */
-    static List<String> funcNames        = new ArrayList<String>();
+    static List<String>                    funcNames              = new ArrayList<String>();
 
     /*
      * A list of all the concurrent state names in the DASH model. This is used for
      * validation purposes. This is accessed by Alloy.cup when parsing a transition.
      */
-    static List<String> concStateNames   = new ArrayList<String>();
+    static List<String>                    concStateNames         = new ArrayList<String>();
+    //A modified name is the name of a Dash item as it would appear in an Alloy model
+    static List<String>                    concStateNamesModified = new ArrayList<String>();
 
     /*
      * A list of all the state names in the DASH model. This is used for validation
      * purposes. This is accessed by Alloy.cup when parsing a transition.
      */
-    static List<String> stateNames       = new ArrayList<String>();
+    public static Map<String,List<String>> stateNames             = new LinkedHashMap<String,List<String>>();
 
     /*
      * A list of all the event names in the DASH model. This is used for validation
      * purposes. This is accessed by Alloy.cup when parsing an event.
      */
-    static List<String> eventNames       = new ArrayList<String>();
+    public static Map<String,List<String>> eventNames             = new LinkedHashMap<String,List<String>>();
 
 
     /*
@@ -68,55 +80,57 @@ public class DASHValidation {
      * validation purposes. This is accessed by Alloy.cup when parsing a var
      * declaration.
      */
-    static List<Decl>   declarations     = new ArrayList<Decl>();
-    static List<String> declarationNames = new ArrayList<String>();
+    static List<Decl>                      declarations           = new ArrayList<Decl>();
+    static Map<String,List<String>>        declarationNames       = new LinkedHashMap<String,List<String>>();
 
     /*
      * Store the quantifier variables in this container. Example: (all c: variable
      * |...) c would be the quantifer variable in this case
      */
-    static List<String> quantifierVars   = new ArrayList<String>();
+    static List<String>                    quantifierVars         = new ArrayList<String>();
 
     /*
      * A list of all the expressions in the DASH model. This is used for validation
      * purposes. This is accessed by Alloy.cup when parsing an expression.
      */
-    static List<Expr>   expressions      = new ArrayList<Expr>();
+    public static Map<String,List<Expr>>   expressions            = new LinkedHashMap<String,List<Expr>>();
 
-    static List<String> keywords         = Arrays.asList("none", "no", "one", "some", "all");
+    static List<String>                    keywords               = Arrays.asList("none", "no", "one", "some", "all");
 
     /*
      * Make sure that transitions declared are legal. An illegal transition would be
-     * on that refers to an event that has not been declared, or attempts to make a
+     * one that refers to an event that has not been declared, or attempts to make a
      * transition to a state that has not been declared, etc.
      */
-    public static void hasLegalTransCommand(String stateName, List<Object> stateItems) {
-        for (String name : stateNames)
+    public static void hasLegalTransCommand(String concStateName) {
+        for (String name : stateNames.get(concStateName))
             System.out.println("State: " + name);
-        for (String name : eventNames)
+        for (String name : eventNames.get(concStateName))
             System.out.println("Event: " + name);
 
-        for (Trans transition : transitions) {
+        for (Trans transition : transitions.get(concStateName)) {
             if (transition.onExpr != null) {
-                validateTransRef(transition.onExpr, transition.onExprPos, eventNames);
+                validateTransRef(transition.onExpr.name, transition.onExpr.pos, eventNames.get(concStateName));
             }
-            if (transition.gotoExpr.size() > 0) {
-                for (String gotoName : transition.gotoExpr) {
+            if (transition.gotoExpr != null) {
+                for (String gotoName : transition.gotoExpr.gotoExpr) {
                     System.out.println("Checking :" + gotoName);
-                    validateTransRef(gotoName, transition.gotoExprPos, stateNames);
+                    validateTransRef(gotoName, transition.gotoExpr.pos, stateNames.get(concStateName));
                 }
             }
-            if (transition.fromExpr.size() > 0) {
-                for (String fromName : transition.fromExpr) {
-                    validateTransRef(fromName, transition.gotoExprPos, stateNames);
+            if (transition.fromExpr != null) {
+                for (String fromName : transition.fromExpr.fromExpr) {
+                    validateTransRef(fromName, transition.fromExpr.pos, stateNames.get(concStateName));
                 }
             }
-            if (transition.templateParam.size() > 0) {
-                for (ExprVar arg : transition.templateParam) {
-                    if (!stateNames.contains(arg.toString()) && !eventNames.contains(arg.toString()))
-                        throw new ErrorSyntax(arg.pos, "Could not resolve reference to: " + arg.toString());
-                }
-            }
+            /*
+             * if (transition.templateCall != null) { for (ExprVar arg :
+             * transition.templateParam) { if
+             * (!stateNames.get(concStateName).contains(arg.toString()) &&
+             * !eventNames.get(concStateName).contains(arg.toString())) throw new
+             * ErrorSyntax(arg.pos, "Could not resolve reference to: " + arg.toString()); }
+             * }
+             */
         }
     }
 
@@ -139,17 +153,18 @@ public class DASHValidation {
     }
 
     /* Store variables that have been declared in the concurrent state */
-    public static void readVariablesDeclared() {
-        /* Store the names of each variable inside declarationNames */
-        for (Decl decl : declarations) {
+    public static List<String> readVariablesDeclared(List<Decl> decls, List<String> names) {
+        /* Store the names of each variable inside decls in ConcState */
+        for (Decl decl : decls) {
             for (Object name : decl.names)
-                declarationNames.add(name.toString());
+                names.add(name.toString());
         }
+        return names;
     }
 
 
-    public static void validateExprVar() {
-        for (Expr expr : expressions) {
+    public static void validateExprVar(ConcState concState) {
+        for (Expr expr : expressions.get(concState.modifiedName)) {
             System.out.println("\nLooking at: " + expr.toString());
 
             ExprUnary parentExprUnary = null;
@@ -310,7 +325,8 @@ public class DASHValidation {
         }
     }
 
-    public static void validateTransTemplateDecl(Pos pos, List<Decl> decls) {
+    public static void validateTransTemplateDecl(Pos pos, String concStateName, List<Decl> decls) {
+        List<String> nameList;
         for (Decl decl : decls) {
             if (decl.expr instanceof ExprVar) {
                 System.out.println("Expr: " + decl.expr.toString());
@@ -319,11 +335,15 @@ public class DASHValidation {
             }
             if (decl.expr instanceof ExprVar && decl.expr.toString().equals("Event")) {
                 System.out.println("Adding to Events: " + decl.get().toString());
-                eventNames.add(decl.get().toString());
+                nameList = new ArrayList<String>(eventNames.get(concStateName));
+                nameList.add(decl.get().toString());
+                eventNames.put(concStateName, nameList);
             }
             if (decl.expr instanceof ExprVar && decl.expr.toString().equals("State")) {
                 System.out.println("Adding to State: " + decl.get().toString());
-                stateNames.add(decl.get().toString());
+                nameList = new ArrayList<String>(stateNames.get(concStateName));
+                nameList.add(decl.get().toString());
+                stateNames.put(concStateName, nameList);
             }
         }
     }
@@ -337,108 +357,82 @@ public class DASHValidation {
         if (variable.contains("'"))
             variable = variable.replace("'", "");
 
-        if (!declarationNames.contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
+        if (!declarationNames.get(currentConcStateValidated.modifiedName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
             throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
         }
     }
 
     /* Ensure that conc states have a default state */
-    public static Boolean hasDefaultState(String stateName, List<Object> stateItems) {
+    public static Boolean hasDefaultState(List<State> states) {
         orStateCount = 0;
-        //System.out.println("In state: " + stateName);
-
-        for (Object item : stateItems) {
-
-            if (item instanceof State) {
-                State currentState = ((State) item);
-                //System.out.println("Current state item: " + (currentState.name));
-                orStateCount++;
-            }
-        }
 
         /*
          * There is no need to declare a default state if no states have been declared
          * inside a concurrent state
          */
-        if (orStateCount == 0)
+        if (states.size() == 0)
             return true;
 
-        for (Object item : stateItems) {
-            if (item instanceof State) {
-                if (((State) item).isDefault)
-                    return true;
-            }
+        for (State item : states) {
+            if (item.isDefault)
+                return true;
         }
         return false;
     }
 
     /* Ensure that conc states do not have orstates with the same name */
-    public static Boolean hasSameStateName(String name, List<Object> stateItems) {
+    public static void hasSameStateName(String name, List<State> states) {
         String stateName = "";
         String currentStateName = "";
         Boolean sameStateFound = false;
 
-        for (Object item : stateItems) {
-            if (item instanceof State) {
-                stateName = ((State) item).name;
-                for (Object state : stateItems) {
-                    if (state instanceof State) {
-                        if (stateName.equals(((State) state).name) && sameStateFound)
-                            return true;
-                        if (stateName.equals(((State) state).name) && !sameStateFound)
-                            sameStateFound = true;
-                    }
-                }
+        for (State stateA : states) {
+            stateName = stateA.name;
+            for (State stateB : states) {
+                if (stateName.equals(stateB.name) && sameStateFound)
+                    throw new ErrorSyntax(stateB.pos, "This state has already been declared.");
+                if (stateName.equals(stateB.name) && !sameStateFound)
+                    sameStateFound = true;
             }
             sameStateFound = false;
         }
-        return false;
     }
 
+
     /* Ensure that conc states do not have orstates with the trans name */
-    public static Boolean hasSameTransName(String name, List<Object> stateItems) {
+    public static void hasSameTransName(String name, List<Trans> transitions) {
         String transName = "";
         String currentTransName = "";
         Boolean sameTransFound = false;
 
-        for (Object item : stateItems) {
-            if (item instanceof Trans) {
-                transName = ((Trans) item).name;
-                for (Object trans : stateItems) {
-                    if (trans instanceof Trans) {
-                        if (transName.equals(((State) trans).name) && sameTransFound)
-                            return true;
-                        if (transName.equals(((State) trans).name) && !sameTransFound)
-                            sameTransFound = true;
-                    }
-                }
+        for (Trans transA : transitions) {
+            transName = transA.name;
+            for (Trans transB : transitions) {
+                if (transName.equals(transB.name) && sameTransFound)
+                    throw new ErrorSyntax(transB.pos, "This transition has already been declared.");
+                if (transName.equals(transB.name) && !sameTransFound)
+                    sameTransFound = true;
             }
             sameTransFound = false;
         }
-        return false;
     }
 
     /* Ensure that conc states do not have events with the same name */
-    public static Boolean hasSameEventName(String name, List<Object> stateItems) {
+    public static void hasSameEventName(String name, List<Event> events) {
         String eventName = "";
         String currentEventName = "";
         Boolean sameEventFound = false;
 
-        for (Object item : stateItems) {
-            if (item instanceof Event) {
-                eventName = ((Event) item).name;
-                for (Object event : stateItems) {
-                    if (event instanceof Event) {
-                        if (eventName.equals(((Event) event).name) && sameEventFound && !eventName.isEmpty())
-                            throw new ErrorSyntax(((Event) event).pos, "This event has already been previous declared.");
-                        if (eventName.equals(((Event) event).name) && !sameEventFound && !eventName.isEmpty())
-                            sameEventFound = true;
-                    }
-                }
+        for (Event eventA : events) {
+            eventName = eventA.name;
+            for (Event eventB : events) {
+                if (eventName.equals(eventB.name) && sameEventFound)
+                    throw new ErrorSyntax(eventB.pos, "This event has already been declared.");
+                if (eventName.equals(eventB.name) && !sameEventFound)
+                    sameEventFound = true;
             }
             sameEventFound = false;
         }
-        return false;
     }
 
     public static void importModule(String fileName) {
@@ -459,17 +453,132 @@ public class DASHValidation {
             throw new ErrorSyntax("Could not import module: " + fileName);
     }
 
+    /*
+     * This function iterates through the concState hashmap and stores each
+     * concurrent state name in the concStateNames list
+     */
+    public static void addConcStates(DashModule dashModule) {
+        /* Get all the concurrent states */
+        for (ConcState concState : dashModule.concStates.values()) {
+            //System.out.println("Name: " + concState.name);
+            System.out.println("Modified Name: " + concState.modifiedName);
+            concStateNames.add(concState.name);
+            concStateNamesModified.add(concState.modifiedName);
+        }
+
+        System.out.println("concStateNames size: " + concStateNames.size());
+        System.out.println("concStateNamesModified size: " + concStateNamesModified.size());
+
+        for (String name : concStateNamesModified)
+            System.out.println("Modified Name: " + name);
+
+        for (String concStateName : concStateNamesModified)
+            initializeNameContainers(concStateName, dashModule);
+
+    }
+
+    public static void initializeNameContainers(String concStateName, DashModule dashModule) {
+        List<String> names = new ArrayList<String>();
+        List<Trans> transitionList = new ArrayList<Trans>();
+        List<Expr> expressionList = new ArrayList<Expr>();
+
+        for (State state : dashModule.concStates.get(concStateName).states)
+            names.add(state.name);
+        stateNames.put(concStateName, new ArrayList<String>(names));
+        names.clear();
+
+        for (Event event : dashModule.concStates.get(concStateName).events)
+            names.add(event.name);
+        eventNames.put(concStateName, new ArrayList<String>(names));
+        names.clear();
+
+        names = readVariablesDeclared(dashModule.concStates.get(concStateName).decls, names);
+        declarationNames.put(concStateName, new ArrayList<String>(names));
+        names.clear();
+
+        for (Trans trans : dashModule.concStates.get(concStateName).transitions) {
+            transitionList.add(trans);
+
+            //The only kind of transition that will have declarations (decl) is a
+            //transition template. Therefore, we will need to valdiate the arguments (decls)
+            if (trans.transTemplate != null)
+                validateTransTemplateDecl(trans.pos, concStateName, trans.transTemplate.decls);
+            if (trans.doExpr != null)
+                expressionList.add(trans.doExpr.expr);
+            if (trans.whenExpr != null)
+                expressionList.add(trans.whenExpr.expr);
+
+        }
+        expressions.put(concStateName, new ArrayList<Expr>(expressionList));
+        transitions.put(concStateName, new ArrayList<Trans>(transitionList));
+        expressionList.clear();
+        transitionList.clear();
+
+        addExprFromConcState(dashModule.concStates.get(concStateName));
+    }
+
+    public static void validateConcStates(DashModule dashModule) {
+        for (String concStateName : concStateNamesModified) {
+            ConcState currentConcState = dashModule.concStates.get(concStateName);
+            currentConcStateValidated = currentConcState;
+
+            if (!hasDefaultState(currentConcState.states))
+                throw new ErrorSyntax(dashModule.concStates.get(concStateName).pos, "A default state is required.");
+
+            hasSameStateName(concStateName, currentConcState.states);
+            hasSameTransName(concStateName, currentConcState.transitions);
+            hasSameEventName(concStateName, currentConcState.events);
+
+            for (State state : currentConcState.states) {
+                if (!hasDefaultState(state.states))
+                    throw new ErrorSyntax(state.pos, "A default state is required.");
+
+                hasSameStateName(concStateName, state.states);
+                hasSameTransName(concStateName, state.transitions);
+            }
+        }
+    }
+
+    public static void addExprFromConcState(ConcState currentConcState) {
+        List<Expr> localExpressions = new ArrayList<Expr>(expressions.get(currentConcState.modifiedName));
+
+        if (currentConcState.init.size() > 0) {
+            for (DashInit init : currentConcState.init)
+                localExpressions.add(init.expr);
+        }
+        if (currentConcState.invariant.size() > 0) {
+            for (DashInvariant invariant : currentConcState.invariant)
+                localExpressions.add(invariant.expr);
+        }
+        if (currentConcState.action.size() > 0) {
+            for (DashAction action : currentConcState.action)
+                localExpressions.add(action.expr);
+        }
+        if (currentConcState.condition.size() > 0) {
+            for (DashCondition condition : currentConcState.condition)
+                localExpressions.add(condition.expr);
+        }
+        expressions.put(currentConcState.modifiedName, new ArrayList<Expr>(localExpressions));
+    }
+
+    public static void validateDashModel(DashModule dashModule) {
+        addConcStates(dashModule);
+        validateConcStates(dashModule);
+    }
+
     public static void clearContainers() {
         orStateCount = 0;
-        transitions = new ArrayList<Trans>();
+        concStateNames = new ArrayList<String>();
+        concStateNamesModified = new ArrayList<String>();
+        transitions = new HashMap<String,List<Trans>>();
         sigNames = new ArrayList<String>();
         funcNames = new ArrayList<String>();
-        stateNames = new ArrayList<String>();
-        eventNames = new ArrayList<String>();
+        stateNames = new HashMap<String,List<String>>();
+        eventNames = new HashMap<String,List<String>>();
         declarations = new ArrayList<Decl>();
-        declarationNames = new ArrayList<String>();
+        declarationNames = new HashMap<String,List<String>>();
         quantifierVars = new ArrayList<String>();
-        expressions = new ArrayList<Expr>();
+        expressions = new HashMap<String,List<Expr>>();
     }
 }
 

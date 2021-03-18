@@ -1258,11 +1258,11 @@ public final class DashModule extends Browsable implements Module {
      * state. The name of the conc state and the items inside the conc state are
      * passed in as arguments
      */
-    public void addTopLevelConcState(String name, List<Object> stateItems) {
-        ConcState topLevelConcState = new ConcState(name, stateItems);
+    public void addTopLevelConcState(Pos pos, String name, List<Object> stateItems) {
+        ConcState topLevelConcState = new ConcState(pos, name, stateItems);
         topLevelConcState.modifiedName = name;
 
-        concStates.put(name, new ConcState(name, stateItems));
+        concStates.put(topLevelConcState.modifiedName, topLevelConcState);
         concStateNames.add(topLevelConcState.modifiedName);
 
         for (Object item : stateItems) {
