@@ -42,9 +42,22 @@ public class DashTrans {
                 gotoExpr = (DashGoto) item;
             if (item instanceof DashSend)
                 sendExpr = (DashSend) item;
-            if (item instanceof DashTransTemplate)
-                transTemplate = (DashTransTemplate) item;
 
         }
+    }
+
+
+    public DashTrans(DashTrans trans) {
+        this.fromExpr = trans.fromExpr;
+        this.onExpr = trans.onExpr;
+        this.whenExpr = trans.whenExpr;
+        this.doExpr = trans.doExpr;
+        this.gotoExpr = trans.gotoExpr;
+        this.sendExpr = trans.sendExpr;
+
+        this.name = trans.name;
+        this.modifiedName = trans.modifiedName;
+        this.parentState = trans.parentState;
+        this.pos = null;
     }
 }

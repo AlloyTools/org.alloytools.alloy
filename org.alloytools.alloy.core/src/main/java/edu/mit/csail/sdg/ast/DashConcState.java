@@ -9,19 +9,22 @@ import edu.mit.csail.sdg.alloy4.Pos;
  * declared within a DASH model */
 public class DashConcState {
 
-    public Pos                 pos;
-    public String              name         = "";
-    public String              modifiedName = "";
+    public Pos                     pos;
+    public String                  name         = "";
+    public String                  modifiedName = "";
+    public DashConcState           parent;
 
-    public List<DashConcState> concStates   = new ArrayList<DashConcState>();
-    public List<DashState>     states       = new ArrayList<DashState>();
-    public List<DashTrans>     transitions  = new ArrayList<DashTrans>();
-    public List<Event>         events       = new ArrayList<Event>();
-    public List<Decl>          decls        = new ArrayList<Decl>();
-    public List<DashInit>      init         = new ArrayList<DashInit>();
-    public List<DashInvariant> invariant    = new ArrayList<DashInvariant>();
-    public List<DashAction>    action       = new ArrayList<DashAction>();
-    public List<DashCondition> condition    = new ArrayList<DashCondition>();
+    public List<DashConcState>     concStates   = new ArrayList<DashConcState>();
+    public List<DashState>         states       = new ArrayList<DashState>();
+    public List<DashTrans>         transitions  = new ArrayList<DashTrans>();
+    public List<DashTemplateCall>  templateCall = new ArrayList<DashTemplateCall>();
+    public List<DashTransTemplate> templateDecl = new ArrayList<DashTransTemplate>();
+    public List<DashEvent>         events       = new ArrayList<DashEvent>();
+    public List<Decl>              decls        = new ArrayList<Decl>();
+    public List<DashInit>          init         = new ArrayList<DashInit>();
+    public List<DashInvariant>     invariant    = new ArrayList<DashInvariant>();
+    public List<DashAction>        action       = new ArrayList<DashAction>();
+    public List<DashCondition>     condition    = new ArrayList<DashCondition>();
 
     /*
      * This constructor is called by DashParser.java when it completes parsing a
@@ -43,8 +46,8 @@ public class DashConcState {
                 transitions.add((DashTrans) item);
             if (item instanceof Decl)
                 decls.add((Decl) item);
-            if (item instanceof Event)
-                events.add((Event) item);
+            if (item instanceof DashEvent)
+                events.add((DashEvent) item);
             if (item instanceof DashInit)
                 init.add((DashInit) item);
             if (item instanceof DashInvariant)
@@ -53,6 +56,11 @@ public class DashConcState {
                 action.add((DashAction) item);
             if (item instanceof DashCondition)
                 condition.add((DashCondition) item);
+            if (item instanceof DashTemplateCall)
+                templateCall.add((DashTemplateCall) item);
+            if (item instanceof DashTransTemplate)
+                templateDecl.add((DashTransTemplate) item);
+
         }
 
     }

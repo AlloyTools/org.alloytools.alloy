@@ -233,6 +233,9 @@ import java_cup.runtime.*;
 "goto"                { return alloy_sym(yytext(), DashSym.GOTO        );}
 "send"                { return alloy_sym(yytext(), DashSym.SEND        );}
 
+"enter"               { return alloy_sym(yytext(), DashSym.ENTER       );}
+"exit"                { return alloy_sym(yytext(), DashSym.EXIT        );}
+
 "event"               { return alloy_sym(yytext(), DashSym.EVENT       );}
 "env"                 { return alloy_sym(yytext(), DashSym.ENV         );}
 "init"                { return alloy_sym(yytext(), DashSym.INIT        );}

@@ -61,9 +61,19 @@ import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
+import edu.mit.csail.sdg.ast.DashAction;
 import edu.mit.csail.sdg.ast.DashConcState;
+import edu.mit.csail.sdg.ast.DashCondition;
+import edu.mit.csail.sdg.ast.DashEvent;
+import edu.mit.csail.sdg.ast.DashFrom;
+import edu.mit.csail.sdg.ast.DashGoto;
+import edu.mit.csail.sdg.ast.DashInit;
+import edu.mit.csail.sdg.ast.DashOn;
+import edu.mit.csail.sdg.ast.DashSend;
 import edu.mit.csail.sdg.ast.DashState;
+import edu.mit.csail.sdg.ast.DashTemplateCall;
 import edu.mit.csail.sdg.ast.DashTrans;
+import edu.mit.csail.sdg.ast.DashTransTemplate;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
@@ -115,8 +125,8 @@ import edu.mit.csail.sdg.ast.VisitReturn;
  *           non-top-level variable sigs; if exact scopes are assigned to
  *           variable sigs; if a module declares a parameter as exact and a
  *           variable argument is passed
- * 
- * @modified [dsh] added methods to read a top level concurrent state in a Dash
+ *
+ * @modified [dash] added methods to read a top level concurrent state in a Dash
  *           model, iterate through states and transitions declared within that
  *           concurrent state, and stores these items in respective containers
  *           declared within this class. These are later used to convert to
@@ -229,43 +239,46 @@ public final class DashModule extends Browsable implements Module {
     /**
      * Each alias is mapped to its corresponding "open" statement.
      */
-    private final Map<String,Open>            opens       = new LinkedHashMap<String,Open>();
+    private final Map<String,Open>           opens       = new LinkedHashMap<String,Open>();
 
-    /** Each sig name is mapped to its corresponding SigAST. */
-    private final Map<String,Sig>             sigs        = new LinkedHashMap<String,Sig>();
+    /**
+     * Each sig name is mapped to its corresponding SigAST. Used by the
+     * DashValidator class
+     */
+    public final Map<String,Sig>             sigs        = new LinkedHashMap<String,Sig>();
 
     /**
      * The list of params in this module whose scope shall be deemed "exact"
      */
-    private final List<String>                exactParams = new ArrayList<String>();
+    private final List<String>               exactParams = new ArrayList<String>();
 
     /**
      * The current name resolution mode (0=pure) (1=Alloy 4.1.3 and older) (2=new)
      */
-    int                                       resolution  = 1;
+    int                                      resolution  = 1;
 
     /**
      * Each func name is mapped to a nonempty list of FunAST objects.
      */
-    private final Map<String,ArrayList<Func>> funcs       = new LinkedHashMap<String,ArrayList<Func>>();
+    public final Map<String,ArrayList<Func>> funcs       = new LinkedHashMap<String,ArrayList<Func>>();
 
     /** Each macro name is mapped to a MacroAST object. */
-    private final Map<String,Macro>           macros      = new LinkedHashMap<String,Macro>();
+    private final Map<String,Macro>          macros      = new LinkedHashMap<String,Macro>();
 
     /** Each assertion name is mapped to its Expr. */
-    private final Map<String,Expr>            asserts     = new LinkedHashMap<String,Expr>();
+    private final Map<String,Expr>           asserts     = new LinkedHashMap<String,Expr>();
 
     /**
      * The list of facts; each fact is either an untypechecked Exp or a typechecked
      * Expr.
      */
-    private final List<Pair<String,Expr>>     facts       = new ArrayList<Pair<String,Expr>>();
+    private final List<Pair<String,Expr>>    facts       = new ArrayList<Pair<String,Expr>>();
 
     /**
      * The list of (CommandName,Command,Expr) triples; NOTE: duplicate command names
      * are allowed.
      */
-    private final List<Command>               commands    = new ArrayList<Command>();
+    private final List<Command>              commands    = new ArrayList<Command>();
 
 
     //================================================DASH INTERNAL DATA STRUCTURE=================================================//
@@ -273,22 +286,81 @@ public final class DashModule extends Browsable implements Module {
     /**
      * Each conc state name is mapped to its respective Conc State AST
      */
-    public final Map<String,DashConcState> concStates     = new LinkedHashMap<String,DashConcState>();
+    public final Map<String,DashConcState>     concStates          = new LinkedHashMap<String,DashConcState>();
+
+    /**
+     * Set to true if there is a child concurrent state inside a parent concurrent
+     * state
+     */
+    public boolean                             stateHierarchy      = false;
+
+    /**
+     * Each top level conc state name is mapped to its respective Conc State AST.
+     * Useful for printing a CoreDash version of a Dash model
+     */
+    public final Map<String,DashConcState>     topLevelConcStates  = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Stores the name for every concurrent state in the model
      */
-    public List<String>                    concStateNames = new ArrayList<String>();
+    public List<String>                        concStateNames      = new ArrayList<String>();
 
     /**
      * Each state name is mapped to its respective State AST
      */
-    public final Map<String,DashState>     states         = new LinkedHashMap<String,DashState>();
+    public final Map<String,DashState>         states              = new LinkedHashMap<String,DashState>();
+
+    /**
+     * A list of the default states in the Dash Model. This will be used when
+     * converting from Dash to Alloy
+     */
+    public final List<DashState>               defaultStates       = new ArrayList<DashState>();
+
+    /**
+     * A list of the initial conditions in the Dash Model. This will be used when
+     * converting from Dash to Alloy
+     */
+    public final List<DashInit>                initConditions      = new ArrayList<DashInit>();
+
+    /**
+     * Each variable name is mapped to it the conc state inside which it is declared
+     */
+    public final Map<String,List<String>>      variableNames       = new LinkedHashMap<String,List<String>>();
+
+    /**
+     * Each variable name is mapped to its respective expression
+     */
+    public final Map<String,String>            variable2Expression = new LinkedHashMap<String,String>();
 
     /**
      * Each transition name is mapped to its respective Transiton AST
      */
-    public final Map<String,DashTrans>     transitions    = new LinkedHashMap<String,DashTrans>();
+    public final Map<String,DashTrans>         transitions         = new LinkedHashMap<String,DashTrans>();
+
+    /**
+     * Each transition template name is mapped to its respective TransitonTemplate
+     * AST
+     */
+    public final Map<String,DashTransTemplate> transitionTemplates = new LinkedHashMap<String,DashTransTemplate>();
+
+    /**
+     * Each Event is mapped to its respective AST AST
+     */
+    public final Map<String,DashEvent>         events              = new LinkedHashMap<String,DashEvent>();
+
+    /**
+     * Each Action Template is mapped to its respective AST AST
+     */
+    public final Map<String,DashAction>        actions             = new LinkedHashMap<String,DashAction>();
+
+    /**
+     * Each Condition Template is mapped to its respective AST AST
+     */
+    public final Map<String,DashCondition>     conditions          = new LinkedHashMap<String,DashCondition>();
+
+    int                                        transitionCount     = 0;
+
+    Boolean                                    isUnitTest          = false;
 
     // ============================================================================================================================//
 
@@ -1269,16 +1341,33 @@ public final class DashModule extends Browsable implements Module {
         DashConcState topLevelConcState = new DashConcState(pos, name, stateItems);
         topLevelConcState.modifiedName = name;
 
+        topLevelConcStates.put(topLevelConcState.modifiedName, topLevelConcState);
         concStates.put(topLevelConcState.modifiedName, topLevelConcState);
         concStateNames.add(topLevelConcState.modifiedName);
 
         for (Object item : stateItems) {
-            if (item instanceof DashConcState)
-                addConcState(name, (DashConcState) item);
+            if (item instanceof DashConcState) {
+                stateHierarchy = true;
+                addConcState(topLevelConcState, (DashConcState) item);
+            }
             if (item instanceof DashState)
-                addState(name, (DashState) item);
+                addState(topLevelConcState, (DashState) item);
             if (item instanceof DashTrans)
                 addTrans(topLevelConcState, (DashTrans) item);
+            if (item instanceof DashTransTemplate)
+                addTransTemplate(topLevelConcState, (DashTransTemplate) item);
+            if (item instanceof DashTemplateCall)
+                addTemplateCall(topLevelConcState, (DashTemplateCall) item);
+            if (item instanceof DashEvent)
+                addEvent(topLevelConcState, (DashEvent) item);
+            if (item instanceof DashInit)
+                addInitCondition((DashInit) item, topLevelConcState);
+            if (item instanceof DashAction)
+                actions.put(((DashAction) item).name, (DashAction) item);
+            if (item instanceof DashCondition)
+                conditions.put(((DashCondition) item).name, (DashCondition) item);
+            if (item instanceof Decl)
+                readVariablesDeclared((Decl) item, topLevelConcState);
         }
     }
 
@@ -1289,31 +1378,79 @@ public final class DashModule extends Browsable implements Module {
      * states and transitions in the concurrent state and call respective functions
      * for adding these items to the DASH Internal Data Structure
      */
-    public void addConcState(String parentName, DashConcState concState) {
-        concState.modifiedName = parentName + '_' + concState.name;
+    public void addConcState(DashConcState parent, DashConcState concState) {
+        concState.modifiedName = parent.modifiedName + '_' + concState.name;
+        concState.parent = parent;
 
         concStates.put(concState.modifiedName, concState);
         concStateNames.add(concState.modifiedName);
 
         for (DashState state : concState.states)
-            addState(concState.modifiedName, state);
+            addState(concState, state);
         for (DashTrans transition : concState.transitions)
             addTrans(concState, transition);
+        for (DashTemplateCall templateCall : concState.templateCall)
+            addTemplateCall(concState, templateCall);
+        for (DashEvent event : concState.events)
+            addEvent(concState, event);
+        for (DashEvent event : concState.events)
+            addEvent(concState, event);
+        for (DashInit init : concState.init)
+            addInitCondition(init, concState);
+        for (Decl decl : concState.decls)
+            readVariablesDeclared(decl, concState);
+    }
+
+    public void addInitCondition(DashInit init, DashConcState parent) {
+        init.parent = parent;
+
+        /*
+         * Breakdown the AND expression (if it is an AND expr) into a list of
+         * expressions. This would make it easier to print each expression
+         */
+        if (init.expr != null) {
+            if (init.expr instanceof ExprUnary) {
+                ExprUnary parentExprUnary = (ExprUnary) init.expr;
+                if (parentExprUnary.sub instanceof ExprList) {
+                    ExprList exprList = (ExprList) parentExprUnary.sub;
+                    for (Expr expression : exprList.args) {
+                        init.exprList.add(expression);
+
+                    }
+                } else
+                    init.exprList.add(parentExprUnary.sub);
+            } else {
+                init.exprList.add(init.expr);
+            }
+        }
+
+        initConditions.add(init);
     }
 
     /*
      * This is called by the addTopLevelConcState/addConcState function once it
      * finds a state inside a conc state/OR state
      */
-    public void addState(String parent, DashState state) {
-        String modifiedStateName = parent + '_' + state.name;
-        state.modifiedName = modifiedStateName;
-        state.parentConc = parent;
+    public void addState(Object parent, DashState state) {
+        String modifiedStateName = "";
+
+        if (parent instanceof DashConcState) {
+            modifiedStateName = ((DashConcState) parent).modifiedName + '_' + state.name;
+            state.modifiedName = modifiedStateName;
+            state.parent = parent;
+        } else if (parent instanceof DashState) {
+            modifiedStateName = ((DashState) parent).modifiedName + '_' + state.name;
+            state.modifiedName = modifiedStateName;
+            state.parent = parent;
+        }
+
+        if (state.isDefault)
+            defaultStates.add(state);
 
         states.put(modifiedStateName, state);
 
         for (DashState innerState : state.states) {
-            addState(modifiedStateName, innerState);
+            addState(state, innerState);
         }
         for (DashTrans transition : state.transitions) {
             addTrans(state, transition);
@@ -1329,7 +1466,22 @@ public final class DashModule extends Browsable implements Module {
         transition.modifiedName = modifiedTransName;
         transition.parentState = parent;
 
-        transitions.put(modifiedTransName, transition);
+        /*
+         * If we have more than one from command (source), split up the transition such
+         * that each transition represents one from command.
+         */
+        if (transition.fromExpr != null && transition.fromExpr.fromExpr.size() > 0) {
+            for (String fromExpr : transition.fromExpr.fromExpr) {
+                if (transition.name == null)
+                    modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+                generateTransition(transition, fromExpr, modifiedTransName);
+            }
+        } else {
+            if (transition.name == null)
+                modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+            transition.modifiedName = modifiedTransName;
+            transitions.put(modifiedTransName, transition);
+        }
     }
 
     /*
@@ -1341,9 +1493,154 @@ public final class DashModule extends Browsable implements Module {
         transition.modifiedName = modifiedTransName;
         transition.parentState = parent;
 
-        transitions.put(modifiedTransName, transition);
+        /*
+         * If we have more than one from command (source), split up the transition such
+         * that each transition represents one from command.
+         */
+        if (transition.fromExpr != null && transition.fromExpr.fromExpr.size() > 0) {
+            for (String fromExpr : transition.fromExpr.fromExpr) {
+                if (transition.name == null)
+                    modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+                generateTransition(transition, fromExpr, modifiedTransName);
+            }
+        } else {
+            if (transition.name == null)
+                modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+            transition.modifiedName = modifiedTransName;
+            transitions.put(modifiedTransName, transition);
+        }
     }
 
+    void generateTransition(DashTrans transition, String fromExpr, String modifiedName) {
+        DashTrans trans = new DashTrans(transition); // New transition representing one of the From commands
+        trans.fromExpr = new DashFrom(fromExpr, false); // Add the from command to the new transition
+        trans.modifiedName = modifiedName;
+        transitions.put(modifiedName, trans);
+    }
+
+    /*
+     * This is called by the addConcState function once it finds a transition
+     * template
+     */
+    public void addTransTemplate(DashConcState parent, DashTransTemplate transTemplate) {
+        transTemplate.parent = parent;
+        transitionTemplates.put(transTemplate.name, transTemplate);
+    }
+
+    /*
+     * This is called by the addConcState function once it finds a transition
+     * template call. It refers to the template being called and uses it to create
+     * new transitions
+     */
+    public void addTemplateCall(DashConcState parent, DashTemplateCall templateCall) {
+        DashTransTemplate transTemplate = transitionTemplates.get(templateCall.templateName);
+        List<String> declNames = new ArrayList<String>();
+        int count = 0;
+
+        //Each decl is an argument for a template call
+        for (Decl decl : transTemplate.decls) {
+            declNames.add(decl.get().toString());
+        }
+
+        DashTrans trans = new DashTrans(null, templateCall.name, new ArrayList<Object>());
+
+        //If we have an On command, check if it matches an argument. If it does, then set the on Command
+        //to that of the argument
+        if (transTemplate.onExpr != null) {
+            if (declNames.indexOf(transTemplate.onExpr.name) != -1)
+                trans.onExpr = new DashOn(null, templateCall.templateParam.get(declNames.indexOf(transTemplate.onExpr.name)));
+            else
+                trans.onExpr = new DashOn(null, transTemplate.onExpr.name);
+        }
+
+        //If we have a From command, check if it matches an argument. If it does, then set the From Command
+        //to that of the argument
+        if (transTemplate.fromExpr != null && !transTemplate.fromExpr.fromAll) {
+            if (declNames.indexOf(transTemplate.fromExpr.fromExpr.get(0)) != -1)
+                trans.fromExpr = new DashFrom(templateCall.templateParam.get(declNames.indexOf(transTemplate.fromExpr.fromExpr.get(0))), false);
+            else
+                trans.fromExpr = new DashFrom(transTemplate.fromExpr.fromExpr, false);
+        }
+
+        //If we have a Goto command, check if it matches an argument. If it does, then set the Goto Command
+        //to that of the argument
+        if (transTemplate.gotoExpr != null) {
+            if (declNames.indexOf(transTemplate.gotoExpr.gotoExpr.get(0)) != -1)
+                trans.gotoExpr = new DashGoto(templateCall.templateParam.get(declNames.indexOf(transTemplate.gotoExpr.gotoExpr.get(0))));
+            else
+                trans.gotoExpr = new DashGoto(transTemplate.gotoExpr.gotoExpr);
+        }
+
+        //If we have a Send command, check if it matches an argument. If it does, then set the Send Command
+        //to that of the argument
+        if (transTemplate.sendExpr != null) {
+            if (declNames.indexOf(transTemplate.sendExpr.name) != -1)
+                trans.sendExpr = new DashSend(null, templateCall.templateParam.get(declNames.indexOf(transTemplate.sendExpr.name)));
+            else
+                trans.sendExpr = new DashSend(null, transTemplate.sendExpr.name);
+        }
+
+        //If the from command is: from *, then we need to fetch all the Or states in the conc state,
+        //and create new transitions each with a different or state as the source
+        if (transTemplate.fromExpr != null && transTemplate.fromExpr.fromAll) {
+            List<String> stateNames = new ArrayList<String>();
+            for (DashState state : parent.states) {
+                stateNames.add(state.name);
+                trans.fromExpr = new DashFrom(state.name, false);
+                trans.modifiedName = parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount);
+                transitions.put(trans.modifiedName, trans);
+            }
+        } //If we have more than one From command, create a new transition for each for command
+        else if (transTemplate.fromExpr != null && trans.fromExpr.fromExpr.size() > 0) {
+            for (String fromExpr : trans.fromExpr.fromExpr)
+                generateTransition(trans, fromExpr, parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount));
+        } else {
+            trans.modifiedName = parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount);
+            transitions.put(trans.modifiedName, trans);
+        }
+
+    }
+
+    public void addEvent(DashConcState parent, DashEvent event) {
+        String modifiedName = parent.modifiedName + "_" + event.name;
+        event.parentName = parent.name;
+
+        //System.out.println("Event: " + modifiedName);
+        events.put(modifiedName, event);
+    }
+
+    /* Store variables that have been declared in the concurrent state */
+    void readVariablesDeclared(Decl decl, DashConcState concState) {
+        List<String> variables = new ArrayList<String>();
+
+        //Fetch the current list of variable names stored for the current conc state
+        if (variableNames.get(concState.modifiedName) != null)
+            variables = variableNames.get(concState.modifiedName);
+
+        /* Store the names of each variable inside decls in ConcState */
+        for (Object name : decl.names) {
+            variables.add(name.toString());
+            //Set variable name to as it would appear in the Alloy model.
+            variable2Expression.put(concState.name + "_" + name.toString(), decl.expr.toString());
+        }
+
+        variableNames.put(concState.modifiedName, variables);
+    }
+
+    /* Retrive the concurrent state inside which "item" is located */
+    static DashConcState getParentConcState(Object item) {
+        if (item instanceof DashState) {
+            if (((DashState) item).parent instanceof DashState)
+                getParentConcState(((DashState) item).parent);
+            if (((DashState) item).parent instanceof DashConcState)
+                return (DashConcState) ((DashState) item).parent;
+        }
+
+        if (item instanceof DashConcState)
+            return (DashConcState) item;
+
+        return null;
+    }
     // =====================================================================================================================//
 
     /** Add the "MODULE" declaration. */

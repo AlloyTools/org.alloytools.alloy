@@ -20,4 +20,18 @@ public class DashGoto {
             }
         }
     }
+
+    /*
+     * Used when the TransfromCoreDash expands transitions and creates a new
+     * DashGoto Object
+     */
+    public DashGoto(List<String> gotoExpr) {
+        this.pos = null;
+        this.gotoExpr = gotoExpr;
+    }
+
+    public DashGoto(String gotoExpr) {
+        this.pos = null;
+        this.gotoExpr.add(gotoExpr);
+    }
 }

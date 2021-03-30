@@ -19,7 +19,18 @@ public class DashFrom {
                 this.fromExpr.add(var.toString());
             }
         }
+        this.fromAll = fromAll;
+    }
 
+    public DashFrom(List<String> fromExpr, Boolean fromAll) {
+        this.pos = null;
+        this.fromExpr = fromExpr;
+        this.fromAll = fromAll;
+    }
+
+    public DashFrom(String fromExpr, Boolean fromAll) {
+        this.pos = null;
+        this.fromExpr.add(fromExpr);
         this.fromAll = fromAll;
     }
 

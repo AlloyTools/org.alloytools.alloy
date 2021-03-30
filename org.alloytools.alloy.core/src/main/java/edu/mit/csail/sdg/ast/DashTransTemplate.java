@@ -6,16 +6,18 @@ import edu.mit.csail.sdg.alloy4.Pos;
 
 public class DashTransTemplate {
 
-    public Pos          pos;
-    public String       name;
-    public List<Decl>   decls;
+    public Pos           pos;
+    public String        name     = "";
+    public List<Decl>    decls;
 
-    public DashFrom     fromExpr = null;
-    public DashOn       onExpr   = null;
-    public DashWhenExpr whenExpr = null;
-    public DashDoExpr   doExpr   = null;
-    public DashGoto     gotoExpr = null;
-    public DashSend     sendExpr = null;
+    public DashFrom      fromExpr = null;
+    public DashOn        onExpr   = null;
+    public DashWhenExpr  whenExpr = null;
+    public DashDoExpr    doExpr   = null;
+    public DashGoto      gotoExpr = null;
+    public DashSend      sendExpr = null;
+
+    public DashConcState parent   = null;
 
     public DashTransTemplate(Pos pos, String name, List<Object> stateItems, List<Decl> decls) {
         this.pos = pos;

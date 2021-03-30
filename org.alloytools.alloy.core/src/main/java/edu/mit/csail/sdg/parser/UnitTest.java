@@ -13,12 +13,11 @@ public class UnitTest {
 
     public static void testStates() {
 
-        String dashModel = "conc state concState { " + "default state topStateA { " + "default state innerState{}}" + "state topStateB{}}";
+        String dashModel = "conc state concState { default state topStateA { default state innerState{}} state topStateB{}}";
 
         DashModule module = CompUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
 
-        //System.out.println("Size of stateNames: " + DASHValidation.stateNames.get("concState").size());
-
+        module.isUnitTest = true;
 
         if (!expectedStateNames.equals(DashValidation.stateNames.get("concState")))
             throw new ErrorSyntax("Every state has not been stored in the IDS");
@@ -34,6 +33,8 @@ public class UnitTest {
         String dashModel = "conc state topConcStateA { conc state innerConcState{  default state A {} } } conc state topConcStateB { default state B{} }";
 
         DashModule module = CompUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+
+        module.isUnitTest = true;
 
         if (!(module.concStates.get("topConcStateA").name.equals("topConcStateA")))
             throw new ErrorSyntax("Top level concurrent state not stored in the IDS");
@@ -53,13 +54,17 @@ public class UnitTest {
 
         DashModule module = CompUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
 
+        module.isUnitTest = true;
+
         if (!(module.transitions.get("topConcStateA_A").name.equals("A")))
             throw new ErrorSyntax("Transition not stored in the IDS");
         if (!(module.transitions.get("topConcStateA_B_B").name.equals("B")))
             throw new ErrorSyntax("Transition not stored in the IDS");
-        if (!(module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0).equals("B")))
-            throw new ErrorSyntax("Transition event not stored in the IDS");
-        if (!(module.transitions.get("topConcStateA_B_B").onExpr.equals("A")))
+        System.out.println("GotExpr: " + module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0));
+        if (!(module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0).equals("topConcStateA/B")))
+            throw new ErrorSyntax("Transition goto not stored in the IDS");
+        System.out.println("OnExpr: " + module.transitions.get("topConcStateA_B_B").onExpr.name);
+        if (!(module.transitions.get("topConcStateA_B_B").onExpr.name.equals("topConcStateA_A")))
             throw new ErrorSyntax("Transition event not stored in the IDS");
 
         DashValidation.clearContainers();

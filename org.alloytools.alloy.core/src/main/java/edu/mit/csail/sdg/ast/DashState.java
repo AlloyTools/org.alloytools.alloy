@@ -11,8 +11,7 @@ public class DashState {
     public Pos             pos;
     public String          name         = "";
     public String          modifiedName = "";
-    public String          parentConc   = "";
-    public DashState       parentState  = null;
+    public Object          parent       = null;
 
     public List<DashState> states       = new ArrayList<DashState>();
     public List<DashTrans> transitions  = new ArrayList<DashTrans>();
@@ -35,8 +34,8 @@ public class DashState {
                     this.states.add((DashState) item);
                 if (item instanceof DashTrans)
                     this.transitions.add((DashTrans) item);
-                if (item instanceof Event)
-                    throw new ErrorSyntax(((Event) item).pos, "Cannot declare an event inside a state");
+                if (item instanceof DashEvent)
+                    throw new ErrorSyntax(((DashEvent) item).pos, "Cannot declare an event inside a state");
                 if (item instanceof DashExpr)
                     throw new ErrorSyntax(((DashExpr) item).pos, "Illegal declaration inside a state");
             }

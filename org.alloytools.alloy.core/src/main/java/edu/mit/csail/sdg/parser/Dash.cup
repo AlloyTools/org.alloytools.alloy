@@ -61,7 +61,7 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.ast.DashState;
 import edu.mit.csail.sdg.ast.DashConcState;
-import edu.mit.csail.sdg.ast.Event;
+import edu.mit.csail.sdg.ast.DashEvent;
 import edu.mit.csail.sdg.ast.DashInit;
 import edu.mit.csail.sdg.ast.DashInvariant;
 import edu.mit.csail.sdg.ast.DashAction;
@@ -76,8 +76,11 @@ import edu.mit.csail.sdg.ast.DashTransTemplate;
 import edu.mit.csail.sdg.ast.DashTemplateCall;
 import edu.mit.csail.sdg.ast.DashExpr;
 import edu.mit.csail.sdg.ast.DashTrans;
+import edu.mit.csail.sdg.ast.DashEnter;
+import edu.mit.csail.sdg.ast.DashExit;
 
 import edu.mit.csail.sdg.parser.DashValidation;
+import edu.mit.csail.sdg.parser.TransformCoreDash;
  
 //===========================================================================//
 
@@ -553,6 +556,9 @@ terminal Pos INVARIANT;        //   invaraint
 terminal Pos ACTION;           //   invaraint
 terminal Pos CONDITION;        //   invaraint
 
+terminal Pos ENTER;            //   Enter
+terminal Pos EXIT;             //   Exit
+
 terminal Pos FROM;             //   from
 terminal Pos ON;               //   when
 terminal Pos WHEN;             //   when
@@ -657,9 +663,9 @@ nonterminal                            ConcB; //This reprents a conc state insid
 
 nonterminal List<Object>               StateItems;
 
-nonterminal Event                      Event;
+nonterminal DashEvent                      Event;
 
-nonterminal DashState                  StateA;
+nonterminal DashState                  State;
 
 nonterminal                            Trans;
 nonterminal List<Object>               TransItems;
@@ -670,12 +676,13 @@ nonterminal                            Invariant;
 nonterminal                            Action;
 nonterminal                            Condition;
 
+nonterminal							   Enter;
+nonterminal							   Exit;
+
 nonterminal                            From;
 nonterminal                            On;
 nonterminal                            WhenA; //This is a when statement with braces
-nonterminal                            WhenB; //This is a when statement without braces
 nonterminal                            DoA; //This is a do statement with braces
-nonterminal                            DoB; //This is a do statement without braces
 nonterminal                            GoTo;
 nonterminal                            Send;
 nonterminal                            TemplateCall;
@@ -805,7 +812,8 @@ Vis ::= PRIVATE:p {: RESULT=p;    :};
 //This is the top level conc state. StateItems are specific items that can appear inside a Concurrent State (Conc State, State, Event, Trans, etc)
 ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: 								        
 										parser.dashmodule.addTopLevelConcState(o, n.label, c);    
-										DashValidation.validateDashModel(parser.dashmodule);  :};
+										DashValidation.validateDashModel(parser.dashmodule); 
+										TransformCoreDash.transformToCoreDash(parser.dashmodule); :};
 
 //This represents a concurrent state inside a concurrent state
 ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c);  :};
@@ -814,59 +822,67 @@ StateItems::= ConcB:x 				    {: RESULT=new ArrayList<Object>(); RESULT.add(x); 
 StateItems::= ConcB:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
  
 //Event Declaration     
-Event::= EVENT:o  				    Name:n LBRACE RBRACE {: RESULT=new Event(o, n.label, "event");  :}
-	 | ENV EVENT:o				    Name:n LBRACE RBRACE {: RESULT=new Event(o, n.label, "env event");  :} 
-	 | ENV:o			        	Name:n LBRACE RBRACE {: RESULT=new Event(o, n.label, "env event");   :}
-	 | ENV:o			        	Declb:d {: RESULT=new Event(o, d, "env event"); DashValidation.declarations.add(d);  :};
+Event::= EVENT:o  				    Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "event");  :}
+	 | ENV EVENT:o				    Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "env event");  :} 
+	 | ENV:o			        	Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "env event");   :}
+	 | ENV:o			        	Declb:d {: RESULT= new DashEvent(o, d, "env event"); DashValidation.declarations.add(d);  :};
 	 	 
 StateItems::= Event:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= Event:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
 
 //State Declaration
-StateA::= STATE:o 		        	Name:n LBRACE                  RBRACE {: RESULT= new DashState(o, n.label, null, false); :}
+State::= STATE:o 		        	Name:n LBRACE                  RBRACE {: RESULT= new DashState(o, n.label, null, false); :}
 	| STATE:o 		        	    Name:n LBRACE StateItems:c     RBRACE {: RESULT= new DashState(o, n.label, c, false);    :}
 
 	| DEFAULT STATE:o 		        Name:n LBRACE                  RBRACE {: RESULT= new DashState(o, n.label, null, true);   :}
 	| DEFAULT STATE:o 		        Name:n LBRACE StateItems:c     RBRACE {:  RESULT= new DashState(o, n.label, c, true);   :};
 
+Enter::= ENTER:o					LBRACE SuperP:v RBRACE			      {: RESULT= new DashEnter(o, v);  :};
+Exit ::= EXIT:o		    			LBRACE SuperP:v RBRACE			      {: RESULT= new DashExit(o, v);  :};
  
-StateItems::= StateA:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
-StateItems::= StateA:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
+StateItems::= State:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
+StateItems::= State:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
 
 //Transition Declaration
 Trans ::= TRANS:o				    Name:n LBRACE TransItems:c RBRACE {: RESULT = new DashTrans(o, n.label, c);  :}
  	 |TRANS:o                                   LBRACE TransItems:c RBRACE        {: RESULT = new DashTrans(o, null, c);       :}
+ 	 |TRANS:o                                   LBRACE Name:a   LBRACKET Names:b RBRACKET RBRACE         {: RESULT=new DashTemplateCall(a.pos, "", a.label, b); :}   
+ 	 |TRANS:o      Name:n                       LBRACE Name:a   LBRACKET Names:b RBRACKET RBRACE         {: RESULT=new DashTemplateCall(a.pos, n.label, a.label, b); :} 
  	 |DEF:o        Name:n                       LBRACKET Decls:d RBRACKET    LBRACE TransItems:c RBRACE {: RESULT = new DashTransTemplate(o, n.label, c, d); :}
-; 
+;  
 
 StateItems::= Trans:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= Trans:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
 	 
 
-From::=FROM:o					Names:n  {: RESULT=new DashFrom(o, n, false);                                           :}
-	| FROM:o				    STAR {: RESULT=new DashFrom(o, new ArrayList<ExprVar>(), true);                                               :};
+From::=FROM:o					Names:n  {: RESULT=new DashFrom(o, n, false);                                          :}
+	| FROM:o				    STAR {: RESULT=new DashFrom(o, new ArrayList<ExprVar>(), true);                        :};
 On::= ON:o					    Name:n   {: RESULT=new DashOn(o, n.label);                                             :};
-WhenA::= WHEN:o					SuperP:v  {:  RESULT=new DashWhenExpr(o, v); :};
-DoA::= DO:o					    SuperP:v  {:  RESULT=new DashDoExpr(o, v);                 :};
-GoTo::= GOTO:o					Names:n   {: RESULT=new DashGoto(o, n);                                           :};
+WhenA::= WHEN:o					SuperP:v {:  RESULT=new DashWhenExpr(o, v);                                            :};
+DoA::= DO:o					    SuperP:v  {:  RESULT=new DashDoExpr(o, v);                                             :};
+GoTo::= GOTO:o					Names:n   {: RESULT=new DashGoto(o, n);                                                :};
 Send::=SEND:o					Name:n   {: RESULT=new DashSend(o, n.label);                                           :};
-TemplateCall::=					Name:a   LBRACKET Names:b RBRACKET {: RESULT=new DashTemplateCall(a.pos, a.label, b); :};
 
 
 TransItems::=From:x  				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};    
 TransItems::=On:x  				    {: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
+
 TransItems::=WhenA:x  				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
+
 TransItems::=DoA:x  				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};     
-TransItems::=DoB:x  				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};  
+ 
 TransItems::=GoTo:x  				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 TransItems::=Send:x  				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};   
 
 TransItems::=From:x TransItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};   
 TransItems::=On:x TransItems:y  		{: RESULT=y; RESULT.add(0, x) ;			  :};
+
 TransItems::=WhenA:x TransItems:y  		{: RESULT=y; RESULT.add(0, x) ;			  :};
-TransItems::=DoA:x TransItems:y  		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
-TransItems::=GoTo:x TransItems:y  		{: RESULT=y; RESULT.add(0, x) ;			  :};
-TransItems::=Send:x TransItems:y  		{: RESULT=y; RESULT.add(0, x) ;			  :};     
+
+TransItems::=DoA:x TransItems:y  		                {: RESULT=y; RESULT.add(0, x) ;			  :}; 
+ 
+TransItems::=GoTo:x TransItems:y  		                {: RESULT=y; RESULT.add(0, x) ;			  :};
+TransItems::=Send:x TransItems:y  		                {: RESULT=y; RESULT.add(0, x) ;			  :};      
 
 
 StateInit::= INIT:o				    Super:v  {: RESULT=new DashInit(o, v);      :};

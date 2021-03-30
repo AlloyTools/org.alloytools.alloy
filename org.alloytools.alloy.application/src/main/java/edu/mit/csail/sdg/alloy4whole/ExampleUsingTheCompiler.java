@@ -23,9 +23,7 @@ import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.parser.CompUtil;
-import edu.mit.csail.sdg.parser.CoreDashGenerator;
 import edu.mit.csail.sdg.parser.DashModule;
-import edu.mit.csail.sdg.parser.UnitTest;
 
 /**
  * This class demonstrates how to access Alloy4 via the compiler methods.
@@ -64,9 +62,9 @@ public final class ExampleUsingTheCompiler {
         boolean parse = true;
         String filename = "D:/util/integer.als";
 
-        UnitTest.testStates();
-        UnitTest.testConcStates();
-        UnitTest.testTransitions();
+        //UnitTest.testStates();
+        //UnitTest.testConcStates();
+        //UnitTest.testTransitions();
 
         System.out.println("Before parsing");
 
@@ -78,7 +76,7 @@ public final class ExampleUsingTheCompiler {
             // Parse+typecheck the model
             System.out.println("=========== Parsing+Typechecking " + filename + " =============");
 
-            DashModule world = CompUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), "D:/DashModels/BitCounter.dsh");
+            DashModule world = CompUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), "D:/DashModels/Elevator.dsh");
 
 
             //printDashModel(world);
@@ -89,10 +87,10 @@ public final class ExampleUsingTheCompiler {
         File myObj = new File("D:/dashModel.txt");
         String dashModel = "";
 
-        CoreDashGenerator gen = new CoreDashGenerator(module.concStates, module.concStateNames, module.states, module.transitions);
+        //CoreDashGenerator gen = new CoreDashGenerator(module.concStates, module.concStateNames, module.states, module.transitions);
 
         System.out.println("Printing Dash Model");
 
-        gen.printCoreDash();
+        //gen.printCoreDash();
     }
 }

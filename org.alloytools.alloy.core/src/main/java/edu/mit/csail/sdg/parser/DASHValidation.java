@@ -15,12 +15,12 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.DashAction;
 import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.DashCondition;
+import edu.mit.csail.sdg.ast.DashEvent;
 import edu.mit.csail.sdg.ast.DashInit;
 import edu.mit.csail.sdg.ast.DashInvariant;
 import edu.mit.csail.sdg.ast.DashState;
 import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Decl;
-import edu.mit.csail.sdg.ast.Event;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBadJoin;
 import edu.mit.csail.sdg.ast.ExprBinary;
@@ -39,7 +39,8 @@ import edu.mit.csail.sdg.ast.ExprVar;
  * information is stored (state names, transition names, Alloy expressions,
  * etc), we will check for issues in the Dash model.
  *
- * The issues being checked for are:
+ * The issues being checked for are (description of an issue: function name that
+ * finds the issue)
  *
  * Two or more states with the same name with in the same level:
  * hasSameStateName
@@ -83,13 +84,13 @@ public class DashValidation {
 
     /*
      * A list of all the func and pred names in the DASH model. This is used for
-     * validation purposes. This is accessed by Alloy.cup when parsing a signature.
+     * validation purposes.
      */
     static List<String>                    funcNames              = new ArrayList<String>();
 
     /*
      * A list of all the concurrent state names in the DASH model. This is used for
-     * validation purposes. This is accessed by Alloy.cup when parsing a transition.
+     * validation purposes.
      */
     static List<String>                    concStateNames         = new ArrayList<String>();
     //A modified name is the name of a Dash item as it would appear in an Alloy model
@@ -97,21 +98,26 @@ public class DashValidation {
 
     /*
      * A list of all the state names in the DASH model. This is used for validation
-     * purposes. This is accessed by Alloy.cup when parsing a transition.
+     * purposes.
      */
     public static Map<String,List<String>> stateNames             = new LinkedHashMap<String,List<String>>();
 
     /*
      * A list of all the event names in the DASH model. This is used for validation
-     * purposes. This is accessed by Alloy.cup when parsing an event.
+     * purposes.
      */
     public static Map<String,List<String>> eventNames             = new LinkedHashMap<String,List<String>>();
+
+    /*
+     * A list of all the event names in the DASH model. This is used for validation
+     * purposes. This is accessed by Alloy.cup when parsing an event.
+     */
+    public static Map<String,List<String>> transitionNames        = new LinkedHashMap<String,List<String>>();
 
 
     /*
      * A list of all the variable declarations in the DASH model. This is used for
-     * validation purposes. This is accessed by Alloy.cup when parsing a var
-     * declaration.
+     * validation purposes. declaration.
      */
     static List<Decl>                      declarations           = new ArrayList<Decl>();
     static Map<String,List<String>>        declarationNames       = new LinkedHashMap<String,List<String>>();
@@ -136,18 +142,13 @@ public class DashValidation {
      * transition to a state that has not been declared, etc.
      */
     public static void hasLegalTransCommand(String concStateName) {
-        for (String name : stateNames.get(concStateName))
-            System.out.println("State: " + name);
-        for (String name : eventNames.get(concStateName))
-            System.out.println("Event: " + name);
-
         for (DashTrans transition : transitions.get(concStateName)) {
             if (transition.onExpr != null) {
                 validateTransRef(transition.onExpr.name, transition.onExpr.pos, eventNames.get(concStateName));
             }
             if (transition.gotoExpr != null) {
                 for (String gotoName : transition.gotoExpr.gotoExpr) {
-                    System.out.println("Checking :" + gotoName);
+                    //System.out.println("Checking :" + gotoName);
                     validateTransRef(gotoName, transition.gotoExpr.pos, stateNames.get(concStateName));
                 }
             }
@@ -186,7 +187,7 @@ public class DashValidation {
     }
 
     /* Store variables that have been declared in the concurrent state */
-    public static List<String> readVariablesDeclared(List<Decl> decls, List<String> names) {
+    static List<String> readVariablesDeclared(List<Decl> decls, List<String> names) {
         /* Store the names of each variable inside decls in ConcState */
         for (Decl decl : decls) {
             for (Object name : decl.names)
@@ -196,9 +197,9 @@ public class DashValidation {
     }
 
 
-    public static void validateExprVar(DashConcState concState) {
+    static void validateExprVar(DashConcState concState) {
         for (Expr expr : expressions.get(concState.modifiedName)) {
-            System.out.println("\nLooking at: " + expr.toString());
+            //System.out.println("\nLooking at: " + expr.toString());
 
             ExprUnary parentExprUnary = null;
 
@@ -211,7 +212,7 @@ public class DashValidation {
             if (parentExprUnary != null && parentExprUnary.sub instanceof ExprList) {
                 ExprList exprList = (ExprList) parentExprUnary.sub;
                 for (Expr expression : exprList.args) {
-                    System.out.println("\nLooking at: " + expression.toString() + " Type: " + expression.getClass());
+                    //System.out.println("\nLooking at: " + expression.toString() + " Type: " + expression.getClass());
                     quantifierVars.clear(); //Clearly out previously stored quantified variables
                     getVarFromParentExpr(expression);
                 }
@@ -238,7 +239,6 @@ public class DashValidation {
         }
 
         if (parentExpr instanceof ExprVar) {
-            System.out.println("ExprVar: " + parentExpr.toString());
             checkIfVarValid((ExprVar) parentExpr);
         }
 
@@ -257,16 +257,16 @@ public class DashValidation {
         }
 
         if (binary.left instanceof ExprVar) {
-            System.out.println("Left ExprVar: " + binary.left);
+            //System.out.println("Left ExprVar: " + binary.left);
             checkIfVarValid((ExprVar) binary.left);
         }
 
         if (binary.left instanceof ExprBinary) {
-            getVarFromBinary((ExprBinary) binary.right);
+            getVarFromBinary((ExprBinary) binary.left);
         }
 
         if (binary.left instanceof ExprBadJoin) {
-            getVarFromBadJoin((ExprBadJoin) binary.right);
+            getVarFromBadJoin((ExprBadJoin) binary.left);
         }
 
         if (binary.right instanceof ExprUnary) {
@@ -276,7 +276,7 @@ public class DashValidation {
         }
 
         if (binary.right instanceof ExprVar) {
-            System.out.println("Right ExprVar: " + binary.right);
+            //System.out.println("Right ExprVar: " + binary.right);
             checkIfVarValid((ExprVar) binary.right);
         }
 
@@ -296,7 +296,7 @@ public class DashValidation {
      */
     private static String getVarFromUnary(ExprUnary unary) {
         if (unary.sub instanceof ExprVar) {
-            System.out.println("ExprVar: " + unary.sub.toString());
+            //System.out.println("ExprVar: " + unary.sub.toString());
             checkIfVarValid((ExprVar) unary.sub);
         }
         if (unary.sub instanceof ExprUnary) {
@@ -313,7 +313,7 @@ public class DashValidation {
 
     private static String getVarFromBadJoin(ExprBadJoin joinExpr) {
         if (joinExpr.left instanceof ExprVar) {
-            System.out.println("Left ExprVar: " + joinExpr.left.toString());
+            //System.out.println("Left ExprVar: " + joinExpr.left.toString());
             checkIfVarValid((ExprVar) joinExpr.left);
         }
         if (joinExpr.left instanceof ExprUnary) {
@@ -323,7 +323,7 @@ public class DashValidation {
             getVarFromBadJoin((ExprBadJoin) joinExpr.right);
         }
         if (joinExpr.right instanceof ExprVar) {
-            System.out.println("Left ExprVar: " + joinExpr.right.toString());
+            //System.out.println("Left ExprVar: " + joinExpr.right.toString());
             checkIfVarValid((ExprVar) joinExpr.right);
         }
         if (joinExpr.right instanceof ExprUnary) {
@@ -352,28 +352,28 @@ public class DashValidation {
 
     private static void getDeclsFromExprQT(ExprQt exprQt) {
         for (Decl decl : exprQt.decls) {
-            System.out.println("Var Name: " + decl.get());
+            //System.out.println("Var Name: " + decl.get());
             quantifierVars.add(decl.get().toString());
             getVarFromParentExpr(decl.expr);
         }
     }
 
-    public static void validateTransTemplateDecl(Pos pos, String concStateName, List<Decl> decls) {
+    private static void validateTransTemplateDecl(Pos pos, String concStateName, List<Decl> decls) {
         List<String> nameList;
         for (Decl decl : decls) {
             if (decl.expr instanceof ExprVar) {
-                System.out.println("Expr: " + decl.expr.toString());
+                //System.out.println("Expr: " + decl.expr.toString());
                 if (!decl.expr.toString().equals("State") && !decl.expr.toString().equals("Event"))
                     throw new ErrorSyntax(pos, "Expected Type: Abstract Boolean or Abstract Event or Abstract State");
             }
             if (decl.expr instanceof ExprVar && decl.expr.toString().equals("Event")) {
-                System.out.println("Adding to Events: " + decl.get().toString());
+                //System.out.println("Adding to Events: " + decl.get().toString());
                 nameList = new ArrayList<String>(eventNames.get(concStateName));
                 nameList.add(decl.get().toString());
                 eventNames.put(concStateName, nameList);
             }
             if (decl.expr instanceof ExprVar && decl.expr.toString().equals("State")) {
-                System.out.println("Adding to State: " + decl.get().toString());
+                //System.out.println("Adding to State: " + decl.get().toString());
                 nameList = new ArrayList<String>(stateNames.get(concStateName));
                 nameList.add(decl.get().toString());
                 stateNames.put(concStateName, nameList);
@@ -390,13 +390,19 @@ public class DashValidation {
         if (variable.contains("'"))
             variable = variable.replace("'", "");
 
-        if (!declarationNames.get(currentConcStateValidated.modifiedName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
+        String concStateParName = "";
+        if (currentConcStateValidated.parent != null)
+            concStateParName = currentConcStateValidated.parent.modifiedName;
+        else
+            concStateParName = currentConcStateValidated.modifiedName;
+
+        if (!declarationNames.get(currentConcStateValidated.modifiedName).contains(variable) && !declarationNames.get(concStateParName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
             throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
         }
     }
 
     /* Ensure that conc states have a default state */
-    public static Boolean hasDefaultState(List<DashState> states) {
+    private static Boolean hasDefaultState(List<DashState> states) {
         orStateCount = 0;
 
         /*
@@ -414,7 +420,7 @@ public class DashValidation {
     }
 
     /* Ensure that conc states do not have orstates with the same name */
-    public static void hasSameStateName(String name, List<DashState> states) {
+    private static void hasSameStateName(String name, List<DashState> states) {
         String stateName = "";
         String currentStateName = "";
         Boolean sameStateFound = false;
@@ -433,7 +439,7 @@ public class DashValidation {
 
 
     /* Ensure that conc states do not have orstates with the trans name */
-    public static void hasSameTransName(String name, List<DashTrans> transitions) {
+    private static void hasSameTransName(String name, List<DashTrans> transitions) {
         String transName = "";
         String currentTransName = "";
         Boolean sameTransFound = false;
@@ -441,24 +447,26 @@ public class DashValidation {
         for (DashTrans transA : transitions) {
             transName = transA.name;
             for (DashTrans transB : transitions) {
-                if (transName.equals(transB.name) && sameTransFound)
-                    throw new ErrorSyntax(transB.pos, "This transition has already been declared.");
-                if (transName.equals(transB.name) && !sameTransFound)
-                    sameTransFound = true;
+                if (transB.name != null) {
+                    if (transName.equals(transB.name) && sameTransFound)
+                        throw new ErrorSyntax(transB.pos, "This transition has already been declared.");
+                    if (transName.equals(transB.name) && !sameTransFound)
+                        sameTransFound = true;
+                }
             }
             sameTransFound = false;
         }
     }
 
     /* Ensure that conc states do not have events with the same name */
-    public static void hasSameEventName(String name, List<Event> events) {
+    private static void hasSameEventName(String name, List<DashEvent> events) {
         String eventName = "";
         String currentEventName = "";
         Boolean sameEventFound = false;
 
-        for (Event eventA : events) {
+        for (DashEvent eventA : events) {
             eventName = eventA.name;
-            for (Event eventB : events) {
+            for (DashEvent eventB : events) {
                 if (eventName.equals(eventB.name) && sameEventFound)
                     throw new ErrorSyntax(eventB.pos, "This event has already been declared.");
                 if (eventName.equals(eventB.name) && !sameEventFound)
@@ -468,6 +476,7 @@ public class DashValidation {
         }
     }
 
+    /* Accessed by the DashParser */
     public static void importModule(String fileName) {
         File utilFolder = new File(fileName + ".als");
         if (utilFolder.exists()) {
@@ -500,6 +509,11 @@ public class DashValidation {
         for (String concStateName : concStateNamesModified)
             initializeNameContainers(concStateName, dashModule);
 
+        /* Stores the names for each signature in the model */
+        for (String sigName : dashModule.sigs.keySet()) {
+            sigNames.add(sigName);
+        }
+
     }
 
     public static void initializeNameContainers(String concStateName, DashModule dashModule) {
@@ -507,39 +521,88 @@ public class DashValidation {
         List<DashTrans> transitionList = new ArrayList<DashTrans>();
         List<Expr> expressionList = new ArrayList<Expr>();
 
-        for (DashState state : dashModule.concStates.get(concStateName).states)
+        expressions.put(concStateName, expressionList);
+
+        /* Stores the names for each state in the current conc state */
+        for (DashState state : dashModule.concStates.get(concStateName).states) {
+            getExprFromStateTrans(concStateName, state.modifiedName, dashModule);
             names.add(state.name);
+        }
+
         stateNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
 
-        for (Event event : dashModule.concStates.get(concStateName).events)
+        /* Stores the names for each event in the current conc state */
+        for (DashEvent event : dashModule.concStates.get(concStateName).events)
             names.add(event.name);
+
+        System.out.println("Getting funcs");
+        /* Stores the names for each func/pred in the current conc state */
+        for (String key : dashModule.funcs.keySet()) {
+            System.out.println("Func: " + key);
+        }
+
+        /* Stores the names for each action template in the current conc state */
+        for (DashAction action : dashModule.concStates.get(concStateName).action)
+            funcNames.add(action.name);
+
         eventNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
 
+        /* Stores the names for each variable in the current conc state */
         names = readVariablesDeclared(dashModule.concStates.get(concStateName).decls, names);
         declarationNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
 
+        expressionList = new ArrayList<Expr>(expressions.get(concStateName));
         for (DashTrans trans : dashModule.concStates.get(concStateName).transitions) {
+            names.add(trans.name);
             transitionList.add(trans);
+
+            //System.out.println("Checking: " + trans.name);
 
             //The only kind of transition that will have declarations (decl) is a
             //transition template. Therefore, we will need to valdiate the arguments (decls)
             if (trans.transTemplate != null)
                 validateTransTemplateDecl(trans.pos, concStateName, trans.transTemplate.decls);
-            if (trans.doExpr != null)
+            if (trans.doExpr != null) {
                 expressionList.add(trans.doExpr.expr);
-            if (trans.whenExpr != null)
+            }
+            if (trans.whenExpr != null) {
                 expressionList.add(trans.whenExpr.expr);
+            }
 
         }
         expressions.put(concStateName, new ArrayList<Expr>(expressionList));
         transitions.put(concStateName, new ArrayList<DashTrans>(transitionList));
-        expressionList.clear();
-        transitionList.clear();
+        transitionNames.put(concStateName, new ArrayList<String>(names));
 
         addExprFromConcState(dashModule.concStates.get(concStateName));
+    }
+
+    public static void getExprFromStateTrans(String concStateName, String stateName, DashModule dashModule) {
+        List<Expr> expressionList = new ArrayList<Expr>(expressions.get(concStateName));
+
+        /* Stores the names for each state in the current state */
+        for (DashState state : dashModule.states.get(stateName).states) {
+            getExprFromStateTrans(concStateName, state.modifiedName, dashModule);
+        }
+
+        for (DashTrans trans : dashModule.states.get(stateName).transitions) {
+            //System.out.println("Checking: " + trans.name);
+
+            //The only kind of transition that will have declarations (decl) is a
+            //transition template. Therefore, we will need to valdiate the arguments (decls)
+            if (trans.transTemplate != null)
+                validateTransTemplateDecl(trans.pos, concStateName, trans.transTemplate.decls);
+            if (trans.doExpr != null) {
+                expressionList.add(trans.doExpr.expr);
+            }
+            if (trans.whenExpr != null) {
+                expressionList.add(trans.whenExpr.expr);
+            }
+        }
+        expressions.put(concStateName, expressionList);
     }
 
     public static void validateConcStates(DashModule dashModule) {
@@ -561,10 +624,13 @@ public class DashValidation {
                 hasSameStateName(concStateName, state.states);
                 hasSameTransName(concStateName, state.transitions);
             }
+
+            validateExprVar(dashModule.concStates.get(concStateName));
         }
     }
 
     public static void addExprFromConcState(DashConcState currentConcState) {
+
         List<Expr> localExpressions = new ArrayList<Expr>(expressions.get(currentConcState.modifiedName));
 
         if (currentConcState.init.size() > 0) {
