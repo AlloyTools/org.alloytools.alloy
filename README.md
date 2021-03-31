@@ -51,10 +51,44 @@ internal Dash data structure in the DashModule and convert it to CoreDash. CoreD
 commands within transitions such that it is easier to convert a Dash model to an Alloy model. It will largely modify
 transitions stored inside the DashModule and create new transitions if necessary.
 
-**org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/parser/TransformCoreDash:** This is used to convert the
-internal Dash data structure in the DashModule and convert it to CoreDash. CoreDash expands transitions and modifies
-commands within transitions such that it is easier to convert a Dash model to an Alloy model. It will largely modify
-transitions stored inside the DashModule and create new transitions if necessary.
+**org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/parser/CoreDashGenerator:** This is used to print out
+a CoreDash model by iterating through the transitions container in DashModule after it has been modified by
+TransformCoreDash.java. It will also print the concurrent states and/or OR states inside the model.
+
+
+**org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/ast:** This folder contains several new Dash AST files.
+These are important for storing the required information regarding any parsed Dash model. These AST files will be
+used by the DashParser when parsing a Dash model.
+
+**org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/parser/PrintAlloy:** (In Progress)
+
+
+# Building the project
+---
+
+In order to build the project, navigate to the
+
+
+```org.alloytools.alloy```
+
+directory in the command-line and then run the
+
+```gradle build```
+
+command. In the scenario that this command fails to build the project, please try
+
+```./gradle build``` or ```./gradlew build``` or ```gradle build -x test```
+
+Please note that ```gradle build -x test``` will not run the unit tests.
+
+Once the build is successful, use the following command:
+
+```java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar```
+
+This will give provide a prompt to speciy a path for a Dash (.dsh) file input and
+an output path where the CoreDash print will be stored. Please specify the necessary
+information, and a successful parse/validation of the input Dash model will result in
+the printing of the CoreDash version of that model.
 
 
 
