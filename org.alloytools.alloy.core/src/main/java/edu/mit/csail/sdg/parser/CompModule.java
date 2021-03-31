@@ -257,8 +257,6 @@ public final class CompModule extends Browsable implements Module {
      */
     private final List<Command>               commands    = new ArrayList<Command>();
 
-    public int                                unrolls;
-
     // ============================================================================================================================//
 
     /**

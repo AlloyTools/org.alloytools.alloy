@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.mit.csail.sdg.alloy4.Options;
 import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.DashInit;
 import edu.mit.csail.sdg.ast.DashState;
@@ -38,7 +39,7 @@ public class PrintAlloy {
 
         printModelDefinition(module);
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter("D:/AlloyOutput.txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(Options.outputDir + ".als"));
         writer.write(alloyModel);
 
         writer.close();
@@ -130,6 +131,7 @@ public class PrintAlloy {
             for (Expr expr : transition.doExpr.exprList)
                 alloyModel += (modifyExprVariables(expr, getParentConcState(transition.parentState), module) + '\n');
 
+            //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
             for (String var : getUnchangedVars(transition.doExpr.exprList, getParentConcState(transition.parentState), module))
                 alloyModel += ("s'." + getParentConcState(transition.parentState).modifiedName + "_" + var + " = s." + getParentConcState(transition.parentState).modifiedName + "_" + var + '\n');
         }
@@ -344,10 +346,9 @@ public class PrintAlloy {
         if (expr instanceof ExprQt)
             expression = getQuantifiedExpression((ExprQt) expr);
 
-        for (String var : exprList) {
+        for (String var : exprList)
             expression = splitChangeExpr(var, (Arrays.asList(expression.split(" "))), parent);
-            System.out.println("Expr: " + expression + " ExprList: " + Arrays.asList(expression.split(" ")) + " Return: " + expression);
-        }
+
         return expression;
     }
 

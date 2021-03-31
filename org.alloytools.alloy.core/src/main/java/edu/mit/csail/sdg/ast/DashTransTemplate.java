@@ -29,10 +29,10 @@ public class DashTransTemplate {
                 fromExpr = (DashFrom) item;
             if (item instanceof DashOn)
                 onExpr = (DashOn) item;
-            if (item instanceof DashWhenExpr)
-                whenExpr = (DashWhenExpr) item;
             if (item instanceof DashDoExpr)
                 doExpr = (DashDoExpr) item;
+            if (item instanceof DashWhenExpr)
+                whenExpr = (DashWhenExpr) item;
             if (item instanceof DashGoto)
                 gotoExpr = (DashGoto) item;
             if (item instanceof DashSend)

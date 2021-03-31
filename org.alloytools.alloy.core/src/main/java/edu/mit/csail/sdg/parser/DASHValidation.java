@@ -447,7 +447,7 @@ public class DashValidation {
         for (DashTrans transA : transitions) {
             transName = transA.name;
             for (DashTrans transB : transitions) {
-                if (transB.name != null) {
+                if (transName != null && transB.name != null) {
                     if (transName.equals(transB.name) && sameTransFound)
                         throw new ErrorSyntax(transB.pos, "This transition has already been declared.");
                     if (transName.equals(transB.name) && !sameTransFound)
@@ -536,7 +536,7 @@ public class DashValidation {
         for (DashEvent event : dashModule.concStates.get(concStateName).events)
             names.add(event.name);
 
-        System.out.println("Getting funcs");
+        //System.out.println("Getting funcs");
         /* Stores the names for each func/pred in the current conc state */
         for (String key : dashModule.funcs.keySet()) {
             System.out.println("Func: " + key);

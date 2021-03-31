@@ -487,7 +487,7 @@ public final class CompUtil {
 
     public static DashModule parseEverything_fromFileDash(A4Reporter rep, Map<String,String> loaded, String filename) throws Err {
         try {
-            System.out.println("Parsing Dash from CompUtil");
+            //System.out.println("Parsing Dash from CompUtil");
             filename = Util.canon(filename);
             Set<String> thispath = new LinkedHashSet<String>();
             if (loaded == null)

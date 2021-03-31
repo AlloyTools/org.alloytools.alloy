@@ -3,7 +3,6 @@ package edu.mit.csail.sdg.parser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import edu.mit.csail.sdg.ast.DashAction;
 import edu.mit.csail.sdg.ast.DashConcState;
@@ -14,8 +13,11 @@ import edu.mit.csail.sdg.ast.DashGoto;
 import edu.mit.csail.sdg.ast.DashOn;
 import edu.mit.csail.sdg.ast.DashSend;
 import edu.mit.csail.sdg.ast.DashState;
+import edu.mit.csail.sdg.ast.DashTemplateCall;
 import edu.mit.csail.sdg.ast.DashTrans;
+import edu.mit.csail.sdg.ast.DashTransTemplate;
 import edu.mit.csail.sdg.ast.DashWhenExpr;
+import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprUnary;
@@ -23,9 +25,11 @@ import edu.mit.csail.sdg.ast.ExprVar;
 
 public class TransformCoreDash {
 
-    static List<DashTrans> transitions = new ArrayList<DashTrans>();
+    static int transitionCount = 0;
 
     public static void transformToCoreDash(DashModule module) throws IOException {
+        transitionCount = 0;
+        getAllTransitions(module);
         modifyTransitions(module);
         CoreDashGenerator.printCoreDash(module);
         PrintAlloy.printAlloyModel(module);
@@ -42,19 +46,171 @@ public class TransformCoreDash {
         }
     }
 
-    static void generateTransitions(Map<String,DashTrans> transitionList) {
-        for (DashTrans trans : transitionList.values()) {
-            if (trans.fromExpr.fromExpr.size() > 1) {
-                for (String fromCommand : trans.fromExpr.fromExpr) {
-                    DashTrans genTrans = new DashTrans(trans);
-                    genTrans.fromExpr = new DashFrom(fromCommand, false);
-                    transitions.add(genTrans);
-                }
-            } else {
-                transitions.add(trans);
-            }
+    /* Fetch all the transitions in the model */
+    static void getAllTransitions(DashModule module) {
+        for (DashConcState concState : module.concStates.values()) {
+            for (DashTrans transition : concState.transitions)
+                addTrans(concState, transition, module);
+            for (DashTemplateCall templateCall : concState.templateCall)
+                addTemplateCall(concState, templateCall, module);
+        }
+
+        for (DashState state : module.states.values()) {
+            for (DashTrans transition : state.transitions)
+                addTrans(state, transition, module);
         }
     }
+
+    /*
+     * This is called by the getAllTransitions function once it finds a transition
+     * inside an OR state
+     */
+    public static void addTrans(DashState parent, DashTrans transition, DashModule module) {
+        String modifiedTransName = parent.modifiedName + '_' + transition.name;
+        transition.modifiedName = modifiedTransName;
+        transition.parentState = parent;
+
+        /*
+         * If we have more than one from command (source), split up the transition such
+         * that each transition represents one from command.
+         */
+        if (transition.fromExpr != null && transition.fromExpr.fromExpr.size() > 0) {
+            for (String fromExpr : transition.fromExpr.fromExpr) {
+                if (transition.name == null)
+                    modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+                generateTransition(transition, fromExpr, modifiedTransName, module);
+            }
+        } else {
+            if (transition.name == null)
+                modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+            transition.modifiedName = modifiedTransName;
+            module.transitions.put(modifiedTransName, transition);
+        }
+    }
+
+    /*
+     * This is called by the getAllTransitions function once it finds a transition
+     * inside an conc state
+     */
+    public static void addTrans(DashConcState parent, DashTrans transition, DashModule module) {
+        String modifiedTransName = parent.modifiedName + '_' + transition.name;
+        transition.modifiedName = modifiedTransName;
+        transition.parentState = parent;
+
+        /*
+         * If we have more than one from command (source), split up the transition such
+         * that each transition represents one from command.
+         */
+        if (transition.fromExpr != null && transition.fromExpr.fromExpr.size() > 0) {
+            for (String fromExpr : transition.fromExpr.fromExpr) {
+                if (transition.name == null)
+                    modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+                generateTransition(transition, fromExpr, modifiedTransName, module);
+            }
+        } else {
+            if (transition.name == null)
+                modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
+            transition.modifiedName = modifiedTransName;
+            module.transitions.put(modifiedTransName, transition);
+        }
+    }
+
+    /*
+     * This is called by the addConcState function once it finds a transition
+     * template call. It refers to the template being called and uses it to create
+     * new transitions
+     */
+    public static void addTemplateCall(DashConcState parent, DashTemplateCall templateCall, DashModule module) {
+        DashTransTemplate transTemplate = module.transitionTemplates.get(templateCall.templateName);
+        List<String> declNames = new ArrayList<String>();
+        int count = 0;
+
+        //Each decl is an argument for a template call
+        for (Decl decl : transTemplate.decls) {
+            declNames.add(decl.get().toString());
+        }
+
+        DashTrans trans = new DashTrans(null, templateCall.name, new ArrayList<Object>());
+        trans.parentState = parent;
+
+        //If we have an On command, check if it matches an argument. If it does, then set the on Command
+        //to that of the argument
+        if (transTemplate.onExpr != null) {
+            if (declNames.indexOf(transTemplate.onExpr.name) != -1)
+                trans.onExpr = new DashOn(null, templateCall.templateParam.get(declNames.indexOf(transTemplate.onExpr.name)));
+            else
+                trans.onExpr = new DashOn(null, transTemplate.onExpr.name);
+        }
+
+        //If we have a From command, check if it matches an argument. If it does, then set the From Command
+        //to that of the argument
+        if (transTemplate.fromExpr != null && !transTemplate.fromExpr.fromAll) {
+            List<String> fromExprList = new ArrayList<String>();
+
+            for (String fromExpr : transTemplate.fromExpr.fromExpr) {
+                if (declNames.indexOf(fromExpr) != -1)
+                    fromExprList.add(templateCall.templateParam.get(declNames.indexOf(fromExpr)));
+                else
+                    fromExprList.add(fromExpr);
+            }
+            trans.fromExpr = new DashFrom(fromExprList, false);
+        }
+
+        //If we have a Goto command, check if it matches an argument. If it does, then set the Goto Command
+        //to that of the argument
+        if (transTemplate.gotoExpr != null) {
+            if (declNames.indexOf(transTemplate.gotoExpr.gotoExpr.get(0)) != -1)
+                trans.gotoExpr = new DashGoto(templateCall.templateParam.get(declNames.indexOf(transTemplate.gotoExpr.gotoExpr.get(0))));
+            else
+                trans.gotoExpr = new DashGoto(transTemplate.gotoExpr.gotoExpr);
+        }
+
+        //If we have a Send command, check if it matches an argument. If it does, then set the Send Command
+        //to that of the argument
+        if (transTemplate.sendExpr != null) {
+            if (declNames.indexOf(transTemplate.sendExpr.name) != -1)
+                trans.sendExpr = new DashSend(null, templateCall.templateParam.get(declNames.indexOf(transTemplate.sendExpr.name)));
+            else
+                trans.sendExpr = new DashSend(null, transTemplate.sendExpr.name);
+        }
+
+        //If we have a do command, add it to our transition
+        if (transTemplate.doExpr != null) {
+            trans.doExpr = new DashDoExpr(null, transTemplate.doExpr.expr);
+        }
+
+        //If we have a when command, add it to our transition
+        if (transTemplate.whenExpr != null) {
+            trans.whenExpr = new DashWhenExpr(null, transTemplate.whenExpr.expr);
+        }
+
+        //If the from command is: from *, then we need to fetch all the Or states in the conc state,
+        //and create new transitions each with a different or state as the source
+        if (transTemplate.fromExpr != null && transTemplate.fromExpr.fromAll) {
+            for (DashState state : parent.states) {
+                trans.fromExpr = new DashFrom(state.name, false);
+                trans.modifiedName = parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount);
+                //System.out.println("Trans Name: " + trans.modifiedName + " From: " + trans.fromExpr.fromExpr.get(0));
+                module.transitions.put(trans.modifiedName, new DashTrans(trans));
+            }
+        } //If we have more than one From command, create a new transition for each for command
+        else if (transTemplate.fromExpr != null && trans.fromExpr.fromExpr.size() > 0) {
+            for (String fromExpr : trans.fromExpr.fromExpr)
+                generateTransition(trans, fromExpr, parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount), module);
+        } else {
+            trans.modifiedName = parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount);
+            module.transitions.put(trans.modifiedName, trans);
+        }
+
+    }
+
+    static void generateTransition(DashTrans transition, String fromExpr, String modifiedName, DashModule module) {
+        DashTrans trans = new DashTrans(transition); // New transition representing one of the From commands
+        trans.fromExpr = new DashFrom(fromExpr, false); // Add the from command to the new transition
+        trans.modifiedName = modifiedName;
+        module.transitions.put(modifiedName, trans);
+    }
+
 
     static DashDoExpr addAction(DashDoExpr doExpr, DashModule module) {
         if (doExpr != null) {

@@ -17,10 +17,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.java"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.kodkod.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.kodkod.nativesat"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.util"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.sat4j.core"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
