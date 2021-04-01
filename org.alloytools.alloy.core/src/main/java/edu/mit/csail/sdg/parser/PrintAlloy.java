@@ -10,6 +10,7 @@ import java.util.List;
 import edu.mit.csail.sdg.alloy4.Options;
 import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.DashInit;
+import edu.mit.csail.sdg.ast.DashInvariant;
 import edu.mit.csail.sdg.ast.DashState;
 import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Decl;
@@ -24,9 +25,6 @@ public class PrintAlloy {
 
     public static void printAlloyModel(DashModule module) throws IOException {
 
-        if (module.isUnitTest)
-            return;
-
         printSnapshotSig(module);
 
         printStateSpace(module);
@@ -39,6 +37,8 @@ public class PrintAlloy {
 
         printModelDefinition(module);
 
+        printInvariants(module);
+
         BufferedWriter writer = new BufferedWriter(new FileWriter(Options.outputDir + ".als"));
         writer.write(alloyModel);
 
@@ -48,6 +48,10 @@ public class PrintAlloy {
     static void printVariables(DashModule module) {
         if (module.stateHierarchy)
             alloyModel += ("stable: one Bool");
+
+        for (String variableName : module.envVariable2Expression.keySet()) {
+            alloyModel += (variableName + ": " + module.envVariable2Expression.get(variableName) + '\n');
+        }
 
         for (String variableName : module.variable2Expression.keySet()) {
             alloyModel += (variableName + ": " + module.variable2Expression.get(variableName) + '\n');
@@ -68,7 +72,7 @@ public class PrintAlloy {
             alloyModel += ("abstract sig " + concState.modifiedName + " extends SystemState {}\n");
             printStateLabels(concState);
         }
-        alloyModel += "}\n\n";
+        alloyModel += "\n\n";
     }
 
     static void printStateLabels(DashConcState concState) {
@@ -87,7 +91,7 @@ public class PrintAlloy {
         for (DashTrans transition : module.transitions.values()) {
             alloyModel += ("one sig " + transition.modifiedName + " extends TransitionLabel {}\n");
         }
-        alloyModel += "}\n\n";
+        alloyModel += "\n\n";
     }
 
     static void printTransitions(DashModule module) {
@@ -141,8 +145,10 @@ public class PrintAlloy {
                 alloyModel += ("s'." + getParentConcState(transition.parentState).modifiedName + "_" + var + " = s." + getParentConcState(transition.parentState).modifiedName + "_" + var + '\n');
         }
 
-        if (transition.sendExpr == null)
+        if (transition.sendExpr == null && Options.isEnvEventModel)
             alloyModel += ("no (s'.events and InternalEvent) \n");
+        else if (transition.sendExpr != null && transition.sendExpr.name != null)
+            alloyModel += ("{" + transition.sendExpr.name + "} in s'.events\n");
 
         alloyModel += "}\n\n";
     }
@@ -298,6 +304,34 @@ public class PrintAlloy {
         alloyModel += "}\n";
     }
 
+
+    static void printInvariants(DashModule module) {
+        alloyModel += "/****************************** INVARIANTS ****************************/\n\n";
+
+        for (DashConcState concState : module.concStates.values()) {
+            for (DashInvariant invariant : concState.invariant) {
+                printInvariant(invariant, concState, module);
+            }
+        }
+
+        alloyModel += "}\n";
+    }
+
+    static void printInvariant(DashInvariant invariant, DashConcState parent, DashModule module) {
+        alloyModel += "fact {\n";
+        alloyModel += "all s: Snapshot | ";
+
+        if (parent.states.size() > 0)
+            alloyModel += "(some " + parent.modifiedName + " & s.conf) => {\n";
+        else
+            alloyModel += ("(" + parent.modifiedName + " in s.conf) => {\n");
+
+        for (Expr expr : invariant.exprList)
+            alloyModel += (modifyExprVariables(expr, parent, module) + '\n');
+
+        alloyModel += "}\n\n";
+    }
+
     //Find the variables that are unchanged during a transition
     static List<String> getUnchangedVars(List<Expr> exprList, DashConcState parent, DashModule module) {
         List<String> variablesInParent = new ArrayList<String>();
@@ -325,11 +359,13 @@ public class PrintAlloy {
     //s.Game_active_players
     static String modifyExprVariables(Expr expr, DashConcState parent, DashModule module) {
         final List<String> variablesInParent = module.variableNames.get(parent.modifiedName);
+        final List<String> envVariablesInParent = module.envVariableNames.get(parent.modifiedName);
         String expression = expr.toString();
 
         DashConcState outerConcState = parent.parent;
 
         expression = getModifiedExpr(expression, parent, expr, variablesInParent);
+        expression = getModifiedExpr(expression, parent, expr, envVariablesInParent);
 
         while (outerConcState != null) {
             expression = getModifiedExpr(expression, outerConcState, expr, module.variableNames.get(outerConcState.modifiedName));

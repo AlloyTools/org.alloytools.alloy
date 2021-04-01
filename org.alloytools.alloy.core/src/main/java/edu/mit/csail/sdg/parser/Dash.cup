@@ -822,10 +822,9 @@ StateItems::= ConcB:x 				    {: RESULT=new ArrayList<Object>(); RESULT.add(x); 
 StateItems::= ConcB:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
  
 //Event Declaration     
-Event::= EVENT:o  				    Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "event");  :}
+Event::= EVENT:o  				    Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "env event");  :}
 	 | ENV EVENT:o				    Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "env event");  :} 
-	 | ENV:o			        	Name:n LBRACE RBRACE {: RESULT=new DashEvent(o, n.label, "env event");   :}
-	 | ENV:o			        	Declb:d {: RESULT= new DashEvent(o, d, "env event"); DashValidation.declarations.add(d);  :};
+	 | ENV:o			        	Declb:d {: RESULT= new DashEvent(o, d, "env"); DashValidation.declarations.add(d);  :};
 	 	 
 StateItems::= Event:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= Event:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 

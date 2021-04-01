@@ -396,7 +396,7 @@ public class DashValidation {
         else
             concStateParName = currentConcStateValidated.modifiedName;
 
-        if (!declarationNames.get(currentConcStateValidated.modifiedName).contains(variable) && !declarationNames.get(concStateParName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
+        if (!declarationNames.get(currentConcStateValidated.modifiedName).contains(variable) && !eventNames.get(currentConcStateValidated.modifiedName).contains(variable) && !declarationNames.get(concStateParName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
             throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
         }
     }
@@ -459,18 +459,22 @@ public class DashValidation {
     }
 
     /* Ensure that conc states do not have events with the same name */
-    private static void hasSameEventName(String name, List<DashEvent> events) {
+    private static void hasSameEventName(DashConcState concState) {
         String eventName = "";
         String currentEventName = "";
         Boolean sameEventFound = false;
 
-        for (DashEvent eventA : events) {
+        List<DashEvent> concStateEvent = getEvents(concState);
+
+        for (DashEvent eventA : concStateEvent) {
             eventName = eventA.name;
-            for (DashEvent eventB : events) {
-                if (eventName.equals(eventB.name) && sameEventFound)
-                    throw new ErrorSyntax(eventB.pos, "This event has already been declared.");
-                if (eventName.equals(eventB.name) && !sameEventFound)
-                    sameEventFound = true;
+            for (DashEvent eventB : concStateEvent) {
+                if (eventName != null && eventB.name != null) {
+                    if (eventName.equals(eventB.name) && sameEventFound)
+                        throw new ErrorSyntax(eventB.pos, "This event has already been declared.");
+                    if (eventName.equals(eventB.name) && !sameEventFound)
+                        sameEventFound = true;
+                }
             }
             sameEventFound = false;
         }
@@ -516,6 +520,25 @@ public class DashValidation {
 
     }
 
+    //Get the set of event names inside the given Conc State
+    public static List<DashEvent> getEvents(DashConcState parent) {
+        List<DashEvent> events = new ArrayList<DashEvent>();
+
+        for (DashEvent event : parent.events) {
+            if (event.type.equals("env")) {
+                //If we have an event such as env in_m1, in_m2: lone Patient, we
+                //need to store in_m1 as an event and in_m2 as an Event
+                for (Object name : event.decl.names) {
+                    events.add(new DashEvent(event.pos, name.toString(), "env"));
+                }
+            } else {
+                events.add(new DashEvent(event.pos, event.name, "event"));
+            }
+        }
+
+        return events;
+    }
+
     public static void initializeNameContainers(String concStateName, DashModule dashModule) {
         List<String> names = new ArrayList<String>();
         List<DashTrans> transitionList = new ArrayList<DashTrans>();
@@ -532,10 +555,6 @@ public class DashValidation {
         stateNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
 
-        /* Stores the names for each event in the current conc state */
-        for (DashEvent event : dashModule.concStates.get(concStateName).events)
-            names.add(event.name);
-
         //System.out.println("Getting funcs");
         /* Stores the names for each func/pred in the current conc state */
         for (String key : dashModule.funcs.keySet()) {
@@ -545,6 +564,19 @@ public class DashValidation {
         /* Stores the names for each action template in the current conc state */
         for (DashAction action : dashModule.concStates.get(concStateName).action)
             funcNames.add(action.name);
+
+        /* Stores the names for each event in the current conc state */
+        for (DashEvent event : dashModule.concStates.get(concStateName).events) {
+            if (event.type.equals("env")) {
+                //If we have an event such as env in_m1, in_m2: lone Patient, we
+                //need to store in_m1, in_m2 as event names
+                for (Object name : event.decl.names) {
+                    names.add(name.toString());
+                }
+            } else {
+                names.add(event.name);
+            }
+        }
 
         eventNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
@@ -615,7 +647,7 @@ public class DashValidation {
 
             hasSameStateName(concStateName, currentConcState.states);
             hasSameTransName(concStateName, currentConcState.transitions);
-            hasSameEventName(concStateName, currentConcState.events);
+            hasSameEventName(currentConcState);
 
             for (DashState state : currentConcState.states) {
                 if (!hasDefaultState(state.states))

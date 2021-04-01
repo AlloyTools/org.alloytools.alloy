@@ -51,6 +51,7 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.JoinableList;
+import edu.mit.csail.sdg.alloy4.Options;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
@@ -66,6 +67,7 @@ import edu.mit.csail.sdg.ast.DashConcState;
 import edu.mit.csail.sdg.ast.DashCondition;
 import edu.mit.csail.sdg.ast.DashEvent;
 import edu.mit.csail.sdg.ast.DashInit;
+import edu.mit.csail.sdg.ast.DashInvariant;
 import edu.mit.csail.sdg.ast.DashState;
 import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.DashTransTemplate;
@@ -281,81 +283,88 @@ public final class DashModule extends Browsable implements Module {
     /**
      * Each conc state name is mapped to its respective Conc State AST
      */
-    public final Map<String,DashConcState>     concStates          = new LinkedHashMap<String,DashConcState>();
+    public final Map<String,DashConcState>     concStates             = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Set to true if there is a child concurrent state inside a parent concurrent
      * state
      */
-    public boolean                             stateHierarchy      = false;
+    public boolean                             stateHierarchy         = false;
 
     /**
      * Each top level conc state name is mapped to its respective Conc State AST.
      * Useful for printing a CoreDash version of a Dash model
      */
-    public final Map<String,DashConcState>     topLevelConcStates  = new LinkedHashMap<String,DashConcState>();
+    public final Map<String,DashConcState>     topLevelConcStates     = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Stores the name for every concurrent state in the model
      */
-    public List<String>                        concStateNames      = new ArrayList<String>();
+    public List<String>                        concStateNames         = new ArrayList<String>();
 
     /**
      * Each state name is mapped to its respective State AST
      */
-    public final Map<String,DashState>         states              = new LinkedHashMap<String,DashState>();
+    public final Map<String,DashState>         states                 = new LinkedHashMap<String,DashState>();
 
     /**
      * A list of the default states in the Dash Model. This will be used when
      * converting from Dash to Alloy
      */
-    public final List<DashState>               defaultStates       = new ArrayList<DashState>();
+    public final List<DashState>               defaultStates          = new ArrayList<DashState>();
 
     /**
      * A list of the initial conditions in the Dash Model. This will be used when
      * converting from Dash to Alloy
      */
-    public final List<DashInit>                initConditions      = new ArrayList<DashInit>();
+    public final List<DashInit>                initConditions         = new ArrayList<DashInit>();
 
     /**
      * Each variable name is mapped to it the conc state inside which it is declared
      */
-    public final Map<String,List<String>>      variableNames       = new LinkedHashMap<String,List<String>>();
+    public final Map<String,List<String>>      variableNames          = new LinkedHashMap<String,List<String>>();
+    public final Map<String,List<String>>      envVariableNames       = new LinkedHashMap<String,List<String>>();
 
     /**
      * Each variable name is mapped to its respective expression
      */
-    public final Map<String,String>            variable2Expression = new LinkedHashMap<String,String>();
+    public final Map<String,String>            variable2Expression    = new LinkedHashMap<String,String>();
+    public final Map<String,String>            envVariable2Expression = new LinkedHashMap<String,String>();
 
     /**
      * Each transition name is mapped to its respective Transiton AST
      */
-    public final Map<String,DashTrans>         transitions         = new LinkedHashMap<String,DashTrans>();
+    public final Map<String,DashTrans>         transitions            = new LinkedHashMap<String,DashTrans>();
 
     /**
      * Each transition template name is mapped to its respective TransitonTemplate
      * AST
      */
-    public final Map<String,DashTransTemplate> transitionTemplates = new LinkedHashMap<String,DashTransTemplate>();
+    public final Map<String,DashTransTemplate> transitionTemplates    = new LinkedHashMap<String,DashTransTemplate>();
 
     /**
      * Each Event is mapped to its respective AST AST
      */
-    public final Map<String,DashEvent>         events              = new LinkedHashMap<String,DashEvent>();
+    public final Map<String,DashEvent>         events                 = new LinkedHashMap<String,DashEvent>();
 
     /**
      * Each Action Template is mapped to its respective AST AST
      */
-    public final Map<String,DashAction>        actions             = new LinkedHashMap<String,DashAction>();
+    public final Map<String,DashAction>        actions                = new LinkedHashMap<String,DashAction>();
 
     /**
      * Each Condition Template is mapped to its respective AST AST
      */
-    public final Map<String,DashCondition>     conditions          = new LinkedHashMap<String,DashCondition>();
+    public final Map<String,DashCondition>     conditions             = new LinkedHashMap<String,DashCondition>();
 
-    int                                        transitionCount     = 0;
+    /**
+     * Each Invariant Template is mapped to its respective AST AST
+     */
+    public final Map<String,DashInvariant>     invariants             = new LinkedHashMap<String,DashInvariant>();
 
-    Boolean                                    isUnitTest          = false;
+    int                                        transitionCount        = 0;
+
+    Boolean                                    isUnitTest             = false;
 
     // ============================================================================================================================//
 
@@ -730,8 +739,8 @@ public final class DashModule extends Browsable implements Module {
         public Expr visit(ExprVar x) throws Err {
             Expr obj = resolve(x.pos, x.label);
             if (obj instanceof Macro) {
-                Macro macro = ((Macro) obj).copy(); 
-                /*Expr instantiated = macro.instantiate(this, warns);*/ Expr instantiated = null;
+                Macro macro = ((Macro) obj).copy();
+                /* Expr instantiated = macro.instantiate(this, warns); */ Expr instantiated = null;
                 instantiated.setReferenced(new Clause() {
 
                     @Override
@@ -1357,6 +1366,8 @@ public final class DashModule extends Browsable implements Module {
                 addAction((DashAction) item, topLevelConcState);
             if (item instanceof DashCondition)
                 conditions.put(((DashCondition) item).name, (DashCondition) item);
+            if (item instanceof DashInvariant)
+                addInvariant((DashInvariant) item, topLevelConcState);
             if (item instanceof Decl)
                 readVariablesDeclared((Decl) item, topLevelConcState);
         }
@@ -1386,6 +1397,8 @@ public final class DashModule extends Browsable implements Module {
             addInitCondition(init, concState);
         for (DashAction action : concState.action)
             addAction(action, concState);
+        for (DashInvariant invariant : concState.invariant)
+            addInvariant(invariant, concState);
         for (Decl decl : concState.decls)
             readVariablesDeclared(decl, concState);
     }
@@ -1414,6 +1427,32 @@ public final class DashModule extends Browsable implements Module {
         }
 
         initConditions.add(init);
+    }
+
+    public void addInvariant(DashInvariant invariant, DashConcState parent) {
+        invariant.parent = parent;
+
+        /*
+         * Breakdown the AND expression (if it is an AND expr) into a list of
+         * expressions. This would make it easier to print each expression
+         */
+        if (invariant.expr != null) {
+            if (invariant.expr instanceof ExprUnary) {
+                ExprUnary parentExprUnary = (ExprUnary) invariant.expr;
+                if (parentExprUnary.sub instanceof ExprList) {
+                    ExprList exprList = (ExprList) parentExprUnary.sub;
+                    for (Expr expression : exprList.args) {
+                        invariant.exprList.add(expression);
+
+                    }
+                } else
+                    invariant.exprList.add(parentExprUnary.sub);
+            } else {
+                invariant.exprList.add(invariant.expr);
+            }
+        }
+
+        invariants.put(invariant.name, invariant);
     }
 
     public void addAction(DashAction action, DashConcState parent) {
@@ -1482,6 +1521,11 @@ public final class DashModule extends Browsable implements Module {
         String modifiedName = parent.modifiedName + "_" + event.name;
         event.parentName = parent.name;
 
+        if (event.type.equals("evn event") || event.type.equals("event"))
+            Options.isEnvEventModel = true;
+        if (event.type.equals("env"))
+            readEnvVariablesDeclared(event.decl, parent);
+
         //System.out.println("Event: " + modifiedName);
         events.put(modifiedName, event);
     }
@@ -1497,11 +1541,32 @@ public final class DashModule extends Browsable implements Module {
         /* Store the names of each variable inside decls in ConcState */
         for (Object name : decl.names) {
             variables.add(name.toString());
-            //Set variable name to as it would appear in the Alloy model.
+            //Set variable name to as it would appear in the Alloy model and map it to its
+            //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
             variable2Expression.put(concState.name + "_" + name.toString(), decl.expr.toString());
         }
 
         variableNames.put(concState.modifiedName, variables);
+    }
+
+
+    /* Store event variables that have been declared in the concurrent state */
+    void readEnvVariablesDeclared(Decl decl, DashConcState concState) {
+        List<String> variables = new ArrayList<String>();
+
+        //Fetch the current list of variable names stored for the current conc state
+        if (envVariableNames.get(concState.modifiedName) != null)
+            variables = envVariableNames.get(concState.modifiedName);
+
+        /* Store the names of each variable inside decls in ConcState */
+        for (Object name : decl.names) {
+            variables.add(name.toString());
+            //Set variable name to as it would appear in the Alloy model and map it to its
+            //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
+            envVariable2Expression.put(concState.name + "_" + name.toString(), decl.expr.toString());
+        }
+
+        envVariableNames.put(concState.modifiedName, variables);
     }
 
     /* Retrive the concurrent state inside which "item" is located */

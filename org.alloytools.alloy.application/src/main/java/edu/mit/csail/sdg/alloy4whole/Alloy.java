@@ -18,7 +18,7 @@ public class Alloy {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        String filePath= sc.nextLine();
+        String filePath = sc.nextLine();
 
         System.out.println("Please specify the CoreDash output location:");
         String outputDir = sc.nextLine();

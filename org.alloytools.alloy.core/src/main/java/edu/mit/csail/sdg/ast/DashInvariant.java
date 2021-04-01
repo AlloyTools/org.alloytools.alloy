@@ -1,12 +1,17 @@
 package edu.mit.csail.sdg.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.mit.csail.sdg.alloy4.Pos;
 
 public class DashInvariant {
 
-    public Pos    pos;
-    public String name;
-    public Expr   expr;
+    public Pos           pos;
+    public String        name;
+    public Expr          expr;
+    public DashConcState parent;
+    public List<Expr>    exprList = new ArrayList<Expr>();
 
     public DashInvariant(Pos pos, String name, Expr expr) {
         this.pos = pos;
