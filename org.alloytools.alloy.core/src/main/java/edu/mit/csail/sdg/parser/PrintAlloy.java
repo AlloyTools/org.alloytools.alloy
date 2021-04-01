@@ -19,6 +19,8 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprQt;
 
+/* Print an Alloy model from its respective CoreDash model using the Internal Data Structure
+ * in the DashModule class */
 public class PrintAlloy {
 
     static String alloyModel = "";
@@ -379,6 +381,7 @@ public class PrintAlloy {
         if (exprList == null)
             return expression;
 
+        /* Handle a quantified expression */
         if (expr instanceof ExprQt)
             expression = getQuantifiedExpression((ExprQt) expr);
 
@@ -388,6 +391,11 @@ public class PrintAlloy {
         return expression;
     }
 
+    /*
+     * Breakdown an expression by into a space separated list and check each
+     * item/expression to see if it is a variable declared inside parent. If so,
+     * change its name to what it would appear in the Alloy model
+     */
     static String splitChangeExpr(String var, List<String> exprList, DashConcState parent) {
         String expression = "";
 

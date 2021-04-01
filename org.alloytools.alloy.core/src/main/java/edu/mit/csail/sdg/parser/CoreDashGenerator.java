@@ -16,6 +16,8 @@ import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 
+/* Print out the CoreDash model of a Dash model using information stored inside the
+ * DashModule after the transformation to CoreDash is completed */
 public class CoreDashGenerator {
 
     static String coreDashModel = "";
