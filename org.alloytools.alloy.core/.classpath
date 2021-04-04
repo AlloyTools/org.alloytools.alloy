@@ -19,5 +19,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.kodkod.nativesat"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.util"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dash"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -5,6 +5,7 @@
 	lib/apple-osx-ui.jar;version=file,\
 	org.alloytools.pardinus;version=latest,\
 	org.alloytools.alloy.core;version=latest,\
+	org.alloytools.alloy.dash;version=latest,\
 
 -testpath: \
 	osgi.enroute.junit.wrapper, \

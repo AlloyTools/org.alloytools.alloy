@@ -57,16 +57,16 @@ import edu.mit.csail.sdg.ast.Type.ProductType;
 public final class ExprBinary extends Expr {
 
     /** The binary operator. */
-    public final Op   op;
+    public final Op op;
 
     /** The left-hand-side expression. */
-    public final Expr left;
+    public Expr     left;
 
     /** The right-hand-side expression. */
-    public final Expr right;
+    public Expr     right;
 
     /** Caches the span() result. */
-    private Pos       span = null;
+    private Pos     span = null;
 
     // ============================================================================================================//
 
@@ -165,6 +165,7 @@ public final class ExprBinary extends Expr {
 
     /** This class contains all possible binary operators. */
     public static enum Op {
+
                            /** -&gt; */
                            ARROW("->", true),
                            /** -&gt;some */

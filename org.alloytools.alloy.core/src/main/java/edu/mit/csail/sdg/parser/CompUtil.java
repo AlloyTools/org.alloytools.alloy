@@ -54,6 +54,9 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
 /**
  * This class provides convenience methods for calling the parser and the
  * compiler.
+ *
+ * @modified [electrum] helper method to determine whether a model is fully
+ *           static (classic Alloy);
  */
 
 public final class CompUtil {
@@ -180,6 +183,44 @@ public final class CompUtil {
         return false;
     }
 
+    /**
+     * Whether the given command is a temporal model (either there are variable
+     * sigs/fields or temporal operators in the formula).
+     */
+    public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
+        for (Sig sig : sigs) {
+            if (sig.isVariable != null && !sig.builtin)
+                return true;
+            else {
+                for (Decl dec : sig.getFieldDecls()) {
+                    if (dec.isVar != null)
+                        return true;
+                }
+            }
+        }
+        Object varTriggerNode;
+        varTriggerNode = cmd.formula.accept(new VisitQueryOnce<Object>() {
+
+            @Override
+            public Object visit(ExprUnary x) throws Err {
+                if (x.op == Op.AFTER || x.op == Op.BEFORE || x.op == Op.PRIME || x.op == Op.HISTORICALLY || x.op == Op.ALWAYS || x.op == Op.ONCE || x.op == Op.EVENTUALLY)
+                    return x;
+                return super.visit(x);
+            }
+
+            @Override
+            public Object visit(ExprBinary x) throws Err {
+                if (x.op == ExprBinary.Op.UNTIL || x.op == ExprBinary.Op.SINCE || x.op == ExprBinary.Op.TRIGGERED || x.op == ExprBinary.Op.RELEASES)
+                    return x;
+                return super.visit(x);
+            }
+        });
+        if (varTriggerNode != null)
+            return true;
+
+        return false;
+    }
+
     // =============================================================================================================//
 
     /**
@@ -253,123 +294,14 @@ public final class CompUtil {
                     }
                 }
             }
-            //System.out.println("CP:" + cp);
             loaded.put(cp, content);
             x.setResolvedFilePath(cp);
             CompModule y = parseRecursively(seenDollar, loaded, fc, x.pos, cp, root, (prefix.length() == 0 ? x.alias : prefix + "/" + x.alias), thispath, initialResolution);
             x.connect(y);
         }
-        //System.out.println("Inside CompUtil Parse Recur");
         thispath.remove(filename); // Remove this file from the CYCLE DETECTION
                                   // LIST.
         return u;
-    }
-
-    private static DashModule parseRecursivelyDash(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, Pos pos, String filename, DashModule root, String prefix, Set<String> thispath, int initialResolution) throws Err, FileNotFoundException, IOException {
-        // Add the filename into a ArrayList, so that we can detect cycles in
-        // the module import graph
-        // How? I'll argue that (filename appears > 1 time along a chain) <=>
-        // (infinite loop in the import graph)
-        // => As you descend down the chain via OPEN, if you see the same FILE
-        // twice, then
-        // you will go into an infinite loop (since, regardless of the
-        // instantiating parameter,
-        // that file will attempt to OPEN the exact same set of files. leading
-        // back to itself, etc. etc.)
-        // <= If there is an infinite loop, that means there is at least 1
-        // infinite chain of OPEN (from root).
-        // Since the number of files is finite, at least 1 filename will be
-        // repeated.
-        if (thispath.contains(filename))
-            throw new ErrorSyntax(pos, "Circular dependency in module import. The file \"" + (new File(filename)).getName() + "\" is imported infinitely often.");
-        thispath.add(filename);
-        // No cycle detected so far. So now we parse the file.
-        DashModule u = CompUtil.parseDash(seenDollar, loaded, fc, root, 0, filename, prefix, initialResolution);
-        if (prefix.length() == 0)
-            root = u;
-
-        // Here, we recursively open the included files
-        for (edu.mit.csail.sdg.parser.DashModule.Open x : u.getOpens()) {
-            String cp = Util.canon(computeModulePath(u.getModelName(), filename, x.filename)), content = fc.get(cp);
-            try {
-                if (content == null) {
-                    content = loaded.get(cp);
-                }
-                if (content == null) {
-                    content = fc.get(x.filename);
-                    if (content != null)
-                        cp = x.filename;
-                }
-                if (content == null) {
-                    content = loaded.get(x.filename);
-                    if (content != null)
-                        cp = x.filename;
-                }
-                if (content == null) {
-                    content = Util.readAll(cp);
-                }
-            } catch (IOException ex1) {
-                try {
-                    String newCp = cp.replaceAll("\\.als$", ".md");
-                    content = Util.readAll(newCp);
-                } catch (IOException exx) {
-
-                    try {
-                        String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
-                        content = Util.readAll(newCp);
-                        cp = newCp;
-                    } catch (IOException ex) {
-                    }
-                }
-            }
-            //System.out.println("CP:" + cp);
-            loaded.put(cp, content);
-            x.setResolvedFilePath(cp);
-            DashModule y = parseRecursivelyDash(seenDollar, loaded, fc, x.pos, cp, root, (prefix.length() == 0 ? x.alias : prefix + "/" + x.alias), thispath, initialResolution);
-            x.connect(y);
-        }
-        //System.out.println("Inside CompUtil Parse Recur");
-        thispath.remove(filename); // Remove this file from the CYCLE DETECTION
-                                  // LIST.
-        return u;
-    }
-
-    /**
-     * Whether the given command is a temporal model (either there are variable
-     * sigs/fields or temporal operators in the formula).
-     */
-    public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
-        for (Sig sig : sigs) {
-            if (sig.isVariable != null && !sig.builtin)
-                return true;
-            else {
-                for (Decl dec : sig.getFieldDecls()) {
-                    if (dec.isVar != null)
-                        return true;
-                }
-            }
-        }
-        Object varTriggerNode;
-        varTriggerNode = cmd.formula.accept(new VisitQueryOnce<Object>() {
-
-            @Override
-            public Object visit(ExprUnary x) throws Err {
-                if (x.op == Op.AFTER || x.op == Op.BEFORE || x.op == Op.PRIME || x.op == Op.HISTORICALLY || x.op == Op.ALWAYS || x.op == Op.ONCE || x.op == Op.EVENTUALLY)
-                    return x;
-                return super.visit(x);
-            }
-
-            @Override
-            public Object visit(ExprBinary x) throws Err {
-                if (x.op == ExprBinary.Op.UNTIL || x.op == ExprBinary.Op.SINCE || x.op == ExprBinary.Op.TRIGGERED || x.op == ExprBinary.Op.RELEASES)
-                    return x;
-                return super.visit(x);
-            }
-        });
-        if (varTriggerNode != null)
-            return true;
-
-        return false;
     }
 
     // =============================================================================================================//
@@ -462,7 +394,6 @@ public final class CompUtil {
      */
     public static CompModule parseEverything_fromFile(A4Reporter rep, Map<String,String> loaded, String filename) throws Err {
         try {
-            System.out.println("Parsing from CompUtil");
             filename = Util.canon(filename);
             Set<String> thispath = new LinkedHashSet<String>();
             if (loaded == null)
@@ -473,31 +404,6 @@ public final class CompUtil {
             CompModule root = parseRecursively(seenDollar, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, 1);
             root.seenDollar = seenDollar.size() > 0;
             return CompModule.resolveAll(rep == null ? A4Reporter.NOP : rep, root);
-        } catch (FileNotFoundException ex) {
-            throw new ErrorSyntax("File cannot be found.\n" + ex.getMessage(), ex);
-        } catch (IOException ex) {
-            throw new ErrorFatal("IOException occurred: " + ex.getMessage(), ex);
-        } catch (Throwable ex) {
-            if (ex instanceof Err)
-                throw (Err) ex;
-            else
-                throw new ErrorFatal("Unknown exception occurred: " + ex, ex);
-        }
-    }
-
-    public static DashModule parseEverything_fromFileDash(A4Reporter rep, Map<String,String> loaded, String filename) throws Err {
-        try {
-            //System.out.println("Parsing Dash from CompUtil");
-            filename = Util.canon(filename);
-            Set<String> thispath = new LinkedHashSet<String>();
-            if (loaded == null)
-                loaded = new LinkedHashMap<String,String>();
-            Map<String,String> fc = new LinkedHashMap<String,String>(loaded);
-            loaded.clear();
-            List<Object> seenDollar = new ArrayList<Object>();
-            DashModule root = parseRecursivelyDash(seenDollar, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, 1);
-            root.seenDollar = seenDollar.size() > 0;
-            return DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, root);
         } catch (FileNotFoundException ex) {
             throw new ErrorSyntax("File cannot be found.\n" + ex.getMessage(), ex);
         } catch (IOException ex) {
@@ -554,34 +460,6 @@ public final class CompUtil {
         }
     }
 
-    public static DashModule parseEverything_fromFileDash(A4Reporter rep, Map<String,String> loaded, String filename, int initialResolutionMode) throws Err {
-        try {
-            filename = Util.canon(filename);
-            Set<String> thispath = new LinkedHashSet<String>();
-            if (loaded == null)
-                loaded = new LinkedHashMap<String,String>();
-            Map<String,String> fc = new LinkedHashMap<String,String>(loaded);
-            loaded.clear();
-            List<Object> seenDollar = new ArrayList<Object>();
-            DashModule root = parseRecursivelyDash(seenDollar, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, initialResolutionMode);
-            // if no sigs are defined by the user, add one
-            if (root.getAllReachableUserDefinedSigs().isEmpty()) {
-                root.addGhostSig();
-            }
-            root.seenDollar = seenDollar.size() > 0;
-            return DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, root);
-        } catch (FileNotFoundException ex) {
-            throw new ErrorSyntax("File cannot be found.\n" + ex.getMessage(), ex);
-        } catch (IOException ex) {
-            throw new ErrorFatal("IOException occurred: " + ex.getMessage(), ex);
-        } catch (Throwable ex) {
-            if (ex instanceof Err)
-                throw (Err) ex;
-            else
-                throw new ErrorFatal("Unknown exception occurred: " + ex, ex);
-        }
-    }
-
     /**
      * @param rep - may be null
      * @param content - alloy model
@@ -592,17 +470,6 @@ public final class CompUtil {
         try {
             File tmpAls = flushModelToFile(content, null);
             return CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());
-        } catch (IOException ex) {
-            throw new ErrorFatal("IOException occurred: " + ex.getMessage(), ex);
-        }
-    }
-
-    public static DashModule parseEverything_fromStringDash(A4Reporter rep, String content) throws Err {
-        if (rep == null)
-            rep = new A4Reporter();
-        try {
-            File tmpAls = flushModelToFile(content, null);
-            return CompUtil.parseEverything_fromFileDash(rep, null, tmpAls.getAbsolutePath());
         } catch (IOException ex) {
             throw new ErrorFatal("IOException occurred: " + ex.getMessage(), ex);
         }
@@ -628,13 +495,6 @@ public final class CompUtil {
 
     static CompModule parse(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, CompModule root, int lineOffset, String filename, String prefix, int initialResolutionMode) throws Err, FileNotFoundException, IOException {
         CompModule module = CompParser.alloy_parseStream(seenDollar, loaded, fc, root, lineOffset, filename, prefix, initialResolutionMode);
-        module.addDefaultCommand();
-        return module;
-    }
-
-    /* Dash Parsing. A change is required */
-    static DashModule parseDash(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, DashModule root, int lineOffset, String filename, String prefix, int initialResolutionMode) throws Err, FileNotFoundException, IOException {
-        DashModule module = DashParser.alloy_parseStream(seenDollar, loaded, fc, root, lineOffset, filename, prefix, initialResolutionMode);
         module.addDefaultCommand();
         return module;
     }

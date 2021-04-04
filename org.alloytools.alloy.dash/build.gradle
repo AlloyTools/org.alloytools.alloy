@@ -1,0 +1,31 @@
+apply plugin: 'java'
+
+task jflex(type: JavaExec) {
+    inputs.files("src/main/java/edu/mit/csail/sdg/parser/Dash.lex")
+    outputs.files("src/main/java/edu/mit/csail/sdg/parser/DashLexer.java")
+
+    classpath file( '../cnf/jars/JFlex.jar' )
+    main = 'JFlex.Main'
+    args ("-d","src/main/java/edu/mit/csail/sdg/parser","-nobak","src/main/java/edu/mit/csail/sdg/parser/Dash.lex")
+}
+
+task cup(type: JavaExec ) {
+
+    inputs.files("src/main/java/edu/mit/csail/sdg/parser/Dash.cup")
+    outputs.files("src/main/java/edu/mit/csail/sdg/parser/DashParser.java", "src/main/java/edu/mit/csail/sdg/parser/DashSym.java")
+
+    classpath file( '../cnf/jars/java-cup-11a.jar' )
+    classpath file( '../cnf/jars/java-cup-runtime-0.11-a-czt01-cdh.jar' )
+    main = 'java_cup.Main'
+    workingDir( "src/main/java/edu/mit/csail/sdg/parser")
+    args(
+            "-parser", "DashParser",
+            "-symbols", "DashSym",
+            "-progress",
+            "-time",
+            "-compact_red",
+            "Dash.cup")
+}
+compileJava.dependsOn(jflex)
+compileJava.dependsOn(cup)
+cup.dependsOn(jflex) 

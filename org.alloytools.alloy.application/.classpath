@@ -14,6 +14,7 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/cnf"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dash"/> 
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.java"/>
