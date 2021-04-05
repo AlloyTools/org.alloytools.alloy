@@ -90,35 +90,46 @@ public class DashConvertToAlloyAST {
         //if (!onlyExpr)
         //alloyModel += ("pred pre_" + transition.modifiedName + "[s: Snapshot]" + '\n');
 
+        List<Decl> decls = new ArrayList<Decl>();
+        List<ExprVar> a = new ArrayList<ExprVar>();
+        Expr b = ExprUnary.Op.ONE.make(null, ExprVar.make(null, "Snapshot"));
+        a.add(ExprVar.make(null, "s"));
+        decls.add(new Decl(null, null, null, null, a, mult(b))); //[s: Snapshot]
+
+        Expr binaryFrom = null;
         //sourceState in s.conf
         if (transition.fromExpr.fromExpr.size() > 0) {
             Expr left = ExprVar.make(null, transition.fromExpr.fromExpr.get(0).replace('/', '_'));
             Expr right = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "conf"));
-            Expr binaryFrom = ExprBinary.Op.IN.make(null, null, left, right);
+            binaryFrom = ExprBinary.Op.IN.make(null, null, left, right);
         }
 
+        Expr binaryOn = null;
         // onExprName in (s.events & EnvironmentEvent)
         if (transition.onExpr.name != null) {
             Expr left = ExprVar.make(null, transition.onExpr.name.replace('/', '_'));
             Expr rightJoin = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "events")); // s.events
-            Expr rightBinary = ExprBinary.Op.AND.make(null, null, rightJoin, ExprVar.make(null, "EnvironmentEvent")); // s.events & EnvironmentEvent
-            Expr binaryOn = ExprBinary.Op.IN.make(null, null, left, rightBinary); //onExprName in (s.events & EnvironmentEvent)
+            Expr rightBinary = ExprBinary.Op.INTERSECT.make(null, null, rightJoin, ExprVar.make(null, "EnvironmentEvent")); // s.events & EnvironmentEvent
+            binaryOn = ExprBinary.Op.IN.make(null, null, left, rightBinary); //onExprName in (s.events & EnvironmentEvent)
         }
 
-
+        if (binaryOn != null)
+            System.out.println("On Expr: " + binaryOn.toString());
         if (transition.whenExpr != null && transition.whenExpr.exprList != null) {
-            for (Expr expr : transition.whenExpr.exprList)
+            for (Expr expr : transition.whenExpr.exprList) {
                 getVarFromParentExpr(expr, getParentConcState(transition.parentState), module);
+            }
         }
 
 
         if (transition.whenExpr != null) {
             for (Expr expr : transition.whenExpr.exprList) {
-                System.out.println("Expr: " + expr.toString() + " type: " + expr.getClass());
-                System.out.println("Expr Right: " + ((ExprBinary) expr).right + " type: " + ((ExprBinary) expr).right.getClass());
-                ExprBinary binRight = (ExprBinary) ((ExprBinary) expr).right;
-                System.out.println("Expr Right Right: " + binRight.right + " type: " + ((ExprBinary) expr).right.getClass());
-                System.out.println("Expr Right Left: " + binRight.left + " type: " + ((ExprBinary) expr).right.getClass());
+                System.out.println("When Expr: " + expr);
+                //System.out.println("Expr: " + expr.toString() + " type: " + expr.getClass());
+                //System.out.println("Expr Right: " + ((ExprBinary) expr).right + " type: " + ((ExprBinary) expr).right.getClass());
+                //ExprBinary binRight = (ExprBinary) ((ExprBinary) expr).right;
+                //System.out.println("Expr Right Right: " + binRight.right + " type: " + ((ExprBinary) expr).right.getClass());
+                //System.out.println("Expr Right Left: " + binRight.left + " type: " + ((ExprBinary) expr).right.getClass());
             }
         }
 

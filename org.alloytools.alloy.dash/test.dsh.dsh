@@ -1,0 +1,36 @@
+conc state concState {
+var_one: none
+env event event_one{}
+
+state state_one{}
+
+state state_two{}
+
+	trans concState_t_1{
+	from concState/state_one
+	on concState_event_one
+	when {
+	s.concState_var_one = none
+	s.concState_var_one = none
+	}
+	do {
+	var_one' = var_one
+	var_one' = var_one
+	}
+	goto concState/state_two
+}
+	trans concState_t_2{
+	from concState/state_two
+	on concState_event_one
+	when {
+	s.concState_var_one = none
+	s.concState_var_one = none
+	}
+	do {
+	var_one' = var_one
+	var_one' = var_one
+	}
+	goto concState/state_two
+}
+
+}
