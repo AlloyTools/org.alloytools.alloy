@@ -40,10 +40,6 @@ public class DashConvertToAlloyAST {
         }
     }
 
-    static void testORExpr() {
-
-    }
-
     /*
      * Taken from the Dash.cup file. It is used for handling difficult parsing
      * ambiguities with Alloy expressions
