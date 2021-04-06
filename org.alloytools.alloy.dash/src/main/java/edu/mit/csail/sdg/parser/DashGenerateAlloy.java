@@ -226,9 +226,9 @@ public class DashGenerateAlloy {
         printEqualsPred(module);
 
         if (module.stateHierarchy)
-            alloyModel += ("fact {\n" + "all s: Snapshot | s in initial iff init[s]]\n" + "all s, s': Snapshot | s->s' in nextStep iff small_step[s, s']]\n" + "all s, s': Snapshot | equals[s, s'] => s = s'\n" + "all s: Snapshot | (isEnabled[s] && no s': Snapshot | small_step[s, s']) => s.stable = False\n" + " all s: Snapshot | s.stable = False => some s.nextStep\n" + "path" + "}\n");
+            alloyModel += ("fact {\n" + "all s: Snapshot | s in initial iff init[s]\n" + "all s, s': Snapshot | s->s' in nextStep iff small_step[s, s']]\n" + "all s, s': Snapshot | equals[s, s'] => s = s'\n" + "all s: Snapshot | (isEnabled[s] && no s': Snapshot | small_step[s, s']) => s.stable = False\n" + " all s: Snapshot | s.stable = False => some s.nextStep\n" + "path" + "}\n");
         if (!module.stateHierarchy)
-            alloyModel += ("fact {\n" + "all s: Snapshot | s in initial iff init[s]]\n" + "all s, s': Snapshot | s->s' in nextStep iff small_step[s, s']]\n" + "all s, s': Snapshot | equals[s, s'] => s = s'" + "path" + "}\n");
+            alloyModel += ("fact {\n" + "all s: Snapshot | s in initial iff init[s]\n" + "all s, s': Snapshot | s->s' in nextStep iff small_step[s, s']]\n" + "all s, s': Snapshot | equals[s, s'] => s = s'" + "path" + "}\n");
 
         alloyModel += "}\n\n";
 
