@@ -110,6 +110,8 @@ public class DashConvertToAlloyAST {
         a.add(ExprVar.make(null, "s"));
         decls.add(new Decl(null, null, null, null, a, mult(b))); //[s: Snapshot]
 
+        Expr expression = null; //This is the final expression that will be stored in the predicate AST
+
         Expr binaryFrom = null;
         /* Creating the following expression: sourceState in s.conf */
         if (transition.fromExpr.fromExpr.size() > 0) {
@@ -127,35 +129,26 @@ public class DashConvertToAlloyAST {
             Expr left = ExprVar.make(null, transition.onExpr.name.replace('/', '_'));
             Expr rightJoin = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "events")); // s.events
             Expr rightBinary = ExprBinary.Op.INTERSECT.make(null, null, rightJoin, ExprVar.make(null, "EnvironmentEvent")); // s.events & EnvironmentEvent
-            binaryOn = ExprBinary.Op.IN.make(null, null, left, mult(rightBinary)); //onExprName in (s.events & EnvironmentEvent)
+            binaryOn = ExprBinary.Op.IN.make(null, null, left, mult(rightBinary)); //onExprName in (s.events & EnvironmentEvent)         
         }
+
+        if (binaryOn != null)
+            expression = ExprBinary.Op.AND.make(null, null, binaryFrom, binaryOn);
 
 
         /* Creating the following expression: AND[whenExpr, whenExpr, ..] */
-        Expr whenExpr = null;
         if (transition.whenExpr != null && transition.whenExpr.exprList != null) {
             for (Expr expr : transition.whenExpr.exprList) {
                 getVarFromParentExpr(expr, getParentConcState(transition.parentState), module);
-
-                if (whenExpr == null)
-                    whenExpr = expr;
+                if (expression == null)
+                    expression = ExprBinary.Op.AND.make(null, null, binaryFrom, expr);
                 else
-                    whenExpr = ExprBinary.Op.AND.make(null, null, whenExpr, expr);
+                    expression = ExprBinary.Op.AND.make(null, null, expression, expr);
             }
         }
 
-
-        /* For testing purpose. MUST BE REMOVED LATER */
-        if (transition.whenExpr != null) {
-            for (Expr expr : transition.whenExpr.exprList) {
-                System.out.println("When Expr: " + expr + " type: " + expr.getClass());
-                if (expr instanceof ExprQt) {
-                    System.out.println("When Expr: " + expr + " type: " + ((ExprQt) expr).sub.getClass());
-                }
-            }
-        }
-
-        System.out.println("\n");
+        expression = ExprUnary.Op.NOOP.make(null, expression);
+        module.addFunc(null, null, "pre_" + transition.modifiedName, null, decls, null, expression);
     }
 
     /*
@@ -169,6 +162,8 @@ public class DashConvertToAlloyAST {
         a.add(ExprVar.make(null, "s"));
         a.add(ExprVar.make(null, "s'"));
         decls.add(new Decl(null, null, null, null, a, mult(b))); //[s, s': Snapshot]
+
+        Expr expression = null;
 
         Expr binaryGoTo = null;
         /*
@@ -187,7 +182,7 @@ public class DashConvertToAlloyAST {
         Expr sendExpr = null;
         if (transition.sendExpr == null && DashOptions.isEnvEventModel) {
             Expr join = ExprBadJoin.make(null, null, ExprVar.make(null, "s'"), ExprVar.make(null, "events")); // s'.events
-            Expr rightBinary = ExprBinary.Op.INTERSECT.make(null, null, join, ExprVar.make(null, "InternalEvent")); // s'.events & EnvironmentEvent    
+            Expr rightBinary = ExprBinary.Op.INTERSECT.make(null, null, join, ExprVar.make(null, "InternalEvent")); // s'.events & EnvironmentEvent
             sendExpr = ExprUnary.Op.NO.make(null, rightBinary); // no (s'.events & EnvironmentEvent)
         }
         /* Creating the following expression: sentEvent in s'.events */
@@ -196,22 +191,24 @@ public class DashConvertToAlloyAST {
             sendExpr = ExprBinary.Op.IN.make(null, null, ExprVar.make(null, transition.sendExpr.name), mult(join)); // sentEvent in s'.events
         }
 
+        if (sendExpr != null)
+            expression = ExprBinary.Op.AND.make(null, null, binaryGoTo, sendExpr);
+
         /* Creating the following expression: AND[doexpr, doexpr, ..] */
-        Expr doExpr = null;
         if (transition.doExpr != null && transition.doExpr.exprList != null) {
             for (Expr expr : transition.doExpr.exprList) {
                 getVarFromParentExpr(expr, getParentConcState(transition.parentState), module);
-                if (doExpr == null)
-                    doExpr = expr;
+                if (expression == null)
+                    expression = ExprBinary.Op.AND.make(null, null, binaryGoTo, expr);
                 else
-                    doExpr = ExprBinary.Op.AND.make(null, null, doExpr, expr);
+                    expression = ExprBinary.Op.AND.make(null, null, expression, expr);
             }
             //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
             for (String var : getUnchangedVars(transition.doExpr.exprList, getParentConcState(transition.parentState), module)) {
                 Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s'"), ExprVar.make(null, getParentConcState(transition.parentState).modifiedName + "_" + var)); //s'.variableParent_varName
                 Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, getParentConcState(transition.parentState).modifiedName + "_" + var)); //s'.variableParent_varName
                 Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
-                doExpr = ExprBinary.Op.AND.make(null, null, doExpr, binaryEquals);
+                expression = ExprBinary.Op.AND.make(null, null, expression, binaryEquals);
             }
         }
 
@@ -222,14 +219,12 @@ public class DashConvertToAlloyAST {
                 Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s'"), ExprVar.make(null, getParentConcState(transition.parentState).modifiedName + "_" + var)); //s'.variableParent_varName
                 Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, getParentConcState(transition.parentState).modifiedName + "_" + var)); //s'.variableParent_varName
                 Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
-                if (doExpr == null)
-                    doExpr = binaryEquals;
-                else
-                    doExpr = ExprBinary.Op.AND.make(null, null, doExpr, binaryEquals);
+                expression = ExprBinary.Op.AND.make(null, null, expression, binaryEquals);
             }
         }
 
-        System.out.println("\n");
+        expression = ExprUnary.Op.NOOP.make(null, expression);
+        module.addFunc(null, null, "post_" + transition.modifiedName, null, decls, null, expression);
     }
 
     /*
@@ -243,11 +238,14 @@ public class DashConvertToAlloyAST {
         a.add(ExprVar.make(null, "s'"));
         decls.add(new Decl(null, null, null, null, a, mult(b))); //[s, s': Snapshot]
 
+        Expr expression = null;
+
         /* Creating the following expression: s'.taken = currentTrans */
         Expr semanticsExpr = null;
         Expr sTakenPrime = ExprBadJoin.make(null, null, ExprVar.make(null, "s'"), ExprVar.make(null, "taken")); //s'.taken
         if (!module.stateHierarchy) {
             semanticsExpr = ExprBinary.Op.EQUALS.make(null, null, sTakenPrime, ExprVar.make(null, transition.modifiedName)); //s'.taken = currentTrans
+            expression = semanticsExpr;
         }
 
         /*
@@ -270,9 +268,11 @@ public class DashConvertToAlloyAST {
             }
             Expr ElseExpr = ExprBinary.Op.AND.make(null, null, ElseExprLeft, ElseExprRight);
             ifElseExpr = ExprITE.make(null, ifCond, ifExpr, ElseExpr);
+            expression = ifElseExpr;
         }
 
-        System.out.println("\n");
+        expression = ExprUnary.Op.NOOP.make(null, expression);
+        module.addFunc(null, null, "semantics_" + transition.modifiedName, null, decls, null, expression);
     }
 
     /*
@@ -280,6 +280,13 @@ public class DashConvertToAlloyAST {
      * the pre,post,semantics) predicate in the Alloy Model
      */
     static void createTransCallAST(DashTrans transition, DashModule module) {
+        List<Decl> decls = new ArrayList<Decl>();
+        List<ExprVar> a = new ArrayList<ExprVar>();
+        Expr b = ExprUnary.Op.ONE.make(null, ExprVar.make(null, "Snapshot"));
+        a.add(ExprVar.make(null, "s"));
+        a.add(ExprVar.make(null, "s'"));
+        decls.add(new Decl(null, null, null, null, a, mult(b))); //[s, s': Snapshot]
+
         Expr ssprimeJoin = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "s"));
 
         /*
@@ -289,6 +296,9 @@ public class DashConvertToAlloyAST {
         Expr predCallExpr = ExprBadJoin.make(null, null, ssprimeJoin, ExprVar.make(null, "post_" + transition.modifiedName)); //s.s'.post_transName
         predCallExpr = ExprBinary.Op.AND.make(null, null, predCallExpr, ExprBadJoin.make(null, null, ssprimeJoin, ExprVar.make(null, "semantics_" + transition.modifiedName))); //s.s'.post_transName
         predCallExpr = ExprBinary.Op.AND.make(null, null, predCallExpr, ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "semantics_" + transition.modifiedName))); //s.post_transName
+
+        predCallExpr = ExprUnary.Op.NOOP.make(null, predCallExpr);
+        module.addFunc(null, null, transition.modifiedName, null, decls, null, predCallExpr);
     }
 
     /*
