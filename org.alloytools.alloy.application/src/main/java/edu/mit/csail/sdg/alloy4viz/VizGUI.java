@@ -98,8 +98,16 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-base, electrum-simulator
+ * @modified [electrum] support for visualization of traces; multiple states
+ *           presented side-by-side (each with own viz state); (navigable)
+ *           overview of the trace shape; evaluator also acts on focused state;
+ *           if the Alloy model is static, should revert to classic viz; all
+ *           theme management applies to all graphs; support for exporting an
+ *           instance as an Alloy formula; added support for new operations over
+ *           traces, next config, next path, next init, fork at given state
+ *           (toolbar/menu buttons); communication with the enumerator which now
+ *           expects an additional parameter with selected operation to be
+ *           passed too the A4Solution
  */
 
 public final class VizGUI implements ComponentListener {
@@ -140,7 +148,7 @@ public final class VizGUI implements ComponentListener {
                     txtButton, tableButton, leftNavButton, rightNavButton, cnfgButton, forkButton, initButton, pathButton/*
                                                                                                                           * , dotButton,
                                                                                                                           * xmlButton
-                                                                                                                          */; // [HASLab]
+                                                                                                                          */;
 
     /**
      * This list must contain all the display mode buttons (that is, vizButton,
@@ -158,23 +166,18 @@ public final class VizGUI implements ComponentListener {
     private final JMenuItem     enumerateMenu;
 
     /** The "fresh config" menu item. */
-    // [HASLab]
     private final JMenuItem     cnfgMenu;
 
     /** The "fresh path" menu item. */
-    // [HASLab]
     private final JMenuItem     pathMenu;
 
     /** The "fork next" menu item. */
-    // [HASLab]
     private final JMenuItem     forkMenu;
 
     /** The "fork init" menu item. */
-    // [HASLab]
     private final JMenuItem     initMenu;
 
     /** The trace navigation menu items. */
-    // [HASLab]
     private final JMenuItem     rightNavMenu, leftNavMenu;
 
     /** Current font size. */
@@ -186,13 +189,15 @@ public final class VizGUI implements ComponentListener {
      */
     private int                 settingsOpen    = 0;
 
-    // [HASLab]
+    /**
+     * Whether the previous iteration operation was a next init/fork (which disables
+     * next path until a next config).
+     */
     private boolean             seg_iteration   = false;
 
     /**
      * The current states and visualization settings; null if none is loaded.
      */
-    // [HASLab]
     private List<VizState>      myStates        = new ArrayList<VizState>();
 
     /**
@@ -201,7 +206,6 @@ public final class VizGUI implements ComponentListener {
      * make changes to the state, you should call doApply() on the VizGUI object to
      * refresh the screen.
      */
-    // [HASLab]
     public List<VizState> getVizState() {
         return myStates;
     }
@@ -217,16 +221,15 @@ public final class VizGUI implements ComponentListener {
     private OurConsole            myEvaluatorPanel = null;
 
     /**
-     * The graphical panel at the upper-side of the the right panel; null if it is
+     * The graphical panel at the lower-side of the the right panel; null if it is
      * not yet loaded.
      */
     private VizGraphPanel         myGraphPanel     = null;
 
     /**
      * The panel to the right, containing the graph and the temporal navigation
-     * panels; null if it is not yet loaded.
+     * panel; null if it is not yet loaded.
      */
-    // [HASLab]
     private JPanel                mySplitTemporal  = null;
 
     /**
@@ -270,9 +273,8 @@ public final class VizGUI implements ComponentListener {
     private final Computer enumerator;
 
     /**
-     * Number of trace states to depict.
+     * Number of trace states to depict in graph mode.
      */
-    // [HASLab]
     private final int      statepanes;
 
     // ==============================================================================================//
@@ -556,7 +558,7 @@ public final class VizGUI implements ComponentListener {
      *            will initially hide the window.
      */
     public VizGUI(boolean standalone, String xmlFileName, JMenu windowmenu) {
-        this(standalone, xmlFileName, windowmenu, null, null, 1); // [HASLab]
+        this(standalone, xmlFileName, windowmenu, null, null, 1);
     }
 
     /**
@@ -577,9 +579,8 @@ public final class VizGUI implements ComponentListener {
      *            Note: if standalone==false and xmlFileName.length()==0, then we
      *            will initially hide the window.
      */
-    // [HASLab]
     public VizGUI(boolean standalone, String xmlFileName, JMenu windowmenu, Computer enumerator, Computer evaluator, int panes) {
-        this(standalone, xmlFileName, windowmenu, enumerator, evaluator, true, panes); // [HASLab]
+        this(standalone, xmlFileName, windowmenu, enumerator, evaluator, true, panes);
     }
 
     /**
@@ -597,18 +598,17 @@ public final class VizGUI implements ComponentListener {
      * @param evaluator - if it's not null, it provides solution evaluation ability
      * @param makeWindow - if false, then we will only construct the JSplitPane,
      *            without making the window
-     * @param panes - the number of states that will be shown
+     * @param panes - the number of states that will be shown side-by-side
      *            <p>
      *            Note: if standalone==false and xmlFileName.length()==0 and
      *            makeWindow==true, then we will initially hide the window.
      */
-    // [HASLab]
     public VizGUI(boolean standalone, String xmlFileName, JMenu windowmenu, Computer enumerator, Computer evaluator, boolean makeWindow, int panes) {
-        this.statepanes = panes == 0 ? 1 : panes; // [HASLab]
+        this.statepanes = panes == 0 ? 1 : panes;
         this.enumerator = enumerator;
         this.standalone = standalone;
         this.evaluator = evaluator;
-        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null; // [HASLab]
+        this.frame = makeWindow ? new JFrame("Electrum Visualizer") : null;
 
         // Figure out the desired x, y, width, and height
         int screenWidth = OurUtil.getScreenWidth(), screenHeight = OurUtil.getScreenHeight();
@@ -642,7 +642,7 @@ public final class VizGUI implements ComponentListener {
             JMenu exportMenu = menu(null, "&Export To", null);
             menuItem(exportMenu, "Dot...", 'D', 'D', doExportDot());
             menuItem(exportMenu, "XML...", 'X', 'X', doExportXml());
-            menuItem(exportMenu, "LTL", 'T', 'T', doExportLTL());
+            menuItem(exportMenu, "Predicate...", 'P', 'P', doExportPred());
             fileMenu.add(exportMenu);
             menuItem(fileMenu, "Close", 'W', 'W', doClose());
             if (standalone)
@@ -650,13 +650,15 @@ public final class VizGUI implements ComponentListener {
             else
                 menuItem(fileMenu, "Close All", 'A', doCloseAll());
             JMenu instanceMenu = menu(mb, "&Instance", null);
-            enumerateMenu = menuItem(instanceMenu, "Show Next Solution", 'N', 'N', doNext());
-            cnfgMenu = menuItem(instanceMenu, "Show Fresh Configuration", 'C', 'C', doConfig()); // [HASLab]
-            pathMenu = menuItem(instanceMenu, "Show Fresh Path", 'P', 'P', doPath()); // [HASLab]
-            initMenu = menuItem(instanceMenu, "Show Fresh Initial State", 'I', 'I', doInit()); // [HASLab]
-            forkMenu = menuItem(instanceMenu, "Show Different Post-state", 'F', 'F', doFork()); // [HASLab]
-            leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, leftNavListener); // [HASLab]
-            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, rightNavListener); // [HASLab]
+            enumerateMenu = menuItem(instanceMenu, "Show New Solution", 'N', 'N', doNext());
+            // [electrum] new iteration operation buttons
+            cnfgMenu = menuItem(instanceMenu, "Show New Configuration", 'C', 'C', doConfig());
+            pathMenu = menuItem(instanceMenu, "Show New Path", 'P', 'P', doPath());
+            initMenu = menuItem(instanceMenu, "Show New Initial State", 'I', 'I', doInit());
+            forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork());
+            // [electrum] trace navigation buttons
+            leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, doNavLeft());
+            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, doNavRight());
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
@@ -707,13 +709,15 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(magicLayout = OurUtil.button("Magic Layout", "Automatic theme customization (will reset current theme)", "images/24_settings_apply2.gif", doMagicLayout()));
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
-            toolbar.add(enumerateButton = OurUtil.button("Next", "Show a fresh solution", "images/24_history.gif", doNext()));
-            toolbar.add(cnfgButton = OurUtil.button("Fresh Config", "Show a fresh configuration", "images/24_history.gif", doConfig())); // [HASLab]
-            toolbar.add(pathButton = OurUtil.button("Fresh Path", "Show a fresh path", "images/24_history.gif", doPath())); // [HASLab]
-            toolbar.add(initButton = OurUtil.button("Fresh Init", "Show a fresh initial state", "images/24_history.gif", doInit())); // [HASLab]
-            toolbar.add(forkButton = OurUtil.button("Fork", "Show a different post-state", "images/24_history.gif", doFork())); // [HASLab]
-            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the previous state", "images/24_history.gif", leftNavListener));
-            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the next state", "images/24_history.gif", rightNavListener));
+            toolbar.add(enumerateButton = OurUtil.button("New", "Show a new solution", "images/24_history.gif", doNext()));
+            // [electrum] new iteration operation buttons
+            toolbar.add(cnfgButton = OurUtil.button("New Config", "Show a new configuration", "images/24_history.gif", doConfig()));
+            toolbar.add(pathButton = OurUtil.button("New Path", "Show a new path", "images/24_history.gif", doPath()));
+            toolbar.add(initButton = OurUtil.button("New Init", "Show a new initial state", "images/24_history.gif", doInit()));
+            toolbar.add(forkButton = OurUtil.button("New Fork", "Show a new fork", "images/24_history.gif", doFork()));
+            // [electrum] trace navigation buttons
+            toolbar.add(leftNavButton = OurUtil.button(new String(Character.toChars(0x2190)), "Show the previous state", "images/24_history.gif", doNavLeft()));
+            toolbar.add(rightNavButton = OurUtil.button(new String(Character.toChars(0x2192)), "Show the next state", "images/24_history.gif", doNavRight()));
             toolbar.add(projectionButton);
             toolbar.add(loadSettingsButton = OurUtil.button("Load", "Load the theme customization from a theme file", "images/24_open.gif", doLoadTheme()));
             toolbar.add(saveSettingsButton = OurUtil.button("Save", "Save the current theme customization", "images/24_save.gif", doSaveTheme()));
@@ -801,13 +805,13 @@ public final class VizGUI implements ComponentListener {
     private void repopulateProjectionPopup() {
         int num = 0;
         String label = "Projection: none";
-        if (myStates.isEmpty()) { // [HASLab]
+        if (myStates.isEmpty()) {
             projectionButton.setEnabled(false);
             return;
         }
         projectionButton.setEnabled(true);
         projectionPopup.removeAll();
-        VizState myState = myStates.get(statepanes - 1); // [HASLab]
+        VizState myState = myStates.get(statepanes - 1);
         final Set<AlloyType> projected = myState.getProjectedTypes();
         for (final AlloyType t : myState.getOriginalModel().getTypes())
             if (myState.canProject(t)) {
@@ -817,7 +821,8 @@ public final class VizGUI implements ComponentListener {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        for (VizState myState : myStates) // [HASLab]
+                        // [electrum] apply projection to all states
+                        for (VizState myState : myStates)
                             if (on)
                                 myState.deproject(t);
                             else
@@ -840,7 +845,7 @@ public final class VizGUI implements ComponentListener {
      * latest settings.
      */
     private void updateDisplay() {
-        if (myStates.isEmpty()) // [HASLab]
+        if (myStates.isEmpty())
             return;
         // First, update the toolbar
         currentMode.set();
@@ -861,10 +866,11 @@ public final class VizGUI implements ComponentListener {
             default :
                 vizButton.setEnabled(false);
         }
+        // [electrum] this info is the same in all states
         final AlloyInstance oInst = myStates.get(statepanes - 1).getOriginalInstance();
-        final boolean isMeta = oInst.isMetamodel; // [HASLab]
-        final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0; // [HASLab]
-        final boolean hasConfigs = oInst.originalA4.hasConfigs(); // [HASLab]
+        final boolean isMeta = oInst.isMetamodel;
+        final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0;
+        final boolean hasConfigs = oInst.originalA4.hasConfigs();
         vizButton.setVisible(frame != null);
         treeButton.setVisible(frame != null);
         txtButton.setVisible(frame != null);
@@ -882,35 +888,40 @@ public final class VizGUI implements ComponentListener {
         openEvaluatorButton.setVisible(!isMeta && settingsOpen == 0 && evaluator != null);
         closeEvaluatorButton.setVisible(!isMeta && settingsOpen == 2 && evaluator != null);
         enumerateMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
-        enumerateMenu.setVisible(!isTrace); // [HASLab]
-        enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && !isTrace); // [HASLab]
-        initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        initMenu.setVisible(isTrace); // [HASLab]
-        initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        pathMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && !seg_iteration); // [HASLab]
-        pathMenu.setVisible(isTrace); // [HASLab]
-        pathButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        pathButton.setEnabled(!seg_iteration); // [HASLab]
-        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && hasConfigs); // [HASLab]
-        cnfgMenu.setVisible(isTrace); // [HASLab]
-        cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        cnfgButton.setEnabled(hasConfigs); // [HASLab]
-        forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null); // [HASLab]
-        forkMenu.setVisible(isTrace); // [HASLab]
-        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace); // [HASLab]
-        leftNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        leftNavButton.setEnabled(current > 0); // [HASLab]
-        leftNavMenu.setEnabled(!isMeta && current > 0); // [HASLab]
-        rightNavButton.setVisible(!isMeta && isTrace); // [HASLab]
-        rightNavMenu.setEnabled(!isMeta); // [HASLab]
+        // [electrum] hide buttons if static; disable previous at first state
+        enumerateMenu.setVisible(!isTrace);
+        enumerateButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && !isTrace);
+        initMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
+        initMenu.setVisible(isTrace);
+        initButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        // [electrum] after fork cannot iterate path (would not guarantee non-isomorphic solutions)
+        pathMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && !seg_iteration);
+        pathMenu.setVisible(isTrace);
+        pathButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        pathButton.setEnabled(!seg_iteration);
+        // [electrum] if no static relations, do not allow next config (would always return the same solution)
+        cnfgMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null && hasConfigs);
+        cnfgMenu.setVisible(isTrace);
+        cnfgButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        cnfgButton.setEnabled(hasConfigs);
+        forkMenu.setEnabled(!isMeta && settingsOpen == 0 && enumerator != null);
+        forkMenu.setVisible(isTrace);
+        forkButton.setVisible(!isMeta && settingsOpen == 0 && enumerator != null && isTrace);
+        leftNavButton.setVisible(!isMeta && isTrace);
+        leftNavButton.setEnabled(current > 0);
+        leftNavMenu.setEnabled(!isMeta && current > 0);
+        leftNavButton.setText(new String(current > 0 ? Character.toChars(0x2190) : Character.toChars(0x21e4)));
+        rightNavButton.setVisible(!isMeta && isTrace);
+        rightNavMenu.setEnabled(!isMeta);
         toolbar.setVisible(true);
         // Now, generate the graph or tree or textarea that we want to display
         // on the right
         if (frame != null)
             frame.setTitle(makeVizTitle());
+        // [electrum] all visualizations focus on current state
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize); // [HASLab] only graph shows multiple
+                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current);
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -926,12 +937,12 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(); // [HASLab] only graph shows multiple
+                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current);
                 content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(); // [HASLab] only graph shows multiple
+                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current);
                 content = getTextComponent(textualOutput);
                 break;
             }
@@ -941,37 +952,59 @@ public final class VizGUI implements ComponentListener {
             // }
             default : {
                 List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
-                if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanes()) { // [HASLab]
-                    if (isTrace && !isMeta) { // [HASLab]
+                if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanels()) {
+                    if (isTrace && !isMeta) // [electrum] test whether trace
                         myGraphPanel = new VizGraphPanel(frame, myStates, false);
-                        JPanel tmpNavScrollPanel = createTempNavPanel();
-                        final Box instanceTopBox = Box.createVerticalBox();
-                        instanceTopBox.add(tmpNavScrollPanel);
-                        mySplitTemporal = new JPanel(new BorderLayout());
-                        mySplitTemporal.add(instanceTopBox, BorderLayout.NORTH);
-                        mySplitTemporal.add(myGraphPanel, BorderLayout.CENTER);
-                        mySplitTemporal.setVisible(true);
-                    } else {
-                        mySplitTemporal = null;
-                        myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false); // [HASLab]
-                    }
+                    else
+                        myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false);
                 } else {
-                    if (isTrace && !isMeta) { // [HASLab]
-                        updateTempPanel();
-                        myGraphPanel.seeDot(frame, false);
-                        myGraphPanel.remakeAll(frame);
-                    } else {
-                        mySplitTemporal = null;
-                        myGraphPanel.seeDot(frame, false);
-                        myGraphPanel.remakeAll(frame);
+                    if (isTrace && !isMeta) {
+                        for (int i = 0; i < statepanes; i++) {
+                            File f = new File(getXMLfilename());
+                            try {
+                                if (!f.exists())
+                                    throw new IOException("File " + getXMLfilename() + " does not exist.");
+
+                                if (current + i < 0) {
+                                    getVizState().set(i, null);
+                                } else {
+                                    AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, current + i);
+                                    if (getVizState().get(i) != null)
+                                        getVizState().get(i).loadInstance(myInstance);
+                                    else {
+                                        getVizState().set(i, new VizState(getVizState().get(statepanes - 1))); // [electrum] get the previous state (including theme)
+                                        getVizState().get(i).loadInstance(myInstance);
+                                    }
+                                }
+                            } catch (Throwable e) {
+                                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
+                                doCloseAll();
+                                return;
+                            }
+                        }
                     }
+                    myGraphPanel.seeDot(frame, false);
+                    myGraphPanel.remakeAll(frame);
                 }
+                content = myGraphPanel;
             }
-                if (isTrace && !isMeta) // [HASLab]
-                    content = mySplitTemporal;
-                else
-                    content = myGraphPanel;
         }
+
+        // [electrum] update the trace overview
+        if (isTrace && !isMeta) {
+            JComponent aux = content;
+
+            JPanel tmpNavScrollPanel = new JPanel();
+            tmpNavScrollPanel.setLayout(new BoxLayout(tmpNavScrollPanel, BoxLayout.PAGE_AXIS));
+            tmpNavScrollPanel.add(traceGraph());
+            final Box instanceTopBox = Box.createVerticalBox();
+            instanceTopBox.add(tmpNavScrollPanel);
+            content = new JPanel(new BorderLayout());
+            content.add(instanceTopBox, BorderLayout.NORTH);
+            content.add(aux, BorderLayout.CENTER);
+            content.setVisible(true);
+        }
+
         // Now that we've re-constructed "content", let's set its font size
         if (currentMode != VisualizerMode.Tree) {
             content.setFont(OurUtil.getVizFont().deriveFont((float) fontSize));
@@ -993,17 +1026,19 @@ public final class VizGUI implements ComponentListener {
         JComponent left = null;
         if (settingsOpen == 1) {
             if (myCustomPanel == null)
-                myCustomPanel = new VizCustomizationPanel(splitpane, myStates.get(statepanes - 1)); // [HASLab]
+                myCustomPanel = new VizCustomizationPanel(splitpane, myStates.get(statepanes - 1));
             else
                 myCustomPanel.remakeAll();
             left = myCustomPanel;
         } else if (settingsOpen > 1) {
             if (myEvaluatorPanel == null)
-                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n"); // [HASLab]
+                myEvaluatorPanel = new OurConsole(evaluator, true, "The ", true, "Alloy Evaluator ", false, "allows you to type\nin Alloy expressions and see their values\nat the currently focused state (left-hand side).\nFor example, ", true, "univ", false, " shows the list of all\natoms on the left-hand state.\n(You can press UP and DOWN to recall old inputs).\n");
             try {
                 evaluator.compute(new File(xmlFileName));
-                myEvaluatorPanel.setCurrentState(current); // [HASLab] set evaluator state
-            } catch (Exception ex) {} // exception should not happen
+                // [electrum] evaluator acts on current state
+                myEvaluatorPanel.setCurrentState(current);
+            } catch (Exception ex) {
+            } // exception should not happen
             left = myEvaluatorPanel;
             left.setBorder(new OurBorder(false, false, false, false));
         }
@@ -1050,8 +1085,9 @@ public final class VizGUI implements ComponentListener {
      * being displayed.
      */
     private String makeVizTitle() {
-        String filename = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().filename : ""); // (HASLab]
-        String commandname = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().commandname : ""); // (HASLab]
+        // [electrum] this info is the same in all states
+        String filename = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().filename : "");
+        String commandname = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().commandname : "");
         int i = filename.lastIndexOf('/');
         if (i >= 0)
             filename = filename.substring(i + 1);
@@ -1061,7 +1097,7 @@ public final class VizGUI implements ComponentListener {
         int n = filename.length();
         if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".als"))
             filename = filename.substring(0, n - 4);
-        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele")) // [HASLab] .ele extension
+        else if (n > 4 && filename.substring(n - 4).equalsIgnoreCase(".ele"))// .ele extension
             filename = filename.substring(0, n - 4);
         if (filename.length() > 0)
             return "(" + filename + ") " + commandname;
@@ -1134,28 +1170,28 @@ public final class VizGUI implements ComponentListener {
 
     /** Load the XML instance. */
     public void loadXML(final String fileName, boolean forcefully) {
-        loadXML(fileName, forcefully, current); // [HASLab] first state
+        loadXML(fileName, forcefully, current);
     }
 
     /** Load the XML instance. */
-    // [HASLab] considers particular state
     public void loadXML(final String fileName, boolean forcefully, int state) {
-        current = state; // [HASLab]
+        current = state;
         final String xmlFileName = Util.canon(fileName);
         File f = new File(xmlFileName);
         if (!forcefully)
             seg_iteration = false;
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
-            for (int i = 0; i < statepanes; i++) { // [HASLab]
+            // [electrum] update all viz states
+            for (int i = 0; i < statepanes; i++) {
                 try {
                     if (!f.exists())
                         throw new IOException("File " + xmlFileName + " does not exist.");
-                    if (i >= myStates.size()) { // [HASLab]
-                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i); // [HASLab] state
+                    if (i >= myStates.size()) {
+                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i);
                         myStates.add(new VizState(myInstance));
                     } else {
                         VizState vstate = myStates.get(i);
-                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i); // [HASLab] state
+                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i);
                         if (vstate == null)
                             vstate = new VizState(myInstance);
                         else
@@ -1167,7 +1203,7 @@ public final class VizGUI implements ComponentListener {
                     xmlLoaded.remove(xmlFileName);
                     OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
                     if (xmlLoaded.size() > 0) {
-                        loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state + i); // [HASLab] state
+                        loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state + i);
                         return;
                     }
                     doCloseAll();
@@ -1188,7 +1224,7 @@ public final class VizGUI implements ComponentListener {
         windowmenu.setEnabled(true);
         if (frame != null) {
             frame.setVisible(true);
-            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait..."); // [HASLab]
+            frame.setTitle("Electrum Visualizer " + Version.version() + " loading... Please wait...");
             OurUtil.show(frame);
         }
         updateDisplay();
@@ -1196,11 +1232,11 @@ public final class VizGUI implements ComponentListener {
 
     /** This method loads a specific theme file. */
     public boolean loadThemeFile(String filename) {
-        if (myStates.isEmpty()) // [HASLab]
+        if (myStates.isEmpty())
             return false; // Can only load if there is a VizState loaded
         filename = Util.canon(filename);
         try {
-            for (VizState myState : myStates) // [HASLab]
+            for (VizState myState : myStates) // [electrum] applly theme to all states
                 myState.loadPaletteXML(filename);
         } catch (IOException ex) {
             OurDialog.alert(frame, "Error: " + ex.getMessage());
@@ -1222,7 +1258,7 @@ public final class VizGUI implements ComponentListener {
      * user); returns true if it succeeded.
      */
     public boolean saveThemeFile(String filename) {
-        if (myStates.isEmpty()) // [HASLab]
+        if (myStates.isEmpty())
             return false; // Can only save if there is a VizState loaded
         if (filename == null) {
             File file = OurDialog.askFile(frame, false, null, ".thm", ".thm theme files");
@@ -1236,7 +1272,7 @@ public final class VizGUI implements ComponentListener {
         }
         filename = Util.canon(filename);
         try {
-            myStates.get(statepanes - 1).savePaletteXML(filename); // [HASLab]
+            myStates.get(statepanes - 1).savePaletteXML(filename); // [electrum] same theme in all states
             filename = Util.canon(filename); // Since the canon name may have
                                             // changed
             addThemeHistory(filename);
@@ -1272,7 +1308,7 @@ public final class VizGUI implements ComponentListener {
         if (file == null)
             return null;
         Util.setCurrentDirectory(file.getParentFile());
-        loadXML(file.getPath(), true, 0); // [HASLab]
+        loadXML(file.getPath(), true, 0);
         return null;
     }
 
@@ -1351,9 +1387,10 @@ public final class VizGUI implements ComponentListener {
         String defaultTheme = System.getProperty("alloy.theme0");
         if (defaultTheme == null)
             defaultTheme = "";
-        if (myStates.isEmpty()) // [HASLab]
+        if (myStates.isEmpty())
             return null; // Can only load if there is a VizState loaded
-        for (VizState myState : myStates) { // [HASLab]
+        // [electrum] apply theme to all states
+        for (VizState myState : myStates) {
             if (myState.changedSinceLastSave()) {
                 char opt = OurDialog.askSaveDiscardCancel(frame, "The current theme");
                 if (opt == 'c')
@@ -1381,9 +1418,10 @@ public final class VizGUI implements ComponentListener {
         String defaultTheme = System.getProperty("alloy.theme0");
         if (defaultTheme == null)
             defaultTheme = "";
-        if (myStates.isEmpty()) // [HASLab]
+        if (myStates.isEmpty())
             return null; // Can only load if there is a VizState loaded
-        for (VizState myState : myStates) { // [HASLab]
+        // [electrum] apply theme to all states
+        for (VizState myState : myStates) {
             if (myState.changedSinceLastSave()) {
                 char opt = OurDialog.askSaveDiscardCancel(frame, "The current theme");
                 if (opt == 'c')
@@ -1460,10 +1498,12 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
-    // [HASLab]
-    // ad hoc implementation since alloy lacks a proper pretty printer
-    // also, prints conjunctions as lists, which can't be parsed
-    private Runner doExportLTL() {
+    /**
+     * Export the current instance as an Alloy formula that exactly represents it.
+     */
+    // [electrum] ad hoc implementation since Alloy lacks a proper pretty printer
+    // also, conjunctions would be printed as lists, which can't be parsed back
+    private Runner doExportPred() {
         if (wrap)
             return wrapMe();
         if (myStates.isEmpty())
@@ -1472,6 +1512,7 @@ public final class VizGUI implements ComponentListener {
         Map<String,ExprVar> reifs = new HashMap<String,ExprVar>();
         A4Solution inst = myStates.get(myStates.size() - 1).getOriginalInstance().originalA4;
 
+        // calculate the values of the static relations
         StringJoiner config = new StringJoiner(" and ");
         for (Sig s : inst.getAllReachableSigs()) {
             if (s.isPrivate != null || s.isVariable != null || s.equals(Sig.UNIV) || s.equals(Sig.NONE))
@@ -1499,6 +1540,7 @@ public final class VizGUI implements ComponentListener {
             config.add(s.equal(tupleset).toString());
         }
 
+        // calculate the values of the variable relations
         List<String> states = new ArrayList<String>();
         for (int i = 0; i < inst.getTraceLength(); i++) {
             StringJoiner state = new StringJoiner(" and ");
@@ -1530,37 +1572,47 @@ public final class VizGUI implements ComponentListener {
             states.add(state.toString());
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("some disj ");
-        StringJoiner sj = new StringJoiner(",");
-        for (ExprVar v : reifs.values())
-            sj.add(v.toString());
-        sb.append(sj.toString());
-        sb.append(" : ");
-        Expr unvs = Sig.UNIV;
-        for (int i = 0; i < inst.getTraceLength() - 1; i++)
-            unvs = Sig.UNIV.plus(unvs.prime());
-        sb.append(unvs.toString());
+        if (!reifs.isEmpty()) {
+            // quantify over all atoms of all univs (univ changes over time)
+            sb.append("some disj ");
+            StringJoiner sj = new StringJoiner(",");
+            for (ExprVar v : reifs.values())
+                sj.add(v.toString());
+            sb.append(sj.toString());
+            sb.append(" : ");
+            Expr unvs = Sig.UNIV;
+            for (int i = 0; i < inst.getTraceLength() - 1; i++)
+                unvs = Sig.UNIV.plus(unvs.prime());
+            sb.append(unvs.toString());
+        }
         sb.append(" {\n  ");
+        // print config
         sb.append(config.toString());
         sb.append("\n\n  ");
+        // print prefix
         StringJoiner statesj = new StringJoiner(";\n  ");
         for (String s : states)
             statesj.add(s);
         sb.append(statesj.toString());
         sb.append("\n\n  ");
-        for (int i = 0; i < inst.getLoopState(); i++)
-            sb.append("after ");
-        sb.append(" {\n");
-        for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
-            StringBuilder sa = new StringBuilder("");
-            for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
-                sa.append("after ");
-            sa.append("(");
-            sa.append(states.get(i));
-            sa.append(")");
-            sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+        // print looping suffix
+        if (inst.getMaxTrace() >= 0) {
+            for (int i = 0; i < inst.getLoopState(); i++)
+                sb.append("after ");
+            sb.append(" {\n");
+            for (int i = inst.getLoopState(); i < inst.getTraceLength(); i++) {
+                StringBuilder sa = new StringBuilder("");
+                for (int j = inst.getLoopState(); j < inst.getTraceLength(); j++)
+                    sa.append("after ");
+                sa.append("(");
+                sa.append(states.get(i));
+                sa.append(")");
+                sb.append("    (" + states.get(i) + ") implies " + sa.toString() + "\n");
+            }
+            sb.append("  }\n");
         }
-        sb.append("  }\n}\n");
+        sb.append("}\n");
+
         OurDialog.showtext("Text Viewer", sb.toString());
         return null;
     }
@@ -1569,11 +1621,11 @@ public final class VizGUI implements ComponentListener {
     private Runner doResetTheme() {
         if (wrap)
             return wrapMe();
-        if (myStates.isEmpty()) // [HASLab]
+        if (myStates.isEmpty())
             return null;
         if (!OurDialog.yesno(frame, "Are you sure you wish to clear all your customizations?", "Yes, clear them", "No, keep them"))
             return null;
-        for (VizState myState : myStates) // [HASLab]
+        for (VizState myState : myStates)
             myState.resetTheme();
         repopulateProjectionPopup();
         if (myCustomPanel != null)
@@ -1591,16 +1643,17 @@ public final class VizGUI implements ComponentListener {
     private Runner doMagicLayout() {
         if (wrap)
             return wrapMe();
-        if (myStates.get(statepanes - 1) == null) // [HASLab]
+        if (myStates.isEmpty())
             return null;
         if (!OurDialog.yesno(frame, "This will clear your original customizations. Are you sure?", "Yes, clear them", "No, keep them"))
             return null;
-        for (VizState myState : myStates) { // [HASLab]
+        for (VizState myState : myStates) {
             myState.resetTheme();
             try {
                 MagicLayout.magic(myState);
                 MagicColor.magic(myState);
-            } catch (Throwable ex) {}
+            } catch (Throwable ex) {
+            }
         }
         repopulateProjectionPopup();
         if (myCustomPanel != null)
@@ -1660,6 +1713,36 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
+     * Navigates the trace being visualized to the left, unless already in the first
+     * state.
+     */
+    private Runner doNavLeft() {
+        if (wrap)
+            return wrapMe();
+        if (current > 0) {
+            current--;
+            updateDisplay();
+        }
+        return null;
+    }
+
+    /**
+     * Navigates the trace being visualized to the right, unrolling the loop if
+     * needed.
+     */
+    private Runner doNavRight() {
+        if (wrap)
+            return wrapMe();
+        int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
+        int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
+        int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
+        int lox = lmx - (lst - lop);
+        current = normalize(current + 1, lmx, lox);
+        updateDisplay();
+        return null;
+    }
+
+    /**
      * This method attempts to derive the next satisfying instance.
      */
     private Runner doNext() {
@@ -1673,7 +1756,7 @@ public final class VizGUI implements ComponentListener {
             OurDialog.alert(frame, "Cannot display the next solution since the analysis engine is not loaded with the visualizer.");
         } else {
             try {
-                enumerator.compute(new String[] { // [HASLab]
+                enumerator.compute(new String[] {
                                                  xmlFileName, -3 + ""
                 });
             } catch (Throwable ex) {
@@ -1684,9 +1767,9 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
-     * This method attempts to derive the next satisfying instance.
+     * This method attempts to derive the next satisfying instance with a distinct
+     * configuration.
      */
-    // [HASLab]
     private Runner doConfig() {
         if (wrap)
             return wrapMe();
@@ -1710,9 +1793,9 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
-     * This method attempts to derive the next satisfying instance.
+     * This method attempts to derive the next satisfying instance with a distinct
+     * path (but same configuration).
      */
-    // [HASLab]
     private Runner doPath() {
         if (wrap)
             return wrapMe();
@@ -1735,8 +1818,10 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
-    /** This method attempts to derive the next satisfying instance. */
-    // [HASLab] simulator
+    /**
+     * This method attempts to derive the next satisfying instance with a distinct
+     * focused state (but same configuration and prefix).
+     */
     private Runner doFork() {
         if (wrap)
             return wrapMe();
@@ -1759,8 +1844,10 @@ public final class VizGUI implements ComponentListener {
         return null;
     }
 
-    /** This method attempts to derive the next satisfying instance. */
-    // [HASLab] simulator
+    /**
+     * This method attempts to derive the next satisfying instance with a distinct
+     * initial state (but same configuration).
+     */
     private Runner doInit() {
         if (wrap)
             return wrapMe();
@@ -1787,7 +1874,8 @@ public final class VizGUI implements ComponentListener {
      * This method updates the graph with the current theme customization.
      */
     private Runner doApply() {
-        if (!myStates.isEmpty()) { // [HASLab]
+        if (!myStates.isEmpty()) {
+            // [electrum] apply theme to all states
             for (int i = 0; i < myStates.size() - 1; i++) {
                 VizState ss = myStates.get(statepanes - 1);
                 myStates.set(i, new VizState(ss));
@@ -1907,52 +1995,15 @@ public final class VizGUI implements ComponentListener {
     // return wrapMe();
     // }
 
-    // ========================================TRACES=====================================================//
-
-    // [HASLab]
+    /**
+     * The currently focused state (the one printed in the left-most graph panel).
+     */
     private int    current          = 0;
 
-    // [HASLab]
-    ActionListener leftNavListener  = new ActionListener() {
-
-                                        public final void actionPerformed(ActionEvent e) {
-                                            if (current > 0) {
-                                                current--;
-                                                updateDisplay();
-                                            }
-                                        }
-                                    };
-
-    // [HASLab]
-    ActionListener rightNavListener = new ActionListener() {
-
-                                        public final void actionPerformed(ActionEvent e) {
-                                            int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-                                            int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-                                            int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
-                                            int lox = lmx - (lst - lop);
-                                            current = normalize(current + 1, lmx, lox);
-                                            updateDisplay();
-                                        }
-                                    };
-
-    /**
-     * Creates the panel for navigating the trace, in the lower side of the right
-     * panel.
-     *
-     * @return
+    /*
+     * Draws a graph depicting the shape of the trace being visualized. States are
+     * clickable for navigation.
      */
-    // [HASLab]
-    private JPanel createTempNavPanel() {
-
-        JPanel tmpNavPanel = new JPanel();
-        tmpNavPanel.setLayout(new BoxLayout(tmpNavPanel, BoxLayout.PAGE_AXIS));
-        tmpNavPanel.add(traceGraph());
-        updateTempPanel();
-        return tmpNavPanel;
-    }
-
-    // [HASLab]
     private JPanel traceGraph() {
 
         List<Ellipse2D> states = new ArrayList<Ellipse2D>();
@@ -2057,41 +2108,15 @@ public final class VizGUI implements ComponentListener {
         return trace;
     }
 
-    // [HASLab]
-    private void updateTempPanel() {
-        AlloyModel model = null;
-        AlloyType event = null;
-        leftNavButton.setText(new String(current > 0 ? Character.toChars(0x2190) : Character.toChars(0x21e4)));
-
-        for (int i = 0; i < statepanes; i++) {
-            AlloyInstance myInstance;
-            File f = new File(getXMLfilename());
-            try {
-                if (!f.exists())
-                    throw new IOException("File " + getXMLfilename() + " does not exist.");
-
-                if (current + i < 0) {
-                    getVizState().set(i, null);
-                } else {
-                    myInstance = StaticInstanceReader.parseInstance(f, current + i);
-                    if (getVizState().get(i) != null)
-                        getVizState().get(i).loadInstance(myInstance);
-                    else {
-                        getVizState().set(i, new VizState(getVizState().get(statepanes - 1))); // [HASLab] get the theme
-                        getVizState().get(i).loadInstance(myInstance);
-                    }
-                }
-            } catch (Throwable e) {
-                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
-                doCloseAll();
-                return;
-            }
-
-        }
-
-    }
-
-    // [HASLab]
+    /**
+     * Given an arbitrary positive index, calculates the corresponding state the in
+     * trace prefix after loop unrollings.
+     *
+     * @param idx current index
+     * @param length trace prefix length
+     * @param loop backloop state
+     * @return the corresponding state in the prefix
+     */
     private int normalize(int idx, int length, int loop) {
         int lln = length - loop;
         return idx > loop ? (((idx - loop) % lln) + loop) : idx;

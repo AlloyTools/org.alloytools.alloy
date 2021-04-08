@@ -63,7 +63,8 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-vizualizer
+ * @modified [electrum] added the ability to update the scale (needed to be
+ *           preserved when navigating traces)
  */
 
 public final strictfp class GraphViewer extends JPanel {
@@ -698,12 +699,12 @@ public final strictfp class GraphViewer extends JPanel {
         return new Dimension((int) (graph.getTotalWidth() * scale), (int) (graph.getTotalHeight() * scale));
     }
 
-    // [HASLab]
+    /** Returns the zoom level of this graph. */
     public double getScale() {
         return scale;
     }
 
-    // [HASLab]
+    /** Updates the zoom level of this graph. */
     public void setScale(double scale) {
         this.scale = scale;
     }

@@ -32,7 +32,7 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
  *
- * @modified Nuno Macedo // [HASLab] electrum-decomposed
+ * @modified [electrum] added decompose strategy option
  *
  */
 @SuppressWarnings({
@@ -520,135 +520,134 @@ public class A4Preferences {
     /**
      * True if Alloy Analyzer should let warning be nonfatal.
      */
-    public static final BooleanPref            WarningNonfatal        = new BooleanPref("WarningNonfatal", "Allow warnings");
+    public static final BooleanPref           WarningNonfatal        = new BooleanPref("WarningNonfatal", "Allow warnings");
 
     /**
      * True if Alloy Analyzer should automatically visualize the latest instance.
      */
-    public static final BooleanPref            AutoVisualize          = new BooleanPref("AutoVisualize", "Visualize automatically");
+    public static final BooleanPref           AutoVisualize          = new BooleanPref("AutoVisualize", "Visualize automatically");
 
     /** True if Alloy Analyzer should insist on antialias. */
-    public static final BooleanPref            AntiAlias              = new BooleanPref("AntiAlias", "Use anti-aliasing");
+    public static final BooleanPref           AntiAlias              = new BooleanPref("AntiAlias", "Use anti-aliasing");
 
     /**
      * True if Alloy Analyzer should record the raw Kodkod input and output.
      */
-    public static final BooleanPref            RecordKodkod           = new BooleanPref("RecordKodkod", "Record the Kodkod input/output");
+    public static final BooleanPref           RecordKodkod           = new BooleanPref("RecordKodkod", "Record the Kodkod input/output");
 
     /**
      * True if Alloy Analyzer should enable the new Implicit This name resolution.
      */
-    public static final BooleanPref            ImplicitThis           = new BooleanPref("ImplicitThis", "Enable 'implicit this' name resolution");
+    public static final BooleanPref           ImplicitThis           = new BooleanPref("ImplicitThis", "Enable 'implicit this' name resolution");
 
     /**
      * True if Alloy Analyzer should not report models that overflow.
      */
-    public static final BooleanPref            NoOverflow             = new BooleanPref("NoOverflow", "Prevent overflows", true);
+    public static final BooleanPref           NoOverflow             = new BooleanPref("NoOverflow", "Prevent overflows", true);
 
     /**
      * The latest X coordinate of the Alloy Analyzer's main window.
      */
-    public static final IntPref                AnalyzerX              = new IntPref("AnalyzerX", 0, -1, 65535);
+    public static final IntPref               AnalyzerX              = new IntPref("AnalyzerX", 0, -1, 65535);
 
     /**
      * The latest Y coordinate of the Alloy Analyzer's main window.
      */
-    public static final IntPref                AnalyzerY              = new IntPref("AnalyzerY", 0, -1, 65535);
+    public static final IntPref               AnalyzerY              = new IntPref("AnalyzerY", 0, -1, 65535);
 
     /** The latest width of the Alloy Analyzer's main window. */
-    public static final IntPref                AnalyzerWidth          = new IntPref("AnalyzerWidth", 0, -1, 65535);
+    public static final IntPref               AnalyzerWidth          = new IntPref("AnalyzerWidth", 0, -1, 65535);
 
     /**
      * The latest height of the Alloy Analyzer's main window.
      */
-    public static final IntPref                AnalyzerHeight         = new IntPref("AnalyzerHeight", 0, -1, 65535);
+    public static final IntPref               AnalyzerHeight         = new IntPref("AnalyzerHeight", 0, -1, 65535);
 
     /** The latest font size of the Alloy Analyzer. */
-    public static final IntChoicePref          FontSize               = new IntChoicePref("FontSize", "Font size", Arrays.asList(9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72), 14);
+    public static final IntChoicePref         FontSize               = new IntChoicePref("FontSize", "Font size", Arrays.asList(9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72), 14);
 
     /** The latest font name of the Alloy Analyzer. */
-    public static final StringChoicePref       FontName               = new StringChoicePref("FontName", "Font family", Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()), "Lucida Grande");
+    public static final StringChoicePref      FontName               = new StringChoicePref("FontName", "Font family", Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()), "Lucida Grande");
 
     /** The latest tab distance of the Alloy Analyzer. */
-    public static final IntChoicePref          TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
+    public static final IntChoicePref         TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
 
     /** The latest welcome screen that the user has seen. */
-    public static final BooleanPref            Welcome                = new BooleanPref("Welcome", "Show welcome message at start up");
+    public static final BooleanPref           Welcome                = new BooleanPref("Welcome", "Show welcome message at start up");
 
     /** Look and feel */
-    public static final StringChoicePref       LAF                    = new StringChoicePref("LAF", "Look and feel", Arrays.asList("Native", "Cross-platform"), Util.onMac() || Util.onWindows() ? "Native" : "Cross-platform");
+    public static final StringChoicePref      LAF                    = new StringChoicePref("LAF", "Look and feel", Arrays.asList("Native", "Cross-platform"), Util.onMac() || Util.onWindows() ? "Native" : "Cross-platform");
 
     /**
      * Whether syntax highlighting should be disabled or not.
      */
-    public static final BooleanPref            SyntaxDisabled         = new BooleanPref("SyntaxHighlightingDisabled", "Disable syntax highlighting");
+    public static final BooleanPref           SyntaxDisabled         = new BooleanPref("SyntaxHighlightingDisabled", "Disable syntax highlighting");
 
     /** The number of recursion unrolls. */
-    public static final IntChoicePref          Unrolls                = new IntChoicePref("Unrolls", "Recursion depth", Arrays.asList(-1, 0, 1, 2, 3), -1) {
+    public static final IntChoicePref         Unrolls                = new IntChoicePref("Unrolls", "Recursion depth", Arrays.asList(-1, 0, 1, 2, 3), -1) {
 
-                                                                          @Override
-                                                                          public Object renderValueShort(Integer value) {
-                                                                              return (value != null && value.intValue() == -1) ? "disabled" : value;
-                                                                          }
-                                                                      };
+                                                                         @Override
+                                                                         public Object renderValueShort(Integer value) {
+                                                                             return (value != null && value.intValue() == -1) ? "disabled" : value;
+                                                                         }
+                                                                     };
 
     /** The skolem depth. */
-    public static final IntChoicePref          SkolemDepth            = new IntChoicePref("SkolemDepth3", "Skolem depth", Arrays.asList(0, 1, 2, 3, 4), 1);
+    public static final IntChoicePref         SkolemDepth            = new IntChoicePref("SkolemDepth3", "Skolem depth", Arrays.asList(0, 1, 2, 3, 4), 1);
 
     /** The unsat core minimization strategy. */
-    private static final String[]              coreMinimizationLabels = new String[] {
-                                                                                      "Slow", "Slow (guarantees local minimum)", "Medium", "Medium", "Fast", "Fast (initial unsat core)"
+    private static final String[]             coreMinimizationLabels = new String[] {
+                                                                                     "Slow", "Slow (guarantees local minimum)", "Medium", "Medium", "Fast", "Fast (initial unsat core)"
     };
-    public static final IntChoicePref          CoreMinimization       = new IntChoicePref("CoreMinimization", "Unsat core minimization", Arrays.asList(0, 1, 2), 2) {
+    public static final IntChoicePref         CoreMinimization       = new IntChoicePref("CoreMinimization", "Unsat core minimization", Arrays.asList(0, 1, 2), 2) {
 
-                                                                          @Override
-                                                                          public Object renderValueShort(Integer value) {
-                                                                              return coreMinimizationLabels[value * 2];
-                                                                          }
+                                                                         @Override
+                                                                         public Object renderValueShort(Integer value) {
+                                                                             return coreMinimizationLabels[value * 2];
+                                                                         }
 
-                                                                          @Override
-                                                                          public Object renderValueLong(Integer value) {
-                                                                              return coreMinimizationLabels[value * 2 + 1];
-                                                                          }
-                                                                      };
+                                                                         @Override
+                                                                         public Object renderValueLong(Integer value) {
+                                                                             return coreMinimizationLabels[value * 2 + 1];
+                                                                         }
+                                                                     };
 
-    private static final String[]              coreGranularityLabels  = new String[] {
-                                                                                      "Top-level", "Top-level conjuncts only", "Flatten once", "Flatten the formula once at the beginning", "Flatten twice", "Flatten the formula at the beginning and after skolemizing", "Expand quantifiers", "In addition to flattening the formula twice, expand the quantifiers"
+    private static final String[]             coreGranularityLabels  = new String[] {
+                                                                                     "Top-level", "Top-level conjuncts only", "Flatten once", "Flatten the formula once at the beginning", "Flatten twice", "Flatten the formula at the beginning and after skolemizing", "Expand quantifiers", "In addition to flattening the formula twice, expand the quantifiers"
     };
     /** The unsat core granularity. */
-    public static final IntChoicePref          CoreGranularity        = new IntChoicePref("CoreGranularity", "Unsat core granularity", Arrays.asList(0, 1, 2, 3), 0) {
+    public static final IntChoicePref         CoreGranularity        = new IntChoicePref("CoreGranularity", "Unsat core granularity", Arrays.asList(0, 1, 2, 3), 0) {
 
-                                                                          @Override
-                                                                          public Object renderValueShort(Integer value) {
-                                                                              return coreGranularityLabels[value * 2];
-                                                                          }
+                                                                         @Override
+                                                                         public Object renderValueShort(Integer value) {
+                                                                             return coreGranularityLabels[value * 2];
+                                                                         }
 
-                                                                          @Override
-                                                                          public Object renderValueLong(Integer value) {
-                                                                              return coreGranularityLabels[value * 2 + 1];
-                                                                          }
-                                                                      };
+                                                                         @Override
+                                                                         public Object renderValueLong(Integer value) {
+                                                                             return coreGranularityLabels[value * 2 + 1];
+                                                                         }
+                                                                     };
 
-    // [HASLab]
-    public static final ChoicePref<Decomposed> DecomposedPref         = new ChoicePref<Decomposed>("Decomposed strategy", Decomposed.values(), Decomposed.OFF) {
+    /** The decompose solving strategy. */
+    public static final ChoicePref<Decompose> DecomposePref          = new ChoicePref<Decompose>("Decompose strategy", Decompose.values(), Decompose.OFF) {
 
-                                                                          @Override
-                                                                          protected String serialize(Decomposed value) {
-                                                                              return value.id;
-                                                                          }
-                                                                      };
+                                                                         @Override
+                                                                         protected String serialize(Decompose value) {
+                                                                             return value.id;
+                                                                         }
+                                                                     };
 
-    // [HASLab]
-    public enum Decomposed {
-                            /** Level 0. */
-                            OFF("0", "disabled"),
-                            /** Level 1. */
-                            HYBRID("1", "hybrid"),
-                            /** Level 2. */
-                            PARALLEL("2", "parallel");
+    public enum Decompose {
+                           /** regular amalgamated strategy. */
+                           OFF("0", "batch"),
+                           /** hybrid strategy, competitive parallel vs amalgamated. */
+                           HYBRID("1", "hybrid"),
+                           /** purely parallel decompose strategy. */
+                           PARALLEL("2", "parallel");
 
         /** Returns true if it is greater than or equal to "other". */
-        public boolean geq(Decomposed other) {
+        public boolean geq(Decompose other) {
             return ordinal() >= other.ordinal();
         }
 
@@ -660,16 +659,12 @@ public class A4Preferences {
         /** This is the label that the toString() method will return. */
         private final String label;
 
-        /** Constructs a new Verbosity value with the given id and label. */
-        private Decomposed(String id, String label) {
+        /** Constructs a new Decompose value with the given id and label. */
+        private Decompose(String id, String label) {
             this.id = id;
             this.label = label;
         }
 
-        /**
-         * Given an id, return the enum value corresponding to it (if there's no match,
-         * then return DEFAULT).
-         */
         /** Returns the human-readable label for this enum value. */
         @Override
         public final String toString() {
@@ -795,7 +790,8 @@ public class A4Preferences {
             if (Pref.class.isAssignableFrom(f.getType())) {
                 try {
                     ans.add((Pref< ? >) f.get(self));
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
         return ans;

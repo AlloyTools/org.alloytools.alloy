@@ -23,7 +23,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] changed to register whether a subset is mutable
  */
 
 public final class AlloySet extends AlloyNodeElement {
@@ -47,17 +47,15 @@ public final class AlloySet extends AlloyNodeElement {
      * Records whether this relation is known to be "variable"; NOTE: this value is
      * NOT USED during equals() comparison.
      */
-    // [HASLab]
     public final boolean    isVar;
 
     /** Constructs a new AlloySet object. */
-    // [HASLab] variable info
     public AlloySet(String name, boolean isPrivate, boolean isMeta, boolean isVar, AlloyType type) {
         super(name);
         this.type = type;
         this.isPrivate = isPrivate;
         this.isMeta = isMeta;
-        this.isVar = isVar; // [HASLab]
+        this.isVar = isVar;
     }
 
     /** Returns the parent type of the AlloySet. */

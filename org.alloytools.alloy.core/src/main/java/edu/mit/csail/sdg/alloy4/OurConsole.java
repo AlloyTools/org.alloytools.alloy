@@ -1,5 +1,4 @@
 /* Alloy Analyzer 4 -- Copyright (c) 2006-2009, Felix Chang
- * Electrum -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify,
@@ -68,7 +67,10 @@ import org.alloytools.util.table.Table;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] the evaluator now acts on the current state focused on
+ *           the visualizer (temporal formulas can still be evaluated, but
+ *           always from the focused state); this info is updated by the VizGUI
+ *           and passed along to the computer
  */
 
 public final class OurConsole extends JScrollPane {
@@ -127,7 +129,6 @@ public final class OurConsole extends JScrollPane {
     private int browse  = 0;
 
     /** The current state under which to evaluate user commands. */
-    // [HASLab]
     private int current = 0;
 
     /*
@@ -386,7 +387,7 @@ public final class OurConsole extends JScrollPane {
         boolean isBad = false;
         Object result;
         try {
-            result = computer.compute(new String[] { // [HASLab] state arg
+            result = computer.compute(new String[] {
                                                     cmd, current + ""
             });
         } catch (Throwable ex) {
@@ -437,11 +438,11 @@ public final class OurConsole extends JScrollPane {
                 main.getCaret().setSelectionVisible(false);
             } else
                 doc.insertString(where >= 0 ? where : doc.getLength(), text, style);
-        } catch (BadLocationException ex) {}
+        } catch (BadLocationException ex) {
+        }
     }
 
     /** Set the current state under which to evaluate the user command. */
-    // [HASLab]
     public void setCurrentState(int state) {
         current = state;
     }

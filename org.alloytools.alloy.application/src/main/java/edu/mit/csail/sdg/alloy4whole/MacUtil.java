@@ -34,7 +34,7 @@ import edu.mit.csail.sdg.alloy4.Runner;
  * <p>
  * <b>Thread Safety:</b> Safe.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-base
+ * @modified: Nuno Macedo electrum-base
  */
 
 public final class MacUtil {
@@ -66,7 +66,7 @@ public final class MacUtil {
      * @param quit - when the user clicks on Quit, we'll call quit.run() using
      *            SwingUtilities.invokeAndWait
      */
-    // [HASLab]
+   
     public synchronized void registerApplicationListener(final Runnable reopen, final Runnable about, final Runnable prefs, final Runner open, final Runnable quit) {
         if (app == null)
             app = new Application();
@@ -87,7 +87,7 @@ public final class MacUtil {
             }
 
             @Override
-            // [HASLab]
+           
             public void handlePreferences(ApplicationEvent arg) {
                 SwingUtilities.invokeLater(prefs);
             }
@@ -120,7 +120,7 @@ public final class MacUtil {
         app.addApplicationListener(listener);
     }
 
-    // [HASLab] duplicated listeners
+    //duplicated listeners
     public void addMenus(SimpleGUI simpleGUI) {
         //        for (Method m : Application.class.getMethods()) {
         //            System.out.println(m);

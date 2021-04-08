@@ -48,7 +48,9 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] creates an AlloyInstance for a particular state after
+ *           parsing the XML of a full instance trace (expressions evaluated in
+ *           that state); whether elements are mutable is also registered
  */
 
 public final class StaticInstanceReader {
@@ -110,12 +112,11 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloyType whose label is unambiguous with any existing one.
      */
-    // [HASLab] variable info
     private AlloyType makeType(String label, boolean isOne, boolean isAbstract, boolean isBuiltin, boolean isPrivate, boolean isMeta, boolean isEnum, boolean isVar) {
         if (label.startsWith("this/"))
             label = label.substring(5);
         while (true) {
-            AlloyType ans = new AlloyType(label, isOne, isAbstract, isBuiltin, isPrivate, isMeta, isEnum, isVar); // [HASLab]
+            AlloyType ans = new AlloyType(label, isOne, isAbstract, isBuiltin, isPrivate, isMeta, isEnum, isVar);
             if (!sig2type.values().contains(ans))
                 return ans;
             label = label + "'";
@@ -125,12 +126,11 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloySet whose label is unambiguous with any existing one.
      */
-    // [HASLab] variable info
     private AlloySet makeSet(String label, boolean isPrivate, boolean isMeta, boolean isVar, AlloyType type) {
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
-            AlloySet ans = new AlloySet(label, isPrivate, isMeta, isVar, type); // [HASLab]
+            AlloySet ans = new AlloySet(label, isPrivate, isMeta, isVar, type);
             if (!sets.contains(ans))
                 return ans;
             label = label + "'";
@@ -140,12 +140,11 @@ public final class StaticInstanceReader {
     /**
      * Create a new AlloyRelation whose label is unambiguous with any existing one.
      */
-    // [HASLab] variable info
     private AlloyRelation makeRel(String label, boolean isPrivate, boolean isMeta, boolean isVar, List<AlloyType> types) {
         while (label.equals(Sig.UNIV.label) || label.equals(Sig.SIGINT.label) || label.equals(Sig.SEQIDX.label) || label.equals(Sig.STRING.label))
             label = label + "'";
         while (true) {
-            AlloyRelation ans = new AlloyRelation(label, isPrivate, isMeta, isVar, types); // [HASLab]
+            AlloyRelation ans = new AlloyRelation(label, isPrivate, isMeta, isVar, types);
             if (!rels.containsKey(ans))
                 return ans;
             label = label + "'";
@@ -161,7 +160,7 @@ public final class StaticInstanceReader {
             throw new ErrorFatal("Unexpected sig \"none\" encountered.");
         AlloyType ans = sig2type.get(s);
         if (ans == null) {
-            ans = makeType(s.label, s.isOne != null, s.isAbstract != null, false, s.isPrivate != null, s.isMeta != null, s.isEnum != null, s.isVariable != null); // [HASLab]
+            ans = makeType(s.label, s.isOne != null, s.isAbstract != null, false, s.isPrivate != null, s.isMeta != null, s.isEnum != null, s.isVariable != null);
             sig2type.put(s, ans);
             if (s.parent != Sig.UNIV)
                 ts.put(ans, sig(s.parent));
@@ -188,7 +187,7 @@ public final class StaticInstanceReader {
         else if (s == Sig.STRING)
             type = AlloyType.STRING;
         else
-            type = makeType(s.label, s.isOne != null, s.isAbstract != null, false, s.isPrivate != null, s.isMeta != null, s.isEnum != null, s.isVariable != null); // [HASLab]
+            type = makeType(s.label, s.isOne != null, s.isAbstract != null, false, s.isPrivate != null, s.isMeta != null, s.isEnum != null, s.isVariable != null);
         sig2type.put(s, type);
         AlloyAtom atom = new AlloyAtom(type, (type == AlloyType.SEQINT ? Integer.MIN_VALUE : Integer.MAX_VALUE), s.label);
         atom2sets.put(atom, new LinkedHashSet<AlloySet>());
@@ -212,7 +211,7 @@ public final class StaticInstanceReader {
         AlloyType type = sig2type.get(s);
         if (type != null)
             return;
-        type = makeType(s.label, s.isOne != null, s.isAbstract != null, false, s.isPrivate != null, s.isMeta != null, s.isEnum != null, s.isVariable != null); // [HASLab]
+        type = makeType(s.label, s.isOne != null, s.isAbstract != null, false, s.isPrivate != null, s.isMeta != null, s.isEnum != null, s.isVariable != null);
         atom = new AlloyAtom(type, Integer.MAX_VALUE, s.label);
         atom2sets.put(atom, new LinkedHashSet<AlloySet>());
         sig2atom.put(s, atom);
@@ -228,14 +227,19 @@ public final class StaticInstanceReader {
     }
 
     /** Constructs the atoms corresponding to the given sig. */
-    // [HASLab] particular state
     private void atoms(A4Solution sol, PrimSig s, int state) throws Err {
         Expr sum = Sig.NONE;
         for (PrimSig c : s.children()) {
             sum = sum.plus(c);
-            atoms(sol, c, state); // [HASLab]
+            atoms(sol, c, state);
         }
-        A4TupleSet ts = (A4TupleSet) (sol.eval(s.minus(sum), state)); // [HASLab] // This ensures that atoms will be associated with the most specific sig
+        A4TupleSet ts = (A4TupleSet) (sol.eval(s.minus(sum), state));
+                                                              // This ensures
+                                                              // that atoms
+                                                              // will be
+                                                              // associated
+                                                              // with the most
+                                                              // specific sig
         for (A4Tuple z : ts) {
             String atom = z.atom(0);
             int i, dollar = atom.lastIndexOf('$');
@@ -244,7 +248,7 @@ public final class StaticInstanceReader {
             } catch (NumberFormatException ex) {
                 i = Integer.MAX_VALUE;
             }
-            // [HASLab] do not hide singleton variable atoms ids, important for traces
+            // [electrum] do not hide ids for variable singletons, their id may change between states
             AlloyAtom at = new AlloyAtom(sig(s), ts.size() == 1 && s.isVariable == null ? Integer.MAX_VALUE : i, atom);
             atom2sets.put(at, new LinkedHashSet<AlloySet>());
             string2atom.put(atom, at);
@@ -254,14 +258,13 @@ public final class StaticInstanceReader {
     /**
      * Construct an AlloySet or AlloyRelation corresponding to the given expression.
      */
-    // [HASLab] variable info
     private void setOrRel(A4Solution sol, String label, Expr expr, boolean isPrivate, boolean isMeta, boolean isVar, int state) throws Err {
         for (List<PrimSig> ps : expr.type().fold()) {
             if (ps.size() == 1) {
                 PrimSig t = ps.get(0);
-                AlloySet set = makeSet(label, isPrivate, isMeta, isVar, sig(t)); // [HASLab]
+                AlloySet set = makeSet(label, isPrivate, isMeta, isVar, sig(t));
                 sets.add(set);
-                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t), state))) { // [HASLab]
+                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(t), state))) {
                     atom2sets.get(string2atom.get(tp.atom(0))).add(set);
                 }
             } else {
@@ -274,9 +277,9 @@ public final class StaticInstanceReader {
                     else
                         mask = mask.product(ps.get(i));
                 }
-                AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, types); // [HASLab]
+                AlloyRelation rel = makeRel(label, isPrivate, isMeta, isVar, types);
                 Set<AlloyTuple> ts = new LinkedHashSet<AlloyTuple>();
-                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(mask), state))) { // [HASLab]
+                for (A4Tuple tp : (A4TupleSet) (sol.eval(expr.intersect(mask), state))) {
                     AlloyAtom[] atoms = new AlloyAtom[tp.arity()];
                     for (int i = 0; i < tp.arity(); i++) {
                         atoms[i] = string2atom.get(tp.atom(i));
@@ -291,7 +294,6 @@ public final class StaticInstanceReader {
     }
 
     /** Parse the file into an AlloyInstance if possible. */
-    // [HASLab] particular state
     private StaticInstanceReader(XMLNode root, int state) throws Err {
         XMLNode inst = null;
         for (XMLNode sub : root)
@@ -322,15 +324,15 @@ public final class StaticInstanceReader {
                     sig((PrimSig) s);
             for (Sig s : toplevels)
                 if (!s.builtin || s == Sig.STRING)
-                    atoms(sol, (PrimSig) s, state); // [HASLab]
+                    atoms(sol, (PrimSig) s, state);
             for (Sig s : sol.getAllReachableSigs())
                 if (s instanceof SubsetSig)
-                    setOrRel(sol, s.label, s, s.isPrivate != null, s.isMeta != null, s.isVariable != null, state); // [HASLab]
+                    setOrRel(sol, s.label, s, s.isPrivate != null, s.isMeta != null, s.isVariable != null, state);
             for (Sig s : sol.getAllReachableSigs())
                 for (Field f : s.getFields())
-                    setOrRel(sol, f.label, f, f.isPrivate != null, f.isMeta != null, f.isVariable != null, state); // [HASLab]
+                    setOrRel(sol, f.label, f, f.isPrivate != null, f.isMeta != null, f.isVariable != null, state);
             for (ExprVar s : sol.getAllSkolems())
-                setOrRel(sol, s.label, s, false, false, false, state); // [HASLab]
+                setOrRel(sol, s.label, s, false, false, false, state);
         }
         if (isMeta) {
             sigMETA(Sig.UNIV);
@@ -346,7 +348,7 @@ public final class StaticInstanceReader {
                             types.add(sig(ps.get(i)));
                             tuple[i] = sig2atom.get(ps.get(i));
                         }
-                        AlloyRelation rel = makeRel(f.label, f.isPrivate != null, false, f.isVariable != null, types); // [HASLab]
+                        AlloyRelation rel = makeRel(f.label, f.isPrivate != null, false, f.isVariable != null, types);
                         rels.put(rel, Util.asSet(new AlloyTuple(tuple)));
                     }
                 }
@@ -416,10 +418,9 @@ public final class StaticInstanceReader {
     }
 
     /** Parse the file into an AlloyInstance if possible. */
-    // [HASLab]
     public static AlloyInstance parseInstance(File file, int state) throws Err {
         try {
-            return (new StaticInstanceReader(new XMLNode(file), state)).ans; // [HASLab]
+            return (new StaticInstanceReader(new XMLNode(file), state)).ans;
         } catch (IOException ex) {
             throw new ErrorFatal("Error reading the XML file: " + ex, ex);
         }
@@ -429,10 +430,9 @@ public final class StaticInstanceReader {
      * Parse the file into an AlloyInstance if possible, then close the Reader
      * afterwards.
      */
-    // [HASLab]
     public static AlloyInstance parseInstance(Reader reader, int state) throws Err {
         try {
-            return (new StaticInstanceReader(new XMLNode(reader), state)).ans; // [HASLab]
+            return (new StaticInstanceReader(new XMLNode(reader), state)).ans;
         } catch (IOException ex) {
             throw new ErrorFatal("Error reading the XML file: " + ex, ex);
         }

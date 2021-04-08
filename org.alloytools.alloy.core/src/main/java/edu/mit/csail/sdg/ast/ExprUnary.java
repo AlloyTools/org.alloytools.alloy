@@ -40,7 +40,9 @@ import edu.mit.csail.sdg.ast.Type.ProductType;
  * <p>
  * <b>Invariant:</b> type!=EMPTY => sub.mult==0
  *
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] add unary temporal ops for formulas (after, always,
+ *           eventually, before, historically, once) and expressions (primes) to
+ *           the AST
  */
 
 public final class ExprUnary extends Expr {
@@ -101,7 +103,7 @@ public final class ExprUnary extends Expr {
                     sub.toString(out, -1);
                     out.append(']');
                     return;
-                case PRIME : // [HASLab]
+                case PRIME :
                     out.append('(');
                     sub.toString(out, -1);
                     out.append(")'");
@@ -167,17 +169,17 @@ public final class ExprUnary extends Expr {
                     /** not f (where f is a formula) */
                     NOT("!"),
                     /** after f (where f is a formula) */
-                    AFTER("after"), // [HASLab]
+                    AFTER("after"),
                     /** always f (where f is a formula) */
-                    ALWAYS("always"), // [HASLab]
+                    ALWAYS("always"),
                     /** eventually f (where f is a formula) */
-                    EVENTUALLY("eventually"), // [HASLab]
+                    EVENTUALLY("eventually"),
                     /** before f (where f is a formula) */
-                    BEFORE("before"), // [HASLab]
+                    BEFORE("before"),
                     /** historically f (where f is a formula) */
-                    HISTORICALLY("historically"), // [HASLab]
+                    HISTORICALLY("historically"),
                     /** once f (where f is a formula) */
-                    ONCE("once"), // [HASLab]
+                    ONCE("once"),
                     /** no x (where x is a set or relation) */
                     NO("no"),
                     /** some x (where x is a set or relation) */
@@ -189,7 +191,7 @@ public final class ExprUnary extends Expr {
                     /** transpose */
                     TRANSPOSE("~"),
                     /** post */
-                    PRIME("\'"), // [HASLab]
+                    PRIME("\'"),
                     /** reflexive closure */
                     RCLOSURE("*"),
                     /** closure */
@@ -283,7 +285,7 @@ public final class ExprUnary extends Expr {
                 case EVENTUALLY :
                 case BEFORE :
                 case HISTORICALLY :
-                case ONCE :         // [HASLab]
+                case ONCE :
                     sub = sub.typecheck_as_formula();
                     break;
                 case CAST2SIGINT :
@@ -331,7 +333,7 @@ public final class ExprUnary extends Expr {
                     case EVENTUALLY :
                     case BEFORE :
                     case HISTORICALLY :
-                    case ONCE :         // [HASLab]
+                    case ONCE :
                         type = Type.FORMULA;
                         break;
                     case TRANSPOSE :
@@ -396,7 +398,7 @@ public final class ExprUnary extends Expr {
             case EVENTUALLY :
             case BEFORE :
             case HISTORICALLY :
-            case ONCE : // [HASLab]
+            case ONCE :
                 s = Type.FORMULA;
                 break;
             case TRANSPOSE :

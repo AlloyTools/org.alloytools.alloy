@@ -56,7 +56,8 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
  * This class provides convenience methods for calling the parser and the
  * compiler.
  *
- * @modified Nuno Macedo // [HASLab] electrum-base
+ * @modified [electrum] helper method to determine whether a model is fully
+ *           static (classic Alloy);
  */
 
 public final class CompUtil {
@@ -64,7 +65,8 @@ public final class CompUtil {
     /**
      * Constructor is private, since this class never needs to be instantiated.
      */
-    private CompUtil() {}
+    private CompUtil() {
+    }
 
     // =============================================================================================================//
 
@@ -122,7 +124,7 @@ public final class CompUtil {
                 for (int i = 0; i < moduleA.length(); i++)
                     if (moduleA.charAt(i) == '/')
                         numberOfSlash++;
-                return up(fileA, numberOfSlash + 1) + File.separatorChar + moduleB.replace('/', File.separatorChar) + fileA.substring(fileA.indexOf(".")); // [HASLab] use extension of local module
+                return up(fileA, numberOfSlash + 1) + File.separatorChar + moduleB.replace('/', File.separatorChar) + fileA.substring(fileA.indexOf(".")); //use extension of local module
             }
             moduleA = moduleA.substring(a + 1);
             moduleB = moduleB.substring(b + 1);
@@ -176,15 +178,19 @@ public final class CompUtil {
             });
             if (intTriggerNode != null)
                 return true;
-        } catch (Err e) {}
+        } catch (Err e) {
+        }
 
         return false;
     }
 
-    // [HASLab]
+    /**
+     * Whether the given command is a temporal model (either there are variable
+     * sigs/fields or temporal operators in the formula).
+     */
     public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
         for (Sig sig : sigs) {
-            if (sig.isVariable != null)
+            if (sig.isVariable != null && !sig.builtin)
                 return true;
             else {
                 for (Decl dec : sig.getFieldDecls()) {
@@ -215,7 +221,6 @@ public final class CompUtil {
 
         return false;
     }
-
 
     // =============================================================================================================//
 
@@ -279,11 +284,6 @@ public final class CompUtil {
             } catch (IOException ex1) {
                 try {
                     String newCp = cp.replaceAll("\\.als$", ".md");
-                    try { // [HASLab] try .als built-ins and then .ele built-ins
-                        content = Util.readAll(newCp);
-                    } catch (IOException e) {
-                        newCp = (Util.jarPrefix() + "models/" + x.filename + ".ele").replace('/', File.separatorChar);
-                    }
                     content = Util.readAll(newCp);
                 } catch (IOException exx) {
 
@@ -291,7 +291,8 @@ public final class CompUtil {
                         String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
                         content = Util.readAll(newCp);
                         cp = newCp;
-                    } catch (IOException ex) {}
+                    } catch (IOException ex) {
+                    }
                 }
             }
             loaded.put(cp, content);

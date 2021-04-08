@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+/**
+ * @modified [electrum] find executable binaries
+ */
 public class NativeCode {
 
     static class Platform {
@@ -48,7 +51,6 @@ public class NativeCode {
 
     public static Platform   platform    = findPlatform();
 
-    // [HASLab]
     public static String findexecutable(Path cache, String name) throws RuntimeException {
         try {
             if (platform.dir == null)
@@ -60,11 +62,11 @@ public class NativeCode {
             String file = platform.dir + "/" + libraryName;
             Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
             if (!enumeration.hasMoreElements()) {
-                //                System.out.println("Could not find native lib " + file);
+                System.out.println("Could not find native lib " + file);
                 return null;
             }
             URL resource = enumeration.nextElement();
-            //            System.out.println("Found native lib '" + resource + "'");
+            System.out.println("Found native lib '" + resource + "'");
 
             Path to = cached.computeIfAbsent(name, (k) -> {
                 try {

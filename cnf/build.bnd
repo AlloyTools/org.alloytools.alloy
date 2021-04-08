@@ -21,10 +21,8 @@ Bundle-Vendor:			AlloyTools at Github
 Bundle-DocURL: 			http://alloytools.org
 Bundle-License:			MIT
 
-base.version:           5.1.0
-elec.version:           2.1.0
-Bundle-Version:         ${elec.version}.${tstamp}
-Bundle-Description:		${Bundle-Version} (forked from Alloy Analyzer ${base.version})
+base.version:           6.0.0
+Bundle-Version:         ${base.version}.${tstamp}
 
 # Remove -SNAPSHOT for release version
 -pom:                   version=${base.version}-SNAPSHOT

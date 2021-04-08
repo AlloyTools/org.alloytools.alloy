@@ -28,7 +28,7 @@ import java.util.jar.Manifest;
  * <p>
  * <b>Thread Safety:</b> Safe.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-base
+ * @modified: Nuno Macedo electrum-base
  */
 
 public final class Version {
@@ -39,7 +39,7 @@ public final class Version {
     private Version() {}
 
     public static String  version      = "unknown";
-    public static String  descritpion  = "unknown"; // [HASLab]
+    public static String  descritpion  = "unknown";
     public static long    buildnumber  = -1;
     public static Instant builddate    = Instant.ofEpochMilli(0);
     public static String  commit       = "unknown";
@@ -54,7 +54,7 @@ public final class Version {
         Manifest manifest = getManifest();
         if (manifest != null) {
 
-            // [HASLab]
+           
             String description = manifest.getMainAttributes().getValue("Bundle-Description");
             if (description != null) {
                 Version.descritpion = description;
@@ -89,7 +89,7 @@ public final class Version {
     }
 
     /** Returns the description string. */
-    // [HASLab]
+   
     public static String aa_version() {
         return descritpion;
     }

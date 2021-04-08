@@ -81,8 +81,11 @@ import kodkod.util.ints.IntVector;
 /**
  * Translate an Alloy AST into Kodkod AST then attempt to solve it using Kodkod.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal,
- *            electrum-unbounded, electrum-decomposed
+ * @modified [electrum] added the translation of temporal operators and
+ *           quantifies globally over time constraints over sigs and fields (sig
+ *           facts are also implicitly globally quantified); also, variable
+ *           singleton sigs are not collapsed like static ones; name all
+ *           relations of total order; updated reporting
  */
 
 public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
@@ -262,19 +265,20 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                     Expr form = s.decl.get().join(f).in(d.expr);
                     form = s.isOne == null ? form.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, form);
                     Formula ff = cform(form);
-                    if (TemporalTranslator.isTemporal(ff)) // [HASLab] always
+                    if (TemporalTranslator.isTemporal(ff))
                         ff = ff.always();
                     frame.addFormula(ff, f);
                     // Given the above, we can be sure that every column is
                     // well-bounded (except possibly the first column).
                     // Thus, we need to add a bound that the first column is a
                     // subset of s.
-                    if (s.isOne == null || s.isVariable != null) { // [HASLab]
+                    // [electrum] mutable singletons sigs cannot be simplified
+                    if (s.isOne == null || s.isVariable != null) {
                         Expression sr = a2k(s), fr = a2k(f);
                         for (int i = f.type().arity(); i > 1; i--)
                             fr = fr.join(Expression.UNIV);
                         ff = fr.in(sr);
-                        if (TemporalTranslator.isTemporal(ff)) // [HASLab] always
+                        if (TemporalTranslator.isTemporal(ff))
                             ff = ff.always();
                         frame.addFormula(ff, f);
                     }
@@ -284,22 +288,22 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                         Decl that = s.oneOf("that");
                         Expr formula = s.decl.get().equal(that.get()).not().implies(s.decl.get().join(f).intersect(that.get().join(f)).no());
                         Formula ff = cform(formula.forAll(that).forAll(s.decl));
-                        if (d.isVar != null) // [HASLab] always
+                        if (d.isVar != null)
                             ff = ff.always();
                         frame.addFormula(ff, d.disjoint2);
                     }
                 if (d.names.size() > 1 && d.disjoint != null) {
                     Formula ff = cform(ExprList.makeDISJOINT(d.disjoint, null, d.names));
-                    if (d.isVar != null) // [HASLab] always
+                    if (d.isVar != null)
                         ff = ff.always();
                     frame.addFormula(ff, d.disjoint);
                 }
             }
             k2pos_enabled = true;
             for (Expr f : s.getFacts()) {
-                Expr form = s.isOne == null ? f.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, f); // [HASLab] always, avoids over total order predicate
+                Expr form = s.isOne == null ? f.forAll(s.decl) : ExprLet.make(null, (ExprVar) (s.decl.get()), s, f);
                 Formula kdorm = cform(form);
-                // [HASLab] avoid always over statics (not only efficiency, total orders would not by detected in SB)
+                // [electrum] avoid "always" over statics (not only efficiency, total orders would not by detected in SB)
                 if (TemporalTranslator.isTemporal(kdorm))
                     kdorm = kdorm.always();
                 frame.addFormula(kdorm, f);
@@ -330,7 +334,8 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         private ConstList<Sig> growableSigs         = null;
         private A4Solution     partial              = null;
 
-        public GreedySimulator() {}
+        public GreedySimulator() {
+        }
 
         private TupleSet convert(TupleFactory factory, Expr f) throws Err {
             TupleSet old = ((A4TupleSet) (partial.eval(f))).debugGetKodkodTupleset();
@@ -460,19 +465,20 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
                 private boolean first = true;
 
                 @Override
-                // [HASLab]
-                public void translate(String solver, String strat, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
+                public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
                     if (first)
-                        super.translate(solver, strat, bitwidth, maxseq, skolemDepth, symmetry); // [HASLab]
+                        super.translate(solver, bitwidth, maxseq, mintrace, maxtrace, skolemDepth, symmetry, strat);
                     first = false;
                 }
 
 
                 @Override
-                public void resultSAT(Object command, long solvingTime, Object solution) {}
+                public void resultSAT(Object command, long solvingTime, Object solution) {
+                }
 
                 @Override
-                public void resultUNSAT(Object command, long solvingTime, Object solution) {}
+                public void resultUNSAT(Object command, long solvingTime, Object solution) {
+                }
             };
             // Form the list of commands
             List<Command> commands = new ArrayList<Command>();
@@ -819,7 +825,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case EMPTYNESS :
                 return Expression.NONE;
             case IDEN :
-                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
+                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); //this makes bad decompositions, makes static expressions variable
             case STRING :
                 Expression ans = s2k(x.string);
                 if (ans == null)
@@ -858,17 +864,17 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case NOT :
                 return k2pos(cform(x.sub).not(), x);
             case AFTER :
-                return k2pos(cform(x.sub).after(), x);         // [HASLab]
+                return k2pos(cform(x.sub).after(), x);
             case ALWAYS :
-                return k2pos(cform(x.sub).always(), x);       // [HASLab]
+                return k2pos(cform(x.sub).always(), x);
             case EVENTUALLY :
-                return k2pos(cform(x.sub).eventually(), x);   // [HASLab]
+                return k2pos(cform(x.sub).eventually(), x);
             case BEFORE :
-                return k2pos(cform(x.sub).before(), x);     // [HASLab]
+                return k2pos(cform(x.sub).before(), x);
             case HISTORICALLY :
-                return k2pos(cform(x.sub).historically(), x); // [HASLab]
+                return k2pos(cform(x.sub).historically(), x);
             case ONCE :
-                return k2pos(cform(x.sub).once(), x);         // [HASLab]
+                return k2pos(cform(x.sub).once(), x);
             case SOME :
                 return k2pos(cset(x.sub).some(), x);
             case LONE :
@@ -878,7 +884,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case NO :
                 return k2pos(cset(x.sub).no(), x);
             case PRIME :
-                return cset(x.sub).prime();                   // [HASLab]
+                return cset(x.sub).prime();
             case TRANSPOSE :
                 return cset(x.sub).transpose();
             case CARDINALITY :
@@ -888,7 +894,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case CAST2INT :
                 return sum(cset(x.sub));
             case RCLOSURE :
-                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); // [HASLab] this makes bad decompositions, makes static expressions variable
+                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); //this makes bad decompositions, makes static expressions variable
                 return cset(x.sub).closure().union(iden);
             case CLOSURE :
                 return cset(x.sub).closure();
@@ -1067,7 +1073,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         if (x.op == ExprList.Op.TOTALORDER) {
             Expression elem = cset(x.args.get(0)), first = cset(x.args.get(1)), next = cset(x.args.get(2));
             if (elem instanceof Relation && first instanceof Relation && next instanceof Relation) {
-                Relation lst = frame.addRel(((Relation) elem).name() + "_last", null, frame.query(true, elem, false), false); // [HASLab] no unnamed rels for electrod
+                Relation lst = frame.addRel(((Relation) elem).name() + "_last", null, frame.query(true, elem, false), false); // [electrum] no unnamed rels for electrod
                 totalOrderPredicates.add((Relation) elem);
                 totalOrderPredicates.add((Relation) first);
                 totalOrderPredicates.add(lst);
@@ -1136,7 +1142,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         Formula f;
         Object objL, objR;
         switch (x.op) {
-            // [HASLab] changed from !a || b, was it relevant?
+            // [electrum] changed from !a || b, was it relevant?
             case IMPLIES :
                 f = cform(a).implies(cform(b));
                 return k2pos(f, x);
@@ -1187,19 +1193,19 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case UNTIL :
                 f = cform(a);
                 f = f.until(cform(b));
-                return k2pos(f, x);   // [HASLab]
+                return k2pos(f, x);
             case RELEASES :
                 f = cform(a);
                 f = f.releases(cform(b));
-                return k2pos(f, x); // [HASLab]
+                return k2pos(f, x);
             case SINCE :
                 f = cform(a);
                 f = f.since(cform(b));
-                return k2pos(f, x);   // [HASLab]
+                return k2pos(f, x);
             case TRIGGERED :
                 f = cform(a);
                 f = f.triggered(cform(b));
-                return k2pos(f, x); // [HASLab]
+                return k2pos(f, x);
             case IFF :
                 f = cform(a);
                 f = f.iff(cform(b));

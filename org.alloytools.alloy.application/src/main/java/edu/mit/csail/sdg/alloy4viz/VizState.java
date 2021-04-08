@@ -43,7 +43,7 @@ import edu.mit.csail.sdg.alloy4graph.DotStyle;
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
  *
- * @modified: Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] apply a default style to mutable elements (dashed)
  */
 
 public final class VizState {
@@ -159,7 +159,7 @@ public final class VizState {
         edgeColor.put(in, DotColor.BLACK);
         weight.put(in, 100);
         layoutBack.put(in, true);
-        applyDefaultVar(); // [HASLab] dashed variable elements
+        applyDefaultVar(); // [electrum] dashed style for variable elements
         // Done
         cache.clear();
         changedSinceLastSave = false;
@@ -169,7 +169,6 @@ public final class VizState {
      * Paints variable items as dashed if no other style has been set by the user.
      * Must be run every time since new elements may have been introduced.
      */
-    // [HASLab]
     void applyDefaultVar() {
         // if parent also var or has style, inherit, otherwise paint dashed
         for (AlloyType r : currentModel.getTypes())
@@ -346,7 +345,7 @@ public final class VizState {
      * Returns true iff the type is not univ, and it is a toplevel type.
      */
     public boolean canProject(final AlloyType type) {
-        return isTopLevel(type) && !type.isVar; // [HASLab] can't project var
+        return isTopLevel(type) && !type.isVar; // [electrum] can't project over mutable variable
     }
 
     /**
@@ -547,8 +546,7 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,Integer> map = new LinkedHashMap<AlloyElement,Integer>();
 
-        private MInt() {
-        }
+        private MInt() {}
 
         private void clear() {
             map.clear();
@@ -579,8 +577,7 @@ public final class VizState {
 
         private final LinkedHashMap<AlloyElement,String> map = new LinkedHashMap<AlloyElement,String>();
 
-        private MString() {
-        }
+        private MString() {}
 
         private void clear() {
             map.clear();

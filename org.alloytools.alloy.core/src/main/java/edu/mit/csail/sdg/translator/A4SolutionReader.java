@@ -56,13 +56,14 @@ import kodkod.instance.TupleSet;
  * This helper class contains helper routines for reading an A4Solution object
  * from an XML file.
  *
- * @modified: Nuno Macedo, Eduardo Pessoa // [HASLab] electrum-temporal
+ * @modified [electrum] incrementally builds a solution by iteratively reading
+ *           states from the XML; must start by collecting all used atoms, since
+ *           univ varies from state to state
  */
 
 public final class A4SolutionReader {
 
     /** The resulting A4Solution object. */
-    // [HASLab] removed final, trace solutions
     private A4Solution                sol;
 
     /** The provided choices of existing Sig and Field. */
@@ -87,7 +88,6 @@ public final class A4SolutionReader {
     private final Map<Expr,TupleSet>  expr2ts = new LinkedHashMap<Expr,TupleSet>();
 
     /** The Kodkod tupleset factory. */
-    // [HASLab] removed final, trace solutions
     private TupleFactory              factory;
 
     /**
@@ -155,7 +155,7 @@ public final class A4SolutionReader {
     /** Parse sig/set. */
     private Sig parseSig(String id, int depth) throws IOException, Err {
         Sig ans = id2sig.get(id);
-        // [HASLab] identify that has not been processed in this step (ans may be != null from previous steps)
+        // [electrum] identify that has not been processed in this step (ans may be != null from previous steps)
         if (ans != null && expr2ts.get(ans) != null)
             return ans;
         XMLNode node = nmap.get(id);
@@ -172,7 +172,7 @@ public final class A4SolutionReader {
         Attr isMeta = yes(node, "meta") ? Attr.META : null;
         Attr isEnum = yes(node, "enum") ? Attr.ENUM : null;
         Attr isExact = yes(node, "exact") ? Attr.EXACT : null;
-        Attr isVar = yes(node, "var") ? Attr.VARIABLE : null; // [HASLab]
+        Attr isVar = yes(node, "var") ? Attr.VARIABLE : null;
         if (yes(node, "builtin")) {
             if (label.equals(UNIV.label)) {
                 id2sig.put(id, UNIV);
@@ -220,7 +220,7 @@ public final class A4SolutionReader {
                     break;
                 }
             if (ans == null) {
-                ans = new PrimSig(null, label, Pos.UNKNOWN, (PrimSig) parent, isAbstract, isLone, isOne, isSome, isPrivate, isMeta, isEnum, isVar); // [HASLab]
+                ans = new PrimSig(null, label, Pos.UNKNOWN, (PrimSig) parent, isAbstract, isLone, isOne, isSome, isPrivate, isMeta, isEnum, isVar);
                 allsigs.add(ans);
             }
         } else {
@@ -231,7 +231,7 @@ public final class A4SolutionReader {
                     break;
                 }
             if (ans == null) {
-                ans = new SubsetSig(null, label, null, parents, isExact, isLone, isOne, isSome, isPrivate, isMeta, isVar); // [HASLab]
+                ans = new SubsetSig(null, label, null, parents, isExact, isLone, isOne, isSome, isPrivate, isMeta, isVar);
                 allsigs.add(ans);
             }
         }
@@ -281,7 +281,7 @@ public final class A4SolutionReader {
         String label = label(node);
         Pos isPrivate = yes(node, "private") ? Pos.UNKNOWN : null;
         Pos isMeta = yes(node, "meta") ? Pos.UNKNOWN : null;
-        Pos isVar = yes(node, "var") ? Pos.UNKNOWN : null; // [HASLab]
+        Pos isVar = yes(node, "var") ? Pos.UNKNOWN : null;
         Expr type = null;
         for (XMLNode sub : node)
             if (sub.is("types")) {
@@ -335,7 +335,7 @@ public final class A4SolutionReader {
         int arity;
         if (type == null || (arity = type.type().arity()) < 1)
             throw new IOException("Skolem " + label + " is maltyped.");
-        // [HASLab] try to use previously created expr for skolem, not mapped anywhere
+        // [electrum] try to use previously created expr for skolem, not registered anywhere
         ExprVar var = null;
         for (Expr exp : expr2ts.keySet())
             if (exp instanceof ExprVar && ((ExprVar) exp).label.equals(label))
@@ -348,7 +348,7 @@ public final class A4SolutionReader {
     }
 
     /** Parse everything. */
-    // [HASLab] heavily modified to support sequences of <instance> nodes
+    // [electrum] heavily modified to support sequences of <instance> nodes, A4Solutions are built incrementally
     private A4SolutionReader(Iterable<Sig> sigs, XMLNode xml) throws IOException, Err {
         // find <instance>..</instance>
         if (!xml.is("alloy"))
@@ -372,10 +372,10 @@ public final class A4SolutionReader {
         final int maxtrace;
         final int mintrace;
         try {
-            mintrace = Integer.parseInt(inst.getAttribute("mintrace"));        // [HASLab]
-            maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));        // [HASLab]
-            tracelength = Integer.parseInt(inst.getAttribute("tracelength"));  // [HASLab]
-            backloop = Integer.parseInt(inst.getAttribute("backloop"));        // [HASLab]
+            mintrace = Integer.parseInt(inst.getAttribute("mintrace"));
+            maxtrace = Integer.parseInt(inst.getAttribute("maxtrace"));
+            tracelength = Integer.parseInt(inst.getAttribute("tracelength"));
+            backloop = Integer.parseInt(inst.getAttribute("backloop"));
         } catch (Exception ex) {
             throw new ErrorSyntax("Missing trace attributes.");
         }
@@ -385,7 +385,7 @@ public final class A4SolutionReader {
                 atoms.add(Integer.toString(i));
             }
 
-        // [HASLab] get all atoms of the universe, must traverse all steps
+        // [electrum] get all atoms of the universe, must traverse all states
         for (XMLNode sub : xml)
             if (sub.is("instance")) {
                 inst = sub;
@@ -407,7 +407,7 @@ public final class A4SolutionReader {
             if (sub.is("instance")) {
                 inst = sub;
 
-                // [HASLab] if not first step, retrieve already created sigs
+                // [electrum] if not first step, retrieve already created sigs
                 prev = sol;
                 if (prev != null)
                     sigs = prev.getAllReachableSigs();
@@ -433,8 +433,8 @@ public final class A4SolutionReader {
                 // create the A4Solution object
                 A4Options opt = new A4Options();
                 opt.originalFilename = inst.getAttribute("filename");
-                // [HASLab] do not use actual max trace, would flag as unbounded and the used solver is unknown
-                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace < 1 ? mintrace : tracelength, maxtrace < 1 ? maxtrace : tracelength, maxseq, strings, atoms, null, opt, 1); // [HASLab]
+                // [electrum] do not use actual max trace, solution would identify unbounded solving but no unbounded solver
+                sol = new A4Solution(inst.getAttribute("command"), bitwidth, mintrace, tracelength, maxseq, strings, atoms, null, opt, 1);
                 factory = sol.getFactory();
                 // parse all the sigs, fields, and skolems
                 for (Map.Entry<String,XMLNode> e : nmap.entrySet())
@@ -452,10 +452,10 @@ public final class A4SolutionReader {
                         if (ts == null)
                             ts = factory.noneOf(1); // If the sig was NOT mentioned in the XML file...
                         Relation r;
-                        // [HASLab] if first set create the relation
+                        // [electrum] if first state create the relation
                         if (prev == null)
                             r = sol.addRel(s.label, ts, ts, s.isVariable != null);
-                        // [HASLab] otherwise use previously created
+                        // [electrum] otherwise use previously created
                         else {
                             r = (Relation) prev.a2k(s);
                             sol.addPreRel(s.label, ts, ts, r);
@@ -465,10 +465,10 @@ public final class A4SolutionReader {
                             ts = expr2ts.remove(f);
                             if (ts == null)
                                 ts = factory.noneOf(f.type().arity()); // If the field was NOT mentioned in the XML file...
-                            // [HASLab] if first set create the relation
+                            // [electrum] if first state create the relation
                             if (prev == null)
                                 r = sol.addRel(s.label + "." + f.label, ts, ts, f.isVariable != null);
-                            // [HASLab] otherwise use previously created
+                            // [electrum] otherwise use previously created
                             else {
                                 r = (Relation) prev.a2k(f);
                                 sol.addPreRel(s.label + "." + f.label, ts, ts, r);
@@ -483,7 +483,7 @@ public final class A4SolutionReader {
                     if (prev == null)
                         r = sol.addRel(v.label, ts, ts, true);
                     else {
-                        // [HASLab] try to use previously created relation for skolem, not mapped anywhere
+                        // [electrum] search for skolem relation, not registered anywhere, but skolems always present in all instances
                         for (Expr exp : prev.a2k().keySet())
                             if (exp instanceof ExprVar && ((Relation) prev.a2k(exp)).name().equals(v.label)) {
                                 r = (Relation) prev.a2k(exp);
@@ -494,7 +494,7 @@ public final class A4SolutionReader {
                     sol.kr2type(r, v.type());
                 }
                 // Done!
-                sol.solve(null, prev, backloop); // [HASLab] merge current solution with previous, if any
+                sol.solve(null, prev, backloop); // [electrum] merge current solution with previous, if any
             }
     }
 

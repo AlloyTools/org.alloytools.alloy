@@ -51,7 +51,8 @@ import edu.mit.csail.sdg.ast.Type.ProductType;
  * <b>Invariant:</b> type!=EMPTY => (right.mult==2 => (this.op==IN || this.op is
  * one of the 17 arrow operators))
  *
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] electrum-temporal
+ * @modified [electrum] add binary temporal operators (until, releases, since,
+ *           triggered) to the AST
  */
 
 public final class ExprBinary extends Expr {
@@ -262,13 +263,13 @@ public final class ExprBinary extends Expr {
                            /** &lt;=&gt; */
                            IFF("<=>", false),
                            /** until; */
-                           UNTIL("until", false), // [HASLab]
+                           UNTIL("until", false),
                            /** release; */
-                           RELEASES("releases", false), // [HASLab]
+                           RELEASES("releases", false),
                            /** since; */
-                           SINCE("since", false), // [HASLab]
+                           SINCE("since", false),
                            /** trigger */
-                           TRIGGERED("triggered", false); // [HASLab]
+                           TRIGGERED("triggered", false);
 
         /**
          * The constructor.
@@ -331,10 +332,10 @@ public final class ExprBinary extends Expr {
                 }
                 case IFF :
                 case IMPLIES :
-                case RELEASES :
                 case UNTIL :
+                case RELEASES :
                 case SINCE :
-                case TRIGGERED : { // [HASLab]
+                case TRIGGERED : {
                     left = left.typecheck_as_formula();
                     right = right.typecheck_as_formula();
                     break;
@@ -389,10 +390,10 @@ public final class ExprBinary extends Expr {
                     case OR :
                     case IFF :
                     case IMPLIES :
-                    case RELEASES : // [HASLab]
-                    case UNTIL : // [HASLab]
-                    case SINCE : // [HASLab]
-                    case TRIGGERED : // [HASLab]
+                    case UNTIL :
+                    case RELEASES :
+                    case SINCE :
+                    case TRIGGERED :
                         type = Type.FORMULA;
                         break;
                     case MUL :
@@ -509,10 +510,10 @@ public final class ExprBinary extends Expr {
             case OR :
             case IFF :
             case IMPLIES :
-            case RELEASES :
             case UNTIL :
+            case RELEASES :
             case SINCE :
-            case TRIGGERED : { // [HASLab]
+            case TRIGGERED : {
                 a = (b = Type.FORMULA);
                 break;
             }

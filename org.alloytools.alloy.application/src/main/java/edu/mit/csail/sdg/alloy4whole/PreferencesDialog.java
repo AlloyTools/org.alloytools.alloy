@@ -4,7 +4,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposedPref;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposePref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
@@ -81,8 +81,8 @@ import edu.mit.csail.sdg.alloy4.Subprocess;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
- * @modified: Nuno Macedo // [HASLab] electrum-base, electrum-unbounded,
- *            electrum-decomposed
+ * @modified [electrum] only log when debugging; load electrod binary
+ *           executables; added decompose strategy option
  */
 @SuppressWarnings({
                    "serial"
@@ -94,6 +94,8 @@ public class PreferencesDialog extends JFrame {
     // private JPanel editorPane;
     // private JPanel solverPane;
     // private JPanel miscPane;
+
+    final static boolean isDebug = "yes".equals(System.getProperty("debug"));
 
     private static class MyIntSpinnerModel extends AbstractSpinnerModel {
 
@@ -288,7 +290,7 @@ public class PreferencesDialog extends JFrame {
             satChoices.remove(SatSolver.GlucoseJNI);
         if (!loadLibrary("cryptominisat"))
             satChoices.remove(SatSolver.CryptoMiniSatJNI);
-        // [HASLab] load unbounded model checking backend
+        // [electrum] load unbounded model checking backend
         if (!staticLibrary("electrod")) {
             satChoices.remove(SatSolver.ElectrodX);
             satChoices.remove(SatSolver.ElectrodS);
@@ -331,14 +333,13 @@ public class PreferencesDialog extends JFrame {
         return output.substring(i).startsWith("s SATISFIABLE");
     }
 
-    // [HASLab]
     private static boolean staticLibrary(String name) {
         // check if in java library path
         final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
         for (int i = dirs.length - 1; i >= 0; i--) {
             final File file = new File(dirs[i] + File.separator + name);
             if (file.canExecute()) {
-                if ("yes".equals(System.getProperty("debug")))
+                if (isDebug)
                     System.out.println("Loaded: " + name + " at " + file);
                 return true;
             }
@@ -347,13 +348,13 @@ public class PreferencesDialog extends JFrame {
         for (String str : (System.getenv("PATH")).split(Pattern.quote(File.pathSeparator))) {
             Path pth = Paths.get(str);
             if (Files.exists(pth.resolve(name))) {
-                if ("yes".equals(System.getProperty("debug")))
+                if (isDebug)
                     System.out.println("Loaded: " + name + " at " + pth);
                 return true;
             }
         }
 
-        if ("yes".equals(System.getProperty("debug")))
+        if (isDebug)
             System.out.println("Failed to load: " + name);
         return false;
     }
@@ -362,7 +363,7 @@ public class PreferencesDialog extends JFrame {
     private static boolean loadLibrary(String library) {
         boolean loaded = _loadLibrary(library);
         String libName = System.mapLibraryName(library);
-        if ("yes".equals(System.getProperty("debug"))) // [HASLab]
+        if (isDebug)
             if (loaded)
                 System.out.println("Loaded: " + libName);
             else
@@ -432,8 +433,8 @@ public class PreferencesDialog extends JFrame {
     }
 
     protected Component initSolverPane() {
-        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization), mkSlider(DecomposedPref)); // [HASLab]);
-        int r = 6; // [HASLab]
+        JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(Solver), mkSlider(SkolemDepth), mkCombo(Unrolls), mkCombo(CoreGranularity), mkSlider(CoreMinimization), mkSlider(DecomposePref));
+        int r = 6;
         addToGrid(p, mkCheckBox(NoOverflow), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(ImplicitThis), gbc().pos(0, r++).gridwidth(2));
         addToGrid(p, mkCheckBox(InferPartialInstance), gbc().pos(0, r++).gridwidth(2));

@@ -51,7 +51,7 @@ import org.alloytools.alloy.core.AlloyCore;
  * reported to the parent process via callback, and if we try to execute another
  * task, then a new subprocess will be spawned automatically.
  *
- * @modified Nuno Macedo // [HASLab] electrum-unbounded
+ * @modified [electrum] handle external executables
  */
 public final class WorkerEngine {
 
@@ -184,17 +184,22 @@ public final class WorkerEngine {
         synchronized (WorkerEngine.class) {
             try {
                 if (latest_sub != null) {
-                    if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
-                        try {  // [HASLab] needed to stop all child processes (electrod)
-                            Field f = latest_sub.getClass().getDeclaredField("pid");
-                            f.setAccessible(true);
-                            Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
-                        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    else
-                        latest_sub.destroy();
+                    // [electrum] this replaces the currently WorkerTask so that it exits gracefully
+                    try {
+                        ObjectOutputStream main2sub = new ObjectOutputStream(wrap(latest_sub.getOutputStream()));
+                        main2sub.writeObject(new WorkerTask() {
+
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public void run(WorkerCallback out) throws Exception {
+                            }
+                        });
+                        main2sub.close();
+                    } catch (IOException e) {
+                    }
+
+                    latest_sub.destroy();
                 }
             } finally {
                 latest_manager = null;
@@ -367,7 +372,7 @@ public final class WorkerEngine {
                 @Override
                 public void run() {
                     if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
-                        try {  // [HASLab] needed to stop all child processes (electrod)
+                        try {  //needed to stop all child processes (electrod)
                             Field f = latest_sub.getClass().getDeclaredField("pid");
                             f.setAccessible(true);
                             Runtime.getRuntime().exec("kill -SIGTERM " + f.get(latest_sub));
