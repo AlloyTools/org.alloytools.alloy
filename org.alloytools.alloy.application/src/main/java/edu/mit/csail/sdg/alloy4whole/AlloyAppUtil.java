@@ -37,13 +37,13 @@ public class AlloyAppUtil {
 			return alloyHome;
 		String temp = System.getProperty("java.io.tmpdir");
 		if (temp == null || temp.length() == 0)
-			OurDialog.fatal("Error. JVM need to specify a temporary directory using java.io.tmpdir property.");
+			OurDialog.fatal(null, "Error. JVM need to specify a temporary directory using java.io.tmpdir property.");
 		String username = System.getProperty("user.name");
 		File tempfile = new File(temp + File.separatorChar + "alloy4tmp40-" + (username == null ? "" : username));
 		tempfile.mkdirs();
 		String ans = Util.canon(tempfile.getPath());
 		if (!tempfile.isDirectory()) {
-			OurDialog.fatal("Error. Cannot create the temporary directory " + ans);
+			OurDialog.fatal(null, "Error. Cannot create the temporary directory " + ans);
 		}
 		if (!Util.onWindows()) {
 			String[] args = { "chmod", "700", ans };
