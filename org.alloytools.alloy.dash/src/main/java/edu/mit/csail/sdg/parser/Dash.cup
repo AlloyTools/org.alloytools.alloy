@@ -80,7 +80,7 @@ import edu.mit.csail.sdg.ast.DashEnter;
 import edu.mit.csail.sdg.ast.DashExit;
 
 import edu.mit.csail.sdg.parser.DashValidation;
-import edu.mit.csail.sdg.parser.TransformCoreDash;
+import edu.mit.csail.sdg.parser.DashToCoreDash;
  
 //===========================================================================//
 
@@ -813,7 +813,7 @@ Vis ::= PRIVATE:p {: RESULT=p;    :};
 ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: 								        
 										parser.dashmodule.addTopLevelConcState(o, n.label, c);    
 										DashValidation.validateDashModel(parser.dashmodule); 
-										TransformCoreDash.transformToCoreDash(parser.dashmodule); :};
+										DashToCoreDash.transformToCoreDash(parser.dashmodule); :};
 
 //This represents a concurrent state inside a concurrent state
 ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c);  :};
