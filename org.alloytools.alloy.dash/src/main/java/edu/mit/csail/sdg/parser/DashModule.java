@@ -201,7 +201,7 @@ public final class DashModule extends Browsable implements Module {
      * 1: has seen the "module" line 3: has seen the
      * "sig/pred/fun/fact/assert/check/run" commands
      */
-    private int                   status     = 0;
+    int                           status     = 0;
 
     /**
      * The position of the "MODULE" line at the top of the file; Pos.UNKNOWN if the
@@ -282,88 +282,89 @@ public final class DashModule extends Browsable implements Module {
     /**
      * Each conc state name is mapped to its respective Conc State AST
      */
-    public final Map<String,DashConcState>     concStates             = new LinkedHashMap<String,DashConcState>();
+    public Map<String,DashConcState>     concStates             = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Set to true if there is a child concurrent state inside a parent concurrent
      * state
      */
-    public boolean                             stateHierarchy         = false;
+    public boolean                       stateHierarchy         = false;
 
     /**
      * Each top level conc state name is mapped to its respective Conc State AST.
      * Useful for printing a CoreDash version of a Dash model
      */
-    public final Map<String,DashConcState>     topLevelConcStates     = new LinkedHashMap<String,DashConcState>();
+    public Map<String,DashConcState>     topLevelConcStates     = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Stores the name for every concurrent state in the model
      */
-    public List<String>                        concStateNames         = new ArrayList<String>();
+    public List<String>                  concStateNames         = new ArrayList<String>();
 
     /**
      * Each state name is mapped to its respective State AST
      */
-    public final Map<String,DashState>         states                 = new LinkedHashMap<String,DashState>();
+    public Map<String,DashState>         states                 = new LinkedHashMap<String,DashState>();
 
     /**
      * A list of the default states in the Dash Model. This will be used when
      * converting from Dash to Alloy
      */
-    public final List<DashState>               defaultStates          = new ArrayList<DashState>();
+    public List<DashState>               defaultStates          = new ArrayList<DashState>();
 
     /**
      * A list of the initial conditions in the Dash Model. This will be used when
      * converting from Dash to Alloy
      */
-    public final List<DashInit>                initConditions         = new ArrayList<DashInit>();
+    public List<DashInit>                initConditions         = new ArrayList<DashInit>();
 
     /**
      * Each variable name is mapped to it the conc state inside which it is declared
      */
-    public final Map<String,List<String>>      variableNames          = new LinkedHashMap<String,List<String>>();
-    public final Map<String,List<String>>      envVariableNames       = new LinkedHashMap<String,List<String>>();
+    public Map<String,List<String>>      variableNames          = new LinkedHashMap<String,List<String>>();
+    public List<String>                  modifiedVarNames       = new ArrayList<String>();
+    public Map<String,List<String>>      envVariableNames       = new LinkedHashMap<String,List<String>>();
 
     /**
      * Each variable name is mapped to its respective expression
      */
-    public final Map<String,Expr>              variable2Expression    = new LinkedHashMap<String,Expr>();
-    public final Map<String,Expr>              envVariable2Expression = new LinkedHashMap<String,Expr>();
+    public Map<String,Expr>              variable2Expression    = new LinkedHashMap<String,Expr>();
+    public Map<String,Expr>              envVariable2Expression = new LinkedHashMap<String,Expr>();
 
     /**
      * Each transition name is mapped to its respective Transiton AST
      */
-    public final Map<String,DashTrans>         transitions            = new LinkedHashMap<String,DashTrans>();
+    public Map<String,DashTrans>         transitions            = new LinkedHashMap<String,DashTrans>();
 
     /**
      * Each transition template name is mapped to its respective TransitonTemplate
      * AST
      */
-    public final Map<String,DashTransTemplate> transitionTemplates    = new LinkedHashMap<String,DashTransTemplate>();
+    public Map<String,DashTransTemplate> transitionTemplates    = new LinkedHashMap<String,DashTransTemplate>();
 
     /**
      * Each Event is mapped to its respective AST AST
      */
-    public final Map<String,DashEvent>         events                 = new LinkedHashMap<String,DashEvent>();
+    public Map<String,DashEvent>         events                 = new LinkedHashMap<String,DashEvent>();
 
     /**
      * Each Action Template is mapped to its respective AST AST
      */
-    public final Map<String,DashAction>        actions                = new LinkedHashMap<String,DashAction>();
+    public Map<String,DashAction>        actions                = new LinkedHashMap<String,DashAction>();
 
     /**
      * Each Condition Template is mapped to its respective AST AST
      */
-    public final Map<String,DashCondition>     conditions             = new LinkedHashMap<String,DashCondition>();
+    public Map<String,DashCondition>     conditions             = new LinkedHashMap<String,DashCondition>();
 
     /**
      * Each Invariant Template is mapped to its respective AST AST
      */
-    public final Map<String,DashInvariant>     invariants             = new LinkedHashMap<String,DashInvariant>();
+    public Map<String,DashInvariant>     invariants             = new LinkedHashMap<String,DashInvariant>();
 
-    int                                        transitionCount        = 0;
+    int                                  transitionCount        = 0;
 
-    Boolean                                    isUnitTest             = false;
+    Boolean                              isUnitTest             = false;
 
     // ============================================================================================================================//
 
@@ -1363,7 +1364,7 @@ public final class DashModule extends Browsable implements Module {
             }
         }
 
-        DashConvertToAlloyAST.convertExpr();
+        //DashConvertToAlloyAST.convertExpr();
     }
 
     /*
@@ -1419,8 +1420,6 @@ public final class DashModule extends Browsable implements Module {
 
         for (DashState state : concState.states)
             addState(concState, state);
-        for (DashEvent event : concState.events)
-            addEvent(concState, event);
         for (DashEvent event : concState.events)
             addEvent(concState, event);
         for (DashInit init : concState.init)
@@ -1551,10 +1550,12 @@ public final class DashModule extends Browsable implements Module {
         String modifiedName = parent.modifiedName + "_" + event.name;
         event.parentName = parent.name;
 
-        if (event.type.equals("evn event") || event.type.equals("event"))
+        if (event.type.equals("env event") || event.type.equals("event")) {
             DashOptions.isEnvEventModel = true;
-        if (event.type.equals("env"))
+        } else if (event.type.equals("env")) {
+            DashOptions.isEnvEventModel = false;
             readEnvVariablesDeclared(event.decl, parent);
+        }
 
         //System.out.println("Event: " + modifiedName);
         events.put(modifiedName, event);
@@ -1576,6 +1577,11 @@ public final class DashModule extends Browsable implements Module {
             variable2Expression.put(concState.name + "_" + name.toString(), decl.expr);
         }
 
+        for (String var : variables) {
+            if (!modifiedVarNames.contains(concState.modifiedName + "_" + var))
+                modifiedVarNames.add(concState.modifiedName + "_" + var);
+        }
+        System.out.println("Modified Names Size: " + modifiedVarNames.size());
         variableNames.put(concState.modifiedName, variables);
     }
 

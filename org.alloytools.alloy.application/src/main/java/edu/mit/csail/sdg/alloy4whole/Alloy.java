@@ -18,7 +18,7 @@ public class Alloy {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        String filePath = "D:/DashModels/Elevator.dsh";//"D:/EHealth.als";//"D:/DashModels/EHealth.dsh";
+        String filePath = "D:/DashModels/Elevator1.dsh";//"D:/EHealth.als";//"D:/DashModels/EHealth.dsh";
 
         System.out.println("Please specify the CoreDash output location:");
         String outputDir = "D:/";
