@@ -44,7 +44,6 @@ import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprUnary.Op;
-import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type.ProductType;
@@ -332,7 +331,7 @@ public final class DashUtil {
      * @return the fully-typechecked expression if no error occurred
      * @throws Err if world==null or if any other error occurred
      */
-    public static Expr parseOneExpression_fromString(Module world, String input) throws Err {
+    public static Expr parseOneExpression_fromString(DashModule world, String input) throws Err {
         try {
             if (world == null)
                 throw new ErrorFatal("Cannot parse an expression with null world.");

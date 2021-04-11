@@ -2,7 +2,6 @@ package edu.mit.csail.sdg.alloy4whole;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
 import java.util.Scanner;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -18,7 +17,7 @@ public class Alloy {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        String filePath = "D:/DashModels/Elevator1.dsh";//"D:/EHealth.als";//"D:/DashModels/EHealth.dsh";
+        String filePath = "D:/test.als";//"D:/EHealth.als";//"D:/DashModels/EHealth.dsh";
 
         System.out.println("Please specify the CoreDash output location:");
         String outputDir = "D:/";
@@ -47,12 +46,19 @@ public class Alloy {
 
             System.out.println("Parsing Model");
 
-            // Parse+typecheck the model
+            //Parse+typecheck the model
             System.out.println("=========== Parsing+Typechecking " + fileName + " =============");
-            DashModule world = DashUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), filePath);
+            //Module world = CompUtil.parseEverything_fromFile(rep, null, filePath);
 
-            System.out.println("Parsing Successfully Completed!");
+
+            DashModule dashWorld = DashUtil.parseEverything_fromFileDash(rep, null, filePath);
+
+
+            for(String func: dashWorld.funcs.keySet()) {
+                if (func.contains("pre")) {
+                    System.out.println("Expr: " + dashWorld.funcs.get(func).get(0).body.toString());
+                }
+            }
         }
-
     }
 }

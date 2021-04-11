@@ -60,6 +60,9 @@ public final class ExampleUsingTheCompiler {
             }
         };
 
+        String fileName = "D:/test.als";
+        Module world1 = CompUtil.parseEverything_fromFile(rep, null, fileName);
+
         for (String filename : args) {
 
             // Parse+typecheck the model

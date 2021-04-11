@@ -1,12 +1,12 @@
 conc state concState {
 var_one: none
-env event event_one{}
+event event_one{}
 
 state state_one{}
 
 state state_two{}
 
-	trans concState_t_1{
+	trans concState___1{
 	from concState/state_one
 	on concState_event_one
 	when {
@@ -14,12 +14,12 @@ state state_two{}
 	s.concState_var_one = none
 	}
 	do {
-	var_one' = var_one
-	var_one' = var_one
+	s'.concState_var_one = s.concState_var_one
+	s'.concState_var_one = s.concState_var_one
 	}
-	goto concState/state_two
+	goto concState/state_one
 }
-	trans concState_t_2{
+	trans concState___2{
 	from concState/state_two
 	on concState_event_one
 	when {
@@ -27,10 +27,10 @@ state state_two{}
 	s.concState_var_one = none
 	}
 	do {
-	var_one' = var_one
-	var_one' = var_one
+	s'.concState_var_one = s.concState_var_one
+	s'.concState_var_one = s.concState_var_one
 	}
-	goto concState/state_two
+	goto concState/state_one
 }
 
 }

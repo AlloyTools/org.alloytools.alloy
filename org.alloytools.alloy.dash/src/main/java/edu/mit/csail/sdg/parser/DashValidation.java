@@ -546,6 +546,7 @@ public class DashValidation {
 
         expressions.put(concStateName, expressionList);
 
+
         /* Stores the names for each state in the current conc state */
         for (DashState state : dashModule.concStates.get(concStateName).states) {
             getExprFromStateTrans(concStateName, state.modifiedName, dashModule);
@@ -558,7 +559,7 @@ public class DashValidation {
         //System.out.println("Getting funcs");
         /* Stores the names for each func/pred in the current conc state */
         for (String key : dashModule.funcs.keySet()) {
-            System.out.println("Func: " + key);
+            //System.out.println("Func: " + key);
         }
 
         /* Stores the names for each action template in the current conc state */

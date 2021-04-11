@@ -32,9 +32,6 @@ public class DashToCoreDash {
         transitionCount = 0;
         getAllTransitions(module);
         modifyTransitions(module);
-        CoreDashToAlloy.convertToAlloyAST(module);
-        CoreDashGenerator.printCoreDash(module);
-        DashToStringAlloy.printAlloyModel(module);
     }
 
     static void modifyTransitions(DashModule module) {

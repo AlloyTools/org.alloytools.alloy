@@ -79,6 +79,7 @@ import edu.mit.csail.sdg.ast.DashTrans;
 import edu.mit.csail.sdg.ast.DashEnter;
 import edu.mit.csail.sdg.ast.DashExit;
 
+import edu.mit.csail.sdg.parser.DashOptions;
 import edu.mit.csail.sdg.parser.DashValidation;
 import edu.mit.csail.sdg.parser.DashToCoreDash;
  
@@ -87,6 +88,7 @@ import edu.mit.csail.sdg.parser.DashToCoreDash;
 parser code {:
 
   public DashModule dashmodule=null;
+  public boolean doneParsing = false;
 
   @Override public Symbol parse() throws java.lang.Exception {
      int act; // current action code
@@ -690,7 +692,7 @@ nonterminal                            TemplateCall;
 
 //===========================================================================//
 
-File ::= Spec {: parser.dashmodule.doneParsing(); :};
+File ::= Spec {: parser.dashmodule.doneParsing(); if (!DashOptions.doneParsing){ DashOptions.doneParsing = true; System.out.println("Done"); } :};
 
 Spec ::= Spec MODULE:o Name:n                                                  {: nod(n);         parser.dashmodule.addModelName(o.merge(n.pos) , n.label , new ArrayList<ExprVar>()); :};
 Spec ::= Spec MODULE:o Name:n LBRACKET Namex:b RBRACKET:r                      {: nod(n); nod(b); parser.dashmodule.addModelName(o.merge(r)     , n.label , b                       ); :};
@@ -812,8 +814,7 @@ Vis ::= PRIVATE:p {: RESULT=p;    :};
 //This is the top level conc state. StateItems are specific items that can appear inside a Concurrent State (Conc State, State, Event, Trans, etc)
 ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: 								        
 										parser.dashmodule.addTopLevelConcState(o, n.label, c);    
-										DashValidation.validateDashModel(parser.dashmodule); 
-										DashToCoreDash.transformToCoreDash(parser.dashmodule); :};
+										:};
 
 //This represents a concurrent state inside a concurrent state
 ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c);  :};
@@ -910,16 +911,6 @@ Sig ::= SigQuals:a Names:b SigIn:c LBRACE Decls:d RBRACE:o SuperOpt:e
  {:
    if (e==null) e = ExprConstant.Op.TRUE.make(o, 0);
    ExprVar cc = (c!=null && c.size()>0) ? c.remove(c.size()-1) : null;
-	//if(d.size() == 0)
-        	//System.out.println("Decls is 0 size and not null");
-	//if(b.get(0).label.equals("Snapshot"))
-        	//System.out.println("bb.label: " + b.get(0).label + " c value: " + c.get(0).toString());
-    //if(c == null)
-          	//System.out.println("bb.label: " + b.get(0).label + " c is null");  	
-    //if(cc == null)
-        	//System.out.println("bb.label: " + b.get(0).label + " and cc is null");
-     //else
-     	//System.out.println("bb.label: " + b.get(0).label + " and cc is: " + cc.toString());
    for(ExprVar bb:b) {
       DashValidation.sigNames.add(bb.label);
       parser.dashmodule.addSig(bb.label, cc, c, d, e,

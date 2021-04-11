@@ -1,0 +1,9 @@
+conc state topConcStateA {
+
+conc state innerConcState {
+
+state A{}
+
+}
+
+}

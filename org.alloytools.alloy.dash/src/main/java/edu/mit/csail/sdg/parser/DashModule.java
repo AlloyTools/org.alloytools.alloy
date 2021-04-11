@@ -201,30 +201,30 @@ public final class DashModule extends Browsable implements Module {
      * 1: has seen the "module" line 3: has seen the
      * "sig/pred/fun/fact/assert/check/run" commands
      */
-    int                           status     = 0;
+    int                          status     = 0;
 
     /**
      * The position of the "MODULE" line at the top of the file; Pos.UNKNOWN if the
      * line has not been parsed from the file yet.
      */
-    private Pos                   modulePos  = Pos.UNKNOWN;
+    private Pos                  modulePos  = Pos.UNKNOWN;
 
     /**
      * The text of the "MODULE" line at the top of the file; "unknown" if the line
      * has not be parsed from the file yet.
      */
-    private String                moduleName = "unknown";
+    private String               moduleName = "unknown";
 
     /**
      * Whether we have seen a name containing a dollar sign or not.
      */
-    boolean                       seenDollar = false;
+    boolean                      seenDollar = false;
 
     /**
      * Each param is mapped to its corresponding Sig (or null if we have not
      * resolved it).
      */
-    private final Map<String,Sig> params     = new LinkedHashMap<String,Sig>();				// Must
+    public final Map<String,Sig> params     = new LinkedHashMap<String,Sig>();				// Must
     // be
     // LinkedHashMap
     // since
@@ -364,7 +364,7 @@ public final class DashModule extends Browsable implements Module {
 
     int                                  transitionCount        = 0;
 
-    Boolean                              isUnitTest             = false;
+    Boolean                              doneParsing            = false;
 
     // ============================================================================================================================//
 
@@ -1581,7 +1581,6 @@ public final class DashModule extends Browsable implements Module {
             if (!modifiedVarNames.contains(concState.modifiedName + "_" + var))
                 modifiedVarNames.add(concState.modifiedName + "_" + var);
         }
-        System.out.println("Modified Names Size: " + modifiedVarNames.size());
         variableNames.put(concState.modifiedName, variables);
     }
 

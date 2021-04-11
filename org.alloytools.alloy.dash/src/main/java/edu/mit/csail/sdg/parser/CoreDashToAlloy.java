@@ -45,7 +45,7 @@ public class CoreDashToAlloy {
     }
 
     /* Used by other functions to help create signature ASTs */
-    static void addSigAST(DashModule module, String sigName, ExprVar isExtends, List<ExprVar> sigParent, List<Decl> decls, Pos isAbstract, Pos isLone, Pos isOne, Pos isSome, Pos isPrivate) {
+    public static void addSigAST(DashModule module, String sigName, ExprVar isExtends, List<ExprVar> sigParent, List<Decl> decls, Pos isAbstract, Pos isLone, Pos isOne, Pos isSome, Pos isPrivate) {
         module.addSig(sigName, isExtends, sigParent, decls, null, null, AttrType.ABSTRACT.makenull(isAbstract), AttrType.LONE.makenull(isLone), AttrType.ONE.makenull(isOne), AttrType.SOME.makenull(isSome), AttrType.PRIVATE.makenull(isPrivate));
     }
 
@@ -57,7 +57,6 @@ public class CoreDashToAlloy {
             createTransCallAST(transition, module);
             createEnabledNextStepAST(transition, module);
         }
-
     }
 
     /*
@@ -117,6 +116,11 @@ public class CoreDashToAlloy {
             a.clear();
         }
 
+        for (Decl decl : decls)
+            System.out.println("Snapshot Decl: " + decl.get() + " Expr: " + decl.expr);
+
+        System.out.println();
+
         List<ExprVar> sigParent = new ArrayList<ExprVar>();
         sigParent.add(ExprVar.make(null, "BaseSnapshot"));
         addSigAST(module, "Snapshot", ExprVar.make(null, "extends"), sigParent, decls, new Pos("abstract", 0, 0), null, null, null, null);
@@ -151,7 +155,6 @@ public class CoreDashToAlloy {
 
     static void createTransitionSpaceAST(DashModule module) {
         for (DashTrans transition : module.transitions.values()) {
-            System.out.println("Trans Name: " + transition.modifiedName);
             addSigAST(module, transition.modifiedName, ExprVar.make(null, "extends"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "TransitionLabel"))), new ArrayList<Decl>(), null, null, new Pos("one", 0, 0), null, null);
         }
     }
@@ -209,7 +212,7 @@ public class CoreDashToAlloy {
     static void createPreConditionAST(DashTrans transition, DashModule module) {
         Expr expression = null;
         expression = ExprUnary.Op.NOOP.make(null, getPreCondAST(transition, module));
-        System.out.println("PreCond: " + expression.toString() + '\n');
+        //System.out.println("PreCond: " + expression.toString() + '\n');
         addPredicateAST(module, "pre_" + transition.modifiedName, "s", null, null, null, expression);
     }
 
@@ -282,7 +285,6 @@ public class CoreDashToAlloy {
             }
         }
 
-
         /*
          * Creating the following expression: testIfNextStable[s, s', {none},
          * Mutex_Process1_wait] => { s'.stable = True } else { s'.stable = False }
@@ -336,11 +338,11 @@ public class CoreDashToAlloy {
             expression = ExprBinary.Op.AND.make(null, null, expression, ExprITE.make(null, ssPrimeGenEventT, ifLowerExpr, elseLowerExprIf));
         }
 
-        System.out.println("Post Cond Expression: " + expression.toString() + '\n');
+        //System.out.println("Post Cond Expression: " + expression.toString() + '\n');
         expression = ExprUnary.Op.NOOP.make(null, expression);
 
-        System.out.println("Post Cond Expression: " + expression.toString() + '\n');
-        addPredicateAST(module, "post_" + transition.modifiedName, "s", "s'", null, null, expression); //LOOK HERE
+        //System.out.println("Post Cond Expression: " + expression.toString() + '\n');
+        addPredicateAST(module, "pos_" + transition.modifiedName, "s", "s'", null, null, expression); //LOOK HERE
     }
 
     /*
@@ -384,7 +386,7 @@ public class CoreDashToAlloy {
             expression = ifElseExpr;
         }
 
-        System.out.println("Semantics AST: " + expression.toString() + '\n');
+        //System.out.println("Semantics AST: " + expression.toString() + '\n');
         expression = ExprUnary.Op.NOOP.make(null, expression);
         addPredicateAST(module, "semantics_" + transition.modifiedName, "s", "s'", null, null, expression);
     }
@@ -472,7 +474,7 @@ public class CoreDashToAlloy {
 
             expr = ExprBinary.Op.AND.make(null, null, expr, ExprITE.make(null, ifCond, ifExpr, elseExpr));
 
-            System.out.println("Expr from EnabledNextStep: " + expr.toString() + '\n');
+            //System.out.println("Expr from EnabledNextStep: " + expr.toString() + '\n');
             addPredicateAST(module, "enabledAfterStep_" + transition.modifiedName, "_s", "s", "t", "genEvents", expr);
         }
     }
@@ -511,7 +513,7 @@ public class CoreDashToAlloy {
 
         expression = ExprBinary.Op.AND.make(null, null, expression, ExprBadJoin.make(null, null, ExprVar.make(null, "first"), ExprVar.make(null, "init")));
 
-        System.out.println("Path AST: " + expression.toString() + '\n');
+        //System.out.println("Path AST: " + expression.toString() + '\n');
         addPredicateAST(module, "path", null, null, null, null, expression);
     }
 
@@ -601,7 +603,7 @@ public class CoreDashToAlloy {
         expression = ExprBinary.Op.AND.make(null, null, expression, ExprVar.make(null, "path"));
 
         expression = ExprUnary.Op.NOOP.make(null, expression);
-        System.out.println("Fact: " + expression.toString() + '\n');
+        //System.out.println("Fact: " + expression.toString() + '\n');
         module.addFact(null, "", expression);
     }
 
@@ -623,9 +625,8 @@ public class CoreDashToAlloy {
             }
         }
 
-        if (expression != null) {
-            addPredicateAST(module, "operation", "s", "s'", null, null, expression);
-        }
+        addPredicateAST(module, "operation", "s", "s'", null, null, expression);
+
     }
 
     /*
@@ -642,23 +643,25 @@ public class CoreDashToAlloy {
                 Expr genEventT = ExprBadJoin.make(null, null, ExprVar.make(null, "s'"), tFuncCall); //genEvents.t.enabledAfterStep_transName
                 Expr sPrimeGenEventT = ExprBadJoin.make(null, null, ExprVar.make(null, "t"), genEventT);
                 Expr ssPrimeGenEventT = ExprBadJoin.make(null, null, ExprVar.make(null, "genEvents"), sPrimeGenEventT);
-                System.out.println("Join: " + ssPrimeGenEventT.toString());
+                //System.out.println("Join: " + ssPrimeGenEventT.toString());
                 expr = ExprUnary.Op.NOT.make(null, ssPrimeGenEventT); //!enabledAfterStep_transName[s, s', t, genEvents]\n
             } else {
                 Expr tFuncCall = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "enabledAfterStep_" + key)); //s.enabledAfterStep_transName
                 Expr genEventT = ExprBadJoin.make(null, null, ExprVar.make(null, "s'"), tFuncCall); //s'.s.enabledAfterStep_transName
                 Expr sPrimeGenEventT = ExprBadJoin.make(null, null, ExprVar.make(null, "t"), genEventT);
                 Expr ssPrimeGenEventT = ExprBadJoin.make(null, null, ExprVar.make(null, "genEvents"), sPrimeGenEventT);
-                System.out.println("Join: " + ssPrimeGenEventT.toString());
+                //System.out.println("Join: " + ssPrimeGenEventT.toString());
                 Expr negaged = ExprUnary.Op.NOT.make(null, ssPrimeGenEventT); //!enabledAfterStep_transName[s, s', t, genEvents]\n
                 expr = ExprBinary.Op.AND.make(null, null, expr, negaged);
             }
         }
 
-        expr = ExprUnary.Op.NOOP.make(null, expr);
-
-        System.out.println("TestIfNextStable: " + expr);
-        addPredicateAST(module, "testIfNextStable", "s", "s'", "t", "genEvents", expr);
+        /* No need to add this predicate if there are no transitions */
+        if (module.transitions.keySet().size() > 0 && module.stateHierarchy) {
+            expr = ExprUnary.Op.NOOP.make(null, expr);
+            //System.out.println("TestIfNextStable: " + expr);
+            addPredicateAST(module, "testIfNextStable", "s", "s'", "t", "genEvents", expr);
+        }
     }
 
     /*
@@ -673,8 +676,12 @@ public class CoreDashToAlloy {
             else
                 expr = ExprBinary.Op.OR.make(null, null, expr, ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "pre_" + key)));
         }
-        System.out.println("Enabled AST: " + expr.toString() + '\n');
-        addPredicateAST(module, "isEnabled", "s", null, null, null, expr);
+
+        //No need to add this predicate if there are no transitions in the model
+        if (module.transitions.keySet().size() > 0 && module.stateHierarchy) {
+            //System.out.println("Enabled AST: " + expr.toString() + '\n');
+            addPredicateAST(module, "isEnabled", "s", null, null, null, expr);
+        }
     }
 
     /*
@@ -750,7 +757,7 @@ public class CoreDashToAlloy {
             }
         }
 
-        System.out.println("Init expression: " + expression.toString() + '\n');
+        //System.out.println("Init expression: " + expression.toString() + '\n');
         expression = ExprUnary.Op.NOOP.make(null, expression);
         module.addFunc(null, null, "init", null, decls, null, expression);
     }
