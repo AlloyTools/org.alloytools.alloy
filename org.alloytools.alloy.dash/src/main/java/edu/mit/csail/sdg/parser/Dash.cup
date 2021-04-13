@@ -36,6 +36,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.io.StringReader;
 import java_cup.runtime.*;
+import java.util.Arrays;
 import org.alloytools.alloy.core.AlloyCore;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorFatal;
@@ -304,7 +305,7 @@ parser code {:
         if (!filename.endsWith(INT_LIB_NAME + ".als"))
             u.addOpen(null, null, ExprVar.make(null, INT_LIB_NAME), null, ExprVar.make(null, "integer"));
         u.resolution = initialResolutionMode;
-        String content = fc!=null ? fc.get(filename) : null;
+        String content = fc!=null ? fc.get(filename) : null; 
         if (content==null && loaded!=null) content = loaded.get(filename);
         if (content==null) content = Util.readAll(filename);
         if (loaded!=null) loaded.put(filename,content);
@@ -692,7 +693,10 @@ nonterminal                            TemplateCall;
 
 //===========================================================================//
 
-File ::= Spec {: parser.dashmodule.doneParsing(); if (!DashOptions.doneParsing){ DashOptions.doneParsing = true; System.out.println("Done"); } :};
+File ::= Spec {: parser.dashmodule.doneParsing(); if (!DashOptions.doneParsing){ parser.dashmodule.status = 0;
+											parser.dashmodule.addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), ExprVar.make(null, "ordering")); 
+											parser.dashmodule.addOpen(null, null, ExprVar.make(null, "util/steps"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), ExprVar.make(null, "steps"));
+											parser.dashmodule.status = 3; DashOptions.doneParsing = true; System.out.println("Done"); } :};
 
 Spec ::= Spec MODULE:o Name:n                                                  {: nod(n);         parser.dashmodule.addModelName(o.merge(n.pos) , n.label , new ArrayList<ExprVar>()); :};
 Spec ::= Spec MODULE:o Name:n LBRACKET Namex:b RBRACKET:r                      {: nod(n); nod(b); parser.dashmodule.addModelName(o.merge(r)     , n.label , b                       ); :};

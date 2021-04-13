@@ -21,9 +21,9 @@
 
 Export-Package: \
 	edu.mit.csail.sdg.alloy4,\
-	edu.mit.csail.sdg.ast,\
+	ca.uwaterloo.watform.ast,\
 	org.alloytools.graphics.util,\
-	edu.mit.csail.sdg.parser,\
+	ca.uwaterloo.watform.parser,\
 	edu.mit.csail.sdg.sim,\
 	edu.mit.csail.sdg.translator,\
 	org.alloytools.util.table,\

@@ -351,13 +351,14 @@ public class DashToCoreDash {
                     completedGoToCommands.add(generateCompleteCommand(trans.parentState, gotoCommand));
             }
         } else {
-            completedGoToCommands.add(generateCompleteCommand(trans, ""));
+            //If we do not have a goto command, it should be equal to the origin of the transition
+            completedGoToCommands.add(trans.fromExpr.fromExpr.get(0));
         }
 
         return completedGoToCommands;
     }
 
-    static String generateCompleteCommand(Object transItem, String fromExpr) {
+    static String generateCompleteCommand(Object transItem, String expr) {
         String completeCommand = "";
         Object parentObject = null;
 
@@ -378,7 +379,7 @@ public class DashToCoreDash {
             }
         }
 
-        completeCommand = completeCommand + fromExpr;
+        completeCommand = completeCommand + expr;
 
         if (completeCommand.substring(completeCommand.length() - 1).equals("/")) // If the last character is a /, then remove it
             completeCommand = completeCommand.substring(0, completeCommand.length() - 1);

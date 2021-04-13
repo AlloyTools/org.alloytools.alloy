@@ -268,7 +268,7 @@ public final class DashModule extends Browsable implements Module {
      * The list of facts; each fact is either an untypechecked Exp or a typechecked
      * Expr.
      */
-    private final List<Pair<String,Expr>>    facts       = new ArrayList<Pair<String,Expr>>();
+    public final List<Pair<String,Expr>>     facts       = new ArrayList<Pair<String,Expr>>();
 
     /**
      * The list of (CommandName,Command,Expr) triples; NOTE: duplicate command names
@@ -437,7 +437,7 @@ public final class DashModule extends Browsable implements Module {
             this.rootmodule = rootModule;
             this.unrolls = unrolls;
             this.warns = warns;
-            boolean noIntFields = !CompUtil.areIntsUsed(rootModule.getAllReachableSigs(), null);
+            boolean noIntFields = !DashUtil.areIntsUsed(rootModule.getAllReachableSigs(), null);
             boolean noOpenInteger = true;
             for (Open o : rootModule.opens.values()) {
                 if (("util/integer".equals(o.filename) || "util\\integer".equals(o.filename)) && o.pos != null) {
@@ -2550,7 +2550,7 @@ public final class DashModule extends Browsable implements Module {
      * This method resolves the entire world; NOTE: if it throws an exception, it
      * may leave the world in an inconsistent state!
      */
-    static DashModule resolveAll(final A4Reporter rep, final DashModule root) throws Err {
+    public static DashModule resolveAll(final A4Reporter rep, final DashModule root) throws Err {
         final List<ErrorWarning> warns = new ArrayList<ErrorWarning>();
         for (DashModule m : root.getAllReachableModules())
             root.allModules.add(m);

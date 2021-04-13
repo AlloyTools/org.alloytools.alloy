@@ -209,6 +209,8 @@ public final class DashUtil {
         // infinite chain of OPEN (from root).
         // Since the number of files is finite, at least 1 filename will be
         // repeated.
+
+
         if (thispath.contains(filename))
             throw new ErrorSyntax(pos, "Circular dependency in module import. The file \"" + (new File(filename)).getName() + "\" is imported infinitely often.");
         thispath.add(filename);
@@ -374,7 +376,8 @@ public final class DashUtil {
             List<Object> seenDollar = new ArrayList<Object>();
             DashModule root = parseRecursivelyDash(seenDollar, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, 1);
             root.seenDollar = seenDollar.size() > 0;
-            return DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, root);
+            //return DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, root);
+            return root;
         } catch (FileNotFoundException ex) {
             throw new ErrorSyntax("File cannot be found.\n" + ex.getMessage(), ex);
         } catch (IOException ex) {
@@ -467,7 +470,6 @@ public final class DashUtil {
     /* Dash Parsing. A change is required */
     static DashModule parseDash(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, DashModule root, int lineOffset, String filename, String prefix, int initialResolutionMode) throws Err, FileNotFoundException, IOException {
         DashModule module = DashParser.alloy_parseStream(seenDollar, loaded, fc, root, lineOffset, filename, prefix, initialResolutionMode);
-        module.addDefaultCommand();
         return module;
     }
 }

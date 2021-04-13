@@ -52,8 +52,6 @@ public class DashToStringAlloy {
 
         for (String variableName : module.envVariable2Expression.keySet()) {
             alloyModel += (variableName + ": " + module.envVariable2Expression.get(variableName) + '\n');
-            //System.out.println("Expr: " + module.envVariable2Expression.get(variableName).toString() + " Type: " + module.envVariable2Expression.get(variableName).getClass());
-            //alloyModel += (variableName + ": " + module.envVariable2Expression.get(variableName) + '\n');
         }
 
         for (String variableName : module.variable2Expression.keySet()) {

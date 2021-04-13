@@ -23,11 +23,6 @@ import edu.mit.csail.sdg.ast.ExprVar;
 public class CoreDashToAlloy {
 
     public static void convertToAlloyAST(DashModule module) {
-        module.status = 0;
-        //module.addModelName(null, "Elevator", new ArrayList<ExprVar>());
-        module.addOpen(null, null, ExprVar.make(null, "util/Boolean"), new ArrayList<ExprVar>(), null);
-        module.addOpen(null, null, ExprVar.make(null, "util/steps"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
-        module.addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
         createSnapshotSigAST(module);
         createStateSpaceAST(module);
         createEventSpaceAST(module);
@@ -115,11 +110,6 @@ public class CoreDashToAlloy {
             decls.add(new Decl(null, null, null, null, a, mult(b)));
             a.clear();
         }
-
-        for (Decl decl : decls)
-            System.out.println("Snapshot Decl: " + decl.get() + " Expr: " + decl.expr);
-
-        System.out.println();
 
         List<ExprVar> sigParent = new ArrayList<ExprVar>();
         sigParent.add(ExprVar.make(null, "BaseSnapshot"));

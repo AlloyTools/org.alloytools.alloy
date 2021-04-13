@@ -7,19 +7,19 @@ import java.util.List;
 import org.junit.Test;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.ast.DashTrans;
+import ca.uwaterloo.watform.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Func;
-import edu.mit.csail.sdg.parser.CoreDashToAlloy;
-import edu.mit.csail.sdg.parser.DashModule;
-import edu.mit.csail.sdg.parser.DashOptions;
-import edu.mit.csail.sdg.parser.DashToCoreDash;
-import edu.mit.csail.sdg.parser.DashUtil;
-import edu.mit.csail.sdg.parser.DashValidation;
+import ca.uwaterloo.watform.parser.CoreDashToAlloy;
+import ca.uwaterloo.watform.parser.DashModule;
+import ca.uwaterloo.watform.parser.DashOptions;
+import ca.uwaterloo.watform.parser.DashToCoreDash;
+import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.parser.DashValidation;
 
 public class DashModelsTest {
 
     //Dash Parser Unit Tests
-    @Test
+    //@Test
     public void testStates() throws Exception {
         String dashModel = "conc state concState { default state topStateA { default state innerState{}} state topStateB{}}";
         DashOptions.outputDir = "test.dsh";
@@ -37,7 +37,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testConcStates() throws Exception {
 
         String dashModel = "conc state topConcStateA { conc state innerConcState{  default state A {} } } conc state topConcStateB { default state B{} }";
@@ -57,7 +57,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testTransitions() throws Exception {
 
         String dashModel = "conc state topConcStateA { event A{} trans A {on A goto B} default state B {trans B {on A}} }";
@@ -77,7 +77,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testVarNames() throws Exception {
 
         String dashModel = "conc state concState { var_one: none->none var_two: none->none conc state innerConcState {var_three: none->none} }";
@@ -97,7 +97,7 @@ public class DashModelsTest {
 
 
     //CoreDash Unit Tests
-    @Test
+    // @Test
     public void testCoreDashTransitions() throws Exception {
 
         String dashModel = "conc state concState { var_one: none trans {do var_one = none} trans trans_two {do var_one = none} default state state_one {trans {do var_one = none}} }";
@@ -124,7 +124,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testTransitionIncompleteCommand() throws Exception {
 
         String dashModel = "conc state concState { var_one: none trans {do var_one = none} trans trans_two {do var_one = none} default state state_one {trans {do var_one = none}} }";
@@ -161,7 +161,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testTransitionAllCommands() throws Exception {
 
         String dashModel = "conc state concState { var_one: none event event_one {} default state state_one {} state state_two {} trans {from state_one, state_two on event_one when var_one = none do var_one' = var_one goto state_two send event_one }}";
@@ -171,12 +171,6 @@ public class DashModelsTest {
 
         List<DashTrans> transitions = new ArrayList<DashTrans>();
         for (DashTrans trans : module.transitions.values()) {
-            //System.out.println(trans.modifiedName + " fromExpr: " + trans.fromExpr.fromExpr.get(0));
-            //System.out.println(trans.modifiedName + "onExpr: " + trans.onExpr.name);
-            //System.out.println(trans.modifiedName + "doExpr: " + trans.doExpr.exprList.get(0).toString());
-            //System.out.println(trans.modifiedName + "whenExpr: " + trans.whenExpr.exprList.get(0).toString());
-            //System.out.println(trans.modifiedName + "gotoExpr: " + trans.gotoExpr.gotoExpr.get(0));
-            //System.out.println(trans.modifiedName + "sendExpr: " + trans.sendExpr.name);
             transitions.add(trans);
         }
 
@@ -209,7 +203,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    // @Test
     public void testTransitionTemplate() throws Exception {
 
         String dashModel = "conc state concState { var_one: none event event_one {} def trans template [s: State, e: Event] {from s, state_two on e when var_one = none do var_one' = var_one goto s send e} default state state_one {} state state_two {} trans{ template[state_one, event_one]} }";
@@ -253,7 +247,7 @@ public class DashModelsTest {
 
     //CoreDash to Alloy AST Unit Tests
 
-    @Test
+    //@Test
     public void testPredicateNames() throws Exception {
 
         String dashModel = "conc state topConcStateA { event envA{} trans A {on envA goto B} default state B {trans B {on envA}} }";
@@ -297,7 +291,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testSignatureNames() throws Exception {
         String dashModel = "conc state topConcStateA { event envA{} trans A {on envA goto B} default state B {trans B {on envA}} }";
         DashOptions.outputDir = "test.dsh";
@@ -325,9 +319,9 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    @Test
+    //@Test
     public void testPreCondPred() throws Exception {
-        String dashModel = "conc state concState { var_one: none->none event envA {} trans A {from stateA on envA when var_one = none->none} default state stateA {}}";
+        String dashModel = "conc state concState { var_one: none event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
         DashOptions.outputDir = "test.dsh";
 
         DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
@@ -342,9 +336,326 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        if (funcs.get(0) != null)
-            System.out.println("Pre-Cond Expr: " + funcs.get(0).body);
+        String expectedOutput = "AND[concState_stateA in s.conf, concState_envA in s.events & EnvironmentEvent, s.concState_var_one = none]";
 
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Pre-Conditions Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testPosCondPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("pos_concState_A"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[s'.conf = s.conf - concState_stateA + concState_stateA, no s'.events & InternalEvent, s'.concState_var_one = s.concState_var_one]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Post-Conditions Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+    
+    
+    @Test
+    public void testPosCondPredWithHierarchy() throws Exception {
+        String dashModel = "conc state concState { var_one: one EventLabel event envA {} conc state inner{ default state stateA{} trans A {from stateA on envA when var_one = none}  trans B {from stateA on envA do var_one' = none} } }";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("pos_concState_inner_A"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[s'.conf = s.conf - concState_inner_stateA + concState_inner_stateA, s'.concState_var_one = s.concState_var_one, (none.concState_inner_A.s'.s.testIfNextStable => AND[s'.stable = True, (s.stable = True => no s'.events & InternalEvent else no s'.events & InternalEvent - InternalEvent & s.events)] else AND[s'.stable = False, (s.stable = True => AND[s'.events & InternalEvent = none, s'.events & EnvironmentEvent = s.events & EnvironmentEvent] else s'.events = s.events + none)])]";
+        
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Post-Conditions Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+    
+    @Test
+    public void testEnabledAfterNextStep() throws Exception {
+        String dashModel = "conc state concState { var_one: one EventLabel event envA {} conc state inner{ default state stateA{} trans A {from stateA on envA when var_one = none}  trans B {from stateA on envA do var_one' = none} } }";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("enabledAfterStep_concState_inner_A"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[concState_inner_stateA in s.conf, s.concState_var_one = none, (_s.stable = True => AND[no t & concState_inner_A + concState_inner_B, concState_envA in _s.events & EnvironmentEvent + genEvents] else AND[no _s.taken + t & concState_inner_A + concState_inner_B, concState_envA in _s.events + genEvents])]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Enabled After Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+    
+    @Test
+    public void testTestIfNextStep() throws Exception {
+        String dashModel = "conc state concState { var_one: one EventLabel event envA {} conc state inner{ default state stateA{} trans A {from stateA on envA when var_one = none}  trans B {from stateA on envA do var_one' = none} } }";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("testIfNextStable"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[! genEvents.t.s'.s.enabledAfterStep_concState_inner_A, ! genEvents.t.s'.s.enabledAfterStep_concState_inner_B]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("TestIfNext After Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+    
+    @Test
+    public void testTestIsEnabled() throws Exception {
+        String dashModel = "conc state concState { var_one: one EventLabel event envA {} conc state inner{ default state stateA{} trans A {from stateA on envA when var_one = none}  trans B {from stateA on envA do var_one' = none} } }";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("isEnabled"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "OR[s.pre_concState_inner_A, s.pre_concState_inner_B]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("TestIfNext After Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+
+    @Test
+    public void testSemanticsPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("semantics_concState_A"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "s'.taken = concState_A";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Semantics Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testInitPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("init"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[s.conf = concState_stateA, no s.taken, no s.events & InternalEvent]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Init Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testOperaionPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("operation"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "s'.s.concState_A";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Operation Predicate Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testSmallStepPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("small_step"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "s'.s.operation";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Operation Predicate Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testEqualsPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("equals"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[s'.conf = s.conf, s'.events = s.events, s'.taken = s.taken, s'.concState_var_one = s.concState_var_one]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Equals Predicate Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testPathPred() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        List<Func> funcs = new ArrayList<Func>();
+
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("path"))
+                funcs = module.funcs.get(name);
+        }
+
+        String expectedOutput = "AND[(all s,s' | s'.s.operation), first.init]";
+
+        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+            throw new Exception("Path Predicate Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testModelFact() throws Exception {
+        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s' | s -> s' in nextStep <=> s'.s.small_step), (all s,s' | s'.s.equals => s = s'), path]";
+
+        if (!expectedOutput.equals(module.facts.get(0).b.toString()))
+            throw new Exception("Fact Not Stored Properly.");
+
+        DashValidation.clearContainers();
+    }
+    
+    @Test
+    public void testModelFactWithHierarchy() throws Exception {
+        String dashModel = "conc state concState { var_one: one EventLabel event envA {} conc state inner{ default state stateA{} trans A {from stateA on envA when var_one = none}  trans B {from stateA on envA do var_one' = none} } }";
+        DashOptions.outputDir = "test.dsh";
+
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        DashValidation.validateDashModel(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+
+        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s' | s -> s' in nextStep <=> s'.s.small_step), (all s,s' | s'.s.equals => s = s'), (all s | AND[s.isEnabled, (no s' | s'.s.small_step)] => s.stable = False), (all s | s.stable = False => some s.nextStep), path]";
+
+        System.out.println("Actual  : " + module.facts.get(0).b.toString());
+        System.out.println("Expected: " + expectedOutput);
+        
+        if (!expectedOutput.equals(module.facts.get(0).b.toString()))
+            throw new Exception("Fact Not Stored Properly.");
 
         DashValidation.clearContainers();
     }
