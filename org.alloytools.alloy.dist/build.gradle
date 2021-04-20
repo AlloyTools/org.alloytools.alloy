@@ -1,4 +1,3 @@
-
 task macos( dependsOn: jar, type: JavaExec ) {
 
 	classpath files("${System.properties['java.home']}/../lib/ant-javafx.jar")

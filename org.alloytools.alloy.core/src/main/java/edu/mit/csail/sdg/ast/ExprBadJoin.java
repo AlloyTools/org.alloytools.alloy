@@ -36,13 +36,13 @@ import edu.mit.csail.sdg.alloy4.Pos;
 public final class ExprBadJoin extends Expr {
 
     /** The left-hand-side expression. */
-    public Expr left;
+    public final Expr left;
 
     /** The right-hand-side expression. */
-    public Expr right;
+    public final Expr right;
 
     /** Caches the span() result. */
-    private Pos span = null;
+    private Pos       span = null;
 
     /** {@inheritDoc} */
     @Override

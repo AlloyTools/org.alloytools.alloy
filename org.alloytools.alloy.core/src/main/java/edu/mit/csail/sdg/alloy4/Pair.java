@@ -86,6 +86,4 @@ public final class Pair<A, B> implements Serializable {
         Pair< ? , ? > p = (Pair< ? , ? >) that;
         return (a == null ? p.a == null : a.equals(p.a)) && (b == null ? p.b == null : b.equals(p.b));
     }
-
-
 }

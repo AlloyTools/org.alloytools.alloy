@@ -20,14 +20,9 @@
     slf4j.api, \
 
 Export-Package: \
-	edu.mit.csail.sdg.alloy4,\
 	ca.uwaterloo.watform.ast,\
-	org.alloytools.graphics.util,\
 	ca.uwaterloo.watform.parser,\
-	edu.mit.csail.sdg.sim,\
-	edu.mit.csail.sdg.translator,\
-	org.alloytools.util.table,\
-	org.alloytools.alloy.core
+	ca.uwaterloo.watform.transform,\
 	
 Private-Package: \
 	java_cup.runtime

@@ -1,0 +1,20 @@
+task macos( dependsOn: jar, type: JavaExec ) {
+
+	classpath files("${System.properties['java.home']}/../lib/ant-javafx.jar")
+	classpath files(".")
+
+	main = 'com.sun.javafx.tools.packager.Main'
+
+	args( 
+		'-deploy', 
+			'-BappVersion=5.1.0',
+			'-native', 'pkg',
+				'-srcfiles', 'target/org.alloytools.alloy.dash.jar', 
+				'-appclass', 'ca.uwaterloo.watform.dash4whole.dash', 
+				'-name', 'Dash',
+	 			'-outdir', 'target', 
+				'-outfile', 'dash',
+				'-Bmac.CFBundleVersion=5.1.0',
+	 			'-v'	)
+	
+}

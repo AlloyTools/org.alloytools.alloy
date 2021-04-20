@@ -34,10 +34,10 @@ import edu.mit.csail.sdg.parser.CompModule.Context;
 
 /** Immutable; this class represents a macro. */
 
-public final class Macro extends ExprCustom {
+final class Macro extends ExprCustom {
 
     /** If nonnull, this is a private macro. */
-    public final Pos                 isPrivate;
+    final Pos                        isPrivate;
 
     /** The module that defined this. */
     private final CompModule         realModule;
@@ -77,7 +77,7 @@ public final class Macro extends ExprCustom {
         return new Macro(pos, isPrivate, realModule, name, params, Util.append(args, arg), body);
     }
 
-    public Expr changePos(Pos pos) {
+    Expr changePos(Pos pos) {
         return new Macro(pos, isPrivate, realModule, name, params, args, body);
     }
 

@@ -9,10 +9,10 @@ import org.junit.Test;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import ca.uwaterloo.watform.ast.DashTrans;
 import edu.mit.csail.sdg.ast.Func;
-import ca.uwaterloo.watform.parser.CoreDashToAlloy;
+import ca.uwaterloo.watform.transform.CoreDashToAlloy;
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashOptions;
-import ca.uwaterloo.watform.parser.DashToCoreDash;
+import ca.uwaterloo.watform.transform.DashToCoreDash;
 import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.parser.DashValidation;
 
@@ -338,7 +338,7 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[concState_stateA in s.conf, concState_envA in s.events & EnvironmentEvent, s.concState_var_one = none]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Pre-Conditions Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -361,10 +361,11 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "AND[s'.conf = s.conf - concState_stateA + concState_stateA, no s'.events & InternalEvent, s'.concState_var_one = s.concState_var_one]";
+        String expectedOutput = "AND[s'.conf = s.conf - concState_stateA + concState_stateA, s'.concState_var_one = s.concState_var_one, no s'.events & InternalEvent]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
-            throw new Exception("Post-Conditions Not Stored Properly.");
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString())) {
+            throw new Exception("Post-Conditions Not Stored Properly. Expected: " + expectedOutput + " Actual: " + funcs.get(0).getBody().toString());
+        }
 
         DashValidation.clearContainers();
     }
@@ -389,8 +390,9 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[s'.conf = s.conf - concState_inner_stateA + concState_inner_stateA, s'.concState_var_one = s.concState_var_one, (none.concState_inner_A.s'.s.testIfNextStable => AND[s'.stable = True, (s.stable = True => no s'.events & InternalEvent else no s'.events & InternalEvent - InternalEvent & s.events)] else AND[s'.stable = False, (s.stable = True => AND[s'.events & InternalEvent = none, s'.events & EnvironmentEvent = s.events & EnvironmentEvent] else s'.events = s.events + none)])]";
         
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
-            throw new Exception("Post-Conditions Not Stored Properly.");
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString())) {
+            throw new Exception("Post-Conditions Not Stored Properly. Expected: " + expectedOutput + " Actual: " + funcs.get(0).getBody().toString());
+        }
 
         DashValidation.clearContainers();
     }
@@ -414,7 +416,7 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[concState_inner_stateA in s.conf, s.concState_var_one = none, (_s.stable = True => AND[no t & concState_inner_A + concState_inner_B, concState_envA in _s.events & EnvironmentEvent + genEvents] else AND[no _s.taken + t & concState_inner_A + concState_inner_B, concState_envA in _s.events + genEvents])]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Enabled After Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -439,7 +441,7 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[! genEvents.t.s'.s.enabledAfterStep_concState_inner_A, ! genEvents.t.s'.s.enabledAfterStep_concState_inner_B]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("TestIfNext After Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -464,7 +466,7 @@ public class DashModelsTest {
 
         String expectedOutput = "OR[s.pre_concState_inner_A, s.pre_concState_inner_B]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("TestIfNext After Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -490,7 +492,7 @@ public class DashModelsTest {
 
         String expectedOutput = "s'.taken = concState_A";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Semantics Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -515,7 +517,7 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[s.conf = concState_stateA, no s.taken, no s.events & InternalEvent]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Init Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -540,7 +542,7 @@ public class DashModelsTest {
 
         String expectedOutput = "s'.s.concState_A";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Operation Predicate Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -565,7 +567,7 @@ public class DashModelsTest {
 
         String expectedOutput = "s'.s.operation";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Operation Predicate Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -590,7 +592,7 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[s'.conf = s.conf, s'.events = s.events, s'.taken = s.taken, s'.concState_var_one = s.concState_var_one]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Equals Predicate Not Stored Properly.");
 
         DashValidation.clearContainers();
@@ -615,7 +617,7 @@ public class DashModelsTest {
 
         String expectedOutput = "AND[(all s,s' | s'.s.operation), first.init]";
 
-        if (!expectedOutput.equals(funcs.get(0).body.toString()))
+        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Path Predicate Not Stored Properly.");
 
         DashValidation.clearContainers();

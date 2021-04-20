@@ -84,7 +84,6 @@ import ca.uwaterloo.watform.ast.DashExit;
 
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashValidation;
-import ca.uwaterloo.watform.parser.DashToCoreDash;
  
 //===========================================================================//
 
@@ -304,8 +303,8 @@ parser code {:
         if (root==null && prefix.length()!=0) throw new ErrorFatal("Internal error (parse subfile with root==null)");
         if (root!=null && prefix.length()==0) throw new ErrorFatal("Internal error (parse topfile with root!=null)");
         DashModule u = new DashModule(root, filename, prefix);
-        if (!filename.endsWith(INT_LIB_NAME + ".als"))
-            u.addOpen(null, null, ExprVar.make(null, INT_LIB_NAME), null, ExprVar.make(null, "integer"));
+        //if (!filename.endsWith(INT_LIB_NAME + ".als"))
+            //u.addOpen(null, null, ExprVar.make(null, INT_LIB_NAME), null, ExprVar.make(null, "integer"));
         u.resolution = initialResolutionMode;
         String content = fc!=null ? fc.get(filename) : null; 
         if (content==null && loaded!=null) content = loaded.get(filename);
@@ -695,11 +694,7 @@ nonterminal                            TemplateCall;
 
 //===========================================================================//
 
-File ::= Spec {: parser.dashmodule.doneParsing(); if (!DashOptions.doneParsing){ parser.dashmodule.status = 0;
-											parser.dashmodule.addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), ExprVar.make(null, "ordering")); 
-											parser.dashmodule.addOpen(null, null, ExprVar.make(null, "util/steps"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), ExprVar.make(null, "steps"));
-											parser.dashmodule.addOpen(null, null, ExprVar.make(null, "util/boolean"), new ArrayList<ExprVar>(), ExprVar.make(null, "boolean"));
-											parser.dashmodule.status = 3; DashOptions.doneParsing = true; System.out.println("Done"); } :};
+File ::= Spec {: parser.dashmodule.doneParsing(); if (!DashOptions.doneParsing){ DashOptions.doneParsing = true; System.out.println("Done"); } :};
 
 Spec ::= Spec MODULE:o Name:n                                                  {: nod(n);         parser.dashmodule.addModelName(o.merge(n.pos) , n.label , new ArrayList<ExprVar>()); :};
 Spec ::= Spec MODULE:o Name:n LBRACKET Namex:b RBRACKET:r                      {: nod(n); nod(b); parser.dashmodule.addModelName(o.merge(r)     , n.label , b                       ); :};
@@ -792,7 +787,7 @@ TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b                 {: if (!Versi
 TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e             , Sig.NONE, true,           a.num, Integer.MAX_VALUE, 1    ); :};
 TypeNumber ::= EXACTLY:e NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, b.num,             i.num); :};
 TypeNumber ::= EXACTLY:e NUMBER:a                  COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(    e.merge(i.pos), Sig.NONE, true,           a.num, Integer.MAX_VALUE, i.num); :};
-TypeNumber ::=           NUMBER:a                                  {:                                                                                RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, a.num,             1    ); :};
+TypeNumber ::=           NUMBER:a                                  {: 											                                     RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, a.num,             1    ); :};
 TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b                 {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(b.pos), Sig.NONE, a.num == b.num, a.num, b.num,             1    ); :}; 
 TypeNumber ::=           NUMBER:a DOT DOT                          {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos             , Sig.NONE, false,          a.num, Integer.MAX_VALUE, 1    ); :}; 
 TypeNumber ::=           NUMBER:a DOT DOT NUMBER:b COLON NUMBER:i  {: if (!Version.experimental) throw new ErrorSyntax(a.pos, "Syntax error here."); RESULT = new CommandScope(a.pos.merge(i.pos), Sig.NONE, a.num == b.num, a.num, b.num,             i.num); :};
@@ -808,7 +803,7 @@ Function ::= Vis:p FUN:o SigRef:f DOT Name:n LBRACKET Decls:d RBRACKET COLON Exp
 Function ::= Vis:p FUN:o SigRef:f DOT Name:n                           COLON Expr:r Super:v {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , null , mult(r), v); :};
 
 Predicate ::= Vis:p PRED:o              Name:n LPAREN   Decls:d RPAREN   Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
-Predicate ::= Vis:p PRED:o              Name:n LBRACKET Decls:d RBRACKET Super:v             {: parser.dashmodule.breakDownExpr(v); DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
+Predicate ::= Vis:p PRED:o              Name:n LBRACKET Decls:d RBRACKET Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, d    , null, v); :};
 Predicate ::= Vis:p PRED:o              Name:n                           Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, null, null , null, v); :};
 Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n LPAREN   Decls:d RPAREN   Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , null, v); :};
 Predicate ::= Vis:p PRED:o SigRef:f DOT Name:n LBRACKET Decls:d RBRACKET Super:v             {: DashValidation.funcNames.add(n.label);nod(n); parser.dashmodule.addFunc(o.merge(v.span()), p, n.label, f   , d    , null, v); :};
@@ -820,7 +815,8 @@ Vis ::= PRIVATE:p {: RESULT=p;    :};
 
 //This is the top level conc state. StateItems are specific items that can appear inside a Concurrent State (Conc State, State, Event, Trans, etc)
 ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: 								        
-										parser.dashmodule.addTopLevelConcState(o, n.label, c);    
+										parser.dashmodule.addTopLevelConcState(o, n.label, c);
+										parser.dashmodule.importModules();    
 										:};
 
 //This represents a concurrent state inside a concurrent state

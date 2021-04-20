@@ -63,4 +63,21 @@ public class DashConcState {
                 templateDecl.add((DashTransTemplate) item);
         }
     }
+
+	public DashConcState(DashConcState concState) {
+		this.name = concState.name;
+		this.modifiedName = concState.modifiedName;
+		this.parent = concState.parent;	
+		this.concStates = concState.concStates;		
+		this.states = concState.states;
+		this.transitions = concState.transitions;
+		this.templateCall = concState.templateCall;		
+		this.templateDecl = concState.templateDecl;
+		this.events = concState.events;
+		this.decls = concState.decls;
+		this.init = concState.init;		
+		this.invariant = concState.invariant;
+		this.action = concState.action;
+		this.condition = concState.condition;
+	}
 }

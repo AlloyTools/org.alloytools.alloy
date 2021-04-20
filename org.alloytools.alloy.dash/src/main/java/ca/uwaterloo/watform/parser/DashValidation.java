@@ -148,7 +148,6 @@ public class DashValidation {
             }
             if (transition.gotoExpr != null) {
                 for (String gotoName : transition.gotoExpr.gotoExpr) {
-                    //System.out.println("Checking :" + gotoName);
                     validateTransRef(gotoName, transition.gotoExpr.pos, stateNames.get(concStateName));
                 }
             }
@@ -199,7 +198,6 @@ public class DashValidation {
 
     static void validateExprVar(DashConcState concState) {
         for (Expr expr : expressions.get(concState.modifiedName)) {
-            //System.out.println("\nLooking at: " + expr.toString());
 
             ExprUnary parentExprUnary = null;
 
@@ -212,7 +210,6 @@ public class DashValidation {
             if (parentExprUnary != null && parentExprUnary.sub instanceof ExprList) {
                 ExprList exprList = (ExprList) parentExprUnary.sub;
                 for (Expr expression : exprList.args) {
-                    //System.out.println("\nLooking at: " + expression.toString() + " Type: " + expression.getClass());
                     quantifierVars.clear(); //Clearly out previously stored quantified variables
                     getVarFromParentExpr(expression);
                 }
@@ -257,7 +254,6 @@ public class DashValidation {
         }
 
         if (binary.left instanceof ExprVar) {
-            //System.out.println("Left ExprVar: " + binary.left);
             checkIfVarValid((ExprVar) binary.left);
         }
 
@@ -276,7 +272,6 @@ public class DashValidation {
         }
 
         if (binary.right instanceof ExprVar) {
-            //System.out.println("Right ExprVar: " + binary.right);
             checkIfVarValid((ExprVar) binary.right);
         }
 
@@ -296,7 +291,6 @@ public class DashValidation {
      */
     private static String getVarFromUnary(ExprUnary unary) {
         if (unary.sub instanceof ExprVar) {
-            //System.out.println("ExprVar: " + unary.sub.toString());
             checkIfVarValid((ExprVar) unary.sub);
         }
         if (unary.sub instanceof ExprUnary) {
@@ -313,7 +307,6 @@ public class DashValidation {
 
     private static String getVarFromBadJoin(ExprBadJoin joinExpr) {
         if (joinExpr.left instanceof ExprVar) {
-            //System.out.println("Left ExprVar: " + joinExpr.left.toString());
             checkIfVarValid((ExprVar) joinExpr.left);
         }
         if (joinExpr.left instanceof ExprUnary) {
@@ -323,7 +316,6 @@ public class DashValidation {
             getVarFromBadJoin((ExprBadJoin) joinExpr.right);
         }
         if (joinExpr.right instanceof ExprVar) {
-            //System.out.println("Left ExprVar: " + joinExpr.right.toString());
             checkIfVarValid((ExprVar) joinExpr.right);
         }
         if (joinExpr.right instanceof ExprUnary) {
@@ -352,7 +344,6 @@ public class DashValidation {
 
     private static void getDeclsFromExprQT(ExprQt exprQt) {
         for (Decl decl : exprQt.decls) {
-            //System.out.println("Var Name: " + decl.get());
             quantifierVars.add(decl.get().toString());
             getVarFromParentExpr(decl.expr);
         }
@@ -362,18 +353,15 @@ public class DashValidation {
         List<String> nameList;
         for (Decl decl : decls) {
             if (decl.expr instanceof ExprVar) {
-                //System.out.println("Expr: " + decl.expr.toString());
                 if (!decl.expr.toString().equals("State") && !decl.expr.toString().equals("Event"))
                     throw new ErrorSyntax(pos, "Expected Type: Abstract Boolean or Abstract Event or Abstract State");
             }
             if (decl.expr instanceof ExprVar && decl.expr.toString().equals("Event")) {
-                //System.out.println("Adding to Events: " + decl.get().toString());
                 nameList = new ArrayList<String>(eventNames.get(concStateName));
                 nameList.add(decl.get().toString());
                 eventNames.put(concStateName, nameList);
             }
             if (decl.expr instanceof ExprVar && decl.expr.toString().equals("State")) {
-                //System.out.println("Adding to State: " + decl.get().toString());
                 nameList = new ArrayList<String>(stateNames.get(concStateName));
                 nameList.add(decl.get().toString());
                 stateNames.put(concStateName, nameList);
@@ -482,7 +470,10 @@ public class DashValidation {
 
     /* Accessed by the DashParser */
     public static void importModule(String fileName) {
-        File utilFolder = new File(fileName + ".als");
+    	System.out.println("File Name: " + fileName);
+    	if(fileName.contains("/"))
+    		fileName = fileName.substring(fileName.indexOf("/") + 1);
+        File utilFolder = new File(DashOptions.dashModelLocation + "/util/" + fileName + ".als"); 
         if (utilFolder.exists()) {
             A4Reporter rep = new A4Reporter() {
 
@@ -494,7 +485,7 @@ public class DashValidation {
                     System.out.flush();
                 }
             };
-            DashUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), (fileName + ".als"));
+            DashUtil.parseEverything_fromFileDash(rep, new LinkedHashMap<String,String>(), (DashOptions.dashModelLocation + "/util/" + fileName + ".als"));
         } else
             throw new ErrorSyntax("Could not import module: " + fileName);
     }
@@ -556,10 +547,8 @@ public class DashValidation {
         stateNames.put(concStateName, new ArrayList<String>(names));
         names.clear();
 
-        //System.out.println("Getting funcs");
         /* Stores the names for each func/pred in the current conc state */
         for (String key : dashModule.funcs.keySet()) {
-            //System.out.println("Func: " + key);
         }
 
         /* Stores the names for each action template in the current conc state */
@@ -592,8 +581,6 @@ public class DashValidation {
             names.add(trans.name);
             transitionList.add(trans);
 
-            //System.out.println("Checking: " + trans.name);
-
             //The only kind of transition that will have declarations (decl) is a
             //transition template. Therefore, we will need to valdiate the arguments (decls)
             if (trans.transTemplate != null)
@@ -622,8 +609,6 @@ public class DashValidation {
         }
 
         for (DashTrans trans : dashModule.states.get(stateName).transitions) {
-            //System.out.println("Checking: " + trans.name);
-
             //The only kind of transition that will have declarations (decl) is a
             //transition template. Therefore, we will need to valdiate the arguments (decls)
             if (trans.transTemplate != null)

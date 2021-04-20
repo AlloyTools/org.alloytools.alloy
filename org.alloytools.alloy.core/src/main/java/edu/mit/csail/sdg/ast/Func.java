@@ -195,7 +195,7 @@ public final class Func extends Browsable implements Clause {
     }
 
     /** The predicate/function body; never null. */
-    public Expr body;
+    private Expr body;
 
     /**
      * Changes the method body. <b>Precondition:</b> The expression should have no

@@ -253,13 +253,11 @@ public final class DashUtil {
                     }
                 }
             }
-            //System.out.println("CP:" + cp);
             loaded.put(cp, content);
             x.setResolvedFilePath(cp);
             DashModule y = parseRecursivelyDash(seenDollar, loaded, fc, x.pos, cp, root, (prefix.length() == 0 ? x.alias : prefix + "/" + x.alias), thispath, initialResolution);
             x.connect(y);
         }
-        //System.out.println("Inside CompUtil Parse Recur");
         thispath.remove(filename); // Remove this file from the CYCLE DETECTION
                                   // LIST.
         return u;
@@ -345,7 +343,6 @@ public final class DashUtil {
      */
     public static DashModule parseEverything_fromFileDash(A4Reporter rep, Map<String,String> loaded, String filename) throws Err {
         try {
-            //System.out.println("Parsing Dash from CompUtil");
             filename = Util.canon(filename);
             Set<String> thispath = new LinkedHashSet<String>();
             if (loaded == null)

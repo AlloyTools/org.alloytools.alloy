@@ -694,7 +694,7 @@ public abstract class Sig extends Expr implements Clause {
         public final boolean defined;
 
         /** The declaration that this field came from. */
-        public Decl          decl;
+        private Decl         decl;
 
         /** Return the declaration that this field came from. */
         public Decl decl() {
@@ -791,8 +791,8 @@ public abstract class Sig extends Expr implements Clause {
     // ==============================================================================================================//
 
     /** The list of fields. */
-    private final SafeList<Decl> fields     = new SafeList<Decl>();
-    public final SafeList<Field> realFields = new SafeList<>();
+    private final SafeList<Decl>  fields     = new SafeList<Decl>();
+    private final SafeList<Field> realFields = new SafeList<>();
 
     /**
      * Return the list of fields as a unmodifiable list of declarations (where you

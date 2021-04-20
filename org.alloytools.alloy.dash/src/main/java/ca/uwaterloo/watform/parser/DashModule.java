@@ -27,8 +27,10 @@ import static edu.mit.csail.sdg.ast.Sig.SEQIDX;
 import static edu.mit.csail.sdg.ast.Sig.SIGINT;
 import static edu.mit.csail.sdg.ast.Sig.STRING;
 import static edu.mit.csail.sdg.ast.Sig.UNIV;
-
+ 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,8 +63,10 @@ import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
-import edu.mit.csail.sdg.parser.Macro;
+import edu.mit.csail.sdg.parser.CompModule;
 
+
+import ca.uwaterloo.watform.parser.Macro;
 import ca.uwaterloo.watform.ast.DashAction;
 import ca.uwaterloo.watform.ast.DashConcState;
 import ca.uwaterloo.watform.ast.DashCondition;
@@ -276,7 +280,9 @@ public final class DashModule extends Browsable implements Module {
      * The list of (CommandName,Command,Expr) triples; NOTE: duplicate command names
      * are allowed.
      */
-    private final List<Command>              commands    = new ArrayList<Command>();
+    public final List<Command>              commands    = new ArrayList<Command>();
+    
+    public CompModule         compModule      = null;
 
 
     //================================================DASH INTERNAL DATA STRUCTURE=================================================//
@@ -367,6 +373,12 @@ public final class DashModule extends Browsable implements Module {
     int                                  transitionCount        = 0;
 
     Boolean                              doneParsing            = false;
+    
+    /**
+     * Used by the toString() function to print a Dash Module
+     */
+    static String coreDashModel = "";
+    static int    tabCount      = 0;
 
     // ============================================================================================================================//
 
@@ -598,8 +610,8 @@ public final class DashModule extends Browsable implements Module {
             Expr left = visitThis(x.left);
             Expr right = visitThis(x.right);
             // If it's a macro invocation, instantiate it
-            //if (right instanceof Macro)
-            //return ((Macro) right).addArg(left).instantiate(this, warns);
+            if (right instanceof Macro)
+            	return ((Macro) right).addArg(left).instantiate(this, warns);
             // check to see if it is the special builtin function "Int[]"
             if (left.type().is_int() && right.isSame(Sig.SIGINT))
                 return left; // [AM] .cast2sigint();
@@ -617,8 +629,8 @@ public final class DashModule extends Browsable implements Module {
             Expr right = visitThis(x.right);
             if (x.op == ExprBinary.Op.JOIN) {
                 // If it's a macro invocation, instantiate it
-                //if (right instanceof Macro)
-                //return ((Macro) right).addArg(left).instantiate(this, warns);
+                if (right instanceof Macro)
+                	return ((Macro) right).addArg(left).instantiate(this, warns);
                 // check to see if it is the special builtin function "Int[]"
                 if (left.type().is_int() && right.isSame(Sig.SIGINT))
                     return left; // [AM] .cast2sigint();
@@ -899,7 +911,7 @@ public final class DashModule extends Browsable implements Module {
      * @param filename - the filename corresponding to this module
      * @param path - one of the path pointing to this module
      */
-    DashModule(DashModule world, String filename, String path) throws Err {
+    public DashModule(DashModule world, String filename, String path) throws Err {
         if (world == null) {
             if (path.length() > 0)
                 throw new ErrorFatal("Root module misparsed by parser.");
@@ -930,7 +942,8 @@ public final class DashModule extends Browsable implements Module {
             this.modulePos = new Pos(filename, 1, 1);
     }
 
-    /** {@inheritDoc} */
+
+	/** {@inheritDoc} */
     @Override
     public final Pos pos() {
         return modulePos;
@@ -1338,37 +1351,6 @@ public final class DashModule extends Browsable implements Module {
 
     // =============================================DASH INTERNAL DATA STRUCTURE FUNCTIONS============================================//
 
-
-    //ONLY FOR TESTING PURPOSES
-    public void breakDownExpr(Expr expr) {
-        /*
-         * Breakdown the AND expression (if it is an AND expr) into a list of
-         * expressions. This would make it easier to print each expression
-         */
-        if (expr != null) {
-            if (expr instanceof ExprUnary) {
-                ExprUnary parentExprUnary = (ExprUnary) expr;
-                //System.out.println("ExprUnary: " + parentExprUnary.toString() + " Op: " + parentExprUnary.op.toString());
-                if (parentExprUnary.sub instanceof ExprList) {
-                    ExprList exprList = (ExprList) parentExprUnary.sub;
-                    for (Expr expression : exprList.args) {
-                        //System.out.println("Expr: " + expression.toString() + " Type: " + expression.getClass() + "\n");
-                        if (expression instanceof ExprBinary) {
-                            //System.out.println("Expr Binary Left: " + ((ExprBinary) expression).left.toString() + " Type: " + ((ExprBinary) expression).left.getClass() + "\n");
-                        }
-                    }
-                } else {
-
-                }
-                //System.out.println("Expr: " + expr.toString() + " Expr Type: " + expr.getClass());
-            } else {
-                //System.out.println("Expr: " + expr.toString() + expr.getClass());
-            }
-        }
-
-        //DashConvertToAlloyAST.convertExpr();
-    }
-
     /*
      * This is called by the parser once it completes parsing a top level conc
      * state. The name of the conc state and the items inside the conc state are
@@ -1559,14 +1541,13 @@ public final class DashModule extends Browsable implements Module {
             readEnvVariablesDeclared(event.decl, parent);
         }
 
-        //System.out.println("Event: " + modifiedName);
         events.put(modifiedName, event);
     }
 
     /* Store variables that have been declared in the concurrent state */
     void readVariablesDeclared(Decl decl, DashConcState concState) {
         List<String> variables = new ArrayList<String>();
-
+        
         //Fetch the current list of variable names stored for the current conc state
         if (variableNames.get(concState.modifiedName) != null)
             variables = variableNames.get(concState.modifiedName);
@@ -1620,6 +1601,148 @@ public final class DashModule extends Browsable implements Module {
 
         return null;
     }
+    
+    public void importModules() {
+    	status = 0;
+		addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null); 
+		addOpen(null, null, ExprVar.make(null, "util/steps"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
+		if(stateHierarchy)
+			addOpen(null, null, ExprVar.make(null, "util/boolean"), new ArrayList<ExprVar>(), ExprVar.make(null, "boolean"));
+		addOpen(null, null, ExprVar.make(null, "util/integer"), new ArrayList<ExprVar>(), null);
+    }
+    
+    // =============================================DASH MODULE TO STRING FUNCTIONS ============================================//
+    
+    public void moduleToString() throws IOException {
+
+        coreDashModel = "";
+
+        for (DashConcState concState : topLevelConcStates.values()) {
+        	concStateToString(concState);
+        }
+
+        for (DashTrans trans : transitions.values()) {
+        	transitionToString(trans);
+        }
+
+        coreDashModel += "\n}";
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(DashOptions.outputDir + ".dsh"));
+        writer.write(coreDashModel);
+
+        writer.close();
+    }
+    
+    void concStateToString(DashConcState concState) {
+        DashConcState current = concState;
+
+        coreDashModel += ("conc state " + current.name + " {" + '\n');
+
+        for (Decl decl : current.decls) {
+            coreDashModel += (decl.get().toString() + ": " + decl.expr.toString() + '\n');
+        }
+
+        for (DashEvent event : current.events) {
+            coreDashModel += (event.type + " " + event.name + "{}\n");
+        }
+
+        coreDashModel += '\n';
+
+        if (current.invariant.size() > 0) {
+            for (DashInvariant dashExpr : current.invariant) {
+                coreDashModel += ("invariant " + dashExpr.name + "{\n");
+                coreDashModel += (dashExpr.expr.toString());
+                coreDashModel += ("}\n\n");
+            }
+            coreDashModel += '\n';
+        }
+
+        if (current.init.size() > 0) {
+            for (DashInit init : current.init) {
+                coreDashModel += ("init generated_name" + "{\n");
+                for (Expr expr : init.exprList) {
+                    coreDashModel += (expr.toString() + '\n');
+                }
+                coreDashModel += ("}\n\n");
+            }
+            coreDashModel += '\n';
+        }
+
+
+        if (current.action.size() > 0) {
+            for (DashAction action : current.action) {
+                coreDashModel += ("action " + action.name + "{\n");
+                for (Expr expr : action.exprList) {
+                    coreDashModel += (expr.toString() + '\n');
+                }
+                coreDashModel += ("}\n\n");
+            }
+            coreDashModel += '\n';
+        }
+
+        for (DashState state : current.states) {
+        	stateToString(state);
+            coreDashModel += '\n';
+        }
+
+
+        for (DashConcState innerConcState : current.concStates) {
+            concStateToString(innerConcState);
+            coreDashModel += "}\n";
+        }
+    }
+    
+    void stateToString(DashState state) {
+        coreDashModel += (tabLine(tabCount) + "state " + state.name + "{}");
+
+        if (state.states.size() > 0) {
+            coreDashModel += "{\n";
+            for (DashState innerState : state.states) {
+            	stateToString(innerState);
+            }
+            coreDashModel += "}\n";
+        }
+
+        coreDashModel += (tabLine(tabCount) + '\n');
+    }
+
+    void transitionToString(DashTrans transition) {
+        coreDashModel += (tabLine(++tabCount) + "trans " + transition.modifiedName + "{" + '\n');
+
+        if (transition.fromExpr.fromExpr.size() > 0)
+            coreDashModel += (tabLine(tabCount) + "from " + transition.fromExpr.fromExpr.get(0) + '\n');
+        if (transition.onExpr != null && transition.onExpr.name != null)
+            coreDashModel += (tabLine(tabCount) + "on " + transition.onExpr.name + '\n');
+        if (transition.whenExpr != null)
+            printExprList("when", transition.whenExpr.exprList);
+        if (transition.doExpr != null)
+            printExprList("do", transition.doExpr.exprList);
+        if (transition.gotoExpr.gotoExpr.size() > 0)
+            coreDashModel += (tabLine(tabCount) + "goto " + transition.gotoExpr.gotoExpr.get(0) + '\n');
+
+        coreDashModel += (tabLine(--tabCount) + "}" + '\n');
+    }
+
+    static void printExprList(String commandName, List<Expr> exprList) {
+        if (exprList.size() > 1) {
+            coreDashModel += (tabLine(tabCount) + commandName + " {" + '\n');
+            for (Expr expr : exprList)
+                coreDashModel += (tabLine(tabCount) + expr.toString() + '\n');
+            coreDashModel += (tabLine(tabCount) + "}" + '\n');
+        } else {
+            coreDashModel += (tabLine(tabCount) + commandName + " " + exprList.get(0) + '\n');
+        }
+    }
+
+    static String tabLine(int count) {
+        String tabs = "";
+
+        for (int i = 0; i < count; i++) {
+            tabs += '\t';
+        }
+        return tabs;
+    }
+    
     // =====================================================================================================================//
 
     /** Add the "MODULE" declaration. */
@@ -1665,6 +1788,8 @@ public final class DashModule extends Browsable implements Module {
 
     /** Add an OPEN declaration. */
     void addOpen(Pos pos, Pos isPrivate, ExprVar name, List<ExprVar> args, ExprVar alias) throws Err {
+    	//compModule.addOpen(pos, isPrivate, name, args, alias);
+    	
         if (status > 2)
             throw new ErrorSyntax(pos, "The \"open\" declaration must occur before any\n" + "sig/pred/fun/fact/assert/check/run command.");
         String as = (alias == null ? "" : alias.label);
@@ -1844,7 +1969,7 @@ public final class DashModule extends Browsable implements Module {
         sigs.put(Sig.GHOST.label, Sig.GHOST);
     }
 
-    Sig addSig(String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
+    public Sig addSig(String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
         Sig obj;
         Pos pos = Pos.UNKNOWN.merge(WHERE.find(attributes));
         status = 3;
@@ -1989,7 +2114,7 @@ public final class DashModule extends Browsable implements Module {
     }
 
     /** Add a FUN or PRED declaration. */
-    void addFunc(Pos p, Pos isPrivate, String n, Expr f, List<Decl> decls, Expr t, Expr v) throws Err {
+    public void addFunc(Pos p, Pos isPrivate, String n, Expr f, List<Decl> decls, Expr t, Expr v) throws Err {
         if (decls == null)
             decls = new ArrayList<Decl>();
         else
@@ -2170,7 +2295,7 @@ public final class DashModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a FACT declaration. */
-    void addFact(Pos pos, String name, Expr value) throws Err {
+    public void addFact(Pos pos, String name, Expr value) throws Err {
         status = 3;
         if (name == null || name.length() == 0)
             name = "fact$" + (1 + facts.size());
@@ -2246,9 +2371,9 @@ public final class DashModule extends Browsable implements Module {
     }
 
     // ============================================================================================================================//
-
+ 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    public void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
         if (label != null)
@@ -2268,7 +2393,7 @@ public final class DashModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+    public void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
 
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");

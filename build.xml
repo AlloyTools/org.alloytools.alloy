@@ -29,6 +29,7 @@
 			<!-- ignore runtime, tmp" -->
 			<packageset defaultexcludes="yes" dir="src">
 				<include name="edu.mit.csail.sdg.*"/>
+				<include name="ca.uwaterloo.watform.*"/>
 			</packageset>
 		</javadoc>
 	</target>

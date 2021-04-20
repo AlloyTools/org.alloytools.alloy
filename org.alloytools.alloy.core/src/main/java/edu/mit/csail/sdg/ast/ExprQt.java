@@ -62,7 +62,7 @@ public final class ExprQt extends Expr {
     public final ConstList<Decl> decls;
 
     /** The body of the quantified expression. */
-    public Expr                  sub;
+    public final Expr            sub;
 
     /** Caches the span() result. */
     private Pos                  span;
@@ -170,7 +170,6 @@ public final class ExprQt extends Expr {
      * This class contains all possible quantification operators.
      */
     public enum Op {
-
                     /** all a,b:x | formula */
                     ALL("all"),
                     /** no a,b:x | formula */
