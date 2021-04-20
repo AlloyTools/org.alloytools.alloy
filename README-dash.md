@@ -41,6 +41,10 @@ AlloyModule file, but it additionally builds the internal data structure for Das
 have been parsed. This internal data structure is stored within containers inside the file, and is 
 later accessed by other files that are responsible for converting a Dash model to an Alloy model
 
+**org.alloytools.alloy.dash/src/main/java/ca/uwaterloo/watform/parser/DashModuleToString:** This is used to print out
+an Alloy AST after a CoreDash model has been converted to an Alloy AST. It will iterate through all the signatures,
+fucntions, predicates, commands in a DashModule containing an Alloy AST and print them to the console.
+
 **org.alloytools.alloy.dash/src/main/java/ca/uwaterloo/watform/parser/DashValidation:** This is used to check
 for well-formedness conditions of a Dash model. It is called immediately after the internal data structure
 has been build and it makes sure that the parsed Dash model is correct i.e. two states in the same hierarchical level
@@ -50,11 +54,6 @@ do not have the same name, correct variable references, default states exist, et
 internal Dash data structure in the DashModule and convert it to CoreDash. CoreDash expands transitions and modifies
 commands within transitions such that it is easier to convert a Dash model to an Alloy model. It will largely modify
 transitions stored inside the DashModule and create new transitions if necessary.
-
-**org.alloytools.alloy.dash/src/main/java/ca/uwaterloo/watform/parser/CoreDashGenerator:** This is used to print out
-a CoreDash model by iterating through the transitions container in DashModule after it has been modified by
-TransformCoreDash.java. It will also print the concurrent states and/or OR states inside the model.
-
 
 **org.alloytools.alloy.dash/src/main/java/ca/uwaterloo/watform/ast:** This folder contains several new Dash AST files.
 These are important for storing the required information regarding any parsed Dash model. These AST files will be
