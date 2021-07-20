@@ -444,8 +444,7 @@ public final class A4Solution {
         } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
             solver_opts.setSolver(SATFactory.Glucose);
         } else if (opt.solver.equals(A4Options.SatSolver.Glucose41JNI)) {
-            throw new UnsupportedOperationException("Glucose 4.1 still not supported by Pardinus.");
-            // solver_opts.setSolver(SATFactory.Glucose41);
+            solver_opts.setSolver(SATFactory.Glucose41);
         } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
             solver_opts.setSolver(SATFactory.CryptoMiniSat);
         } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {
