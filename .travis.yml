@@ -5,7 +5,7 @@ before_install:
   - curl -N -L "http://es-static.fbk.eu/tools/nuxmv/downloads/nuXmv-2.0.0-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "nuXmv-2.0.0-Linux/bin/nuXmv" || true
 install: 
   - "gradle --version"
-script: travis_wait gradle --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
+script: gradle --no-daemon -DGRADLE_OPTS="-Xms128m" --stacktrace build -i
 cache:
   directories:
   - "$HOME/.gradle"
