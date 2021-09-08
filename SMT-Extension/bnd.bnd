@@ -1,0 +1,11 @@
+-buildpath: \
+	org.apache.commons.cli,\
+	org.alloytools.alloy.core,\
+	com.fasterxml.jackson.core.jackson-annotations,\
+	com.fasterxml.jackson.core.jackson-databind,\
+	jaxb-api,\
+	com.fasterxml.jackson.core.jackson-core,\
+	org.antlr.antlr4-runtime,\
+
+-testpath:	
+	
