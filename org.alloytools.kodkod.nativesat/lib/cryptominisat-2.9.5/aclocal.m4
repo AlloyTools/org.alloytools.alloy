@@ -227,7 +227,7 @@ aix3*)
   ;;
 esac
 
-# Global declarations:
+# Global variables:
 ofile=libtool
 can_build_shared=yes
 
@@ -240,7 +240,7 @@ with_gnu_ld="$lt_cv_prog_gnu_ld"
 old_CC="$CC"
 old_CFLAGS="$CFLAGS"
 
-# Set sane defaults for various declarations
+# Set sane defaults for various variables
 test -z "$CC" && CC=cc
 test -z "$LTCC" && LTCC=$CC
 test -z "$LTCFLAGS" && LTCFLAGS=$CFLAGS
@@ -446,7 +446,7 @@ m4_define([_LT_CONFIG_STATUS_DECLARE],
 
 # _LT_CONFIG_STATUS_DECLARATIONS
 # ------------------------------
-# We delimit libtool config declarations with single quotes, so when
+# We delimit libtool config variables with single quotes, so when
 # we write them to config.status, we have to be sure to quote all
 # embedded single quotes properly.  In configure, this macro expands
 # each variable declared with _LT_DECL (and _LT_TAGDECL) into:
@@ -489,9 +489,9 @@ m4_ifval([$2], [_$2])[]m4_popdef([_libtool_name])[]dnl
 
 # _LT_LIBTOOL_CONFIG_VARS
 # -----------------------
-# Produce commented declarations of non-tagged libtool config declarations
+# Produce commented declarations of non-tagged libtool config variables
 # suitable for insertion in the LIBTOOL CONFIG section of the `libtool'
-# script.  Tagged libtool config declarations (even for the LIBTOOL CONFIG
+# script.  Tagged libtool config variables (even for the LIBTOOL CONFIG
 # section) are produced by _LT_LIBTOOL_TAG_VARS.
 m4_defun([_LT_LIBTOOL_CONFIG_VARS],
 [m4_foreach([_lt_var],
@@ -514,8 +514,8 @@ m4_define([_LT_TAGVAR], [m4_ifval([$2], [$1_$2], [$1])])
 # _LT_CONFIG_COMMANDS
 # -------------------
 # Send accumulated output to $CONFIG_STATUS.  Thanks to the lists of
-# declarations for single and double quote escaping we saved from calls
-# to _LT_DECL, we can put quote escaped declarations declarations
+# variables for single and double quote escaping we saved from calls
+# to _LT_DECL, we can put quote escaped variables declarations
 # into `config.status', and then the shell code to quote escape them in
 # for loops in `config.status'.  Finally, any additional code accumulated
 # from calls to _LT_CONFIG_LIBTOOL_INIT is expanded.
@@ -3657,7 +3657,7 @@ symcode='[[BCDEGRST]]'
 # Regexp to match symbols that can be accessed directly from C.
 sympat='\([[_A-Za-z]][[_A-Za-z0-9]]*\)'
 
-# Define system-specific declarations.
+# Define system-specific variables.
 case $host_os in
 aix*)
   symcode='[[BCDT]]'
@@ -5760,8 +5760,8 @@ dnl    [Compiler flag to generate thread safe objects])
 
 # _LT_LANG_C_CONFIG([TAG])
 # ------------------------
-# Ensure that the configuration declarations for a C compiler are suitably
-# defined.  These declarations are subsequently used by _LT_CONFIG to write
+# Ensure that the configuration variables for a C compiler are suitably
+# defined.  These variables are subsequently used by _LT_CONFIG to write
 # the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_C_CONFIG],
 [m4_require([_LT_DECL_EGREP])dnl
@@ -5841,8 +5841,8 @@ CC="$lt_save_CC"
 
 # _LT_LANG_CXX_CONFIG([TAG])
 # --------------------------
-# Ensure that the configuration declarations for a C++ compiler are suitably
-# defined.  These declarations are subsequently used by _LT_CONFIG to write
+# Ensure that the configuration variables for a C++ compiler are suitably
+# defined.  These variables are subsequently used by _LT_CONFIG to write
 # the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_CXX_CONFIG],
 [m4_require([_LT_FILEUTILS_DEFAULTS])dnl
@@ -5889,7 +5889,7 @@ objext=o
 _LT_TAGVAR(objext, $1)=$objext
 
 # No sense in running all these tests if we already determined that
-# the CXX compiler isn't working.  Some declarations (like enable_shared)
+# the CXX compiler isn't working.  Some variables (like enable_shared)
 # are currently assumed to apply to all compilers on this platform,
 # and will be corrupted by setting them based on a non-working compiler.
 if test "$_lt_caught_CXX_error" != yes; then
@@ -7187,8 +7187,8 @@ _LT_TAGDECL([], [compiler_lib_search_path], [1],
 
 # _LT_LANG_F77_CONFIG([TAG])
 # --------------------------
-# Ensure that the configuration declarations for a Fortran 77 compiler are
-# suitably defined.  These declarations are subsequently used by _LT_CONFIG
+# Ensure that the configuration variables for a Fortran 77 compiler are
+# suitably defined.  These variables are subsequently used by _LT_CONFIG
 # to write the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_F77_CONFIG],
 [AC_LANG_PUSH(Fortran 77)
@@ -7226,7 +7226,7 @@ objext=o
 _LT_TAGVAR(objext, $1)=$objext
 
 # No sense in running all these tests if we already determined that
-# the F77 compiler isn't working.  Some declarations (like enable_shared)
+# the F77 compiler isn't working.  Some variables (like enable_shared)
 # are currently assumed to apply to all compilers on this platform,
 # and will be corrupted by setting them based on a non-working compiler.
 if test "$_lt_disable_F77" != yes; then
@@ -7318,8 +7318,8 @@ AC_LANG_POP
 
 # _LT_LANG_FC_CONFIG([TAG])
 # -------------------------
-# Ensure that the configuration declarations for a Fortran compiler are
-# suitably defined.  These declarations are subsequently used by _LT_CONFIG
+# Ensure that the configuration variables for a Fortran compiler are
+# suitably defined.  These variables are subsequently used by _LT_CONFIG
 # to write the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_FC_CONFIG],
 [AC_LANG_PUSH(Fortran)
@@ -7358,7 +7358,7 @@ objext=o
 _LT_TAGVAR(objext, $1)=$objext
 
 # No sense in running all these tests if we already determined that
-# the FC compiler isn't working.  Some declarations (like enable_shared)
+# the FC compiler isn't working.  Some variables (like enable_shared)
 # are currently assumed to apply to all compilers on this platform,
 # and will be corrupted by setting them based on a non-working compiler.
 if test "$_lt_disable_FC" != yes; then
@@ -7453,8 +7453,8 @@ AC_LANG_POP
 
 # _LT_LANG_GCJ_CONFIG([TAG])
 # --------------------------
-# Ensure that the configuration declarations for the GNU Java Compiler compiler
-# are suitably defined.  These declarations are subsequently used by _LT_CONFIG
+# Ensure that the configuration variables for the GNU Java Compiler compiler
+# are suitably defined.  These variables are subsequently used by _LT_CONFIG
 # to write the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_GCJ_CONFIG],
 [AC_REQUIRE([LT_PROG_GCJ])dnl
@@ -7520,8 +7520,8 @@ CFLAGS=$lt_save_CFLAGS
 
 # _LT_LANG_GO_CONFIG([TAG])
 # --------------------------
-# Ensure that the configuration declarations for the GNU Go compiler
-# are suitably defined.  These declarations are subsequently used by _LT_CONFIG
+# Ensure that the configuration variables for the GNU Go compiler
+# are suitably defined.  These variables are subsequently used by _LT_CONFIG
 # to write the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_GO_CONFIG],
 [AC_REQUIRE([LT_PROG_GO])dnl
@@ -7587,8 +7587,8 @@ CFLAGS=$lt_save_CFLAGS
 
 # _LT_LANG_RC_CONFIG([TAG])
 # -------------------------
-# Ensure that the configuration declarations for the Windows resource compiler
-# are suitably defined.  These declarations are subsequently used by _LT_CONFIG
+# Ensure that the configuration variables for the Windows resource compiler
+# are suitably defined.  These variables are subsequently used by _LT_CONFIG
 # to write the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_RC_CONFIG],
 [AC_REQUIRE([LT_PROG_RC])dnl
@@ -8706,7 +8706,7 @@ _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
 #   MISSING="\${SHELL} $am_aux_dir/missing"
 # This will work as long as MISSING is not called from configure, because
 # unfortunately $(top_srcdir) has no meaning in configure.
-# However there are other declarations, like CC, which are often used in
+# However there are other variables, like CC, which are often used in
 # configure, and could therefore not use this "fixed" $ac_aux_dir.
 #
 # Another solution, used here, is to always expand $ac_aux_dir to an

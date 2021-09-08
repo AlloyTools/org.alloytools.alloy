@@ -110,9 +110,3 @@ fun larger [e1, e2: Int]: Int { let a=int[e1], b=int[e2] | (a<b => b else a) }
 
 /** returns the smaller of the two integers */
 fun smaller [e1, e2: Int]: Int { let a=int[e1], b=int[e2] | (a<b => a else b) }
-
-
-/** signatures and facts added by cvc4 relational solver */
-sig univInt in Int { idenInt: univInt}
-fact universe { univInt = Int}
-fact identity {all x, y: univInt | (x = y) <=> x->y in idenInt}

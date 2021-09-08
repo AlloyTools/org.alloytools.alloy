@@ -359,7 +359,7 @@ public class Alloy2SmtTranslator extends AbstractTranslator
     Expr lte = ExprBinary.Op.LTE.make(command.formula.pos, command.formula.closingBracket, x, ExprConstant.makeNUMBER(maxInteger));
     Expr and = ExprList.make(command.formula.pos, command.formula.closingBracket, ExprList.Op.AND, Arrays.asList(gte, lte));
     Expr oneOfInt = ExprUnary.Op.ONEOF.make(null, Sig.SIGINT);
-    Decl decl = new Decl(null, null, null, Collections.singletonList(x), oneOfInt);
+    Decl decl = new Decl(null, null, null, null, Collections.singletonList(x), oneOfInt);
     Expr all = ExprQt.Op.ALL.make(command.formula.pos, command.formula.closingBracket, Collections.singletonList(decl), and);
     exprTranslator.translateFormula("Scope " + command.bitwidth + " Int", all);
   }

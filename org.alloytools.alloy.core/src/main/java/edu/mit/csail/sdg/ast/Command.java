@@ -39,6 +39,16 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <b>Invariant:</b> maxseq >= -1
  * <p>
  * <b>Invariant:</b> maxstring >= -1
+ * <p>
+ * <b>Invariant:</b> minprefix == -1 or >= 1
+ * <p>
+ * <b>Invariant:</b> maxprefix == -1 or >= 1
+ *
+ * @modified [electrum] added two special scopes to commands, the minimum and
+ *           maximum trace prefix lengths to be considered during analysis; when
+ *           they are omitted, defaults to -1; also, for complement model
+ *           checking (unbounded max prefix length), the max length is assumed
+ *           to be MAX_INTEGER
  */
 
 public final class Command extends Browsable {
@@ -79,6 +89,18 @@ public final class Command extends Browsable {
     public final int                     maxseq;
 
     /**
+     * The minimum trace prefix length (1 or higher) (Or -1 if it was not
+     * specified).
+     */
+    public final int                     minprefix;
+
+    /**
+     * The maximum trace prefix length (1 or higher) (Or -1 if it was not
+     * specified).
+     */
+    public final int                     maxprefix;
+
+    /**
      * The number of String atoms to allocate (0 or higher) (Or -1 if it was not
      * specified).
      */
@@ -116,11 +138,11 @@ public final class Command extends Browsable {
         }
         boolean first = true;
         StringBuilder sb = new StringBuilder(check ? "Check " : "Run ").append(label);
-        if (overall >= 0 && (bitwidth >= 0 || maxseq >= 0 || scope.size() > 0))
+        if (overall >= 0 && (bitwidth >= 0 || maxseq >= 0 || scope.size() > 0 || minprefix >= 0 || maxprefix >= 0))
             sb.append(" for ").append(overall).append(" but");
         else if (overall >= 0)
             sb.append(" for ").append(overall);
-        else if (bitwidth >= 0 || maxseq >= 0 || scope.size() > 0)
+        else if (bitwidth >= 0 || maxseq >= 0 || scope.size() > 0 || minprefix >= 0 || maxprefix >= 0)
             sb.append(" for");
         if (bitwidth >= 0) {
             sb.append(" ").append(bitwidth).append(" int");
@@ -128,6 +150,15 @@ public final class Command extends Browsable {
         }
         if (maxseq >= 0) {
             sb.append(first ? " " : ", ").append(maxseq).append(" seq");
+            first = false;
+        }
+        if (maxprefix >= 0) {
+            sb.append(" ");
+            if (minprefix >= 0)
+                sb.append(minprefix).append("..");
+            if (maxprefix != Integer.MAX_VALUE)
+                sb.append(maxprefix);
+            sb.append(" steps");
             first = false;
         }
         for (CommandScope e : scope) {
@@ -152,7 +183,7 @@ public final class Command extends Browsable {
      * @param formula - the formula that must be satisfied by this command
      */
     public Command(boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
-        this(null, null, "", check, overall, bitwidth, maxseq, -1, null, null, formula, null);
+        this(null, null, "", check, overall, bitwidth, maxseq, -1, -1, -1, null, null, formula, null);
     }
 
     /**
@@ -168,6 +199,10 @@ public final class Command extends Browsable {
      *            specified)
      * @param maxseq - the maximum sequence length (0 or higher) (-1 if it was not
      *            specified)
+     * @param minprefix - the minimal trace prefix length (0 or higher) (-1 if it
+     *            was not specified)
+     * @param maxprefix - the maximal trace prefix length (0 or higher) (-1 if it
+     *            was not specified)
      * @param expects - the expected value (0 or 1) (-1 if no expectation was
      *            specified)
      * @param scope - a list of scopes (can be null if we want to use default)
@@ -175,7 +210,7 @@ public final class Command extends Browsable {
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
+    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int minprefix, int maxprefix, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.nameExpr = e;
@@ -186,6 +221,8 @@ public final class Command extends Browsable {
         this.overall = (overall < 0 ? -1 : overall);
         this.bitwidth = (bitwidth < 0 ? -1 : bitwidth);
         this.maxseq = (maxseq < 0 ? -1 : maxseq);
+        this.maxprefix = (maxprefix < 1 ? -1 : maxprefix);
+        this.minprefix = (minprefix < 1 ? -1 : minprefix);
         this.maxstring = (-1);
         this.expects = (expects < 0 ? -1 : (expects > 0 ? 1 : 0));
         this.scope = ConstList.make(scope);
@@ -198,7 +235,7 @@ public final class Command extends Browsable {
      * except with a different formula.
      */
     public Command change(Expr newFormula) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, newFormula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, additionalExactScopes, newFormula, parent);
     }
 
     /**
@@ -206,7 +243,7 @@ public final class Command extends Browsable {
      * except with a different scope.
      */
     public Command change(ConstList<CommandScope> scope) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, additionalExactScopes, formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, additionalExactScopes, formula, parent);
     }
 
     /**
@@ -214,7 +251,7 @@ public final class Command extends Browsable {
      * except with a different list of "additional exact sigs".
      */
     public Command change(Sig... additionalExactScopes) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, expects, scope, Util.asList(additionalExactScopes), formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, Util.asList(additionalExactScopes), formula, parent);
     }
 
     /**

@@ -230,8 +230,7 @@ public class AlloyUtils
         Expr declaredExpr = decl.expr;
         declaredExpr = substituteExpr(declaredExpr, oldExpr, newExpr);
 
-        Decl newDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2,
-            variables, declaredExpr);
+        Decl newDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2, decl.isVar, variables, declaredExpr);
         declList.add(newDecl);
       }
 

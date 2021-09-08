@@ -39,6 +39,7 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.parser.CompUtil;
 
 /**
  * Immutable; this class computes the scopes for each sig and computes the
@@ -66,6 +67,13 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * <p>
  * Please see ScopeComputer.java for the exact rules for deriving the missing
  * scopes.
+ *
+ * @modified [electrum] store the trace scope (min and max scope); also, some
+ *           errors on scopes are relaxed: eg, one var sigs may still have a
+ *           scope larger than 1, since the multiplicity is imposed state by
+ *           state, thus the atom may change; also, scopes for such sigs are not
+ *           made exact; new syntax error, setting trace scope for static models
+ *
  */
 final class ScopeComputer {
 
@@ -95,6 +103,16 @@ final class ScopeComputer {
      * The number of STRING atoms to allocate; -1 if it was not specified.
      */
     private int                                    maxstring = (-1);
+
+    /**
+     * Maximum trace length to be handled by bounded temporal solvers.
+     */
+    private int                                    maxtrace  = 10;
+
+    /**
+     * Minimum trace length to be handled by bounded temporal solvers.
+     */
+    private int                                    mintrace  = 1;
 
     /** The scope for each sig. */
     private final IdentityHashMap<PrimSig,Integer> sig2scope = new IdentityHashMap<PrimSig,Integer>();
@@ -159,7 +177,7 @@ final class ScopeComputer {
 
     /**
      * Modifies the integer bitwidth of this solution's model (and sets the max
-     * sequence length to 0)
+     * sequence length to 0).
      */
     private void setBitwidth(Pos pos, int newBitwidth) throws ErrorAPI, ErrorSyntax {
         if (newBitwidth < 0)
@@ -170,6 +188,17 @@ final class ScopeComputer {
         maxseq = 0;
         sig2scope.put(SIGINT, bitwidth < 1 ? 0 : 1 << bitwidth);
         sig2scope.put(SEQIDX, 0);
+    }
+
+
+    /** Modifies the maximum trace length of this solution's model. */
+    private void setMaxTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
+        maxtrace = newTracelength;
+    }
+
+    /** Modifies the minimum trace length of this solution's model. */
+    private void setMinTraceLength(Pos pos, int newTracelength) throws ErrorAPI, ErrorSyntax {
+        mintrace = newTracelength;
     }
 
     /** Modifies the maximum sequence length. */
@@ -349,6 +378,7 @@ final class ScopeComputer {
         this.rep = rep;
         this.cmd = cmd;
         boolean shouldUseInts = true; // TODO CompUtil.areIntsUsed(sigs, cmd);
+
         // Process each sig listed in the command
         for (CommandScope entry : cmd.scope) {
             Sig s = entry.sig;
@@ -372,9 +402,12 @@ final class ScopeComputer {
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"none\".");
             if (s.isEnum != null)
                 throw new ErrorSyntax(cmd.pos, "You cannot set a scope on the enum \"" + s.label + "\"");
-            if (s.isOne != null && scope != 1)
+            // [electrum] rules relaxed if mutable, the atom may change along the trace
+            if (s.isOne != null && s.isVariable == null && scope != 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1, and cannot be " + scope);
-            if (s.isLone != null && scope > 1)
+            if (s.isOne != null && s.isVariable != null && scope < 1)
+                throw new ErrorSyntax(cmd.pos, "Var sig \"" + s + "\" has the multiplicity of \"one\", so its scope must be 1 or above, and cannot be " + scope);
+            if (s.isLone != null && s.isVariable == null && scope > 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"lone\", so its scope must 0 or 1, and cannot be " + scope);
             if (s.isSome != null && scope < 1)
                 throw new ErrorSyntax(cmd.pos, "Sig \"" + s + "\" has the multiplicity of \"some\", so its scope must 1 or above, and cannot be " + scope);
@@ -383,28 +416,32 @@ final class ScopeComputer {
                 makeExact(cmd.pos, s);
         }
         // Force "one" sigs to be exactly one, and "lone" to be at most one
+        // [electrum] except in mutable sigs, where atom may vary
         for (Sig s : sigs)
             if (s instanceof PrimSig) {
-                if (s.isOne != null) {
+                if (s.isOne != null && s.isVariable == null) {
                     makeExact(cmd.pos, s);
                     sig2scope(s, 1);
-                } else if (s.isLone != null && sig2scope(s) != 0)
+                } else if (s.isLone != null && s.isVariable == null && sig2scope(s) != 0)
                     sig2scope(s, 1);
             }
         // Derive the implicit scopes
         while (true) {
             if (derive_abstract_scope(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_abstract_scope(sigs));
                 continue;
             }
             if (derive_overall_scope(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_overall_scope(sigs));
                 continue;
             }
             if (derive_scope_from_parent(sigs)) {
-                do {}
+                do {
+                }
                 while (derive_scope_from_parent(sigs));
                 continue;
             }
@@ -434,6 +471,28 @@ final class ScopeComputer {
         if (max >= min)
             for (int i = min; i <= max; i++)
                 atoms.add("" + i);
+        // [electrum] handle trace lengths
+        boolean isVar = CompUtil.isTemporalModel(sigs, cmd);
+        int tracelength = cmd.maxprefix;
+        // [electrum] do not allow trace scopes for static models
+        if (!isVar) {
+            if (tracelength > 0)
+                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
+            tracelength = -1;
+        } else if (tracelength < 1)
+            tracelength = 10;
+        setMaxTraceLength(cmd.pos, tracelength);
+        tracelength = cmd.minprefix;
+        if (!isVar) {
+            if (tracelength > 0)
+                throw new ErrorSyntax(cmd.pos, "You cannot set a scope on \"steps\" in static models.");
+            tracelength = -1;
+        } else if (tracelength > cmd.maxprefix)
+            tracelength = cmd.maxprefix;
+        else if (tracelength < 1)
+            tracelength = 1;
+        setMinTraceLength(cmd.pos, tracelength);
+
     }
 
     // ===========================================================================================================================//
@@ -473,7 +532,7 @@ final class ScopeComputer {
         for (int i = 0; set.size() < sc.maxstring; i++)
             set.add("\"String" + i + "\"");
         sc.atoms.addAll(set);
-        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
+        A4Solution sol = new A4Solution(cmd.toString(), sc.bitwidth, sc.mintrace, sc.maxtrace, sc.maxseq, set, sc.atoms, rep, opt, cmd.expects);
         return new Pair<A4Solution,ScopeComputer>(sol, sc);
     }
 }

@@ -192,7 +192,7 @@ public class FieldTranslator
     Expr exprLet = ExprLet.make(null, s, zisJoinField, in);
 
     Expr oneOfSig = ExprUnary.Op.ONEOF.make(null, field.sig);
-    Decl decl = new Decl(null, null, null, Collections.singletonList(zis), oneOfSig);
+    Decl decl = new Decl(null, null, null, null, Collections.singletonList(zis), oneOfSig);
     Expr all = ExprQt.Op.ALL.make(null, null, Collections.singletonList(decl), exprLet);
 
     SmtEnv smtEnv = new SmtEnv();

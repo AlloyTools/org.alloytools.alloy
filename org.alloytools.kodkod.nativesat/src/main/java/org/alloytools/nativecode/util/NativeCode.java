@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+/**
+ * @modified [electrum] find executable binaries
+ */
 public class NativeCode {
 
     static class Platform {
@@ -47,6 +50,47 @@ public class NativeCode {
     };
 
     public static Platform   platform    = findPlatform();
+
+    public static String findexecutable(Path cache, String name) throws RuntimeException {
+        try {
+            if (platform.dir == null)
+                return null;
+
+            Platform p = platform;
+            String libraryName = name;
+
+            String file = platform.dir + "/" + libraryName;
+            Enumeration<URL> enumeration = NativeCode.class.getClassLoader().getResources(file);
+            if (!enumeration.hasMoreElements()) {
+                System.out.println("Could not find native lib " + file);
+                return null;
+            }
+            URL resource = enumeration.nextElement();
+            System.out.println("Found native lib '" + resource + "'");
+
+            Path to = cached.computeIfAbsent(name, (k) -> {
+                try {
+                    if (cache == null) {
+                        Path tox = Files.createTempFile(name, libraryName);
+                        tox.toFile().deleteOnExit();
+                        Files.copy(resource.openStream(), tox, StandardCopyOption.REPLACE_EXISTING);
+                        return tox;
+                    } else {
+                        cache.toFile().mkdirs();
+                        return cache.resolve(libraryName);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            to.toFile().setExecutable(true);
+            return to.toFile().getAbsolutePath();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @SuppressWarnings("unused" )
     public static boolean loadlibrary(Path cache, String name) throws RuntimeException {

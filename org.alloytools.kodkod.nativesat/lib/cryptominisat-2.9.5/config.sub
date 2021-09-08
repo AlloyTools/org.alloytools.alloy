@@ -1765,7 +1765,7 @@ esac
 echo $basic_machine$os
 exit
 
-# Local declarations:
+# Local variables:
 # eval: (add-hook 'write-file-hooks 'time-stamp)
 # time-stamp-start: "timestamp='"
 # time-stamp-format: "%:y-%02m-%02d"

@@ -23,6 +23,9 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 /**
  * Mutable; this class encapsulates the customizable options of the
  * Alloy-to-Kodkod translator.
+ *
+ * @modified [electrum] electrod smv solvers; decompose strategy options, mode
+ *           and cores
  */
 
 public final class A4Options implements Serializable {
@@ -183,10 +186,24 @@ public final class A4Options implements Serializable {
         public static final SatSolver CryptoMiniSatJNI = new SatSolver("cryptominisat(jni)", "CryptoMiniSat", null, null, true);
         /** SAT4J using native Java */
         public static final SatSolver SAT4J            = new SatSolver("sat4j", "SAT4J", null, null, true);
+        /** Electrod through NuSMV */
+        public static final SatSolver ElectrodS        = new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", null, true);
+
+        public static final SatSolver electrodS(String[] opts) {
+            return new SatSolver("NuSMV", "Electrod/NuSMV", "electrod", opts, true);
+        }
+
+        /** Electrod through nuXmv */
+        public static final SatSolver ElectrodX = new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", null, true);
+
+        public static final SatSolver electrodX(String[] opts) {
+            return new SatSolver("nuXmv", "Electrod/nuXmv", "electrod", opts, true);
+        }
+
         /** Outputs the raw CNF file only */
-        public static final SatSolver CNF              = new SatSolver("cnf", "Output CNF to file", null, null, true);
+        public static final SatSolver CNF = new SatSolver("cnf", "Output CNF to file", null, null, true);
         /** Outputs the raw Kodkod file only */
-        public static final SatSolver KK               = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
+        public static final SatSolver KK  = new SatSolver("kodkod", "Output Kodkod to file", null, null, true);
 
     }
 
@@ -196,7 +213,8 @@ public final class A4Options implements Serializable {
     /**
      * Constructs an A4Options object with default values for everything.
      */
-    public A4Options() {}
+    public A4Options() {
+    }
 
     public boolean   inferPartialInstance = true;
 
@@ -287,6 +305,21 @@ public final class A4Options implements Serializable {
      */
     public int       unrolls              = (-1);
 
+    /**
+     * This option specifies the decompose strategy (0=Off 1=Hybrid 2=Parallel)
+     * <p>
+     * Default value is off.
+     */
+    public int       decompose_mode       = 0;
+
+    /**
+     * This option specifies the number of threads when following a decompose
+     * strategy
+     * <p>
+     * Default value is 4.
+     */
+    public int       decompose_threads    = 4;
+
     /** This method makes a copy of this Options object. */
     public A4Options dup() {
         A4Options x = new A4Options();
@@ -302,6 +335,8 @@ public final class A4Options implements Serializable {
         x.recordKodkod = recordKodkod;
         x.noOverflow = noOverflow;
         x.coreGranularity = coreGranularity;
+        x.decompose_mode = decompose_mode;
+        x.decompose_threads = decompose_threads;
         return x;
     }
 }

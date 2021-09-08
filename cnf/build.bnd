@@ -9,8 +9,8 @@ testbin:      			target/test-classes
 target-dir:   			target
 
 javac.source:           1.8
-javac.target:           ${javac.source}
-javac.compliance:       ${javac.source}
+javac.target:           1.8
+javac.compliance:       1.8
 javac.debug:            on
 
 Git-Descriptor:         	${system-allow-fail;git describe --dirty --always}
@@ -21,7 +21,7 @@ Bundle-Vendor:			AlloyTools at Github
 Bundle-DocURL: 			http://alloytools.org
 Bundle-License:			MIT
 
-base.version:           5.1.0
+base.version:           6.0.0
 Bundle-Version:         ${base.version}.${tstamp}
 
 # Remove -SNAPSHOT for release version

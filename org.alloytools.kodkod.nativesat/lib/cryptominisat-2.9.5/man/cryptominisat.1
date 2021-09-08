@@ -20,7 +20,7 @@ The input format is that of DIMACS CNF, i.e. a header of the form
 
 p cnf VARS CLAUSES
 
-where VARS is the number of declarations, and CLAUSES is the number of clauses in
+where VARS is the number of variables, and CLAUSES is the number of clauses in
 the problem. It then lists the set of clauses such as:
 
 1 -2 0
@@ -32,17 +32,17 @@ which is equivalent to the 2-long clause "v1 OR NOT v2 = TRUE"
 \fB\-\-polarity\-mode\fP = \fI{true,false,rnd,auto}\fP [default: auto]
 Selects the polarity mode.  Auto is the Jeroslow&Wang method.
 .TP
-\fB\-\-rnd\-freq\fP = <\fInum\fP> [0-1] How often should decision declarations
+\fB\-\-rnd\-freq\fP = <\fInum\fP> [0-1] How often should decision variables
 be picked randomly.
 .TP
 \fB\-\-verbosity\fP = <\fInum\fP> [0-2] Verbosity 1 is default. Verbosity 0
 only prints the results, and verbosity 2 prints many useful debug info.
 .TP
 \fB\-\-randomize\fP = <\fIseed\fP> [0 - 2^32-1]
-Sets the random seed, used for picking decision declarations (default = 0).
+Sets the random seed, used for picking decision variables (default = 0).
 .TP
 \fB\-\-restrict\fP = <\fInum\fP> [1 - varnum]
-When picking random declarations to branch on, pick one that is in the \fInum\fP
+When picking random variables to branch on, pick one that is in the \fInum\fP
 most active vars useful for cryptographic problems, where the question is the
 key, which is usually small (e.g., 80 bits).
 .TP
@@ -78,7 +78,7 @@ only a waste of time to execute these simplification rounds. Typically, however,
 these simplification methods save significant amount of time (>60%)
 .TP
 \fB\-\-greedyunbound\fP
-Greedily unbound declarations that are not needed for the final satisfying
+Greedily unbound variables that are not needed for the final satisfying
 assignement.
 .TP
 \fB\-\-debuglib\fP
@@ -150,7 +150,7 @@ Don't find and solve subroblems with subsolvers.
 Don't find distinct matrixes.  Put all xors into one big matrix.
 .TP
 \fB\-\-noordercol\fP
-Don't order declarations in the columns of Gaussian elimination.  Effectively
+Don't order variables in the columns of Gaussian elimination.  Effectively
 disables iterative reduction of the matrix.
 .TP
 \fB\-\-noiterreduce\fP

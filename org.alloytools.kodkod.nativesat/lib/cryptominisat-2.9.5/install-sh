@@ -123,7 +123,7 @@ Options:
   -t DIRECTORY  install into DIRECTORY.
   -T            report an error if DSTFILE is a directory.
 
-Environment declarations override the default commands:
+Environment variables override the default commands:
   CHGRPPROG CHMODPROG CHOWNPROG CMPPROG CPPROG MKDIRPROG MVPROG
   RMPROG STRIPPROG
 "
@@ -518,7 +518,7 @@ do
   fi
 done
 
-# Local declarations:
+# Local variables:
 # eval: (add-hook 'write-file-hooks 'time-stamp)
 # time-stamp-start: "scriptversion="
 # time-stamp-format: "%:y-%02m-%02d.%02H"

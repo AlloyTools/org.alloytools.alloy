@@ -28,9 +28,11 @@ import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.instance.TupleSet;
 
 /**
@@ -44,6 +46,9 @@ import kodkod.instance.TupleSet;
  * <p>
  * (2) When it sees "A = B", it will try to simplify A assuming "A in B", and
  * then simplify B assuming "B in A".
+ *
+ * @modified [electrum] allow simplification when inside always temporal
+ *           operator
  */
 
 public class Simplifier {
@@ -55,7 +60,8 @@ public class Simplifier {
     private A4Solution sol = null;
 
     /** Construct a Simplifier object. */
-    public Simplifier() {}
+    public Simplifier() {
+    }
 
     /* Stores the equivalence relation discovered so far. */
     // private final IdentityHashMap<Node,List<Expression>> equiv = new
@@ -162,7 +168,8 @@ public class Simplifier {
                     rep.debug("Comment: Simplify " + b + " " + (b1.size() - b0.size()) + "->" + (a1.size() - b0.size()) + "\n");
                     sol.shrink((Relation) b, b0, b1 = a1);
                 }
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
         }
         return true;
     }
@@ -258,6 +265,12 @@ public class Simplifier {
      * discover the formula is unsat.
      */
     private final boolean simplify_in(Formula form) {
+        if (form instanceof UnaryTempFormula) {
+            UnaryTempFormula f = (UnaryTempFormula) form;
+            if (f.op() == TemporalOperator.ALWAYS) {
+                return simplify_in(f.formula());
+            }
+        }
         if (form instanceof NaryFormula) {
             NaryFormula f = (NaryFormula) form;
             if (f.op() == FormulaOperator.AND) {
@@ -293,6 +306,12 @@ public class Simplifier {
      * discover the formula is unsat.
      */
     private final boolean simplify_eq(Formula form) {
+        if (form instanceof UnaryTempFormula) {
+            UnaryTempFormula f = (UnaryTempFormula) form;
+            if (f.op() == TemporalOperator.ALWAYS) {
+                return simplify_in(f.formula());
+            }
+        }
         if (form instanceof NaryFormula) {
             NaryFormula f = (NaryFormula) form;
             if (f.op() == FormulaOperator.AND) {

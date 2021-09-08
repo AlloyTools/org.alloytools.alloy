@@ -23,6 +23,7 @@ import java.util.Map;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprConstant;
@@ -46,6 +47,17 @@ import kodkod.instance.Universe;
 /**
  * Immutable; this class assigns each sig and field to some Kodkod relation or
  * expression, then set the bounds.
+ *
+ * @modified [electrum] adapted the constraints to enforce the sig hierarchy to
+ *           the temporal context; most relevant: one and lone multiplicities
+ *           are enforced state-wise (but the atom may change between state);
+ *           atoms may not change from one var prim sig to another;
+ *
+ *           singleton mutable sigs cannot be collapsed for simplification,
+ *           since their value may change over time; also, since the value of
+ *           mutable sigs changes over time it is not possible to quantify over
+ *           their hull (the set of all atoms in all states), so the static
+ *           kodkod univ is used when needed;
  */
 
 final class BoundsComputer {
@@ -137,21 +149,33 @@ final class BoundsComputer {
         // Recursively allocate all children expressions, and form the union of
         // them
         Expression sum = null;
+        boolean all_static = true;
+        List<Formula> extra_fs = new ArrayList<Formula>();
+        Variable v = Variable.unary("v");
         for (PrimSig child : sig.children()) {
+            if (child.isVariable != null)
+                all_static = false;
             Expression childexpr = allocatePrimSig(child);
             if (sum == null) {
                 sum = childexpr;
                 continue;
             }
             // subsigs are disjoint
-            sol.addFormula(sum.intersection(childexpr).no(), child.isSubsig);
+            if (!all_static) { // [electrum] disjointness when some variable sig
+                Expression c = sol.a2k(child);
+                // eventually v in sig => always v not in parent - sig
+                Formula ff = (v.in(c).eventually()).implies(((v.in(sum)).not().always()));
+                extra_fs.add(ff);
+            } else {
+                sol.addFormula(sum.intersection(childexpr).no(), child.isSubsig);
+            }
             sum = sum.union(childexpr);
         }
         TupleSet lower = lb.get(sig).clone(), upper = ub.get(sig).clone();
         if (sum == null) {
             // If sig doesn't have children, then sig should make a fresh
             // relation for itself
-            sum = sol.addRel(sig.label, lower, upper);
+            sum = sol.addRel(sig.label, lower, upper, sig.isVariable != null);
         } else if (sig.isAbstract == null) {
             // If sig has children, and sig is not abstract, then create a new
             // relation to act as the remainder.
@@ -167,8 +191,20 @@ final class BoundsComputer {
                 lower.removeAll(childTS);
                 upper.removeAll(childTS);
             }
-            sum = sum.union(sol.addRel(sig.label + " remainder", lower, upper));
+            Relation rem = sol.addRel(sig.label + "_remainder", lower, upper, sig.isVariable != null);
+            if (!all_static) { // [electrum] disjointness when some variable sig
+                // eventually v in sig-rem => always v not in rem
+                Formula ff = (v.in(sum).eventually()).implies(((v.in(rem)).not().always()));
+                extra_fs.add(ff);
+            }
+            sum = sum.union(rem);
         }
+        if (!extra_fs.isEmpty()) { // [electrum] add disjointness when some variable sig
+            // always all v : univ | f (kodkod univ, static)
+            sol.addFormula(Formula.and(extra_fs).forAll(v.oneOf(Expression.UNIV)), sig.pos);
+        }
+        if (sig.isVariable == null && !extra_fs.isEmpty()) // [electrum] when the static top relation is omitted 
+            sol.addFormula((sum.prime().eq(sum)).always(), sig.isVariable);
         sol.addSig(sig, sum);
         return sum;
     }
@@ -184,7 +220,10 @@ final class BoundsComputer {
             return sum;
         // Recursively form the union of all parent expressions
         TupleSet ts = factory.noneOf(1);
+        boolean hasVarParent = false;
         for (Sig parent : sig.parents) {
+            if (parent.isVariable != null)
+                hasVarParent = true;
             Expression p = (parent instanceof PrimSig) ? sol.a2k(parent) : allocateSubsetSig((SubsetSig) parent);
             ts.addAll(sol.query(true, p, false));
             if (sum == null)
@@ -199,11 +238,14 @@ final class BoundsComputer {
         }
         // Allocate a relation for this subset sig, then bound it
         rep.bound("Sig " + sig + " in " + ts + "\n");
-        Relation r = sol.addRel(sig.label, null, ts);
+        Relation r = sol.addRel(sig.label, null, ts, sig.isVariable != null);
         sol.addSig(sig, r);
         // Add a constraint that it is INDEED a subset of the union of its
         // parents
-        sol.addFormula(r.in(sum), sig.isSubset);
+        if (sig.isVariable != null || hasVarParent)
+            sol.addFormula(r.in(sum).always(), sig.isSubset);
+        else
+            sol.addFormula(r.in(sum), sig.isSubset);
         return r;
     }
 
@@ -217,7 +259,7 @@ final class BoundsComputer {
         Expression a = sol.a2k(sig);
         if (n <= 0)
             return a.no();
-        if (n == 1)
+        if (n == 1 && sig.isVariable == null) // [electrum] mutable sigs are never exact
             return exact ? a.one() : a.lone();
         Formula f = exact ? Formula.TRUE : null;
         Decls d = null;
@@ -225,7 +267,7 @@ final class BoundsComputer {
         while (n > 0) {
             n--;
             Variable v = Variable.unary("v" + Integer.toString(TranslateAlloyToKodkod.cnt++));
-            kodkod.ast.Decl dd = v.oneOf(a);
+            kodkod.ast.Decl dd = v.oneOf(sig.isVariable == null ? a : Expression.UNIV); // [electrum] if mutable, quantify over static univ
             if (d == null)
                 d = dd;
             else
@@ -240,8 +282,10 @@ final class BoundsComputer {
         }
         if (f != null)
             return sum.eq(a).and(f).forSome(d);
-        else
+        else if (sig.isVariable == null)
             return a.no().or(sum.eq(a).forSome(d));
+        else  // [electrum] if mutable, quantify over static univ
+            return Expression.UNIV.no().or(a.in(sum).always().forSome(d));
     }
 
     // ==============================================================================================================//
@@ -370,14 +414,15 @@ final class BoundsComputer {
                 }
                 if (firstTS.size() != (n > 0 ? 1 : 0) || nextTS.size() != n - 1)
                     break;
-                sol.addField(f1, sol.addRel(s.label + "." + f1.label, firstTS, firstTS));
-                sol.addField(f2, sol.addRel(s.label + "." + f2.label, nextTS, nextTS));
+                sol.addField(f1, sol.addRel(s.label + "." + f1.label, firstTS, firstTS, f1.isVariable != null));
+                sol.addField(f2, sol.addRel(s.label + "." + f2.label, nextTS, nextTS, f2.isVariable != null));
                 rep.bound("Field " + s.label + "." + f1.label + " == " + firstTS + "\n");
                 rep.bound("Field " + s.label + "." + f2.label + " == " + nextTS + "\n");
                 continue again;
             }
             for (Field f : s.getFields()) {
                 boolean isOne = s.isOne != null;
+                boolean isVar = s.isVariable != null;
                 if (isOne && f.decl().expr.mult() == ExprUnary.Op.EXACTLYOF) {
                     Expression sim = sim(f.decl().expr);
                     if (sim != null) {
@@ -386,7 +431,8 @@ final class BoundsComputer {
                         continue;
                     }
                 }
-                Type t = isOne ? Sig.UNIV.type().join(f.type()) : f.type();
+                // [electrum] avoid collapse of mutable singleton sigs
+                Type t = isOne && !isVar ? Sig.UNIV.type().join(f.type()) : f.type();
                 TupleSet ub = factory.noneOf(t.arity());
                 for (List<PrimSig> p : t.fold()) {
                     TupleSet upper = null;
@@ -399,25 +445,36 @@ final class BoundsComputer {
                     }
                     ub.addAll(upper);
                 }
-                Relation r = sol.addRel(s.label + "." + f.label, null, ub);
-                sol.addField(f, isOne ? sol.a2k(s).product(r) : r);
+                Relation r = sol.addRel(s.label + "." + f.label, null, ub, f.isVariable != null);
+                // [electrum] avoid collapse of mutable singleton sigs
+                sol.addField(f, isOne && !isVar ? sol.a2k(s).product(r) : r);
             }
         }
+
+        // [electrum] Add possible symbolic bounds
+        if (Version.experimental)
+            for (Sig s : sigs) {
+                sol.addSymbolicBound(s);
+                for (Field f : s.getFields())
+                    sol.addSymbolicBound(f);
+            }
+
         // Add any additional SIZE constraints
         for (Sig s : sigs)
             if (!s.builtin) {
                 Expression exp = sol.a2k(s);
                 TupleSet upper = sol.query(true, exp, false), lower = sol.query(false, exp, false);
                 final int n = sc.sig2scope(s);
+                // [electrum] enforce multiplities over the trace (always)
                 if (s.isOne != null && (lower.size() != 1 || upper.size() != 1)) {
                     rep.bound("Sig " + s + " in " + upper + " with size==1\n");
-                    sol.addFormula(exp.one(), s.isOne);
+                    sol.addFormula(s.isVariable != null ? exp.one().always() : exp.one(), s.isOne);
                     continue;
                 }
                 if (s.isSome != null && lower.size() < 1)
-                    sol.addFormula(exp.some(), s.isSome);
+                    sol.addFormula(s.isVariable != null ? exp.some().always() : exp.some(), s.isSome);
                 if (s.isLone != null && upper.size() > 1)
-                    sol.addFormula(exp.lone(), s.isLone);
+                    sol.addFormula(s.isVariable != null ? exp.lone().always() : exp.lone(), s.isLone);
                 if (n < 0)
                     continue; // This means no scope was specified
                 if (lower.size() == n && upper.size() == n && sc.isExact(s)) {

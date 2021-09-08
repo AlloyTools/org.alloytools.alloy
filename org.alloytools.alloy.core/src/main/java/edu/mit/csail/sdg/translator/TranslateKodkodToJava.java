@@ -27,6 +27,7 @@ import java.util.Map;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -35,7 +36,6 @@ import kodkod.ast.Decl;
 import kodkod.ast.Decls;
 import kodkod.ast.ExprToIntCast;
 import kodkod.ast.Expression;
-import kodkod.ast.FixFormula;
 import kodkod.ast.Formula;
 import kodkod.ast.IfExpression;
 import kodkod.ast.IfIntExpression;
@@ -55,12 +55,14 @@ import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.RelationPredicate.Function;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -72,6 +74,8 @@ import kodkod.util.nodes.PrettyPrinter;
  * <p>
  * Requirements: atoms must be String objects (since we cannot possibly output a
  * Java source code that can re-generate arbitrary Java objects).
+ *
+ * @modified [electrum] added temporal nodes and solving parameters
  */
 
 public final class TranslateKodkodToJava implements VoidVisitor {
@@ -119,6 +123,11 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             }
 
             @Override
+            public Integer visit(UnaryTempFormula x) {
+                return 1 + x.formula().accept(this);
+            }
+
+            @Override
             public Integer visit(IntToExprCast x) {
                 return 1 + x.intExpr().accept(this);
             }
@@ -135,6 +144,11 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 
             @Override
             public Integer visit(UnaryExpression x) {
+                return 1 + x.expression().accept(this);
+            }
+
+            @Override
+            public Integer visit(TempExpression x) {
                 return 1 + x.expression().accept(this);
             }
 
@@ -160,6 +174,11 @@ public final class TranslateKodkodToJava implements VoidVisitor {
 
             @Override
             public Integer visit(BinaryFormula x) {
+                return 1 + max(x.left().accept(this), x.right().accept(this));
+            }
+
+            @Override
+            public Integer visit(BinaryTempFormula x) {
                 return 1 + max(x.left().accept(this), x.right().accept(this));
             }
 
@@ -191,11 +210,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             @Override
             public Integer visit(QuantifiedFormula x) {
                 return 1 + max(x.decls().accept(this), x.formula().accept(this));
-            }
-
-            @Override
-            public Integer visit(FixFormula x) {
-                return 1 + max(x.condition().accept(this), x.formula().accept(this));
             }
 
             @Override
@@ -281,11 +295,13 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * @param atoms - an iterator over the set of all atoms
      * @param bounds - the Kodkod bounds object to use
      * @param atomMap - if nonnull, it is used to map the atom name before printing
+     * @param mintrace - the minimum trace length
+     * @param maxtrace - the maximum trace length
      */
-    public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap) {
+    public static String convert(Formula formula, int bitwidth, Iterable<String> atoms, PardinusBounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         StringWriter string = new StringWriter();
         PrintWriter file = new PrintWriter(string);
-        new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap);
+        new TranslateKodkodToJava(file, formula, bitwidth, atoms, bounds, atomMap, mintrace, maxtrace);
         if (file.checkError()) {
             return ""; // shouldn't happen
         } else {
@@ -323,7 +339,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
      * Constructor is private, so that the only way to access this class is via the
      * static convert() method.
      */
-    private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, Bounds bounds, Map<Object,String> atomMap) {
+    private TranslateKodkodToJava(PrintWriter pw, Formula x, int bitwidth, Iterable<String> atoms, PardinusBounds bounds, Map<Object,String> atomMap, int mintrace, int maxtrace) {
         file = pw;
         file.printf("import java.util.Arrays;%n");
         file.printf("import java.util.List;%n");
@@ -332,7 +348,7 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("import kodkod.instance.*;%n");
         file.printf("import kodkod.engine.*;%n");
         file.printf("import kodkod.engine.satlab.SATFactory;%n");
-        file.printf("import kodkod.engine.config.Options;%n%n");
+        file.printf("import kodkod.engine.config.ExtendedOptions;%n%n");
 
         file.printf("/* %n");
         file.printf("  ==================================================%n");
@@ -353,7 +369,9 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             String name = makename(r);
             int a = r.arity();
             if (a == 1)
-                file.printf("Relation %s = Relation.unary(\"%s\");%n", name, r.name());
+                file.printf("Relation %s = Relation.unary%s(\"%s\");%n", name, r.isVariable() ? "_variable" : "", r.name());
+            else if (r.isVariable())
+                file.printf("Relation %s = Relation.variable(\"%s\", %d);%n", name, r.name(), a);
             else
                 file.printf("Relation %s = Relation.nary(\"%s\", %d);%n", name, r.name(), a);
         }
@@ -379,16 +397,31 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         file.printf("Bounds bounds = new Bounds(universe);%n%n");
         for (Relation r : bounds.relations()) {
             String n = map.get(r);
-            TupleSet upper = bounds.upperBound(r);
-            TupleSet lower = bounds.lowerBound(r);
-            printTupleset(n + "_upper", upper, atomMap);
-            if (upper.equals(lower)) {
-                file.printf("bounds.boundExactly(%s, %s_upper);%n%n", n, n);
-            } else if (lower.size() == 0) {
-                file.printf("bounds.bound(%s, %s_upper);%n%n", n, n);
+            // [electrum] print symbolic bounds
+            if (bounds.lowerSymbBound(r) != null) {
+                Expression upper = bounds.upperSymbBound(r);
+                Expression lower = bounds.lowerSymbBound(r);
+                file.printf("Expression %s_upper = %s;%n%n", n, upper);
+                if (upper.equals(lower)) {
+                    file.printf("bounds.boundExactly(%s, %s_upper);%n%n", n, n);
+                    //                } else if (lower.size() == 0) {
+                    //                    file.printf("bounds.bound(%s, %s_upper);%n%n", n, n);
+                } else {
+                    file.printf("Expression %s_lower = %s;%n%n", n, lower);
+                    file.printf("bounds.bound(%s, %s_lower, %s_upper);%n%n", n, n, n);
+                }
             } else {
-                printTupleset(n + "_lower", lower, atomMap);
-                file.printf("bounds.bound(%s, %s_lower, %s_upper);%n%n", n, n, n);
+                TupleSet upper = bounds.upperBound(r);
+                TupleSet lower = bounds.lowerBound(r);
+                printTupleset(n + "_upper", upper, atomMap);
+                if (upper.equals(lower)) {
+                    file.printf("bounds.boundExactly(%s, %s_upper);%n%n", n, n);
+                } else if (lower.size() == 0) {
+                    file.printf("bounds.bound(%s, %s_upper);%n%n", n, n);
+                } else {
+                    printTupleset(n + "_lower", lower, atomMap);
+                    file.printf("bounds.bound(%s, %s_lower, %s_upper);%n%n", n, n, n);
+                }
             }
         }
         for (IndexedEntry<TupleSet> i : bounds.intBounds()) {
@@ -401,13 +434,16 @@ public final class TranslateKodkodToJava implements VoidVisitor {
         }
         file.printf("%n");
         String result = make(x);
-        file.printf("%nSolver solver = new Solver();");
-        file.printf("%nsolver.options().setSolver(SATFactory.DefaultSAT4J);");
-        file.printf("%nsolver.options().setBitwidth(%d);", bitwidth != 0 ? bitwidth : 1);
-        file.printf("%nsolver.options().setFlatten(false);");
-        file.printf("%nsolver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);");
-        file.printf("%nsolver.options().setSymmetryBreaking(20);");
-        file.printf("%nsolver.options().setSkolemDepth(0);");
+        file.printf("%nExtendedOptions opt = new ExtendedOptions();");
+        file.printf("%nopt.setSolver(SATFactory.DefaultSAT4J);");
+        file.printf("%nopt.setBitwidth(%d);", bitwidth != 0 ? bitwidth : 1);
+        file.printf("%nopt.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);");
+        file.printf("%nopt.setSymmetryBreaking(20);");
+        file.printf("%nopt.setSkolemDepth(0);");
+        file.printf("%nopt.setMinTraceLength(%d);", mintrace);
+        file.printf("%nopt.setMaxTraceLength(%d);", maxtrace);
+        file.printf("%nopt.setRunUnbounded(%b);", maxtrace == Integer.MAX_VALUE);
+        file.printf("%nPardinusSolver solver = new PardinusSolver(opt);");
         file.printf("%nSystem.out.println(\"Solving...\");");
         file.printf("%nSystem.out.flush();");
         file.printf("%nSolution sol = solver.solve(%s,bounds);", result);
@@ -573,6 +609,31 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
+    public void visit(BinaryTempFormula temporalFormula) {
+        String newname = makename(temporalFormula);
+        if (newname == null)
+            return;
+        String left = make(temporalFormula.left());
+        String right = make(temporalFormula.right());
+        switch (temporalFormula.op()) {
+            case RELEASES :
+                file.printf("Expression %s=%s.releases(%s);%n", newname, left, right);
+                break;
+            case UNTIL :
+                file.printf("Expression %s=%s.until(%s);%n", newname, left, right);
+                break;
+            case SINCE :
+                file.printf("Expression %s=%s.since(%s);%n", newname, left, right);
+                break;
+            case TRIGGERED :
+                file.printf("Expression %s=%s.triggered(%s);%n", newname, left, right);
+                break;
+            default :
+                throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalFormula.op() + "\" encountered");
+        }
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void visit(BinaryIntExpression x) {
         String newname = makename(x);
@@ -667,6 +728,21 @@ public final class TranslateKodkodToJava implements VoidVisitor {
     }
 
     /** {@inheritDoc} */
+    public void visit(TempExpression temporalExpr) {
+        String newname = makename(temporalExpr);
+        if (newname == null)
+            return;
+        String sub = make(temporalExpr.expression());
+        switch (temporalExpr.op()) {
+            case PRIME :
+                file.printf("Expression %s=%s.prime();%n", newname, sub);
+                break;
+            default :
+                throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalExpr.op() + "\" encountered");
+        }
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void visit(IfExpression x) {
         String newname = makename(x);
@@ -698,6 +774,36 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             return;
         String sub = make(x.formula());
         file.printf("Formula %s=%s.not();%n", newname, sub);
+    }
+
+    /** {@inheritDoc} */
+    public void visit(UnaryTempFormula temporalFormula) {
+        String newname = makename(temporalFormula);
+        if (newname == null)
+            return;
+        String sub = make(temporalFormula.formula());
+        switch (temporalFormula.op()) {
+            case ALWAYS :
+                file.printf("Formula %s=%s.always();%n", newname, sub);
+                break;
+            case EVENTUALLY :
+                file.printf("Formula %s=%s.eventually();%n", newname, sub);
+                break;
+            case HISTORICALLY :
+                file.printf("Formula %s=%s.historically();%n", newname, sub);
+                break;
+            case ONCE :
+                file.printf("Formula %s=%s.once();%n", newname, sub);
+                break;
+            case BEFORE :
+                file.printf("Formula %s=%s.previously();%n", newname, sub);
+                break;
+            case AFTER :
+                file.printf("Formula %s=%s.after();%n", newname, sub);
+                break;
+            default :
+                throw new RuntimeException("Unknown temporal kodkod operator \"" + temporalFormula.op() + "\" encountered");
+        }
     }
 
     /** {@inheritDoc} */
@@ -817,17 +923,6 @@ public final class TranslateKodkodToJava implements VoidVisitor {
             default :
                 throw new RuntimeException("Unknown kodkod quantifier \"" + x.quantifier() + "\" encountered");
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void visit(FixFormula x) {
-        String newname = makename(x);
-        if (newname == null)
-            return;
-        String f = make(x.formula());
-        String c = make(x.condition());
-        file.printf("Formula %s=%s.fix(%s);%n", newname, f, c);
     }
 
     /** {@inheritDoc} */

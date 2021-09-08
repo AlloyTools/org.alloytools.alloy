@@ -66,6 +66,11 @@ import org.alloytools.util.table.Table;
  * be displayed in red.
  * <p>
  * <b>Thread Safety:</b> Can be called only by the AWT event thread.
+ *
+ * @modified [electrum] the evaluator now acts on the current state focused on
+ *           the visualizer (temporal formulas can still be evaluated, but
+ *           always from the focused state); this info is updated by the VizGUI
+ *           and passed along to the computer
  */
 
 public final class OurConsole extends JScrollPane {
@@ -121,7 +126,10 @@ public final class OurConsole extends JScrollPane {
     /**
      * The position in this.history that is currently showing.
      */
-    private int browse = 0;
+    private int browse  = 0;
+
+    /** The current state under which to evaluate user commands. */
+    private int current = 0;
 
     /*
      * Helper method that construct a mutable style with the given font name, font
@@ -379,7 +387,9 @@ public final class OurConsole extends JScrollPane {
         boolean isBad = false;
         Object result;
         try {
-            result = computer.compute(cmd);
+            result = computer.compute(new String[] {
+                                                    cmd, current + ""
+            });
         } catch (Throwable ex) {
             result = ex.toString();
             isBad = true;
@@ -428,6 +438,12 @@ public final class OurConsole extends JScrollPane {
                 main.getCaret().setSelectionVisible(false);
             } else
                 doc.insertString(where >= 0 ? where : doc.getLength(), text, style);
-        } catch (BadLocationException ex) {}
+        } catch (BadLocationException ex) {
+        }
+    }
+
+    /** Set the current state under which to evaluate the user command. */
+    public void setCurrentState(int state) {
+        current = state;
     }
 }

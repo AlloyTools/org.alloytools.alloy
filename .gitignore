@@ -1,10 +1,8 @@
 .DS_Store
 .gradle/
-.idea/
 generated/
 bin/
 bin_test/
-build/
 target/
 enroute.zip
 .metadata
@@ -25,9 +23,6 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.dylib
 *.dll
 
-# SMT-Lib files
-*.smt2
-
 # Fortran module files
 *.mod
 
@@ -41,3 +36,6 @@ org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4compiler/
 *.exe
 *.out
 *.app
+
+.idea
+*.iml

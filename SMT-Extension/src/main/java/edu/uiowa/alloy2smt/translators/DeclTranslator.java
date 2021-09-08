@@ -38,7 +38,7 @@ public class DeclTranslator
 
     for (ExprHasName name : decl.names)
     {
-      Decl individualDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2, Collections.singletonList(name), decl.expr);
+      Decl individualDecl = new Decl(decl.isPrivate, decl.disjoint, decl.disjoint2, decl.isVar, Collections.singletonList(name), decl.expr);
       variables.add(translateIndividualDecl(individualDecl, smtEnv));
     }
 

@@ -15,7 +15,42 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
-import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerHeight;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerWidth;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerX;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerY;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4FiniteModelFind;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4IncludeCommandScope;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4ProduceUnsatCores;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Cvc4Timeout;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposePref;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.KODKOD;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Model0;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Model1;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Model2;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Model3;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.RelationalSolver;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Welcome;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
 import static java.awt.event.KeyEvent.VK_A;
@@ -24,6 +59,7 @@ import static java.awt.event.KeyEvent.VK_E;
 import static java.awt.event.KeyEvent.VK_PAGE_DOWN;
 import static java.awt.event.KeyEvent.VK_PAGE_UP;
 import static java.awt.event.KeyEvent.VK_SHIFT;
+import static java.awt.event.KeyEvent.VK_U;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,7 +72,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -154,6 +196,14 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
  * (1) the run() method in SatRunner is launched from a fresh thread <br>
  * (2) the run() method in the instance watcher (in constructor) is launched
  * from a fresh thread
+ *
+ * @modified [electrum] added electrum example models; added accelerator for
+ *           execute all on mac; updated about message; evaluator now takes a
+ *           second argument denoting the focused state; visualize traces with 2
+ *           states, 1 otherwise; enumerator now takes as additional argument
+ *           the operation to apply; also distinguishes between global and local
+ *           iterations, the former resets the visualizer; added electrod
+ *           binaries; added the option to select the decompose strategy
  */
 public final class SimpleGUI implements ComponentListener, Listener {
 
@@ -248,8 +298,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private static final Color    background             = new Color(0.9f, 0.9f, 0.9f);
 
     /**
-     * If subrunning==true: 0 means SAT solving; 1 means metamodel; 2 means
-     * enumeration.
+     * If subrunning==true: 0 means SAT solving; 1 means metamodel; 2 means global
+     * enumeration; 3 means local enumeration.
      */
     private int                   subrunningTask         = 0;
 
@@ -304,10 +354,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     /** The preferences dialog. */
     private PreferencesDialog     prefDialog;
-
-    /**CVC4 SMT-Extension */
-
-
 
     // ====== helper methods =================================================//
 
@@ -428,10 +474,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
             // The error will be caught later by the "berkmin" or "spear" test
         }
         // Copy the platform-dependent binaries
-        Util.copy(frame, true, false, platformBinary, arch + "/libminisat.so", arch + "/libminisatx1.so", arch + "/libminisat.jnilib", arch + "/libminisat.dylib", arch + "/libminisatprover.so", arch + "/libminisatproverx1.so", arch + "/libminisatprover.jnilib", arch + "/libminisatprover.dylib", arch + "/libzchaff.so", arch + "/libzchaffmincost.so", arch + "/libzchaffx1.so", arch + "/libzchaff.jnilib", arch + "/liblingeling.so", arch + "/liblingeling.dylib", arch + "/liblingeling.jnilib", arch + "/plingeling", arch + "/libglucose.so", arch + "/libglucose.dylib", arch + "/libglucose.jnilib", arch + "/libcryptominisat.so", arch + "/libcryptominisat.la", arch + "/libcryptominisat.dylib", arch + "/libcryptominisat.jnilib", arch + "/berkmin", arch + "/spear", arch + "/cryptominisat");
-        Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe");
+        Util.copy(frame, true, false, platformBinary, arch + "/libminisat.so", arch + "/libminisatx1.so", arch + "/libminisat.jnilib", arch + "/libminisat.dylib", arch + "/libminisatprover.so", arch + "/libminisatproverx1.so", arch + "/libminisatprover.jnilib", arch + "/libminisatprover.dylib", arch + "/libzchaff.so", arch + "/libzchaffmincost.so", arch + "/libzchaffx1.so", arch + "/libzchaff.jnilib", arch + "/liblingeling.so", arch + "/liblingeling.dylib", arch + "/liblingeling.jnilib", arch + "/plingeling", arch + "/libglucose.so", arch + "/libglucose.dylib", arch + "/libglucose.jnilib", arch + "/libcryptominisat.so", arch + "/libcryptominisat.la", arch + "/libcryptominisat.dylib", arch + "/libcryptominisat.jnilib", arch + "/berkmin", arch + "/spear", arch + "/cryptominisat", arch + "/electrod");
+        Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe", arch + "/electrod.exe");
         // Copy the model files
-        Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als");
+        Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als",
+                  "models/examples/temporal/buffer.als", "models/examples/temporal/leader.als", "models/examples/temporal/leader_events.als", "models/examples/temporal/trash.als");
         // Record the locations
         System.setProperty("alloy.theme0", alloyHome(frame) + fs + "models");
         System.setProperty("alloy.home", alloyHome(frame));
@@ -491,7 +538,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             public void run() {
                 try {
                     method.setAccessible(true);
-                    method.invoke(SimpleGUI.this, new Object[] {});
+                    method.invoke(SimpleGUI.this, new Object[] {
+});
                 } catch (Throwable ex) {
                     ex = new IllegalArgumentException("Failed call to " + name + "()", ex);
                     Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex);
@@ -1032,7 +1080,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private Runner doRefreshRun() {
         if (wrap)
             return wrapMe();
-        KeyStroke ac = KeyStroke.getKeyStroke(VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         try {
             wrap = true;
             runmenu.removeAll();
@@ -1087,19 +1134,22 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             for (int i = 0; i < cp.size(); i++) {
-                JMenuItem y = new JMenuItem(cp.get(i).toString(), null);
-                y.addActionListener(doRun(i));
+                JMenuItem menuItem = new JMenuItem(cp.get(i).toString(), null);
+                menuItem.addActionListener(doRun(i));
                 if (i == latestCommand) {
-                    y.setMnemonic(VK_E);
-                    y.setAccelerator(ac);
+                    menuItem.setMnemonic(VK_E);
+                    menuItem.setAccelerator(KeyStroke.getKeyStroke(VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                 }
-                runmenu.add(y, i);
+                runmenu.add(menuItem, i);
             }
-            if (cp.size() >= 2) {
-                JMenuItem y = new JMenuItem("Execute All", null);
-                y.setMnemonic(VK_A);
-                y.addActionListener(doRun(-1));
-                runmenu.add(y, 0);
+            if (cp.size() > 1) {
+                JMenuItem menuItem = new JMenuItem("Execute All", null);
+                // [electrum] cmd+u acc for mac
+                final int mnemonic = Util.onMac() ? VK_U : VK_A;
+                menuItem.setMnemonic(mnemonic);
+                menuItem.setAccelerator(KeyStroke.getKeyStroke(mnemonic, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                menuItem.addActionListener(doRun(-1));
+                runmenu.add(menuItem, 0);
                 runmenu.add(new JSeparator(), 1);
             }
         } finally {
@@ -1153,14 +1203,15 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.coreMinimization = CoreMinimization.get();
         opt.inferPartialInstance = InferPartialInstance.get();
         opt.coreGranularity = CoreGranularity.get();
+        opt.decompose_mode = DecomposePref.get().ordinal();
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.solver = Solver.get();
 
         WorkerEngine.WorkerTask task;
 
-        Map<String, String> alloyFiles = text.takeSnapshot();
-        int resolutionMode              = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
-        if(RelationalSolver.get().equals(KODKOD)) {
+        Map<String,String> alloyFiles = text.takeSnapshot();
+        int resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
+        if (RelationalSolver.get().equals(KODKOD)) {
             SimpleTask1 kodkodTask = new SimpleTask1();
             kodkodTask.bundleIndex = i;
             kodkodTask.bundleWarningNonFatal = WarningNonfatal.get();
@@ -1169,8 +1220,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             kodkodTask.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
             kodkodTask.tempdir = maketemp(frame);
             task = kodkodTask;
-        }
-        else{
+        } else {
             task = new Cvc4Task(alloyFiles, opt.originalFilename, resolutionMode, i);
         }
         try {
@@ -1220,7 +1270,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (latestAutoInstance.length() > 0) {
             String f = latestAutoInstance;
             latestAutoInstance = "";
+            // [electrum] move to first state if global iteration
             if (subrunningTask == 2)
+                viz.loadXML(f, true, 0);
+            else if (subrunningTask == 3)
                 viz.loadXML(f, true);
             else if (AutoVisualize.get() || subrunningTask == 1)
                 doVisualize("XML: " + f);
@@ -1411,25 +1464,17 @@ public final class SimpleGUI implements ComponentListener, Listener {
             // CVC4 options
             JMenu relationalSolverMenu = addToMenu(optmenu, RelationalSolver);
             JMenu cvc4TimeoutMenu = addToMenu(optmenu, Cvc4Timeout);
-            List<JMenuItem> cvc4BooleanPreferences = addToMenu(optmenu,
-                Cvc4IncludeCommandScope,
-                Cvc4ProduceUnsatCores,
-                Cvc4FiniteModelFind);
+            List<JMenuItem> cvc4BooleanPreferences = addToMenu(optmenu, Cvc4IncludeCommandScope, Cvc4ProduceUnsatCores, Cvc4FiniteModelFind);
             //, Cvc4IntegerSingletonsOnly
 
-            if(RelationalSolver.get().equals(KODKOD))
-            {
+            if (RelationalSolver.get().equals(KODKOD)) {
                 cvc4TimeoutMenu.setEnabled(false);
-                for(JMenuItem item: cvc4BooleanPreferences)
-                {
+                for (JMenuItem item : cvc4BooleanPreferences) {
                     item.setEnabled(false);
                 }
-            }
-            else
-            {
+            } else {
                 cvc4TimeoutMenu.setEnabled(true);
-                for(JMenuItem item: cvc4BooleanPreferences)
-                {
+                for (JMenuItem item : cvc4BooleanPreferences) {
                     item.setEnabled(true);
                 }
             }
@@ -1447,6 +1492,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
             if (Version.experimental) {
                 addToMenu(optmenu, Unrolls);
+                addToMenu(optmenu, DecomposePref);
                 addToMenu(optmenu, ImplicitThis, NoOverflow, InferPartialInstance);
             }
 
@@ -1530,7 +1576,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         ta.setBorder(null);
         ta.setFont(new JLabel().getFont());
         // @formatter:off
-        ta.setText("<html><h1>Alloy Analyzer " + Version.getShortversion() + "</h1>"
+        ta.setText("<html><h1>Alloy Analyzer "+ Version.getShortversion() +"</h1>"
         + "<br/>"
         + "<html>"
         + "<tr><th>Project Lead</th><td>Daniel Jackson</td></tr>"
@@ -1542,12 +1588,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
         + "<p>Questions and comments about Alloy are welcome at the community forum:</p>"
         + "<p>Alloy Community Forum: <a href='https://groups.google.com/forum/#!forum/alloytools'>https://groups.google.com/forum/#!forum/alloytools</a></p>"
         + "<p>Alloy experts also respond to <a href='https://stackoverflow.com/questions/tagged/alloy'>https://stackoverflow.com</a> questions tagged <code>alloy</code>.</p>"
-        + "<p>Major contributions to earlier versions of Alloy were made by: Felix Chang (v4);<br/>"
-        + "Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater, Derek Rayside, Greg Dennis,<br/>"
-        + "Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz Khurshid (v3); Manu Sridharan<br/>"
-        + "(v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip, Jongmin Baek, Ning Song,<br/>"
-        + "Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel, Ian Schechter, Uriel<br/>"
-        + "Schafer (v1).</p>"
+        + "<p>Major contributions to earlier versions of Alloy were made by: Julien Brunel, David<br/>"
+        + "Chemouil, Alcino Cunha, Nuno Macedo, Denis Kuperberg, Eduardo Pessoa, Tiago Guimarães<br/>" // [electrum] electrum contributors
+        + "(Electrum); Felix Chang (v4); Jonathan Edwards, Eunsuk Kang, Joe Near, Robert Seater,<br/>"
+        + "Derek Rayside, Greg Dennis, Ilya Shlyakhter, Mana Taghdiri, Mandana Vaziri, Sarfraz<br/>"
+        + "Khurshid (v3); Manu Sridharan (v2); Edmond Lau, Vincent Yeung, Sam Daitch, Andrew Yip,<br/>"
+        + "Jongmin Baek, Ning Song, Arturo Arizpe, Li-kuo (Brian) Lin, Joseph Cohen, Jesse Pavel,<br/>"
+        + "Ian Schechter, Uriel Schafer (v1).</p>"
         + "<p>The development of Alloy was funded by part by the National Science Foundation under<br/>"
         + "Grant Nos. 0325283, 0541183, 0438897 and 0707612; by the Air Force Research Laboratory<br/>"
         + "(AFRL/IF) and the Disruptive Technology Office (DTO) in the National Intelligence<br/>"
@@ -1750,7 +1797,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             }
         }
         if (arg.startsWith("XML: ")) { // XML: filename
-            viz.loadXML(Util.canon(arg.substring(5)), false);
+            viz.loadXML(Util.canon(arg.substring(5)), false, 0);
         }
         return null;
     }
@@ -1775,28 +1822,29 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         @Override
         public String compute(Object input) {
-            final String arg = (String) input;
+            final String[] arg = (String[]) input; // [electrum] additional argument to set the iteration operation
             OurUtil.show(frame);
             if (WorkerEngine.isBusy())
                 throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
             SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
 
             WorkerEngine.WorkerTask task;
-            if(RelationalSolver.get().equals(KODKOD)) {
-                SimpleTask2 task2   = new SimpleTask2();
-                task2.filename      = arg;
-                task                = task2;
-            }
-            else{
+
+            if (RelationalSolver.get().equals(KODKOD)) {
+                SimpleTask2 task2 = new SimpleTask2();
+                task2.filename = arg[0];
+                task2.index = Integer.valueOf(arg[1]);
+                task = task2;
+            } else {
                 try {
-                    task = new Cvc4EnumerationTask(arg);
+                    task = new Cvc4EnumerationTask(arg[1]);
                 } catch (Exception exception) {
                     StringWriter stringWriter = new StringWriter();
                     exception.printStackTrace(new PrintWriter(stringWriter));
                     log.logBold(stringWriter.toString());
                     log.logDivider();
                     log.flush();
-                    return arg;
+                    return arg[1];
                 }
             }
 
@@ -1812,14 +1860,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 log.logDivider();
                 log.flush();
                 doStop(2);
-                return arg;
+                return arg[0];
             }
-            subrunningTask = 2;
+            subrunningTask = task.getIndex() < 1 ? 2 : 3; // [electrum] whether global iteration
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
             stopbutton.setVisible(true);
-            return arg;
+            return arg[0];
         }
     };
 
@@ -1869,10 +1917,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 filename = ((File) input).getAbsolutePath();
                 return "";
             }
-            if (!(input instanceof String))
+            if (!(input instanceof String[]))
                 return "";
-            final String str = (String) input;
-            if (str.trim().length() == 0)
+            // [electrum] evaluator takes two arguments, the second is the focused state
+            final String[] strs = (String[]) input;
+            if (strs[0].trim().length() == 0)
                 return ""; // Empty line
             Module root = null;
             A4Solution ans = null;
@@ -1907,13 +1956,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 throw new ErrorFatal("Failed to read or parse the XML file.");
             }
             try {
-                Expr e = CompUtil.parseOneExpression_fromString(root, str);
+                Expr e = CompUtil.parseOneExpression_fromString(root, strs[0]);
                 if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
                     SimInstance simInst = convert(root, ans);
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
-                return ans.eval(e);
+                return ans.eval(e, Integer.valueOf(strs[1])).toString();
             } catch (HigherOrderDeclException ex) {
                 throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
             }
@@ -2185,7 +2234,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         }
 
         // Pre-load the visualizer
-        viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator);
+        viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator, 2);
         viz.doSetFontSize(FontSize.get());
 
         // Create the toolbar

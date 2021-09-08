@@ -15,7 +15,14 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -23,13 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.mit.csail.sdg.alloy4whole.instances.AlloySolution;
 import org.alloytools.alloy.core.AlloyCore;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorAPI;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
@@ -44,6 +51,7 @@ import edu.mit.csail.sdg.alloy4.WorkerEngine.WorkerTask;
 import edu.mit.csail.sdg.alloy4.XMLNode;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
+import edu.mit.csail.sdg.alloy4whole.instances.AlloySolution;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Module;
 import edu.mit.csail.sdg.ast.Sig;
@@ -54,10 +62,23 @@ import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4SolutionWriter;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
-import javax.swing.*;
-import javax.xml.bind.JAXBException;
-
-/** This helper method is used by SimpleGUI. */
+/**
+ * This helper method is used by SimpleGUI.
+ *
+ * @modified [electrum] changed so that all commands can be executed even when
+ *           some throw errors; the solving process now reports in which step of
+ *           the temporal analysis is; since temporal analysis is incremental,
+ *           solving the command from 1 to the maximum number of steps defined
+ *           in the scope, and reports whenever each of these steps finishes;
+ *           the SimpleReporter overrides these messages in the log panel and
+ *           shows only the most recent one; the translation also reports the
+ *           relevant temporal options; enumeration task enriched with
+ *           alternative iteration operations; reporting updated with the
+ *           decompose strategy; a call is made every time one of the parallel
+ *           problems performs a step; the number of seen configurations is thus
+ *           also logged (the presented step is the maximum step seen by any
+ *           parallel problem)
+ */
 
 final class SimpleReporter extends A4Reporter {
 
@@ -68,7 +89,7 @@ final class SimpleReporter extends A4Reporter {
         private final SwingLogPanel     span;
         private final Set<ErrorWarning> warnings = new HashSet<ErrorWarning>();
         private final List<String>      results  = new ArrayList<String>();
-        private int                     len2     = 0, len3 = 0, verbosity = 0;
+        private int                     len2     = 0, len3 = 0, len4 = 0, verbosity = 0;
         private final String            latestName;
         private final int               latestVersion;
 
@@ -202,15 +223,16 @@ final class SimpleReporter extends A4Reporter {
             }
             if (array[0].equals("debug") && verbosity > 2) {
                 span.log("   " + array[1] + "\n");
-                len2 = len3 = span.getLength();
+                len2 = len3 = len4 = span.getLength();
             }
             if (array[0].equals("translate")) {
                 span.log("   " + array[1]);
-                len3 = span.getLength();
+                len3 = len4 = span.getLength();
                 span.logBold("   Generating CNF...\n");
             }
             if (array[0].equals("solve")) {
-                span.setLength(len3);
+                // [electrum] len4 allows solving step info to be overwritten
+                span.setLength(len4);
                 span.log("   " + array[1]);
                 len3 = span.getLength();
                 span.logBold("   Solving...\n");
@@ -247,8 +269,7 @@ final class SimpleReporter extends A4Reporter {
                 gui.doSetLatest(filename);
 
                 // generate model constraints
-                try
-                {
+                try {
                     AlloySolution alloySolution = AlloySolution.readFromXml(filename);
 
                     span.log("\nGenerated xml instance file: ");
@@ -263,9 +284,7 @@ final class SimpleReporter extends A4Reporter {
                     span.logLink(" constraints", "MSG: " + constraints);
                     span.log("\n");
 
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
                     e.printStackTrace(pw);
@@ -384,16 +403,41 @@ final class SimpleReporter extends A4Reporter {
 
     /** {@inheritDoc} */
     @Override
-    public void translate(String solver, int bitwidth, int maxseq, int skolemDepth, int symmetry) {
-        lastTime = System.currentTimeMillis();
-        cb("translate", "Solver=" + solver + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + '\n');
+    public void translate(String solver, int bitwidth, int maxseq, int mintrace, int maxtrace, int skolemDepth, int symmetry, String strat) {
+        startTime = System.currentTimeMillis();
+        startCount = 0;
+        cb("translate", "Solver=" + solver + " Steps=" + mintrace + ".." + maxtrace + " Bitwidth=" + bitwidth + " MaxSeq=" + maxseq + (skolemDepth == 0 ? "" : " SkolemDepth=" + skolemDepth) + " Symmetry=" + (symmetry > 0 ? ("" + symmetry) : "OFF") + " Mode=" + strat + "\n");
     }
 
     /** {@inheritDoc} */
     @Override
-    public void solve(final int primaryVars, final int totalVars, final int clauses) {
+    public void solve(final int step, final int pv, final int tv, final int cl) {
+        // [electrum] this may now be called multiple times in iterative temporal solving, variables are accumulated
+        // [electrum] in decomposed mode it also reports how many configs have been explored (and only presents the largest step seen)
         minimized = 0;
-        cb("solve", "" + totalVars + " vars. " + primaryVars + " primary vars. " + clauses + " clauses. " + (System.currentTimeMillis() - lastTime) + "ms.\n");
+        if (startStep < 0)
+            startStep = step;
+        if (startStep == step) // [electrum] denotes a new config
+            startCount++;
+        seenStep = Math.max(seenStep, step);
+        primaryVars += pv;
+        totalVars += tv;
+        clauses += cl;
+        StringBuilder sb = new StringBuilder();
+        if (startCount > 1)
+            sb.append(startCount + " configs. ");
+        if (seenStep > 0)
+            sb.append(startStep + ".." + seenStep + " steps. ");
+        if (totalVars >= 0)
+            sb.append("" + totalVars + " vars. ");
+        if (primaryVars >= 0)
+            sb.append(primaryVars + " primary vars. ");
+        if (clauses > 0)
+            sb.append(clauses + " clauses. ");
+        if (sb.length() == 0)
+            sb.append("No translation information available. ");
+        sb.append((System.currentTimeMillis() - startTime) + "ms.\n");
+        cb("solve", sb.toString());
         lastTime = System.currentTimeMillis();
     }
 
@@ -504,7 +548,13 @@ final class SimpleReporter extends A4Reporter {
      * The time that the last action began; we subtract it from
      * System.currentTimeMillis() to determine the elapsed time.
      */
-    private long          lastTime  = 0;
+    private long          lastTime  = 0, startTime = 0;
+
+    /**
+     * Variables to log and accumulate solving data for each call to
+     * {@link #solve(int, int, int, int)}
+     */
+    private int           startStep = -1, seenStep = -1, primaryVars = 0, clauses = 0, totalVars = 0, startCount = 0;
 
     /**
      * If we performed unsat core minimization, then this is the start of the
@@ -580,11 +630,17 @@ final class SimpleReporter extends A4Reporter {
     static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
+        public int                      index            = -1; // [electrum] registers which iteration operation to perform
         public String                   filename         = "";
         public transient WorkerCallback out              = null;
 
         private void cb(Object... objs) throws Exception {
             out.callback(objs);
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
         }
 
         @Override
@@ -619,7 +675,12 @@ final class SimpleReporter extends A4Reporter {
             }
             int tries = 0;
             while (true) {
-                sol = sol.next();
+                try {
+                    sol = sol.fork(this.index); // [electrum] call the enumerator with appropriate operation
+                } catch (ErrorAPI e) {
+                    cb("pop", e.getMessage());
+                    return;
+                }
                 if (!sol.satisfiable()) {
                     cb("pop", "There are no more satisfying instances.\n\n" + "Note: due to symmetry breaking and other optimizations,\n" + "some equivalent solutions may have been omitted.");
                     return;
@@ -649,7 +710,7 @@ final class SimpleReporter extends A4Reporter {
      */
     private static void validate(String filename) throws Exception {
         A4SolutionReader.read(new ArrayList<Sig>(), new XMLNode(new File(filename))).toString();
-        StaticInstanceReader.parseInstance(new File(filename));
+        StaticInstanceReader.parseInstance(new File(filename), 0);
     }
 
     /** Task that perform one command. */
@@ -670,6 +731,11 @@ final class SimpleReporter extends A4Reporter {
         }
 
         @Override
+        public int getIndex() {
+            return -1;
+        }
+
+        @Override
         public void run(WorkerCallback out) throws Exception {
             cb(out, "S2", "Starting the solver...\n\n");
             final SimpleReporter rep = new SimpleReporter(out, options.recordKodkod);
@@ -680,6 +746,7 @@ final class SimpleReporter extends A4Reporter {
             if (rep.warn > 0 && !bundleWarningNonFatal)
                 return;
             List<String> result = new ArrayList<String>(cmds.size());
+            Exception exc = null;
             if (bundleIndex == -2) {
                 final String outf = tempdir + File.separatorChar + "m.xml";
                 cb(out, "S2", "Generating the metamodel...\n");
@@ -706,7 +773,12 @@ final class SimpleReporter extends A4Reporter {
                         final Command cmd = cmds.get(i);
                         rep.tempfile = tempCNF;
                         cb(out, "bold", "Executing \"" + cmd + "\"\n");
-                        A4Solution ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
+                        A4Solution ai = null;
+                        try { // [electrum] postpones error throwing, allows other commands to still be solved
+                            ai = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), cmd, options);
+                        } catch (Exception e1) {
+                            exc = e1;
+                        }
                         if (ai == null)
                             result.add(null);
                         else if (ai.satisfiable())
@@ -760,6 +832,10 @@ final class SimpleReporter extends A4Reporter {
                 rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings. Please scroll up to see them.\n");
             if (rep.warn == 1)
                 rep.cb("bold", "Note: There was 1 compilation warning. Please scroll up to see it.\n");
+
+            if (exc != null)
+                throw exc;
+
         }
     }
 }

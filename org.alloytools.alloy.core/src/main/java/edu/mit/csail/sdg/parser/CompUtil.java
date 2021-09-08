@@ -38,7 +38,9 @@ import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprUnary.Op;
@@ -52,6 +54,9 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
 /**
  * This class provides convenience methods for calling the parser and the
  * compiler.
+ *
+ * @modified [electrum] helper method to determine whether a model is fully
+ *           static (classic Alloy);
  */
 
 public final class CompUtil {
@@ -59,7 +64,8 @@ public final class CompUtil {
     /**
      * Constructor is private, since this class never needs to be instantiated.
      */
-    private CompUtil() {}
+    private CompUtil() {
+    }
 
     // =============================================================================================================//
 
@@ -171,7 +177,46 @@ public final class CompUtil {
             });
             if (intTriggerNode != null)
                 return true;
-        } catch (Err e) {}
+        } catch (Err e) {
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the given command is a temporal model (either there are variable
+     * sigs/fields or temporal operators in the formula).
+     */
+    public static boolean isTemporalModel(Iterable<Sig> sigs, Command cmd) {
+        for (Sig sig : sigs) {
+            if (sig.isVariable != null && !sig.builtin)
+                return true;
+            else {
+                for (Decl dec : sig.getFieldDecls()) {
+                    if (dec.isVar != null)
+                        return true;
+                }
+            }
+        }
+        Object varTriggerNode;
+        varTriggerNode = cmd.formula.accept(new VisitQueryOnce<Object>() {
+
+            @Override
+            public Object visit(ExprUnary x) throws Err {
+                if (x.op == Op.AFTER || x.op == Op.BEFORE || x.op == Op.PRIME || x.op == Op.HISTORICALLY || x.op == Op.ALWAYS || x.op == Op.ONCE || x.op == Op.EVENTUALLY)
+                    return x;
+                return super.visit(x);
+            }
+
+            @Override
+            public Object visit(ExprBinary x) throws Err {
+                if (x.op == ExprBinary.Op.UNTIL || x.op == ExprBinary.Op.SINCE || x.op == ExprBinary.Op.TRIGGERED || x.op == ExprBinary.Op.RELEASES)
+                    return x;
+                return super.visit(x);
+            }
+        });
+        if (varTriggerNode != null)
+            return true;
 
         return false;
     }
@@ -245,7 +290,8 @@ public final class CompUtil {
                         String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
                         content = Util.readAll(newCp);
                         cp = newCp;
-                    } catch (IOException ex) {}
+                    } catch (IOException ex) {
+                    }
                 }
             }
             loaded.put(cp, content);

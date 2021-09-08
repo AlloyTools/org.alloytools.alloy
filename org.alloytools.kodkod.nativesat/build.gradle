@@ -1,7 +1,0 @@
-sourceSets {
-    main {
-        resources {
-            srcDirs "jni"
-        }
-    }
-}

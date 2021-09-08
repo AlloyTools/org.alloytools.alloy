@@ -25,10 +25,13 @@ import static kodkod.engine.Solution.Outcome.UNSATISFIABLE;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -38,9 +41,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.util.table.Table;
 
+import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -64,6 +67,7 @@ import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import kodkod.ast.BinaryExpression;
@@ -77,21 +81,32 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
+import kodkod.engine.AbstractKodkodSolver;
 import kodkod.engine.CapacityExceededException;
 import kodkod.engine.Evaluator;
+import kodkod.engine.Explorer;
+import kodkod.engine.InvalidSolverParamException;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
 import kodkod.engine.config.AbstractReporter;
+import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
+import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.HybridStrategy;
 import kodkod.engine.ucore.RCEStrategy;
+import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -102,6 +117,19 @@ import kodkod.util.ints.IndexedEntry;
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
  * a staging area for the solver before generating the solution. Once solve()
  * has been called, then this object becomes immutable after that.
+ *
+ * @modified [electrum] adapted to support temporal problems (including
+ *           decomposed); evaluation now also acts at a particular state
+ *           (caching also per state); better handling of backend runtime
+ *           errors, including:
+ *
+ *           invalid mutable expressions (eg, total order over mutable
+ *           elements); invalid steps scope for solvers (eg, open intervals not
+ *           starting in 1); invalid iteration operations; setting an unbounded
+ *           steps scope with a bounded solver
+ *
+ *           supports additional iteration operations provided by the kodkod
+ *           backend
  */
 
 public final class A4Solution {
@@ -163,6 +191,16 @@ public final class A4Solution {
     private final int               maxseq;
 
     /**
+     * The maximum allowed trace length; -1 if static model.
+     */
+    private final int               maxtrace;
+
+    /**
+     * The minimum allowed trace length; -1 if static model.
+     */
+    private final int               mintrace;
+
+    /**
      * The maximum allowed number of loop unrolling and recursion level.
      */
     private final int               unrolls;
@@ -183,7 +221,7 @@ public final class A4Solution {
     private final TupleSet          stringBounds;
 
     /** The Kodkod Solver object. */
-    private final Solver            solver;
+    private final PardinusSolver    solver;
 
     // ====== mutable fields (immutable after solve() has been called)
     // ===================================//
@@ -192,7 +230,7 @@ public final class A4Solution {
     private boolean                           solved      = false;
 
     /** The Kodkod Bounds object. */
-    private Bounds                            bounds;
+    private PardinusBounds                    bounds;
 
     /**
      * The list of Kodkod formulas; can be empty if unknown; once a solution is
@@ -232,7 +270,7 @@ public final class A4Solution {
     private Evaluator                         eval        = null;
 
     /** If not null, you can ask it to get another solution. */
-    private Iterator<Solution>                kEnumerator = null;
+    private Explorer<Solution>                kEnumerator = null;
 
     /**
      * The map from each Sig/Field/Skolem/Atom to its corresponding Kodkod
@@ -279,7 +317,7 @@ public final class A4Solution {
      * @param expected - whether the user expected an instance or not (1 means yes,
      *            0 means no, -1 means the user did not express an expectation)
      */
-    A4Solution(String originalCommand, int bitwidth, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, int expected) throws Err {
+    A4Solution(String originalCommand, int bitwidth, int mintrace, int maxtrace, int maxseq, Set<String> stringAtoms, Collection<String> atoms, final A4Reporter rep, A4Options opt, int expected) throws Err {
         opt = opt.dup();
         this.unrolls = opt.unrolls;
         this.sigs = new SafeList<Sig>(Arrays.asList(UNIV, SIGINT, SEQIDX, STRING, NONE));
@@ -293,20 +331,25 @@ public final class A4Solution {
         this.originalCommand = (originalCommand == null ? "" : originalCommand);
         this.bitwidth = bitwidth;
         this.maxseq = maxseq;
+        this.maxtrace = maxtrace;
+        this.mintrace = mintrace;
+        // [electrum] test whether unbounded solver
+        if (maxtrace == Integer.MAX_VALUE && !(opt.solver.external() != null && opt.solver.external().equals("electrod")))
+            throw new ErrorAPI("Bounded engines do not support open bounds on steps.");
         if (bitwidth < 0)
-            throw new ErrorSyntax("Cannot specify a bitwidth less than 0");
+            throw new ErrorSyntax("Cannot specify a bitwidth less than 0.");
         if (bitwidth > 30)
-            throw new ErrorSyntax("Cannot specify a bitwidth greater than 30");
+            throw new ErrorSyntax("Cannot specify a bitwidth greater than 30.");
         if (maxseq < 0)
             throw new ErrorSyntax("The maximum sequence length cannot be negative.");
         if (maxseq > 0 && maxseq > max())
-            throw new ErrorSyntax("With integer bitwidth of " + bitwidth + ", you cannot have sequence length longer than " + max());
+            throw new ErrorSyntax("With integer bitwidth of " + bitwidth + ", you cannot have sequence length longer than " + max() + ".");
         if (atoms.isEmpty()) {
             atoms = new ArrayList<String>(1);
             atoms.add("<empty>");
         }
         kAtoms = ConstList.make(atoms);
-        bounds = new Bounds(new Universe(kAtoms));
+        bounds = new PardinusBounds(new Universe(kAtoms));
         factory = bounds.universe().factory();
         TupleSet sigintBounds = factory.noneOf(1);
         TupleSet seqidxBounds = factory.noneOf(1);
@@ -347,80 +390,127 @@ public final class A4Solution {
         this.stringBounds = stringBounds.unmodifiableView();
         bounds.boundExactly(KK_STRING, this.stringBounds);
         int sym = (expected == 1 ? 0 : opt.symmetry);
-        solver = new Solver();
-        solver.options().setNoOverflow(opt.noOverflow);
+        // [electrum] set temporal solving options
+        ExtendedOptions solver_opts = new ExtendedOptions();
+        solver_opts.setReporter(new SLF4JReporter());
+        solver_opts.setRunTemporal(maxtrace > 0);
+        solver_opts.setNoOverflow(opt.noOverflow);
+        solver_opts.setMaxTraceLength(maxtrace);
+        solver_opts.setMinTraceLength(mintrace);
+        solver_opts.setRunUnbounded(maxtrace == Integer.MAX_VALUE);
+        if (opt.decompose_mode > 0) {
+            solver_opts.setRunDecomposed(true);
+            if (opt.decompose_mode == 1)
+                solver_opts.setDecomposedMode(DMode.HYBRID);
+            else
+                solver_opts.setDecomposedMode(DMode.PARALLEL);
+            if (opt.decompose_threads > 0)
+                solver_opts.setThreads(opt.decompose_threads);
+        } else {
+            solver_opts.setRunDecomposed(false);
+        }
         // solver.options().setFlatten(false); // added for now, since
         // multiplication and division circuit takes forever to flatten
-        if (opt.solver.external() != null) {
+        // [electrum] pushed solver creation further below as solver choice is needed for initialization
+        if (opt.solver.id().equals(A4Options.SatSolver.ElectrodS.id())) {
+            String[] nopts = new String[opt.solver.options().length + 2];
+            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
+            nopts[0] = "-t";
+            nopts[1] = "NuSMV";
+            solver_opts.setSolver(SATFactory.electrod(nopts));
+        } else if (opt.solver.id().equals(A4Options.SatSolver.ElectrodX.id())) {
+            String[] nopts = new String[opt.solver.options().length + 2];
+            System.arraycopy(opt.solver.options(), 0, nopts, 2, opt.solver.options().length);
+            nopts[0] = "-t";
+            nopts[1] = "nuXmv";
+            solver_opts.setSolver(SATFactory.electrod(nopts));
+        } else if (opt.solver.external() != null) {
             String ext = opt.solver.external();
             if (opt.solverDirectory.length() > 0 && ext.indexOf(File.separatorChar) < 0)
                 ext = opt.solverDirectory + File.separatorChar + ext;
             try {
                 File tmp = File.createTempFile("tmp", ".cnf", new File(opt.tempDirectory));
                 tmp.deleteOnExit();
-                solver.options().setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), opt.solver.options()));
+                solver_opts.setSolver(SATFactory.externalFactory(ext, tmp.getAbsolutePath(), false, false, opt.solver.options()));
                 // solver.options().setSolver(SATFactory.externalFactory(ext,
                 // tmp.getAbsolutePath(), opt.solver.options()));
             } catch (IOException ex) {
                 throw new ErrorFatal("Cannot create temporary directory.", ex);
             }
         } else if (opt.solver.equals(A4Options.SatSolver.LingelingJNI)) {
-            solver.options().setSolver(SATFactory.Lingeling);
+            solver_opts.setSolver(SATFactory.Lingeling);
         } else if (opt.solver.equals(A4Options.SatSolver.PLingelingJNI)) {
-            solver.options().setSolver(SATFactory.plingeling(4, null));
+            solver_opts.setSolver(SATFactory.plingeling(4, null));
         } else if (opt.solver.equals(A4Options.SatSolver.GlucoseJNI)) {
-            solver.options().setSolver(SATFactory.Glucose);
+            solver_opts.setSolver(SATFactory.Glucose);
         } else if (opt.solver.equals(A4Options.SatSolver.Glucose41JNI)) {
-            solver.options().setSolver(SATFactory.Glucose41);
+            throw new UnsupportedOperationException("Glucose 4.1 still not supported by Pardinus.");
+            // solver_opts.setSolver(SATFactory.Glucose41);
         } else if (opt.solver.equals(A4Options.SatSolver.CryptoMiniSatJNI)) {
-            solver.options().setSolver(SATFactory.CryptoMiniSat);
+            solver_opts.setSolver(SATFactory.CryptoMiniSat);
         } else if (opt.solver.equals(A4Options.SatSolver.MiniSatJNI)) {
-            solver.options().setSolver(SATFactory.MiniSat);
+            solver_opts.setSolver(SATFactory.MiniSat);
         } else if (opt.solver.equals(A4Options.SatSolver.MiniSatProverJNI)) {
             sym = 20;
-            solver.options().setSolver(SATFactory.MiniSatProver);
-            solver.options().setLogTranslation(2);
-            solver.options().setCoreGranularity(opt.coreGranularity);
+            solver_opts.setSolver(SATFactory.MiniSatProver);
+            solver_opts.setLogTranslation(2);
+            solver_opts.setCoreGranularity(opt.coreGranularity);
         } else {
-            solver.options().setSolver(SATFactory.DefaultSAT4J); // Even for
-                                                                // "KK" and
-                                                                // "CNF", we
-                                                                // choose
-                                                                // SAT4J
-                                                                // here;
-                                                                // later,
-                                                                // just
-                                                                // before
-                                                                // solving,
-                                                                // we'll
-                                                                // change it
-                                                                // to a
-                                                                // Write2CNF
-                                                                // solver
+            // Even for "KK" and "CNF", we choose SAT4J here; later, just before solving, we'll change it to a Write2CNF solver
+            solver_opts.setSolver(SATFactory.DefaultSAT4J);
         }
-        solver.options().setSymmetryBreaking(sym);
-        solver.options().setSkolemDepth(opt.skolemDepth);
-        solver.options().setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
-        solver.options().setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
+        solver_opts.setSymmetryBreaking(sym);
+        solver_opts.setSkolemDepth(opt.skolemDepth);
+        solver_opts.setBitwidth(bitwidth > 0 ? bitwidth : (int) Math.ceil(Math.log(atoms.size())) + 1);
+        solver_opts.setIntEncoding(Options.IntEncoding.TWOSCOMPLEMENT);
+        // [electrum] create unique readable name, allows some traceability at backend level
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+        String file = "untitled";
+        if (!getOriginalFilename().isEmpty()) {
+            String[] pths = getOriginalFilename().split("/");
+            file = pths[pths.length - 1].substring(0, pths[pths.length - 1].length() - 4).replace(' ', '_');
+        }
+        String check = getOriginalCommand().replace(' ', '_').replace('$', '-');
+        solver_opts.setUniqueName(file + "-" + check + "-" + dateFormat.format(new Date()) + "-" + this.hashCode());
+        solver = new PardinusSolver(solver_opts);
     }
 
     /**
      * Construct a new A4Solution that is the continuation of the old one, but with
-     * the "next" instance.
+     * the "next" instance. An additional parameter determines how to calculate this
+     * "next" (-3 standard next, -2 next path, -1 next config, >=0 fork at state).
      */
-    private A4Solution(A4Solution old) throws Err {
+    private A4Solution(A4Solution old, int state) throws Err {
         if (!old.solved)
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (old.kEnumerator == null)
             throw new ErrorAPI("This solution was not generated by an incremental SAT solver.\n" + "Solution enumeration is currently only implemented for MiniSat and SAT4J.");
         if (old.eval == null)
             throw new ErrorAPI("This solution is already unsatisfiable, so you cannot call next() to get the next solution.");
-        Instance inst = old.kEnumerator.next().instance();
+        Instance inst;
+        // [electrum] better reporting of unsupported iterations
+        try {
+            if (state == -1) // [electrum] this is a next config
+                inst = old.kEnumerator.nextC().instance();
+            else if (state == -2) // [electrum] this is a next path
+                inst = old.kEnumerator.nextP().instance();
+            else if (state >= 0) { // [electrum] this is a fork at "state"
+                Set<Relation> rels = ((TemporalInstance) old.eval.instance()).state(0).relations().stream().filter(r -> r.isVariable()).collect(Collectors.toSet());
+                inst = old.kEnumerator.nextS(state, 1, rels).instance();
+            } else
+                inst = old.kEnumerator.next().instance();
+        } catch (UnsupportedOperationException e) {
+            throw new ErrorAPI(e.getMessage());
+        }
+        if (inst != null && !(inst instanceof TemporalInstance))
+            inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         unrolls = old.unrolls;
         originalOptions = old.originalOptions;
         originalCommand = old.originalCommand;
         bitwidth = old.bitwidth;
         maxseq = old.maxseq;
+        maxtrace = old.maxtrace;
+        mintrace = old.mintrace;
         kAtoms = old.kAtoms;
         factory = old.factory;
         sigintBounds = old.sigintBounds;
@@ -490,6 +580,20 @@ public final class A4Solution {
     }
 
     /**
+     * Returns the maximum allowed trace length; -1 if static model.
+     */
+    public int getMaxTrace() {
+        return maxtrace;
+    }
+
+    /**
+     * Returns the minimum allowed trace length; -1 if static model.
+     */
+    public int getMinTrace() {
+        return mintrace;
+    }
+
+    /**
      * Returns the largest allowed integer, or -1 if no integers are allowed.
      */
     public int max() {
@@ -536,9 +640,9 @@ public final class A4Solution {
      */
     public String debugExtractKInput() {
         if (solved)
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds, atom2name, mintrace, maxtrace);
         else
-            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null);
+            return TranslateKodkodToJava.convert(Formula.and(formulas), bitwidth, kAtoms, bounds.unmodifiableView(), null, mintrace, maxtrace);
     }
 
     // ===================================================================================================//
@@ -556,17 +660,42 @@ public final class A4Solution {
     }
 
     /**
-     * Add a new relation with the given label and the given lower and upper bound.
+     * Add a new relation with the given label and the given lower and upper bound
+     * with variable information that could not be retrieved when <code>expr</code>
+     * is null (static instances) by
+     * {@link #addRel(String, TupleSet, TupleSet, Expr)}.
      *
      * @param label - the label for the new relation; need not be unique
      * @param lower - the lowerbound; can be null if you want it to be the empty set
      * @param upper - the upperbound; cannot be null; must contain everything in
      *            lowerbound
      */
-    Relation addRel(String label, TupleSet lower, TupleSet upper) throws ErrorFatal {
+    Relation addRel(String label, TupleSet lower, TupleSet upper, boolean var) throws ErrorFatal {
         if (solved)
             throw new ErrorFatal("Cannot add a Kodkod relation since solve() has completed.");
-        Relation rel = Relation.nary(label, upper.arity());
+        Relation rel;
+        if (var)
+            rel = Relation.variable(label, upper.arity());
+        else
+            rel = Relation.nary(label, upper.arity());
+
+        addPreRel(label, lower, upper, rel);
+
+        return rel;
+    }
+
+    /**
+     * Add a new relation with the given label and the given lower and upper bound
+     * without creating a new object.
+     *
+     * @param label - the label for the new relation; need not be unique
+     * @param lower - the lowerbound; can be null if you want it to be the empty set
+     * @param upper - the upperbound; cannot be null; must contain everything in
+     *            lowerbound
+     */
+    void addPreRel(String label, TupleSet lower, TupleSet upper, Relation rel) throws ErrorFatal {
+        if (solved)
+            throw new ErrorFatal("Cannot add a Kodkod relation since solve() has completed.");
         if (lower == upper) {
             bounds.boundExactly(rel, upper);
         } else if (lower == null) {
@@ -576,8 +705,8 @@ public final class A4Solution {
                 throw new ErrorFatal("Relation " + label + " must have same arity for lowerbound and upperbound.");
             bounds.bound(rel, lower, upper);
         }
-        return rel;
     }
+
 
     /**
      * Add a new sig to this solution and associate it with the given expression
@@ -733,7 +862,10 @@ public final class A4Solution {
      * given expression.
      */
     TupleSet approximate(Expression expression) {
-        return factory.setOf(expression.arity(), Translator.approximate(expression, bounds, solver.options()).denseIndices());
+        PardinusBounds b = bounds.clone();
+        b.resolve(new AbstractReporter() {
+        });
+        return factory.setOf(expression.arity(), Translator.approximate(expression, b, solver.options()).denseIndices());
     }
 
     /**
@@ -750,6 +882,8 @@ public final class A4Solution {
         if (expr == KK_STRING)
             return makeMutable ? stringBounds.clone() : stringBounds;
         if (expr instanceof Relation) {
+            if (bounds.lowerSymbBound((Relation) expr) != null)
+                return query(findUpper, findUpper ? bounds.upperSymbBound((Relation) expr) : bounds.lowerSymbBound((Relation) expr), makeMutable);
             TupleSet ans = findUpper ? bounds.upperBound((Relation) expr) : bounds.lowerBound((Relation) expr);
             if (ans != null)
                 return makeMutable ? ans.clone() : ans;
@@ -785,6 +919,8 @@ public final class A4Solution {
         }
     }
 
+
+
     // ===================================================================================================//
 
     /**
@@ -803,6 +939,21 @@ public final class A4Solution {
     }
 
     /**
+     * Checks whether the this solution's model contains any configuration (static)
+     * elements.
+     */
+    public boolean hasConfigs() {
+        for (Sig s : sigs) {
+            if (s.isVariable == null && !s.builtin)
+                return true;
+            for (edu.mit.csail.sdg.ast.Decl f : s.getFieldDecls())
+                if (f.isVar == null)
+                    return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns an unmodifiable copy of the list of all skolems if the problem is
      * solved and is satisfiable; else returns an empty list.
      */
@@ -816,6 +967,16 @@ public final class A4Solution {
      */
     public Iterable<ExprVar> getAllAtoms() {
         return atoms.dup();
+    }
+
+    /** Returns the back loop instance of this instance (should always exist). */
+    public int getLoopState() {
+        return ((TemporalInstance) eval.instance()).loop;
+    }
+
+    /** Returns the length of the finite prefix. */
+    public int getTraceLength() {
+        return ((TemporalInstance) eval.instance()).prefixLength();
     }
 
     /**
@@ -837,42 +998,63 @@ public final class A4Solution {
     }
 
     /** Caches eval(Sig) and eval(Field) results. */
-    private Map<Expr,A4TupleSet> evalCache = new LinkedHashMap<Expr,A4TupleSet>();
+    // [electrum] cache per state
+    private Map<Integer,Map<Expr,A4TupleSet>> evalCache = new LinkedHashMap<Integer,Map<Expr,A4TupleSet>>();
 
     /**
      * Return the A4TupleSet for the given sig (if solution not yet solved, or
-     * unsatisfiable, or sig not found, then return an empty tupleset)
+     * unsatisfiable, or sig not found, then return an empty tupleset).
      */
     public A4TupleSet eval(Sig sig) {
+        return eval(sig, 0);
+    }
+
+    /**
+     * Return the A4TupleSet for the given sig (if solution not yet solved, or
+     * unsatisfiable, or sig not found, then return an empty tupleset).
+     */
+    public A4TupleSet eval(Sig sig, int state) {
         try {
             if (!solved || eval == null)
                 return new A4TupleSet(factory.noneOf(1), this);
-            A4TupleSet ans = evalCache.get(sig);
+            if (evalCache.get(state) == null)
+                evalCache.put(state, new LinkedHashMap<Expr,A4TupleSet>());
+            A4TupleSet ans = evalCache.get(state).get(sig);
             if (ans != null)
                 return ans;
-            TupleSet ts = eval.evaluate((Expression) TranslateAlloyToKodkod.alloy2kodkod(this, sig));
+            TupleSet ts = eval.evaluate((Expression) TranslateAlloyToKodkod.alloy2kodkod(this, sig), state);
             ans = new A4TupleSet(ts, this);
-            evalCache.put(sig, ans);
+            evalCache.get(state).put(sig, ans);
             return ans;
         } catch (Err er) {
             return new A4TupleSet(factory.noneOf(1), this);
         }
+
     }
 
     /**
      * Return the A4TupleSet for the given field (if solution not yet solved, or
-     * unsatisfiable, or field not found, then return an empty tupleset)
+     * unsatisfiable, or field not found, then return an empty tupleset).
      */
     public A4TupleSet eval(Field field) {
+        return eval(field, 0);
+    }
+
+    /**
+     * Return the A4TupleSet for the given field (if solution not yet solved, or
+     * unsatisfiable, or field not found, then return an empty tupleset).
+     */
+    public A4TupleSet eval(Field field, int state) {
         try {
             if (!solved || eval == null)
                 return new A4TupleSet(factory.noneOf(field.type().arity()), this);
-            A4TupleSet ans = evalCache.get(field);
-            if (ans != null)
-                return ans;
-            TupleSet ts = eval.evaluate((Expression) TranslateAlloyToKodkod.alloy2kodkod(this, field));
+            if (evalCache.get(state) == null)
+                evalCache.put(state, new LinkedHashMap<Expr,A4TupleSet>());
+            A4TupleSet ans = evalCache.get(state).get(field);
+            //if (ans!=null) return ans;
+            TupleSet ts = eval.evaluate((Expression) TranslateAlloyToKodkod.alloy2kodkod(this, field), state);
             ans = new A4TupleSet(ts, this);
-            evalCache.put(field, ans);
+            evalCache.get(state).put(field, ans);
             return ans;
         } catch (Err er) {
             return new A4TupleSet(factory.noneOf(field.type().arity()), this);
@@ -884,11 +1066,19 @@ public final class A4Solution {
      * and returns an A4TupleSet, a java Integer, or a java Boolean.
      */
     public Object eval(Expr expr) throws Err {
+        return eval(expr, 0);
+    }
+
+    /**
+     * If this solution is solved and satisfiable, evaluates the given expression at
+     * the given state and returns an A4TupleSet, a java Integer, or a java Boolean.
+     */
+    public Object eval(Expr expr, int state) throws Err {
         try {
             if (expr instanceof Sig)
-                return eval((Sig) expr);
+                return eval((Sig) expr, state);
             if (expr instanceof Field)
-                return eval((Field) expr);
+                return eval((Field) expr, state);
             if (!solved)
                 throw new ErrorAPI("This solution is not yet solved, so eval() is not allowed.");
             if (eval == null)
@@ -899,11 +1089,11 @@ public final class A4Solution {
                 throw expr.errors.pick();
             Object result = TranslateAlloyToKodkod.alloy2kodkod(this, expr);
             if (result instanceof IntExpression)
-                return eval.evaluate((IntExpression) result) + (eval.wasOverflow() ? " (OF)" : "");
+                return eval.evaluate((IntExpression) result, state) + (eval.wasOverflow() ? " (OF)" : "");
             if (result instanceof Formula)
-                return eval.evaluate((Formula) result);
+                return eval.evaluate((Formula) result, state);
             if (result instanceof Expression)
-                return new A4TupleSet(eval.evaluate((Expression) result), this);
+                return new A4TupleSet(eval.evaluate((Expression) result, state), this);
             throw new ErrorFatal("Unknown internal error encountered in the evaluator.");
         } catch (CapacityExceededException ex) {
             throw TranslateAlloyToKodkod.rethrow(ex);
@@ -1069,10 +1259,10 @@ public final class A4Solution {
      * Helper class that wraps an iterator up where it will pre-fetch the first
      * element (note: it will not prefetch subsequent elements).
      */
-    private static final class Peeker<T> implements Iterator<T> {
+    private static final class Peeker<T> implements Explorer<T> {
 
         /** The encapsulated iterator. */
-        private Iterator<T> iterator;
+        private Explorer<T> iterator;
         /** True iff we have captured the first element. */
         private boolean     hasFirst;
         /**
@@ -1081,7 +1271,7 @@ public final class A4Solution {
         private T           first;
 
         /** Constructrs a Peeker object. */
-        private Peeker(Iterator<T> it) {
+        private Peeker(Explorer<T> it) {
             iterator = it;
             if (it.hasNext()) {
                 hasFirst = true;
@@ -1111,6 +1301,31 @@ public final class A4Solution {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T nextC() {
+            return iterator.nextC();
+        }
+
+        @Override
+        public T nextP() {
+            return iterator.nextP();
+        }
+
+        @Override
+        public T nextS(int state, int delta, Set<Relation> change) {
+            return iterator.nextS(state, delta, change);
+        }
+
+        @Override
+        public boolean hasNextP() {
+            return iterator.hasNextP();
+        }
+
+        @Override
+        public boolean hasNextC() {
+            return iterator.hasNextC();
         }
     }
 
@@ -1278,9 +1493,11 @@ public final class A4Solution {
         for (PrimSig c : s.children())
             rename(frame, c, nexts, un);
         String signame = un.make(s.label.startsWith("this/") ? s.label.substring(5) : s.label);
+        // [electrum] collect atoms from every state
         List<Tuple> list = new ArrayList<Tuple>();
-        for (Tuple t : frame.eval.evaluate(frame.a2k(s)))
-            list.add(t);
+        for (int i = 0; i < frame.getTraceLength(); i++)
+            for (Tuple t : frame.eval.evaluate(frame.a2k(s), i))
+                list.add(t);
         List<Tuple> order = nexts.get(s);
         if (order != null && order.size() == list.size() && order.containsAll(list)) {
             list = order;
@@ -1288,15 +1505,14 @@ public final class A4Solution {
         int i = 0;
         for (Tuple t : list) {
             if (frame.atom2sig.containsKey(t.atom(0)))
-                continue; // This means one of the subsig has already claimed
-                         // this atom.
+                continue; // This means one of the subsig has already claimed this atom.
             String x = signame + "$" + i;
             i++;
             frame.atom2sig.put(t.atom(0), s);
             frame.atom2name.put(t.atom(0), x);
             ExprVar v = ExprVar.make(null, x, s.type());
             TupleSet ts = t.universe().factory().range(t, t);
-            Relation r = Relation.unary(x);
+            Relation r = Relation.atom(x); // [electrum] set to atom relation
             frame.eval.instance().add(r, ts);
             frame.a2k.put(v, r);
             frame.atoms.add(v);
@@ -1304,6 +1520,50 @@ public final class A4Solution {
     }
 
     // ===================================================================================================//
+
+
+    /**
+     * Solve for the solution if not solved already simply using the lowerbound of
+     * each relation as its value. For trace solutions should be called iteratively,
+     * and will build on the information from the previous steps.
+     */
+    // [electrum] this is the method now called, iteratively, by the static reader;
+    // it reads a state at a time, and the solution is built incrementally
+    A4Solution solve(final A4Reporter rep, A4Solution pre_sol, int loop) throws Err, IOException {
+        // construct the instance from the current state
+        Universe static_uni;
+        if (pre_sol != null)
+            static_uni = ((TemporalInstance) pre_sol.eval.instance()).staticUniverse();
+        else
+            static_uni = bounds.universe();
+        Instance inst = new Instance(static_uni);
+        for (int max = max(), i = min(); i <= max; i++) {
+            Tuple it = static_uni.factory().tuple("" + i);
+            inst.add(i, static_uni.factory().range(it, it));
+        }
+        for (Relation r : bounds.relations())
+            inst.add(r, TemporalBoundsExpander.convertToUniv(bounds.lowerBound(r), static_uni));
+
+        // retrieve previous steps of the trace
+        List<Instance> instances = new ArrayList<Instance>();
+        if (pre_sol != null) {
+            for (int i = 0; i < ((TemporalInstance) pre_sol.eval.instance()).prefixLength(); i++)
+                instances.add(((TemporalInstance) pre_sol.eval.instance()).state(i));
+        }
+        instances.add(inst);
+
+        if (loop >= instances.size())
+            loop = instances.size() - 1;
+
+        // create temporal instance
+        TemporalInstance prev = new TemporalInstance(instances, loop, 1);
+        eval = new Evaluator(prev, solver.options());
+        rename(this, null, null, new UniqueNameGenerator());
+        toStringCache.clear();
+        evalCache = new HashMap<>();
+        solved();
+        return this;
+    }
 
     /**
      * Solve for the solution if not solved already; if cmd==null, we will simply
@@ -1315,18 +1575,9 @@ public final class A4Solution {
             return this;
         // If cmd==null, then all four arguments are ignored, and we simply use
         // the lower bound of each relation
+        // [electrum] behaviour refactored into A4Solution#solve(A4Reporter,A4Solution,int)
         if (cmd == null) {
-            Instance inst = new Instance(bounds.universe());
-            for (int max = max(), i = min(); i <= max; i++) {
-                Tuple it = factory.tuple("" + i);
-                inst.add(i, factory.range(it, it));
-            }
-            for (Relation r : bounds.relations())
-                inst.add(r, bounds.lowerBound(r));
-            eval = new Evaluator(inst, solver.options());
-            rename(this, null, null, new UniqueNameGenerator());
-            solved();
-            return this;
+            throw new RuntimeException("Should not be null, refactored.");
         }
         // Otherwise, prepare to do the solve...
         final A4Options opt = originalOptions;
@@ -1334,7 +1585,7 @@ public final class A4Solution {
         rep.debug("Simplifying the bounds...\n");
         if (opt.inferPartialInstance && simp != null && formulas.size() > 0 && !simp.simplify(rep, this, formulas))
             addFormula(Formula.FALSE, Pos.UNKNOWN);
-        rep.translate(opt.solver.id(), bitwidth, maxseq, solver.options().skolemDepth(), solver.options().symmetryBreaking());
+        rep.translate(opt.solver.id(), bitwidth, maxseq, mintrace, maxtrace, solver.options().skolemDepth(), solver.options().symmetryBreaking(), A4Preferences.Decompose.values()[opt.decompose_mode].toString());
         Formula fgoal = Formula.and(formulas);
         rep.debug("Generating the solution...\n");
         kEnumerator = null;
@@ -1343,11 +1594,8 @@ public final class A4Solution {
         final boolean solved[] = new boolean[] {
                                                 true
         };
-        solver.options().setReporter(new AbstractReporter() { // Set up a
-                                                             // reporter to
-                                                             // catch the
-                                                             // type+pos of
-                                                             // skolems
+        // [electrum] sl4j reporter for backend
+        solver.options().setReporter(new SLF4JReporter() { // Set up a reporter to catch the type+pos of skolems
 
             @Override
             public void skolemizing(Decl decl, Relation skolem, List<Decl> predecl) {
@@ -1362,30 +1610,33 @@ public final class A4Solution {
                         t = pp.product(t);
                     }
                     kr2type(skolem, t);
-                } catch (Throwable ex) {} // Exception here is not fatal
+                } catch (Throwable ex) {
+                } // Exception here is not fatal
             }
 
             @Override
-            public void solvingCNF(int primaryVars, int vars, int clauses) {
-                if (solved[0])
-                    return;
-                else
-                    solved[0] = true; // initially solved[0] is true, so we
-                                     // won't report the # of vars/clauses
+            // [electrum] synchronized due to multiple parallel problems reporting
+            public synchronized void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+                // [electrum] this is now called multiple times during iterative temporal solving
+                //                if (solved[0])
+                //                    return;
+                //                else
+                solved[0] = true; // initially solved[0] is true, so we
+                                 // won't report the # of vars/clauses
                 if (rep != null)
-                    rep.solve(primaryVars, vars, clauses);
+                    rep.solve(step, primaryVars, vars, clauses);
             }
+
         });
-        if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try
-                                                                                                       // book
-                                                                                                       // examples
-            A4Reporter r = AlloyCore.isDebug() ? rep : null;
+        if (!opt.solver.equals(SatSolver.CNF) && !opt.solver.equals(SatSolver.KK) && tryBookExamples) { // try book examples
+            A4Reporter r = "yes".equals(System.getProperty("debug")) ? rep : null;
             try {
-                sol = BookExamples.trial(r, this, fgoal, solver, cmd.check);
+                sol = BookExamples.trial(r, this, fgoal, (AbstractKodkodSolver) solver.solver, cmd.check);
             } catch (Throwable ex) {
                 sol = null;
             }
         }
+
         solved[0] = false; // this allows the reporter to report the # of
                           // vars/clauses
         for (Relation r : bounds.relations()) {
@@ -1418,19 +1669,34 @@ public final class A4Solution {
             rep.resultCNF(out);
             return null;
         }
-        if (!solver.options().solver().incremental() /*
-                                                      * || solver.options().solver()==SATFactory. ZChaffMincost
-                                                      */) {
-            if (sol == null)
-                sol = solver.solve(fgoal, bounds);
+        if (/* solver.options().solver()==SATFactory.ZChaffMincost || */ !solver.options().solver().incremental()) {
+            sol = solver.solve(fgoal, bounds);
         } else {
-            kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, bounds));
+            PardinusBounds b;
+            if (solver.options().decomposed())
+                b = PardinusBounds.splitAtTemporal(bounds); // [electrum] split bounds on temporal
+            else
+                b = bounds;
+            // [electrum] better handling of solving runtime errors
+            try {
+                kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));
+            } catch (InvalidMutableExpressionException e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Mutable expression not supported by solver.\n");
+            } catch (InvalidSolverParamException e) {
+                throw new ErrorAPI(cmd.pos, "Invalid solver parameters.\n" + e.getMessage());
+            } catch (InvalidUnboundedProblem e) {
+                Pos p = ((Expr) k2pos(e.node())).pos;
+                throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
+            }
             if (sol == null)
                 sol = kEnumerator.next();
         }
         if (!solved[0])
-            rep.solve(0, 0, 0);
-        final Instance inst = sol.instance();
+            rep.solve(0, 0, 0, 0);
+        Instance inst = sol.instance();
+        if (inst != null && !(inst instanceof TemporalInstance))
+            inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         // To ensure no more output during SolutionEnumeration
         solver.options().setReporter(oldReporter);
         // If unsatisfiable, then retreive the unsat core if desired
@@ -1446,11 +1712,13 @@ public final class A4Solution {
                     if (opt.coreMinimization == 0)
                         try {
                             p.minimize(new RCEStrategy(p.log()));
-                        } catch (Throwable ex) {}
+                        } catch (Throwable ex) {
+                        }
                     if (opt.coreMinimization == 1)
                         try {
                             p.minimize(new HybridStrategy(p.log()));
-                        } catch (Throwable ex) {}
+                        } catch (Throwable ex) {
+                        }
                     rep.minimized(cmd, i, p.highLevelCore().size());
                 }
                 for (Iterator<TranslationRecord> it = p.core(); it.hasNext();) {
@@ -1483,21 +1751,34 @@ public final class A4Solution {
     // ===================================================================================================//
 
     /** This caches the toString() output. */
-    private String toStringCache = null;
+    // [electrum] cache per state
+    private final Map<Integer,String> toStringCache = new HashMap<Integer,String>();
 
     /** Dumps the Kodkod solution into String. */
     @Override
     public String toString() {
+        return toString(-1);
+    }
+
+    // [electrum] print particular state, if -1 all
+    public String toString(int state) {
         if (!solved)
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
-        String answer = toStringCache;
+        String answer = toStringCache.get(state);
         if (answer != null)
             return answer;
         Instance sol = eval.instance();
         StringBuilder sb = new StringBuilder();
-        sb.append("---INSTANCE---\n" + "integers={");
+        sb.append("---INSTANCE---");
+        if (sol instanceof TemporalInstance) {
+            sb.append("\nloop=");
+            sb.append(getLoopState());
+            sb.append("\nend=");
+            sb.append(getTraceLength() - 1);
+        }
+        sb.append("\nintegers={");
         boolean firstTuple = true;
         for (IndexedEntry<TupleSet> e : sol.intTuples()) {
             if (firstTuple)
@@ -1511,18 +1792,36 @@ public final class A4Solution {
         }
         sb.append("}\n");
         try {
-            for (Sig s : sigs) {
-                sb.append(s.label).append("=").append(eval(s)).append("\n");
-                for (Field f : s.getFields())
-                    sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f)).append("\n");
+            if (sol instanceof TemporalInstance && state < 0) {
+                for (int i = 0; i < getTraceLength(); i++) {
+                    sb.append("------State " + i + "-------\n");
+                    for (Sig s : sigs) {
+                        sb.append(s.label).append("=").append(eval(s, i)).append("\n");
+                        for (Field f : s.getFields())
+                            sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f, i)).append("\n");
+                    }
+                    for (ExprVar v : skolems) {
+                        sb.append("skolem ").append(v.label).append("=").append(eval(v, i)).append("\n");
+                    }
+                }
+            } else {
+                state = Math.max(0, state);
+                for (Sig s : sigs) {
+                    sb.append(s.label).append("=").append(eval(s, state)).append("\n");
+                    for (Field f : s.getFields())
+                        sb.append(s.label).append("<:").append(f.label).append("=").append(eval(f, state)).append("\n");
+                }
+                for (ExprVar v : skolems) {
+                    sb.append("skolem ").append(v.label).append("=").append(eval(v, state)).append("\n");
+                }
             }
-            for (ExprVar v : skolems) {
-                sb.append("skolem ").append(v.label).append("=").append(eval(v)).append("\n");
-            }
-            return toStringCache = sb.toString();
         } catch (Err er) {
-            return toStringCache = ("<Evaluator error occurred: " + er + ">");
+            toStringCache.put(state, "<Evaluator error occurred: " + er + ">");
+            return toStringCache.get(state);
         }
+        toStringCache.put(state, sb.toString());
+        return toStringCache.get(state);
+
     }
 
     // ===================================================================================================//
@@ -1537,13 +1836,27 @@ public final class A4Solution {
      * @throws ErrorAPI if the solver was not an incremental solver
      */
     public A4Solution next() throws Err {
+        return fork(-3);
+    }
+
+    /**
+     * If this solution is UNSAT, return itself; else return the next solution
+     * according to the selected operation (which could be SAT or UNSAT).
+     *
+     * @throws ErrorAPI if the solver was not an incremental solver
+     */
+    public A4Solution fork(int p) throws Err {
         if (!solved)
             throw new ErrorAPI("This solution is not yet solved, so next() is not allowed.");
         if (eval == null)
             return this;
-        if (nextCache == null)
-            nextCache = new A4Solution(this);
-        return nextCache;
+        if (p == -3) {
+            if (nextCache == null)
+                nextCache = new A4Solution(this, -3);
+            return nextCache;
+        }
+
+        return new A4Solution(this, p); // [electrum] do not cache, may have different arguments
     }
 
     /**
@@ -1670,24 +1983,83 @@ public final class A4Solution {
     }
 
     public String format() {
+        return format(-1);
+    }
+
+    // [electrum] format particular state, if -1 all
+    public String format(int state) {
         if (!solved)
             return "---OUTCOME---\nUnknown.\n";
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs);
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
         return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
     }
 
-    public Map<String, String> getAtomToName()
-    {
-        Map<String, String> atomToName = new HashMap<>();
-
-        for (Map.Entry<Object, String> entry: atom2name.entrySet())
-        {
-            atomToName.put(entry.getKey().toString(), entry.getValue());
+    /**
+     * Extract symbolic bounds from the model's signatures and add them to the
+     * problem's bounds.
+     */
+    protected void addSymbolicBound(Sig s) {
+        if (s.builtin || s.isTopLevel() || s instanceof PrimSig)
+            return;
+        Relation r;
+        Expression e = a2k.get(s);
+        if (!(e instanceof Relation))
+            return; // happens with sigs defined by equality
+        else
+            r = (Relation) e;
+        if (bounds.lowerBound(r).size() == bounds.upperBound(r).size())
+            return;
+        Expression ke = Expression.NONE;
+        if (s instanceof PrimSig)
+            ke = a2k.get(((PrimSig) s).parent);
+        else
+            for (Sig ss : ((SubsetSig) s).parents)
+                ke = ke.union(a2k.get(ss));
+        if (ke != Expression.NONE && ke != null) {
+            bounds.relations().remove(r);
+            bounds.bound(r, ke);
         }
-
-        return atomToName;
     }
+
+    /**
+     * Extract symbolic bounds from the model's fields and add them to the problem's
+     * bounds.
+     */
+    protected void addSymbolicBound(Field f) {
+        Relation r;
+        Expression e = a2k.get(f);
+        if (e instanceof Relation)
+            r = (Relation) e;
+        else if (e instanceof BinaryExpression &&  // singleton sig, collapsed relation
+                 ((BinaryExpression) e).op() == ExprOperator.PRODUCT && ((BinaryExpression) e).right() instanceof Relation)
+            r = (Relation) ((BinaryExpression) e).right();
+        else
+            throw new UnsupportedOperationException();
+        if (bounds.lowerBound(r).size() == bounds.upperBound(r).size())
+            return;
+        boolean isOne = f.sig.isOne != null;
+        boolean isVar = f.sig.isVariable != null;
+        Type t = isOne && !isVar ? Sig.UNIV.type().join(f.type()) : f.type();
+        Expression ub = null;
+        for (List<PrimSig> p : t.fold()) {
+            Expression upper = null;
+            for (PrimSig b : p) {
+                Expression tmp = a2k(b);
+                if (upper == null)
+                    upper = tmp;
+                else
+                    upper = upper.product(tmp);
+            }
+            if (ub == null)
+                ub = upper;
+            else
+                ub = ub.union(upper);
+        }
+        bounds.relations().remove(r);
+        bounds.bound(r, ub);
+    }
+
 }

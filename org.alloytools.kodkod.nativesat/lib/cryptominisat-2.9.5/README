@@ -20,9 +20,9 @@ The CNF input may contain lines of the form:
     b 3 4 17 0
     b 10 0
 
-This means that the solver will try to branch on the declarations 3, 4, 17,
-and 10, in that particular order, before branching on any other declarations.
-Remaining (unspecified) declarations will use the regular variable selection
+This means that the solver will try to branch on the variables 3, 4, 17,
+and 10, in that particular order, before branching on any other variables.
+Remaining (unspecified) variables will use the regular variable selection
 heuristic.
 
 Above by: Vegard Nossum <vegardno@posco.ifi.uio.no>

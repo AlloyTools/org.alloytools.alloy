@@ -46,6 +46,9 @@ import edu.mit.csail.sdg.alloy4.Pos;
  * <br>
  * <b>Invariant:</b> type!=EMPTY => sub.mult==0 <br>
  * <b>Invariant:</b> type!=EMPTY => vars.size()>0
+ *
+ * @modified [electrum] adapt the creation of the Decl, always immutable (null
+ *           isVar) in this context
  */
 
 public final class ExprQt extends Expr {
@@ -316,7 +319,7 @@ public final class ExprQt extends Expr {
                 continue;
             }
             guard = ExprList.makeDISJOINT(d.disjoint, null, d.names).and(guard);
-            newdecls.add(new Decl(null, null, null, d.names, d.expr));
+            newdecls.add(new Decl(null, null, null, null, d.names, d.expr));
         }
         if (guard == null)
             return this;

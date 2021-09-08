@@ -194,7 +194,7 @@ public final class AlloyModel {
         for (AlloyType subType : types)
             if (isSubtype(subType, type))
                 subtypes.add(subType);
-        return subtypes.makeConst(); // Since this.types is sorted, the satResult
+        return subtypes.makeConst(); // Since this.types is sorted, the result
                                     // is already sorted.
     }
 
@@ -211,7 +211,7 @@ public final class AlloyModel {
         for (AlloyType subType : types)
             if (isDirectSubtype(subType, type))
                 subtypes.add(subType);
-        return subtypes.makeConst(); // Since this.types is sorted, the satResult
+        return subtypes.makeConst(); // Since this.types is sorted, the result
                                     // is already sorted.
     }
 

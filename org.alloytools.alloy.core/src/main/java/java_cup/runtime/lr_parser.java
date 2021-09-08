@@ -363,7 +363,7 @@ public abstract class lr_parser {
      * @param stack the parse stack of that object.
      * @param top the index of the top element of the parse stack.
      */
-    public abstract Symbol do_action(int act_num, lr_parser parser, Stack stack, int top) throws java.lang.Exception;
+    public abstract Symbol do_action(int act_num, lr_parser parser, Stack<Symbol> stack, int top) throws java.lang.Exception;
 
     /*
      * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
