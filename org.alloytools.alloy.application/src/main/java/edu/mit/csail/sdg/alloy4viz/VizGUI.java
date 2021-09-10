@@ -652,7 +652,7 @@ public final class VizGUI implements ComponentListener {
             enumerateMenu = menuItem(instanceMenu, "Show New Solution", 'N', 'N', doNext());
             // [electrum] new iteration operation buttons
             cnfgMenu = menuItem(instanceMenu, "Show New Configuration", 'C', 'C', doConfig());
-            pathMenu = menuItem(instanceMenu, "Show New Path", 'P', 'P', doPath());
+            pathMenu = menuItem(instanceMenu, "Show New Trace", 'T', 'T', doPath());
             initMenu = menuItem(instanceMenu, "Show New Initial State", 'I', 'I', doInit());
             forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork());
             // [electrum] trace navigation buttons
@@ -711,7 +711,7 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(enumerateButton = OurUtil.button("New", "Show a new solution", "images/24_history.gif", doNext()));
             // [electrum] new iteration operation buttons
             toolbar.add(cnfgButton = OurUtil.button("New Config", "Show a new configuration", "images/24_history.gif", doConfig()));
-            toolbar.add(pathButton = OurUtil.button("New Path", "Show a new path", "images/24_history.gif", doPath()));
+            toolbar.add(pathButton = OurUtil.button("New Trace", "Show a new trace", "images/24_history.gif", doPath()));
             toolbar.add(initButton = OurUtil.button("New Init", "Show a new initial state", "images/24_history.gif", doInit()));
             toolbar.add(forkButton = OurUtil.button("New Fork", "Show a new fork", "images/24_history.gif", doFork()));
             // [electrum] trace navigation buttons
@@ -911,9 +911,11 @@ public final class VizGUI implements ComponentListener {
         leftNavButton.setVisible(!isMeta && isTrace);
         leftNavButton.setEnabled(current > 0);
         leftNavMenu.setEnabled(!isMeta && current > 0);
+        leftNavMenu.setVisible(isTrace);
         leftNavButton.setText(new String(current > 0 ? Character.toChars(0x2190) : Character.toChars(0x21e4)));
         rightNavButton.setVisible(!isMeta && isTrace);
         rightNavMenu.setEnabled(!isMeta);
+        rightNavMenu.setVisible(isTrace);
         toolbar.setVisible(true);
         // Now, generate the graph or tree or textarea that we want to display
         // on the right
