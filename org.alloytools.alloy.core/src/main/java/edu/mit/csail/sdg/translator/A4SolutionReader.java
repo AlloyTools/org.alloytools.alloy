@@ -23,6 +23,7 @@ import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -330,13 +331,7 @@ public final class A4SolutionReader {
         int arity;
         if (type == null || (arity = type.type().arity()) < 1)
             throw new IOException("Skolem " + label + " is maltyped.");
-        // [electrum] try to use previously created expr for skolem, not registered anywhere
-        ExprVar var = null;
-        for (Expr exp : expr2ts.keySet())
-            if (exp instanceof ExprVar && ((ExprVar) exp).label.equals(label))
-                var = (ExprVar) exp;
-        if (var == null)
-            var = ExprVar.make(Pos.UNKNOWN, label, type.type());
+        ExprVar var = ExprVar.make(Pos.UNKNOWN, label, type.type());
         TupleSet ts = parseTuples(node, arity);
         expr2ts.put(var, ts);
         return var;
@@ -345,6 +340,8 @@ public final class A4SolutionReader {
     /** Parse everything. */
     // [electrum] heavily modified to support sequences of <instance> nodes, A4Solutions are built incrementally
     private A4SolutionReader(Iterable<Sig> sigs, XMLNode xml) throws IOException, Err {
+        Map<ExprVar,String> skolemIds = new HashMap<>();
+        Map<Relation,ExprVar> skolemRels = new HashMap<>();
         // find <instance>..</instance>
         if (!xml.is("alloy"))
             throw new ErrorSyntax("The XML file's root node must be <alloy> or <instance>.");
@@ -439,8 +436,10 @@ public final class A4SolutionReader {
                     if (e.getValue().is("field"))
                         parseField(e.getKey());
                 for (Map.Entry<String,XMLNode> e : nmap.entrySet())
-                    if (e.getValue().is("skolem"))
-                        parseSkolem(e.getKey());
+                    if (e.getValue().is("skolem")) {
+                        ExprVar v = parseSkolem(e.getKey());
+                        skolemIds.put(v, e.getKey());
+                    }
                 for (Sig s : allsigs)
                     if (!s.builtin) {
                         TupleSet ts = expr2ts.remove(s);
@@ -475,15 +474,18 @@ public final class A4SolutionReader {
                     ExprVar v = (ExprVar) (e.getKey());
                     TupleSet ts = e.getValue();
                     Relation r = null;
-                    if (prev == null)
+                    if (prev == null) {
                         r = sol.addRel(v.label, ts, ts, true);
-                    else {
-                        // [electrum] search for skolem relation, not registered anywhere, but skolems always present in all instances
-                        for (Expr exp : prev.a2k().keySet())
-                            if (exp instanceof ExprVar && ((Relation) prev.a2k(exp)).name().equals(v.label)) {
+                        skolemRels.put(r, v);
+                    } else {
+                        // [electrum] search for skolem relation, must use id since skolems may be renamed at A4Solution
+                        for (Expr exp : prev.getAllSkolems()) {
+                            ExprVar x = skolemRels.get(prev.a2k(exp));
+                            if (skolemIds.get(x).equals(skolemIds.get(v))) {
                                 r = (Relation) prev.a2k(exp);
                                 break;
                             }
+                        }
                         sol.addPreRel(v.label, ts, ts, r);
                     }
                     sol.kr2type(r, v.type());
