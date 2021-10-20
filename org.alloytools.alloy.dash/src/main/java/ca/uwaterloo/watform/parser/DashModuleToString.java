@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.StringJoiner;
 
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.ast.Decl;
@@ -47,7 +48,7 @@ public class DashModuleToString {
     		for(Field f: sig.getFields()) {
     			for(ExprHasName name: f.decl().names)
     				alloyModel += (name.label);
-    			alloyModel += (": " + f.decl().expr + '\n');
+    			alloyModel += (": " + f.decl().expr + ",\n");
     		}
     		
     		alloyModel += "}\n";
@@ -63,9 +64,9 @@ public class DashModuleToString {
 	    		if(func.decls.size() > 0)
 	    			alloyModel += ("[");	    			
     			for(Decl decl: func.decls) {
-    				for(ExprHasName name: decl.names) {
-    					alloyModel += (name + ", ");
-    				}
+					StringJoiner joiner = new StringJoiner(",");
+					decl.names.forEach(name -> joiner.add(name.toString()));
+					alloyModel += joiner.toString();
         			alloyModel += (": " + decl.expr + ", ");
     			}
 	    		if(func.decls.size() > 0)

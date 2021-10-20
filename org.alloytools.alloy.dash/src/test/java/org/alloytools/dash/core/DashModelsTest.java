@@ -361,7 +361,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "AND[s'.conf = s.conf - concState_stateA + concState_stateA, s'.concState_var_one = s.concState_var_one, no s'.events & InternalEvent]";
+        String expectedOutput = "AND[s_next.conf = s.conf - concState_stateA + concState_stateA, s_next.concState_var_one = s.concState_var_one, no s_next.events & InternalEvent]";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString())) {
             throw new Exception("Post-Conditions Not Stored Properly. Expected: " + expectedOutput + " Actual: " + funcs.get(0).getBody().toString());
@@ -388,7 +388,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "AND[s'.conf = s.conf - concState_inner_stateA + concState_inner_stateA, s'.concState_var_one = s.concState_var_one, (none.concState_inner_A.s'.s.testIfNextStable => AND[s'.stable = True, (s.stable = True => no s'.events & InternalEvent else no s'.events & InternalEvent - InternalEvent & s.events)] else AND[s'.stable = False, (s.stable = True => AND[s'.events & InternalEvent = none, s'.events & EnvironmentEvent = s.events & EnvironmentEvent] else s'.events = s.events + none)])]";
+        String expectedOutput = "AND[s_next.conf = s.conf - concState_inner_stateA + concState_inner_stateA, s_next.concState_var_one = s.concState_var_one, (none.concState_inner_A.s_next.s.testIfNextStable => AND[s_next.stable = True, (s.stable = True => no s_next.events & InternalEvent else no s_next.events & InternalEvent - InternalEvent & s.events)] else AND[s_next.stable = False, (s.stable = True => AND[s_next.events & InternalEvent = none, s_next.events & EnvironmentEvent = s.events & EnvironmentEvent] else s_next.events = s.events + none)])]";
         
         if (!expectedOutput.equals(funcs.get(0).getBody().toString())) {
             throw new Exception("Post-Conditions Not Stored Properly. Expected: " + expectedOutput + " Actual: " + funcs.get(0).getBody().toString());
@@ -439,7 +439,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "AND[! genEvents.t.s'.s.enabledAfterStep_concState_inner_A, ! genEvents.t.s'.s.enabledAfterStep_concState_inner_B]";
+        String expectedOutput = "AND[! genEvents.t.s_next.s.enabledAfterStep_concState_inner_A, ! genEvents.t.s_next.s.enabledAfterStep_concState_inner_B]";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("TestIfNext After Not Stored Properly.");
@@ -490,7 +490,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "s'.taken = concState_A";
+        String expectedOutput = "s_next.taken = concState_A";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Semantics Not Stored Properly.");
@@ -524,7 +524,7 @@ public class DashModelsTest {
     }
 
     @Test
-    public void testOperaionPred() throws Exception {
+    public void testOperationPred() throws Exception {
         String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
         DashOptions.outputDir = "test.dsh";
 
@@ -540,7 +540,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "s'.s.concState_A";
+        String expectedOutput = "s_next.s.concState_A";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Operation Predicate Not Stored Properly.");
@@ -565,7 +565,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "s'.s.operation";
+        String expectedOutput = "s_next.s.operation";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Operation Predicate Not Stored Properly.");
@@ -590,7 +590,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "AND[s'.conf = s.conf, s'.events = s.events, s'.taken = s.taken, s'.concState_var_one = s.concState_var_one]";
+        String expectedOutput = "AND[s_next.conf = s.conf, s_next.events = s.events, s_next.taken = s.taken, s_next.concState_var_one = s.concState_var_one]";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Equals Predicate Not Stored Properly.");
@@ -615,7 +615,7 @@ public class DashModelsTest {
                 funcs = module.funcs.get(name);
         }
 
-        String expectedOutput = "AND[(all s,s' | s'.s.operation), first.init]";
+        String expectedOutput = "AND[(all s,s_next | s_next.s.operation), first.init]";
 
         if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
             throw new Exception("Path Predicate Not Stored Properly.");
@@ -633,7 +633,7 @@ public class DashModelsTest {
         DashValidation.validateDashModel(module);
         CoreDashToAlloy.convertToAlloyAST(module);
 
-        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s' | s -> s' in nextStep <=> s'.s.small_step), (all s,s' | s'.s.equals => s = s'), path]";
+        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s_next | s -> s_next in nextStep <=> s_next.s.small_step), (all s,s_next | s_next.s.equals => s = s_next), path]";
 
         if (!expectedOutput.equals(module.facts.get(0).b.toString()))
             throw new Exception("Fact Not Stored Properly.");
@@ -651,7 +651,7 @@ public class DashModelsTest {
         DashValidation.validateDashModel(module);
         CoreDashToAlloy.convertToAlloyAST(module);
 
-        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s' | s -> s' in nextStep <=> s'.s.small_step), (all s,s' | s'.s.equals => s = s'), (all s | AND[s.isEnabled, (no s' | s'.s.small_step)] => s.stable = False), (all s | s.stable = False => some s.nextStep), path]";
+        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s_next | s -> s_next in nextStep <=> s_next.s.small_step), (all s,s_next | s_next.s.equals => s = s_next), (all s | AND[s.isEnabled, (no s_next | s_next.s.small_step)] => s.stable = False), (all s | s.stable = False => some s.nextStep), path]";
 
         System.out.println("Actual  : " + module.facts.get(0).b.toString());
         System.out.println("Expected: " + expectedOutput);
