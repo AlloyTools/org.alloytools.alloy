@@ -50,6 +50,7 @@ Bundle-Version:         ${base.version}.${tstamp}
         readOnly            =true,\
 
 -releaserepo: Nexus
+-buildrepo: Local
 
 # On Travis, you can set the secret as follows
 # travis encrypt REPOSITORY_USERNAME=<user> REPOSITORY_PASSWORD=<passwd> and add to env: \  secure:  
@@ -64,5 +65,4 @@ usr = ${env;REPOSITORY_USERNAME;}
 # Install a copy in the local Maven repository (~/.m2/repository)
 #
 
--buildrepo: Local
 
