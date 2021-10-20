@@ -7,8 +7,8 @@
 	org.alloytools.alloy.core;version=latest,\
 
 -testpath: \
-	biz.aQute.wrapper.junit.wrapper, \
-	biz.aQute.wrapper.hamcrest.wrapper, \
+	biz.aQute.wrapper.junit, \
+	biz.aQute.wrapper.hamcrest, \
     org.sat4j.core, \
 
 Private-Package: \

@@ -10,8 +10,8 @@
 	org.eclipse.jdt.annotation
 
 -testpath: \
-	biz.aQute.wrapper.junit.wrapper, \
-	biz.aQute.wrapper.hamcrest.wrapper, \
+	biz.aQute.wrapper.junit, \
+	biz.aQute.wrapper.hamcrest, \
     src/main/resources;version=file, \
     slf4j.api, \
     org.sat4j.core, \
