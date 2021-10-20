@@ -33,24 +33,21 @@ Bundle-Version:         ${base.version}.${tstamp}
 # Access Maven Central + OSGi snapshots
 #
 
--plugin.4.Central:  \
-	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
-		snapshotUrls=https://oss.sonatype.org/content/groups/osgi; \
-		releaseUrls=https://repo1.maven.org/maven2/; \
-		pom=${build}/central.xml; \
-		name=Central; \
-		location=${build}/cache/enroute-central.xml
-	        
-#
-# Release to Nexus
-#
-
--plugin.8.nexus: \
-	aQute.bnd.repository.maven.provider.MavenBndRepository; \
-		snapshotUrl=https://oss.sonatype.org/content/repositories/snapshots/; \
-		releaseUrl= 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'; \
-		index=${.}/osgi-nexus.maven; \
-		name="Nexus"
+-plugin: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository;\
+		snapshotUrl         ='https://oss.sonatype.org/content/repositories/snapshots/';\
+		releaseUrl          ='https://oss.sonatype.org/service/local/staging/deploy/maven2/';\
+		index               ='${.}/osgi-nexus.maven';\
+		name                =Nexus,\
+	aQute.bnd.repository.maven.provider.MavenBndRepository;\
+		name                =Local;\
+		noupdateOnRelease   =true,\
+	aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name                =Central;\
+        releaseUrl          ='https://repo.maven.apache.org/maven2';\
+        snapshotUrl         ='https://oss.sonatype.org/content/repositories/snapshots/,https://bndtools.jfrog.io/bndtools/update';\
+        index               ='${.}/central.mvn';\
+        readOnly            =true,\
 
 -releaserepo: Nexus
 
@@ -66,11 +63,6 @@ usr = ${env;REPOSITORY_USERNAME;}
 # 
 # Install a copy in the local Maven repository (~/.m2/repository)
 #
-
--plugin.A.local: \
-    aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name='Local';\
-        noupdateOnRelease=true
 
 -buildrepo: Local
 
