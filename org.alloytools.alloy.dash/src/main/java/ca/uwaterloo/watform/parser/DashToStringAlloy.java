@@ -19,7 +19,8 @@ import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprQt;
 
 /* Print an Alloy model from its respective CoreDash model using the Internal Data Structure
- * in the DashModule class */
+ * in the DashModule class.
+ * This file is NO LONGER used. */
 public class DashToStringAlloy {
 
     static String alloyModel = "";
