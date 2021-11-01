@@ -266,7 +266,7 @@ public class PreferencesDialog extends JFrame {
         initUI();
     }
 
-    protected Iterable<SatSolver> testSolvers() {
+    public Iterable<SatSolver> testSolvers() {
         List<SatSolver> satChoices = SatSolver.values().makeCopy();
         satChoices.remove(SatSolver.BerkMinPIPE);
         String fs = System.getProperty("file.separator");

@@ -1,0 +1,2 @@
+some sig Foo {}
+
