@@ -30,7 +30,7 @@ public class CLI extends Env {
 	final CommandLine	cl		= new CommandLine(this);
 	final A4Options		options	= new A4Options();
 
-	interface CLIOptions extends Options {
+	public interface CLIOptions extends aQute.lib.getopt.Options {
 		/**
 		 * default true
 		 */

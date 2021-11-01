@@ -1,6 +1,10 @@
+
+
 -buildpath: \
 	aQute.libg,\
 	org.alloytools.alloy.core,\
+    org.alloytools.alloy.application,\
+    org.alloytools.alloy.extra,\
 	org.alloytools:pardinus.nativesat, \
     jline
 	
