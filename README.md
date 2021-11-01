@@ -1,5 +1,8 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
+![Release build](https://github.com/alloytools/org.alloytools.alloy/actions/workflows/release.yml/badge.svg)
+![Snapshot build](https://github.com/alloytools/org.alloytools.alloy/actions/workflows/snapshot.yml/badge.svg)
+
+
 # Alloy
 
 Alloy 6 is a self-contained executable, which includes an extended version of 
