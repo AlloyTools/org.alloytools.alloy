@@ -9,5 +9,5 @@ org.alloytools:pardinus.core:1.3.0
 org.alloytools:pardinus.nativesat:1.3.0
 biz.aQute:biz.aQute.wrapper.hamcrest:1.3
 biz.aQute:biz.aQute.wrapper.junit:4.13.1
-biz.aQute.bnd:aQute.libg:5.0.0
+biz.aQute.bnd:aQute.libg:6.0.0
 jline:jline:2.14.6
