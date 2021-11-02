@@ -12,7 +12,7 @@ incorporated into other applications to use Alloy as an API, and includes the
 source code. See the release notes for details of new
 features. 
 
-More documentation can be found at: http://alloytools.org/documentation.html.
+Alloy 6 is a [major new release](http://alloytools.org/alloy6.html) More documentation can be found at: http://alloytools.org/documentation.html.
 
 # Requirements
 
