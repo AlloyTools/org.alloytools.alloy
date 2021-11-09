@@ -9,3 +9,8 @@ org.alloytools:pardinus.core:1.3.0
 org.alloytools:pardinus.nativesat:1.3.0
 biz.aQute:biz.aQute.wrapper.hamcrest:1.3
 biz.aQute:biz.aQute.wrapper.junit:4.13.1
+org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.1
+org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.4.1
+org.eclipse.equinox:org.eclipse.equinox.common:jar:3.6.0
+commons-io:commons-io:jar:2.6
+com.google.code.gson:gson:2.8.9
