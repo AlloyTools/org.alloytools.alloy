@@ -1,0 +1,3 @@
+-includeresource         @jars/java-cup-11a.jar,@jars/java-cup-runtime-0.11-a-czt01-cdh.jar
+
+Main-Class          java_cup.Main
