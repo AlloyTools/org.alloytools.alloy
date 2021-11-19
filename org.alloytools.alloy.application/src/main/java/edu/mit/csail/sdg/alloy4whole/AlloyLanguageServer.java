@@ -1427,14 +1427,15 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
         @Override
         public String compute(Object input) {
-            final String arg = (String) input;
+            final String[] arg = (String[]) input;
             //OurUtil.show(frame);
             if (WorkerEngine.isBusy())
                 throw new RuntimeException("Alloy4 is currently executing a SAT solver command. Please wait until that command has finished.");
             //SimpleCallback1 cb = new SimpleCallback1(SimpleGUI.this, viz, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
             WorkerCallback cb = getVizWorkerCallback();
             SimpleTask2 task = new SimpleTask2();
-            task.filename = arg;
+            task.filename = arg[0];
+						task.index = Integer.valueOf(arg[1]);
             try {
                 if (AlloyCore.isDebug())
                     WorkerEngine.runLocally(task, cb);
@@ -1448,14 +1449,14 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
                 //log.logDivider();
                 //log.flush();
                 doStop(2);
-                return arg;
+                return arg[0];
             }
            /* subrunningTask = 2;
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
             stopbutton.setVisible(true);*/
-            return arg;
+            return arg[0];
         }
     };
     
@@ -1471,10 +1472,10 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
                 filename = ((File) input).getAbsolutePath();
                 return "";
             }
-            if (!(input instanceof String))
+            if (!(input instanceof String[]))
                 return "";
-            final String str = (String) input;
-            if (str.trim().length() == 0)
+            final String[] strs = (String[]) input;
+            if (strs[0].trim().length() == 0)
                 return ""; // Empty line
             Module root = null;
             A4Solution ans = null;
@@ -1509,13 +1510,13 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
                 throw new ErrorFatal("Failed to read or parse the XML file.");
             }
             try {
-                Expr e = CompUtil.parseOneExpression_fromString(root, str);
+                Expr e = CompUtil.parseOneExpression_fromString(root, strs[0]);
                 if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG) {
                     SimInstance simInst = SimpleGUI.convert(root, ans);
                     if (simInst.wasOverflow())
                         return simInst.visitThis(e).toString() + " (OF)";
                 }
-                return ans.eval(e);
+                return ans.eval(e, Integer.valueOf(strs[1])).toString();
             } catch (HigherOrderDeclException ex) {
                 throw new ErrorType("Higher-order quantification is not allowed in the evaluator.");
             }
