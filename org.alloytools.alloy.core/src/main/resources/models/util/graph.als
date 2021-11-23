@@ -67,7 +67,7 @@ fun roots [r: node->node] : set node {
   node - node.^r
 }
 
-/** returns the leaves of the grpah */
+/** returns the leaves of the graph */
 fun leaves [r: node->node] : set node {
   node - node.^~r
 }
