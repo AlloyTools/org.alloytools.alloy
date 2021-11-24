@@ -662,10 +662,13 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 			List<Object> args = vsCommand.getArguments();
 			Gson gson = new Gson();
 			try {
-				link.setTarget("command:" + vsCommand.getCommand() + "?" + 
-					URLEncoder.encode(gson.toJson(args), "UTF-8") );
-			} catch (UnsupportedEncodingException e1) {
-			}
+				java.net.URI path = new java.net.URI((String) args.get(0));
+				args.set(0, path.toString());
+				System.out.println("gson.toJson(args): " + gson.toJson(args));
+				link.setTarget("command:" + vsCommand.getCommand() + "?" + gson.toJson(args));
+					// URLEncoder.encode(gson.toJson(args), "UTF-8") );
+			// } catch (UnsupportedEncodingException e1) {
+			} catch (URISyntaxException e) {}
 			
 			return link;
 		}).collect(Collectors.toList());
@@ -698,12 +701,36 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
 
 		Position position = new Position(line, character);
 		Pos pos = positionToPos(position);
-		CompModule module = CompUtil.parseOneModule(fileContents.get(uri));
+		String fileString = fileContents.get(uri);
+		// Ugly hack to make the uri look like what it was if invoked through links
+		// if (fileString == null) {
+		// 	java.net.URI uriObj = new java.net.URI(uri);
+		// 	String newPath =  uriObj.getRawPath().replace(":", "%3A");
+		// 	String newUri = uriObj.getScheme() + newPath;
+		// 	fileString = fileContents.get(newUri);
+		// }
+		// Another ugly hack to make things work if invoked through links (which makes the uri look different)
+		if (fileString == null) {
+			String uriPath = fileUriToPath(uri);
+			for (Map.Entry<String, String> entry : fileContents.entrySet()) {
+				if(fileUriToPath(entry.getKey()).equals(uriPath)){
+					fileString = entry.getValue();
+					uri = entry.getKey();
+					break;
+				}
+			}
+		}
+		if(fileString == null) {
+			System.err.println("Error in ExecuteAlloyCommand: failed to retrieve file contents for " + uri);
+			return CompletableFuture.completedFuture(null);
+		}
+		CompModule module = CompUtil.parseOneModule(fileString);
 		ConstList<edu.mit.csail.sdg.ast.Command> commands = module.getAllCommands();
 		edu.mit.csail.sdg.ast.Command command = commands.stream()
 				.filter(comm -> comm.pos().y == pos.y && comm.pos.x == pos.x).findFirst().orElse(null);
 		if (command != null || ind == -1) {
-			CompletableFuture.runAsync(() -> doRun(uri, ind));
+			String uriToShutUpStupidJava = uri;
+			CompletableFuture.runAsync(() -> doRun(uriToShutUpStupidJava, ind));
 		} else {
 			System.err.println("no matching command found");
 		}
