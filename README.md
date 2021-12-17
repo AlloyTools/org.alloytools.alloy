@@ -27,7 +27,7 @@ JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 Checkout the project and type `./gradlew build`. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
 
-     $ java version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
+     $ java -version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
      java version "1.8.0_144"
      Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
      Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model
