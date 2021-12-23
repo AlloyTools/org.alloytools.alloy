@@ -71,7 +71,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -83,6 +85,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.swing.Action;
 import javax.swing.Box;
@@ -122,6 +125,10 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
 import org.alloytools.alloy.core.AlloyCore;
+import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageServer;
 
 //import com.apple.eawt.Application;
 //import com.apple.eawt.ApplicationAdapter;
@@ -592,11 +599,12 @@ public final class SimpleGUI implements ComponentListener, Listener {
      */
     private static String alloyHome = null;
 
+    //TODO can be replaced by AlloyAppUtil.alloyHome()
     /**
      * Find a temporary directory to store Alloy files; it's guaranteed to be a
      * canonical absolute path.
      */
-    private static synchronized String alloyHome(JFrame parent) {
+    public static synchronized String alloyHome(JFrame parent) {
         if (alloyHome != null)
             return alloyHome;
         String temp = System.getProperty("java.io.tmpdir");
@@ -625,7 +633,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Create an empty temporary directory for use, designate it "deleteOnExit",
      * then return it. It is guaranteed to be a canonical absolute path.
      */
-    private static String maketemp(JFrame parent) {
+    public static String maketemp(JFrame parent) {
         Random r = new Random(new Date().getTime());
         while (true) {
             int i = r.nextInt(1000000);
@@ -1822,7 +1830,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     };
 
     /** Converts an A4TupleSet into a SimTupleset object. */
-    private static SimTupleset convert(Object object) throws Err {
+    public static SimTupleset convert(Object object) throws Err {
         if (!(object instanceof A4TupleSet))
             throw new ErrorFatal("Unexpected type error: expecting an A4TupleSet.");
         A4TupleSet s = (A4TupleSet) object;
@@ -1840,7 +1848,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /** Converts an A4Solution into a SimInstance object. */
-    private static SimInstance convert(Module root, A4Solution ans) throws Err {
+    public static SimInstance convert(Module root, A4Solution ans) throws Err {
         SimInstance ct = new SimInstance(root, ans.getBitwidth(), ans.getMaxSeq());
         for (Sig s : ans.getAllReachableSigs()) {
             if (!s.builtin)
@@ -1920,12 +1928,62 @@ public final class SimpleGUI implements ComponentListener, Listener {
     };
 
     // ====== Main Method ====================================================//
+    public static void main(final String[] args) throws Exception {
+        if (args.length > 0 && args[0].equals("ls")) {
+            System.out.println("######## Alloy Language Server Requested!#####");
+            int port = Integer.parseInt(args[1]);
+            launchLanguageServer(port);
+        } else {
+            mainOld(args);
+        }
+    }
 
+    private static void launchLanguageServer(int port) throws Exception {
+        try {
+        	java.net.Socket socket = new Socket("localhost", port);
+        	AlloyLanguageServer langserv = new AlloyLanguageServer();
+        	System.out.println("connected!");
+
+        	InputStream inputStream = socket.getInputStream();
+        	OutputStream outputStream = socket.getOutputStream();
+
+
+        	//InputStream inputStream = System.in;
+        	//OutputStream outputStream = System.out;
+
+        	Launcher<AlloyLanguageClient> launcher = createServerLauncher(langserv, AlloyLanguageClient.class, inputStream, outputStream);
+        	System.out.println("Starting Alloy Language Server!");
+        	langserv.connect(launcher.getRemoteProxy());
+        	Future<Void> res = launcher.startListening();
+        	System.out.println("Alloy Language Server Started!");
+        	res.get();
+
+        	System.out.println("########Exited Alloy Language Server!");
+        } catch (Throwable ex) {
+        	System.out.println(ex.toString());
+        }
+    }
+
+	/**
+	 * Create a new Launcher for a language server and an input and output stream.
+	 * 
+	 * @param server - the server that receives method calls from the remote client
+	 * @param in - input stream to listen for incoming messages
+	 * @param out - output stream to send outgoing messages
+	 */
+	public static <TLangClient extends LanguageClient> Launcher<TLangClient> createServerLauncher(LanguageServer server, Class<? extends TLangClient> clientType, InputStream in, OutputStream out) {
+		return new Builder<TLangClient>()
+				.setLocalService(server)
+				.setRemoteInterface(clientType)
+				.setInput(in)
+				.setOutput(out)
+				.create();
+	}
     /**
      * Main method that launches the program; this method might be called by an
      * arbitrary thread.
      */
-    public static void main(final String[] args) throws Exception {
+    public static void mainOld(final String[] args) throws Exception {
 
         List<String> remainingArgs = new ArrayList<>();
 
@@ -1963,7 +2021,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                         break;
 
                     default :
-                        if (cmd.endsWith(".als"))
+                        if (cmd.endsWith(".als") || cmd.endsWith(".md"))
                             remainingArgs.add(cmd);
                         else {
                             System.out.println("Unknown cmd " + cmd);
@@ -2313,7 +2371,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
         // Open the given file, if a filename is given in the command line
         for (String f : args)
-            if (f.toLowerCase(Locale.US).endsWith(".als")) {
+            if (f.toLowerCase(Locale.US).endsWith(".als") || f.toLowerCase(Locale.US).endsWith(".md")) {
                 File file = new File(f);
                 if (file.exists() && file.isFile())
                     doOpenFile(file.getPath());

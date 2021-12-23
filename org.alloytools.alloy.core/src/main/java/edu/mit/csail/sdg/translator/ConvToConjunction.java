@@ -17,6 +17,7 @@ package edu.mit.csail.sdg.translator;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
 import edu.mit.csail.sdg.ast.ExprCall;
@@ -27,9 +28,11 @@ import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * Immutable; this class rearranges the AST to promote as many clauses up to the
@@ -119,6 +122,21 @@ final class ConvToConjunction extends VisitReturn<Expr> {
     /** {@inheritDoc} */
     @Override
     public Expr visit(Sig x) {
+        return x;
+    }
+
+    @Override
+    public Expr visit(Func x) throws Err {
+        return x;
+    }
+
+    @Override
+    public Expr visit(Assert x) throws Err {
+        return x;
+    }
+
+    @Override
+    public Expr visit(Macro x) throws Err {
         return x;
     }
 

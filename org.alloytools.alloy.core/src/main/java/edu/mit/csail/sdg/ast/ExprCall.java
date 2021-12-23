@@ -31,6 +31,7 @@ import edu.mit.csail.sdg.alloy4.JoinableList;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * Immutable; represents a call.
@@ -264,6 +265,21 @@ public final class ExprCall extends Expr {
         @Override
         public Type visit(Sig x) {
             return x.type;
+        }
+
+        @Override
+        public Type visit(Func x) throws Err {
+            return x.type;
+        }
+
+        @Override
+        public Type visit(Assert x) throws Err {
+            return x.type;
+        }
+
+        @Override
+        public Type visit(Macro x) throws Err {
+            return x.type();
         }
 
         @Override

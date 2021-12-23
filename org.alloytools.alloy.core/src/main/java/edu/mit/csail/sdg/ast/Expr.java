@@ -1180,10 +1180,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    public final Expr after() {
-        return ExprUnary.Op.AFTER.make(span(), this);
-    }
-
     /**
      * Returns the formula (before this)
      * <p>
@@ -1198,10 +1194,6 @@ public abstract class Expr extends Browsable {
      * <p>
      * this must be a formula
      */
-    public final Expr historically() {
-        return ExprUnary.Op.HISTORICALLY.make(span(), this);
-    }
-
     /**
      * Returns the formula (once this)
      * <p>

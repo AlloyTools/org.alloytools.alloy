@@ -37,3 +37,10 @@ enroute.zip
 
 .idea
 *.iml
+.classpath
+.project
+*.prefs
+.settings/
+
+*.jar
+.vscode
