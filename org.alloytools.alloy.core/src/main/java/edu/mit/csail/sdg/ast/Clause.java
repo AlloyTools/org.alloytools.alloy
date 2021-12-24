@@ -22,4 +22,25 @@ public interface Clause {
      * @return a string formatted like a set
      */
     String explain();
+
+    public final class Custom implements Clause{
+        final Pos pos;
+        final String explanation;
+
+        public Custom(Pos pos, String explanation) {
+            this.pos = pos;
+            this.explanation = explanation;
+        }
+
+        @Override
+        public Pos pos() {
+            return pos;
+        }
+
+        @Override
+        public String explain() {
+            return explanation;
+        }
+
+    }
 }

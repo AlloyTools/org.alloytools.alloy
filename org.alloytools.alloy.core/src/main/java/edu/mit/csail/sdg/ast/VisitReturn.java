@@ -17,6 +17,7 @@ package edu.mit.csail.sdg.ast;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Sig.Field;
+import edu.mit.csail.sdg.parser.Macro;
 
 /**
  * This abstract class defines what a Return Visitor's interface needs to be.
@@ -81,4 +82,13 @@ public abstract class VisitReturn<T> {
 
     /** Visits a Field node. */
     public abstract T visit(Field x) throws Err;
+
+    /** Visits a Func node. */
+    public abstract T visit(Func x) throws Err;
+
+    /** Visists an Assert node. */
+    public abstract T visit(Assert x) throws Err;
+
+    /** Visits a Macro node. */
+    public abstract T visit(Macro macro) throws Err;
 }

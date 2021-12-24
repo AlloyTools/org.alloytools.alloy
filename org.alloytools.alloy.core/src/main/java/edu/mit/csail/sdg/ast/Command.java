@@ -126,6 +126,11 @@ public final class Command extends Browsable {
     public final Expr                    nameExpr;
 
     /**
+     * The 'check' or 'run' keyword
+     */
+    public final ExprVar                 commandKeyword;
+
+    /**
      * Returns a human-readable string that summarizes this Run or Check command.
      */
     @Override
@@ -180,10 +185,31 @@ public final class Command extends Browsable {
      *            specified)
      * @param maxseq - the maximum sequence length (0 or higher) (-1 if it was not
      *            specified)
+     * @param mintime - the minimal trace length (0 or higher) (-1 if it was not
+     *            specified)
+     * @param maxtime - the maximal trace length (0 or higher) (-1 if it was not
+     *            specified)
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(boolean check, int overall, int bitwidth, int maxseq, Expr formula) throws ErrorSyntax {
-        this(null, null, "", check, overall, bitwidth, maxseq, -1, -1, -1, null, null, formula, null);
+    //extended with time scopes
+    public Command(boolean check, int overall, int bitwidth, int maxseq, int mintime, int maxtime, ExprVar commandKeyword, Expr formula) throws ErrorSyntax {
+        this(null, null, "", check, overall, bitwidth, maxseq, mintime, maxtime, -1, null, null, commandKeyword, formula, null);
+    }
+
+    /**
+     * Constructs a new Command object.
+     *
+     * @param check - true if this is a "check"; false if this is a "run"
+     * @param overall - the overall scope (0 or higher) (-1 if no overall scope was
+     *            specified)
+     * @param bitwidth - the integer bitwidth (0 or higher) (-1 if it was not
+     *            specified)
+     * @param maxseq - the maximum sequence length (0 or higher) (-1 if it was not
+     *            specified)
+     * @param formula - the formula that must be satisfied by this command
+     */
+    public Command(boolean check, int overall, int bitwidth, int maxseq, ExprVar commandKeyword, Expr formula) throws ErrorSyntax {
+        this(null, null, "", check, overall, bitwidth, maxseq, -1, -1, -1, null, null, commandKeyword, formula, null);
     }
 
     /**
@@ -210,10 +236,11 @@ public final class Command extends Browsable {
      *            exact though we may or may not know what the scope is yet
      * @param formula - the formula that must be satisfied by this command
      */
-    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int minprefix, int maxprefix, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, Expr formula, Command parent) {
+    public Command(Pos pos, Expr e, String label, boolean check, int overall, int bitwidth, int maxseq, int minprefix, int maxprefix, int expects, Iterable<CommandScope> scope, Iterable<Sig> additionalExactSig, ExprVar commandKeyword, Expr formula, Command parent) {
         if (pos == null)
             pos = Pos.UNKNOWN;
         this.nameExpr = e;
+        this.commandKeyword = commandKeyword;
         this.formula = formula;
         this.pos = pos;
         this.label = (label == null ? "" : label);
@@ -234,24 +261,27 @@ public final class Command extends Browsable {
      * Constructs a new Command object where it is the same as the current object,
      * except with a different formula.
      */
+    //extended with time scopes
     public Command change(Expr newFormula) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, additionalExactScopes, newFormula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, additionalExactScopes, commandKeyword, newFormula, parent);
     }
 
     /**
      * Constructs a new Command object where it is the same as the current object,
      * except with a different scope.
      */
+    //extended with time scopes
     public Command change(ConstList<CommandScope> scope) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, additionalExactScopes, formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, additionalExactScopes, commandKeyword, formula, parent);
     }
 
     /**
      * Constructs a new Command object where it is the same as the current object,
      * except with a different list of "additional exact sigs".
      */
+    //extended with time scopes
     public Command change(Sig... additionalExactScopes) {
-        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, Util.asList(additionalExactScopes), formula, parent);
+        return new Command(pos, nameExpr, label, check, overall, bitwidth, maxseq, minprefix, maxprefix, expects, scope, Util.asList(additionalExactScopes), commandKeyword, formula, parent);
     }
 
     /**
@@ -269,10 +299,10 @@ public final class Command extends Browsable {
     public Command change(Sig sig, boolean isExact, int startingScope, int endingScope, int increment) throws ErrorSyntax {
         for (int i = 0; i < scope.size(); i++)
             if (scope.get(i).sig == sig) {
-                CommandScope sc = new CommandScope(scope.get(i).pos, sig, isExact, startingScope, endingScope, increment);
+                CommandScope sc = new CommandScope(scope.get(i).pos, scope.get(i).sigPos, sig, isExact, startingScope, endingScope, increment);
                 return change(new TempList<CommandScope>(scope).set(i, sc).makeConst());
             }
-        CommandScope sc = new CommandScope(Pos.UNKNOWN, sig, isExact, startingScope, endingScope, increment);
+        CommandScope sc = new CommandScope(Pos.UNKNOWN, Pos.UNKNOWN, sig, isExact, startingScope, endingScope, increment);
         return change(Util.append(scope, sc));
     }
 
