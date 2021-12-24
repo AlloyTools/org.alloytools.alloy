@@ -23,7 +23,3 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
 	LICENSES
-	
-a\u0040b=FOO
-
-${a@b}
