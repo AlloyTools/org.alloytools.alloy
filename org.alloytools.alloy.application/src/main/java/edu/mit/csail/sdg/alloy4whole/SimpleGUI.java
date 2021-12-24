@@ -459,6 +459,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                              // binaries
                              // Find out the appropriate Alloy directory
         final String platformBinary = alloyHome(frame) + fs + "binary";
+        System.setProperty("alloy.binary", platformBinary);
         // Write a few test files
         try {
             (new File(platformBinary)).mkdirs();
@@ -2252,7 +2253,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 macUtil.registerApplicationListener(doShow(), doAbout(), doOpenFile(""), doQuit());
             }
         } catch (Throwable t) {
-            System.out.println("Mac classes not there");
         } finally {
             wrap = false;
         }

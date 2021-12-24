@@ -19,7 +19,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 17 
       - name: Build
         shell: bash
         run: ./gradlew --parallel release

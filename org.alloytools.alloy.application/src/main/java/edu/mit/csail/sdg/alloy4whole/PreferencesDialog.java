@@ -360,14 +360,13 @@ public class PreferencesDialog extends JFrame {
     }
 
 
-    private static boolean loadLibrary(String library) {
+    private boolean loadLibrary(String library) {
         boolean loaded = _loadLibrary(library);
-        String libName = System.mapLibraryName(library);
         if (isDebug)
             if (loaded)
-                System.out.println("Loaded: " + libName);
+                System.out.println("Loaded: " + library);
             else
-                System.out.println("Failed to load: " + libName);
+                System.out.println("Failed to load: " + library);
         return loaded;
     }
 
@@ -375,7 +374,8 @@ public class PreferencesDialog extends JFrame {
         try {
             System.loadLibrary(library);
             return true;
-        } catch (UnsatisfiedLinkError ex) {}
+        } catch (UnsatisfiedLinkError ex) {
+        }
         try {
             System.loadLibrary(library + "x1");
             return true;

@@ -1,11 +1,17 @@
+
 Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
 
 -buildpath: \
 	org.alloytools.alloy.application,\
     org.alloytools.alloy.core,\
 	org.alloytools.alloy.extra,\
+	aQute.libg, \
+    slf4j.api, \
+    slf4j.simple
+	
 
 -sources: false
+-conditionalpackage: aQute.lib*, org.apache.commmons.cli, slf4j*
 
 -includeresource: \
 	@${repo;org.alloytools.alloy.application}, \
@@ -17,3 +23,7 @@ Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
 	LICENSES
+	
+a\u0040b=FOO
+
+${a@b}
