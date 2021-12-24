@@ -79,7 +79,7 @@ public interface Module extends Clause {
     /**
      * Return an unmodifiable list of all assertions in this module.
      */
-    public ConstList<Pair<String,Expr>> getAllAssertions();
+    public ConstList<Assert> getAllAssertions();
 
     /**
      * Return an unmodifiable list of all facts in this module.
@@ -110,7 +110,7 @@ public interface Module extends Clause {
     public JFrame showAsTree(Listener listener);
 
     /**
-     * Parse one expression by starting fromt this module as the root module.
+     * Parse one expression by starting from this module as the root module.
      */
     public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException;
 }

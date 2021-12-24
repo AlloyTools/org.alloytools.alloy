@@ -102,9 +102,9 @@ public final class Pos implements Serializable {
      * @param that - the other position object
      */
     public Pos merge(Pos that) {
-        if (that == null || that == UNKNOWN || that == this)
+        if (that == null || that.equals(UNKNOWN) || that == this)
             return this;
-        if (this == UNKNOWN)
+        if (this.equals(UNKNOWN))
             return that;
         int x = this.x, y = this.y, x2 = that.x2, y2 = that.y2;
         if (that.y < y || (that.y == y && that.x < x)) {
@@ -178,6 +178,11 @@ public final class Pos implements Serializable {
             return "line " + y + ", column " + x + ", filename=" + filename;
     }
 
+    public String toRangeString() {
+        String filePart = filename.length() == 0 ? "" : ", filename=" + filename;
+        return "line " + y + ", column " + x + " to line " + y2 + ", column " + x2 + filePart;
+    }
+
     int start() {
         return y * 500 + x;
     }
@@ -194,6 +199,10 @@ public final class Pos implements Serializable {
         int anchor = pos.start();
         int ourStart = start();
         int ourEnd = end();
+
+        if(!filename.equals(pos.filename) && !"".equals(pos.filename))
+            return false;
+            
         if (ourStart > anchor)
             return false;
 
@@ -307,5 +316,9 @@ public final class Pos implements Serializable {
 
     public boolean sameFile(Pos pos) {
         return this.filename.equals(pos.filename);
+    }
+
+    public Pos withFilename(String filename){
+        return new Pos(filename, x, y, x2, y2);
     }
 }

@@ -36,6 +36,7 @@ import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.CommandScope;
 import edu.mit.csail.sdg.ast.Decl;
@@ -55,6 +56,7 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Type;
 import edu.mit.csail.sdg.ast.VisitReturn;
+import edu.mit.csail.sdg.parser.Macro;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.Decls;
 import kodkod.ast.ExprToIntCast;
@@ -821,7 +823,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case EMPTYNESS :
                 return Expression.NONE;
             case IDEN :
-                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
+                return Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); //this makes bad decompositions, makes static expressions variable
             case STRING :
                 Expression ans = s2k(x.string);
                 if (ans == null)
@@ -890,7 +892,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
             case CAST2INT :
                 return sum(cset(x.sub));
             case RCLOSURE :
-                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV));
+                Expression iden = Expression.IDEN.intersection(a2k(UNIV).product(Expression.UNIV)); //this makes bad decompositions, makes static expressions variable
                 return cset(x.sub).closure().union(iden);
             case CLOSURE :
                 return cset(x.sub).closure();
@@ -948,6 +950,21 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
         if (ans == null)
             throw new ErrorFatal(x.pos, "Sig \"" + x + "\" is not bound to a legal value during translation.\n");
         return ans;
+    }
+
+    @Override
+    public Object visit(Func x) throws Err {
+        return null;
+    }
+
+    @Override
+    public Object visit(Assert x) throws Err {
+        return null;
+    }
+
+    @Override
+    public Object visit(Macro x) throws Err {
+        return null;
     }
 
     /* ============================= */

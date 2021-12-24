@@ -23,6 +23,7 @@ import static edu.mit.csail.sdg.ast.Sig.UNIV;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,6 +40,7 @@ import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.XMLNode;
 import edu.mit.csail.sdg.ast.Attr;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
@@ -217,7 +219,7 @@ public final class A4SolutionReader {
                     break;
                 }
             if (ans == null) {
-                ans = new PrimSig(label, (PrimSig) parent, isAbstract, isLone, isOne, isSome, isPrivate, isMeta, isEnum, isVar);
+                ans = new PrimSig(null, label, Pos.UNKNOWN, (PrimSig) parent, isAbstract, isLone, isOne, isSome, isPrivate, isMeta, isEnum, isVar);
                 allsigs.add(ans);
             }
         } else {
@@ -228,7 +230,7 @@ public final class A4SolutionReader {
                     break;
                 }
             if (ans == null) {
-                ans = new SubsetSig(label, parents, isExact, isLone, isOne, isSome, isPrivate, isMeta, isVar);
+                ans = new SubsetSig(null, label, null, parents, isExact, isLone, isOne, isSome, isPrivate, isMeta, isVar);
                 allsigs.add(ans);
             }
         }
@@ -302,10 +304,11 @@ public final class A4SolutionReader {
                 choices.remove(f);
                 break;
             }
-        if (field == null)
-            field = parent.addTrickyField(Pos.UNKNOWN, isPrivate, null, null, isMeta, isVar, new String[] {
-                                                                                                           label
-            }, UNIV.join(type))[0];
+        if (field == null){
+            ExprHasName labelExpr = ExprVar.make(null, label);
+            field = parent.addTrickyField(Pos.UNKNOWN, isPrivate, null, null, isMeta, isVar, Arrays.asList(labelExpr)
+            , UNIV.join(type))[0];
+        }
         TupleSet ts = parseTuples(node, arity);
         expr2ts.put(field, ts);
         return field;
