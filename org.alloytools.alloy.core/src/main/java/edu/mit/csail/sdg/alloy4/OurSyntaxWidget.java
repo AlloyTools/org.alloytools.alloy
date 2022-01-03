@@ -113,6 +113,9 @@ public final class OurSyntaxWidget {
      */
     private boolean                         isFile;
 
+    /** Whether we are editing a Dash model */
+    private final boolean                   editingDash;
+
     /** Caches the most recent background painter if nonnull. */
     private OurHighlighter                  painter;
 
@@ -124,7 +127,7 @@ public final class OurSyntaxWidget {
      * Constructs a syntax-highlighting widget.
      */
     public OurSyntaxWidget(OurTabbedSyntaxWidget parent) {
-        this(parent, true, "", "Monospaced", 14, 4, null, null);
+        this(parent, true, false, "", "Monospaced", 14, 4, null, null);
     }
 
     /**
@@ -133,7 +136,7 @@ public final class OurSyntaxWidget {
      * @param parent
      */
     @SuppressWarnings("serial" )
-    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName, int fontSize, int tabSize, JComponent obj1, JComponent obj2) {
+    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, boolean isDash, String text, String fontName, int fontSize, int tabSize, JComponent obj1, JComponent obj2) {
         pane.addKeyListener(new KeyListener() {
 
             @Override
@@ -156,6 +159,7 @@ public final class OurSyntaxWidget {
         this.obj2 = obj2;
         final OurSyntaxWidget me = this;
         final ViewFactory defaultFactory = (new StyledEditorKit()).getViewFactory();
+        this.editingDash = isDash;
         doc.do_enableSyntax(enableSyntax);
         doc.do_setFont(fontName, fontSize, tabSize);
         pane.setEditorKit(new StyledEditorKit() { // Prevents line-wrapping up
@@ -526,6 +530,11 @@ public final class OurSyntaxWidget {
         return pane.getHighlighter().getHighlights().length > 0;
     }
 
+    /** Returns true if this textbox is currently dash. */
+    public boolean isEditingDash() {
+        return editingDash;
+    }
+
     /** Remove all shading. */
     void clearShade() {
         pane.getHighlighter().removeAllHighlights();
@@ -571,7 +580,7 @@ public final class OurSyntaxWidget {
 
     /** Enables or disables syntax highlighting. */
     void enableSyntax(boolean flag) {
-        if (doc != null)
+        if (!editingDash && doc != null) // disable syntax highlighting when editing dash
             doc.do_enableSyntax(flag);
     }
 
@@ -693,9 +702,14 @@ public final class OurSyntaxWidget {
         char ans = (!modified || !askUser) ? 'd' : OurDialog.askSaveDiscardCancel(parent.getParent(), "The file \"" + filename + "\"");
         if (ans == 'c' || (ans == 's' && save(false, bannedNames) == false))
             return false;
-        for (int i = 1;; i++)
-            if (!bannedNames.contains(filename = Util.canon("Untitled " + i + ".als")))
+        for (int i = 1;; i++) {
+            if (editingDash)
+                filename = Util.canon("Untitled " + i + ".dsh");
+            else
+                filename = Util.canon("Untitled " + i + ".als");
+            if (!bannedNames.contains(filename))
                 break;
+        }
         fileModifiedDate = -1;
         pane.setText("");
         clearUndo();
@@ -793,7 +807,11 @@ public final class OurSyntaxWidget {
     boolean save(boolean alwaysPickNewName, Collection<String> bannedNames) {
         String n = this.filename;
         if (alwaysPickNewName || isFile == false || n.startsWith(Util.jarPrefix())) {
-            File f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, ".als", ".als files");
+            File f;
+            if (editingDash)
+                f = OurDialog.askFile(new Frame("Dash File Dialog"), false, null, ".dsh", ".dsh files");
+            else
+                f = OurDialog.askFile(new Frame("Alloy File Dialog"), false, null, ".als", ".als files");
             if (f == null)
                 return false;
             n = Util.canon(f.getPath());
@@ -832,6 +850,8 @@ public final class OurSyntaxWidget {
 
     public String getTooltip(MouseEvent event) {
         try {
+            if (editingDash) // Disable tooltips when editing dash
+                return null;
             int offset = pane.viewToModel(event.getPoint());
             CompModule module = getModule();
             if (module == null)

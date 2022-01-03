@@ -60,6 +60,11 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.5</version>
 		</dependency>
+		<dependency>
+			<groupId>com.io7m.jpplib</groupId>
+			<artifactId>io7m-jpplib-core</artifactId>
+			<version>0.7.4</version>
+		</dependency>
 	</dependencies>
 
 </project>

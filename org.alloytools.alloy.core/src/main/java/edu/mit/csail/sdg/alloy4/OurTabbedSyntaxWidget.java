@@ -135,7 +135,11 @@ public final class OurTabbedSyntaxWidget {
                                                                                      n = n.substring(i + 1);
                                                                                  i = n.lastIndexOf('.');
                                                                                  if (i >= 0)
-                                                                                     n = n.substring(0, i);
+                                                                                     if (n.substring(i+1,n.length()).equals("dsh")) {
+                                                                                         n = "(dsh) " + n.substring(0, i);
+                                                                                     } else {
+                                                                                         n = n.substring(0, i);
+                                                                                     }
                                                                                  if (n.length() > 14) {
                                                                                      n = n.substring(0, 14) + "...";
                                                                                  }
@@ -401,6 +405,10 @@ public final class OurTabbedSyntaxWidget {
             select(me == tabs.size() - 1 ? 0 : (me + 1));
     }
 
+    public boolean newtab(String filename) {
+        return newtab(filename, false);
+    }
+
     /**
      * Create a new tab with the given filename (if filename==null, we'll create a
      * blank tab instead)
@@ -410,7 +418,7 @@ public final class OurTabbedSyntaxWidget {
      *
      * @return false iff an error occurred
      */
-    public boolean newtab(String filename) {
+    public boolean newtab(String filename, boolean isDash) {
         if (filename != null) {
             filename = Util.canon(filename);
             for (int i = 0; i < tabs.size(); i++)
@@ -438,7 +446,11 @@ public final class OurTabbedSyntaxWidget {
         JPanel pan = Util.onMac() ? OurUtil.makeVL(null, 2, OurUtil.makeHB(h1, lb, h2)) : OurUtil.makeVL(null, 2, OurUtil.makeHB(h1, lb, h2, GRAY), GRAY);
         pan.setAlignmentX(0.0f);
         pan.setAlignmentY(1.0f);
-        OurSyntaxWidget text = new OurSyntaxWidget(this, syntaxHighlighting, "", fontName, fontSize, tabSize, lb, pan);
+        OurSyntaxWidget text;
+        if (filename == null)
+            text = new OurSyntaxWidget(this, syntaxHighlighting, isDash, "", fontName, fontSize, tabSize, lb, pan);
+        else
+            text = new OurSyntaxWidget(this, syntaxHighlighting, filename.contains(".dsh"), "", fontName, fontSize, tabSize, lb, pan);
         tabBar.add(pan, tabs.size());
         tabs.add(text);
         text.listeners.add(listener); // add listener AFTER we've updated

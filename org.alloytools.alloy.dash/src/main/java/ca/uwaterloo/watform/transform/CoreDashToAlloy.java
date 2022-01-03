@@ -1087,7 +1087,7 @@ public class CoreDashToAlloy {
     		for(DashConcState state: module.concStates.values()) {
     			if(state.name.equals(concStateRef)) {
     	            if (expr.toString().contains("'"))
-    	                return ExprBadJoin.make(null, null, ExprVar.make(null, "sPrime"), ExprVar.make(null, state.modifiedName + "_" + expr.toString().substring(expr.toString().indexOf("/") + 1)));
+    	                return ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, state.modifiedName + "_" + expr.toString().substring(expr.toString().indexOf("/") + 1)));
     	            else
     	            	return ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, state.modifiedName + "_" + expr.toString().substring(expr.toString().indexOf("/") + 1)));
     			}
@@ -1141,7 +1141,7 @@ public class CoreDashToAlloy {
     static Expr modifyVar(Expr expression, DashConcState parent, Expr expr, List<String> exprList) {
         for (String var : exprList) {
             if (expr.toString().equals(var + "'"))
-                return ExprBadJoin.make(null, null, ExprVar.make(null, "sPrime"), ExprVar.make(null, parent.modifiedName + '_' + var));
+                return ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, parent.modifiedName + '_' + var));
             else if (expr.toString().equals(var)) {
                 return ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var));
             }
