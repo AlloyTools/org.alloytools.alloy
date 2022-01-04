@@ -61,8 +61,4 @@ usr = ${env;REPOSITORY_USERNAME;}
 -connection-settings: ${if;${pwd};server;-dummy};id=https://oss.sonatype.org;username=${usr};password=${pwd}, -bnd
 
 
-# 
-# Install a copy in the local Maven repository (~/.m2/repository)
-#
-
-
+-includepackage *;from:=classes
