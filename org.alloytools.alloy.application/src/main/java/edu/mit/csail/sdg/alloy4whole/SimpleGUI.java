@@ -123,6 +123,8 @@ import javax.swing.text.html.StyleSheet;
 
 import org.alloytools.alloy.core.AlloyCore;
 
+import aQute.lib.io.IO;
+
 //import com.apple.eawt.Application;
 //import com.apple.eawt.ApplicationAdapter;
 //import com.apple.eawt.ApplicationEvent;
@@ -2003,7 +2005,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * The constructor; this method will be called by the AWT event thread, using
      * the "invokeLater" method.
      */
-    private SimpleGUI(final String[] args) {
+    SimpleGUI(final String[] args) {
 
         UIManager.put("ToolTip.font", new FontUIResource("Courier New", Font.PLAIN, 14));
 
@@ -2312,12 +2314,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
         frame.setJMenuBar(bar);
 
         // Open the given file, if a filename is given in the command line
-        for (String f : args)
-            if (f.toLowerCase(Locale.US).endsWith(".als")) {
-                File file = new File(f);
-                if (file.exists() && file.isFile())
-                    doOpenFile(file.getPath());
-            }
+        for (String f : args) {
+            File file = IO.getFile(f);
+            if (file.isFile())
+                doOpenFile(file.getPath());
+        }
 
         // Update the title and status bar
         notifyChange();
