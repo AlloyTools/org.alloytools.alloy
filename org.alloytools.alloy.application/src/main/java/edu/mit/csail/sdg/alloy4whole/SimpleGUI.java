@@ -412,6 +412,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         else
             frame.setTitle("Alloy Analyzer " + Version.getShortversion());
         toolbar.setBorder(new OurBorder(false, false, text.count() <= 1, false));
+        translatebutton.setVisible(text.get().isEditingDash());
         int c = t.getCaret();
         int y = t.getLineOfOffset(c) + 1;
         int x = c - t.getLineStartOffset(y - 1) + 1;
@@ -2488,7 +2489,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
                     notifyFocusGained();
                     break;
                 case STATUS_CHANGE :
-                    translatebutton.setVisible(text.get().isEditingDash());
                     notifyChange();
                     break;
                 default :
