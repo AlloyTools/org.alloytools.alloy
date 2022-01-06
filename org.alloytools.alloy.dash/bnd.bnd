@@ -12,6 +12,7 @@
 	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
 	org.eclipse.jdt.annotation,\
+    com.io7m.jpplib.io7m-jpplib-core;version=0.7.4,\
 
 -testpath: \
 	osgi.enroute.junit.wrapper, \
@@ -23,6 +24,7 @@ Export-Package: \
 	ca.uwaterloo.watform.ast,\
 	ca.uwaterloo.watform.parser,\
 	ca.uwaterloo.watform.transform,\
+    de.uka.ilkd.pp,\
 	
 Private-Package: \
 	java_cup.runtime
