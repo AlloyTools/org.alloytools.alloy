@@ -89,6 +89,9 @@ public final class OurSyntaxWidget {
     /** The underlying JTextPane being displayed. */
     private final JTextPane                 pane             = OurAntiAlias.pane(this::getTooltip, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
 
+    /** The view we will draw line numbers in, a rowHeader on pane. */
+    private final LineNumbersView           lineNumbersView;
+
     /**
      * The filename for this JTextPane (changes will trigger the STATUS_CHANGE
      * event)
@@ -124,7 +127,7 @@ public final class OurSyntaxWidget {
      * Constructs a syntax-highlighting widget.
      */
     public OurSyntaxWidget(OurTabbedSyntaxWidget parent) {
-        this(parent, true, "", "Monospaced", 14, 4, null, null);
+        this(parent, true, "", "Monospaced", 14, 4, false, null, null);
     }
 
     /**
@@ -133,7 +136,7 @@ public final class OurSyntaxWidget {
      * @param parent
      */
     @SuppressWarnings("serial" )
-    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName, int fontSize, int tabSize, JComponent obj1, JComponent obj2) {
+    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName, int fontSize, int tabSize, boolean lineNumbers, JComponent obj1, JComponent obj2) {
         pane.addKeyListener(new KeyListener() {
 
             @Override
@@ -327,6 +330,9 @@ public final class OurSyntaxWidget {
         component.setFocusable(false);
         component.setMinimumSize(new Dimension(50, 50));
         component.setViewportView(pane);
+
+        lineNumbersView = new LineNumbersView(pane, lineNumbers);
+        component.setRowHeaderView(lineNumbersView);
         modified = false;
     }
 
@@ -573,6 +579,10 @@ public final class OurSyntaxWidget {
     void enableSyntax(boolean flag) {
         if (doc != null)
             doc.do_enableSyntax(flag);
+    }
+
+    void enableLineNumbers(boolean flag) {
+        lineNumbersView.enableLineNumbers(flag);
     }
 
     /**
@@ -865,4 +875,6 @@ public final class OurSyntaxWidget {
         }
         return null;
     }
+
+
 }

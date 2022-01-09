@@ -15,36 +15,7 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerHeight;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerWidth;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerX;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerY;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposePref;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model0;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model1;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model2;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Model3;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.Welcome;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menu;
 import static edu.mit.csail.sdg.alloy4.OurUtil.menuItem;
 import static java.awt.event.KeyEvent.VK_A;
@@ -121,6 +92,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
+import edu.mit.csail.sdg.alloy4.*;
 import org.alloytools.alloy.core.AlloyCore;
 
 //import com.apple.eawt.Application;
@@ -128,34 +100,11 @@ import org.alloytools.alloy.core.AlloyCore;
 //import com.apple.eawt.ApplicationEvent;
 //
 
-import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.BooleanPref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.ChoicePref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.StringPref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Verbosity;
-import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.Computer;
-import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4.ErrorFatal;
-import edu.mit.csail.sdg.alloy4.ErrorType;
-import edu.mit.csail.sdg.alloy4.Listener;
-import edu.mit.csail.sdg.alloy4.MailBug;
-import edu.mit.csail.sdg.alloy4.OurAntiAlias;
-import edu.mit.csail.sdg.alloy4.OurBorder;
-import edu.mit.csail.sdg.alloy4.OurCombobox;
-import edu.mit.csail.sdg.alloy4.OurDialog;
-import edu.mit.csail.sdg.alloy4.OurSyntaxWidget;
-import edu.mit.csail.sdg.alloy4.OurTabbedSyntaxWidget;
-import edu.mit.csail.sdg.alloy4.OurTree;
-import edu.mit.csail.sdg.alloy4.OurUtil;
-import edu.mit.csail.sdg.alloy4.Pair;
-import edu.mit.csail.sdg.alloy4.Pos;
-import edu.mit.csail.sdg.alloy4.Runner;
-import edu.mit.csail.sdg.alloy4.Util;
-import edu.mit.csail.sdg.alloy4.Version;
-import edu.mit.csail.sdg.alloy4.WorkerEngine;
-import edu.mit.csail.sdg.alloy4.XMLNode;
 import edu.mit.csail.sdg.alloy4viz.VizGUI;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleCallback1;
 import edu.mit.csail.sdg.alloy4whole.SimpleReporter.SimpleTask1;
@@ -1440,6 +1389,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             else
                 addToMenu(optmenu, AntiAlias);
             addToMenu(optmenu, A4Preferences.LAF);
+            addToMenu(optmenu, LineNumbers);
 
             optmenu.addSeparator();
 
@@ -1490,6 +1440,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
         status.setFont(new Font(f, Font.PLAIN, n));
         log.setFontSize(n);
         viz.doSetFontSize(n);
+        return null;
+    }
+
+    private Runner doOptRefreshLineNumbers() {
+        if ( wrap ) {
+            return wrapMe();
+        }
+        text.enableLineNumbers(LineNumbers.get());
         return null;
     }
 
@@ -2220,7 +2178,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         PreferencesDialog.logOnChange(log, A4Preferences.allUserPrefs().toArray(new Pref< ? >[0]));
 
         // Create the text area
-        text = new OurTabbedSyntaxWidget(fontName, fontSize, TabSize.get(), frame);
+        text = new OurTabbedSyntaxWidget(fontName, fontSize, TabSize.get(), LineNumbers.get(), frame);
         text.listeners.add(this);
         text.enableSyntax(!SyntaxDisabled.get());
 
@@ -2282,6 +2240,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             prefDialog.addChangeListener(wrapToChangeListener(doOptAntiAlias()), AntiAlias);
             prefDialog.addChangeListener(wrapToChangeListener(doOptSyntaxHighlighting()), SyntaxDisabled);
             prefDialog.addChangeListener(wrapToChangeListener(doLookAndFeel()), LAF);
+            prefDialog.addChangeListener(wrapToChangeListener(doOptRefreshLineNumbers()), LineNumbers);
         } finally {
             wrap = false;
         }
