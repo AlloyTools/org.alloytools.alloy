@@ -14,6 +14,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Objects;
 
+/**
+ * Provides display of line-numbers to a provided JTextComponent.
+ */
+
 public class LineNumbersView extends JComponent implements DocumentListener, CaretListener, ComponentListener {
 
     private static final int LINE_NUMBERS_MARGIN_PX_WIDTH = 28; // better way than pixels?  based on font size?
@@ -22,7 +26,7 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
 
     private static final long serialVersionUID = 1L;
 
-    private JTextComponent editor;
+    private final JTextComponent editor;
     private Font font;
 
     public LineNumbersView(JTextComponent editor, boolean shouldDisplay) {
@@ -69,6 +73,7 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
         }
     }
 
+    /** update the font we will use to draw numbers from the provided editor component.  */
     private Font getEditorFont() {
         return new Font(editor.getFont().getName(), Font.PLAIN, editor.getFont().getSize());
     }
@@ -157,9 +162,6 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
             editor.addCaretListener(this);
         } else {
             marginWidth = 0;
-            editor.getDocument().removeDocumentListener(this);
-            editor.removeComponentListener(this);
-            editor.removeCaretListener(this);
         }
         font = getEditorFont();
         updateSize();
