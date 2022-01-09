@@ -333,6 +333,7 @@ public final class OurSyntaxWidget {
 
         lineNumbersView = new LineNumbersView(pane, lineNumbers);
         component.setRowHeaderView(lineNumbersView);
+        lineNumbersView.enableLineNumbers(lineNumbers); // ?!?!
         modified = false;
     }
 

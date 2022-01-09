@@ -12,12 +12,13 @@ import javax.swing.text.Utilities;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.util.Objects;
 
 public class LineNumbersView extends JComponent implements DocumentListener, CaretListener, ComponentListener {
 
     private static final int LINE_NUMBERS_MARGIN_PX_WIDTH = 28; // better way than pixels?  based on font size?
-    private int displayWidth = 0;
-    private boolean display = false;
+    private int marginWidth = 0;
+    private boolean lineNumbers = false;
 
     private static final long serialVersionUID = 1L;
 
@@ -25,17 +26,17 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
     private Font font;
 
     public LineNumbersView(JTextComponent editor, boolean shouldDisplay) {
+        Objects.requireNonNull(editor, "Need a non-null JTextComponent for parameter editor");
         this.editor = editor;
 
-        if ( shouldDisplay ) {
-            display = true;
-            displayWidth = LINE_NUMBERS_MARGIN_PX_WIDTH;
+        this.lineNumbers = shouldDisplay;
+        if ( lineNumbers ) {
+            marginWidth = LINE_NUMBERS_MARGIN_PX_WIDTH;
             editor.getDocument().addDocumentListener(this);
             editor.addComponentListener(this);
             editor.addCaretListener(this);
         } else {
-            display = false;
-            displayWidth = 0;
+            marginWidth = 0;
         }
     }
 
@@ -43,8 +44,8 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if ( display ) {
-
+        if (lineNumbers) {
+            font = getEditorFont();
             Rectangle clip = g.getClipBounds();
             int startOffset = editor.viewToModel(new Point(0, clip.y));
             int endOffset = editor.viewToModel(new Point(0, clip.y + clip.height));
@@ -56,9 +57,6 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
                         int x = getInsets().left + 2;
                         int y = getOffsetY(startOffset);
 
-                        font = font != null ?
-                                font :
-                                new Font(editor.getFont().getName(), Font.PLAIN, editor.getFont().getSize());
                         g.setFont(font);
                         g.setColor(isCurrentLine(startOffset) ? Color.RED : Color.BLACK);
                         g.drawString(lineNumber, x, y);
@@ -70,6 +68,11 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
             }
         }
     }
+
+    private Font getEditorFont() {
+        return new Font(editor.getFont().getName(), Font.PLAIN, editor.getFont().getSize());
+    }
+
     private String getLineNumber(int offset) {
         Element root = editor.getDocument().getDefaultRootElement();
         int index = root.getElementIndex(offset);
@@ -100,7 +103,7 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
     }
 
     private void updateSize() {
-        Dimension size = new Dimension(displayWidth, editor.getHeight());
+        Dimension size = new Dimension(marginWidth, editor.getHeight());
         setPreferredSize(size);
         setSize(size);
     }
@@ -146,12 +149,19 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
     }
 
     public void enableLineNumbers(boolean flag) {
-        display = flag;
-        if ( display ) {
-            displayWidth = LINE_NUMBERS_MARGIN_PX_WIDTH;
+        lineNumbers = flag;
+        if (lineNumbers) {
+            marginWidth = LINE_NUMBERS_MARGIN_PX_WIDTH;
+            editor.getDocument().addDocumentListener(this);
+            editor.addComponentListener(this);
+            editor.addCaretListener(this);
         } else {
-            displayWidth = 0;
+            marginWidth = 0;
+            editor.getDocument().removeDocumentListener(this);
+            editor.removeComponentListener(this);
+            editor.removeCaretListener(this);
         }
+        font = getEditorFont();
         updateSize();
         documentChanged();
     }

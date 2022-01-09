@@ -392,7 +392,9 @@ public final class OurTabbedSyntaxWidget {
 
     /** Returns the JTextArea of the current text buffer. */
     public OurSyntaxWidget get() {
-        return (me >= 0 && me < tabs.size()) ? tabs.get(me) : new OurSyntaxWidget(this);
+        return (me >= 0 && me < tabs.size()) ? tabs.get(me) :
+                new OurSyntaxWidget(this,
+                    syntaxHighlighting, "", fontName, fontSize, tabSize, lineNumbers, null, null);
     }
 
     /**
