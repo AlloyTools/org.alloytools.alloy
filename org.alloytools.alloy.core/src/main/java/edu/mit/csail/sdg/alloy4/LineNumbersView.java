@@ -73,9 +73,14 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
         }
     }
 
-    /** update the font we will use to draw numbers from the provided editor component.  */
+    /** update the font we will use to draw numbers from the provided editor component.
+     * first implementation here is not getting the font set in preferences properly, but
+     * a default on editor.  maybe lineNumberMode needs to be involved in the font and fontsize
+     * setting path as well.  */
     private Font getEditorFont() {
-        return new Font(editor.getFont().getName(), Font.PLAIN, editor.getFont().getSize());
+        Font tmp = new Font(editor.getFont().getName(), Font.PLAIN, editor.getFont().getSize());
+        System.out.println("made a font from editor: " + tmp.getFontName() + " " + tmp.getSize());
+        return tmp;
     }
 
     private String getLineNumber(int offset) {

@@ -335,7 +335,7 @@ public final class OurSyntaxWidget {
         component.setRowHeaderView(lineNumbersView);
         // if this is not present, the second and only the second editor
         // opened will not display line numbers.
-        // race condition with component's JScrollPane life cycle?  but why the second?
+        // race condition with component's JScrollPane life cycle?  but why only the second?
         lineNumbersView.enableLineNumbers(lineNumbers);
         modified = false;
     }
