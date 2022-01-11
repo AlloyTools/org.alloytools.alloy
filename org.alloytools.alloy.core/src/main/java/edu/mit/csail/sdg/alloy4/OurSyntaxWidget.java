@@ -331,12 +331,9 @@ public final class OurSyntaxWidget {
         component.setMinimumSize(new Dimension(50, 50));
         component.setViewportView(pane);
 
-        lineNumbersView = new LineNumbersView(pane, lineNumbers);
+        lineNumbersView = new LineNumbersView(pane, lineNumbers, fontName, fontSize);
         component.setRowHeaderView(lineNumbersView);
-        // if this is not present, the second and only the second editor
-        // opened will not display line numbers.
-        // race condition with component's JScrollPane life cycle?  but why the second?
-        lineNumbersView.enableLineNumbers(lineNumbers);
+        lineNumbersView.componentResized(null);
         modified = false;
     }
 
@@ -575,8 +572,10 @@ public final class OurSyntaxWidget {
      * Changes the font name, font size, and tab size for the document.
      */
     void setFont(String fontName, int fontSize, int tabSize) {
-        if (doc != null)
+        if (doc != null) {
             doc.do_setFont(fontName, fontSize, tabSize);
+            lineNumbersView.updateFontNameAndFontSize(fontName, fontSize);
+        }
     }
 
     /** Enables or disables syntax highlighting. */
