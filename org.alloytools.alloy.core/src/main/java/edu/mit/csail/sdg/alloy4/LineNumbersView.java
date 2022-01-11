@@ -204,7 +204,8 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
     }
 
     /** produce a width in pixels for this margin when it is to be drawn.
-     * make an effort to have our page-number margin only wide enough for three numerals, no wider. */
+     * make an effort to have our page-number margin only wide enough for three numerals, no wider.
+     * */
     private int calculateMarginWidth() {
         if ( font != null ) {
             return (int) Math.ceil(font
