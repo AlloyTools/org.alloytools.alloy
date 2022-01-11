@@ -1,5 +1,29 @@
 package edu.mit.csail.sdg.alloy4whole;
 
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposePref;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.LineNumbers;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SubMemory;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.Welcome;
+
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -56,8 +80,6 @@ import edu.mit.csail.sdg.alloy4.OurUtil;
 import edu.mit.csail.sdg.alloy4.OurUtil.GridBagConstraintsBuilder;
 import edu.mit.csail.sdg.alloy4.Subprocess;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
-
-import static edu.mit.csail.sdg.alloy4.A4Preferences.*;
 
 /**
  * @modified [electrum] only log when debugging; load electrod binary
