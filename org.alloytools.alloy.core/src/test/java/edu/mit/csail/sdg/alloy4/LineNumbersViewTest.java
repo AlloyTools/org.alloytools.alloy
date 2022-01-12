@@ -17,6 +17,36 @@ public class LineNumbersViewTest {
     JTextComponent dummyTextComponent = OurAntiAlias.pane(null, Color.BLACK, Color.WHITE, new EmptyBorder(6, 6, 6, 6));
 
     @Test
+    public void some_font_always_set_after_construction() throws Exception {
+        LineNumbersView lineNumbersView;
+
+        lineNumbersView = new LineNumbersView(dummyTextComponent, true, Font.MONOSPACED, 15);
+        assertNotNull(lineNumbersView.getFont());
+        assertEquals("Monospaced", lineNumbersView.getFontName());
+        assertEquals(15, lineNumbersView.getFontSize());
+
+        lineNumbersView = new LineNumbersView(dummyTextComponent, true, null, 15);
+        assertNotNull(lineNumbersView.getFont());
+        assertEquals("Monospaced", lineNumbersView.getFontName());
+        assertEquals(14, lineNumbersView.getFontSize());
+
+        lineNumbersView = new LineNumbersView(dummyTextComponent, true, null, -3);
+        assertNotNull(lineNumbersView.getFont());
+        assertEquals("Monospaced", lineNumbersView.getFontName());
+        assertEquals(14, lineNumbersView.getFontSize());
+
+        lineNumbersView = new LineNumbersView(dummyTextComponent, true, Font.DIALOG, -3);
+        assertNotNull(lineNumbersView.getFont());
+        assertEquals("Monospaced", lineNumbersView.getFontName());
+        assertEquals(14, lineNumbersView.getFontSize());
+
+        lineNumbersView = new LineNumbersView(dummyTextComponent, true, Font.DIALOG, 17);
+        assertNotNull(lineNumbersView.getFont());
+        assertEquals("Dialog", lineNumbersView.getFontName());
+        assertEquals(17, lineNumbersView.getFontSize());
+    }
+
+    @Test
     public void antialias_set_correctly() throws Exception {
 
         String originalOs = System.getProperty("os.name", "UNKNOWN");
@@ -29,6 +59,10 @@ public class LineNumbersViewTest {
         System.setProperty("os.name", "Mac 100");
         lineNumbersView = new LineNumbersView(dummyTextComponent, true, "Monospaced", 15);
         assertTrue(lineNumbersView.isAntiAlias());
+
+        System.setProperty("os.name", "linux 2049");
+        lineNumbersView = new LineNumbersView(dummyTextComponent, true, "Monospaced", 15);
+        assertFalse(lineNumbersView.isAntiAlias());
 
         System.setProperty("os.name", "Belchfire Status Symbol X100");
         lineNumbersView = new LineNumbersView(dummyTextComponent, true, "Monospaced", 15);
