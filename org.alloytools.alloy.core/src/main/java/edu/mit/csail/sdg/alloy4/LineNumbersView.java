@@ -33,11 +33,13 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
     private final JTextComponent editor;
     private final boolean antiAlias;
 
-    private int marginWidth = 0;
-    private boolean lineNumbers = false;
+    private int marginWidth;
+    private boolean lineNumbers;
     private String fontName;
     private int fontSize;
     private Font font;
+
+    private int lastCaretLine = -1;
 
     public LineNumbersView(JTextComponent editor, boolean shouldDisplay, String fontName, int fontSize) {
         Objects.requireNonNull(editor, "Need a non-null JTextComponent for parameter editor");
@@ -64,6 +66,35 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
         }
     }
 
+    public int getLastCaretLine() {
+        return lastCaretLine;
+    }
+
+    public boolean isAntiAlias() {
+        return antiAlias;
+    }
+
+    public int getMarginWidth() {
+        return marginWidth;
+    }
+
+    public boolean isLineNumbers() {
+        return lineNumbers;
+    }
+
+    public String getFontName() {
+        return fontName;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    @Override
+    public Font getFont() {
+        return font;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         if (antiAlias && g instanceof Graphics2D) {
@@ -79,13 +110,18 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
 
             while (startOffset <= endOffset) {
                 try {
-                    String lineNumber = getLineNumber(startOffset);
+                    String lineNumber = getLineNumberString(startOffset);
                     if (lineNumber != null) {
                         int x = getInsets().left + 2;
                         int y = getOffsetY(startOffset);
 
                         g.setFont(font);
-                        g.setColor(isCurrentLine(startOffset) ? Color.RED : Color.BLACK);
+                        Color color = Color.BLACK;
+                        if ( isCurrentLine(startOffset)) {
+                            color = Color.red;
+                            lastCaretLine = getLineNumber(startOffset);
+                        }
+                        g.setColor(color);
                         g.drawString(lineNumber, x, y);
                     }
                     startOffset = Utilities.getRowEnd(editor, startOffset) + 1;
@@ -105,9 +141,14 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
         }
     }
 
-    private String getLineNumber(int offset) {
+    private int getLineNumber(int offset) {
         Element root = editor.getDocument().getDefaultRootElement();
-        int index = root.getElementIndex(offset);
+        return root.getElementIndex(offset);
+    }
+
+    private String getLineNumberString(int offset) {
+        int index = getLineNumber(offset);
+        Element root = editor.getDocument().getDefaultRootElement();
         Element line = root.getElement(index);
 
         // how long are alloy specifications often?
@@ -157,6 +198,7 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
 
     @Override
     public void caretUpdate(CaretEvent e) {
+        updateSize();
         documentChanged();
     }
 
@@ -168,6 +210,8 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
 
     @Override
     public void componentMoved(ComponentEvent e) {
+        updateSize();
+        documentChanged();
     }
 
     @Override
@@ -205,8 +249,10 @@ public class LineNumbersView extends JComponent implements DocumentListener, Car
 
     /** produce a width in pixels for this margin when it is to be drawn.
      * make an effort to have our page-number margin only wide enough for three numerals, no wider.
+     * This calculation is based on trial and error ("width of '000' in current font plus 10%"),
+     * and if there's better way to decide this margin width by all means.
      * */
-    private int calculateMarginWidth() {
+    public int calculateMarginWidth() {
         if ( font != null ) {
             return (int) Math.ceil(font
                     .getStringBounds("000", new FontRenderContext(null, antiAlias, false))

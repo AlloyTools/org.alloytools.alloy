@@ -334,6 +334,7 @@ public final class OurSyntaxWidget {
         lineNumbersView = new LineNumbersView(pane, lineNumbers, fontName, fontSize);
         component.setRowHeaderView(lineNumbersView);
         lineNumbersView.componentResized(null);
+
         modified = false;
     }
 
