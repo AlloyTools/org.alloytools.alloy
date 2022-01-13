@@ -1,0 +1,43 @@
+name: snapshot
+
+on:
+  push:
+    branches: ["master"]
+
+env:
+  LC_ALL: en_US.UTF-8
+  REPOSITORY_USERNAME: ${{ secrets.REPOSITORY_USERNAME }}
+  REPOSITORY_PASSWORD: ${{ secrets.REPOSITORY_PASSWORD }}
+
+jobs:
+  build:
+    name: build on OpenJDK Linux
+    runs-on: macos-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v1
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17 
+      - name: Build
+        shell: bash
+        run: ./gradlew --parallel release
+      - name: Macos
+        shell: bash
+        run: cd org.alloytools.alloy.dist;./macos
+      - name: save-artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-reports
+          path: '*/target/reports/'
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          draft: true
+          files: |
+             org.alloytools.alloy.dist/target/*.jar
+             org.alloytools.alloy.dist/target/*.dmg
+             */target/reports

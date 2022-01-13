@@ -1,5 +1,8 @@
 ![Logo](https://avatars3.githubusercontent.com/u/30268214?v=4&s=200)
-[![Build Status](https://travis-ci.org/AlloyTools/org.alloytools.alloy.svg?branch=master)](https://travis-ci.org/AlloyTools/org.alloytools.alloy)
+![Release build](https://github.com/alloytools/org.alloytools.alloy/actions/workflows/release.yml/badge.svg)
+![Snapshot build](https://github.com/alloytools/org.alloytools.alloy/actions/workflows/snapshot.yml/badge.svg)
+
+
 # Alloy
 
 Alloy 6 is a self-contained executable, which includes an extended version of 
@@ -9,7 +12,7 @@ incorporated into other applications to use Alloy as an API, and includes the
 source code. See the release notes for details of new
 features. 
 
-More documentation can be found at: http://alloytools.org/documentation.html.
+Alloy 6 is a [major new release](http://alloytools.org/alloy6.html) More documentation can be found at: http://alloytools.org/documentation.html.
 
 # Requirements
 
@@ -24,7 +27,7 @@ JVM to run Alloy on macOS. A `.pkg` file is provided for that purpose.
 
 Checkout the project and type `./gradlew build`. You find the executable JAR in org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar after the build has finished.
 
-     $ java version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
+     $ java -version           # requires 1.8 (and NOT 1.9, gradle does not run on 1.9)
      java version "1.8.0_144"
      Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
      Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed model

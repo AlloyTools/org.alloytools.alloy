@@ -1,29 +1,24 @@
+
 Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
 
 -buildpath: \
 	org.alloytools.alloy.application,\
     org.alloytools.alloy.core,\
 	org.alloytools.alloy.extra,\
-	org.alloytools.pardinus;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
-	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.util;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
-	slf4j.api,\
+	aQute.libg, \
+    slf4j.api, \
+    slf4j.simple
+	
 
 -sources: false
+-conditionalpackage: aQute.lib*, org.apache.commmons.cli, slf4j*
 
 -includeresource: \
 	@${repo;org.alloytools.alloy.application}, \
 	@${repo;org.alloytools.alloy.core}, \
 	@${repo;org.alloytools.alloy.extra}, \
-	@${repo;org.alloytools.pardinus}, \
-	@${repo;org.alloytools.kodkod.nativesat.util}, \
-	@${repo;org.alloytools.kodkod.nativesat.amd64-linux}, \
-	@${repo;org.alloytools.kodkod.nativesat.x86-linux}, \
-	@${repo;org.alloytools.kodkod.nativesat.x86-mac}, \
-	@${repo;org.alloytools.kodkod.nativesat.x86-windows}, \
+	@${repo;org.alloytools:pardinus.core}, \
+	@${repo;org.alloytools:pardinus.nativesat}, \
 	@${repo;org.sat4j.core}, \
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
