@@ -124,7 +124,7 @@ public final class OurSyntaxWidget {
      * Constructs a syntax-highlighting widget.
      */
     public OurSyntaxWidget(OurTabbedSyntaxWidget parent) {
-        this(parent, true, "", "Monospaced", 14, 4, null, null);
+        this(parent, true, "", "Monospaced", 14, 4, false, null, null);
     }
 
     /**
@@ -133,7 +133,7 @@ public final class OurSyntaxWidget {
      * @param parent
      */
     @SuppressWarnings("serial" )
-    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName, int fontSize, int tabSize, JComponent obj1, JComponent obj2) {
+    public OurSyntaxWidget(OurTabbedSyntaxWidget parent, boolean enableSyntax, String text, String fontName, int fontSize, int tabSize, boolean lineNumbers, JComponent obj1, JComponent obj2) {
         pane.addKeyListener(new KeyListener() {
 
             @Override
@@ -327,6 +327,9 @@ public final class OurSyntaxWidget {
         component.setFocusable(false);
         component.setMinimumSize(new Dimension(50, 50));
         component.setViewportView(pane);
+
+        // do our new thing here for line number display.
+
         modified = false;
     }
 
@@ -573,6 +576,10 @@ public final class OurSyntaxWidget {
     void enableSyntax(boolean flag) {
         if (doc != null)
             doc.do_enableSyntax(flag);
+    }
+
+    void enableLineNumbers(boolean flag) {
+        // something
     }
 
     /**
@@ -865,4 +872,6 @@ public final class OurSyntaxWidget {
         }
         return null;
     }
+
+
 }
