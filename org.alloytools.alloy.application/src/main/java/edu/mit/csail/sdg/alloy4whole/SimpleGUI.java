@@ -29,6 +29,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.LineNumbers;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Model0;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Model1;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Model2;
@@ -1440,6 +1441,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             else
                 addToMenu(optmenu, AntiAlias);
             addToMenu(optmenu, A4Preferences.LAF);
+            addToMenu(optmenu, LineNumbers);
 
             optmenu.addSeparator();
 
@@ -1490,6 +1492,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
         status.setFont(new Font(f, Font.PLAIN, n));
         log.setFontSize(n);
         viz.doSetFontSize(n);
+        return null;
+    }
+
+    private Runner doOptRefreshLineNumbers() {
+        if ( wrap ) {
+            return wrapMe();
+        }
+        text.enableLineNumbers(LineNumbers.get());
         return null;
     }
 
@@ -2220,7 +2230,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         PreferencesDialog.logOnChange(log, A4Preferences.allUserPrefs().toArray(new Pref< ? >[0]));
 
         // Create the text area
-        text = new OurTabbedSyntaxWidget(fontName, fontSize, TabSize.get(), frame);
+        text = new OurTabbedSyntaxWidget(fontName, fontSize, TabSize.get(), LineNumbers.get(), frame);
         text.listeners.add(this);
         text.enableSyntax(!SyntaxDisabled.get());
 
@@ -2282,6 +2292,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             prefDialog.addChangeListener(wrapToChangeListener(doOptAntiAlias()), AntiAlias);
             prefDialog.addChangeListener(wrapToChangeListener(doOptSyntaxHighlighting()), SyntaxDisabled);
             prefDialog.addChangeListener(wrapToChangeListener(doLookAndFeel()), LAF);
+            prefDialog.addChangeListener(wrapToChangeListener(doOptRefreshLineNumbers()), LineNumbers);
         } finally {
             wrap = false;
         }

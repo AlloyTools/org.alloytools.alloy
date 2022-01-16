@@ -572,6 +572,9 @@ public class A4Preferences {
     /** The latest tab distance of the Alloy Analyzer. */
     public static final IntChoicePref         TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
 
+    /** The latest line-number mode selection of the Alloy Analyzer. */
+    public static final BooleanPref           LineNumbers            = new BooleanPref("Line-numbers", "Show line numbers in editors");
+
     /** The latest welcome screen that the user has seen. */
     public static final BooleanPref           Welcome                = new BooleanPref("Welcome", "Show welcome message at start up");
 
