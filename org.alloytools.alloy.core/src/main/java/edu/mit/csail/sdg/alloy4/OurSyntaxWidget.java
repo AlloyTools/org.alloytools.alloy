@@ -120,6 +120,8 @@ public final class OurSyntaxWidget {
 
     private volatile CompModule             module;
 
+    private OurLineNumberWidget             ourLineNumberWidget;
+
     /**
      * Constructs a syntax-highlighting widget.
      */
@@ -328,7 +330,7 @@ public final class OurSyntaxWidget {
         component.setMinimumSize(new Dimension(50, 50));
         component.setViewportView(pane);
 
-        // do our new thing here for line number display.
+        ourLineNumberWidget = OurLineNumberWidget.build(pane, component, lineNumbers, fontName, fontSize);
 
         modified = false;
     }
@@ -568,8 +570,10 @@ public final class OurSyntaxWidget {
      * Changes the font name, font size, and tab size for the document.
      */
     void setFont(String fontName, int fontSize, int tabSize) {
-        if (doc != null)
+        if (doc != null) {
             doc.do_setFont(fontName, fontSize, tabSize);
+            ourLineNumberWidget.updateFontNameAndSize(fontName, fontSize);
+        }
     }
 
     /** Enables or disables syntax highlighting. */
@@ -579,7 +583,7 @@ public final class OurSyntaxWidget {
     }
 
     void enableLineNumbers(boolean flag) {
-        // something
+        ourLineNumberWidget.setDisplay(flag);
     }
 
     /**
