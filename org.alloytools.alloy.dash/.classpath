@@ -12,14 +12,15 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/cnf"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.core"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.application"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.java"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.kodkod.nativesat"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.util"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.util"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.kodkod.nativesat"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.application"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/cnf"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.pardinus"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

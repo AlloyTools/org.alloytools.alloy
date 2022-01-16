@@ -1,6 +1,6 @@
 <alloy builddate="1970-01-01T00:00:00Z">
 
-<instance bitwidth="4" maxseq="4" mintrace="-1" maxtrace="-1" command="Run path for 5 Snapshot, 3 Chair, 3 Player, 3 EventLabel" filename="" tracelength="1" backloop="0">
+<instance bitwidth="4" maxseq="4" mintrace="-1" maxtrace="-1" command="Run path for 5 Snapshot, 3 EventLabel" filename="" tracelength="1" backloop="0">
 
 <sig label="seq/Int" ID="0" parentID="1" builtin="yes">
 </sig>
@@ -11,54 +11,56 @@
 <sig label="String" ID="3" parentID="2" builtin="yes">
 </sig>
 
-<sig label="this/Chair" ID="4" parentID="2">
-   <atom label="Chair$0"/>
+<sig label="boolean/True" ID="4" parentID="5" one="yes">
+   <atom label="boolean/True$0"/>
 </sig>
 
-<sig label="this/Player" ID="5" parentID="2">
-   <atom label="Player$0"/>
-   <atom label="Player$1"/>
+<sig label="boolean/False" ID="6" parentID="5" one="yes">
+   <atom label="boolean/False$0"/>
 </sig>
 
-<sig label="ordering/Ord" ID="6" parentID="2" one="yes" private="yes">
+<sig label="boolean/Bool" ID="5" parentID="2" abstract="yes">
+</sig>
+
+<sig label="ordering/Ord" ID="7" parentID="2" one="yes" private="yes">
    <atom label="ordering/Ord$0"/>
 </sig>
 
-<field label="First" ID="7" parentID="6" private="yes">
+<field label="First" ID="8" parentID="7" private="yes">
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Snapshot$0"/> </tuple>
-   <types> <type ID="6"/> <type ID="8"/> </types>
+   <types> <type ID="7"/> <type ID="9"/> </types>
 </field>
 
-<field label="Next" ID="9" parentID="6" private="yes">
+<field label="Next" ID="10" parentID="7" private="yes">
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
-   <types> <type ID="6"/> <type ID="8"/> <type ID="8"/> </types>
+   <types> <type ID="7"/> <type ID="9"/> <type ID="9"/> </types>
 </field>
 
-<sig label="steps/Step" ID="10" parentID="2" one="yes">
-   <atom label="steps/Step$0"/>
+<sig label="stepUtil/Step" ID="11" parentID="2" one="yes">
+   <atom label="stepUtil/Step$0"/>
 </sig>
 
-<field label="initial" ID="11" parentID="10">
-   <tuple> <atom label="steps/Step$0"/> <atom label="Snapshot$0"/> </tuple>
-   <types> <type ID="10"/> <type ID="8"/> </types>
+<field label="initial" ID="12" parentID="11">
+   <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$0"/> </tuple>
+   <types> <type ID="11"/> <type ID="9"/> </types>
 </field>
 
-<field label="next_step" ID="12" parentID="10">
-   <tuple> <atom label="steps/Step$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
-   <tuple> <atom label="steps/Step$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
-   <tuple> <atom label="steps/Step$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
-   <tuple> <atom label="steps/Step$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
-   <types> <type ID="10"/> <type ID="8"/> <type ID="8"/> </types>
+<field label="next_step" ID="13" parentID="11">
+   <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
+   <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
+   <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
+   <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
+   <types> <type ID="11"/> <type ID="9"/> <type ID="9"/> </types>
 </field>
 
-<field label="equality" ID="13" parentID="10">
-   <types> <type ID="10"/> <type ID="8"/> <type ID="8"/> </types>
+<field label="equality" ID="14" parentID="11">
+   <types> <type ID="11"/> <type ID="9"/> <type ID="9"/> </types>
 </field>
 
-<sig label="this/Snapshot" ID="14" parentID="8">
+<sig label="this/Snapshot" ID="15" parentID="9">
    <atom label="Snapshot$0"/>
    <atom label="Snapshot$1"/>
    <atom label="Snapshot$2"/>
@@ -66,138 +68,137 @@
    <atom label="Snapshot$4"/>
 </sig>
 
-<field label="events" ID="15" parentID="14">
-   <tuple> <atom label="Snapshot$0"/> <atom label="Game_MusicStarts$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="Game_MusicStarts$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="Game_MusicStops$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="Game_MusicStarts$0"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="Game_MusicStarts$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="Game_MusicStops$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="16"/> </types>
+<field label="stable" ID="16" parentID="15">
+   <tuple> <atom label="Snapshot$0"/> <atom label="boolean/True$0"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="boolean/True$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="boolean/False$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="boolean/True$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="boolean/True$0"/> </tuple>
+   <types> <type ID="9"/> <type ID="5"/> </types>
 </field>
 
-<field label="Game_active_players" ID="17" parentID="14">
-   <tuple> <atom label="Snapshot$0"/> <atom label="Player$0"/> </tuple>
-   <tuple> <atom label="Snapshot$0"/> <atom label="Player$1"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="Player$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="Player$1"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="Player$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="Player$1"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="Player$1"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="Player$1"/> </tuple>
-   <types> <type ID="8"/> <type ID="5"/> </types>
+<field label="events" ID="17" parentID="15">
+   <tuple> <atom label="Snapshot$0"/> <atom label="Counter_Tk0$0"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="Counter_Tk0$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="Counter_Tk0$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="Counter_Bit1_Tk1$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="Counter_Tk0$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="Counter_Bit1_Tk1$0"/> </tuple>
+   <types> <type ID="9"/> <type ID="18"/> </types>
 </field>
 
-<field label="Game_active_chairs" ID="18" parentID="14">
-   <tuple> <atom label="Snapshot$0"/> <atom label="Chair$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="Chair$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="Chair$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="4"/> </types>
+<sig label="stepUtil/BaseSnapshot" ID="9" parentID="2" abstract="yes">
+</sig>
+
+<field label="conf" ID="19" parentID="9">
+   <tuple> <atom label="Snapshot$0"/> <atom label="Counter_Bit1_Bit11$0"/> </tuple>
+   <tuple> <atom label="Snapshot$0"/> <atom label="Counter_Bit2_Bit21$0"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="Counter_Bit1_Bit12$0"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="Counter_Bit2_Bit21$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="Counter_Bit1_Bit11$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="Counter_Bit2_Bit21$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="Counter_Bit1_Bit11$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="Counter_Bit2_Bit22$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="Counter_Bit1_Bit12$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="Counter_Bit2_Bit22$0"/> </tuple>
+   <types> <type ID="9"/> <type ID="20"/> </types>
 </field>
 
-<field label="Game_occupied" ID="19" parentID="14">
-   <tuple> <atom label="Snapshot$2"/> <atom label="Chair$0"/> <atom label="Player$1"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="Chair$0"/> <atom label="Player$1"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="Chair$0"/> <atom label="Player$1"/> </tuple>
-   <types> <type ID="8"/> <type ID="4"/> <type ID="5"/> </types>
+<field label="taken" ID="21" parentID="9">
+   <tuple> <atom label="Snapshot$1"/> <atom label="Counter_Bit1_T1$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="Counter_Bit1_T2$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="Counter_Bit1_T2$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="Counter_Bit2_T3$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="Counter_Bit1_T1$0"/> </tuple>
+   <types> <type ID="9"/> <type ID="22"/> </types>
 </field>
 
-<sig label="steps/BaseSnapshot" ID="8" parentID="2" abstract="yes">
+<sig label="this/Counter_Tk0" ID="23" parentID="24" one="yes">
+   <atom label="Counter_Tk0$0"/>
 </sig>
 
-<field label="conf" ID="20" parentID="8">
-   <tuple> <atom label="Snapshot$0"/> <atom label="Game_Start$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="Game_Walking$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="Game_Sitting$0"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="Game_Start$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="Game_End$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="21"/> </types>
+<sig label="stepUtil/EnvironmentEvent" ID="24" parentID="18" abstract="yes">
+</sig>
+
+<sig label="this/Counter_Bit1_Tk1" ID="25" parentID="26" one="yes">
+   <atom label="Counter_Bit1_Tk1$0"/>
+</sig>
+
+<sig label="this/Counter_Bit2_Done" ID="27" parentID="26" one="yes">
+   <atom label="Counter_Bit2_Done$0"/>
+</sig>
+
+<sig label="stepUtil/InternalEvent" ID="26" parentID="18" abstract="yes">
+</sig>
+
+<sig label="stepUtil/EventLabel" ID="18" parentID="2" abstract="yes">
+</sig>
+
+<sig label="this/Counter_Bit1_Bit11" ID="28" parentID="29" one="yes">
+   <atom label="Counter_Bit1_Bit11$0"/>
+</sig>
+
+<sig label="this/Counter_Bit1_Bit12" ID="30" parentID="29" one="yes">
+   <atom label="Counter_Bit1_Bit12$0"/>
+</sig>
+
+<sig label="this/Counter_Bit1" ID="29" parentID="31" abstract="yes">
+</sig>
+
+<sig label="this/Counter_Bit2_Bit21" ID="32" parentID="33" one="yes">
+   <atom label="Counter_Bit2_Bit21$0"/>
+</sig>
+
+<sig label="this/Counter_Bit2_Bit22" ID="34" parentID="33" one="yes">
+   <atom label="Counter_Bit2_Bit22$0"/>
+</sig>
+
+<sig label="this/Counter_Bit2" ID="33" parentID="31" abstract="yes">
+</sig>
+
+<sig label="this/Counter" ID="31" parentID="35" abstract="yes">
+</sig>
+
+<sig label="this/SystemState" ID="35" parentID="20" abstract="yes">
+</sig>
+
+<sig label="stepUtil/StateLabel" ID="20" parentID="2" abstract="yes">
+</sig>
+
+<sig label="this/Counter_Bit1_T1" ID="36" parentID="22" one="yes">
+   <atom label="Counter_Bit1_T1$0"/>
+</sig>
+
+<sig label="this/Counter_Bit1_T2" ID="37" parentID="22" one="yes">
+   <atom label="Counter_Bit1_T2$0"/>
+</sig>
+
+<sig label="this/Counter_Bit2_T3" ID="38" parentID="22" one="yes">
+   <atom label="Counter_Bit2_T3$0"/>
+</sig>
+
+<sig label="this/Counter_Bit2_T4" ID="39" parentID="22" one="yes">
+   <atom label="Counter_Bit2_T4$0"/>
+</sig>
+
+<sig label="stepUtil/TransitionLabel" ID="22" parentID="2" abstract="yes">
+</sig>
+
+<sig label="stepUtil/ctl/TS" ID="40" parentID="2" one="yes" private="yes">
+   <atom label="stepUtil/ctl/TS$0"/>
+</sig>
+
+<field label="S0" ID="41" parentID="40" private="yes">
+   <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$0"/> </tuple>
+   <types> <type ID="40"/> <type ID="9"/> </types>
 </field>
 
-<field label="taken" ID="22" parentID="8">
-   <tuple> <atom label="Snapshot$1"/> <atom label="Game_Start_Walk$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="Game_Walking_Sit$0"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="Game_Sitting_EliminateLoser$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="Game_Start_DeclareWinner$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="23"/> </types>
-</field>
-
-<sig label="this/Game_MusicStarts" ID="24" parentID="25" one="yes">
-   <atom label="Game_MusicStarts$0"/>
-</sig>
-
-<sig label="this/Game_MusicStops" ID="26" parentID="25" one="yes">
-   <atom label="Game_MusicStops$0"/>
-</sig>
-
-<sig label="steps/EnvironmentEvent" ID="25" parentID="16" abstract="yes">
-</sig>
-
-<sig label="steps/InternalEvent" ID="27" parentID="16" abstract="yes">
-</sig>
-
-<sig label="steps/EventLabel" ID="16" parentID="2" abstract="yes">
-</sig>
-
-<sig label="this/Game_Start" ID="28" parentID="29" one="yes">
-   <atom label="Game_Start$0"/>
-</sig>
-
-<sig label="this/Game_Walking" ID="30" parentID="29" one="yes">
-   <atom label="Game_Walking$0"/>
-</sig>
-
-<sig label="this/Game_Sitting" ID="31" parentID="29" one="yes">
-   <atom label="Game_Sitting$0"/>
-</sig>
-
-<sig label="this/Game_End" ID="32" parentID="29" one="yes">
-   <atom label="Game_End$0"/>
-</sig>
-
-<sig label="this/Game" ID="29" parentID="33" abstract="yes">
-</sig>
-
-<sig label="this/SystemState" ID="33" parentID="21" abstract="yes">
-</sig>
-
-<sig label="steps/StateLabel" ID="21" parentID="2" abstract="yes">
-</sig>
-
-<sig label="this/Game_Start_Walk" ID="34" parentID="23" one="yes">
-   <atom label="Game_Start_Walk$0"/>
-</sig>
-
-<sig label="this/Game_Start_DeclareWinner" ID="35" parentID="23" one="yes">
-   <atom label="Game_Start_DeclareWinner$0"/>
-</sig>
-
-<sig label="this/Game_Walking_Sit" ID="36" parentID="23" one="yes">
-   <atom label="Game_Walking_Sit$0"/>
-</sig>
-
-<sig label="this/Game_Sitting_EliminateLoser" ID="37" parentID="23" one="yes">
-   <atom label="Game_Sitting_EliminateLoser$0"/>
-</sig>
-
-<sig label="steps/TransitionLabel" ID="23" parentID="2" abstract="yes">
-</sig>
-
-<sig label="steps/ctl/TS" ID="38" parentID="2" one="yes" private="yes">
-   <atom label="steps/ctl/TS$0"/>
-</sig>
-
-<field label="S0" ID="39" parentID="38" private="yes">
-   <tuple> <atom label="steps/ctl/TS$0"/> <atom label="Snapshot$0"/> </tuple>
-   <types> <type ID="38"/> <type ID="8"/> </types>
-</field>
-
-<field label="sigma" ID="40" parentID="38" private="yes">
-   <tuple> <atom label="steps/ctl/TS$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
-   <tuple> <atom label="steps/ctl/TS$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
-   <tuple> <atom label="steps/ctl/TS$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
-   <tuple> <atom label="steps/ctl/TS$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
-   <types> <type ID="38"/> <type ID="8"/> <type ID="8"/> </types>
+<field label="sigma" ID="42" parentID="40" private="yes">
+   <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
+   <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
+   <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
+   <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
+   <types> <type ID="40"/> <type ID="9"/> <type ID="9"/> </types>
 </field>
 
 <sig label="univ" ID="2" builtin="yes" var="yes">

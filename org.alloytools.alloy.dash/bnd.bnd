@@ -1,23 +1,21 @@
+-dependson org.alloytools.alloy.wrappers
+
 -includeresource: \
     src/main/resources, \
     @${repo;slf4j.api}, \
     
 -buildpath: \
-	org.alloytools.pardinus;version=latest,\
-	org.sat4j.core,\
-	org.alloytools.alloy.core;version=latest,\
-	org.alloytools.kodkod.nativesat.util;version=latest,\
-	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-mac;version=latest,\
-	org.alloytools.kodkod.nativesat.x86-windows;version=latest,\
+	org.alloytools:pardinus.core;version='1.3.0',\
+	org.alloytools:pardinus.nativesat;version='1.3.0',\
 	org.eclipse.jdt.annotation,\
+	org.alloytools.alloy.core;version=latest
 
 -testpath: \
-	osgi.enroute.junit.wrapper, \
-	osgi.enroute.hamcrest.wrapper, \
+	biz.aQute.wrapper.junit, \
+	biz.aQute.wrapper.hamcrest, \
     src/main/resources;version=file, \
     slf4j.api, \
+    org.sat4j.core, \
 
 Export-Package: \
 	ca.uwaterloo.watform.ast,\
