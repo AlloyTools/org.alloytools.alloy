@@ -1,0 +1,31 @@
+name: build
+  
+on:
+  pull_request:
+
+env:
+  LC_ALL: en_US.UTF-8
+  REPOSITORY_USERNAME: ${{ secrets.REPOSITORY_USERNAME }}
+  REPOSITORY_PASSWORD: ${{ secrets.REPOSITORY_PASSWORD }}
+
+jobs:
+  build:
+    name: build on OpenJDK Linux (just changing name for testing with new commit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v1
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17 
+      - name: Build
+        shell: bash
+        run: ./gradlew --parallel build
+      - name: save-tests
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-reports
+          path: '*/target/reports'
+

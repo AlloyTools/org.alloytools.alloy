@@ -250,7 +250,7 @@ public final class OurDialog {
                 });
             open.setVisible(true); // This method blocks until the user either
                                   // chooses something or cancels the dialog.
-            parent.dispose();
+            open.dispose();
             if (open.getFile() == null)
                 return null;
             else
