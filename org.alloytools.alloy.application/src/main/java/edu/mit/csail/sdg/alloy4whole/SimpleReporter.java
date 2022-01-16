@@ -22,13 +22,21 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
 
+import ca.uwaterloo.watform.parser.DashModule;
+import ca.uwaterloo.watform.parser.DashOptions;
+import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.transform.CoreDashToAlloy;
+import ca.uwaterloo.watform.transform.DashToCoreDash;
 import org.alloytools.alloy.core.AlloyCore;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -703,7 +711,17 @@ final class SimpleReporter extends A4Reporter {
         public void run(WorkerCallback out) throws Exception {
             cb(out, "S2", "Starting the solver...\n\n");
             final SimpleReporter rep = new SimpleReporter(out, options.recordKodkod);
-            final Module world = CompUtil.parseEverything_fromFile(rep, map, options.originalFilename, resolutionMode);
+            final Module world;
+            if (options.originalFilename.toLowerCase(Locale.US).endsWith(".dsh")) {
+                Path directory = Paths.get(options.originalFilename).getParent();
+                DashOptions.dashModelLocation = directory.toString();
+                DashModule dash = DashUtil.parseEverything_fromFileDash(rep, map, options.originalFilename);
+                DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
+                DashModule alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
+                world = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);
+            } else {
+                world = CompUtil.parseEverything_fromFile(rep, map, options.originalFilename, resolutionMode);
+            }
             final List<Sig> sigs = world.getAllReachableSigs();
             final ConstList<Command> cmds = world.getAllCommands();
             cb(out, "warnings", bundleWarningNonFatal);

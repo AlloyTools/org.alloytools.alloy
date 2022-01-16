@@ -74,6 +74,8 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -179,6 +181,13 @@ import edu.mit.csail.sdg.translator.A4Tuple;
 import edu.mit.csail.sdg.translator.A4TupleSet;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 
+import ca.uwaterloo.watform.parser.DashModule;
+import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.transform.CoreDashToAlloy;
+import ca.uwaterloo.watform.transform.DashToCoreDash;
+import ca.uwaterloo.watform.parser.DashModuleToString;
+import ca.uwaterloo.watform.parser.DashOptions;
+
 /**
  * Simple graphical interface for accessing various features of the analyzer.
  * <p>
@@ -239,7 +248,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private JToolBar              toolbar;
 
     /** The various toolbar buttons. */
-    private JButton               runbutton, stopbutton, showbutton;
+    private JButton               runbutton, stopbutton, showbutton, translatebutton;
 
     /** The Splitpane. */
     private JSplitPane            splitpane;
@@ -404,6 +413,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         else
             frame.setTitle("Alloy Analyzer " + Version.getShortversion());
         toolbar.setBorder(new OurBorder(false, false, text.count() <= 1, false));
+        translatebutton.setVisible(text.get().isEditingDash());
         int c = t.getCaret();
         int y = t.getLineOfOffset(c) + 1;
         int x = c - t.getLineStartOffset(y - 1) + 1;
@@ -415,7 +425,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Helper method that returns a hopefully very short name for a file name.
      */
     public static String slightlyShorterFilename(String name) {
-        if (name.toLowerCase(Locale.US).endsWith(".als")) {
+        if (name.toLowerCase(Locale.US).endsWith(".als")){
             int i = name.lastIndexOf('/');
             if (i >= 0)
                 name = name.substring(i + 1);
@@ -423,6 +433,14 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (i >= 0)
                 name = name.substring(i + 1);
             return name.substring(0, name.length() - 4);
+        } else if (name.toLowerCase(Locale.US).endsWith(".dsh")) {
+            int i = name.lastIndexOf('/');
+            if (i >= 0)
+                name = name.substring(i + 1);
+            i = name.lastIndexOf('\\');
+            if (i >= 0)
+                name = name.substring(i + 1);
+            return "(dsh) " + name.substring(0, name.length() - 4);
         } else if (name.toLowerCase(Locale.US).endsWith(".xml")) {
             int i = name.lastIndexOf('/');
             if (i > 0)
@@ -471,7 +489,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
         Util.copy(frame, true, false, platformBinary, arch + "/libminisat.so", arch + "/libminisatx1.so", arch + "/libminisat.jnilib", arch + "/libminisat.dylib", arch + "/libminisatprover.so", arch + "/libminisatproverx1.so", arch + "/libminisatprover.jnilib", arch + "/libminisatprover.dylib", arch + "/libzchaff.so", arch + "/libzchaffmincost.so", arch + "/libzchaffx1.so", arch + "/libzchaff.jnilib", arch + "/liblingeling.so", arch + "/liblingeling.dylib", arch + "/liblingeling.jnilib", arch + "/plingeling", arch + "/libglucose.so", arch + "/libglucose.dylib", arch + "/libglucose.jnilib", arch + "/libcryptominisat.so", arch + "/libcryptominisat.la", arch + "/libcryptominisat.dylib", arch + "/libcryptominisat.jnilib", arch + "/berkmin", arch + "/spear", arch + "/cryptominisat", arch + "/electrod");
         Util.copy(frame, false, false, platformBinary, arch + "/minisat.dll", arch + "/cygminisat.dll", arch + "/libminisat.dll.a", arch + "/minisatprover.dll", arch + "/cygminisatprover.dll", arch + "/libminisatprover.dll.a", arch + "/glucose.dll", arch + "/cygglucose.dll", arch + "/libglucose.dll.a", arch + "/zchaff.dll", arch + "/berkmin.exe", arch + "/spear.exe", arch + "/electrod.exe");
         // Copy the model files
-        Util.copy(frame, false, true, alloyHome(frame), "models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als", "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als", "models/examples/temporal/buffer.als", "models/examples/temporal/leader.als", "models/examples/temporal/leader_events.als", "models/examples/temporal/trash.als");
+        Util.copy(frame, false, true, alloyHome(frame),"models/book/appendixA/addressBook1.als", "models/book/appendixA/addressBook2.als", "models/book/appendixA/barbers.als", "models/book/appendixA/closure.als", "models/book/appendixA/distribution.als", "models/book/appendixA/phones.als", "models/book/appendixA/prison.als", "models/book/appendixA/properties.als", "models/book/appendixA/ring.als", "models/book/appendixA/spanning.als", "models/book/appendixA/tree.als", "models/book/appendixA/tube.als", "models/book/appendixA/undirected.als", "models/book/appendixE/hotel.thm", "models/book/appendixE/p300-hotel.als", "models/book/appendixE/p303-hotel.als", "models/book/appendixE/p306-hotel.als", "models/book/chapter2/addressBook1a.als", "models/book/chapter2/addressBook1b.als", "models/book/chapter2/addressBook1c.als", "models/book/chapter2/addressBook1d.als", "models/book/chapter2/addressBook1e.als", "models/book/chapter2/addressBook1f.als", "models/book/chapter2/addressBook1g.als", "models/book/chapter2/addressBook1h.als", "models/book/chapter2/addressBook2a.als", "models/book/chapter2/addressBook2b.als", "models/book/chapter2/addressBook2c.als", "models/book/chapter2/addressBook2d.als", "models/book/chapter2/addressBook2e.als", "models/book/chapter2/addressBook3a.als", "models/book/chapter2/addressBook3b.als", "models/book/chapter2/addressBook3c.als", "models/book/chapter2/addressBook3d.als", "models/book/chapter2/theme.thm", "models/book/chapter4/filesystem.als", "models/book/chapter4/grandpa1.als", "models/book/chapter4/grandpa2.als", "models/book/chapter4/grandpa3.als", "models/book/chapter4/lights.als", "models/book/chapter5/addressBook.als", "models/book/chapter5/lists.als", "models/book/chapter5/sets1.als", "models/book/chapter5/sets2.als", "models/book/chapter6/hotel.thm", "models/book/chapter6/hotel1.als", "models/book/chapter6/hotel2.als", "models/book/chapter6/hotel3.als", "models/book/chapter6/hotel4.als", "models/book/chapter6/mediaAssets.als", "models/book/chapter6/memory/abstractMemory.als", "models/book/chapter6/memory/cacheMemory.als", "models/book/chapter6/memory/checkCache.als", "models/book/chapter6/memory/checkFixedSize.als", "models/book/chapter6/memory/fixedSizeMemory.als", "models/book/chapter6/memory/fixedSizeMemory_H.als", "models/book/chapter6/ringElection.thm", "models/book/chapter6/ringElection1.als", "models/book/chapter6/ringElection2.als", "models/examples/algorithms/dijkstra.als", "models/examples/algorithms/dijkstra.thm", "models/examples/algorithms/messaging.als", "models/examples/algorithms/messaging.thm", "models/examples/algorithms/opt_spantree.als", "models/examples/algorithms/opt_spantree.thm", "models/examples/algorithms/peterson.als", "models/examples/algorithms/ringlead.als", "models/examples/algorithms/ringlead.thm", "models/examples/algorithms/s_ringlead.als", "models/examples/algorithms/stable_mutex_ring.als", "models/examples/algorithms/stable_mutex_ring.thm", "models/examples/algorithms/stable_orient_ring.als", "models/examples/algorithms/stable_orient_ring.thm", "models/examples/algorithms/stable_ringlead.als", "models/examples/algorithms/stable_ringlead.thm", "models/examples/case_studies/INSLabel.als", "models/examples/case_studies/chord.als", "models/examples/case_studies/chord2.als", "models/examples/case_studies/chordbugmodel.als", "models/examples/case_studies/com.als", "models/examples/case_studies/firewire.als", "models/examples/case_studies/firewire.thm", "models/examples/case_studies/ins.als", "models/examples/case_studies/iolus.als", "models/examples/case_studies/sync.als", "models/examples/case_studies/syncimpl.als", "models/examples/puzzles/farmer.als", "models/examples/puzzles/farmer.thm", "models/examples/puzzles/handshake.als", "models/examples/puzzles/handshake.thm", "models/examples/puzzles/hanoi.als", "models/examples/puzzles/hanoi.thm", "models/examples/systems/file_system.als", "models/examples/systems/file_system.thm", "models/examples/systems/javatypes_soundness.als", "models/examples/systems/lists.als", "models/examples/systems/lists.thm", "models/examples/systems/marksweepgc.als", "models/examples/systems/views.als", "models/examples/toys/birthday.als", "models/examples/toys/birthday.thm", "models/examples/toys/ceilingsAndFloors.als", "models/examples/toys/ceilingsAndFloors.thm", "models/examples/toys/genealogy.als", "models/examples/toys/genealogy.thm", "models/examples/toys/grandpa.als", "models/examples/toys/grandpa.thm", "models/examples/toys/javatypes.als", "models/examples/toys/life.als", "models/examples/toys/life.thm", "models/examples/toys/numbering.als", "models/examples/toys/railway.als", "models/examples/toys/railway.thm", "models/examples/toys/trivial.als", "models/examples/tutorial/farmer.als",
+                    "models/util/boolean.als", "models/util/graph.als", "models/util/integer.als", "models/util/natural.als", "models/util/ordering.als", "models/util/relation.als", "models/util/seqrel.als", "models/util/sequence.als", "models/util/sequniv.als", "models/util/ternary.als", "models/util/time.als", "models/util/ctl.als", "models/util/stepUtil.als",
+                    "models/examples/temporal/buffer.als", "models/examples/temporal/leader.als", "models/examples/temporal/leader_events.als", "models/examples/temporal/trash.als");
         // Record the locations
         System.setProperty("alloy.theme0", alloyHome(frame) + fs + "models");
         System.setProperty("alloy.home", alloyHome(frame));
@@ -745,6 +765,16 @@ public final class SimpleGUI implements ComponentListener, Listener {
         return wrapMe();
     }
 
+    /** This method performs File->New Dash Model. */
+    private Runner doNewDash() {
+        if (!wrap) {
+            text.newtab(null, true);
+            notifyChange();
+            doShow();
+        }
+        return wrapMe();
+    }
+
     /** This method performs File->Open. */
     private Runner doOpen() {
         if (wrap)
@@ -770,8 +800,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
 
     private File getFile(String home) {
         File file = OurDialog.askFile(frame, true, home, new String[] {
-                                                                       ".als", ".md", "*"
-        }, "Alloy (.als) or Markdown (.md) files");
+                                                                       ".als", ".dsh", ".md", "*"
+        }, "Alloy (.als), Dash (.dsh) or Markdown (.md) files");
         return file;
     }
 
@@ -1075,16 +1105,53 @@ public final class SimpleGUI implements ComponentListener, Listener {
         try {
             wrap = true;
             runmenu.removeAll();
-            menuItem(runmenu, "Execute Latest Command", 'E', 'E', doExecuteLatest());
-            runmenu.add(new JSeparator());
-            menuItem(runmenu, "Show Latest Instance", 'L', 'L', doShowLatest(), latestInstance.length() > 0);
-            menuItem(runmenu, "Show Metamodel", 'M', 'M', doShowMetaModel());
-            if (Version.experimental)
-                menuItem(runmenu, "Show Parse Tree", 'P', doShowParseTree());
-            menuItem(runmenu, "Open Evaluator", 'V', doLoadEvaluator());
+            if (text.get().isEditingDash()) {
+                menuItem(runmenu, "Execute Dash", 'E', 'E', doExecuteLatest());
+                menuItem(runmenu, "Translate", 'T', 'T', doTranslate());
+            } else {
+                menuItem(runmenu, "Execute Latest Command", 'E', 'E', doExecuteLatest());
+                runmenu.add(new JSeparator());
+                menuItem(runmenu, "Show Latest Instance", 'L', 'L', doShowLatest(), latestInstance.length() > 0);
+                menuItem(runmenu, "Show Metamodel", 'M', 'M', doShowMetaModel());
+                if (Version.experimental)
+                    menuItem(runmenu, "Show Parse Tree", 'P', doShowParseTree());
+                menuItem(runmenu, "Open Evaluator", 'V', doLoadEvaluator());
+            }
         } finally {
             wrap = false;
         }
+
+        if (text.get().isEditingDash()) {
+            commands = null;
+            try {
+                String actual = text.get().getFilename();
+                Path path = Paths.get(actual);
+                Path fileName = path.getFileName();
+                Path directory = path.getParent();
+                DashOptions.outputDir = (directory.toString() + '/' + fileName.toString().substring(0, fileName.toString().indexOf(".")));
+                if (directory.toString() != null)
+                    DashOptions.dashModelLocation = directory.toString();
+                if (text.get().isFile()) {
+                    DashUtil.parseEverything_fromFileDash(A4Reporter.NOP, null, actual);
+                } else {
+                    DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, text.get().getText());
+                }
+            } catch (Err e) {
+                runmenu.getItem(0).setEnabled(false);
+                runmenu.getItem(1).setEnabled(false);
+                text.shade(new Pos(text.get().getFilename(), e.pos.x, e.pos.y, e.pos.x2, e.pos.y2));
+                if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
+                    log.logRed("Fatal Exception!" + e.dump() + "\n\n");
+                else
+                    log.logRed(e.toString() + "\n\n");
+            } catch (Throwable e) {
+                runmenu.getItem(0).setEnabled(false);
+                runmenu.getItem(1).setEnabled(false);
+                log.logRed("Cannot parse the model.\n" + e.toString() + "\n\n");
+            }
+            return null;
+        }
+
         List<Command> cp = commands;
         if (cp == null) {
             try {
@@ -1174,15 +1241,17 @@ public final class SimpleGUI implements ComponentListener, Listener {
         // To update the accelerator to point to the command actually chosen
         doRefreshRun();
         OurUtil.enableAll(runmenu);
-        if (commands == null)
-            return null;
-        if (commands.size() == 0 && index != -2 && index != -3) {
-            log.logRed("There are no commands to execute.\n\n");
-            return null;
-        }
         int i = index;
-        if (i >= commands.size())
-            i = commands.size() - 1;
+        if (!text.get().isEditingDash()) {
+            if (commands == null)
+                return null;
+            if (commands.size() == 0 && index != -2 && index != -3) {
+                log.logRed("There are no commands to execute.\n\n");
+                return null;
+            }
+            if (i >= commands.size())
+                i = commands.size() - 1;
+        }
         SimpleCallback1 cb = new SimpleCallback1(this, null, log, VerbosityPref.get().ordinal(), latestAlloyVersionName, latestAlloyVersion);
         SimpleTask1 task = new SimpleTask1();
         A4Options opt = new A4Options();
@@ -1208,6 +1277,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
+            translatebutton.setEnabled(false);
             stopbutton.setVisible(true);
             int newmem = SubMemory.get(), newstack = SubStack.get();
             if (newmem != subMemoryNow || newstack != subStackNow)
@@ -1247,6 +1317,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         runmenu.setEnabled(true);
         runbutton.setVisible(true);
         showbutton.setEnabled(true);
+        translatebutton.setEnabled(true);
         stopbutton.setVisible(false);
         if (latestAutoInstance.length() > 0) {
             String f = latestAutoInstance;
@@ -1268,6 +1339,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
             return wrapMe();
         doRefreshRun();
         OurUtil.enableAll(runmenu);
+        if (text.get().isEditingDash()) {
+            return doRun(0);
+        }
         if (commands == null)
             return null;
         int n = commands.size();
@@ -1326,6 +1400,51 @@ public final class SimpleGUI implements ComponentListener, Listener {
             log.logRed("No previous instances are available for viewing.\n\n");
         else
             doVisualize("XML: " + latestInstance);
+        return null;
+    }
+
+    /** This method translates to Alloy. */
+    private Runner doTranslate() {
+        if (wrap)
+            return wrapMe();
+        doRefreshRun();
+        OurUtil.enableAll(runmenu);
+        try {
+            String actual = text.get().getFilename();
+            Path path = Paths.get(actual);
+            Path fileName = path.getFileName();
+            Path directory = path.getParent();
+            DashOptions.outputDir = (directory.toString() + '/' + fileName.toString().substring(0, fileName.toString().indexOf(".")));
+            if (directory.toString() != null)
+                    DashOptions.dashModelLocation = directory.toString();
+            DashModule dash;
+            if (text.get().isFile()) {
+                dash = DashUtil.parseEverything_fromFileDash(A4Reporter.NOP, null, actual);
+            } else {
+                dash = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, text.get().getText());
+            }
+            DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
+            DashModule alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
+            alloy = DashModule.resolveAll(A4Reporter.NOP, alloy);
+            if (text.get().isFile()) {
+                DashModuleToString.toString(alloy);
+                text.newtab(DashOptions.outputDir + ".als");
+            } else {
+                text.newtab(null);
+                text.get().setText(DashModuleToString.getString(alloy));
+            }
+        } catch (Err e) {
+            runmenu.getItem(0).setEnabled(false);
+            text.shade(new Pos(text.get().getFilename(), e.pos.x, e.pos.y, e.pos.x2, e.pos.y2));
+            if (AlloyCore.isDebug() && VerbosityPref.get() == Verbosity.FULLDEBUG)
+                log.logRed("Fatal Exception!" + e.dump() + "\n\n");
+            else
+                log.logRed(e.toString() + "\n\n");
+        } catch (Throwable e) {
+            log.logRed("Cannot translate the model.\n" + e.toString() + "\n\n");
+            return null;
+        }
+        notifyChange();
         return null;
     }
 
@@ -1776,8 +1895,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (wrap)
             return wrapMe(arg);
         String f = Util.canon(arg);
-        if (!text.newtab(f))
-            return null;
+        if (f.toLowerCase(Locale.US).endsWith(".dsh")) { 
+            if (!text.newtab(f, true))
+                return null;
+        } else {
+            if (!text.newtab(f))
+                return null;
+        }
         if (text.get().isFile())
             addHistory(f);
         doShow();
@@ -1817,6 +1941,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             runmenu.setEnabled(false);
             runbutton.setVisible(false);
             showbutton.setEnabled(false);
+            translatebutton.setEnabled(false);
             stopbutton.setVisible(true);
             return arg[0];
         }
@@ -2203,6 +2328,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             toolbar.add(stopbutton = OurUtil.button("Stop", "Stops the current analysis", "images/24_execute_abort2.gif", doStop(2)));
             stopbutton.setVisible(false);
             toolbar.add(showbutton = OurUtil.button("Show", "Shows the latest instance", "images/24_graph.gif", doShowLatest()));
+            toolbar.add(translatebutton = OurUtil.button("Translate", "Translate the dash code to alloy", "images/24_graph.gif", doTranslate()));
+            translatebutton.setVisible(false);
             toolbar.add(Box.createHorizontalGlue());
             toolbar.setBorder(new OurBorder(false, false, false, false));
         } finally {
@@ -2317,8 +2444,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 File file = new File(f);
                 if (file.exists() && file.isFile())
                     doOpenFile(file.getPath());
+            } else if (f.toLowerCase(Locale.US).endsWith(".dsh")) {
+                File file = new File(f);
+                if (file.exists() && file.isFile())
+                    doOpenFile(file.getPath());
             }
-
         // Update the title and status bar
         notifyChange();
         text.get().requestFocusInWindow();

@@ -42,8 +42,9 @@ have been parsed. This internal data structure is stored within containers insid
 later accessed by other files that are responsible for converting a Dash model to an Alloy model
 
 **org.alloytools.alloy.dash/src/main/java/ca/uwaterloo/watform/parser/DashModuleToString:** This is used to print out
-an Alloy AST after a CoreDash model has been converted to an Alloy AST. It will iterate through all the signatures,
+an Alloy AST after a CoreDash model has been converted to an Alloy AST. It will iterate through all the openers, signatures,
 fucntions, predicates, commands in a DashModule containing an Alloy AST and print them to the console.
+Any labels with paths will have paths removed (`this/name` becomes `name`) and the alloy string will be pretty printed.
 
 **org.alloytools.alloy.dash/src/main/java/ca/uwaterloo/watform/parser/DashValidation:** This is used to check
 for well-formedness conditions of a Dash model. It is called immediately after the internal data structure
@@ -71,6 +72,26 @@ facts and commands needed to create an Alloy instance from the Alloy AST by pass
 Alloy makes use of a CompModule object to store the Alloy AST, but Dash uses a DashModule instead as functions 
 within a CompModule are inaccessible. 
 
+# Integration with Alloy Analyzer
+---
+
+The modifications to Alloy GUI files are described below:
+
+**org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4whole/SimpleGUI:**
+- Added `doTranslate` to translate .dsh file and open a new tab with translated alloy. The corresponding translate button only appears when editing dash.
+- Added `doNewDash()` for opening new tab in "dash mode" (currently unused)
+- Modified `doRefreshRun()` to only display dash options in the run menu, and appropriately parse dash and log errors.
+- Misc changes to add .dsh option when opening and saving files.
+
+**org.alloytools.alloy.application/src/main/java/edu/mit/csail/sdg/alloy4whole/SimpleReporter:**
+- Modified `SimpleTask1`'s run function to handle dash code.
+
+**org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/alloy4/OurSyntaxWidget:**
+- Added `editingDash` field to indicate if the textbox is editing dash
+- Misc changes to name add .dsh extension to untitled dash files
+
+**org.alloytools.alloy.core/src/main/java/edu/mit/csail/sdg/alloy4/OurTabbedSyntaxWidget:**
+- Modified `newTab()` function to create new `OurSyntaxWidgets` in "Dash Mode"
 
 # Building the project
 ---
