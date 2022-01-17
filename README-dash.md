@@ -119,6 +119,19 @@ an output path where the CoreDash print will be stored. Please specify the neces
 information, and a successful parse/validation of the input Dash model will result in
 the printing of the CoreDash version of that model.
 
+If the user wishes to use the Alloy Analyzer to create or open Dash models, then the following command should be run:
+
+```java -jar org.alloytools.alloy.dist/target/org.alloytools.alloy.dist.jar```
+
+This will open the Alloy Analyzer. The user can then click on the **Open** option in the Toolbar to open a Dash (.dsh) file, or 
+use the **File->New Dash** option in the Menu Bar to open an empty Dash (.dsh) file.
+
+This will turn on the **Dash** mode in the Alloy Analyzer. If the user has a valid Dash model in the text editor and clicks on **Translate** in
+the Toolbar, the Dash model will be converted to Alloy and shown to the user in a new window. It can then be checked using the **Execute**
+button.
+
+
+
 
 
 
