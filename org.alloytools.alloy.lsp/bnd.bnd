@@ -1,0 +1,14 @@
+
+-buildpath: \
+    org.alloytools.alloy.application;version=latest,\
+    org.alloytools.alloy.core;version=latest,\
+    org.eclipse.lsp4j,\
+    org.eclipse.lsp4j.jsonrpc,\
+    com.google.gson,\
+    org.eclipse.equinox.common, \
+    org.apache.commons.io
+
+-testpath: \
+    biz.aQute.wrapper.junit, \
+    biz.aQute.wrapper.hamcrest, \
+    org.sat4j.core

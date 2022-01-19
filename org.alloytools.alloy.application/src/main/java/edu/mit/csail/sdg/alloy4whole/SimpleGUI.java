@@ -600,7 +600,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Find a temporary directory to store Alloy files; it's guaranteed to be a
      * canonical absolute path.
      */
-    private static synchronized String alloyHome(JFrame parent) {
+    public static synchronized String alloyHome(JFrame parent) {
         if (alloyHome != null)
             return alloyHome;
         String temp = System.getProperty("java.io.tmpdir");
@@ -629,7 +629,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
      * Create an empty temporary directory for use, designate it "deleteOnExit",
      * then return it. It is guaranteed to be a canonical absolute path.
      */
-    private static String maketemp(JFrame parent) {
+    public static String maketemp(JFrame parent) {
         Random r = new Random(new Date().getTime());
         while (true) {
             int i = r.nextInt(1000000);
@@ -1853,7 +1853,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /** Converts an A4Solution into a SimInstance object. */
-    private static SimInstance convert(Module root, A4Solution ans) throws Err {
+    public static SimInstance convert(Module root, A4Solution ans) throws Err {
         SimInstance ct = new SimInstance(root, ans.getBitwidth(), ans.getMaxSeq());
         for (Sig s : ans.getAllReachableSigs()) {
             if (!s.builtin)

@@ -4,13 +4,13 @@ JPM-Command: alloy
 
 -buildpath: \
 	org.alloytools.alloy.application,\
-    org.alloytools.alloy.core,\
+	org.alloytools.alloy.core,\
 	org.alloytools.alloy.extra,\
     org.alloytools.api,\
 	aQute.libg, \
     slf4j.api, \
-    slf4j.simple
-	
+    slf4j.simple,\
+	org.alloytools.alloy.lsp
 
 -sources: false
 -conditionalpackage: aQute.*, org.apache.commmons.cli, slf4j*
@@ -20,6 +20,7 @@ JPM-Command: alloy
 	@${repo;org.alloytools.alloy.application}, \
 	@${repo;org.alloytools.alloy.core}, \
 	@${repo;org.alloytools.alloy.extra}, \
+    @${repo;org.alloytools.alloy.lsp}, \
 	@${repo;org.alloytools:pardinus.core}, \
 	@${repo;org.alloytools:pardinus.nativesat}, \
 	@${repo;org.sat4j.core}, \
@@ -27,6 +28,11 @@ JPM-Command: alloy
 	@${repo;org.sat4j.pb}, \
     @${repo;slf4j.api}, \
     @${repo;slf4j.simple}, \
+	@${repo;org.eclipse.lsp4j}, \
+    @${repo;org.eclipse.lsp4j.jsonrpc}, \
+    @${repo;com.google.gson}, \
+    @${repo;org.eclipse.equinox.common}, \
+    @${repo;org.apache.commons.io}, \
 	LICENSES
 
 -dependson: *

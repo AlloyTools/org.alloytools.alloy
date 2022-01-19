@@ -12,6 +12,7 @@ javac.source:           1.8
 javac.target:           1.8
 javac.compliance:       1.8
 javac.debug:            on
+-sources                false
 
 Git-Descriptor:         	${system-allow-fail;git describe --dirty --always}
 Git-SHA:                	${system-allow-fail;git rev-list -1 HEAD}
@@ -27,6 +28,7 @@ Bundle-Version:         ${base.version}.${tstamp}
 # Remove -SNAPSHOT for release version
 -pom:                   version=${base.version}-SNAPSHOT
 -groupid:               org.alloytools
+-includepackage         *;from:=classes
 
 
 #
