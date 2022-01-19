@@ -546,6 +546,16 @@ public class A4Preferences {
     public static final BooleanPref           NoOverflow             = new BooleanPref("NoOverflow", "Prevent overflows", true);
 
     /**
+     * True if a Dash model should have their variables unchanged
+     */
+    public static final BooleanPref           VariablesUnchanged     = new BooleanPref("VariablesUnchanged", "Dash: Variables Unchanged", true);
+
+    /**
+     * True if a Dash model should have their variables unchanged
+     */
+    public static final BooleanPref           AssumeSingleInput      = new BooleanPref("AssumeSingleInput", "Dash: Assume Single Input");
+
+    /**
      * The latest X coordinate of the Alloy Analyzer's main window.
      */
     public static final IntPref               AnalyzerX              = new IntPref("AnalyzerX", 0, -1, 65535);
@@ -639,6 +649,7 @@ public class A4Preferences {
                                                                      };
 
     public enum Decompose {
+
                            /** regular amalgamated strategy. */
                            OFF("0", "batch"),
                            /** hybrid strategy, competitive parallel vs amalgamated. */
@@ -647,7 +658,7 @@ public class A4Preferences {
                            PARALLEL("2", "parallel");
 
         /** Returns true if it is greater than or equal to "other". */
-        public boolean geq(Decompose other) {
+        public boolean get(Decompose other) {
             return ordinal() >= other.ordinal();
         }
 
@@ -734,6 +745,7 @@ public class A4Preferences {
                                                                           };
 
     public enum Verbosity {
+
                            /** Level 0. */
                            DEFAULT("0", "low"),
                            /** Level 1. */

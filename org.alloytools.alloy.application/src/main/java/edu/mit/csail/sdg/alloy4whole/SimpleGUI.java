@@ -20,6 +20,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerWidth;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerX;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AnalyzerY;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AntiAlias;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AssumeSingleInput;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.AutoVisualize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreGranularity;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.CoreMinimization;
@@ -42,6 +43,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.SubStack;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SyntaxDisabled;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.TabSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Unrolls;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.VariablesUnchanged;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.VerbosityPref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.WarningNonfatal;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Welcome;
@@ -1270,6 +1272,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.solver = Solver.get();
         task.bundleIndex = i;
         task.bundleWarningNonFatal = WarningNonfatal.get();
+        task.bundleVariablesUnchanged = VariablesUnchanged.get();
+        task.bundleAssumeSingleInput = AssumeSingleInput.get();
         task.map = text.takeSnapshot();
         task.options = opt.dup();
         task.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
@@ -1578,6 +1582,13 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 addToMenu(optmenu, ImplicitThis, NoOverflow, InferPartialInstance);
             }
 
+            optmenu.addSeparator();
+
+            if (text.get().isEditingDash()) {
+                addToMenu(optmenu, VariablesUnchanged);
+                addToMenu(optmenu, AssumeSingleInput);
+            }
+
         } finally {
             wrap = false;
         }
@@ -1617,6 +1628,24 @@ public final class SimpleGUI implements ComponentListener, Listener {
     private Runner doOptAntiAlias() {
         if (!wrap) {
             OurAntiAlias.enableAntiAlias(AntiAlias.get());
+        }
+        return wrapMe();
+    }
+
+    /** This method toggles the "Variables Unchanged" checkbox. */
+    private Runner doUnchangedVariables() {
+        if (!wrap) {
+            DashOptions.variablesUnchanged = (VariablesUnchanged.get());
+            System.out.println("Changing Variable Unchanged to: " + DashOptions.variablesUnchanged);
+        }
+        return wrapMe();
+    }
+
+    /** This method toggles the "Variables Unchanged" checkbox. */
+    private Runner doAssumeSingleInput() {
+        if (!wrap) {
+            DashOptions.assumeSingleInput = (AssumeSingleInput.get());
+            System.out.println("Changing Single Input to: " + DashOptions.assumeSingleInput);
         }
         return wrapMe();
     }
@@ -2322,6 +2351,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (!Util.onMac())
                 toolbar.setBackground(background);
             toolbar.add(OurUtil.button("New", "Starts a new blank model", "images/24_new.gif", doNew()));
+            toolbar.add(OurUtil.button("New Dash", "Starts a new blank Dash model", "images/24_new.gif", doNewDash()));
             toolbar.add(OurUtil.button("Open", "Opens an existing model", "images/24_open.gif", doOpen()));
             toolbar.add(OurUtil.button("Reload", "Reload all the models from disk", "images/24_reload.gif", doReloadAll()));
             toolbar.add(OurUtil.button("Save", "Saves the current model", "images/24_save.gif", doSave()));
@@ -2329,7 +2359,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             toolbar.add(stopbutton = OurUtil.button("Stop", "Stops the current analysis", "images/24_execute_abort2.gif", doStop(2)));
             stopbutton.setVisible(false);
             toolbar.add(showbutton = OurUtil.button("Show", "Shows the latest instance", "images/24_graph.gif", doShowLatest()));
-            toolbar.add(translatebutton = OurUtil.button("Translate", "Translate the dash code to alloy", "images/24_graph.gif", doTranslate()));
+            toolbar.add(translatebutton = OurUtil.button("Translate", "Translate the Dash model to Alloy", "images/24_graph.gif", doTranslate()));
             translatebutton.setVisible(false);
             toolbar.add(Box.createHorizontalGlue());
             toolbar.setBorder(new OurBorder(false, false, false, false));
@@ -2408,6 +2438,8 @@ public final class SimpleGUI implements ComponentListener, Listener {
             wrap = true;
             prefDialog.addChangeListener(wrapToChangeListener(doOptRefreshFont()), FontName, FontSize, TabSize);
             prefDialog.addChangeListener(wrapToChangeListener(doOptAntiAlias()), AntiAlias);
+            prefDialog.addChangeListener(wrapToChangeListener(doUnchangedVariables()), VariablesUnchanged);
+            prefDialog.addChangeListener(wrapToChangeListener(doAssumeSingleInput()), AssumeSingleInput);
             prefDialog.addChangeListener(wrapToChangeListener(doOptSyntaxHighlighting()), SyntaxDisabled);
             prefDialog.addChangeListener(wrapToChangeListener(doLookAndFeel()), LAF);
         } finally {

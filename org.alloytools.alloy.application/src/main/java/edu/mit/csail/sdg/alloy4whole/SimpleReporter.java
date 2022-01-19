@@ -28,17 +28,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.Locale;
+
+import org.alloytools.alloy.core.AlloyCore;
 
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.transform.CoreDashToAlloy;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
-import org.alloytools.alloy.core.AlloyCore;
-
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstMap;
@@ -697,6 +697,8 @@ final class SimpleReporter extends A4Reporter {
         public A4Options          options;
         public String             tempdir;
         public boolean            bundleWarningNonFatal;
+        public boolean            bundleVariablesUnchanged;
+        public boolean            bundleAssumeSingleInput;
         public int                bundleIndex;
         public int                resolutionMode;
         public Map<String,String> map;

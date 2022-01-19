@@ -54,10 +54,11 @@ public class CoreDashToAlloy {
         createPathAST(module);
         createModelDefFact(module);
         createInvariantFact(module);
-        if (DashOptions.hasEvents) createSingleStepFact(module);
+        
+        if (DashOptions.hasEvents && DashOptions.assumeSingleInput) createSingleStepFact(module);
         
         return module;
-    }
+    }  
 
     /* Used by other functions to help create signature ASTs */
     public static void addSigAST(DashModule module, String sigName, ExprVar isExtends, List<ExprVar> sigParent, List<Decl> decls, Pos isAbstract, Pos isLone, Pos isOne, Pos isSome, Pos isPrivate) {
