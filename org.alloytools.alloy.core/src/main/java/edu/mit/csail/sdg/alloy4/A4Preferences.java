@@ -548,12 +548,12 @@ public class A4Preferences {
     /**
      * True if a Dash model should have their variables unchanged
      */
-    public static final BooleanPref           VariablesUnchanged     = new BooleanPref("VariablesUnchanged", "Dash: Variables Unchanged", true);
+    public static final BooleanPref           VariablesUnchanged     = new BooleanPref("VariablesUnchanged", "Dash: Variables Unchanged", false);
 
     /**
      * True if a Dash model should have their variables unchanged
      */
-    public static final BooleanPref           AssumeSingleInput      = new BooleanPref("AssumeSingleInput", "Dash: Assume Single Input");
+    public static final BooleanPref           AssumeSingleInput      = new BooleanPref("AssumeSingleInput", "Dash: Assume Single Input", true);
 
     /**
      * The latest X coordinate of the Alloy Analyzer's main window.
