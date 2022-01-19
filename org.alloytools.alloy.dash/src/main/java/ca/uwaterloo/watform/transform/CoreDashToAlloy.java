@@ -54,6 +54,7 @@ public class CoreDashToAlloy {
         createPathAST(module);
         createModelDefFact(module);
         createInvariantFact(module);
+        if (DashOptions.hasEvents) createSingleStepFact(module);
         
         return module;
     }
@@ -62,7 +63,7 @@ public class CoreDashToAlloy {
     public static void addSigAST(DashModule module, String sigName, ExprVar isExtends, List<ExprVar> sigParent, List<Decl> decls, Pos isAbstract, Pos isLone, Pos isOne, Pos isSome, Pos isPrivate) {
         module.addSig(sigName, isExtends, sigParent, decls, null, null, AttrType.ABSTRACT.makenull(isAbstract), AttrType.LONE.makenull(isLone), AttrType.ONE.makenull(isOne), AttrType.SOME.makenull(isSome), AttrType.PRIVATE.makenull(isPrivate));
     }
-
+    
     static void createTransitionsAST(DashModule module) {
         for (DashTrans transition : module.transitions.values()) {
             createPreConditionAST(transition, module);
@@ -72,6 +73,34 @@ public class CoreDashToAlloy {
             createSemanticsAST(transition, module);
         }
     }
+    
+    /* Create the single input assumption */
+    static void createSingleStepFact(DashModule module)
+    {
+    	System.out.println("Adding in Single Step Fact.");
+        // Creating the following expression: all s: Snapshot | lone (s.events & EnvironmentEvent)
+    	
+        List<Decl> decls = new ArrayList<Decl>();
+        List<ExprVar> a = new ArrayList<ExprVar>();
+        
+        Expr snapshot = ExprUnary.Op.ONE.make(null, ExprVar.make(null, "Snapshot"));
+        Expr s = ExprVar.make(null, "s");
+        Expr expression = null; //This is the final expression to be stored in the Fact AST
+        
+        /* Creating the following expression: lone (s.events & EnvironmentEvent) */
+        Expr rightQT = null;
+        Expr join = ExprBadJoin.make(null, null, s, ExprVar.make(null, "events")); // s.events
+        Expr rightBinary = ExprBinary.Op.INTERSECT.make(null, null, join, ExprVar.make(null, "EnvironmentEvent")); // s'.events & InternalEvent
+        rightQT = ExprUnary.Op.LONE.make(null, rightBinary); // no (s'.events & InternalEvent)
+        
+        /* Creating the following expression: all s: Snapshot | lone (s.events & EnvironmentEvent) */
+        a.add((ExprVar) s);
+        decls.add(new Decl(null, null, null, null, a, mult(snapshot))); //s: Snapshot
+        expression = ExprQt.Op.ALL.make(null, null, new ArrayList<Decl>(decls), rightQT); //all s: Snapshot | lone (s.events & EnvironmentEvent)
+        
+        module.addFact(null, "", expression);
+    }
+
 
     /*
      * Taken from the Dash.cup file. It is used for handling difficult parsing
@@ -368,10 +397,10 @@ public class CoreDashToAlloy {
         Expr sEvents = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "events"));
         Expr sPrimeEvents = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, "events"));
         ExprVar intEvent = ExprVar.make(null, "InternalEvent");
-        ExprVar extEvent = ExprVar.make(null, "ExternalEvent");
+        //ExprVar extEvent = ExprVar.make(null, "ExternalEvent");
         Expr expression = null;
 
-        Expr binaryGoTo = null;
+        //Expr binaryGoTo = null;
         /*
          * Creating the following expression: s'.conf = s.conf - sourceState +
          * destinationState
@@ -388,13 +417,18 @@ public class CoreDashToAlloy {
 
         /* Creating the following expression: AND[doexpr, doexpr, ..] */
         if (transition.doExpr != null && transition.doExpr.exprList != null) {
-            //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
-            for (String var : getUnchangedVars(transition.doExpr.exprList, getParentConcState(transition.parentState), module, transition)) {
-                Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)); //s'.variableParent_varName
-                Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //s'.variableParent_varName
-                Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
-                expression = ExprBinary.Op.AND.make(null, null, expression, binaryEquals);
-            }
+        	
+        	if (DashOptions.variablesUnchanged)
+        	{
+	            //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
+	            for (String var : getUnchangedVars(transition.doExpr.exprList, getParentConcState(transition.parentState), module, transition)) {
+	                Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)); //s'.variableParent_varName
+	                Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //s'.variableParent_varName
+	                Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
+	                expression = ExprBinary.Op.AND.make(null, null, expression, binaryEquals);
+	            }
+        	}
+            
             Expr modifiedExpr = getVarFromParentExpr(transition.doExpr.expr, getParentConcState(transition.parentState), module);
             expression = ExprBinary.Op.AND.make(null, null, expression, modifiedExpr);
         }
@@ -707,7 +741,7 @@ public class CoreDashToAlloy {
         Expr snapshot = ExprUnary.Op.ONE.make(null, ExprVar.make(null, "Snapshot"));
         Expr s = ExprVar.make(null, "s");
         Expr sPrime = ExprVar.make(null, "s_next");
-        Expr ssPrime = ExprBadJoin.make(null, null, s, sPrime);
+        //Expr ssPrime = ExprBadJoin.make(null, null, s, sPrime);
 
         Expr expression = null; //This is the final expression to be stored in the Fact AST
 

@@ -125,6 +125,13 @@ import javax.swing.text.html.StyleSheet;
 
 import org.alloytools.alloy.core.AlloyCore;
 
+import ca.uwaterloo.watform.parser.DashModule;
+import ca.uwaterloo.watform.parser.DashModuleToString;
+import ca.uwaterloo.watform.parser.DashOptions;
+import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.transform.CoreDashToAlloy;
+import ca.uwaterloo.watform.transform.DashToCoreDash;
+
 //import com.apple.eawt.Application;
 //import com.apple.eawt.ApplicationAdapter;
 //import com.apple.eawt.ApplicationEvent;
@@ -180,13 +187,6 @@ import edu.mit.csail.sdg.translator.A4SolutionReader;
 import edu.mit.csail.sdg.translator.A4Tuple;
 import edu.mit.csail.sdg.translator.A4TupleSet;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
-
-import ca.uwaterloo.watform.parser.DashModule;
-import ca.uwaterloo.watform.parser.DashUtil;
-import ca.uwaterloo.watform.transform.CoreDashToAlloy;
-import ca.uwaterloo.watform.transform.DashToCoreDash;
-import ca.uwaterloo.watform.parser.DashModuleToString;
-import ca.uwaterloo.watform.parser.DashOptions;
 
 /**
  * Simple graphical interface for accessing various features of the analyzer.
@@ -720,6 +720,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             wrap = true;
             filemenu.removeAll();
             menuItem(filemenu, "New", 'N', 'N', doNew());
+            menuItem(filemenu, "New Dash", 'D', 'D', doNewDash());
             menuItem(filemenu, "Open...", 'O', 'O', doOpen());
             if (!Util.onMac())
                 menuItem(filemenu, "Open Sample Models...", VK_ALT, 'O', doBuiltin());
@@ -1895,7 +1896,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         if (wrap)
             return wrapMe(arg);
         String f = Util.canon(arg);
-        if (f.toLowerCase(Locale.US).endsWith(".dsh")) { 
+        if (f.toLowerCase(Locale.US).endsWith(".dsh")) {
             if (!text.newtab(f, true))
                 return null;
         } else {
