@@ -78,7 +78,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  *           parallel problem)
  */
 
-final class SimpleReporter extends A4Reporter {
+public final class SimpleReporter extends A4Reporter {
 
     public static final class SimpleCallback1 implements WorkerCallback {
 
@@ -601,7 +601,7 @@ final class SimpleReporter extends A4Reporter {
     private int warn = 0;
 
     /** Task that performs solution enumeration. */
-    static final class SimpleTask2 implements WorkerTask {
+    public static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
         public int                      index            = -1; // [electrum] registers which iteration operation to perform
@@ -683,7 +683,7 @@ final class SimpleReporter extends A4Reporter {
     }
 
     /** Task that perform one command. */
-    static final class SimpleTask1 implements WorkerTask {
+    public static final class SimpleTask1 implements WorkerTask {
 
         private static final long serialVersionUID = 0;
         public A4Options          options;
