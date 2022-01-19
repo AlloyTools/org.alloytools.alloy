@@ -79,12 +79,12 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
         return service();
     }
 
-
-
     // LanguageClientAware
     @Override
     public void connect(LanguageClient client) {
         System.err.println("AlloyLanguageServer.connect() called");
+        Class< ? >[] interfaces = client.getClass().getInterfaces();
+
         this.client = (AlloyLanguageClient) client;
 
         if (this.alloyTextDocumentService != null) {
@@ -94,8 +94,8 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length == 2) {
-            int port = Integer.parseInt(args[1]);
+        if (args.length == 1) {
+            int port = Integer.parseInt(args[0]);
             InputStream inputStream;
             OutputStream outputStream;
             AlloyLanguageServer langserv = new AlloyLanguageServer();
@@ -113,7 +113,7 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
             }
         } else {
             AlloyLanguageServer server = new AlloyLanguageServer();
-            Launcher<LanguageClient> l = LSPLauncher.createServerLauncher(server, System.in, System.out);
+            Launcher<LanguageClient> l = new LSPLauncher.Builder<LanguageClient>().setLocalService(server).setRemoteInterface(AlloyLanguageClient.class).setInput(System.in).setOutput(System.out).create();
             server.connect(l.getRemoteProxy());
             Future< ? > startListening = l.startListening();
             startListening.get();

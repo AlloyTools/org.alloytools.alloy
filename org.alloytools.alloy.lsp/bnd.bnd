@@ -1,12 +1,14 @@
 
 -buildpath: \
-    org.alloytools.alloy.application;version=latest,\
-    org.alloytools.alloy.core;version=latest,\
-    org.eclipse.lsp4j,\
-    org.eclipse.lsp4j.jsonrpc,\
-    com.google.gson,\
-    org.eclipse.equinox.common, \
-    org.apache.commons.io
+	org.alloytools.alloy.application;version=latest,\
+	org.alloytools.alloy.core;version=latest,\
+	org.eclipse.lsp4j,\
+	org.eclipse.lsp4j.jsonrpc,\
+	com.google.gson,\
+	org.eclipse.equinox.common,\
+	org.apache.commons.io,\
+	org.alloytools.api,\
+	aQute.libg
 
 -testpath: \
     biz.aQute.wrapper.junit, \

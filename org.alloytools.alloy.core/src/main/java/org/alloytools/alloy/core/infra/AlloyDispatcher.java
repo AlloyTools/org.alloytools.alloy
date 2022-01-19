@@ -162,7 +162,7 @@ public class AlloyDispatcher extends ReporterAdapter {
                 return;
             }
 
-            log.info("selected main {} is with arguments {}", selected, arguments);
+            log.debug("selected main {} is with arguments {}", selected, arguments);
 
             String execute = cl.execute(selected.instance, selected.name, arguments);
             if (execute != null) {
