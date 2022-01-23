@@ -1356,8 +1356,8 @@ public final class DashModule extends Browsable implements Module {
      * state. The name of the conc state and the items inside the conc state are
      * passed in as arguments
      */
-    public void addTopLevelConcState(Pos pos, String name, List<Object> stateItems) {
-        DashConcState topLevelConcState = new DashConcState(pos, name, stateItems);
+    public void addTopLevelConcState(Pos pos, String name, List<Object> stateItems, ExprVar param) {
+        DashConcState topLevelConcState = new DashConcState(pos, name, stateItems, param);
         topLevelConcState.modifiedName = name;
 
         topLevelConcStates.put(topLevelConcState.modifiedName, topLevelConcState);
@@ -1421,7 +1421,7 @@ public final class DashModule extends Browsable implements Module {
 
         /*
          * Breakdown the AND expression (if it is an AND expr) into a list of
-         * expressions. This would make it easier to print each expression
+         * expressions. This makes it easier to print each expression
          */
         if (init.expr != null) {
             if (init.expr instanceof ExprUnary) {
@@ -1447,7 +1447,7 @@ public final class DashModule extends Browsable implements Module {
 
         /*
          * Breakdown the AND expression (if it is an AND expr) into a list of
-         * expressions. This would make it easier to print each expression
+         * expressions. This makes it easier to print each expression
          */
         if (invariant.expr != null) {
             if (invariant.expr instanceof ExprUnary) {

@@ -141,7 +141,7 @@ public final class VizGUI implements ComponentListener {
     private final JPopupMenu    projectionPopup;
 
     /** The buttons on the toolbar. */
-    private final JButton       projectionButton, openSettingsButton, closeSettingsButton, magicLayout,
+    private final JButton       projectionButton, openSettingsButton, dashThemeButton, closeSettingsButton, magicLayout,
                     loadSettingsButton, saveSettingsButton, saveAsSettingsButton, resetSettingsButton, updateSettingsButton,
                     openEvaluatorButton, closeEvaluatorButton, enumerateButton, vizButton, treeButton,
                     txtButton, tableButton, leftNavButton, rightNavButton, cnfgButton, forkButton, initButton, pathButton/*
@@ -705,6 +705,7 @@ public final class VizGUI implements ComponentListener {
             toolbar.add(closeSettingsButton = OurUtil.button("Close", "Close the theme customization panel", "images/24_settings_close2.gif", doCloseThemePanel()));
             toolbar.add(updateSettingsButton = OurUtil.button("Apply", "Apply the changes to the current theme", "images/24_settings_apply2.gif", doApply()));
             toolbar.add(openSettingsButton = OurUtil.button("Theme", "Open the theme customization panel", "images/24_settings.gif", doOpenThemePanel()));
+            toolbar.add(dashThemeButton = OurUtil.button("Dash Theme", "Change the theme to display Dash instances", "images/24_settings.gif", doDashTheme()));
             toolbar.add(magicLayout = OurUtil.button("Magic Layout", "Automatic theme customization (will reset current theme)", "images/24_settings_apply2.gif", doMagicLayout()));
             toolbar.add(openEvaluatorButton = OurUtil.button("Evaluator", "Open the evaluator", "images/24_settings.gif", doOpenEvalPanel()));
             toolbar.add(closeEvaluatorButton = OurUtil.button("Close Evaluator", "Close the evaluator", "images/24_settings_close2.gif", doCloseEvalPanel()));
@@ -771,6 +772,43 @@ public final class VizGUI implements ComponentListener {
         }
         if (xmlFileName.length() > 0)
             doLoadInstance(xmlFileName);
+    }
+
+    /**
+     * This method changes the theme to support Dash instances
+     */
+    private Runner doDashTheme() {
+        if (!wrap) {
+            VizState myState = myStates.get(statepanes - 1);
+            final Set<AlloyType> projected = myState.getProjectedTypes();
+
+            for (final AlloyType t : myState.getOriginalModel().getTypes()) {
+                if (t.getName().equals("State")) {
+                    System.out.println("Projecting Over: " + t.getName());
+                    myState.project(t);
+                }
+            }
+
+            myState.attribute.put(null, true);
+            myState.edgeVisible.put(null, false);
+            for (AlloyRelation r : myState.getCurrentModel().getRelations())
+            {
+                myState.attribute.put(r, false);
+                myState.edgeVisible.put(r, true);
+            }
+
+            // Apply the changes
+            if (!myStates.isEmpty()) {
+                for (int i = 0; i < myStates.size() - 1; i++) {
+                    VizState ss = myStates.get(statepanes - 1);
+                    myStates.set(i, new VizState(ss));
+                    myStates.get(i).loadInstance(ss.getOriginalInstance());
+                }
+            }
+
+            updateDisplay();
+        }
+        return wrapMe();
     }
 
     /** Invoked when the Visualizationwindow is resized. */
@@ -880,6 +918,7 @@ public final class VizGUI implements ComponentListener {
         magicLayout.setVisible((settingsOpen == 0 || settingsOpen == 1) && currentMode == VisualizerMode.Viz);
         projectionButton.setVisible((settingsOpen == 0 || settingsOpen == 1) && currentMode == VisualizerMode.Viz);
         openSettingsButton.setVisible(settingsOpen == 0 && currentMode == VisualizerMode.Viz);
+        dashThemeButton.setVisible(settingsOpen == 0 && currentMode == VisualizerMode.Viz);
         loadSettingsButton.setVisible(frame == null && settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         saveSettingsButton.setVisible(frame == null && settingsOpen == 1 && currentMode == VisualizerMode.Viz);
         saveAsSettingsButton.setVisible(frame == null && settingsOpen == 1 && currentMode == VisualizerMode.Viz);

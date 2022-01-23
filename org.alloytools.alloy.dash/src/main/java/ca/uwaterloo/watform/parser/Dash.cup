@@ -814,13 +814,12 @@ Vis ::= PRIVATE:p {: RESULT=p;    :};
 
 
 //This is the top level conc state. StateItems are specific items that can appear inside a Concurrent State (Conc State, State, Event, Trans, etc)
-ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: 								        
-										parser.dashmodule.addTopLevelConcState(o, n.label, c);
-										parser.dashmodule.importModules();    
-										:};
+ConcA::=  CONC:o                       	Name:n LBRACE StateItems:c RBRACE {: parser.dashmodule.addTopLevelConcState(o, n.label, c, null); parser.dashmodule.importModules();    :}
+	 |CONC:o                       	Name:n LBRACKET Name:m RBRACKET LBRACE StateItems:c RBRACE {: parser.dashmodule.addTopLevelConcState(o, n.label, c, m); parser.dashmodule.importModules();    :};
 
 //This represents a concurrent state inside a concurrent state
-ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c);  :};
+ConcB::=  CONC:o                       		Name:n LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c, null);  :}
+	 |CONC:o                       		Name:n LBRACKET Name:m RBRACKET LBRACE StateItems:c RBRACE {: RESULT=new DashConcState(o, n.label, c, m);  :};
 
 StateItems::= ConcB:x 				    {: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= ConcB:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :}; 
@@ -840,8 +839,8 @@ State::= STATE:o 		        	Name:n LBRACE                  RBRACE {: RESULT= new
 	| DEFAULT STATE:o 		        Name:n LBRACE                  RBRACE {: RESULT= new DashState(o, n.label, null, true);   :}
 	| DEFAULT STATE:o 		        Name:n LBRACE StateItems:c     RBRACE {:  RESULT= new DashState(o, n.label, c, true);   :};
 
-Enter::= ENTER:o					LBRACE SuperP:v RBRACE			      {: RESULT= new DashEnter(o, v);  :};
-Exit ::= EXIT:o		    			LBRACE SuperP:v RBRACE			      {: RESULT= new DashExit(o, v);  :};
+//Enter::= ENTER:o					LBRACE SuperP:v RBRACE			      {: RESULT= new DashEnter(o, v);  :};
+//Exit ::= EXIT:o		    			LBRACE SuperP:v RBRACE			      {: RESULT= new DashExit(o, v);  :};
  
 StateItems::= State:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= State:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
@@ -859,10 +858,10 @@ StateItems::= Trans:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
 	 
 
 From::=FROM:o					Names:n  {: RESULT=new DashFrom(o, n, false);                                          :}
-	| FROM:o				    STAR {: RESULT=new DashFrom(o, new ArrayList<ExprVar>(), true);                        :};
-On::= ON:o					    Name:n   {: RESULT=new DashOn(o, n.label);                                             :};
+	| FROM:o				STAR {: RESULT=new DashFrom(o, new ArrayList<ExprVar>(), true);                        :};
+On::= ON:o					Name:n   {: RESULT=new DashOn(o, n.label);                                             :};
 WhenA::= WHEN:o					SuperP:v {:  RESULT=new DashWhenExpr(o, v);                                            :};
-DoA::= DO:o					    SuperP:v  {:  RESULT=new DashDoExpr(o, v);                                             :};
+DoA::= DO:o					SuperP:v  {:  RESULT=new DashDoExpr(o, v);                                             :};
 GoTo::= GOTO:o					Names:n   {: RESULT=new DashGoto(o, n);                                                :};
 Send::=SEND:o					Name:n   {: RESULT=new DashSend(o, n.label);                                           :};
 
@@ -1240,6 +1239,10 @@ RangeExprB ::= RangeExprB:a RANGE:o BracketExprB:b   {: RESULT=ExprBinary.Op.RAN
 BracketExprA ::= DotExprA:b                                 {: RESULT=b;                                                                                                             :};
 BracketExprB ::= DotExprB:b                                 {: RESULT=b;                                                                                                             :};
 BracketExprB ::= BracketExprB:a LBRACKET Exprs:b RBRACKET:c {: Expr aa=a;                                  for(Expr bb:b) aa=t(aa.span().merge(bb.span()), c, bb, aa, c); RESULT=aa; :};
+
+// Dash+ feature for parsing references to a concurrent process
+BracketExprB ::= BracketExprB:a LBRACKET Exprs:b RBRACKET:c SLASH SigRef:d {: ExprVar left = ExprVar.make(null, a.toString() + b.toString()); Expr aa=t(a.span(), c, left, d, c); RESULT=aa;  :};
+
 BracketExprB ::= DISJ:a         LBRACKET Exprs:b RBRACKET:c {: Expr aa=ExprVar.make(a, "disj");            for(Expr bb:b) aa=t(aa.span().merge(bb.span()), c, bb, aa, c); RESULT=aa; :};
 BracketExprB ::= TOTALORDER:a   LBRACKET Exprs:b RBRACKET:c {: Expr aa=ExprVar.make(a, "pred/totalOrder"); for(Expr bb:b) aa=t(aa.span().merge(bb.span()), c, bb, aa, c); RESULT=aa; :};
 //[AM]: INT->SIGINT

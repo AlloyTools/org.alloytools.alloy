@@ -24,7 +24,7 @@ public class Dash {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        String actual = sc.nextLine();
+        String actual = "D:/Elevator.dsh";
 
         if (!actual.endsWith(".dsh")) {
             System.err.println("File not supported.\nExpected a Dash file with 'dsh' extension");

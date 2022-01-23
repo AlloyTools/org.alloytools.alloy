@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Decl;
+import edu.mit.csail.sdg.ast.ExprVar;
 
 /* This class is responsible for holding information regarding each concurrent state
  * declared within a DASH model */
@@ -17,6 +18,7 @@ public class DashConcState {
 
     public List<DashConcState>     concStates   = new ArrayList<DashConcState>();
     public List<DashState>         states       = new ArrayList<DashState>();
+    public String                  param        = new String();
     public List<DashTrans>         transitions  = new ArrayList<DashTrans>();
     public List<DashTemplateCall>  templateCall = new ArrayList<DashTemplateCall>();
     public List<DashTransTemplate> templateDecl = new ArrayList<DashTransTemplate>();
@@ -32,7 +34,7 @@ public class DashConcState {
      * concurrent state. concStateItems are the list of items that are inside the
      * parsed conc state.
      */
-    public DashConcState(Pos pos, String name, List<Object> concStateItems) {
+    public DashConcState(Pos pos, String name, List<Object> concStateItems, ExprVar param) {
         this.pos = pos;
         this.name = name;
 
@@ -62,13 +64,20 @@ public class DashConcState {
             if (item instanceof DashTransTemplate)
                 templateDecl.add((DashTransTemplate) item);
         }
+        
+        if (param != null)
+        {
+        	this.param = param.toString();
+        	System.out.println("Creating Parameterized Concurrent State: " + this.name + " with param: " + this.param);
+        }
     }
 
 	public DashConcState(DashConcState concState) {
 		this.name = concState.name;
 		this.modifiedName = concState.modifiedName;
 		this.parent = concState.parent;	
-		this.concStates = concState.concStates;		
+		this.concStates = concState.concStates;	
+		this.param = concState.param;
 		this.states = concState.states;
 		this.transitions = concState.transitions;
 		this.templateCall = concState.templateCall;		
