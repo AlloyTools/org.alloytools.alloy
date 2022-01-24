@@ -420,6 +420,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
         int y = t.getLineOfOffset(c) + 1;
         int x = c - t.getLineStartOffset(y - 1) + 1;
         status.setText("<html>&nbsp; Line " + y + ", Column " + x + (t.modified() ? " <b style=\"color:#B43333;\">[modified]</b></html>" : "</html>"));
+        DashOptions.isDash = text.get().isEditingDash();
         return null;
     }
 

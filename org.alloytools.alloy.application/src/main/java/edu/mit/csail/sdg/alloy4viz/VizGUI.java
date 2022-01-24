@@ -71,6 +71,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
+import ca.uwaterloo.watform.parser.DashOptions;
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.StringPref;
 import edu.mit.csail.sdg.alloy4.Computer;
@@ -783,8 +784,7 @@ public final class VizGUI implements ComponentListener {
             final Set<AlloyType> projected = myState.getProjectedTypes();
 
             for (final AlloyType t : myState.getOriginalModel().getTypes()) {
-                if (t.getName().equals("State")) {
-                    System.out.println("Projecting Over: " + t.getName());
+                if (t.getName().equals("stepUtil/Step")) {
                     myState.project(t);
                 }
             }
@@ -793,8 +793,10 @@ public final class VizGUI implements ComponentListener {
             myState.edgeVisible.put(null, false);
             for (AlloyRelation r : myState.getCurrentModel().getRelations())
             {
-                myState.attribute.put(r, false);
-                myState.edgeVisible.put(r, true);
+                if (r.getName().equals("next_step")) {
+                    myState.attribute.put(r, false);
+                    myState.edgeVisible.put(r, true);
+                }
             }
 
             // Apply the changes
@@ -1268,6 +1270,9 @@ public final class VizGUI implements ComponentListener {
             frame.setTitle("Alloy Visualizer " + Version.version() + " loading... Please wait...");
             OurUtil.show(frame);
         }
+        if (DashOptions.isDash)
+            doDashTheme();
+
         updateDisplay();
     }
 

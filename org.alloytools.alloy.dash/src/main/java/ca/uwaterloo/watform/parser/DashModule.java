@@ -1557,7 +1557,7 @@ public final class DashModule extends Browsable implements Module {
             variables.add(name.toString());
             //Set variable name to as it would appear in the Alloy model and map it to its
             //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
-            variable2Expression.put(concState.name + "_" + name.toString(), decl.expr);
+            variable2Expression.put(concState.modifiedName + "_" + name.toString(), decl.expr);
         }
 
         for (String var : variables) {
