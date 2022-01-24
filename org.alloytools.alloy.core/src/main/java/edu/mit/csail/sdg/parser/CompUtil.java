@@ -237,7 +237,7 @@ public final class CompUtil {
      * @param thispath - the set of filenames involved in the current
      *            chain_of_file_opening
      */
-    private static CompModule parseRecursively(List<Object> seenDollar, Map<String,String> loaded, Map<String,String> fc, Pos pos, String filename, CompModule root, String prefix, Set<String> thispath, int initialResolution) throws Err, FileNotFoundException, IOException {
+    private static CompModule parseRecursively(List<Object> seenDollar, Map<String, CompModule> modCache, Map<String,String> loaded, Map<String,String> fc, Pos pos, String filename, CompModule root, String prefix, Set<String> thispath, int initialResolution) throws Err, FileNotFoundException, IOException {
         // Add the filename into a ArrayList, so that we can detect cycles in
         // the module import graph
         // How? I'll argue that (filename appears > 1 time along a chain) <=>
@@ -252,6 +252,7 @@ public final class CompUtil {
         // infinite chain of OPEN (from root).
         // Since the number of files is finite, at least 1 filename will be
         // repeated.
+
         if (thispath.contains(filename))
             throw new ErrorSyntax(pos, "Circular dependency in module import. The file \"" + (new File(filename)).getName() + "\" is imported infinitely often.");
         thispath.add(filename);
@@ -262,42 +263,92 @@ public final class CompUtil {
 
         // Here, we recursively open the included files
         for (Open x : u.getOpens()) {
-            String cp = Util.canon(computeModulePath(u.getModelName(), filename, x.filename)), content = fc.get(cp);
-            try {
-                if (content == null) {
-                    content = loaded.get(cp);
-                }
-                if (content == null) {
-                    content = fc.get(x.filename);
-                    if (content != null)
-                        cp = x.filename;
-                }
-                if (content == null) {
-                    content = loaded.get(x.filename);
-                    if (content != null)
-                        cp = x.filename;
-                }
-                if (content == null) {
-                    content = Util.readAll(cp);
-                }
-            } catch (IOException ex1) {
-                try {
-                    String newCp = cp.replaceAll("\\.als$", ".md");
-                    content = Util.readAll(newCp);
-                } catch (IOException exx) {
+            String cp_als = Util.canon(computeModulePath(u.getModelName(), filename, x.filename));
+            String cp_md = cp_als.replaceAll("\\.als$", ".md");
 
-                    try {
-                        String newCp = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
-                        content = Util.readAll(newCp);
-                        cp = newCp;
-                    } catch (IOException ex) {
+            String content = null;
+            String resolved = null;
+
+            String content_als = loaded.get(cp_als);
+            String content_md = loaded.get(cp_md);
+            String content_als_fc = fc.get(cp_als);
+            String content_md_fc = fc.get(cp_md);
+
+            if (content_als != null) {
+                content = content_als;
+                resolved = cp_als;
+            } else if (content_md != null) {
+                content = content_md;
+                resolved = cp_md;
+            } else if (content_md_fc != null) {
+                content = content_md_fc;
+                resolved = cp_md;
+            } else if (content_als_fc != null) {
+                content = content_als_fc;
+                resolved = cp_als;
+            }
+
+            if (resolved == null) {
+                File f = new File(cp_als);
+                if (f.exists()) {
+                    resolved = f.toPath().toRealPath().toString();
+                }
+            }
+
+            if (resolved == null) {
+                File f = new File(cp_md);
+                if (f.exists()) {
+                    resolved = f.toPath().toRealPath().toString();
+                }
+            }
+
+            if (resolved == null) {
+                // todo: may be specify search paths via CLI, not env?
+                String paths = System.getenv("ALLOYTOOLS_SEARCH_PATH");
+                System.out.println("Search for '" + x.filename + "' in '" + paths + "'");
+                if (paths != null) {
+                    String[] paths_array = paths.split(File.pathSeparator);
+                    for (String p : paths_array) {
+                        String filename_als = p + File.separator + x.filename + ".als";
+                        File f = new File(filename_als);
+                        if (f.exists()) {
+                            resolved = f.toPath().toRealPath().toString();
+                            System.out.println("    found: " + filename_als);
+                            break;
+                        }
+                        String filename_md = p + File.separator + x.filename + ".md";
+                        f = new File(filename_md);
+                        if (f.exists()) {
+                            resolved = f.toPath().toRealPath().toString();
+                            System.out.println("    found: " + filename_md);
+                            break;
+                        }
                     }
                 }
             }
-            loaded.put(cp, content);
-            x.setResolvedFilePath(cp);
-            CompModule y = parseRecursively(seenDollar, loaded, fc, x.pos, cp, root, (prefix.length() == 0 ? x.alias : prefix + "/" + x.alias), thispath, initialResolution);
-            x.connect(y);
+
+            if (resolved == null) {
+                resolved = (Util.jarPrefix() + "models/" + x.filename + ".als").replace('/', File.separatorChar);
+            }
+
+            CompModule m = modCache.get(resolved);
+
+            if (m != null) {
+                x.setResolvedFilePath(resolved);
+                x.connect(m);
+            } else {
+                if (content == null) {
+                    try {
+                        content = Util.readAll(resolved);
+                        loaded.put(resolved, content);
+                    } catch (IOException ex) {
+                    }
+                }
+                x.setResolvedFilePath(resolved);
+                CompModule y = parseRecursively(seenDollar, modCache, loaded, fc, x.pos, resolved, root, (prefix.length() == 0 ? x.alias : prefix + "/" + x.alias), thispath, initialResolution);
+                x.connect(y);
+                modCache.put(resolved, y);
+            }
         }
         thispath.remove(filename); // Remove this file from the CYCLE DETECTION
                                   // LIST.
@@ -399,9 +450,10 @@ public final class CompUtil {
             if (loaded == null)
                 loaded = new LinkedHashMap<String,String>();
             Map<String,String> fc = new LinkedHashMap<String,String>(loaded);
+            Map<String, CompModule> mc = new LinkedHashMap<String, CompModule>();
             loaded.clear();
             List<Object> seenDollar = new ArrayList<Object>();
-            CompModule root = parseRecursively(seenDollar, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, 1);
+            CompModule root = parseRecursively(seenDollar, mc, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, 1);
             root.seenDollar = seenDollar.size() > 0;
             return CompModule.resolveAll(rep == null ? A4Reporter.NOP : rep, root);
         } catch (FileNotFoundException ex) {
@@ -439,9 +491,10 @@ public final class CompUtil {
             if (loaded == null)
                 loaded = new LinkedHashMap<String,String>();
             Map<String,String> fc = new LinkedHashMap<String,String>(loaded);
+            Map<String,CompModule> mc = new LinkedHashMap<String,CompModule>();
             loaded.clear();
             List<Object> seenDollar = new ArrayList<Object>();
-            CompModule root = parseRecursively(seenDollar, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, initialResolutionMode);
+            CompModule root = parseRecursively(seenDollar, mc, loaded, fc, new Pos(filename, 1, 1), filename, null, "", thispath, initialResolutionMode);
             // if no sigs are defined by the user, add one
             if (root.getAllReachableUserDefinedSigs().isEmpty()) {
                 root.addGhostSig();
