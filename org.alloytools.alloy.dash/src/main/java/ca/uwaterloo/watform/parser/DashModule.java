@@ -313,6 +313,11 @@ public final class DashModule extends Browsable implements Module {
      * Each state name is mapped to its respective State AST
      */
     public Map<String,DashState>         states                 = new LinkedHashMap<String,DashState>();
+    
+    /**
+     * Each Parameterized State is stored in this list (Dash+)
+     */
+    public List<String>					 parameterizedStates    = new ArrayList<String>();
 
     /**
      * A list of the default states in the Dash Model. This will be used when
@@ -1370,7 +1375,7 @@ public final class DashModule extends Browsable implements Module {
                 addConcState(topLevelConcState, (DashConcState) item);
             }
             if (item instanceof DashState)
-                addState(topLevelConcState, (DashState) item);
+                addState(topLevelConcState, topLevelConcState, (DashState) item);
             if (item instanceof DashTransTemplate)
                 addTransTemplate(topLevelConcState, (DashTransTemplate) item);
             if (item instanceof DashEvent)
@@ -1403,7 +1408,7 @@ public final class DashModule extends Browsable implements Module {
         concStateNames.add(concState.modifiedName);
 
         for (DashState state : concState.states)
-            addState(concState, state);
+            addState(concState, concState, state);
         for (DashEvent event : concState.events)
             addEvent(concState, event);
         for (DashInit init : concState.init)
@@ -1414,6 +1419,35 @@ public final class DashModule extends Browsable implements Module {
             addInvariant(invariant, concState);
         for (Decl decl : concState.decls)
             readVariablesDeclared(decl, concState);
+    }
+    
+    /*
+     * This is called by the addTopLevelConcState/addConcState function once it
+     * finds a state inside a conc state/OR state
+     */
+    public void addState(DashConcState concParent, Object parent, DashState state) {
+        String modifiedStateName = "";
+        
+        if (parent instanceof DashConcState) {
+            modifiedStateName = ((DashConcState) parent).modifiedName + '_' + state.name;
+            state.modifiedName = modifiedStateName;
+            state.parent = parent;
+            state.parentConcState = concParent;
+        } else if (parent instanceof DashState) {
+            modifiedStateName = ((DashState) parent).modifiedName + '_' + state.name;
+            state.modifiedName = modifiedStateName;
+            state.parent = parent;
+            state.parentConcState = concParent;
+        }
+
+        if (state.isDefault)
+            defaultStates.add(state);
+
+        states.put(modifiedStateName, state);
+
+        for (DashState innerState : state.states) {
+            addState(concParent, state, innerState);
+        }
     }
 
     public void addInitCondition(DashInit init, DashConcState parent) {
@@ -1492,33 +1526,6 @@ public final class DashModule extends Browsable implements Module {
         }
 
         actions.put(action.name, action);
-    }
-
-    /*
-     * This is called by the addTopLevelConcState/addConcState function once it
-     * finds a state inside a conc state/OR state
-     */
-    public void addState(Object parent, DashState state) {
-        String modifiedStateName = "";
-
-        if (parent instanceof DashConcState) {
-            modifiedStateName = ((DashConcState) parent).modifiedName + '_' + state.name;
-            state.modifiedName = modifiedStateName;
-            state.parent = parent;
-        } else if (parent instanceof DashState) {
-            modifiedStateName = ((DashState) parent).modifiedName + '_' + state.name;
-            state.modifiedName = modifiedStateName;
-            state.parent = parent;
-        }
-
-        if (state.isDefault)
-            defaultStates.add(state);
-
-        states.put(modifiedStateName, state);
-
-        for (DashState innerState : state.states) {
-            addState(state, innerState);
-        }
     }
 
     /*

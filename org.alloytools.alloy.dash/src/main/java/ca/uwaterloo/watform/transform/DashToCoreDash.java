@@ -34,20 +34,18 @@ public class DashToCoreDash {
         getAllTransitions(module);
         modifyTransitions(module);
         
+        getParameterizedConcStates(module);
+        
         return module;
     }
-
-    static void modifyTransitions(DashModule module) {
-        for (DashTrans trans : module.transitions.values()) {
-            trans.fromExpr = new DashFrom(completeFromCommand(trans, module), false);
-            trans.gotoExpr = new DashGoto(completeGoToCommand(trans, module));
-            trans.onExpr = new DashOn(null, completeOnCommand(trans, module));
-            trans.sendExpr = new DashSend(null, completeSendCommand(trans, module));
-            trans.doExpr = addAction(trans.doExpr, module);
-            trans.whenExpr = addCondition(trans.whenExpr, module);
+    
+    static void getParameterizedConcStates(DashModule module)
+    {
+        for (DashState state : module.states.values()) {
+            System.out.println("State: " + state.modifiedName + " Parent: " + state.parentConcState.modifiedName + " Param: " + state.parentConcState.isParameterized);
         }
     }
-
+    
     /* Fetch all the transitions in the model */
     static void getAllTransitions(DashModule module) {
         for (DashConcState concState : module.concStates.values()) {
@@ -60,6 +58,17 @@ public class DashToCoreDash {
         for (DashState state : module.states.values()) {
             for (DashTrans transition : state.transitions)
                 addTrans(state, transition, module);
+        }
+    }
+
+    static void modifyTransitions(DashModule module) {
+        for (DashTrans trans : module.transitions.values()) {
+            trans.fromExpr = new DashFrom(completeFromCommand(trans, module), false);
+            trans.gotoExpr = new DashGoto(completeGoToCommand(trans, module));
+            trans.onExpr = new DashOn(null, completeOnCommand(trans, module));
+            trans.sendExpr = new DashSend(null, completeSendCommand(trans, module));
+            trans.doExpr = addAction(trans.doExpr, module);
+            trans.whenExpr = addCondition(trans.whenExpr, module);
         }
     }
 

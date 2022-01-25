@@ -9,13 +9,14 @@ import edu.mit.csail.sdg.alloy4.Pos;
 public class DashState {
 
     public Pos             pos;
-    public String          name         = "";
-    public String          modifiedName = "";
-    public Object          parent       = null;
+    public String          name            = "";
+    public String          modifiedName    = "";
+    public DashConcState   parentConcState = null; 
+    public Object          parent          = null;
 
-    public List<DashState> states       = new ArrayList<DashState>();
-    public List<DashTrans> transitions  = new ArrayList<DashTrans>();
-    public Boolean         isDefault;  //Specifies whether this state is a default state
+    public List<DashState> states          = new ArrayList<DashState>();
+    public List<DashTrans> transitions     = new ArrayList<DashTrans>();
+    public Boolean         isDefault;      //Specifies whether this state is a default state
 
 
     /*
