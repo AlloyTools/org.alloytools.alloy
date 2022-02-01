@@ -8,4 +8,5 @@
 -testpath: biz.aQute.wrapper.junit
 
 -includeresource \
-    META-INF/services/org.alloytools.alloy.core.spi.AlloySolverFactory;literal="kodkod.engine.satlab.NativeSolvers"
+    META-INF/services/org.alloytools.alloy.core.spi.AlloySolverFactory;literal="kodkod.engine.satlab.NativeSolvers", \
+    META-INF/services/org.alloytools.alloy.core.api.Alloy;literal="org.alloytools.alloy.classic.provider.AlloyClassicFacade"
