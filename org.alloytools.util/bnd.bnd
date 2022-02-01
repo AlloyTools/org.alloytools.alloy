@@ -1,0 +1,4 @@
+-buildpath: \
+	aQute.libg,\
+	org.osgi.annotation.bundle,\
+	osgi.annotation

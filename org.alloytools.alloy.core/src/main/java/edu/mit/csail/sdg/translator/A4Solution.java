@@ -2061,4 +2061,7 @@ public final class A4Solution {
         bounds.bound(r, ub);
     }
 
+    public PardinusSolver getSolver() {
+        return solver;
+    }
 }

@@ -1,0 +1,99 @@
+subnet(['IOS_00022'-'Vlan172', 'IOS_00023'-'Vlan172']).
+subnet(['IOS_00094'-'GigabitEthernet4/44']).
+subnet(['IOS_00010'-'GigabitEthernet4/16', 'IOS_00011'-'GigabitEthernet0/2']).
+subnet(['IOS_00039'-'Tunnel160']).
+subnet(['IOS_00047'-'Hssi1/0']).
+subnet(['IOS_00071'-'Hssi1/0']).
+subnet(['IOS_00072'-'Serial1/0']).
+subnet(['IOS_00012'-'POS5/0']).
+subnet(['IOS_00082'-'Hssi1/0']).
+subnet(['IOS_00083'-'Serial1/0']).
+subnet(['IOS_00027'-'Hssi1/0']).
+subnet(['IOS_00028'-'Serial1/0']).
+subnet(['IOS_00039'-'Hssi1/0']).
+subnet(['IOS_00040'-'Serial1/0']).
+subnet(['IOS_00046'-'Hssi1/0']).
+subnet(['IOS_00008'-'Vlan608', 'IOS_00009'-'Vlan608']).
+subnet(['IOS_00026'-'Vlan701']).
+subnet(['IOS_00026'-'Vlan702']).
+subnet(['IOS_00026'-'Vlan703']).
+subnet(['IOS_00026'-'Vlan704']).
+subnet(['IOS_00037'-'Vlan790', 'IOS_00038'-'Vlan790']).
+subnet(['IOS_00037'-'Vlan701', 'IOS_00038'-'Vlan701']).
+subnet(['IOS_00037'-'Vlan702', 'IOS_00038'-'Vlan702']).
+subnet(['IOS_00037'-'Vlan703', 'IOS_00038'-'Vlan703']).
+subnet(['IOS_00037'-'Vlan704', 'IOS_00038'-'Vlan704']).
+subnet(['IOS_00044'-'Vlan701', 'IOS_00045'-'Vlan701']).
+subnet(['IOS_00044'-'Vlan702', 'IOS_00045'-'Vlan702']).
+subnet(['IOS_00044'-'Vlan703', 'IOS_00045'-'Vlan703']).
+subnet(['IOS_00044'-'Vlan704', 'IOS_00045'-'Vlan704']).
+subnet(['IOS_00044'-'Vlan705', 'IOS_00045'-'Vlan705']).
+subnet(['IOS_00044'-'Vlan706', 'IOS_00045'-'Vlan706']).
+subnet(['IOS_00044'-'Vlan707', 'IOS_00045'-'Vlan707']).
+subnet(['IOS_00044'-'Vlan708', 'IOS_00045'-'Vlan708']).
+subnet(['IOS_00044'-'Vlan709', 'IOS_00045'-'Vlan709']).
+subnet(['IOS_00044'-'Vlan710', 'IOS_00045'-'Vlan710']).
+subnet(['IOS_00070'-'Vlan701']).
+subnet(['IOS_00070'-'Vlan702']).
+subnet(['IOS_00070'-'Vlan703']).
+subnet(['IOS_00070'-'Vlan704']).
+subnet(['IOS_00070'-'Vlan705']).
+subnet(['IOS_00070'-'Vlan706']).
+subnet(['IOS_00070'-'Vlan707']).
+subnet(['IOS_00070'-'Vlan708']).
+subnet(['IOS_00081'-'Vlan701']).
+subnet(['IOS_00081'-'Vlan702']).
+subnet(['IOS_00081'-'Vlan703']).
+subnet(['IOS_00081'-'Vlan704']).
+subnet(['IOS_00091'-'Vlan820', 'IOS_00092'-'Vlan820', 'IOS_00096'-'FastEthernet0/0']).
+subnet(['IOS_00091'-'Vlan837', 'IOS_00092'-'Vlan837']).
+subnet(['IOS_00091'-'Vlan838', 'IOS_00092'-'Vlan838']).
+subnet(['IOS_00091'-'Vlan839', 'IOS_00092'-'Vlan839']).
+subnet(['IOS_00091'-'Vlan840', 'IOS_00092'-'Vlan840']).
+subnet(['IOS_00091'-'Vlan543', 'IOS_00092'-'Vlan543']).
+subnet(['IOS_00091'-'Vlan587', 'IOS_00092'-'Vlan587']).
+subnet(['IOS_00091'-'Vlan588', 'IOS_00092'-'Vlan588']).
+subnet(['IOS_00091'-'Vlan545', 'IOS_00092'-'Vlan545']).
+subnet(['IOS_00091'-'Vlan546', 'IOS_00092'-'Vlan546']).
+subnet(['IOS_00091'-'Vlan547', 'IOS_00092'-'Vlan547']).
+subnet(['IOS_00091'-'Vlan548', 'IOS_00092'-'Vlan548']).
+subnet(['IOS_00091'-'Vlan549', 'IOS_00092'-'Vlan549']).
+subnet(['IOS_00091'-'Vlan550', 'IOS_00092'-'Vlan550']).
+subnet(['IOS_00091'-'Vlan551', 'IOS_00092'-'Vlan551']).
+subnet(['IOS_00091'-'Vlan552', 'IOS_00092'-'Vlan552']).
+subnet(['IOS_00091'-'Vlan553', 'IOS_00092'-'Vlan553']).
+subnet(['IOS_00091'-'Vlan554', 'IOS_00092'-'Vlan554']).
+subnet(['IOS_00091'-'Vlan556', 'IOS_00092'-'Vlan556']).
+subnet(['IOS_00091'-'Vlan557', 'IOS_00092'-'Vlan557']).
+subnet(['IOS_00091'-'Vlan558', 'IOS_00092'-'Vlan558']).
+subnet(['IOS_00091'-'Vlan559', 'IOS_00092'-'Vlan559']).
+subnet(['IOS_00091'-'Vlan560', 'IOS_00092'-'Vlan560']).
+subnet(['IOS_00091'-'Vlan561', 'IOS_00092'-'Vlan561']).
+subnet(['IOS_00091'-'Vlan562', 'IOS_00092'-'Vlan562']).
+subnet(['IOS_00091'-'Vlan563', 'IOS_00092'-'Vlan563']).
+subnet(['IOS_00091'-'Vlan564', 'IOS_00092'-'Vlan564']).
+subnet(['IOS_00091'-'Vlan885', 'IOS_00092'-'Vlan885']).
+subnet(['IOS_00091'-'Vlan544', 'IOS_00092'-'Vlan544']).
+subnet(['IOS_00091'-'Vlan565', 'IOS_00092'-'Vlan565']).
+subnet(['IOS_00091'-'Vlan566', 'IOS_00092'-'Vlan566']).
+subnet(['IOS_00091'-'Vlan567', 'IOS_00092'-'Vlan567']).
+subnet(['IOS_00091'-'Vlan568', 'IOS_00092'-'Vlan568']).
+subnet(['IOS_00091'-'Vlan569', 'IOS_00092'-'Vlan569']).
+subnet(['IOS_00091'-'Vlan570', 'IOS_00092'-'Vlan570']).
+subnet(['IOS_00091'-'Vlan571', 'IOS_00092'-'Vlan571']).
+subnet(['IOS_00091'-'Vlan572', 'IOS_00092'-'Vlan572']).
+subnet(['IOS_00091'-'Vlan573', 'IOS_00092'-'Vlan573']).
+subnet(['IOS_00091'-'Vlan574', 'IOS_00092'-'Vlan574']).
+subnet(['IOS_00091'-'Vlan575', 'IOS_00092'-'Vlan575']).
+subnet(['IOS_00091'-'Vlan576', 'IOS_00092'-'Vlan576']).
+subnet(['IOS_00091'-'Vlan577', 'IOS_00092'-'Vlan577']).
+subnet(['IOS_00091'-'Vlan580', 'IOS_00092'-'Vlan580']).
+subnet(['IOS_00091'-'Vlan581', 'IOS_00092'-'Vlan581']).
+subnet(['IOS_00091'-'Vlan582', 'IOS_00092'-'Vlan582']).
+subnet(['IOS_00091'-'Vlan583', 'IOS_00092'-'Vlan583']).
+subnet(['IOS_00091'-'Vlan584', 'IOS_00092'-'Vlan584']).
+subnet(['IOS_00091'-'Vlan585', 'IOS_00092'-'Vlan585']).
+subnet(['IOS_00091'-'Vlan586', 'IOS_00092'-'Vlan586']).
+subnet(['IOS_00091'-'Vlan555', 'IOS_00092'-'Vlan555']).
+subnet(['IOS_00091'-'Vlan800', 'IOS_00092'-'Vlan800']).
+subnet(['IOS_00091'-'Loopback0']).

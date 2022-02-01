@@ -1,0 +1,8 @@
+#!/bin/bash
+
+java -cp bin tests.benchmarks.UCoreStatsDriver oce -test > oce.txt
+java -cp bin tests.benchmarks.UCoreStatsDriver kodkod.engine.ucore.AdaptiveRCEStrategy -test > rce.txt
+java -cp bin tests.benchmarks.UCoreStatsDriver kodkod.engine.ucore.SCEStrategy -test > sce.txt
+java -cp bin tests.benchmarks.UCoreStatsDriver kodkod.engine.ucore.NCEStrategy -test > nce.txt
+
+

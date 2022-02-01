@@ -1,0 +1,83 @@
+<solution>
+<module name="alloy/lang/univ">
+
+<sig name="univ" > 
+<atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Person_0"/><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Person_2"/><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_5"/><atom name="examples/puzzles/handshake/Person_6"/><atom name="examples/puzzles/handshake/Person_7"/>
+</sig>
+</module>
+
+<!-- ......................................................... -->
+
+<module name="examples/puzzles/handshake">
+
+<sig name="Person"  extends="univ" > 
+<atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Person_0"/><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Person_2"/><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_5"/><atom name="examples/puzzles/handshake/Person_6"/><atom name="examples/puzzles/handshake/Person_7"/>
+<field name="spouse" arity="2">
+<type> examples/puzzles/handshake/Person </type> 
+<tuple><atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Hilary_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Jocelyn_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_0"/><atom name="examples/puzzles/handshake/Person_1"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Person_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_2"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_2"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_5"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_5"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_6"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Person_6"/></tuple>
+</field>
+<field name="shaken" arity="2">
+<type>set examples/puzzles/handshake/Person </type> 
+<tuple><atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Person_1"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Jocelyn_0"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Person_1"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Hilary_0"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_0"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_0"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_0"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Jocelyn_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Hilary_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_1"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Jocelyn_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Hilary_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_1"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_5"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_6"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_3"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Jocelyn_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Hilary_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_1"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_4"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_5"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_5"/><atom name="examples/puzzles/handshake/Person_7"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_6"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Jocelyn_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Hilary_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Person_0"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Person_1"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Person_3"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Person_4"/></tuple>
+<tuple><atom name="examples/puzzles/handshake/Person_7"/><atom name="examples/puzzles/handshake/Person_5"/></tuple>
+</field>
+</sig>
+
+<sig name="Jocelyn"  extends="Person" > 
+<atom name="examples/puzzles/handshake/Jocelyn_0"/>
+</sig>
+
+<sig name="Hilary"  extends="Person" > 
+<atom name="examples/puzzles/handshake/Hilary_0"/>
+</sig>
+</module>
+
+<!-- ... skolem constants ............................................. -->
+</solution>

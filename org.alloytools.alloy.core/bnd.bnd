@@ -10,7 +10,9 @@
 	org.eclipse.jdt.annotation,\
 	aQute.libg,\
 	org.alloytools.api,\
-	slf4j.api
+	slf4j.api,\
+	org.osgi.annotation.bundle,\
+	osgi.annotation
 
 -testpath: \
 	biz.aQute.wrapper.junit, \

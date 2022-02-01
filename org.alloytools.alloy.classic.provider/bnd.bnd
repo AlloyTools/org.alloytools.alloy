@@ -1,0 +1,11 @@
+-buildpath: \
+	org.alloytools.api,\
+	org.alloytools.alloy.core,\
+	aQute.libg,\
+	org.alloytools.util,\
+	org.alloytools:pardinus.core;version=latest;packages='*',\
+	org.sat4j.core
+-testpath: biz.aQute.wrapper.junit
+
+-includeresource \
+    META-INF/services/org.alloytools.alloy.core.spi.AlloySolverFactory;literal="kodkod.engine.satlab.NativeSolvers"

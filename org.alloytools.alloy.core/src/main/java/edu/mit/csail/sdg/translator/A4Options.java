@@ -263,6 +263,7 @@ public final class A4Options implements Serializable {
      * Default value is SAT4J.
      */
     public SatSolver solver               = SatSolver.SAT4J;
+    public A4Helper  a4Helper             = null;
 
     /**
      * When this.solver is external, and the solver filename is a relative filename,
@@ -337,6 +338,7 @@ public final class A4Options implements Serializable {
         x.coreGranularity = coreGranularity;
         x.decompose_mode = decompose_mode;
         x.decompose_threads = decompose_threads;
+        x.a4Helper = a4Helper;
         return x;
     }
 }

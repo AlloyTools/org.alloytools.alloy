@@ -15,6 +15,9 @@
 
 package edu.mit.csail.sdg.ast;
 
+import org.alloytools.alloy.core.api.TScope;
+import org.alloytools.alloy.core.api.TSig;
+
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
@@ -29,7 +32,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * <b>Invariant:</b> increment > 0
  */
 
-public class CommandScope {
+public class CommandScope implements TScope {
 
     /**
      * The position in the original source file where this scope was declared; can
@@ -40,7 +43,7 @@ public class CommandScope {
     /**
      * The position of the sig reference
      */
-    public final Pos sigPos;
+    public final Pos     sigPos;
     /**
      * The sig whose scope is being given by this CommandScope object.
      */
@@ -116,13 +119,32 @@ public class CommandScope {
     }
 
     Expr sigRef = null;
-    public Expr sigRef(){
-        if(sigRef == null) sigRef =  ExprUnary.Op.NOOP.make(sigPos, sig, null, 0);
+
+    public Expr sigRef() {
+        if (sigRef == null)
+            sigRef = ExprUnary.Op.NOOP.make(sigPos, sig, null, 0);
         return sigRef;
     }
+
     /** {@inheritDoc} */
     @Override
     public String toString() {
         return (isExact ? "exactly " : "") + startingScope + (endingScope != startingScope ? (".." + endingScope) : "") + (increment > 1 ? (":" + increment) : "") + " " + Util.tail(sig.label);
+    }
+
+
+    @Override
+    public TSig getSig() {
+        return sig;
+    }
+
+    @Override
+    public int size() {
+        return endingScope;
+    }
+
+    @Override
+    public boolean isExact() {
+        return isExact;
     }
 }

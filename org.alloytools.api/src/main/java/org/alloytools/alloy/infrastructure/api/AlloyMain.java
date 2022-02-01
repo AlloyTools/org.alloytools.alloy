@@ -8,12 +8,6 @@ import java.lang.annotation.Target;
 
 import org.osgi.annotation.bundle.Capability;
 
-/**
- *
- * @author aqute
- *
- */
-
 @Capability(
             namespace = AlloyMain.NAMESPACE,
             attribute = {

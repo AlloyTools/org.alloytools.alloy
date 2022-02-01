@@ -17,11 +17,19 @@ package edu.mit.csail.sdg.ast;
 
 import static edu.mit.csail.sdg.alloy4.TableView.clean;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import org.alloytools.alloy.core.api.TField;
+import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -35,7 +43,6 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
-import org.alloytools.util.table.Table;
 
 /**
  * Mutable; represents a signature.
@@ -45,19 +52,19 @@ import org.alloytools.util.table.Table;
  *           Decl objects (in this case only those of tricky fields are ever
  *           variable, the ones arising from parsed field declarations)
  */
-public abstract class Sig extends Expr implements Clause {
+public abstract class Sig extends Expr implements Clause, TSig {
 
     /** The built-in "univ" signature. */
     public static final PrimSig UNIV   = new PrimSig("univ", null, null, false, false);
 
     /** The built-in "Int" signature. */
-    public static final PrimSig SIGINT = new PrimSig("Int", Pos.UNKNOWN, UNIV, false, false);
+    public static final PrimSig SIGINT = new IntSig();
 
     /** The built-in "seq/Int" signature. */
-    public static final PrimSig SEQIDX = new PrimSig("seq/Int", Pos.UNKNOWN, SIGINT, false, true);
+    public static final PrimSig SEQIDX = new SeqIdxSig();
 
     /** The built-in "String" signature. */
-    public static final PrimSig STRING = new PrimSig("String", Pos.UNKNOWN, UNIV, false, true);
+    public static final PrimSig STRING = new StringSig();
 
     /** The built-in "none" signature. */
     public static final PrimSig NONE   = new PrimSig("none", null, null, false, false);
@@ -73,12 +80,61 @@ public abstract class Sig extends Expr implements Clause {
         }
     }
 
+    int                x   = 0;
+    Map<Object,String> map = new HashMap<>();
+
+    public String generateName(Object atom) {
+        return map.computeIfAbsent(atom, z -> "" + x++);
+    }
+
+
+    static class StringSig extends PrimSig {
+
+        public StringSig() {
+            super("String", Pos.UNKNOWN, UNIV, false, true);
+        }
+
+        @Override
+        public String generateName(Object atom) {
+            return null;
+        }
+    }
+
+    static class SeqIdxSig extends PrimSig {
+
+        public SeqIdxSig() {
+            super("seq/Int", Pos.UNKNOWN, SIGINT, false, true);
+        }
+
+        @Override
+        public String generateName(Object atom) {
+            return null;
+        }
+    }
+
+    static class IntSig extends PrimSig {
+
+        public IntSig() {
+            super("Int", Pos.UNKNOWN, UNIV, false, false);
+        }
+
+        @Override
+        public String generateName(Object atom) {
+            return null;
+        }
+    }
+
     /**
      * Returns the name for this sig; this name need not be unique.
      */
     @Override
     public final String toString() {
         return label;
+    }
+
+    @Override
+    public String getName() {
+        return label.replaceAll("^this/", "");
     }
 
     public String toExtendedString() {
@@ -232,7 +288,7 @@ public abstract class Sig extends Expr implements Clause {
     /**
      * The position of the sig label
      */
-    public final Pos            labelPos;
+    public final Pos             labelPos;
 
     /**
      * The label for this sig; this name does not need to be unique.
@@ -376,6 +432,7 @@ public abstract class Sig extends Expr implements Clause {
         } else
             return false;
     }
+
     /** {@inheritDoc} */
     @Override
     public int getDepth() {
@@ -443,7 +500,7 @@ public abstract class Sig extends Expr implements Clause {
      * B even if the caller later constructs more sigs or subsigs or subsetsigs...
      */
 
-    public static final class PrimSig extends Sig {
+    public static class PrimSig extends Sig {
 
         /**
          * Stores its immediate children sigs (not including NONE)
@@ -487,16 +544,17 @@ public abstract class Sig extends Expr implements Clause {
         public final PrimSig parent;
 
         /**
-         * The position of the reference to the parent Sig.
-         * Can be null only if parent is null
+         * The position of the reference to the parent Sig. Can be null only if parent
+         * is null
          */
-        public final Pos parentRefPos;
+        public final Pos     parentRefPos;
 
 
-        private Expr parentRef;
-        public Expr parentRef(){
-            if(parentRef == null ){
-                parentRef = ExprUnary.Op.NOOP.make(parentRefPos ,  parent );
+        private Expr         parentRef;
+
+        public Expr parentRef() {
+            if (parentRef == null) {
+                parentRef = ExprUnary.Op.NOOP.make(parentRefPos, parent);
             }
             return parentRef;
         }
@@ -506,7 +564,7 @@ public abstract class Sig extends Expr implements Clause {
             super(label, var);
             this.parent = parent;
             assert parent == null ? parentRefPos == null : parentRefPos != null;
-            this.parentRefPos =  parentRefPos ;
+            this.parentRefPos = parentRefPos;
             if (add)
                 this.parent.children.add(this);
         }
@@ -616,6 +674,12 @@ public abstract class Sig extends Expr implements Clause {
                     return UNIV;
             }
         }
+
+        @Override
+        public Optional< ? extends TField> getField(String fieldName) {
+            return getFields().stream().filter(f -> f.getName().equals(fieldName)).findAny();
+        }
+
     }
 
     // ==============================================================================================================//
@@ -726,13 +790,19 @@ public abstract class Sig extends Expr implements Clause {
                     return true;
             return false;
         }
+
+        @Override
+        public Optional<TField> getField(String fieldName) {
+            return Optional.empty();
+        }
+
     }
 
     // ==============================================================================================================//
 
     /** Mutable; represents a field. */
 
-    public static final class Field extends ExprHasName implements Clause {
+    public static final class Field extends ExprHasName implements Clause, TField {
 
         /** The sig that this field belongs to; never null. */
         public final Sig     sig;
@@ -845,12 +915,36 @@ public abstract class Sig extends Expr implements Clause {
             return sb.toString();
         }
 
+        @Override
+        public TSig getParent() {
+            return sig;
+        }
+
+        @Override
+        public String getName() {
+            return label;
+        }
+
+        @Override
+        public List<TSig> getType() {
+            List<TSig> types = new ArrayList<>();
+            type.forEach(p -> {
+                types.addAll(p.getSigs());
+            });
+            return types;
+        }
+
+        @Override
+        public boolean isVariable() {
+            return isVariable != null;
+        }
+
     }
 
     // ==============================================================================================================//
 
     /** The list of fields. */
-    private final SafeList<Decl>  fields     = new SafeList<Decl>();
+    private final SafeList<Decl>  fields     = new SafeList<>();
     private final SafeList<Field> realFields = new SafeList<>();
 
     /**
@@ -865,13 +959,15 @@ public abstract class Sig extends Expr implements Clause {
      * Return the list of fields as a combined unmodifiable list (without telling
      * you which fields are declared to be disjoint)
      */
-    public final SafeList<Field> getFields() {
-        SafeList<Field> ans = new SafeList<Field>();
+    @Override
+    public final List<Field> getFields() {
+        ArrayList<Field> ans = new ArrayList<>();
         for (Decl d : fields)
             for (ExprHasName n : d.names)
                 ans.add((Field) n);
-        return ans.dup();
+        return ans;
     }
+
 
     /**
      * Add then return a new field, where "all x: ThisSig | x.F in bound"
@@ -926,7 +1022,7 @@ public abstract class Sig extends Expr implements Clause {
      * @throws ErrorType if the bound is not fully typechecked or is not a
      *             set/relation
      */
-    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, Pos isVar, List<? extends ExprHasName> labels, Expr bound) throws Err {
+    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, Pos isVar, List< ? extends ExprHasName> labels, Expr bound) throws Err {
         bound = bound.typecheck_as_set();
         if (bound.ambiguous)
             bound = bound.resolve_as_set(null);
@@ -1045,13 +1141,10 @@ public abstract class Sig extends Expr implements Clause {
             sb.append("subset ");
 
         sb.append(clean(label));
-        if(! realFields.isEmpty()){
+        if (!realFields.isEmpty()) {
             sb.append(" {\n");
 
-            sb.append(StreamSupport.stream(realFields.spliterator(), false)
-            .map(f -> " " + clean(f.label) + " : " +
-                      clean(type.join(f.type).toString()))
-            .collect(Collectors.joining(",\n")));
+            sb.append(StreamSupport.stream(realFields.spliterator(), false).map(f -> " " + clean(f.label) + " : " + clean(type.join(f.type).toString())).collect(Collectors.joining(",\n")));
 
             sb.append("\n}");
         }
