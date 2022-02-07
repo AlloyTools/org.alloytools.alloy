@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -137,7 +136,7 @@ public final class CompModule extends Browsable implements Module {
     private final LinkedHashMap<Sig,Expr>       old2appendedfacts;
 
     /** Maps each Sig to the CompModule it belongs to. */
-    private final HashMap<Sig,CompModule>       sig2module;
+    private final LinkedHashMap<Sig,CompModule> sig2module;
 
     /** The list of CompModules. */
     private final List<CompModule>              allModules;
@@ -246,7 +245,7 @@ public final class CompModule extends Browsable implements Module {
     private final Map<String,Macro>           macros      = new LinkedHashMap<String,Macro>();
 
     /** Each assertion name is mapped to its Expr. */
-    private final Map<String,Assert>            asserts     = new LinkedHashMap<String,Assert>();
+    private final Map<String,Assert>          asserts     = new LinkedHashMap<String,Assert>();
 
     /**
      * The list of facts; each fact is either an untypechecked Exp or a typechecked
@@ -491,7 +490,7 @@ public final class CompModule extends Browsable implements Module {
             Expr right = visitThis(x.right);
             Expr rightInner = ignoreNoops(right);
             // If it's a macro invocation, instantiate it
-            if (rightInner instanceof Macro){
+            if (rightInner instanceof Macro) {
                 Expr instantiated = ((Macro) rightInner).addArg(left).instantiate(this, warns);
                 Expr res = ExprUnary.Op.NOOP.make(right.pos, instantiated);
                 res.setReferenced(right.referenced());
@@ -507,15 +506,16 @@ public final class CompModule extends Browsable implements Module {
             return process(x.pos, x.closingBracket, right.pos, ((ExprChoice) right).choices, ((ExprChoice) right).reasons, left);
         }
 
-        public static Expr ignoreNoops(Expr e){
-            if (e instanceof ExprUnary){
+        public static Expr ignoreNoops(Expr e) {
+            if (e instanceof ExprUnary) {
                 ExprUnary eu = (ExprUnary) e;
-                if( eu.op == Op.NOOP){
+                if (eu.op == Op.NOOP) {
                     return ignoreNoops(eu.sub);
                 }
             }
             return e;
         }
+
         /** {@inheritDoc} */
         @Override
         public Expr visit(ExprBinary x) throws Err {
@@ -524,7 +524,7 @@ public final class CompModule extends Browsable implements Module {
             if (x.op == ExprBinary.Op.JOIN) {
                 // If it's a macro invocation, instantiate it
                 Expr rightInner = ignoreNoops(right);
-                if (rightInner instanceof Macro){
+                if (rightInner instanceof Macro) {
                     Expr instantiated = ((Macro) rightInner).addArg(left).instantiate(this, warns);
                     Expr res = ExprUnary.Op.NOOP.make(right.pos, instantiated);
                     res.setReferenced(right.referenced());
@@ -822,7 +822,7 @@ public final class CompModule extends Browsable implements Module {
             new2old = new LinkedHashMap<Sig,Sig>();
             old2fields = new LinkedHashMap<Sig,List<Decl>>();
             old2appendedfacts = new LinkedHashMap<Sig,Expr>();
-            sig2module = new HashMap<Sig,CompModule>();
+            sig2module = new LinkedHashMap<Sig,CompModule>();
             allModules = new ArrayList<CompModule>();
             exactSigs = new LinkedHashSet<Sig>();
             globals = new LinkedHashMap<String,Expr>();
@@ -1496,7 +1496,8 @@ public final class CompModule extends Browsable implements Module {
         if (subset != null) {
             attributes = Util.append(attributes, SUBSET.makenull(subset));
             List<Sig> newParents = new ArrayList<Sig>(parents == null ? 0 : parents.size());
-            if (parents == null) parents = Arrays.asList();
+            if (parents == null)
+                parents = Arrays.asList();
             for (ExprVar p : parents)
                 newParents.add(new PrimSig(p.label, WHERE.make(p.pos)));
             obj = new SubsetSig(namePos, full, parents.stream().map(p -> p.pos).collect(Collectors.toList()), newParents, attributes);
@@ -1920,7 +1921,7 @@ public final class CompModule extends Browsable implements Module {
         if (check)
             n = addAssertion(pos, null, "check$" + (1 + commands.size()), e);
         else
-            addFunc(e.span().merge(pos), Pos.UNKNOWN, ExprVar.make( Pos.UNKNOWN, n = "run$" + (1 + commands.size())), null, new ArrayList<Decl>(), null, e);
+            addFunc(e.span().merge(pos), Pos.UNKNOWN, ExprVar.make(Pos.UNKNOWN, n = "run$" + (1 + commands.size())), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
         Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, tmn, tmx, expects, scopes, null, commandKeyword, ExprVar.make(null, n), parent);
@@ -1955,11 +1956,11 @@ public final class CompModule extends Browsable implements Module {
                 throw new ErrorSyntax(cmd.pos, "The assertion \"" + cname + "\" cannot be found.");
 
             Expr expr;
-            if (m.get(0) instanceof Assert){
+            if (m.get(0) instanceof Assert) {
                 Assert _assert = (Assert) m.get(0);
                 expr = _assert.expr;
                 declaringClause = _assert;
-            }else{
+            } else {
                 expr = (Expr) m.get(0);
             }
             e = expr.not();
@@ -2083,9 +2084,9 @@ public final class CompModule extends Browsable implements Module {
                 }
             };
             Sig qr = q.visitThis(bound);
-            if (d.isVar == null && qr != null) 
+            if (d.isVar == null && qr != null)
                 warns.add(new ErrorWarning(d.span(), "Static field types with variable bound.\n" + "Field " + d.names.get(0) + " is static but " + qr.label + " is variable."));
-            if (d.isVar == null && s.isVariable != null) 
+            if (d.isVar == null && s.isVariable != null)
                 warns.add(new ErrorWarning(d.span(), "Static field inside variable sig.\n" + "Field " + d.names.get(0) + " is static but " + s.label + " is variable."));
             for (Field f : fields) {
                 rep.typecheck("Sig " + s + ", Field " + f.label + ": " + f.type() + "\n");
@@ -2458,10 +2459,10 @@ public final class CompModule extends Browsable implements Module {
             });
             s.getFacts().forEach(f -> f.accept(visitor));
 
-            if(s instanceof SubsetSig){
+            if (s instanceof SubsetSig) {
                 SubsetSig ss = (SubsetSig) s;
-                ss.parentRefs().forEach( p -> p.accept(visitor));
-            }else{
+                ss.parentRefs().forEach(p -> p.accept(visitor));
+            } else {
                 PrimSig ps = (PrimSig) s;
                 ps.parentRef().accept(visitor);
             }
@@ -2501,30 +2502,39 @@ public final class CompModule extends Browsable implements Module {
 
         // macros are not visitable for now ( accept() throws an exception)
         macros.values().forEach(macro -> {
-           macro.accept(visitor);
+            macro.accept(visitor);
         });
         params.values().forEach(x -> x.accept(visitor));
         return null;
     }
 
-    interface Action{ void call();}
-    private void tryIgnore(Action action) {try { action.call();} catch(Exception ex) {}}
+    interface Action {
+
+        void call();
+    }
+
+    private void tryIgnore(Action action) {
+        try {
+            action.call();
+        } catch (Exception ex) {
+        }
+    }
 
     public <T> void visitExpressionsResilient(VisitReturn<T> visitor) {
         sigs.values().forEach(s -> {
             s.accept(visitor);
             s.getFieldDecls().forEach(d -> {
                 d.names.forEach(x -> tryIgnore(() -> x.accept(visitor)));
-                tryIgnore( () -> d.expr.accept(visitor));
+                tryIgnore(() -> d.expr.accept(visitor));
             });
             s.getFacts().forEach(f -> tryIgnore(() -> f.accept(visitor)));
 
-            if(s instanceof SubsetSig){
+            if (s instanceof SubsetSig) {
                 SubsetSig ss = (SubsetSig) s;
-                ss.parentRefs().forEach( p -> tryIgnore( () -> p.accept(visitor)));
-            }else {
+                ss.parentRefs().forEach(p -> tryIgnore(() -> p.accept(visitor)));
+            } else {
                 PrimSig ps = (PrimSig) s;
-                tryIgnore ( () -> ps.parentRef().accept(visitor));
+                tryIgnore(() -> ps.parentRef().accept(visitor));
             }
 
         });
@@ -2537,39 +2547,39 @@ public final class CompModule extends Browsable implements Module {
                 fun.accept(visitor);
                 fun.getBody().accept(visitor);
                 fun.decls.forEach(d -> {
-                    tryIgnore( () -> d.expr.accept(visitor));
-                    d.names.forEach(n -> tryIgnore ( () -> n.accept(visitor)));
+                    tryIgnore(() -> d.expr.accept(visitor));
+                    d.names.forEach(n -> tryIgnore(() -> n.accept(visitor)));
                 });
-                tryIgnore( () -> fun.returnDecl.accept(visitor));
+                tryIgnore(() -> fun.returnDecl.accept(visitor));
             });
         });
         facts.forEach(fact -> {
-            tryIgnore ( () -> fact.b.accept(visitor));
+            tryIgnore(() -> fact.b.accept(visitor));
         });
         asserts.values().forEach(assrt -> {
-            tryIgnore ( () -> assrt.accept(visitor));
-            tryIgnore ( () -> assrt.expr.accept(visitor));
+            tryIgnore(() -> assrt.accept(visitor));
+            tryIgnore(() -> assrt.expr.accept(visitor));
         });
         commands.forEach(cmd -> {
             if (cmd.nameExpr != null)
-                tryIgnore ( () -> cmd.nameExpr.accept(visitor));
+                tryIgnore(() -> cmd.nameExpr.accept(visitor));
 
-            cmd.additionalExactScopes.forEach(sig -> tryIgnore( () -> sig.accept(visitor)));
-            tryIgnore( () -> cmd.formula.accept(visitor));
+            cmd.additionalExactScopes.forEach(sig -> tryIgnore(() -> sig.accept(visitor)));
+            tryIgnore(() -> cmd.formula.accept(visitor));
             cmd.scope.forEach(scope -> {
-                tryIgnore( () -> scope.sigRef().accept(visitor));
+                tryIgnore(() -> scope.sigRef().accept(visitor));
             });
         });
         opens.values().forEach(open -> {
             if (open.expressions != null)
-                open.expressions.stream().filter(x -> x != null).forEach(ex -> tryIgnore( () -> ex.accept(visitor)));
+                open.expressions.stream().filter(x -> x != null).forEach(ex -> tryIgnore(() -> ex.accept(visitor)));
         });
 
         // macros are not visitable for now ( accept() throws an exception)
         macros.values().forEach(macro -> {
-            tryIgnore( () -> macro.accept(visitor));
+            tryIgnore(() -> macro.accept(visitor));
         });
-        params.values().forEach(x -> tryIgnore( () -> x.accept(visitor)));
+        params.values().forEach(x -> tryIgnore(() -> x.accept(visitor)));
     }
 
 

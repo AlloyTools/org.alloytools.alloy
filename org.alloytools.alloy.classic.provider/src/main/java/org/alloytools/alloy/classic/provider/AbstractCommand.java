@@ -5,6 +5,7 @@ import java.util.Set;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TCommand;
+import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TScope;
 
@@ -44,8 +45,13 @@ public class AbstractCommand implements TCommand, TRun, TCheck {
         return command;
     }
 
-	@Override
-	public String toString() {
-		return command.label + " " + command.nameExpr;
-	}
+    @Override
+    public String toString() {
+        return command.label + " " + command.nameExpr;
+    }
+
+    @Override
+    public TExpression getExpression() {
+        return command.getExpression();
+    }
 }

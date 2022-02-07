@@ -27,8 +27,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TField;
-import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.TSignature;
 import org.alloytools.util.table.Table;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -52,7 +53,7 @@ import edu.mit.csail.sdg.ast.Attr.AttrType;
  *           Decl objects (in this case only those of tricky fields are ever
  *           variable, the ones arising from parsed field declarations)
  */
-public abstract class Sig extends Expr implements Clause, TSig {
+public abstract class Sig extends Expr implements Clause, TSignature {
 
     /** The built-in "univ" signature. */
     public static final PrimSig UNIV   = new PrimSig("univ", null, null, false, false);
@@ -714,22 +715,23 @@ public abstract class Sig extends Expr implements Clause, TSig {
         }
 
         /**
-         * The positions of references to parent Sigs (in parents field).
-         * Could be null
+         * The positions of references to parent Sigs (in parents field). Could be null
          */
         public final ConstList<Pos> parentRefPoss;
 
-        private ConstList<Expr> parentRefs;
-        public ConstList<Expr> parentRefs(){
-            if(parentRefs == null){
+        private ConstList<Expr>     parentRefs;
+
+        public ConstList<Expr> parentRefs() {
+            if (parentRefs == null) {
                 TempList<Expr> res = new TempList<>();
-                for(int i = 0; i < parents.size(); i++){
-                    res.add(ExprUnary.Op.NOOP.make(parentRefPoss != null ? parentRefPoss.get(i) : Pos.UNKNOWN,  parents.get(i) ));
+                for (int i = 0; i < parents.size(); i++) {
+                    res.add(ExprUnary.Op.NOOP.make(parentRefPoss != null ? parentRefPoss.get(i) : Pos.UNKNOWN, parents.get(i)));
                 }
                 parentRefs = res.makeConst();
             }
             return parentRefs;
         }
+
         /**
          * Constructs a subset sig.
          *
@@ -775,7 +777,7 @@ public abstract class Sig extends Expr implements Clause, TSig {
             if (temp.size() == 0)
                 throw new ErrorType(pos, "Sig " + label + " must have at least one non-empty parent.");
             this.parents = temp.makeConst();
-            this.parentRefPoss = parentRefPoss != null ? new  TempList<Pos>(parentRefPoss).makeConst() : null;
+            this.parentRefPoss = parentRefPoss != null ? new TempList<Pos>(parentRefPoss).makeConst() : null;
         }
 
         /** {@inheritDoc} */
@@ -916,7 +918,7 @@ public abstract class Sig extends Expr implements Clause, TSig {
         }
 
         @Override
-        public TSig getParent() {
+        public TSignature getParent() {
             return sig;
         }
 
@@ -926,12 +928,8 @@ public abstract class Sig extends Expr implements Clause, TSig {
         }
 
         @Override
-        public List<TSig> getType() {
-            List<TSig> types = new ArrayList<>();
-            type.forEach(p -> {
-                types.addAll(p.getSigs());
-            });
-            return types;
+        public TExpression getExpression() {
+            return decl.expr;
         }
 
         @Override
@@ -1114,7 +1112,7 @@ public abstract class Sig extends Expr implements Clause, TSig {
         sb.append(" }");
 
         //return sb.toString();
-        
+
         return t.transpose(0).toString();
     }
 

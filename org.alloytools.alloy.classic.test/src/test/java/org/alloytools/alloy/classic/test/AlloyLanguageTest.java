@@ -55,8 +55,8 @@ public class AlloyLanguageTest {
                     fail("Compile failed for " + f.getName() + " " + module.getErrors());
                 }
                 assertTrue(f.getPath(), module.isValid());
-                for (Solver solver : alloy.getSolvers()) {
-                    for (TRun run : module.getRuns()) {
+                for (Solver solver : alloy.getSolvers().values()) {
+                    for (TRun run : module.getRuns().values()) {
                         result.add(new Object[] {
                                                  f.getName(), alloy, module, run, solver
                         });

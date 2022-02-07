@@ -2,7 +2,7 @@ package org.alloytools.alloy.core.api;
 
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * Primary interface into Alloy. An instance can be found through the Java
@@ -15,18 +15,10 @@ public interface Alloy {
 
     /**
      * Get a list of available solvers
-     * 
+     *
      * @return a list of available solvers
      */
-    List<Solver> getSolvers();
-
-    /**
-     * Get a solver with a specific name
-     * 
-     * @param id the name of the solver
-     * @return an optional Alloy solver
-     */
-    Optional<Solver> getSolver(String id);
+    Map<String,Solver> getSolvers();
 
     /**
      * Return the compiler given a resolver for abstracting where the content is

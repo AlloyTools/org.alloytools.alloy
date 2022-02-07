@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import org.alloytools.alloy.core.api.TExpression;
+import org.alloytools.alloy.core.api.TFunction;
+
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
@@ -43,7 +46,7 @@ import edu.mit.csail.sdg.alloy4.Util;
  * predicate/function call
  */
 
-public final class Func extends Expr implements Clause {
+public final class Func extends Expr implements Clause, TFunction {
 
     /**
      * The location in the original file where this predicate/function is declared;
@@ -275,11 +278,13 @@ public final class Func extends Expr implements Clause {
     }
 
     ExprVar labelExpr = null;
-    public Expr labelExpr(){
-        if(labelExpr == null)
+
+    public Expr labelExpr() {
+        if (labelExpr == null)
             labelExpr = ExprVar.make(labelPos, label);
         return labelExpr;
-    } 
+    }
+
     /** {@inheritDoc} */
     @Override
     public List< ? extends Browsable> getSubnodes() {
@@ -343,11 +348,9 @@ public final class Func extends Expr implements Clause {
 
         sb.append(clean(label));
 
-        if (decls.size() > 0 ) {
+        if (decls.size() > 0) {
             sb.append(" [\n");
-            sb.append(decls.stream()
-                      .flatMap(decl -> decl.names.stream().map(e -> " " + e + " : " + decl.expr.type))
-                      .collect(Collectors.joining(",\n")));
+            sb.append(decls.stream().flatMap(decl -> decl.names.stream().map(e -> " " + e + " : " + decl.expr.type)).collect(Collectors.joining(",\n")));
             sb.append("\n]");
         }
         if (!isPred) {
@@ -364,7 +367,7 @@ public final class Func extends Expr implements Clause {
             for (int i = 0; i < indent; i++) {
                 out.append(' ');
             }
-            out.append( isPred? "pred " : "field ").append(label).append('\n');
+            out.append(isPred ? "pred " : "field ").append(label).append('\n');
         }
     }
 
@@ -381,6 +384,43 @@ public final class Func extends Expr implements Clause {
     @Override
     public int getDepth() {
         return 1;
+    }
+
+    @Override
+    public String getName() {
+        return label;
+    }
+
+    @Override
+    public List<Parameter> getParameters() {
+        List<Parameter> parameters = new ArrayList<>();
+        for (Decl decl : decls) {
+            for (ExprHasName d : decl.names) {
+                Parameter parameter = new Parameter() {
+
+                    @Override
+                    public String getName() {
+                        return d.label;
+                    }
+
+                    @Override
+                    public TExpression getType() {
+                        return decl.expr;
+                    }
+                };
+            }
+        }
+        return parameters;
+    }
+
+    @Override
+    public boolean isPredicate() {
+        return isPred;
+    }
+
+    @Override
+    public TExpression call(TExpression... args) {
+        return call((Expr[]) args);
     }
 
 }

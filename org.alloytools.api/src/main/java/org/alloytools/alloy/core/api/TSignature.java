@@ -6,7 +6,7 @@ import java.util.Optional;
 /**
  * Represents a signature in Alloy.
  */
-public interface TSig {
+public interface TSignature {
 
     /**
      * The name of the signature

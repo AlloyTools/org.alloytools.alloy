@@ -13,58 +13,56 @@ import org.alloytools.nativecode.util.NativeCode;
 @AlloySolver
 public class PlingelingPlugin extends AbstractKodkodSolver {
 
-	public static class PlingelingOptions extends KodkodOptions {
+    public static class PlingelingOptions extends KodkodOptions {
 
-		public int		threads		= 1;
-		public boolean	portfolio	= false;
-	}
+        public int     threads   = 1;
+        public boolean portfolio = false;
+    }
 
-	public PlingelingPlugin(Alloy core) {
-		super(core);
-	}
+    public PlingelingPlugin(Alloy core) {
+        super(core);
+    }
 
-	@Override
-	public String getId() {
-		return "plingeling(jni)";
-	}
+    @Override
+    public String getId() {
+        return "plingeling(jni)";
+    }
 
-	@Override
-	public SolverType getSolverType() {
-		return SolverType.SAT;
-	}
+    @Override
+    public SolverType getSolverType() {
+        return SolverType.SAT;
+    }
 
-	@Override
-	public String getName() {
-		return "Plingeling";
-	}
+    @Override
+    public String getName() {
+        return "Plingeling";
+    }
 
-	@Override
-	public String getDescription() {
-		return "Plingeling";
-	}
+    @Override
+    public String getDescription() {
+        return "Plingeling";
+    }
 
-	@Override
-	public PlingelingOptions newOptions() {
-		return new PlingelingOptions();
-	}
+    @Override
+    public PlingelingOptions newOptions() {
+        return new PlingelingOptions();
+    }
 
-	@Override
-	protected SATFactory getSATFactory(KodkodOptions options) {
-		PlingelingOptions poptions = (PlingelingOptions) options;
+    @Override
+    protected SATFactory getSATFactory(KodkodOptions options) {
+        PlingelingOptions poptions = (PlingelingOptions) options;
 
-		final List<String> opts = new ArrayList<>(3);
-		if (poptions.threads > 1)
-			opts.add("-t");
+        final List<String> opts = new ArrayList<>(3);
+        if (poptions.threads > 1)
+            opts.add("-t");
 
-		opts.add(Integer.toString(poptions.threads));
+        opts.add(Integer.toString(poptions.threads));
 
-		if (poptions.portfolio)
-			opts.add("-p");
+        if (poptions.portfolio)
+            opts.add("-p");
 
-		final String executable = NativeCode.cacheBinary(getAlloy().getPreferencesDir("binary").toPath(), "plingeling")
-				.toFile().getAbsolutePath();
-		return SATFactory.externalFactory(executable == null ? "plingeling" : executable, null, isIncremental(),
-				isUnbounded(), opts.toArray(new String[opts.size()]));
-	}
+        final String executable = NativeCode.cacheBinary(getAlloy().getPreferencesDir("binary").toPath(), "plingeling").toFile().getAbsolutePath();
+        return SATFactory.externalFactory(executable == null ? "plingeling" : executable, null, isIncremental(), isUnbounded(), opts.toArray(new String[opts.size()]));
+    }
 
 }

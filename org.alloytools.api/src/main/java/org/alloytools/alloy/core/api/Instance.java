@@ -1,7 +1,5 @@
 package org.alloytools.alloy.core.api;
 
-import java.util.Optional;
-
 /**
  * Represents a value assignment that satisfies an Alloy specification. An
  * instance belongs to a {@link Solution}. A solution can have multiple
@@ -34,7 +32,7 @@ public interface Instance {
      * @param sig the sig
      * @return the atoms with an arity=1
      */
-    IRelation getAtoms(TSig sig);
+    IRelation getAtoms(TSignature sig);
 
     /**
      * Get the value of a variable from a function.
@@ -68,52 +66,4 @@ public interface Instance {
      * @return the identity relation
      */
     IRelation ident();
-
-    /**
-     * Returns another Instance that has the same state ancestors as this instance
-     * but will be a different trace then the current trace. I.e. the new trace will
-     * traverse a different set of Instance objects.
-     * <p>
-     * A instance can point back to an earlier instance but repeatedly calling fork
-     * will end in the return of an empty.
-     * <p>
-     * If the instance has no variables this will always return empty.
-     * <p>
-     * This call is idempotent.
-     *
-     * @return a new Instance or empty if no new trace exists.
-     */
-    Optional<Instance> fork();
-
-    /**
-     * Return an Instance that has the same configuration as this Instance but
-     * represents a different trace. If no new trace can be found, it will return an
-     * empty.
-     * <p>
-     * If the instance has no variables this will always return empty.
-     * <p>
-     * This call is idempotent.
-     *
-     * @return a
-     */
-    Optional<Instance> init();
-
-    /**
-     * Return an Instance that has a different configuration as this Instance. If no
-     * new instance could be found, this returns empty.
-     * <p>
-     * This call is idempotent.
-     *
-     * @return a
-     */
-    Optional<Instance> config();
-
-    /**
-     * Return the parent of this instance. The first instance will return for the
-     * parent.
-     * <p>
-     * This call is idempotent.
-     */
-
-    Optional<Instance> parent();
 }

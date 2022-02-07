@@ -3,7 +3,7 @@ package org.alloytools.alloy.classic.provider;
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Solution;
-import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.TSignature;
 
 public class Atom implements IAtom {
 
@@ -11,10 +11,10 @@ public class Atom implements IAtom {
     final String   name;
     final String   prefix;
     final int      index;
-    final TSig     sig;
+    final TSignature     sig;
     final Solution solution;
 
-    public Atom(Solution solution, TSig sig, Object atom, String name) {
+    public Atom(Solution solution, TSignature sig, Object atom, String name) {
         this.solution = solution;
         this.atom = atom;
         this.sig = sig;
@@ -33,7 +33,7 @@ public class Atom implements IAtom {
     }
 
     @Override
-    public TSig getSig() {
+    public TSignature getSig() {
         return sig;
     }
 

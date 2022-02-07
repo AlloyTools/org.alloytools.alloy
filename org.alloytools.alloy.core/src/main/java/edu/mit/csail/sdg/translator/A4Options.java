@@ -16,9 +16,11 @@
 package edu.mit.csail.sdg.translator;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 import edu.mit.csail.sdg.alloy4.ErrorAPI;
 import edu.mit.csail.sdg.alloy4.SafeList;
+import kodkod.engine.config.ExtendedOptions;
 
 /**
  * Mutable; this class encapsulates the customizable options of the
@@ -29,6 +31,8 @@ import edu.mit.csail.sdg.alloy4.SafeList;
  */
 
 public final class A4Options implements Serializable {
+
+    public Consumer<ExtendedOptions> fixupPardinusOptions;
 
     /** This enum defines the set of possible SAT solvers. */
     public static final class SatSolver implements Serializable {
@@ -263,7 +267,6 @@ public final class A4Options implements Serializable {
      * Default value is SAT4J.
      */
     public SatSolver solver               = SatSolver.SAT4J;
-    public A4Helper  a4Helper             = null;
 
     /**
      * When this.solver is external, and the solver filename is a relative filename,
@@ -338,7 +341,8 @@ public final class A4Options implements Serializable {
         x.coreGranularity = coreGranularity;
         x.decompose_mode = decompose_mode;
         x.decompose_threads = decompose_threads;
-        x.a4Helper = a4Helper;
+        x.fixupPardinusOptions = fixupPardinusOptions;
         return x;
     }
+
 }

@@ -27,7 +27,7 @@ public interface IAtom extends Comparable<IAtom> {
      * 
      * @return the signature
      */
-    TSig getSig();
+    TSignature getSig();
 
     /**
      * Convert the atom to a {@link IRelation}

@@ -5,6 +5,7 @@ bin/
 bin_test/
 gen/
 target/
+languageServers-log/
 enroute.zip
 .metadata
 *.slo

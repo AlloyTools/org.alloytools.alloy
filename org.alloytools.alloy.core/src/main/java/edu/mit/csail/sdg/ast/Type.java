@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.TSignature;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -339,7 +339,7 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
             return ans.toString();
         }
 
-        public List<TSig> getSigs() {
+        public List<TSignature> getSigs() {
             return Stream.of(types).collect(Collectors.toList());
         }
     }
@@ -1309,5 +1309,13 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
             del = "->";
         }
         return sb.toString();
+    }
+
+    List<TSignature> getTypes() {
+        List<TSignature> result = new ArrayList<>();
+        for (ProductType pt : this) {
+            result.addAll(pt.getSigs());
+        }
+        return result;
     }
 }

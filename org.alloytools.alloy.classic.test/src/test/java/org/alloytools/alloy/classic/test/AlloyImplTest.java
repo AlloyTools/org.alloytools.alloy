@@ -8,32 +8,109 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.classic.provider.AlloyClassicFacade;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.IAtom;
+import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
+import org.alloytools.alloy.core.api.Solution.Trace;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TRun;
-import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.TSignature;
 import org.junit.Test;
 
 public class AlloyImplTest {
 
-    Alloy ai = new AlloyClassicFacade();
+    Alloy  ai     = new AlloyClassicFacade();
+    Solver solver = ai.getSolvers().get("");
+
+
+    @Test
+    public void testStandardNext() {
+        Module module = ai.compiler().compileSource("one sig G { y : Int} { y in 0+1 } ");
+        assertThat(module.getErrors()).isEmpty();
+        Solution solve = solver.solve(module.getDefaultCommand(), null);
+        List<Integer> l = new ArrayList<>();
+        for (Instance instance : solve) {
+            Object eval = instance.eval("G.y");
+            assertThat(eval).isNotNull();
+            IRelation r = (IRelation) eval;
+            assertThat(r.isScalar()).isTrue();
+            l.add(r.scalar().get().toInt());
+        }
+        assertThat(l).containsExactlyInAnyOrder(0, 1);
+    }
+
+    @Test
+    public void testNextTraces() {
+        Module module = ai.compiler().compileSource("   one sig G { var x : Int, y : Int } { y in 0+1 }\n" //
+                                                    + "    run { G.x = 2; G.x=3; G.x=4; G.x = G.y }");
+        assertThat(module.getErrors()).isEmpty();
+        Solution solve = solver.solve(module.getDefaultCommand(), null);
+        assertThat(solve.hasVariables()).isTrue();
+
+        List<Instance> configurations = new ArrayList<>();
+        for (Instance s : solve) {
+            configurations.add(s);
+            Iterator<Trace> cursor = solve.trace(s).iterator();
+
+            Instance[] t0 = cursor.next().instances();
+            Instance[] t1 = cursor.next().instances();
+
+
+        }
+        assertThat(configurations).hasSize(2);
+        //        Instance next = solve.iterator().next();
+        //        int n = 0;
+        //        for (Trace trace : solve.trace(next)) {
+        //            System.out.printf("Traces %-4d l=%-3d %-3d%n", n, trace.instances().length, trace.loop());
+        //            for (Instance inst : trace.instances()) {
+        //                System.out.println(inst.eval("F.x"));
+        //            }
+        //            n++;
+        //            if (n > 100)
+        //                break;
+        //        }
+
+
+
+    }
+
+
+    //    @Test
+    //    public void testSimpleTrace() {
+    //
+    //        for (TRun run : module.getRuns().values()) {
+    //            for (Solver solver : ai.getSolvers()) {
+    //                Solution solve = solver.solve(run, null);
+    //                for (Instance root : solve) {
+    //                    for (Trace trace : solve.trace(root)) {
+    //                        Instance[] instances = trace.instances();
+    //                        System.out.println(instances.length + " " + trace.loop());
+    //                    }
+    //
+    //                }
+    //            }
+    //        }
+    //
+    //    }
+
+
 
     @Test
     public void testSolvers() {
         System.out.println(ai.getSolvers());
         assertTrue(ai.getSolvers().size() > 0);
 
-        assertNotNull(ai.getSolver("sat4j"));
-        assertNotNull(ai.getSolver("minisat(jni)"));
+        assertNotNull(ai.getSolvers().get("sat4j"));
+        assertNotNull(ai.getSolvers().get("minisat(jni)"));
     }
 
     @Test
@@ -41,15 +118,15 @@ public class AlloyImplTest {
         Module module = ai.compiler().compileSource("run { 1 = 1 }");
         assertThat(module.getRuns()).isNotEmpty();
         assertThat(ai.getSolvers()).isNotEmpty();
-        for (TRun run : module.getRuns()) {
-            for (Solver solver : ai.getSolvers()) {
+        for (TRun run : module.getRuns().values()) {
+            for (Solver solver : ai.getSolvers().values()) {
                 Solution solution = solver.solve(run, null);
                 assertThat(solution.isSatisfied());
                 assertThat(solution.iterator().hasNext());
-                solution.forEach( inst -> {
-                	System.out.println("solution "+ run + " " + inst);
-                	System.out.println("val " + inst.eval("1=1"));
-                	
+                solution.forEach(inst -> {
+                    System.out.println("solution " + run + " " + inst);
+                    System.out.println("val " + inst.eval("1=1"));
+
                 });
             }
         }
@@ -57,12 +134,10 @@ public class AlloyImplTest {
 
     @Test
     public void iteratorImmutable() throws Exception {
-        Alloy ai = new AlloyClassicFacade();
         Module module = ai.compiler().compileSource("some sig B {}\n run show{} for 3");
-        Solver solver = ai.getSolvers().get(0);
-        TRun run = module.getRuns().get(0);
+        TRun run = module.getRuns().values().iterator().next();
         Solution solution = solver.solve(run, null, null, null);
-        TSig B = module.getSig("B").get();
+        TSignature B = module.getSignatures().get("B");
 
         List<List<IAtom>> older = atoms(solution, B);
         List<List<IAtom>> newer = atoms(solution, B);
@@ -83,7 +158,7 @@ public class AlloyImplTest {
         }
     }
 
-    private List<List<IAtom>> atoms(Solution solution, TSig B) {
+    private List<List<IAtom>> atoms(Solution solution, TSignature B) {
         return slurp(solution).stream().map(inst -> inst.getAtoms(B).asList()).collect(Collectors.toList());
     }
 
@@ -97,8 +172,7 @@ public class AlloyImplTest {
     public void iterator() throws Exception {
         Module module = ai.compiler().compileSource("pred two[y:Int] { y = 1 or y = 2 or y = 3 } run two ");
 
-        Solver solver = ai.getSolvers().get(0);
-        for (TRun run : module.getRuns()) {
+        for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
             List<Integer> collect = solution.stream().map(instance -> instance.getVariable("two", "y").scalar().orElseThrow(RuntimeException::new).toInt()).sorted().collect(Collectors.toList());
@@ -111,9 +185,7 @@ public class AlloyImplTest {
     public void testIteratorNoElements() throws Exception {
         Module module = ai.compiler().compileSource("pred nothing[y:Int] { y = 1 and y = 2 } run nothing ");
 
-        Solver solver = ai.getSolvers().get(0);
-
-        TRun run = module.getRuns().get(0);
+        TRun run = module.getRuns().get("nothing");
 
         Solution solution = solver.solve(run, null, null, null);
         assertFalse(solution.isSatisfied());
@@ -124,17 +196,16 @@ public class AlloyImplTest {
     public void simple() throws Exception {
         Module module = ai.compiler().compileSource("some sig B {}\n" + "some sig A {  x : \"abc\" } \n" + "run Foo2 { #A =1 } for 2");
         assertNotNull(module);
-        System.out.println("Sigs " + module.getSigs());
+        System.out.println("Sigs " + module.getSignatures());
         System.out.println("Runs " + module.getRuns());
 
-        Solver solver = ai.getSolvers().get(0);
-        for (TRun run : module.getRuns()) {
+        for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
 
             for (Instance instance : solution) {
 
-                for (TSig sig : module.getSigs()) {
+                for (TSignature sig : module.getSignatures().values()) {
                     System.out.println(sig + "\t" + instance.getAtoms(sig));
                     for (TField field : sig.getFields()) {
                         System.out.println("\t" + field.getName() + " " + instance.getField(field));
@@ -154,9 +225,7 @@ public class AlloyImplTest {
                                                     + "} "//
                                                     + "run foo for 5 int");
 
-        Solver solver = ai.getSolvers().get(0);
-
-        for (TRun run : module.getRuns()) {
+        for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
 
@@ -175,8 +244,7 @@ public class AlloyImplTest {
         Alloy ai = new AlloyClassicFacade();
         Module module = ai.compiler().compileSource("some sig B {}\nrun { #B =9 } for 16");
 
-        Solver solver = ai.getSolvers().get(0);
-        for (TRun run : module.getRuns()) {
+        for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
             // TSig B = module.getSig("B").get();
@@ -194,14 +262,12 @@ public class AlloyImplTest {
         Alloy ai = new AlloyClassicFacade();
         Module module = ai.compiler().compileSource("some sig B {}");
 
-        Solver solver = ai.getSolvers().get(0);
-
-        for (TRun run : module.getRuns()) {
+        for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
-
-            TSig B = module.getSig("B").get();
-            TSig univ = module.getSig("univ").get();
+            System.out.println(module.getSignatures());
+            TSignature B = module.getSignatures().get("B");
+            TSignature univ = module.getSignatures().get("univ");
 
             for (Instance instance : solution) {
                 System.out.println(instance.getAtoms(univ));

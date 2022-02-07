@@ -24,6 +24,10 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.alloytools.alloy.core.api.Position;
+import org.alloytools.alloy.core.api.TExpression;
+import org.alloytools.alloy.core.api.TSignature;
+
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorType;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
@@ -48,7 +52,7 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  *           in this context
  */
 
-public abstract class Expr extends Browsable {
+public abstract class Expr extends Browsable implements TExpression {
 
     /**
      * The filename, line, and column position in the original Alloy model file
@@ -72,6 +76,10 @@ public abstract class Expr extends Browsable {
      */
     public final Type type() {
         return type;
+    }
+
+    public List<TSignature> getType() {
+        return type.getTypes();
     }
 
     /**
@@ -1276,5 +1284,11 @@ public abstract class Expr extends Browsable {
 
     public Clause referenced() {
         return referenced;
+    }
+
+
+    @Override
+    public Position getPosition() {
+        return pos;
     }
 }

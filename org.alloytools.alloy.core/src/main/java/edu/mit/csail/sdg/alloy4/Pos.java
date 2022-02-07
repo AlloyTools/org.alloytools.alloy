@@ -17,6 +17,8 @@ package edu.mit.csail.sdg.alloy4;
 
 import java.io.Serializable;
 
+import org.alloytools.alloy.core.api.Position;
+
 /**
  * Immutable; stores the filename and line/column position.
  * <p>
@@ -30,7 +32,7 @@ import java.io.Serializable;
  * pair is inclusive
  */
 
-public final class Pos implements Serializable {
+public class Pos implements Serializable, Position {
 
     /** To make sure the serialization form is stable. */
     private static final long serialVersionUID = 0;
@@ -51,7 +53,14 @@ public final class Pos implements Serializable {
     public final int          y2;
 
     /** The default "unknown" location. */
-    public static final Pos   UNKNOWN          = new Pos("", 1, 1);
+    public static final Pos   UNKNOWN          = new Pos("", 1, 1) {
+
+                                                   private static final long serialVersionUID = 0;
+
+                                                   public boolean isUnknown() {
+                                                       return true;
+                                                   };
+                                               };
 
     /**
      * Constructs a new Pos object.
@@ -200,9 +209,9 @@ public final class Pos implements Serializable {
         int ourStart = start();
         int ourEnd = end();
 
-        if(!filename.equals(pos.filename) && !"".equals(pos.filename))
+        if (!filename.equals(pos.filename) && !"".equals(pos.filename))
             return false;
-            
+
         if (ourStart > anchor)
             return false;
 
@@ -318,7 +327,57 @@ public final class Pos implements Serializable {
         return this.filename.equals(pos.filename);
     }
 
-    public Pos withFilename(String filename){
+    public Pos withFilename(String filename) {
         return new Pos(filename, x, y, x2, y2);
     }
+
+    @Override
+    public int compareTo(Position o) {
+        int compare = Integer.compare(y0(), o.y0());
+        if (compare != 0)
+            return compare;
+
+        return Integer.compare(x0(), o.x0());
+    }
+
+    @Override
+    public int x0() {
+        return x;
+    }
+
+    @Override
+    public int y0() {
+        return y;
+    }
+
+    @Override
+    public int x1() {
+        return x2;
+    }
+
+    @Override
+    public int y1() {
+        return y2;
+    }
+
+    @Override
+    public int height() {
+        return y2 - y;
+    }
+
+    @Override
+    public Position merge(Position other) {
+        return merge((Pos) other);
+    }
+
+    @Override
+    public boolean contains(Position other) {
+        return contains((Pos) other);
+    }
+
+    @Override
+    public String getPath() {
+        return filename;
+    }
+
 }

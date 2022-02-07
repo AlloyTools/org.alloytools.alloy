@@ -54,4 +54,9 @@ public class SAT4JPlugin extends AbstractKodkodSolver {
         };
     }
 
+    @Override
+    public boolean isJavaOnly() {
+        return true;
+    }
+
 }

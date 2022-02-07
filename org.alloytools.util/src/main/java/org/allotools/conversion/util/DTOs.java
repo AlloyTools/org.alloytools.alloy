@@ -1,6 +1,7 @@
 package org.allotools.conversion.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
@@ -81,6 +82,41 @@ public class DTOs {
             throw new RuntimeException(e);
         }
     }
+
+    public static void copyDTOToBean(Object dto, Object bean) {
+
+        for (Field f : dto.getClass().getFields()) {
+            if (Modifier.isStatic(f.getModifiers()))
+                continue;
+
+            String name = f.getName();
+            String setName = toSet(name);
+
+            try {
+
+                Method method = bean.getClass().getMethod(setName, f.getType());
+                method.invoke(bean, f.get(dto));
+
+            } catch (NoSuchMethodException e) {
+                // ignore, not al options are in kodkod
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
+    }
+
+    static String toSet(String name) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("set");
+        char c = name.charAt(0);
+        sb.append(Character.toUpperCase(c));
+        sb.append(name.substring(1));
+        return sb.toString();
+    }
+
+
 
     public static String readableTime(long timeMs) {
         if (timeMs < 1000) {

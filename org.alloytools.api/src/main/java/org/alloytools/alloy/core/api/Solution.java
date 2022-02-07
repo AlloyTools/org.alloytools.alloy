@@ -1,5 +1,8 @@
 package org.alloytools.alloy.core.api;
 
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -53,8 +56,7 @@ public interface Solution extends Iterable<Instance> {
     /**
      * Return true if the model that this solution was derived from had variables.
      * Models with variables can create <em>traces</em> where the values of the
-     * variables are varied. This is reflected in the {@link Instance#fork()} and
-     * {@link Instance#init()} methods.
+     * variables are varied. See {@link #trace(Instance)}
      *
      * @return true if the underlying model has variables.
      */
@@ -62,11 +64,64 @@ public interface Solution extends Iterable<Instance> {
 
 
     /**
-     * Turn this solution into a stream of instances.
+     * Return an iterator over the instances. Each instance is a configuration
+     * instance, i.e. only the static parts are resolved. Since resolving is
+     * expensive in time, the solutions should be fetched when needed and not
+     * earlier. The actual resultion generally takes place when calling
+     * {@link Iterator#hasNext()}.
      *
-     * @return a stream of instances
+     * @return An iterator over the configuration instances.
      */
+    Iterator<Instance> iterator();
+
     default Stream<Instance> stream() {
-        return StreamSupport.stream(this.spliterator(), false);
+        Spliterator<Instance> spliterator = Spliterators.spliteratorUnknownSize(iterator(), 0);
+        return StreamSupport.stream(spliterator, false);
     }
+
+    /**
+     * Each configuration instance is associated with a Trace. A Trace is the graph
+     * of instances where the last instance loops back to an earlier instance to
+     * mimic an inifite trace.
+     * <p>
+     * This method creates a new Trace from a <em>current</em> Instance. An instance
+     * can be a <em>configuration Instance</em> or a member of a Trace. It is
+     * possible to iterate over all the traces associated with a configuration
+     * instance , or over traces that share ancestor instances.
+     * <p>
+     * If the current Instance is a configuration INstance, then a Trace iterator
+     * based on that configuration only return.
+     * <p>
+     * If current is a instance from a trace, the returned trace will share the same
+     * ancestors as the current instance.
+     *
+     * @param current instance, either a configuration (a.k.a. init) or a trace
+     *            instance (a.k.a. fork)
+     * @return an iterator over the traces of the current instance
+     */
+    Iterable<Trace> trace(Instance current);
+
+    /**
+     * Represents a trace. A trace is a set of instances over time. The last
+     * instance loops back to an earlier instance.
+     */
+    interface Trace {
+
+        /**
+         * The sequence of instances
+         */
+        Instance[] instances();
+
+        /**
+         * Normally the instances are ordered by the array index. However, the last
+         * instance loops back to the index returned here.
+         *
+         * <pre>
+         * loop >=0 and loop < #instances
+         * </pre>
+         */
+        int loop();
+    }
+
+
 }

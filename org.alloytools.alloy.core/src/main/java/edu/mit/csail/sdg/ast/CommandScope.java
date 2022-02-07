@@ -16,7 +16,7 @@
 package edu.mit.csail.sdg.ast;
 
 import org.alloytools.alloy.core.api.TScope;
-import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.TSignature;
 
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -134,7 +134,7 @@ public class CommandScope implements TScope {
 
 
     @Override
-    public TSig getSig() {
+    public TSignature getSig() {
         return sig;
     }
 

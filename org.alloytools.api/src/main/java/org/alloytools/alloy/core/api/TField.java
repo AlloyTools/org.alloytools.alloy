@@ -1,25 +1,23 @@
 package org.alloytools.alloy.core.api;
 
-import java.util.List;
-
 /**
  * A Field in a sig
  */
 public interface TField {
 
     /**
-     * The types of this field.
+     * The expression for the definition of this field.
      *
      * @return the types of this relation
      */
-    List<TSig> getType();
+    TExpression getExpression();
 
     /**
      * Parent type TODO (not sure this is needed?)
      *
      * @return the parent type
      */
-    TSig getParent();
+    TSignature getParent();
 
     /**
      * The name of the field

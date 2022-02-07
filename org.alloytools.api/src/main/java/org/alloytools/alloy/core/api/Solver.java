@@ -69,4 +69,6 @@ public interface Solver {
         return solve(command, options, null, null);
     }
 
+    boolean isJavaOnly();
+
 }

@@ -9,7 +9,7 @@ public interface TScope {
     /**
      * The signature for which this scope is set
      */
-    TSig getSig();
+    TSignature getSig();
 
     /**
      * The maximum number of atoms for this sig

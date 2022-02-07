@@ -6,12 +6,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,8 +25,10 @@ import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.SourceResolver;
 import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TCommand;
+import org.alloytools.alloy.core.api.TExpression;
+import org.alloytools.alloy.core.api.TFunction;
 import org.alloytools.alloy.core.api.TRun;
-import org.alloytools.alloy.core.api.TSig;
+import org.alloytools.alloy.core.api.TSignature;
 import org.alloytools.alloy.core.api.Visualizer;
 import org.alloytools.alloy.core.spi.AlloySolverFactory;
 import org.alloytools.alloy.core.spi.AlloyVisualizerFactory;
@@ -40,7 +42,7 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 
 /**
- * 
+ *
  */
 public class AlloyClassicFacade implements Alloy {
 
@@ -48,7 +50,7 @@ public class AlloyClassicFacade implements Alloy {
     final static Pattern     OPTIONS_P   = Pattern.compile("^--option(\\.(?<glob>[\\p{javaJavaIdentifierPart}*?.-]+))?\\s+(?<key>" + JNAME_S + ")\\s*=\\s*(?<value>[^\\s]+)\\s*$", Pattern.MULTILINE);
     final Path               home;
 
-    final List<Solver>       solvers     = new ArrayList<>();
+    final Map<String,Solver> solvers     = new HashMap<>();
     private File             preferencesDir;
     private List<Visualizer> visualizers = new ArrayList<>();
 
@@ -67,18 +69,20 @@ public class AlloyClassicFacade implements Alloy {
     }
 
     @Override
-    public synchronized List<Solver> getSolvers() {
+    public synchronized Map<String,Solver> getSolvers() {
         if (solvers.isEmpty()) {
             for (AlloySolverFactory factory : Services.getServices(AlloySolverFactory.class)) {
-                solvers.addAll(factory.getAvailableSolvers(this));
+                for (Solver solver : factory.getAvailableSolvers(this)) {
+                    Solver duplicate = solvers.put(solver.getId(), solver);
+                    assert duplicate == null : "There are multiple solvers with the same name: " + solver.getId() + ": " + solver.getDescription() + " and " + duplicate.getDescription();
+
+                    if (solver.isJavaOnly()) {
+                        solvers.put("", solver);
+                    }
+                }
             }
         }
         return solvers;
-    }
-
-    @Override
-    public Optional<Solver> getSolver(String id) {
-        return getSolvers().stream().filter(s -> s.getId().equals(id)).findAny();
     }
 
     @Override
@@ -110,27 +114,41 @@ public class AlloyClassicFacade implements Alloy {
                     return new AlloyModuleClassic() {
 
                         @Override
-                        public Set<TSig> getSigs() {
+                        public Map<String,TSignature> getSignatures() {
                             ConstList<Sig> sigs = module.getAllReachableSigs();
-                            return new HashSet<>(sigs);
+
+                            Map<String,TSignature> all = sigs.stream().collect(Collectors.toMap(sk -> sk.label, sv -> sv));
+                            module.getAllSigs().forEach(sig -> {
+                                all.put(sig.label.substring("this/".length()), sig);
+                            });
+                            return all;
                         }
 
                         @Override
-                        public Optional<TSig> getSig(String name) {
-                            return getSigs().stream().filter(s -> s.getName().equals(name)).findAny();
+                        public Map<String,TRun> getRuns() {
+                            Map<String,TRun> result = new LinkedHashMap<>();
+                            module.getAllCommands().stream().filter(c -> !c.isCheck()).map(r -> (TRun) new AbstractCommand(this, r)).forEach(e -> {
+                                result.put(e.getName(), e);
+                            });
+                            assert !result.isEmpty() : "If no commands are present we add a default command";
+                            return result;
                         }
 
                         @Override
-                        public List<TRun> getRuns() {
-                           // Module THIS = this;
-                            return module.getAllCommands().stream().filter(c -> !c.isCheck()).map(r -> (TRun) new AbstractCommand(this, r)).collect(Collectors.toList());
+                        public Map<String,TCheck> getChecks() {
+                            return module.getAllCommands().stream().filter(c -> c.isCheck()).map(r -> (TCheck) new AbstractCommand(this, r)).collect(Collectors.toMap(kc -> kc.getName(), vc -> vc));
                         }
 
                         @Override
-                        public List<TCheck> getChecks() {
-                           // Module THIS = this;
-                            return module.getAllCommands().stream().filter(c -> c.isCheck()).map(r -> (TCheck) new AbstractCommand(this, r)).collect(Collectors.toList());
+                        public Map<String,TExpression> getFacts() {
+                            return module.getAllFacts().toList().stream().collect(Collectors.toMap(pk -> pk.a, pv -> pv.b));
                         }
+
+                        @Override
+                        public Map<String,TFunction> getFunctions() {
+                            return module.getAllFunc().toList().stream().filter(f -> !f.isPred).collect(Collectors.toMap(pk -> pk.label, pv -> pv));
+                        }
+
 
                         @Override
                         public CompModule getOriginalModule() {
@@ -171,7 +189,7 @@ public class AlloyClassicFacade implements Alloy {
                         public Compiler getCompiler() {
                             return compiler();
                         }
-                        
+
                     };
                 } catch (Exception e) {
                     return new AlloyModuleClassic() {
@@ -179,26 +197,6 @@ public class AlloyClassicFacade implements Alloy {
                         @Override
                         public Optional<String> getPath() {
                             return Optional.ofNullable(path);
-                        }
-
-                        @Override
-                        public Set<TSig> getSigs() {
-                            return Collections.emptySet();
-                        }
-
-                        @Override
-                        public Optional<TSig> getSig(String name) {
-                            return Optional.empty();
-                        }
-
-                        @Override
-                        public List<TRun> getRuns() {
-                            return Collections.emptyList();
-                        }
-
-                        @Override
-                        public List<TCheck> getChecks() {
-                            return Collections.emptyList();
                         }
 
                         @Override
@@ -265,6 +263,31 @@ public class AlloyClassicFacade implements Alloy {
                         @Override
                         public Compiler getCompiler() {
                             return compiler();
+                        }
+
+                        @Override
+                        public Map<String,TSignature> getSignatures() {
+                            return Collections.emptyMap();
+                        }
+
+                        @Override
+                        public Map<String,TRun> getRuns() {
+                            return Collections.emptyMap();
+                        }
+
+                        @Override
+                        public Map<String,TCheck> getChecks() {
+                            return Collections.emptyMap();
+                        }
+
+                        @Override
+                        public Map<String,TExpression> getFacts() {
+                            return Collections.emptyMap();
+                        }
+
+                        @Override
+                        public Map<String,TFunction> getFunctions() {
+                            return Collections.emptyMap();
                         }
                     };
                 }

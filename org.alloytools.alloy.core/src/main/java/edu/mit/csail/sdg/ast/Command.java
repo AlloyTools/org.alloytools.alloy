@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alloytools.alloy.core.api.TCommand;
+import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TScope;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -414,5 +415,10 @@ public final class Command extends Browsable implements TCommand {
     @Override
     public org.alloytools.alloy.core.api.Module getModule() {
         return null;
+    }
+
+    @Override
+    public TExpression getExpression() {
+        return formula;
     }
 }

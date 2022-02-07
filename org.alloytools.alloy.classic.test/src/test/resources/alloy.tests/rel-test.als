@@ -1,0 +1,20 @@
+let s1  = (1+2+3)
+let s2  = (4+5+6)
+let s3  = (3+4)
+let neg = { n : Int | n < 0 }
+let pos = { n : Int | n > 0 }
+let s4  = (s1 -> s2)
+
+run union               { s1 + s2 = (1+2+3+4+5+6)   } expect 1
+run intersection_no     { s1 & s2 = none            } expect 1
+run intersection_one    { s1 & s3 = 3               } expect 1
+run intersection_neg    { s1 & neg = none           } expect 1
+run intersection_pos    { s1 & pos = s1             } expect 1
+run intersection_parent { Int & s1 = s1             } expect 1
+run difference          { s1 - s3 = 1+2             } expect 1
+run difference_pos_neg  { pos - neg = pos           } expect 1
+run difference_neg_pos  { neg - pos = neg           } expect 1
+run complete            { Int - neg = 0 + pos       } for 4 int expect 1
+run block_join          { s4[s1] = s2               } expect 1
+run dot_join            { s1.s4  = s2               } expect 1 
+run reverse             { (~s4).s1 = s2             } expect 1 

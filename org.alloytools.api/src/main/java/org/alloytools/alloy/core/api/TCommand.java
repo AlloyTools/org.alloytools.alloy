@@ -18,7 +18,7 @@ public interface TCommand {
 
     /**
      * Return the scopes defined by this command
-     * 
+     *
      * @return scopes defined by this command
      */
     Set<TScope> getScopes();
@@ -27,15 +27,17 @@ public interface TCommand {
      * A hint whether the command is expected to be satisfiable or not. This is
      * mainly used for testing and documentation purposes and has no effect on
      * solving.
-     * 
+     *
      * @return expects
      */
     Expects getExpects();
 
     /**
      * Get the associated module.
-     * 
+     *
      * @return the module
      */
     Module getModule();
+
+    TExpression getExpression();
 }
