@@ -1,0 +1,28 @@
+{
+	"fileTypes": ["md"],
+	"injectionSelector": "L:markup.fenced_code.block.markdown",
+	"patterns": [
+		{
+			"include": "#superjs-code-block"
+		}
+	],
+	"repository": {
+		"superjs-code-block": {
+			"begin": "(?<=[`~])alloy(\\s+[^`~]*)?$",
+			"end": "(^|\\G)(?=\\s*[`~]{3,}\\s*$)",
+			"patterns": [
+				{
+					"begin": "(^|\\G)(\\s*)(.*)",  
+					"while": "(^|\\G)(?!\\s*([`~]{3,})\\s*$)",
+					"contentName": "meta.embedded.block.alloy",
+					"patterns": [
+						{
+							"include": "source.als"
+						}
+					]
+				}
+			]
+		}
+	},
+	"scopeName": "markdown.alloy.codeblock"
+}

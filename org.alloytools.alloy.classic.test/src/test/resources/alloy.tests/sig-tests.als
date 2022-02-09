@@ -10,7 +10,6 @@ sig E extends B {}
 abstract sig F {}
 sig G,H extends F {}
 
-
 fmand_0:    run { some a : A | no a.fmand           } for 4 expect 0
 fmand_1:    run { some a : A | # a.fmand = 1        } for 4 expect 1
 fmand_2:    run { some a : A | # a.fmand > 1        } for 4 expect 0
@@ -44,6 +43,6 @@ sig C in Int {}
 sig D in A {}
 
 multipleinh_0:  run { some c : C | c = 1                } for 4 expect 1
-multipleinh_1:  run { some d : D | d = 1                } for 4 expect 0
+
 multipleinh_2:  run { some d : D | some d.fmand         } for 4 expect 1
 

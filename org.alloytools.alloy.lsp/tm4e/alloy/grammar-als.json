@@ -1,0 +1,403 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "scopeName": "source.als",
+    "fileTypes": [ "als" ],
+    "name": "alloy",
+    "patterns": [{
+            "include": "#comments"
+        },
+        {
+            "include": "#declaration"
+        },
+        {
+            "include": "#expression"
+        },
+        {
+            "include": "#built-in"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#digit"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{
+                    "begin": "/\\*",
+                    "end": "\\*/",
+                    "name": "comment.block.alloy"
+                },
+                {
+                    "begin": "//",
+                    "end": "\n",
+                    "name": "comment.line.double-slash"
+                },
+                {
+                    "begin": "--",
+                    "end": "\n",
+                    "name": "comment.line.double-dash"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [{
+                    "include": "#define"
+                },
+                {
+                    "include": "#modifier"
+                },
+                {
+                    "include": "#operator"
+                },
+                {
+                    "include": "#control"
+                },
+                {
+                    "include": "#variable"
+                }
+            ],
+            "repository": {
+                "define": {
+                    "patterns": [{
+                            "match": "\\b(sig)\\b",
+                            "name": "keyword.language.sig.alloy"
+                        },
+                        {
+                            "match": "\\b(fact)\\b",
+                            "name": "keyword.language.fact.alloy"
+                        },
+                        {
+                            "match": "\\b(pred)\\b",
+                            "name": "keyword.language.pred.alloy"
+                        },
+                        {
+                            "match": "\\b(fun)\\b",
+                            "name": "keyword.language.fun.alloy"
+                        },
+                        {
+                            "match": "\\b(module)\\b",
+                            "name": "keyword.language.module.alloy"
+                        },
+                        {
+                            "match": "\\b(extends)\\b",
+                            "name": "keyword.language.extends.alloy"
+                        },
+                        {
+                            "match": ":",
+                            "name": "keyword.other.colon.alloy"
+                        },
+                        {
+                            "match": "\\b(check)\\b",
+                            "name": "keyword.language.check.alloy"
+                        },
+                        {
+                            "match": "\\b(assert)\\b",
+                            "name": "keyword.language.assert.alloy"
+                        },
+                        {
+                            "match": "\\b(run)\\b",
+                            "name": "keyword.language.run.alloy"
+                        },
+                        {
+                            "match": "\\b(open)\\b",
+                            "name": "keyword.other.open.alloy"
+                        },
+                        {
+                            "match": "\\b(as)\\b",
+                            "name": "keyword.other.as.alloy"
+                        },
+                        {
+                            "match": "\\b(in)\\b",
+                            "name": "keyword.other.in.alloy"
+                        }
+                    ]
+                },
+                "modifier": {
+                    "patterns": [{
+                            "match": "\\b(private)\\b",
+                            "name": "keyword.modifier.private.alloy"
+                        },
+                        {
+                            "match": "\\b(abstract)\\b",
+                            "name": "keyword.modifier.abstract.alloy"
+                        },
+                        {
+                            "match": "\\b(all|disj|lone|no|one|set|seq|some|sum|univ|none)\\b",
+                            "name": "keyword.modifier.set.alloy"
+                        }
+                    ]
+                },
+                "operator": {
+                    "patterns": [{
+                            "include": "#unary"
+                        },
+                        {
+                            "include": "#binary"
+                        }
+                    ],
+                    "repository": {
+                        "unary": {
+                            "patterns": [{
+                                "match": "!|#|~|\\*|\\^|(\\b(not)\\b)",
+                                "name": "keyword.operator.unary.alloy"
+                            }]
+                        },
+                        "binary": {
+                            "patterns": [{
+                                    "match": "(?:\\|\\|)|&&|<=>|=>|&|\\+|-|\\+\\+|<:|:>|\\.|=|->",
+                                    "name": "keyword.operator.binary.alloy"
+                                },
+                                {
+                                    "match": "\\b(and|or|iff|implies|else|in)\\b",
+                                    "name": "keyword.operator.binary.alloy"
+                                },
+                                {
+                                    "match": "=|<|>|=<|>=",
+                                    "name": "keyword.operator.binary.alloy"
+                                },
+                                {
+                                    "match": ",",
+                                    "name": "keyword.other.comma.alloy"
+                                },
+                                {
+                                    "match": "\\|",
+                                    "name": "keyword.other.split.alloy"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "variable": {
+                    "patterns": [{
+                            "match": "\\b(let)\\b",
+                            "name": "keyword.language.let.alloy"
+                        },
+                        {
+                            "match": "\\b(this)\\b",
+                            "name": "keyword.language.this.alloy"
+                        }
+                    ]
+                },
+                "control": {
+                    "patterns": [{
+                            "match": "\\b(for)\\b",
+                            "name": "keyword.control.for.alloy"
+                        },
+                        {
+                            "match": "\\b(but)\\b",
+                            "name": "keyword.control.but.alloy"
+                        },
+                        {
+                            "match": "\\b(exactly)\\b",
+                            "name": "keyword.control.exactly.alloy"
+                        },
+                        {
+                            "match": "\\b(expect)\\b",
+                            "name": "keyword.control.expect.alloy"
+                        }
+                    ]
+                }
+            }
+        },
+        "declaration": {
+            "patterns": [{
+                    "include": "#module"
+                },
+                {
+                    "include": "#predict"
+                },
+                {
+                    "include": "#signature"
+                },
+                {
+                    "include": "#fact"
+                },
+                {
+                    "include": "#fun"
+                }
+            ],
+            "repository": {
+                "module": {
+                    "patterns": [{
+                        "match": "(module)\\b\\s*((?:\\w|'|_|\\d|/)+)",
+                        "captures": {
+                            "1": {
+                                "name": "keyword.language.module.alloy"
+                            },
+                            "2": {
+                                "name": "support.class.module.alloy"
+                            }
+                        }
+                    }]
+                },
+                "predict": {
+                    "patterns": [{
+                        "match": "(pred)\\b\\s*((?:\\w|'|_|\\d|/)+)",
+                        "captures": {
+                            "1": {
+                                "name": "keyword.language.pred.alloy"
+                            },
+                            "2": {
+                                "name": "entity.name.function.pred.alloy"
+                            }
+                        }
+                    }]
+                },
+                "signature": {
+                    "patterns": [{
+                        "begin": "(abstract)?\\s*(lone|some|one)?\\s*(sig)\\b\\s*",
+                        "end": "(?=\\{)",
+                        "beginCaptures": {
+                            "1": {
+                                "name": "keyword.modifier.abstract.alloy"
+                            },
+                            "2": {
+                                "name": "keyword.modifier.set.alloy"
+                            },
+                            "3": {
+                                "name": "keyword.language.sig.alloy"
+                            }
+                        },
+                        "patterns": [{
+                                "begin": "(extends)",
+                                "end": "(?=\\{)",
+                                "beginCaptures": {
+                                    "1": {
+                                        "name": "keyword.language.extends.alloy"
+                                    }
+                                },
+                                "patterns": [{
+                                    "match": "(?:\\w|'|_|\\d|/)+",
+                                    "name": "entity.other.inherited-class.alloy"
+                                }]
+                            },
+                            {
+                                "begin": "(in)",
+                                "end": "(?=\\{)",
+                                "beginCaptures": {
+                                    "1": {
+                                        "name": "keyword.other.in.alloy"
+                                    }
+                                },
+                                "patterns": [{
+                                        "match": "(?:\\w|'|_|\\d|/)+",
+                                        "name": "entity.other.inherited-class.alloy"
+                                    },
+                                    {
+                                        "match": "\\+",
+                                        "name": "keyword.operator.binary.alloy"
+                                    }
+                                ]
+                            },
+                            {
+                                "match": "(?:\\w|'|_|\\d|/)+",
+                                "name": "entity.name.type.signature.alloy"
+                            },
+                            {
+                                "match": ",",
+                                "name": "keyword.other.comma.alloy"
+                            }
+                        ]
+                    }]
+                },
+                "fact": {
+                    "patterns": [{
+                        "match": "(fact)\\b\\s*((?:\\w|'|_|\\d|/)+)",
+                        "captures": {
+                            "1": {
+                                "name": "keyword.language.fact.alloy"
+                            },
+                            "2": {
+                                "name": "entity.name.function.fact.alloy"
+                            }
+                        }
+                    }]
+                },
+                "fun": {
+                    "patterns": [{
+                        "match": "(fun)\\b\\s*((?:\\w|'|_|\\d|/)+)",
+                        "captures": {
+                            "1": {
+                                "name": "keyword.language.fun.alloy"
+                            },
+                            "2": {
+                                "name": "entity.name.function.fun.alloy"
+                            }
+                        }
+                    }]
+                }
+            }
+        },
+        "expression": {
+            "patterns": [{
+                    "match": "(check)\\b\\s*((?:\\w|'|_|\\d|/)+)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.language.check.alloy"
+                        },
+                        "2": {
+                            "name": "entity.name.function.check.alloy"
+                        }
+                    }
+                },
+                {
+                    "match": "(assert)\\b\\s*((?:\\w|'|_|\\d|/)+)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.language.assert.alloy"
+                        },
+                        "2": {
+                            "name": "entity.name.function.check.alloy"
+                        }
+                    }
+                }
+            ]
+        },
+        "digit": {
+            "patterns": [{
+                "match": "\\b(\\d+)\\b",
+                "name": "constant.numeric.alloy"
+            }]
+        },
+        "built-in": {
+            "patterns": [{
+                    "match": "\\b(plus|minus|mul|div|rem|sum)\\[",
+                    "captures": {
+                        "1": {
+                            "name": "support.function.numeric.alloy"
+                        }
+                    }
+                },
+                {
+                    "match": "\\b(open)\\b\\s*((?:\\w|'|_|\\d|/)+)\\[",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.open.alloy"
+                        },
+                        "2": {
+                            "name": "support.class.module.alloy"
+                        }
+                    }
+                },
+                {
+                    "match": "(/(?:\\w|'|_|\\d|/)+)",
+                    "captures": {
+                        "1": {
+                            "name": "support.function.order.alloy"
+                        }
+                    }
+                },
+                {
+                    "match": "((?:\\w|'|_|\\d)+)\\s*\\[",
+                    "captures": {
+                        "1": {
+                            "name": "support.function.order.alloy"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
