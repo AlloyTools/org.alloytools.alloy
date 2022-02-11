@@ -1,5 +1,7 @@
 package org.alloytools.alloy.classic.provider;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Solution;
@@ -7,14 +9,18 @@ import org.alloytools.alloy.core.api.TSignature;
 
 public class Atom implements IAtom {
 
-    final Object   atom;
-    final String   name;
-    final String   prefix;
-    final int      index;
-    final TSignature     sig;
-    final Solution solution;
+    final static AtomicInteger ID = new AtomicInteger(1000);
+
+    final Object               atom;
+    final String               name;
+    final String               prefix;
+    final int                  index;
+    final TSignature           sig;
+    final Solution             solution;
+    final int                  id;
 
     public Atom(Solution solution, TSignature sig, Object atom, String name) {
+        this.id = ID.getAndIncrement();
         this.solution = solution;
         this.atom = atom;
         this.sig = sig;
@@ -39,7 +45,7 @@ public class Atom implements IAtom {
 
     @Override
     public String toString() {
-        return name;
+        return name + " [id=" + id + "]";
     }
 
     @Override

@@ -408,6 +408,7 @@ public final class Func extends Expr implements Clause, TFunction {
                         return decl.expr;
                     }
                 };
+                parameters.add(parameter);
             }
         }
         return parameters;

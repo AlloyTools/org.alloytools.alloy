@@ -98,4 +98,10 @@ public interface Module {
     default TCommand getDefaultCommand() {
         return getRuns().values().iterator().next();
     }
+
+    /**
+     * Get the lost of modules that this module has opened (open ..)
+     */
+    List<Module> getOpens();
+
 }

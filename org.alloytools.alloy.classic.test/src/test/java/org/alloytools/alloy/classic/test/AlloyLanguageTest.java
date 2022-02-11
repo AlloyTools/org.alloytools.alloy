@@ -7,7 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.allotools.conversion.util.DTOs;
 import org.allotools.services.util.Services;
@@ -16,7 +18,7 @@ import org.alloytools.alloy.core.api.Compiler;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
-import org.alloytools.alloy.core.api.TRun;
+import org.alloytools.alloy.core.api.TCommand;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,7 +31,7 @@ public class AlloyLanguageTest {
 
     Alloy          alloy;
     Module         module;
-    TRun           run;
+    TCommand       command;
     private Solver solver;
     private String name;
 
@@ -56,7 +58,9 @@ public class AlloyLanguageTest {
                 }
                 assertTrue(f.getPath(), module.isValid());
                 for (Solver solver : alloy.getSolvers().values()) {
-                    for (TRun run : module.getRuns().values()) {
+                    Set<TCommand> commands = new HashSet<>(module.getRuns().values());
+                    commands.addAll(module.getChecks().values());
+                    for (TCommand run : commands) {
                         result.add(new Object[] {
                                                  f.getName(), alloy, module, run, solver
                         });
@@ -67,25 +71,25 @@ public class AlloyLanguageTest {
         return result;
     }
 
-    public AlloyLanguageTest(String name, Alloy alloy, Module module, TRun run, Solver solver) throws IOException {
+    public AlloyLanguageTest(String name, Alloy alloy, Module module, TCommand run, Solver solver) throws IOException {
         this.name = name;
         this.alloy = alloy;
         this.module = module;
-        this.run = run;
+        this.command = run;
         this.solver = solver;
     }
 
     @Test
     public void testAlloy() {
         long now = System.currentTimeMillis();
-        Solution solution = solver.solve(run, null, null, null);
+        Solution solution = solver.solve(command, null, null, null);
         try {
-            switch (run.getExpects()) {
+            switch (command.getExpects()) {
                 case SATISFIABLE :
-                    assertTrue(name + " - " + run + " was expecting a solution", solution.isSatisfied());
+                    assertTrue(name + " - " + command + " was expecting a solution", solution.isSatisfied());
                     break;
                 case UNSATISFIABLE :
-                    assertTrue(name + " - " + run + " was not expecting a solution", !solution.isSatisfied());
+                    assertTrue(name + " - " + command + " was not expecting a solution", !solution.isSatisfied());
                     break;
                 default :
                 case UNKNOWN :
@@ -93,7 +97,7 @@ public class AlloyLanguageTest {
                     break;
             }
         } finally {
-            System.out.printf("%-20s %-20s %12s %-5s %-12s: %s %s\n", name, solver, DTOs.readableTime(System.currentTimeMillis() - now), solution.isSatisfied(), run.getExpects(), module.getSourceOptions(run), run);
+            System.out.printf("%-20s %-5s:%-20s %-16s %-16s %-16s %-8s %-12s: %s %s\n", name, command.isCheck() ? "check" : "run", command.getName(), command.getExpects(), solver, DTOs.readableTime(System.currentTimeMillis() - now), solution.isSatisfied(), command.getExpects(), module.getSourceOptions(command), command.getExpression());
         }
     }
 

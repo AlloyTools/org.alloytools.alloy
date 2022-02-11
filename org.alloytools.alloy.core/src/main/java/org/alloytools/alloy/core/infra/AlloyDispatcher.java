@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import org.alloytools.alloy.context.api.AlloyContext;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
+import org.alloytools.alloy.infrastructure.api.AlloyMain.AlloyMains;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +169,8 @@ public class AlloyDispatcher extends ReporterAdapter {
             if (execute != null) {
                 err.println(execute);
             }
-
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             mains.values().forEach(IO::close);
         }
@@ -309,14 +311,23 @@ public class AlloyDispatcher extends ReporterAdapter {
                     throw new RuntimeException("Expected a fqn in the capability " + e);
 
                 Class< ? > mainClass = AlloyDispatcher.class.getClassLoader().loadClass(fqn);
-                AlloyMain mainAnn = mainClass.getAnnotation(AlloyMain.class);
-                if (mainAnn != null) {
-                    Object instance = getInstance(context, e, mainClass);
-                    MainDef main = new MainDef(instance, mainAnn.name(), mainAnn.isDefault());
-                    result.put(main.name, main);
-                    log.debug("found main class {}", main);
+                AlloyMains mains = mainClass.getAnnotation(AlloyMains.class);
+                if (mains != null) {
+                    for (AlloyMain am : mains.value()) {
+                        Object instance = getInstance(context, e, mainClass);
+                        MainDef main = new MainDef(instance, am.name(), am.isDefault());
+                        result.put(main.name, main);
+                        log.debug("found main class {}", main);
+                    }
                 } else {
-                    throw new RuntimeException("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
+                    AlloyMain am = mainClass.getAnnotation(AlloyMain.class);
+                    if (am != null) {
+                        Object instance = getInstance(context, e, mainClass);
+                        MainDef main = new MainDef(instance, am.name(), am.isDefault());
+                        result.put(main.name, main);
+                        log.debug("found main class {}", main);
+                    } else
+                        log.error("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
                 }
             } catch (ClassNotFoundException e1) {
                 throw new RuntimeException("In capability " + e + ", the fqn cannot be located as class in the current JAR: " + e1);

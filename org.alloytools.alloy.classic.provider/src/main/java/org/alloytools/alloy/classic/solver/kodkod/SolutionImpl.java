@@ -1,6 +1,5 @@
 package org.alloytools.alloy.classic.solver.kodkod;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -21,13 +20,15 @@ import edu.mit.csail.sdg.translator.A4Solution;
 
 class SolutionImpl implements Solution {
 
-    final Map<String,Atom> atoms = new HashMap<>();
-    final Relation         none  = new Relation(this, 0, Collections.emptyList());
+    final Map<String,Atom> atoms  = new HashMap<>();
+    final Relation         none   = new Relation(this, false);
+    final Relation         truthy = new Relation(this, true);
     final Module           module;
     final Command          command;
     final A4Solution       initial;
     final Solver           solver;
     final SolverOptions    options;
+
 
     public SolutionImpl(Module module, Solver solver, A4Solution initial, Command command, SolverOptions options) {
         this.module = module;
@@ -104,9 +105,8 @@ class SolutionImpl implements Solution {
 
     @Override
     public boolean hasVariables() {
-        // TODO sigs can
-
-        return getModule().getSignatures().values().stream().flatMap(sig -> sig.getFields().stream()).filter(field -> field.isVariable()).findAny().isPresent();
+        // TODO sigs can also be variable
+        return getModule().getSignatures().values().stream().flatMap(sig -> sig.getFieldMap().values().stream()).filter(field -> field.isVariable()).findAny().isPresent();
     }
 
     @Override
@@ -178,5 +178,9 @@ class SolutionImpl implements Solution {
 
     A4Solution fork(A4Solution solution, int state) {
         return solution.fork(state);
+    }
+
+    public IRelation truthy() {
+        return truthy;
     }
 }

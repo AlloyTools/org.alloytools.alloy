@@ -32,7 +32,7 @@ abstract class Tuple implements ITuple {
     public IRelation asRelation() {
         return new Relation(solution, arity(), new Tuple[] {
                                                             this
-        });
+        }, false);
     }
 
     @Override
@@ -42,7 +42,7 @@ abstract class Tuple implements ITuple {
         String del = "";
         for (int i = 0; i < arity(); i++) {
             sb.append(del);
-            sb.append(get(i));
+            sb.append(get(i).getName());
             del = "->";
         }
 

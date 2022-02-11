@@ -31,14 +31,14 @@ public interface Alloy {
 
     /**
      * Return a list of visualizers that can render an {@link Instance}
-     * 
+     *
      * @return a list of visualizers
      */
     List<Visualizer> getVisualizers();
 
     /**
      * Return a default compiler based on the current file system
-     * 
+     *
      * @return a compiler
      */
     Compiler compiler();
@@ -46,10 +46,21 @@ public interface Alloy {
     /**
      * Get a file in the Alloy private directory. The intention for this path is to
      * be used by solvers or visualizers for caches and preferences.
-     * 
+     *
      * @param pathWithSlashes a path separated with slashes also on windows
      * @return a Path to a file on the file system using slashes to separate
      *         directories.
      */
     File getPreferencesDir(String id);
+
+    default Instance[] getInstances(String source, int max) {
+        return getSolution(source).next(max);
+    }
+
+    default Solution getSolution(String source) {
+        Module module = compiler().compileSource(source);
+        Solver solver = getSolvers().get("");
+        Solution solution = solver.solve(module.getDefaultCommand(), null);
+        return solution;
+    }
 }

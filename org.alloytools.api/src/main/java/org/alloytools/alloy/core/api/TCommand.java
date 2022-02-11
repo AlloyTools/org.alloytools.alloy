@@ -40,4 +40,6 @@ public interface TCommand {
     Module getModule();
 
     TExpression getExpression();
+
+    boolean isCheck();
 }

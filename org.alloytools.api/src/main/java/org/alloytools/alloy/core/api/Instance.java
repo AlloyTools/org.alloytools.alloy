@@ -1,5 +1,9 @@
 package org.alloytools.alloy.core.api;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Represents a value assignment that satisfies an Alloy specification. An
  * instance belongs to a {@link Solution}. A solution can have multiple
@@ -50,20 +54,81 @@ public interface Instance {
      * @param expr the expression to evaluate.
      * @return the return value. This is either a Boolean or a IRelation
      */
-    Object eval(String expr);
+    IRelation eval(String expr);
 
-    /**
-     * Get the universe for this instance (i.e., all the atoms as a unary relation)
-     *
-     * @return the universe
-     */
-    IRelation universe();
 
-    /**
-     * Return the identity relation for this instance (i.e., a binary relation where
-     * each atom is mapped to itself)
-     *
-     * @return the identity relation
-     */
-    IRelation ident();
+    default IRelation univ() {
+        return eval("univ");
+    }
+
+    default IRelation iden() {
+        return eval("iden");
+    }
+
+    static Instance empty() {
+        return new Instance() {
+
+            @Override
+            public IRelation getField(TField field) {
+                return null;
+            }
+
+            @Override
+            public IRelation getAtoms(TSignature sig) {
+                return null;
+            }
+
+            @Override
+            public IRelation getVariable(String functionName, String varName) {
+                return null;
+            }
+
+            @Override
+            public IRelation eval(String expr) {
+                return null;
+            }
+
+            @Override
+            public Map<String,Object> getVariables() {
+                return Collections.emptyMap();
+            }
+
+            @Override
+            public Map<String,IRelation> getParameters(TFunction foo) {
+                return Collections.emptyMap();
+            }
+        };
+    }
+
+    Map<String,Object> getVariables();
+
+
+
+    @SuppressWarnings({
+                       "unchecked", "rawtypes"
+    } )
+    static Instance[] sort(Instance[] instances, String sortBy) {
+        Instance[] clone = instances.clone();
+        Arrays.sort(clone, (a, b) -> {
+            Comparable aa = null;
+            Comparable bb = null;
+            try {
+                aa = (Comparable) a.eval(sortBy);
+                bb = (Comparable) b.eval(sortBy);
+                if (aa == bb)
+                    return 0;
+                if (aa == null)
+                    return -1;
+                if (bb == null)
+                    return 1;
+                return aa.compareTo(bb);
+            } catch (Exception e) {
+                System.out.println(aa + " <> " + bb + " " + e);
+                return 0;
+            }
+        });
+        return clone;
+    }
+
+    Map<String,IRelation> getParameters(TFunction foo);
 }

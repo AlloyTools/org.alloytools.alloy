@@ -31,10 +31,30 @@ public class AlloyImplTest {
     Alloy  ai     = new AlloyClassicFacade();
     Solver solver = ai.getSolvers().get("");
 
+    @Test
+    public void testAtomNaming() {
+        Solution s = ai.getSolution("sig Foo {} run { #Foo in 2+3}");
+
+        Instance[] instances = s.next(4);
+        assertThat(instances).hasSize(2);
+
+        TSignature foo = s.getModule().getSignatures().get("Foo");
+
+        IRelation atoms0 = instances[0].getAtoms(foo);
+        IRelation atoms1 = instances[1].getAtoms(foo);
+        assertThat(atoms0).hasSize(2);
+        assertThat(atoms1).hasSize(3);
+
+        assertThat(atoms0.in(atoms1)).isTrue();
+        assertThat(atoms1.in(atoms0)).isFalse();
+
+    }
+
+
 
     @Test
     public void testStandardNext() {
-        Module module = ai.compiler().compileSource("one sig G { y : Int} { y in 0+1 } ");
+        Module module = ai.compiler().compileSource("one sig G { y : Int} { y in 0+1+2 } ");
         assertThat(module.getErrors()).isEmpty();
         Solution solve = solver.solve(module.getDefaultCommand(), null);
         List<Integer> l = new ArrayList<>();
@@ -45,13 +65,18 @@ public class AlloyImplTest {
             assertThat(r.isScalar()).isTrue();
             l.add(r.scalar().get().toInt());
         }
-        assertThat(l).containsExactlyInAnyOrder(0, 1);
+        assertThat(l).containsExactlyInAnyOrder(0, 1, 2);
     }
 
+    /*
+     * 2 static configurations, 4 traces, 2 possible traces
+     */
     @Test
     public void testNextTraces() {
-        Module module = ai.compiler().compileSource("   one sig G { var x : Int, y : Int } { y in 0+1 }\n" //
-                                                    + "    run { G.x = 2; G.x=3; G.x=4; G.x = G.y }");
+
+        Module module = ai.compiler().compileSource(//
+                                                    "   one sig G { var x : Int, y : Int } { y in 0+1 }\n" //
+                                                    + "    run { G.x=2 ; G.x=3 ; G.x=4 ; G.x=G.y }");
         assertThat(module.getErrors()).isEmpty();
         Solution solve = solver.solve(module.getDefaultCommand(), null);
         assertThat(solve.hasVariables()).isTrue();
@@ -59,27 +84,14 @@ public class AlloyImplTest {
         List<Instance> configurations = new ArrayList<>();
         for (Instance s : solve) {
             configurations.add(s);
+            Object eval = s.eval("G.y");
             Iterator<Trace> cursor = solve.trace(s).iterator();
 
             Instance[] t0 = cursor.next().instances();
             Instance[] t1 = cursor.next().instances();
 
-
         }
         assertThat(configurations).hasSize(2);
-        //        Instance next = solve.iterator().next();
-        //        int n = 0;
-        //        for (Trace trace : solve.trace(next)) {
-        //            System.out.printf("Traces %-4d l=%-3d %-3d%n", n, trace.instances().length, trace.loop());
-        //            for (Instance inst : trace.instances()) {
-        //                System.out.println(inst.eval("F.x"));
-        //            }
-        //            n++;
-        //            if (n > 100)
-        //                break;
-        //        }
-
-
 
     }
 
@@ -207,7 +219,7 @@ public class AlloyImplTest {
 
                 for (TSignature sig : module.getSignatures().values()) {
                     System.out.println(sig + "\t" + instance.getAtoms(sig));
-                    for (TField field : sig.getFields()) {
+                    for (TField field : sig.getFieldMap().values()) {
                         System.out.println("\t" + field.getName() + " " + instance.getField(field));
                     }
                 }
@@ -251,8 +263,8 @@ public class AlloyImplTest {
 
             for (Instance instance : solution) {
                 System.out.println(solution.none());
-                System.out.println(instance.universe());
-                System.out.println(instance.ident());
+                System.out.println(instance.eval("univ"));
+                System.out.println(instance.eval("iden"));
             }
         }
     }

@@ -2,7 +2,10 @@ package org.alloytools.alloy.classic.solver.kodkod;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.alloytools.alloy.classic.provider.AlloyModuleClassic;
 import org.alloytools.alloy.classic.provider.Atom;
@@ -11,6 +14,8 @@ import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.TField;
+import org.alloytools.alloy.core.api.TFunction;
+import org.alloytools.alloy.core.api.TFunction.Parameter;
 import org.alloytools.alloy.core.api.TSignature;
 
 import edu.mit.csail.sdg.alloy4.Err;
@@ -27,11 +32,12 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
 class InstanceImpl implements Instance {
 
 
-    final A4Solution   ai;
-    final CompModule   orig;
-    final TSignature   univ;
-    final SolutionImpl solution;
-    final int          state;
+    final A4Solution         ai;
+    final CompModule         orig;
+    final TSignature         univ;
+    final SolutionImpl       solution;
+    final int                state;
+    final Map<String,Object> variables = new TreeMap<>();
 
     InstanceImpl(SolutionImpl solution, A4Solution ai, int state) {
         this.solution = solution;
@@ -56,6 +62,17 @@ class InstanceImpl implements Instance {
     }
 
     @Override
+    public Map<String,Object> getVariables() {
+        if (variables.isEmpty()) {
+            for (ExprVar skolem : ai.getAllSkolems()) {
+                Object eval = eval(skolem);
+                variables.put(skolem.label, eval);
+            }
+        }
+        return variables;
+    }
+
+    @Override
     public IRelation getVariable(String fun, String var) {
         String name = "$" + solution.command.getName() + "_" + var;
         for (ExprVar skolem : ai.getAllSkolems()) {
@@ -68,35 +85,38 @@ class InstanceImpl implements Instance {
     }
 
     @Override
-    public Object eval(String cmd) {
+    public IRelation eval(String cmd) {
         try {
             Expr expr = orig.parseOneExpressionFromString(cmd);
-            Object eval = ai.eval(expr, state);
-            if (eval instanceof A4TupleSet) {
-                return to((A4TupleSet) eval);
-            }
-            if (eval instanceof Boolean) {
-                return eval;
-            }
-            if (expr.getType().contains(Sig.SIGINT)) {
-                String nr = (String) eval;
-                return Integer.parseInt(nr);
-            }
+            return eval(expr);
         } catch (Err | IOException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
-    @Override
-    public Relation universe() {
-        A4TupleSet eval = ai.eval((Sig) univ, state);
-        return to(eval);
-    }
-
-    @Override
-    public IRelation ident() {
-        return universe().toIdent();
+    private IRelation eval(Expr expr) {
+        Object eval = ai.eval(expr, state);
+        if (expr.getType().contains(Sig.SIGINT)) {
+            if (eval instanceof String) {
+                String nr = (String) eval;
+                Atom atom = createAtom((String) eval, Sig.SIGINT);
+                return new Relation(solution, atom);
+            }
+        }
+        if (eval instanceof A4TupleSet) {
+            return to((A4TupleSet) eval);
+        }
+        if (eval instanceof Boolean) {
+            Boolean b = (Boolean) eval;
+            if (b) {
+                return solution.truthy();
+            } else
+                return solution.none();
+        }
+        // TODO log
+        System.out.println("unknown type from eval " + eval);
+        throw null;
     }
 
     @Override
@@ -134,10 +154,21 @@ class InstanceImpl implements Instance {
     }
 
     Atom createAtom(String o, TSignature sig) {
-        return solution.atoms.computeIfAbsent(o, k -> {
+        Atom a = solution.atoms.computeIfAbsent(o, k -> {
             return new Atom(solution, sig, o, o);
         });
+        return a;
     }
 
+    @Override
+    public Map<String,IRelation> getParameters(TFunction foo) {
+        Map<String,IRelation> parameters = new HashMap<>();
+        String prefix = "$" + foo.getName() + "_";
+        for (Parameter parameter : foo.getParameters()) {
+            IRelation value = getVariable(foo.getName(), parameter.getName());
+            parameters.put(parameter.getName(), value);
+        }
+        return parameters;
+    }
 
 }

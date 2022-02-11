@@ -5,30 +5,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.allotools.services.util.Services;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.Compiler;
 import org.alloytools.alloy.core.api.CompilerMessage;
 import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.Position;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.SourceResolver;
-import org.alloytools.alloy.core.api.TCheck;
-import org.alloytools.alloy.core.api.TCommand;
-import org.alloytools.alloy.core.api.TExpression;
-import org.alloytools.alloy.core.api.TFunction;
-import org.alloytools.alloy.core.api.TRun;
-import org.alloytools.alloy.core.api.TSignature;
 import org.alloytools.alloy.core.api.Visualizer;
 import org.alloytools.alloy.core.spi.AlloySolverFactory;
 import org.alloytools.alloy.core.spi.AlloyVisualizerFactory;
@@ -36,8 +28,11 @@ import org.alloytools.metainf.util.ManifestAccess;
 
 import aQute.lib.io.IO;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.ConstList;
-import edu.mit.csail.sdg.ast.Sig;
+import edu.mit.csail.sdg.alloy4.ErrorAPI;
+import edu.mit.csail.sdg.alloy4.ErrorFatal;
+import edu.mit.csail.sdg.alloy4.ErrorSyntax;
+import edu.mit.csail.sdg.alloy4.ErrorType;
+import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 
@@ -108,189 +103,28 @@ public class AlloyClassicFacade implements Alloy {
                 List<Option> options = getOptions(source);
 
                 A4Reporter reporter = new A4Reporter();
-
+                List<CompilerMessage> errors = new ArrayList<>();
+                List<CompilerMessage> warnings = new ArrayList<>();
                 try {
                     CompModule module = CompUtil.parseEverything_fromString(reporter, source);
-                    return new AlloyModuleClassic() {
-
-                        @Override
-                        public Map<String,TSignature> getSignatures() {
-                            ConstList<Sig> sigs = module.getAllReachableSigs();
-
-                            Map<String,TSignature> all = sigs.stream().collect(Collectors.toMap(sk -> sk.label, sv -> sv));
-                            module.getAllSigs().forEach(sig -> {
-                                all.put(sig.label.substring("this/".length()), sig);
-                            });
-                            return all;
-                        }
-
-                        @Override
-                        public Map<String,TRun> getRuns() {
-                            Map<String,TRun> result = new LinkedHashMap<>();
-                            module.getAllCommands().stream().filter(c -> !c.isCheck()).map(r -> (TRun) new AbstractCommand(this, r)).forEach(e -> {
-                                result.put(e.getName(), e);
-                            });
-                            assert !result.isEmpty() : "If no commands are present we add a default command";
-                            return result;
-                        }
-
-                        @Override
-                        public Map<String,TCheck> getChecks() {
-                            return module.getAllCommands().stream().filter(c -> c.isCheck()).map(r -> (TCheck) new AbstractCommand(this, r)).collect(Collectors.toMap(kc -> kc.getName(), vc -> vc));
-                        }
-
-                        @Override
-                        public Map<String,TExpression> getFacts() {
-                            return module.getAllFacts().toList().stream().collect(Collectors.toMap(pk -> pk.a, pv -> pv.b));
-                        }
-
-                        @Override
-                        public Map<String,TFunction> getFunctions() {
-                            return module.getAllFunc().toList().stream().filter(f -> !f.isPred).collect(Collectors.toMap(pk -> pk.label, pv -> pv));
-                        }
-
-
-                        @Override
-                        public CompModule getOriginalModule() {
-                            return module;
-                        }
-
-                        @Override
-                        public Optional<String> getPath() {
-                            return Optional.ofNullable(path);
-                        }
-
-                        @Override
-                        public List<CompilerMessage> getWarnings() {
-                            return Collections.emptyList();
-                        }
-
-                        @Override
-                        public List<CompilerMessage> getErrors() {
-                            return Collections.emptyList();
-                        }
-
-                        @Override
-                        public boolean isValid() {
-                            return getErrors().isEmpty();
-                        }
-
-                        @Override
-                        public String toString() {
-                            return module.toString();
-                        }
-
-                        @Override
-                        public Map<String,String> getSourceOptions(TCommand command) {
-                            return extractOptions(options, command);
-                        }
-
-                        @Override
-                        public Compiler getCompiler() {
-                            return compiler();
-                        }
-
-                    };
+                    return new AlloyModuleClassic(module, path, source, compiler(), options);
+                } catch (ErrorAPI eapi) {
+                    errors.add(new ClassicCompilerMessage(path, source, eapi.msg, eapi.pos));
+                } catch (ErrorFatal eapi) {
+                    errors.add(new ClassicCompilerMessage(path, source, eapi.msg, eapi.pos));
+                } catch (ErrorSyntax eapi) {
+                    errors.add(new ClassicCompilerMessage(path, source, eapi.msg, eapi.pos));
+                } catch (ErrorType eapi) {
+                    errors.add(new ClassicCompilerMessage(path, source, eapi.msg, eapi.pos));
+                } catch (ErrorWarning eapi) {
+                    warnings.add(new ClassicCompilerMessage(path, source, eapi.msg, eapi.pos));
                 } catch (Exception e) {
-                    return new AlloyModuleClassic() {
-
-                        @Override
-                        public Optional<String> getPath() {
-                            return Optional.ofNullable(path);
-                        }
-
-                        @Override
-                        public List<CompilerMessage> getWarnings() {
-                            return Collections.emptyList();
-                        }
-
-                        @Override
-                        public List<CompilerMessage> getErrors() {
-                            return Collections.singletonList(new CompilerMessage() {
-
-                                @Override
-                                public int line() {
-                                    return 0;
-                                }
-
-                                @Override
-                                public String getSource() {
-                                    return source;
-                                }
-
-                                @Override
-                                public String getPath() {
-                                    return null;
-                                }
-
-                                @Override
-                                public String getMessage() {
-                                    return e.getMessage();
-                                }
-
-                                @Override
-                                public int column() {
-                                    return 0;
-                                }
-
-                                @Override
-                                public String toString() {
-                                    return line() + "," + column() + "# " + getMessage();
-                                }
-
-                                @Override
-                                public int span() {
-                                    return 0;
-                                }
-                            });
-                        }
-
-                        @Override
-                        public boolean isValid() {
-                            return false;
-                        }
-
-                        @Override
-                        public CompModule getOriginalModule() {
-                            return null;
-                        }
-
-                        @Override
-                        public Map<String,String> getSourceOptions(TCommand command) {
-                            return Collections.emptyMap();
-                        }
-
-                        @Override
-                        public Compiler getCompiler() {
-                            return compiler();
-                        }
-
-                        @Override
-                        public Map<String,TSignature> getSignatures() {
-                            return Collections.emptyMap();
-                        }
-
-                        @Override
-                        public Map<String,TRun> getRuns() {
-                            return Collections.emptyMap();
-                        }
-
-                        @Override
-                        public Map<String,TCheck> getChecks() {
-                            return Collections.emptyMap();
-                        }
-
-                        @Override
-                        public Map<String,TExpression> getFacts() {
-                            return Collections.emptyMap();
-                        }
-
-                        @Override
-                        public Map<String,TFunction> getFunctions() {
-                            return Collections.emptyMap();
-                        }
-                    };
+                    warnings.add(new ClassicCompilerMessage(path, source, e.getMessage(), Position.unknown()));
                 }
+                AlloyModuleClassic m = new AlloyModuleClassic(null, path, source, compiler(), options);
+                m.errors.addAll(errors);
+                m.warnings.addAll(warnings);
+                return m;
             }
 
             private List<Option> getOptions(String source) {
@@ -337,11 +171,6 @@ public class AlloyClassicFacade implements Alloy {
     @Override
     public String toString() {
         return "AlloyClassicFacade [solvers=" + solvers + "]";
-    }
-
-    private Map<String,String> extractOptions(List<Option> options, TCommand command) {
-        String name = command.getName();
-        return options.stream().filter(opt -> opt.glob.matcher(name).matches()).sorted().distinct().collect(Collectors.toMap(option -> option.key, option -> option.value));
     }
 
     @Override

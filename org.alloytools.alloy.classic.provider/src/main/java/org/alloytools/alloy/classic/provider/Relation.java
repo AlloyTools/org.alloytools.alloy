@@ -2,30 +2,66 @@ package org.alloytools.alloy.classic.provider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Solution;
 
+import aQute.lib.collections.ExtList;
+
 public class Relation implements IRelation {
 
     final Solution solution;
     final int      arity;
-    final ITuple[] tuples;
+    final Tuple[]  tuples;
+    final boolean  truthy;
 
-    Relation(Solution solution, int arity, Tuple[] tuples) {
+    Relation(Solution solution, int arity, Tuple[] tuples, boolean truthy) {
         this.solution = solution;
         this.tuples = tuples;
-        this.arity = arity;
+        this.arity = tuples.length == 0 ? 0 : arity;
+        this.truthy = truthy;
+        assert asSet().size() == tuples.length;
     }
 
     public Relation(Solution solution, int arity, List< ? extends IAtom> atoms) {
-        this(solution, arity, toTuples(solution, arity, atoms));
+        this(solution, arity, toTuples(solution, arity, atoms), true);
+    }
+
+    public Relation(Solution solution, int arity, Collection< ? extends ITuple> tuples) {
+        this(solution, arity, tuples.toArray(new Tuple[tuples.size()]), true);
+    }
+
+    public Relation(Solution s, boolean truthy) {
+        this(s, 0, new Tuple[0], truthy);
+    }
+
+    public Relation(Solution s, Atom atom) {
+
+        this(s, 0, new Tuple[] {
+                                new Tuple(s) {
+
+                                    @Override
+                                    public int arity() {
+                                        return 1;
+                                    }
+
+                                    @Override
+                                    public IAtom get(int n) {
+                                        if (n != 0)
+                                            throw new IllegalArgumentException("Invalid index for a tuple");
+                                        return atom;
+                                    }
+                                }
+        }, false);
     }
 
     @Override
@@ -36,6 +72,9 @@ public class Relation implements IRelation {
     @Override
     public IRelation join(IRelation right) {
         assert solution == right.getSolution();
+
+        if (this.arity == 0 || right.arity() == 0)
+            return solution.none();
 
         int arity = this.arity() + right.arity() - 2;
         List<IAtom> atoms = new ArrayList<>();
@@ -86,6 +125,9 @@ public class Relation implements IRelation {
     }
 
     private Relation split(int from, int to) {
+        if (this.isEmpty())
+            return (Relation) solution.none();
+
         assert from >= 0;
         assert from < to;
         assert to > from;
@@ -106,7 +148,7 @@ public class Relation implements IRelation {
 
     @Override
     public Iterator<ITuple> iterator() {
-        return Arrays.stream(tuples).iterator();
+        return new ExtList<ITuple>(tuples).iterator();
     }
 
     @Override
@@ -191,10 +233,98 @@ public class Relation implements IRelation {
         if ((obj == null) || (getClass() != obj.getClass()))
             return false;
         Relation other = (Relation) obj;
+        if (arity == 0 && other.arity == 0)
+            return true;
         if (arity != other.arity)
             return false;
+
         if (!Arrays.equals(tuples, other.tuples))
             return false;
         return true;
     }
+
+    @Override
+    public boolean in(IRelation other) {
+        if (this.isEmpty())
+            return true;
+
+        if (other.isEmpty())
+            return false;
+
+        if (wrongArity(other))
+            return false;
+
+        for (Tuple t : tuples) {
+            if (!other.contains(t))
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean contains(ITuple t) {
+        if (this.isEmpty())
+            return false;
+        for (Tuple tuple : tuples) {
+            if (tuple.equals(t))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public IRelation difference(IRelation other) {
+        if (other.isEmpty())
+            return this;
+
+        if (wrongArity(other))
+            return solution.none();
+
+        SortedSet<ITuple> a = asSet();
+        a.removeAll(other.asSet());
+        return new Relation(solution, arity, a);
+    }
+
+    @Override
+    public IRelation union(IRelation other) {
+        if (wrongArity(other))
+            return solution.none();
+
+        if (this.isEmpty())
+            return other;
+        if (other.isEmpty())
+            return this;
+
+        SortedSet<ITuple> a = asSet();
+        a.addAll(other.asSet());
+        return new Relation(solution, arity, a);
+    }
+
+    @Override
+    public IRelation intersection(IRelation other) {
+        if (wrongArity(other))
+            return solution.none();
+
+        if (this.isEmpty() || other.isEmpty())
+            return solution.none();
+
+        SortedSet<ITuple> a = asSet();
+        a.retainAll(other.asSet());
+        return new Relation(solution, arity, a);
+    }
+
+    private boolean wrongArity(IRelation other) {
+        return arity != 0 && other.arity() != 0 && arity != other.arity();
+    }
+
+    @Override
+    public SortedSet<ITuple> asSet() {
+        return new TreeSet<>(Arrays.asList(tuples));
+    }
+
+    @Override
+    public boolean isTruthy() {
+        return truthy;
+    }
+
 }

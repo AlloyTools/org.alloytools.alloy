@@ -54,4 +54,11 @@ public class AbstractCommand implements TCommand, TRun, TCheck {
     public TExpression getExpression() {
         return command.getExpression();
     }
+
+    @Override
+    public boolean isCheck() {
+        return command.isCheck();
+    }
+
+
 }

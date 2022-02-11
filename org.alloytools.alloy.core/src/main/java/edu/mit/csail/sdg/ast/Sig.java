@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -677,8 +678,8 @@ public abstract class Sig extends Expr implements Clause, TSignature {
         }
 
         @Override
-        public Optional< ? extends TField> getField(String fieldName) {
-            return getFields().stream().filter(f -> f.getName().equals(fieldName)).findAny();
+        public Optional<TField> getField(String fieldName) {
+            return Optional.ofNullable(getFieldMap().get(fieldName));
         }
 
     }
@@ -954,12 +955,25 @@ public abstract class Sig extends Expr implements Clause, TSignature {
     }
 
     /**
+     * Return the map of fields as a combined unmodifiable list (without telling you
+     * which fields are declared to be disjoint)
+     */
+    @Override
+    public final Map<String,TField> getFieldMap() {
+        Map<String,TField> ans = new TreeMap<>();
+        for (Decl d : fields)
+            for (ExprHasName n : d.names)
+                ans.put(n.label, (Field) n);
+        return ans;
+    }
+
+
+    /**
      * Return the list of fields as a combined unmodifiable list (without telling
      * you which fields are declared to be disjoint)
      */
-    @Override
     public final List<Field> getFields() {
-        ArrayList<Field> ans = new ArrayList<>();
+        List<Field> ans = new ArrayList<>();
         for (Decl d : fields)
             for (ExprHasName n : d.names)
                 ans.add((Field) n);

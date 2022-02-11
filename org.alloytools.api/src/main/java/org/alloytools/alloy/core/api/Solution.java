@@ -1,6 +1,8 @@
 package org.alloytools.alloy.core.api;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -123,5 +125,15 @@ public interface Solution extends Iterable<Instance> {
         int loop();
     }
 
+    default Instance[] next(int max) {
+        List<Instance> l = new ArrayList<>();
+        for (Instance instance : this) {
+            l.add(instance);
+            if (l.size() >= max)
+                break;
+        }
+
+        return l.toArray(new Instance[l.size()]);
+    }
 
 }

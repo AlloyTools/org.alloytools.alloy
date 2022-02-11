@@ -1,6 +1,6 @@
 package org.alloytools.alloy.core.api;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -10,23 +10,23 @@ public interface TSignature {
 
     /**
      * The name of the signature
-     * 
+     *
      * @return the name of the signature.
      */
     String getName();
 
     /**
      * The field relations associated with the signature
-     * 
+     *
      * @return the fields
      */
-    List< ? extends TField> getFields();
+    Map<String,TField> getFieldMap();
 
     /**
      * Get a particular field
-     * 
+     *
      * @param fieldName the field name
      * @return an optional field
      */
-    Optional< ? extends TField> getField(String fieldName);
+    Optional<TField> getField(String fieldName);
 }

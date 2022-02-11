@@ -102,11 +102,6 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
     }
 
     @Override
-    public String toString() {
-        return "AbstractKodkodSolver []";
-    }
-
-    @Override
     public boolean isJavaOnly() {
         return false;
     }
