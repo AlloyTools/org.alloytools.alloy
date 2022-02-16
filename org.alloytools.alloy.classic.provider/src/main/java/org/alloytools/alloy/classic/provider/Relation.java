@@ -22,29 +22,27 @@ public class Relation implements IRelation {
     final Solution solution;
     final int      arity;
     final Tuple[]  tuples;
-    final boolean  truthy;
 
-    Relation(Solution solution, int arity, Tuple[] tuples, boolean truthy) {
+    Relation(Solution solution, int arity, Tuple[] tuples) {
         this.solution = solution;
         this.tuples = tuples;
         this.arity = tuples.length == 0 ? 0 : arity;
-        this.truthy = truthy;
         assert asSet().size() == tuples.length;
     }
 
     public Relation(Solution solution, int arity, List< ? extends IAtom> atoms) {
-        this(solution, arity, toTuples(solution, arity, atoms), true);
+        this(solution, arity, toTuples(solution, arity, atoms));
     }
 
     public Relation(Solution solution, int arity, Collection< ? extends ITuple> tuples) {
-        this(solution, arity, tuples.toArray(new Tuple[tuples.size()]), true);
+        this(solution, arity, tuples.toArray(new Tuple[tuples.size()]));
     }
 
-    public Relation(Solution s, boolean truthy) {
-        this(s, 0, new Tuple[0], truthy);
+    public Relation(Solution s) {
+        this(s, 0, new Tuple[0]);
     }
 
-    public Relation(Solution s, Atom atom) {
+    public Relation(Solution s, IAtom atom) {
 
         this(s, 0, new Tuple[] {
                                 new Tuple(s) {
@@ -61,7 +59,7 @@ public class Relation implements IRelation {
                                         return atom;
                                     }
                                 }
-        }, false);
+        });
     }
 
     @Override
@@ -133,12 +131,29 @@ public class Relation implements IRelation {
         assert to > from;
         assert to <= arity;
 
-        List<IAtom> atoms = new ArrayList<>();
+        int arity = to - from;
+
+        TreeSet<Tuple> tuples = new TreeSet<>();
         for (ITuple tuple : this) {
+            List<IAtom> atoms = new ArrayList<>();
             for (int i = from; i < to; i++)
                 atoms.add(tuple.get(i));
+            Tuple t = new Tuple(solution) {
+
+                @Override
+                public int arity() {
+                    return arity;
+                }
+
+                @Override
+                public IAtom get(int n) {
+                    // TODO Auto-generated method stub
+                    return atoms.get(n);
+                }
+            };
+            tuples.add(t);
         }
-        return new Relation(solution, to - from, atoms);
+        return new Relation(solution, arity, tuples);
     }
 
     @Override
@@ -322,9 +337,11 @@ public class Relation implements IRelation {
         return new TreeSet<>(Arrays.asList(tuples));
     }
 
+
     @Override
-    public boolean isTruthy() {
-        return truthy;
+    public IRelation select(IAtom right) {
+        IRelation r = new Relation(solution, right);
+        return r.join(this);
     }
 
 }

@@ -32,7 +32,7 @@ abstract class Tuple implements ITuple {
     public IRelation asRelation() {
         return new Relation(solution, arity(), new Tuple[] {
                                                             this
-        }, false);
+        });
     }
 
     @Override

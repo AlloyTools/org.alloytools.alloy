@@ -1,11 +1,16 @@
 package org.alloytools.alloy.classic.provider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Solution;
+import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TSignature;
+
+import edu.mit.csail.sdg.ast.Sig;
 
 public class Atom implements IAtom {
 
@@ -18,6 +23,7 @@ public class Atom implements IAtom {
     final TSignature           sig;
     final Solution             solution;
     final int                  id;
+    final BasicType            type;
 
     public Atom(Solution solution, TSignature sig, Object atom, String name) {
         this.id = ID.getAndIncrement();
@@ -36,6 +42,24 @@ public class Atom implements IAtom {
                 index = 0;
             }
         }
+
+        type = getType(sig);
+    }
+
+    private BasicType getType(TSignature s) {
+        if (s == Sig.SIGINT)
+            return BasicType.NUMBER;
+        if (s == Sig.STRING)
+            return BasicType.STRING;
+
+        List<TField> fields = new ArrayList<>(s.getFieldMap().values());
+        if (fields.isEmpty()) {
+            if (s == solution.bool())
+                return BasicType.BOOLEAN;
+            else
+                return BasicType.IDENTIFIER;
+        }
+        return BasicType.OBJECT;
     }
 
     @Override
@@ -45,7 +69,7 @@ public class Atom implements IAtom {
 
     @Override
     public String toString() {
-        return name + " [id=" + id + "]";
+        return name;
     }
 
     @Override
@@ -105,7 +129,40 @@ public class Atom implements IAtom {
     }
 
     @Override
+    public BasicType getBasicType() {
+        return type;
+    }
+
+    @Override
     public int toInt() {
-        return Integer.parseInt(getName());
+        if (type == BasicType.NUMBER)
+            return index;
+        else
+            throw new IllegalArgumentException("Not an integer but a " + sig);
+    }
+
+
+    boolean toBool() {
+        if (type == BasicType.BOOLEAN)
+            return getName().equals("true");
+        else
+            throw new IllegalArgumentException("Not a boolean but a " + sig);
+    }
+
+    @Override
+    public Object natural() {
+        switch (getBasicType()) {
+            case BOOLEAN :
+                return toBool();
+            case NUMBER :
+                return toInt();
+            case STRING :
+                return toString();
+
+            default :
+            case IDENTIFIER :
+            case OBJECT :
+                return null;
+        }
     }
 }

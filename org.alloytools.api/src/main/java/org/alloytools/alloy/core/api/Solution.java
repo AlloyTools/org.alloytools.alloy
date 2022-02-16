@@ -54,7 +54,6 @@ public interface Solution extends Iterable<Instance> {
      */
     IRelation none();
 
-
     /**
      * Return true if the model that this solution was derived from had variables.
      * Models with variables can create <em>traces</em> where the values of the
@@ -135,5 +134,7 @@ public interface Solution extends Iterable<Instance> {
 
         return l.toArray(new Instance[l.size()]);
     }
+
+    TSignature bool();
 
 }

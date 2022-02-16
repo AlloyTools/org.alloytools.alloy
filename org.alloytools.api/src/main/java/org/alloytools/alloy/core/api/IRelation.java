@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 
+
 /**
  * A relation is a list of {@link ITuple}s. The {@link #arity()} is the arity
  * (length) of each tuple in this relation (all tuples in a relation must have
@@ -42,6 +43,14 @@ public interface IRelation extends Iterable<ITuple> {
      * @return the result of the join
      */
     IRelation join(IRelation right);
+
+    /**
+     * Join this relation with another one
+     *
+     * @param right the relation to join with
+     * @return the result of the join
+     */
+    IRelation select(IAtom right);
 
     /**
      * Create a relation product of this relation and another one
@@ -196,5 +205,7 @@ public interface IRelation extends Iterable<ITuple> {
      */
     SortedSet<ITuple> asSet();
 
-    boolean isTruthy();
+    default int toInt() {
+        return scalar().map(a -> a.toInt()).orElseThrow(IllegalArgumentException::new);
+    }
 }

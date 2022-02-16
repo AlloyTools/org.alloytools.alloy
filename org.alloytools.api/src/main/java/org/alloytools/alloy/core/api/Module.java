@@ -3,6 +3,7 @@ package org.alloytools.alloy.core.api;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Represents an Alloy Module
@@ -22,7 +23,7 @@ public interface Module {
      *
      * @return a list of sigs
      */
-    Map<String,TSignature> getSignatures();
+    List<TSignature> getSignatures();
 
     /**
      * Get any run commands defined in the module
@@ -50,7 +51,7 @@ public interface Module {
      *
      * @return the list of available check commands
      */
-    Map<String,TFunction> getFunctions();
+    Set<TFunction> getFunctions();
 
 
     /**

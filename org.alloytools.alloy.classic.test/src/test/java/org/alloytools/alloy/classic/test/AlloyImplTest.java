@@ -22,6 +22,7 @@ import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solution.Trace;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.TField;
+import org.alloytools.alloy.core.api.TFunction;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TSignature;
 import org.junit.Test;
@@ -187,7 +188,12 @@ public class AlloyImplTest {
         for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
-            List<Integer> collect = solution.stream().map(instance -> instance.getVariable("two", "y").scalar().orElseThrow(RuntimeException::new).toInt()).sorted().collect(Collectors.toList());
+            TFunction two = solution.getModule().getFunctions().get("two");
+            List<Integer> collect = new ArrayList<>();
+            for (Instance inst : solution) {
+                IRelation y = inst.getParameters(two).get("y");
+                collect.add(y.toInt());
+            }
             assertEquals(Arrays.asList(1, 2, 3), collect);
         }
     }

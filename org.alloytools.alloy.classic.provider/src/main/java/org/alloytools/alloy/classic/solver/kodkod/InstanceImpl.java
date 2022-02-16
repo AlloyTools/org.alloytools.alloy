@@ -100,7 +100,7 @@ class InstanceImpl implements Instance {
         if (expr.getType().contains(Sig.SIGINT)) {
             if (eval instanceof String) {
                 String nr = (String) eval;
-                Atom atom = createAtom((String) eval, Sig.SIGINT);
+                Atom atom = solution.createAtom((String) eval, Sig.SIGINT);
                 return new Relation(solution, atom);
             }
         }
@@ -110,9 +110,9 @@ class InstanceImpl implements Instance {
         if (eval instanceof Boolean) {
             Boolean b = (Boolean) eval;
             if (b) {
-                return solution.truthy();
+                return solution.true_;
             } else
-                return solution.none();
+                return solution.false_;
         }
         // TODO log
         System.out.println("unknown type from eval " + eval);
@@ -142,22 +142,15 @@ class InstanceImpl implements Instance {
                 //
 
                 if (sig.getName().startsWith("seq/Int")) {
-                    createAtom("[" + atomName + "]", sig);
+                    solution.createAtom("[" + atomName + "]", sig);
                     sig = solution.module.getSignatures().get("Int");
                 }
-                Atom atom = createAtom(atomName, sig);
+                Atom atom = solution.createAtom(atomName, sig);
                 atoms.add(atom);
             }
         }
 
         return new Relation(solution, set.arity(), atoms);
-    }
-
-    Atom createAtom(String o, TSignature sig) {
-        Atom a = solution.atoms.computeIfAbsent(o, k -> {
-            return new Atom(solution, sig, o, o);
-        });
-        return a;
     }
 
     @Override
@@ -169,6 +162,19 @@ class InstanceImpl implements Instance {
             parameters.put(parameter.getName(), value);
         }
         return parameters;
+    }
+
+    @Override
+    public Map<TField,IRelation> getObject(IAtom atom) {
+        TSignature sig = atom.getSig();
+        Map<TField,IRelation> result = new HashMap<>();
+        for (Map.Entry<String,TField> e : sig.getFieldMap().entrySet()) {
+            TField f = e.getValue();
+            IRelation allData = getField(f);
+            IRelation objectData = allData.select(atom);
+            result.put(f, objectData);
+        }
+        return result;
     }
 
 }

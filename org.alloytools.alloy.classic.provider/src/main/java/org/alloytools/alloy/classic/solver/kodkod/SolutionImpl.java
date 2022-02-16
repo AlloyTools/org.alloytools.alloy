@@ -1,9 +1,11 @@
 package org.alloytools.alloy.classic.solver.kodkod;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.alloytools.alloy.classic.provider.Atom;
 import org.alloytools.alloy.classic.provider.Relation;
@@ -14,20 +16,40 @@ import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.SolverOptions;
 import org.alloytools.alloy.core.api.TCommand;
+import org.alloytools.alloy.core.api.TField;
+import org.alloytools.alloy.core.api.TSignature;
 
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.translator.A4Solution;
 
-class SolutionImpl implements Solution {
+public class SolutionImpl implements Solution {
 
     final Map<String,Atom> atoms  = new HashMap<>();
-    final Relation         none   = new Relation(this, false);
-    final Relation         truthy = new Relation(this, true);
     final Module           module;
     final Command          command;
     final A4Solution       initial;
     final Solver           solver;
     final SolverOptions    options;
+    final Relation         none   = new Relation(this);
+    final TSignature       bool   = new TSignature() {
+
+                                      @Override
+                                      public String getName() {
+                                          return "bool";
+                                      }
+
+                                      @Override
+                                      public Map<String,TField> getFieldMap() {
+                                          return Collections.emptyMap();
+                                      }
+
+                                      @Override
+                                      public Optional<TField> getField(String fieldName) {
+                                          return Optional.empty();
+                                      }
+                                  };
+    final Relation         true_  = new Relation(this, createAtom("true", bool));
+    final Relation         false_ = new Relation(this, createAtom("false", bool));
 
 
     public SolutionImpl(Module module, Solver solver, A4Solution initial, Command command, SolverOptions options) {
@@ -180,7 +202,17 @@ class SolutionImpl implements Solution {
         return solution.fork(state);
     }
 
-    public IRelation truthy() {
-        return truthy;
+    Atom createAtom(String o, TSignature sig) {
+        Atom a = atoms.computeIfAbsent(o, k -> {
+            return new Atom(this, sig, o, o);
+        });
+        return a;
     }
+
+    @Override
+    public TSignature bool() {
+        return bool;
+    }
+
+
 }

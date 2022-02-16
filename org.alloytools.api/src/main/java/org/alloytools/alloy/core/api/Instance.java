@@ -52,9 +52,11 @@ public interface Instance {
      * syntax?
      *
      * @param expr the expression to evaluate.
-     * @return the return value. This is either a Boolean or a IRelation
+     * @return the return value.
      */
+
     IRelation eval(String expr);
+
 
 
     default IRelation univ() {
@@ -97,6 +99,11 @@ public interface Instance {
             public Map<String,IRelation> getParameters(TFunction foo) {
                 return Collections.emptyMap();
             }
+
+            @Override
+            public Map<TField,IRelation> getObject(IAtom atom) {
+                return Collections.emptyMap();
+            }
         };
     }
 
@@ -131,4 +138,6 @@ public interface Instance {
     }
 
     Map<String,IRelation> getParameters(TFunction foo);
+
+    Map<TField,IRelation> getObject(IAtom atom);
 }
