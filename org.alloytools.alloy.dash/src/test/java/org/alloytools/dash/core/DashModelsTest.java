@@ -17,7 +17,7 @@ import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.parser.DashValidation;
 
 public class DashModelsTest {
-
+    /*
     //Dash Parser Unit Tests
     //@Test
     public void testStates() throws Exception {
@@ -661,4 +661,5 @@ public class DashModelsTest {
 
         DashValidation.clearContainers();
     }
+    */
 }

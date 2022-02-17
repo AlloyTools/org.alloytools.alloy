@@ -31,12 +31,4 @@ Private-Package: \
 
 src=${^src},gen/java
 
--generate: \
-    parser/; \
-        output=gen/java/; \
-        workingdir=gen/java/edu/mit/csail/sdg/parser; \
-        generate= \
-            "JFlex.Main -d . -nobak ./parser/Alloy.lex; \
-             java_cup.Main -dump -parser CompParser -symbols CompSym -compact_red <./parser/Alloy.cup 2>target/report"
-
 -fixupmessages: "Export edu.mit.csail.sdg.parser"

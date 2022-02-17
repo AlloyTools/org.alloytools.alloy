@@ -42,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -268,7 +269,7 @@ public final class DashModule extends Browsable implements Module {
     private final Map<String,Macro>          macros      = new LinkedHashMap<String,Macro>();
 
     /** Each assertion name is mapped to its Expr. */
-    private final Map<String,Expr>           asserts     = new LinkedHashMap<String,Expr>();
+    public final Map<String,Expr>           asserts     = new LinkedHashMap<String,Expr>();
 
     /**
      * The list of facts; each fact is either an untypechecked Exp or a typechecked
@@ -280,9 +281,9 @@ public final class DashModule extends Browsable implements Module {
      * The list of (CommandName,Command,Expr) triples; NOTE: duplicate command names
      * are allowed.
      */
-    public final List<Command>              commands    = new ArrayList<Command>();
+    public final List<Command>              commands     = new ArrayList<Command>();
     
-    public CompModule         compModule      = null;
+    public CompModule         			    compModule   = null;
 
 
     //================================================DASH INTERNAL DATA STRUCTURE=================================================//
@@ -313,11 +314,6 @@ public final class DashModule extends Browsable implements Module {
      * Each state name is mapped to its respective State AST
      */
     public Map<String,DashState>         states                 = new LinkedHashMap<String,DashState>();
-    
-    /**
-     * Each Parameterized State is stored in this list (Dash+)
-     */
-    public List<String>					 parameterizedStates    = new ArrayList<String>();
 
     /**
      * A list of the default states in the Dash Model. This will be used when
@@ -343,6 +339,11 @@ public final class DashModule extends Browsable implements Module {
      */
     public Map<String,Expr>              variable2Expression    = new LinkedHashMap<String,Expr>();
     public Map<String,Expr>              envVariable2Expression = new LinkedHashMap<String,Expr>();
+    
+    /**
+     * Each variable name is mapped to the Concurrent State in which they are declared
+     */
+    public Map<String,DashConcState>     variable2ConcState     = new LinkedHashMap<String,DashConcState>();
 
     /**
      * Each transition name is mapped to its respective Transiton AST
@@ -1363,11 +1364,15 @@ public final class DashModule extends Browsable implements Module {
      */
     public void addTopLevelConcState(Pos pos, String name, List<Object> stateItems, ExprVar param) {
         DashConcState topLevelConcState = new DashConcState(pos, name, stateItems, param);
+        
         topLevelConcState.modifiedName = name;
 
         topLevelConcStates.put(topLevelConcState.modifiedName, topLevelConcState);
         concStates.put(topLevelConcState.modifiedName, topLevelConcState);
         concStateNames.add(topLevelConcState.modifiedName);
+    
+        if(topLevelConcStates.values().size() > 1)
+        	stateHierarchy = true;
 
         for (Object item : stateItems) {
             if (item instanceof DashConcState) {
@@ -1375,7 +1380,7 @@ public final class DashModule extends Browsable implements Module {
                 addConcState(topLevelConcState, (DashConcState) item);
             }
             if (item instanceof DashState)
-                addState(topLevelConcState, topLevelConcState, (DashState) item);
+                addState(topLevelConcState, (DashState) item);
             if (item instanceof DashTransTemplate)
                 addTransTemplate(topLevelConcState, (DashTransTemplate) item);
             if (item instanceof DashEvent)
@@ -1393,69 +1398,43 @@ public final class DashModule extends Browsable implements Module {
         }
     }
 
-    /*
-     * This is responsible for adding a conc state to the internal data structure.
-     * Once it adds a conc state object to the hashmap responsible for holding conc
-     * states, it will iterate through the items in the conc state and look for
-     * states and transitions in the concurrent state and call respective functions
-     * for adding these items to the DASH Internal Data Structure
-     */
-    public void addConcState(DashConcState parent, DashConcState concState) {
-        concState.modifiedName = parent.modifiedName + '_' + concState.name;
-        concState.parent = parent;
-
-        concStates.put(concState.modifiedName, concState);
-        concStateNames.add(concState.modifiedName);
-
-        for (DashState state : concState.states)
-            addState(concState, concState, state);
-        for (DashEvent event : concState.events)
-            addEvent(concState, event);
-        for (DashInit init : concState.init)
-            addInitCondition(init, concState);
-        for (DashAction action : concState.action)
-            addAction(action, concState);
-        for (DashInvariant invariant : concState.invariant)
-            addInvariant(invariant, concState);
-        for (Decl decl : concState.decls)
-            readVariablesDeclared(decl, concState);
-    }
-    
-    /*
-     * This is called by the addTopLevelConcState/addConcState function once it
-     * finds a state inside a conc state/OR state
-     */
-    public void addState(DashConcState concParent, Object parent, DashState state) {
-        String modifiedStateName = "";
-        
-        if (parent instanceof DashConcState) {
-            modifiedStateName = ((DashConcState) parent).modifiedName + '_' + state.name;
-            state.modifiedName = modifiedStateName;
-            state.parent = parent;
-            state.parentConcState = concParent;
-        } else if (parent instanceof DashState) {
-            modifiedStateName = ((DashState) parent).modifiedName + '_' + state.name;
-            state.modifiedName = modifiedStateName;
-            state.parent = parent;
-            state.parentConcState = concParent;
-        }
-
-        if (state.isDefault)
-            defaultStates.add(state);
-
-        states.put(modifiedStateName, state);
-
-        for (DashState innerState : state.states) {
-            addState(concParent, state, innerState);
-        }
-    }
+    /*	
+	 * This is responsible for adding a conc state to the internal data structure.	
+	 * Once it adds a conc state object to the hashmap responsible for holding conc	
+	 * states, it will iterate through the items in the conc state and look for	
+	 * states and transitions in the concurrent state and call respective functions	
+	 * for adding these items to the DASH Internal Data Structure	
+	 */	
+	public void addConcState(DashConcState parent, DashConcState concState) {	
+	    concState.modifiedName = parent.modifiedName + '_' + concState.name;	
+	    concState.parent = parent;	
+	    concStates.put(concState.modifiedName, concState);	
+	    concStateNames.add(concState.modifiedName);
+		
+	    for(DashConcState innerConcState: concState.concStates)	
+	    	addConcState(concState, innerConcState);
+	    for (DashState state : concState.states)	 
+	        addState(concState, state);	
+	    for (DashEvent event : concState.events)	
+	        addEvent(concState, event);	
+	    for (DashInit init : concState.init)	
+	        addInitCondition(init, concState);	
+	    for (DashAction action : concState.action)	
+	        addAction(action, concState);	
+	    for (DashCondition condition : concState.condition)	
+	    	conditions.put(condition.name, condition);	
+	    for (DashInvariant invariant : concState.invariant)	
+	        addInvariant(invariant, concState);	
+	    for (Decl decl : concState.decls)	
+	        readVariablesDeclared(decl, concState);	
+	}
 
     public void addInitCondition(DashInit init, DashConcState parent) {
         init.parent = parent;
 
         /*
          * Breakdown the AND expression (if it is an AND expr) into a list of
-         * expressions. This makes it easier to print each expression
+         * expressions. This would make it easier to print each expression
          */
         if (init.expr != null) {
             if (init.expr instanceof ExprUnary) {
@@ -1481,7 +1460,7 @@ public final class DashModule extends Browsable implements Module {
 
         /*
          * Breakdown the AND expression (if it is an AND expr) into a list of
-         * expressions. This makes it easier to print each expression
+         * expressions. This would make it easier to print each expression
          */
         if (invariant.expr != null) {
             if (invariant.expr instanceof ExprUnary) {
@@ -1529,6 +1508,31 @@ public final class DashModule extends Browsable implements Module {
     }
 
     /*
+     * This is called by the addTopLevelConcState/addConcState function once it
+     * finds a state inside a conc state/OR state
+     */
+    public void addState(Object parent, DashState state) {
+        String modifiedStateName = "";
+        state.parent = parent;
+
+        if (parent instanceof DashConcState)
+            modifiedStateName = ((DashConcState) parent).modifiedName + '_' + state.name;
+        else if (parent instanceof DashState)
+            modifiedStateName = ((DashState) parent).modifiedName + '_' + state.name;
+        
+        state.modifiedName = modifiedStateName;
+
+        if (state.isDefault)
+            defaultStates.add(state);
+
+        states.put(modifiedStateName, state);
+
+        for (DashState innerState : state.states) {
+            addState(state, innerState);
+        }
+    }
+
+    /*
      * This is called by the addConcState function once it finds a transition
      * template
      */
@@ -1539,6 +1543,7 @@ public final class DashModule extends Browsable implements Module {
 
     public void addEvent(DashConcState parent, DashEvent event) {
         String modifiedName = parent.modifiedName + "_" + event.name;
+        event.modifiedName = modifiedName;
         event.parentName = parent.name;
 
         if (event.type.equals("env event") || event.type.equals("event")) {
@@ -1565,6 +1570,7 @@ public final class DashModule extends Browsable implements Module {
             //Set variable name to as it would appear in the Alloy model and map it to its
             //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
             variable2Expression.put(concState.modifiedName + "_" + name.toString(), decl.expr);
+            variable2ConcState.put(concState.modifiedName + "_" + name.toString(), concState);
         }
 
         for (String var : variables) {
@@ -1611,6 +1617,8 @@ public final class DashModule extends Browsable implements Module {
     
     public void importModules() {
     	status = 0;
+    	if (DashOptions.ctlModelChecking)
+    		addOpen(null, null, ExprVar.make(null, "util/ctl"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
 		addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null); 
 		addOpen(null, null, ExprVar.make(null, "util/stepUtil"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
 		if(stateHierarchy)
@@ -1619,6 +1627,7 @@ public final class DashModule extends Browsable implements Module {
     }
     
     // =============================================DASH MODULE TO STRING FUNCTIONS ============================================//
+    
     
     public void moduleToString() throws IOException {
 

@@ -2,6 +2,7 @@ package ca.uwaterloo.watform.transform;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ca.uwaterloo.watform.ast.DashAction;
@@ -19,12 +20,13 @@ import ca.uwaterloo.watform.ast.DashTrans;
 import ca.uwaterloo.watform.ast.DashTransTemplate;
 import ca.uwaterloo.watform.ast.DashWhenExpr;
 import ca.uwaterloo.watform.parser.DashModule;
+import ca.uwaterloo.watform.parser.DashValidation;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
- 
+
 public class DashToCoreDash {
 
     static int transitionCount = 0;
@@ -33,19 +35,66 @@ public class DashToCoreDash {
         transitionCount = 0;
         getAllTransitions(module);
         modifyTransitions(module);
-        
-        getParameterizedConcStates(module);
-        
+        modifyGoToCommands(module);   
+        modifyTransitionParent(module); 
         return module;
     }
-    
-    static void getParameterizedConcStates(DashModule module)
-    {
-        for (DashState state : module.states.values()) {
-            System.out.println("State: " + state.modifiedName + " Parent: " + state.parentConcState.modifiedName + " Param: " + state.parentConcState.isParameterized);
+
+    static void modifyTransitions(DashModule module) {
+        for (DashTrans trans : module.transitions.values()) {
+            trans.fromExpr = new DashFrom(completeFromCommand(trans, module), false);
+            trans.gotoExpr = new DashGoto(completeGoToCommand(trans, module));
+            trans.onExpr = new DashOn(null, completeOnCommand(trans, module), checkInternalEvent(trans, module));
+            trans.sendExpr = new DashSend(null, completeSendCommand(trans, module));
+            trans.doExpr = addAction(trans.doExpr, module);
+            trans.whenExpr = addCondition(trans.whenExpr, module);
         }
     }
     
+    /* Check the source state of a transition, and set that source state as its parent. Simplifies the 
+     * CoreDash to Alloy AST conversion. Then add this transition to the list of transitions for that state */
+    static void modifyTransitionParent(DashModule module) {
+        for (DashTrans trans : module.transitions.values()) {
+        	DashState sourceState = getStateFromName(trans.fromExpr.fromExpr.get(0).replace("/", "_"), module);
+       	
+        	if(sourceState != null) {
+        		trans.parentState = sourceState;
+        		
+        		for(DashState state: module.states.values()) {
+        			if(state.modifiedName.equals(sourceState.modifiedName))
+        				state.modifiedTransitions.add(trans);
+        		}
+        	}     	
+        }
+    }  
+    
+    /* Check if a GoTo command transitions to a state that has inner OR states. If so,
+     * then that transition will need to transition to the default inner OR state */
+    static void modifyGoToCommands(DashModule module) {
+        for (DashTrans trans : module.transitions.values()) {
+        	DashState destinationState = getStateFromName(trans.gotoExpr.gotoExpr.get(0), module);
+        	
+        	String defaultInnerState = "";
+        	/* destState is null if the destination state is a concurrent state (it has no OR states) */
+        	if(destinationState != null) {
+        		defaultInnerState = getDefaultState(trans, destinationState);
+        		trans.gotoExpr = new DashGoto(new ArrayList<String>(Arrays.asList(defaultInnerState)));
+        	}     	
+       
+        }
+    }
+     
+    //Check to see if a state that we are transitioning to has an inner default state,
+    //if it does, then the transition will need to transition to that state instead
+    static String getDefaultState(DashTrans trans, DashState state) { 
+    	for(DashState innerState: state.states) {
+    		if(innerState.isDefault)
+    			return getDefaultState(trans, innerState);
+    	}
+
+        return state.modifiedName;
+    }
+
     /* Fetch all the transitions in the model */
     static void getAllTransitions(DashModule module) {
         for (DashConcState concState : module.concStates.values()) {
@@ -58,17 +107,6 @@ public class DashToCoreDash {
         for (DashState state : module.states.values()) {
             for (DashTrans transition : state.transitions)
                 addTrans(state, transition, module);
-        }
-    }
-
-    static void modifyTransitions(DashModule module) {
-        for (DashTrans trans : module.transitions.values()) {
-            trans.fromExpr = new DashFrom(completeFromCommand(trans, module), false);
-            trans.gotoExpr = new DashGoto(completeGoToCommand(trans, module));
-            trans.onExpr = new DashOn(null, completeOnCommand(trans, module));
-            trans.sendExpr = new DashSend(null, completeSendCommand(trans, module));
-            trans.doExpr = addAction(trans.doExpr, module);
-            trans.whenExpr = addCondition(trans.whenExpr, module);
         }
     }
 
@@ -95,6 +133,7 @@ public class DashToCoreDash {
             if (transition.name == null)
                 modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
             transition.modifiedName = modifiedTransName;
+            transition.parentConcState = getParentConcState(parent);
             module.transitions.put(modifiedTransName, transition);
         }
     }
@@ -122,6 +161,7 @@ public class DashToCoreDash {
             if (transition.name == null)
                 modifiedTransName = parent.modifiedName + "_t_" + (++transitionCount);
             transition.modifiedName = modifiedTransName;
+            transition.parentConcState = parent;
             module.transitions.put(modifiedTransName, transition);
         }
     }
@@ -148,9 +188,9 @@ public class DashToCoreDash {
         //to that of the argument
         if (transTemplate.onExpr != null) {
             if (declNames.indexOf(transTemplate.onExpr.name) != -1)
-                trans.onExpr = new DashOn(null, templateCall.templateParam.get(declNames.indexOf(transTemplate.onExpr.name)));
+                trans.onExpr = new DashOn(null, templateCall.templateParam.get(declNames.indexOf(transTemplate.onExpr.name)), checkInternalEvent(trans, module));
             else
-                trans.onExpr = new DashOn(null, transTemplate.onExpr.name);
+                trans.onExpr = new DashOn(null, transTemplate.onExpr.name, checkInternalEvent(trans, module));
         }
 
         //If we have a From command, check if it matches an argument. If it does, then set the From Command
@@ -201,7 +241,7 @@ public class DashToCoreDash {
             for (DashState state : parent.states) {
                 trans.fromExpr = new DashFrom(state.name, false);
                 trans.modifiedName = parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount);
-                //System.out.println("Trans Name: " + trans.modifiedName + " From: " + trans.fromExpr.fromExpr.get(0));
+                trans.parentConcState = parent;
                 module.transitions.put(trans.modifiedName, new DashTrans(trans));
             }
         } //If we have more than one From command, create a new transition for each for command
@@ -210,6 +250,7 @@ public class DashToCoreDash {
                 generateTransition(trans, fromExpr, parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount), module);
         } else {
             trans.modifiedName = parent.modifiedName + "_" + templateCall.name + "__" + (++transitionCount);
+            trans.parentConcState = parent;
             module.transitions.put(trans.modifiedName, trans);
         }
 
@@ -219,9 +260,9 @@ public class DashToCoreDash {
         DashTrans trans = new DashTrans(transition); // New transition representing one of the From commands
         trans.fromExpr = new DashFrom(fromExpr, false); // Add the from command to the new transition
         trans.modifiedName = modifiedName;
+        trans.parentConcState = getParentConcState(transition.parentState);
         module.transitions.put(modifiedName, trans);
     }
-
 
     static DashDoExpr addAction(DashDoExpr doExpr, DashModule module) {
         if (doExpr != null) {
@@ -320,13 +361,44 @@ public class DashToCoreDash {
         }
 
         while (eventParentObj != null) {
-            if (eventParentObj instanceof DashConcState)
-                sendCommand = (((DashConcState) eventParentObj).name + "_" + sendCommand);
+            if (eventParentObj instanceof DashConcState) {
+            	if (checkForEvent((DashConcState) eventParentObj, sendCommand))
+            		return ((DashConcState) eventParentObj).modifiedName + "_" + sendCommand;
+            }
 
             eventParentObj = getParent(eventParentObj);
         }
-
+        
         return sendCommand;
+    }
+    
+    static Boolean checkInternalEvent(DashTrans trans, DashModule module)
+    {
+        if (trans.onExpr == null)
+            return false;
+    	
+        String onCommand = trans.onExpr.name;
+
+        if (onCommand.contains("/")) 
+            onCommand = onCommand.substring(onCommand.lastIndexOf('/') + 1);
+
+        for(DashConcState concState: module.concStates.values()) {
+        	for(DashEvent event: concState.events) {
+        		if(event.type.equals("event") && event.name.equals(onCommand)) {
+        			return true;
+        		}
+        	}
+        }  
+        return false;
+    }
+    
+    static Boolean checkForEvent(DashConcState concState, String eventName) {
+    	for (DashEvent event: concState.events) {
+    		if (event.name.equals(eventName)) 
+    			return true;
+    		
+    	}
+    	return false;
     }
 
     static List<String> completeFromCommand(DashTrans trans, DashModule module) {
@@ -335,43 +407,80 @@ public class DashToCoreDash {
         if (trans.fromExpr != null) {
             for (String fromCommand : trans.fromExpr.fromExpr) {
             	if(fromCommand.contains("/"))
-            		completedFromCommands.add(generateCompleteCommand(trans, fromCommand.substring(fromCommand.indexOf("/") + 1)));
-            	else
+            		fromCommand = fromCommand.substring(fromCommand.lastIndexOf("/") + 1);
+            	
+            	DashState fromState = locateState(trans, fromCommand, module);
+            	
+            	if(fromState != null)
+            		completedFromCommands.add(fromState.modifiedName);
+            	else /* Transitioning to a conc state that does not have an OR state */
             		completedFromCommands.add(generateCompleteCommand(trans, fromCommand));
             }
         } else {
             completedFromCommands.add(generateCompleteCommand(trans, ""));
         }
-
-
+        
         return completedFromCommands;
     }
 
     static List<String> completeGoToCommand(DashTrans trans, DashModule module) {
         List<String> completedGoToCommands = new ArrayList<String>();
-        
+
         if (trans.gotoExpr != null) {
             for (String gotoCommand : trans.gotoExpr.gotoExpr) {
             	if(gotoCommand.contains("/"))
-            		gotoCommand = gotoCommand.substring(gotoCommand.indexOf("/") + 1);
+            		gotoCommand = gotoCommand.substring(gotoCommand.lastIndexOf("/") + 1);
             	
-                if (trans.parentState instanceof DashConcState)
-                    completedGoToCommands.add(generateCompleteCommand(trans, gotoCommand));
-                if (trans.parentState instanceof DashState) {
-                    for(DashState state: module.states.values()) {
-                    	if(state.name.equals(gotoCommand))
-                    		completedGoToCommands.add(state.modifiedName);
-                    }
-                }
+            	DashState gotoState = locateState(trans, gotoCommand, module);
+            	
+            	if(gotoState != null) {
+            		completedGoToCommands.add(gotoState.modifiedName);
+            	}
+            	else /* Transitioning to a conc state that does not have an OR state */
+            		completedGoToCommands.add(generateCompleteCommand(trans, gotoCommand));
             }
-        } else {
+        }
+        else {
             //If we do not have a goto command, it should be equal to the origin of the transition
             completedGoToCommands.add(trans.fromExpr.fromExpr.get(0));
         }
-
+           
         return completedGoToCommands;
     }
-
+    
+    /* Locate an or state to transition to  */
+    static DashState locateState(DashTrans trans, String command, DashModule module) {
+    	DashConcState parent = getParentConcState(trans.parentState);
+    	List<DashState> states = new ArrayList<DashState>();
+    	
+    	while(parent != null) {
+    		for(DashState state: parent.states) {
+    			states.add(state);
+    			
+    			if(state.states.size() > 0)
+    				getInnerStates(state, states);
+    		}
+    		
+    		for(DashState state: states) {
+    			if(state.name.equals(command))
+    				return state;
+    		}
+    		
+    		parent = getParentConcState(parent.parent);
+    	}
+    	
+    	return null;
+    }
+    
+    static void getInnerStates(DashState state, List<DashState> states) {
+		for(DashState innerState: state.states) {	
+			states.add(innerState);
+			
+			if(innerState.states.size() > 0)
+				getInnerStates(innerState, states);
+		}
+    }
+    
     static String generateCompleteCommand(Object transItem, String expr) {
         String completeCommand = "";
         Object parentObject = null;
@@ -400,6 +509,20 @@ public class DashToCoreDash {
         
         return completeCommand;
     }
+    
+    static DashConcState getParentConcState(Object item) { 	
+        if (item instanceof DashState) {
+            if (((DashState) item).parent instanceof DashState)
+                return getParentConcState(((DashState) item).parent);
+            if (((DashState) item).parent instanceof DashConcState)
+                return (DashConcState) ((DashState) item).parent;
+        }
+
+        if (item instanceof DashConcState)
+            return (DashConcState) item;
+
+        return null;
+    }
 
     static Object getParent(Object parent) {
         if (parent instanceof DashState)
@@ -408,5 +531,12 @@ public class DashToCoreDash {
             return ((DashConcState) parent).parent;
         return null;
     }
-
+    
+    static DashState getStateFromName(String stateName, DashModule module) {
+    	for(DashState state: module.states.values()) {
+    		if(state.modifiedName.equals(stateName))
+    			return state;
+    	}
+    	return null;
+    }
 }

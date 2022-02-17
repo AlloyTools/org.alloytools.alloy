@@ -17,6 +17,7 @@ public class DashTrans {
 
     public String            name          = "";
     public Object            parentState;
+    public DashConcState     parentConcState;
     public String            modifiedName  = "";
     public Pos               pos;
 
@@ -58,6 +59,7 @@ public class DashTrans {
         this.name = trans.name;
         this.modifiedName = trans.modifiedName;
         this.parentState = trans.parentState;
+        this.parentConcState = trans.parentConcState;
         this.pos = null;
     }
 }

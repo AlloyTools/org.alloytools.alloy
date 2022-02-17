@@ -218,7 +218,23 @@ import java_cup.runtime.*;
 "sum"                 { return alloy_sym(yytext(), DashSym.SUM         );}
 "this"                { return alloy_sym(yytext(), DashSym.THIS        );}
 "univ"                { return alloy_sym(yytext(), DashSym.UNIV        );}
- 
+"always"              { return alloy_sym(yytext(), DashSym.ALWAYS      );}
+"after"               { return alloy_sym(yytext(), DashSym.AFTER       );}
+"eventually"          { return alloy_sym(yytext(), DashSym.EVENTUALLY  );}
+"historically"        { return alloy_sym(yytext(), DashSym.HISTORICALLY);}
+"before"              { return alloy_sym(yytext(), DashSym.BEFORE      );}
+"once"                { return alloy_sym(yytext(), DashSym.ONCE        );}
+"releases"            { return alloy_sym(yytext(), DashSym.RELEASES    );}
+"until"               { return alloy_sym(yytext(), DashSym.UNTIL       );}
+"since"               { return alloy_sym(yytext(), DashSym.SINCE       );}
+"triggered"           { return alloy_sym(yytext(), DashSym.TRIGGERED   );}
+";"                   { return alloy_sym(yytext(), DashSym.TRCSEQ      );}
+"var"                 { return alloy_sym(yytext(), DashSym.VAR         );}
+"steps"               { return alloy_sym(yytext(), DashSym.TIME        );}
+"'"                   { return alloy_sym(yytext(), DashSym.PRIME       );}
+"‘"                   { return alloy_sym(yytext(), DashSym.PRIME       );}
+"’"                   { return alloy_sym(yytext(), DashSym.PRIME       );}
+
 //DASH SYNTAX
 "conc state"          { return alloy_sym(yytext(), DashSym.CONC        );}
 "default"             { return alloy_sym(yytext(), DashSym.DEFAULT     );}

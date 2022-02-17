@@ -12,23 +12,23 @@ import edu.mit.csail.sdg.ast.ExprVar;
 public class DashConcState {
 
     public Pos                     pos;
-    public String                  name            = "";
-    public String                  modifiedName    = "";
+    public String                  name         = "";
+    public String                  modifiedName = "";
     public DashConcState           parent;
     public Boolean				   isParameterized = false;
 
-    public List<DashConcState>     concStates      = new ArrayList<DashConcState>();
-    public List<DashState>         states          = new ArrayList<DashState>();
-    public String                  param           = new String();
-    public List<DashTrans>         transitions     = new ArrayList<DashTrans>();
-    public List<DashTemplateCall>  templateCall    = new ArrayList<DashTemplateCall>();
-    public List<DashTransTemplate> templateDecl    = new ArrayList<DashTransTemplate>();
-    public List<DashEvent>         events          = new ArrayList<DashEvent>();
-    public List<Decl>              decls           = new ArrayList<Decl>();
-    public List<DashInit>          init            = new ArrayList<DashInit>();
-    public List<DashInvariant>     invariant       = new ArrayList<DashInvariant>();
-    public List<DashAction>        action          = new ArrayList<DashAction>();
-    public List<DashCondition>     condition       = new ArrayList<DashCondition>();
+    public List<DashConcState>     concStates   = new ArrayList<DashConcState>();
+    public List<DashState>         states       = new ArrayList<DashState>();
+    public String                  param        = new String();
+    public List<DashTrans>         transitions  = new ArrayList<DashTrans>();
+    public List<DashTemplateCall>  templateCall = new ArrayList<DashTemplateCall>();
+    public List<DashTransTemplate> templateDecl = new ArrayList<DashTransTemplate>();
+    public List<DashEvent>         events       = new ArrayList<DashEvent>();
+    public List<Decl>              decls        = new ArrayList<Decl>();
+    public List<DashInit>          init         = new ArrayList<DashInit>();
+    public List<DashInvariant>     invariant    = new ArrayList<DashInvariant>();
+    public List<DashAction>        action       = new ArrayList<DashAction>();
+    public List<DashCondition>     condition    = new ArrayList<DashCondition>();
 
     /*
      * This constructor is called by DashParser.java when it completes parsing a
@@ -70,7 +70,7 @@ public class DashConcState {
         {
         	this.param = param.toString();
         	this.isParameterized = true;
-        	System.out.println("Creating Parameterized Concurrent State: " + this.name + " with param: " + this.param);
+        	System.out.println("Creating Parameterized Concurrent State: " + this.name + " with param: " + this.param + " is Parameterized: " + this.isParameterized);
         }
     }
 
@@ -78,8 +78,7 @@ public class DashConcState {
 		this.name = concState.name;
 		this.modifiedName = concState.modifiedName;
 		this.parent = concState.parent;	
-		this.concStates = concState.concStates;	
-		this.param = concState.param;
+		this.concStates = concState.concStates;		
 		this.states = concState.states;
 		this.transitions = concState.transitions;
 		this.templateCall = concState.templateCall;		
@@ -90,5 +89,6 @@ public class DashConcState {
 		this.invariant = concState.invariant;
 		this.action = concState.action;
 		this.condition = concState.condition;
+		this.isParameterized = concState.isParameterized;
 	}
 }

@@ -8,6 +8,7 @@ public class DashEvent {
     public Pos    pos;
     public String parentName = "";
     public String name       = "";
+    public String modifiedName       = "";
     public String type       = "";
     public Decl   decl;
 
