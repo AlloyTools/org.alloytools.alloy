@@ -50,6 +50,7 @@ public class SolutionImpl implements Solution {
                                   };
     final Relation         true_  = new Relation(this, createAtom("true", bool));
     final Relation         false_ = new Relation(this, createAtom("false", bool));
+    private final Relation error  = new Relation(this);
 
 
     public SolutionImpl(Module module, Solver solver, A4Solution initial, Command command, SolverOptions options) {
@@ -214,5 +215,8 @@ public class SolutionImpl implements Solution {
         return bool;
     }
 
+    public IRelation error() {
+        return error;
+    }
 
 }

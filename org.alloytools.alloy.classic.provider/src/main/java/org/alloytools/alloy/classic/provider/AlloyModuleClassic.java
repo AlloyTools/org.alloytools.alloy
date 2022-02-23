@@ -1,10 +1,12 @@
 package org.alloytools.alloy.classic.provider;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.core.api.Compiler;
@@ -79,11 +81,32 @@ public class AlloyModuleClassic implements Module {
     }
 
     @Override
-    public Map<String,TFunction> getFunctions() {
+    public Set<TFunction> getFunctions() {
         check();
-        return module.getAllFunc().toList().stream().collect(Collectors.toMap(pk -> pk.label.substring("this/".length()), pv -> pv));
+        return new HashSet<TFunction>(module.getAllFunc().toList());
     }
 
+    @Override
+    public Optional<TFunction> getFunction(String name, int arity) {
+        check();
+        String search = "/".concat(name);
+        return getFunctions().stream().filter(f -> f.getName().endsWith(search) && f.getParameters().size() == arity).findAny();
+    }
+
+    @Override
+    public Optional<TFunction> getFunction(String name) {
+        check();
+        List<TFunction> list = getFunctions().stream().filter(f -> f.getName().equals(name)).collect(Collectors.toList());
+        switch (list.size()) {
+            case 0 :
+                return Optional.empty();
+            case 1 :
+                return Optional.of(list.get(0));
+
+            default :
+                throw new IllegalArgumentException("Ambiguous reference to function " + name + " there are multiple funcations with that name with different arity: " + list);
+        }
+    }
 
 
     @Override

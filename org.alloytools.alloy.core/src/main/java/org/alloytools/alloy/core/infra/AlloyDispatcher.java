@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +22,6 @@ import java.util.stream.Collectors;
 import org.alloytools.alloy.context.api.AlloyContext;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
 import org.alloytools.alloy.infrastructure.api.AlloyMain.AlloyMains;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
@@ -48,11 +47,10 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
  */
 public class AlloyDispatcher extends ReporterAdapter {
 
-    final static Logger log = LoggerFactory.getLogger(AlloyDispatcher.class);
-    PrintStream         out = System.out;
-    PrintStream         err = System.err;
-    AlloyContext        context;
-    Optional<Manifest>  manifest;
+    PrintStream        out = System.out;
+    PrintStream        err = System.err;
+    AlloyContext       context;
+    Optional<Manifest> manifest;
 
 
 
@@ -162,8 +160,6 @@ public class AlloyDispatcher extends ReporterAdapter {
             if (!isOk()) {
                 return;
             }
-
-            log.debug("selected main {} is with arguments {}", selected, arguments);
 
             String execute = cl.execute(selected.instance, selected.name, arguments);
             if (execute != null) {
@@ -317,7 +313,6 @@ public class AlloyDispatcher extends ReporterAdapter {
                         Object instance = getInstance(context, e, mainClass);
                         MainDef main = new MainDef(instance, am.name(), am.isDefault());
                         result.put(main.name, main);
-                        log.debug("found main class {}", main);
                     }
                 } else {
                     AlloyMain am = mainClass.getAnnotation(AlloyMain.class);
@@ -325,9 +320,8 @@ public class AlloyDispatcher extends ReporterAdapter {
                         Object instance = getInstance(context, e, mainClass);
                         MainDef main = new MainDef(instance, am.name(), am.isDefault());
                         result.put(main.name, main);
-                        log.debug("found main class {}", main);
                     } else
-                        log.error("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
+                        System.err.println("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
                 }
             } catch (ClassNotFoundException e1) {
                 throw new RuntimeException("In capability " + e + ", the fqn cannot be located as class in the current JAR: " + e1);
@@ -397,14 +391,21 @@ public class AlloyDispatcher extends ReporterAdapter {
             return manifest;
 
         try {
-            URL resource = AlloyDispatcher.class.getResource("/META-INF/MANIFEST.MF");
+            // Alloy is the only class loaded from the standard class loader ...
+            Enumeration<URL> resource = Alloy.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+
             if (resource == null)
                 return Optional.empty();
 
-            Manifest manifest = new Manifest(resource.openStream());
-            return this.manifest = Optional.of(manifest);
+            while (resource.hasMoreElements()) {
+                Manifest m = new Manifest(resource.nextElement().openStream());
+                String value = m.getMainAttributes().getValue("JPM-Command");
+                if (value != null)
+                    return this.manifest = Optional.of(m);
+            }
+            return Optional.empty();
         } catch (IOException e) {
-            log.error("No Manifest found {}", e, e);
+            System.err.println("No Manifest found " + e);
             return Optional.empty();
         }
     }
@@ -413,7 +414,7 @@ public class AlloyDispatcher extends ReporterAdapter {
     static final Pattern TARGET_P = Pattern.compile("\\s*(?<name>[^=]+)\\s*=\\s*(?<level>off|trace|debug|info|warn|error)\\s*");
 
     public static void setslf4j(Levels deflt, String... targets) {
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", deflt.toString());
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, deflt.toString());
         if (targets != null)
             for (String target : targets) {
                 Matcher m = TARGET_P.matcher(target);

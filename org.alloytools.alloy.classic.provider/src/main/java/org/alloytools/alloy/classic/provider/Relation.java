@@ -44,7 +44,7 @@ public class Relation implements IRelation {
 
     public Relation(Solution s, IAtom atom) {
 
-        this(s, 0, new Tuple[] {
+        this(s, 1, new Tuple[] {
                                 new Tuple(s) {
 
                                     @Override
@@ -342,6 +342,16 @@ public class Relation implements IRelation {
     public IRelation select(IAtom right) {
         IRelation r = new Relation(solution, right);
         return r.join(this);
+    }
+
+    @Override
+    public boolean isTrue() {
+        return scalar().map(IAtom::toBool).orElseThrow(() -> new IllegalArgumentException("can only coerce a boolean realtion to a boolean"));
+    }
+
+    @Override
+    public boolean isError() {
+        return solution.error() == this;
     }
 
 }

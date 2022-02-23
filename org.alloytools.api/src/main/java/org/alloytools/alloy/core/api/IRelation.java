@@ -208,4 +208,13 @@ public interface IRelation extends Iterable<ITuple> {
     default int toInt() {
         return scalar().map(a -> a.toInt()).orElseThrow(IllegalArgumentException::new);
     }
+
+    boolean isTrue();
+
+
+    default boolean isFalse() {
+        return !isTrue();
+    }
+
+    boolean isError();
 }

@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface TExpression {
 
-    List<TSignature> getType();
+    TType getType();
 
     Position getPosition();
 

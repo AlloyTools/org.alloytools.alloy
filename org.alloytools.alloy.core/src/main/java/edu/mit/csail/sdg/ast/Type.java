@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.alloytools.alloy.core.api.TColumn;
 import org.alloytools.alloy.core.api.TSignature;
+import org.alloytools.alloy.core.api.TType;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -46,7 +48,7 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  * B even if the caller later constructs more sigs or subsigs or subsetsigs...
  */
 
-public final class Type implements Iterable<Type.ProductType>, Clause {
+public final class Type implements Iterable<Type.ProductType>, Clause, TType {
 
     // [AM]
     // /** This configuration option is true if we want to automatically cast
@@ -1295,8 +1297,7 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
 
     @Override
     public Pos pos() {
-        // TODO Auto-generated method stub
-        return null;
+        return Pos.UNKNOWN;
     }
 
     @Override
@@ -1318,4 +1319,11 @@ public final class Type implements Iterable<Type.ProductType>, Clause {
         }
         return result;
     }
+
+    @Override
+    public TColumn[] getColumns() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

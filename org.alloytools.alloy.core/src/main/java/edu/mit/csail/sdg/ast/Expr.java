@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.alloytools.alloy.core.api.Position;
 import org.alloytools.alloy.core.api.TExpression;
-import org.alloytools.alloy.core.api.TSignature;
+import org.alloytools.alloy.core.api.TType;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorType;
@@ -78,9 +78,6 @@ public abstract class Expr extends Browsable implements TExpression {
         return type;
     }
 
-    public List<TSignature> getType() {
-        return type.getTypes();
-    }
 
     /**
      * The list of errors on this node; nonempty iff this.type==EMPTY
@@ -1290,5 +1287,10 @@ public abstract class Expr extends Browsable implements TExpression {
     @Override
     public Position getPosition() {
         return pos;
+    }
+
+    @Override
+    public TType getType() {
+        return type;
     }
 }

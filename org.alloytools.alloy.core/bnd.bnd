@@ -12,7 +12,8 @@
 	org.alloytools.api,\
 	slf4j.api,\
 	org.osgi.annotation.bundle,\
-	osgi.annotation
+	osgi.annotation,\
+	slf4j.simple
 
 -testpath: \
 	biz.aQute.wrapper.junit, \

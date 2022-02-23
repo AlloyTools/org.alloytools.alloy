@@ -3,10 +3,10 @@ package edu.mit.csail.sdg.alloy4;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,7 +152,7 @@ public class TableView {
     // [electrum] added state to print, -1 for static
     public static Map<String,Table> toTable(A4Solution solution, Instance instance, SafeList<Sig> sigs, int state) {
 
-        Map<String,Table> map = new HashMap<String,Table>();
+        Map<String,Table> map = new TreeMap<String,Table>();
 
         for (Sig s : sigs) {
 

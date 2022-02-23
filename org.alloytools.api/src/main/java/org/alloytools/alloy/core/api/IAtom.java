@@ -127,7 +127,11 @@ public interface IAtom extends Comparable<IAtom> {
 
     int toInt();
 
+    boolean toBool();
+
     BasicType getBasicType();
 
     Object natural();
+
+    ITuple asTuple();
 }

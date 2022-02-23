@@ -85,7 +85,7 @@ public class AlloyAtomTest {
                                     "abba=ab->ba " + //
                                     "} run foo for 5");
         System.out.println(s.getModule().getFunctions());
-        TFunction foo = s.getModule().getFunctions().get("foo");
+        TFunction foo = s.getModule().getFunction("foo").get();
         assertThat(foo).isNotNull();
         Instance[] next = s.next(4000);
         System.out.println(next.length + " solutions");
@@ -150,7 +150,7 @@ public class AlloyAtomTest {
                                     "aba=ab->a " + //
                                     "} run foo for 5");
         System.out.println(s.getModule().getFunctions());
-        TFunction foo = s.getModule().getFunctions().get("foo");
+        TFunction foo = s.getModule().getFunction("foo").get();
         assertThat(foo).isNotNull();
         Instance[] next = s.next(40000);
         System.out.println(next.length + " solutions");

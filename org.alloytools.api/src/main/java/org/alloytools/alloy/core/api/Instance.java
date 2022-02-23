@@ -58,6 +58,7 @@ public interface Instance {
     IRelation eval(String expr);
 
 
+    IRelation eval(TExpression expr);
 
     default IRelation univ() {
         return eval("univ");
@@ -91,7 +92,7 @@ public interface Instance {
             }
 
             @Override
-            public Map<String,Object> getVariables() {
+            public Map<String,IRelation> getVariables() {
                 return Collections.emptyMap();
             }
 
@@ -104,10 +105,15 @@ public interface Instance {
             public Map<TField,IRelation> getObject(IAtom atom) {
                 return Collections.emptyMap();
             }
+
+            @Override
+            public IRelation eval(TExpression expr) {
+                return null;
+            }
         };
     }
 
-    Map<String,Object> getVariables();
+    Map<String,IRelation> getVariables();
 
 
 
@@ -140,4 +146,5 @@ public interface Instance {
     Map<String,IRelation> getParameters(TFunction foo);
 
     Map<TField,IRelation> getObject(IAtom atom);
+
 }

@@ -81,7 +81,7 @@ public class SpectTest2 {
         spec.registerType("false", () -> false);
         spec.registerType("true", () -> true);
         spec.debug();
-        spec.testvar(source, new LinkedHashSet());
+        //        spec.testvar(source, new LinkedHashSet());
     }
 
 }

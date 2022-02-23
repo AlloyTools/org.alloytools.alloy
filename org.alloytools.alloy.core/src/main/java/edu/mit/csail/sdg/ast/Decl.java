@@ -15,7 +15,10 @@
 
 package edu.mit.csail.sdg.ast;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -127,4 +130,25 @@ public final class Decl {
         return false;
     }
 
+    Expr exprSansCardinality() {
+        if (expr instanceof ExprUnary) {
+            ExprUnary eu = (ExprUnary) expr;
+            switch (eu.op) {
+                case LONEOF :
+                case SETOF :
+                case SOMEOF :
+                case ONEOF :
+                    return eu.sub;
+                default :
+                    break;
+            }
+        }
+        return expr;
+    }
+
+    Set<String> getDisjunct() {
+        if (disjoint == null)
+            return Collections.emptySet();
+        return names.stream().map(e -> e.label).collect(Collectors.toSet());
+    }
 }

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -930,12 +931,17 @@ public abstract class Sig extends Expr implements Clause, TSignature {
 
         @Override
         public TExpression getExpression() {
-            return decl.expr;
+            return decl.exprSansCardinality();
         }
 
         @Override
         public boolean isVariable() {
             return isVariable != null;
+        }
+
+        @Override
+        public Set<String> getDisjunct() {
+            return decl.getDisjunct();
         }
 
     }
@@ -1162,4 +1168,6 @@ public abstract class Sig extends Expr implements Clause, TSignature {
         }
         return sb.toString();
     }
+
+
 }

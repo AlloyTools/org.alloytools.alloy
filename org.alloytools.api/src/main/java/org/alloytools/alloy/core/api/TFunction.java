@@ -4,16 +4,9 @@ import java.util.List;
 
 public interface TFunction {
 
-    interface Parameter {
-
-        String getName();
-
-        TExpression getType();
-    }
-
     String getName();
 
-    List<Parameter> getParameters();
+    List<TParameter> getParameters();
 
     boolean isPredicate();
 

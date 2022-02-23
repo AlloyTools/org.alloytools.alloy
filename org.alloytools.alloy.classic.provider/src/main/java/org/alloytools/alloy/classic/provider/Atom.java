@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
+import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TSignature;
@@ -94,7 +95,24 @@ public class Atom implements IAtom {
 
     @Override
     public IRelation asTupleSet() {
-        return null;
+        return asTuple().asRelation();
+    }
+
+    @Override
+    public ITuple asTuple() {
+        return new Tuple(solution) {
+
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public IAtom get(int n) {
+                assert n == 0;
+                return Atom.this;
+            }
+        };
     }
 
     @Override
@@ -142,7 +160,7 @@ public class Atom implements IAtom {
     }
 
 
-    boolean toBool() {
+    public boolean toBool() {
         if (type == BasicType.BOOLEAN)
             return getName().equals("true");
         else

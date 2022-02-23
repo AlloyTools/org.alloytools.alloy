@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TFunction;
+import org.alloytools.alloy.core.api.TParameter;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -279,6 +281,7 @@ public final class Func extends Expr implements Clause, TFunction {
 
     ExprVar labelExpr = null;
 
+
     public Expr labelExpr() {
         if (labelExpr == null)
             labelExpr = ExprVar.make(labelPos, label);
@@ -388,15 +391,19 @@ public final class Func extends Expr implements Clause, TFunction {
 
     @Override
     public String getName() {
+        if (label.startsWith("this/"))
+            return label.substring(5);
         return label;
     }
 
     @Override
-    public List<Parameter> getParameters() {
-        List<Parameter> parameters = new ArrayList<>();
+    public List<TParameter> getParameters() {
+        List<TParameter> parameters = new ArrayList<>();
         for (Decl decl : decls) {
+
+            Expr expr;
             for (ExprHasName d : decl.names) {
-                Parameter parameter = new Parameter() {
+                TParameter parameter = new TParameter() {
 
                     @Override
                     public String getName() {
@@ -404,8 +411,13 @@ public final class Func extends Expr implements Clause, TFunction {
                     }
 
                     @Override
-                    public TExpression getType() {
-                        return decl.expr;
+                    public TExpression getExpression() {
+                        return decl.exprSansCardinality();
+                    }
+
+                    @Override
+                    public Set<String> getDisjunct() {
+                        return decl.getDisjunct();
                     }
                 };
                 parameters.add(parameter);

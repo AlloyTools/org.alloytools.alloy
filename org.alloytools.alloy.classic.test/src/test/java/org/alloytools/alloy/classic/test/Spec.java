@@ -8,12 +8,14 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,7 +27,6 @@ import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
-import org.alloytools.alloy.core.api.Solution.Trace;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TFunction;
 
@@ -86,58 +87,67 @@ public class Spec {
 
     class Action {
 
-        String    name;
-        int       arity;
-        Method    method;
-        TFunction pred;
+        final String    name;
+        final Method    method;
+        final TFunction pred;
+        final int       arityWithReturn;
+        final String    id;
+
+        Action(Method method, TFunction pred, int arity) {
+            this.name = method.getName();
+            this.method = method;
+            this.pred = pred;
+            this.arityWithReturn = arity;
+            this.id = "_" + this.name + "_" + arity;
+        }
     }
 
-    public <T> void testvar(String source, Class<T> type, T __) throws Throwable {
+    public <T> void testvar(String source, Class<T> type, T __, String sig) throws Throwable {
         Module module = alloy.compiler().compileSource(source);
         if (!module.isValid())
             throw new IllegalArgumentException(module.toString());
 
-        List<TFunction> functions = module.getFunctions();
-
+        List<Action> actions = new ArrayList<>();
+        int maxpars = 0;
         for (Method m : type.getMethods()) {
             int arity = m.getParameterCount();
             if (m.getReturnType() != void.class)
                 arity++;
 
-            Action a = new Action();
-            a.name = m.getName();
-            a.pred = functions.get(a.name);
-        }
-        Map<String,List<Method>> declaredMethods = Stream.of(type.getDeclaredMethods()).collect(Collectors.groupingBy(m -> m.getName()));
-
-
-
-        for (Method m : test.getClass().getMethods()) {
-            if (m.getDeclaringClass() == Object.class)
-                continue;
-
-
-            Solution s = alloy.getSolution(source + "\nrun " + m.getName() + "\n");
-
-            for (Instance inst : s) {
-                for (Trace trace : s.trace(inst)) {
-                    for (Instance state : trace.instances()) {
-                        Map<String,Object> values = parameters(m, state);
-                        try {
-                            if (debug) {
-                                System.out.println(m.getName() + " " + values);
-                            }
-                            Object[] array = values.values().toArray();
-                            m.invoke(test, array);
-                        } catch (InvocationTargetException e) {
-                            throw new AssertionError(m.getName() + " " + values + "\n" + e.getTargetException().getMessage(), e.getTargetException());
-                        } catch (Exception e) {
-                            throw new AssertionError(m.getName() + " " + values + "\n" + e.getMessage(), e);
-                        }
-                    }
-                }
+            Optional<TFunction> function = module.getFunction(m.getName(), arity);
+            if (function.isPresent() && function.get().isPredicate()) {
+                Action a = new Action(m, function.get(), arity);
+                actions.add(a);
+                maxpars = Math.max(maxpars, a.arityWithReturn);
             }
         }
+
+        StringBuilder sb = new StringBuilder(source);
+        sb.append("\n\n***********\n");
+
+        sb.append("private enum _actions { ");
+        String del = "";
+        for (Action a : actions) {
+            sb.append(del).append(a.id);
+            del = ", ";
+        }
+        sb.append("}");
+
+        sb.append("private var sig _cmds in _actions {}\n");
+        sb.append("private var one sig _cmd in _actions {}\n");
+        del = "var sig ";
+        for (int i = 0; i < maxpars; i++) {
+            sb.append(del).append("_p").append(i);
+            del = ", ";
+        }
+        sb.append(" in univ {}\n");
+        sb.append("private one var sig _ in " + sig + " {}\n");
+
+        sb.append("run _run {\n");
+
+        sb.append("}\n");
+
+
     }
 
     private Map<String,Object> parameters(Executable m, Instance inst) throws Exception {

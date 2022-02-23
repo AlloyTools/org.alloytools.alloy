@@ -21,10 +21,13 @@ import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solution.Trace;
 import org.alloytools.alloy.core.api.Solver;
+import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TFunction;
+import org.alloytools.alloy.core.api.TParameter;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TSignature;
+import org.alloytools.alloy.core.api.TType;
 import org.junit.Test;
 
 public class AlloyImplTest {
@@ -182,13 +185,32 @@ public class AlloyImplTest {
     }
 
     @Test
+    public void testexpr() throws Exception {
+        Solution s = ai.getSolution("pred two[y: some Int ] { }");
+        TFunction function = s.getModule().getFunction("two", 1).get();
+        List<TParameter> parameters = function.getParameters();
+        TParameter p1 = parameters.get(0);
+        assertThat(p1.getName()).isEqualTo("y");
+        TExpression expr = p1.getExpression();
+        TType type = expr.getType();
+        Instance inst = s.iterator().next();
+        IRelation ints = inst.eval("Int");
+
+        IRelation eval = inst.eval(expr);
+        assertThat(eval).isEqualTo(ints);
+        // assertThat(p1.getCardinality()).isEqualTo(Cardinality.some);
+
+        System.out.println(expr + " " + eval + " " + type);
+    }
+
+    @Test
     public void iterator() throws Exception {
         Module module = ai.compiler().compileSource("pred two[y:Int] { y = 1 or y = 2 or y = 3 } run two ");
 
         for (TRun run : module.getRuns().values()) {
 
             Solution solution = solver.solve(run, null, null, null);
-            TFunction two = solution.getModule().getFunctions().get("two");
+            TFunction two = solution.getModule().getFunction("two").get();
             List<Integer> collect = new ArrayList<>();
             for (Instance inst : solution) {
                 IRelation y = inst.getParameters(two).get("y");

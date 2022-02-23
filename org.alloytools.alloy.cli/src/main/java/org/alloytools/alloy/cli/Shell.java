@@ -3,75 +3,66 @@ package org.alloytools.alloy.cli;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.allotools.services.util.Services;
+import org.alloytools.alloy.core.api.Alloy;
+import org.alloytools.alloy.core.api.IRelation;
+import org.alloytools.alloy.core.api.Instance;
+import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.Solution;
+import org.alloytools.alloy.core.api.Solver;
+import org.alloytools.alloy.core.api.TCommand;
+import org.alloytools.alloy.core.api.TFunction;
+import org.alloytools.util.table.Table;
+import org.alloytools.util.table.TableView;
 
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
+import aQute.lib.justif.Justif;
 import aQute.lib.strings.Strings;
 import aQute.libg.qtokens.QuotedTokenizer;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Expr;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Module;
-import edu.mit.csail.sdg.ast.Sig;
-import edu.mit.csail.sdg.parser.CompUtil;
-import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 import jline.console.ConsoleReader;
 
 public class Shell implements AutoCloseable {
-	final ShellOptions			options;
-	final CLI					env;
-	final Map<String, String>	cache		= new HashMap<>();
+	final ShellOptions	options;
+	final CLI			env;
+	final Alloy			alloy;
 
-	File						file;
-	Module						world;
-	final List<A4Solution>		solutions	= new ArrayList<>();
+	File				file;
+	Module				module;
+	Solution			solution;
+	Iterator<Instance>	iterator;
+	Instance			instance;
+
+	boolean				boxes	= true;
 
 	static class IgnoreException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 	}
 
+	@Description("Start an interactive shell")
+	@Arguments(arg = "source.als")
 	interface ShellOptions extends Options {
-
+		@Description("Print out tuples as text instead of boxes")
+		boolean text();
 	}
 
 	public Shell(CLI env, File file, ShellOptions options) {
 		this.env = env;
 		this.file = file;
 		this.options = options;
-	}
-
-	@Arguments(arg = "[name]")
-	interface ExecOptions extends Options {
-
-	}
-
-	public void _exec(ExecOptions options) throws IOException {
-		List<String> args = options._arguments();
-		if (args.isEmpty()) {
-			doCommand(null);
-			return;
-		}
-
-		String name = args.remove(0);
-		Command c = getCommand(name);
-		if (c == null) {
-
-			env.error("No such command %s, commands available are %s", name, world.getAllCommands());
-			return;
-		}
-	}
-
-	private Command getCommand(String name) {
-		return world.getAllCommands().stream().filter(cc -> cc.label.equals(name)).findAny().orElse(null);
+		this.boxes = !options.text();
+		this.alloy = Services.getService(Alloy.class);
+		compile(file);
 	}
 
 	@Arguments(arg = "...")
@@ -80,70 +71,115 @@ public class Shell implements AutoCloseable {
 	}
 
 	public void _run(RunOptions options) throws IOException {
-		String join = "run __foo " + Strings.join(" ", options._arguments());
-		String collect = IO.collect(file);
-		String content = collect + "\n\n" + join + "\n";
-		cache.put(file.getAbsolutePath(), content);
-		compile();
-		Command command = getCommand("__foo");
-		if (command != null) {
-			doCommand(command);
+		run(options, true);
+		print();
+	}
+
+	public void _check(RunOptions options) throws IOException {
+		run(options, false);
+	}
+
+	private void run(RunOptions options, boolean run) throws IOException {
+		if (options._arguments().isEmpty()) {
+			doCommand("Default", run, options);
+		} else {
+			String arg = options._arguments().get(0);
+			if (arg.equals("{")) {
+				String join = "run __ " + Strings.join(" ", options._arguments());
+				String collect = IO.collect(file);
+				String content = collect + "\n\n" + join + "\n";
+				module = alloy.compiler().compileSource(content);
+				doCommand("__", run,options);
+			} else {
+				for (String a : options._arguments()) {
+					doCommand(a, run, options);
+				}
+			}
 		}
 	}
 
-	public void _cache(Options options) {
-		System.out.println(cache);
+	private void doCommand(String name, boolean run, RunOptions options2) throws IOException {
+		TCommand cmd = run ? module.getRuns().get(name) : module.getChecks().get(name);
+		if (cmd == null) {
+			Optional<TFunction> fun = module.getFunctions().stream().filter(f -> f.isPredicate() && f.getName().equals(name)).findAny();
+			if (fun.isPresent()) {
+				String join = "run "+ name  + "\n";
+				String collect = IO.collect(file);
+				String content = collect + "\n\n" + join + "\n";
+				module = alloy.compiler().compileSource(content);
+				doCommand(name, run, options2);
+				return;
+			}
+			env.error("%s %s not found, available command %s", run ? "run" : "check", name, module.getRuns().keySet());
+			return;
+		}
+		Solver solver = alloy.getSolvers().get("");
+		this.solution = solver.solve(cmd, null);
+		this.iterator = solution.iterator();
+		if (!this.iterator.hasNext()) {
+			env.error("No solution for %s", cmd);
+			return;
+		}
+		next(1);
+
 	}
 
+	private void next(int n) {
+		while (n > 0) {
+			if (!this.iterator.hasNext()) {
+				env.error("No more solutions");
+				return;
+			}
+			this.instance = this.iterator.next();
+			n--;
+		}
+	}
+
+	private void print() {
+		Map<String, Table> table = TableView.toTable(solution, instance);
+		table.remove("Int");
+		table.remove("seq/Int");
+		table.remove("univ");
+		table.forEach((k, v) -> {
+			System.out.println(k);
+			System.out.print(v);
+		});
+	}
+
+	private void print(IRelation relation) {
+		System.out.println(TableView.toTable(relation));
+	}
+
+	@Description("Solve for the next solution")
 	@Arguments(arg = {})
 	interface NextOptions extends Options {
-		boolean print();
 	}
 
+	@Description("Solve for the next solution")
 	public void _next(NextOptions options) throws IOException {
-		A4Solution s = getSolution().next();
-		if (options.print())
-			System.out.println(s);
-		add(s);
+		if (check()) {
+			next(1);
+			print();
+		}
 	}
 
+	@Description("Try to find a solution where the given condition is true")
 	@Arguments(arg = { "..." })
 	interface FindOptions extends Options {
 		boolean print();
 	}
 
 	public void _find(FindOptions options) throws IOException {
-		String line = Strings.join(" ", options._arguments());
-
-		Expr match = getWorld().parseOneExpressionFromString(line);
-		A4Solution s = getSolution();
-		while (s.satisfiable()) {
-			Object eval = s.eval(match);
-			if (isTrue(eval)) {
-				add(s);
-				return;
+		if (check()) {
+			String line = Strings.join(" ", options._arguments());
+			while (iterator.hasNext()) {
+				IRelation eval = instance.eval(line);
+				if (eval.isTrue()) {
+					print();
+					return;
+				}
 			}
-			s = s.next();
-		}
-		System.out.println("not found");
-	}
-
-	private boolean isTrue(Object eval) {
-		if (eval == null)
-			return false;
-
-		try {
-			return (Boolean) eval;
-		} catch (Exception e) {
-			System.out.println(eval.getClass() + "'" + eval + "'");
-		}
-		return false;
-	}
-
-	public void _prev(NextOptions options) throws IOException {
-		pop();
-		if (options.print()) {
-			System.out.println(getSolution());
+			env.error("No more solutions");
 		}
 	}
 
@@ -153,80 +189,63 @@ public class Shell implements AutoCloseable {
 	}
 
 	public void _print(PrintOptions options) throws IOException {
-		A4Solution s = getSolution();
-		if (options.text()) {
-			System.out.println(s);
-		} else {
-			String format = s.format(0);
-			System.out.println(format);
+		if (check()) {
+			if (options.text()) {
+				System.out.println(instance);
+			} else {
+				print();
+			}
 		}
-		for ( ExprVar v : s.getAllSkolems()) {
-			System.out.println(v);
-		}
-	
-		
 	}
 
-	@Arguments(arg = { "file" })
+	@Arguments(arg = { "[file]" })
 	interface CompileOptions extends Options {
 	}
 
 	public void _compile(CompileOptions options) throws IOException {
-		cache.clear();
-		String path = options._arguments().get(0);
-		File file = env.getFile(path);
+
+		File file = options._arguments().isEmpty() ? this.file : env.getFile(options._arguments().get(0));
 		if (file.isFile()) {
 			this.file = file;
-			compile();
+			compile(file);
 		} else {
-			env.error("No such file %s", path);
+			env.error("No such file %s", file);
 		}
-
 	}
 
-	@Arguments(arg = {})
-	interface SigOptions extends Options {
-		boolean xtended();
-	}
-
-	public void _sigs(SigOptions options) throws IOException {
-		Module world = getWorld();
-		for (Sig sig : world.getAllSigs()) {
-			if (options.xtended()) {
-				try (Formatter f = new Formatter()) {
-					if (sig.ambiguous) {
-						f.format("? ");
-					}
-					if (sig.isAbstract != null) {
-						f.format("abstract ");
-					}
-					if (sig.isEnum != null) {
-						f.format("enum ");
-					}
-					if (sig.isLone != null) {
-						f.format("lone ");
-					}
-					if (sig.isMeta != null) {
-						f.format("meta ");
-					}
-					if (sig.isOne != null) {
-						f.format("one ");
-					}
-					if (sig.isPrivate != null) {
-						f.format("private ");
-					}
-					if (sig.isSome != null) {
-						f.format("some ");
-					}
-					if (sig.isVariable != null) {
-						f.format("var ");
-					}
-					f.format("%s", sig.label);
-					System.out.println(f);
+	private boolean check() throws IOException {
+		if (module.isValid()) {
+			if (solution == null) {
+				doCommand("Default", true, null);
+				if (!iterator.hasNext()) {
+					env.error("no solutions");
+					return false;
 				}
-			} else
-				System.out.printf("%s\n", sig);
+				instance = iterator.next();
+				return true;
+			} else if (!iterator.hasNext()) {
+				env.error("no more solutions");
+				return false;
+			}
+			return true;
+		} else {
+			module.getErrors().forEach(e -> env.error("%s", e));
+			module.getWarnings().forEach(e -> env.warning("%s", e));
 		}
+		return false;
+	}
+
+	private void compile(File file) {
+		this.module = alloy.compiler().compile(file);
+		this.solution = null;
+		this.instance = null;
+		this.iterator = null;
+
+		if (!module.isValid()) {
+			module.getErrors().forEach(e -> env.error("%s", e));
+			module.getWarnings().forEach(e -> env.warning("%s", e));
+		}
+
 	}
 
 	/**
@@ -261,9 +280,10 @@ public class Shell implements AutoCloseable {
 							System.out.println(help);
 						}
 					} else {
-						Expr e = getWorld().parseOneExpressionFromString(line);
-						Object o = getSolution().eval(e);
-						System.out.println(o);
+						if (check()) {
+							IRelation eval = instance.eval(line);
+							print(eval);
+						}
 					}
 				} catch (Throwable e) {
 					if (e.getClass() != Exception.class)
@@ -275,53 +295,6 @@ public class Shell implements AutoCloseable {
 			}
 		}
 
-	}
-
-	private Module getWorld() throws IOException {
-		if (world == null) {
-			if (file == null) {
-				env.error("No file name, use /compile first");
-				throw new IgnoreException();
-			}
-			SimpleReporter rep = new SimpleReporter(env);
-			this.world = CompUtil.parseEverything_fromFile(rep, cache, file.getAbsolutePath());
-		}
-		return this.world;
-	}
-
-	private void add(A4Solution solution) throws IOException {
-		if (solution != null && (solutions.isEmpty() || solution != getSolution())) {
-			solutions.add(0, solution);
-		}
-	}
-
-	private void pop() throws IOException {
-		if (solutions.isEmpty())
-			return;
-		solutions.remove(0);
-	}
-
-	private A4Solution getSolution() throws IOException {
-		if (solutions.isEmpty()) {
-			doCommand(null);
-		}
-		return solutions.get(0);
-	}
-
-	private void compile() throws IOException {
-		SimpleReporter s = new SimpleReporter(env);
-		this.world = CompUtil.parseEverything_fromFile(s, cache, file.getAbsolutePath());
-		solutions.clear();
-	}
-
-	private void doCommand(Command c) throws IOException {
-		if (c == null) {
-			c = getWorld().getAllCommands().get(0);
-		}
-		SimpleReporter rep = new SimpleReporter(env);
-		A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c,
-				env.options);
-		add(s);
 	}
 
 	@Override

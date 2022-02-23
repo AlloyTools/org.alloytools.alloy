@@ -7,7 +7,8 @@
 	org.alloytools.alloy.extra,\
 	org.alloytools:pardinus.nativesat,\
 	jline,\
-	org.alloytools.api
+	org.alloytools.api,\
+	org.alloytools.util
 	
 -includepackage org.alloytools.alloy.cli
 -conditionalpackage: *

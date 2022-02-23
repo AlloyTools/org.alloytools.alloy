@@ -137,4 +137,5 @@ public interface Solution extends Iterable<Instance> {
 
     TSignature bool();
 
+    IRelation error();
 }

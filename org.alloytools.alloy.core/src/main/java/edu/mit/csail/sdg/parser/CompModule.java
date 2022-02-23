@@ -2627,4 +2627,8 @@ public final class CompModule extends Browsable implements Module {
         return "module " + moduleName;
     }
 
+    public void resetGlobals() {
+        globals.clear();
+    }
+
 }

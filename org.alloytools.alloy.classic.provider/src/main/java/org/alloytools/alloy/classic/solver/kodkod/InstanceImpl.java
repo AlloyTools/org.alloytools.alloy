@@ -13,9 +13,10 @@ import org.alloytools.alloy.classic.provider.Relation;
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
+import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TFunction;
-import org.alloytools.alloy.core.api.TFunction.Parameter;
+import org.alloytools.alloy.core.api.TParameter;
 import org.alloytools.alloy.core.api.TSignature;
 
 import edu.mit.csail.sdg.alloy4.Err;
@@ -32,12 +33,12 @@ import edu.mit.csail.sdg.translator.A4TupleSet;
 class InstanceImpl implements Instance {
 
 
-    final A4Solution         ai;
-    final CompModule         orig;
-    final TSignature         univ;
-    final SolutionImpl       solution;
-    final int                state;
-    final Map<String,Object> variables = new TreeMap<>();
+    final A4Solution            ai;
+    final CompModule            orig;
+    final TSignature            univ;
+    final SolutionImpl          solution;
+    final int                   state;
+    final Map<String,IRelation> variables = new TreeMap<>();
 
     InstanceImpl(SolutionImpl solution, A4Solution ai, int state) {
         this.solution = solution;
@@ -62,10 +63,10 @@ class InstanceImpl implements Instance {
     }
 
     @Override
-    public Map<String,Object> getVariables() {
+    public Map<String,IRelation> getVariables() {
         if (variables.isEmpty()) {
             for (ExprVar skolem : ai.getAllSkolems()) {
-                Object eval = eval(skolem);
+                IRelation eval = eval(skolem);
                 variables.put(skolem.label, eval);
             }
         }
@@ -87,22 +88,39 @@ class InstanceImpl implements Instance {
     @Override
     public IRelation eval(String cmd) {
         try {
+            orig.resetGlobals();
+            for (ExprVar a : ai.getAllAtoms()) {
+                orig.addGlobal(a.label, a);
+            }
+            for (ExprVar a : ai.getAllSkolems()) {
+                orig.addGlobal(a.label, a);
+            }
             Expr expr = orig.parseOneExpressionFromString(cmd);
             return eval(expr);
         } catch (Err | IOException e) {
+            return solution.error();
+        }
+    }
+
+    @Override
+    public IRelation eval(TExpression a) {
+        try {
+            Expr expr = (Expr) a;
+            return eval(expr);
+        } catch (Err e) {
             e.printStackTrace();
             return null;
         }
     }
 
+
+
     private IRelation eval(Expr expr) {
         Object eval = ai.eval(expr, state);
-        if (expr.getType().contains(Sig.SIGINT)) {
-            if (eval instanceof String) {
-                String nr = (String) eval;
-                Atom atom = solution.createAtom((String) eval, Sig.SIGINT);
-                return new Relation(solution, atom);
-            }
+        if (eval instanceof String) {
+            String nr = (String) eval;
+            Atom atom = solution.createAtom((String) eval, Sig.SIGINT);
+            return new Relation(solution, atom);
         }
         if (eval instanceof A4TupleSet) {
             return to((A4TupleSet) eval);
@@ -157,7 +175,7 @@ class InstanceImpl implements Instance {
     public Map<String,IRelation> getParameters(TFunction foo) {
         Map<String,IRelation> parameters = new HashMap<>();
         String prefix = "$" + foo.getName() + "_";
-        for (Parameter parameter : foo.getParameters()) {
+        for (TParameter parameter : foo.getParameters()) {
             IRelation value = getVariable(foo.getName(), parameter.getName());
             parameters.put(parameter.getName(), value);
         }

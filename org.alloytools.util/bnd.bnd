@@ -1,4 +1,9 @@
 -buildpath: \
 	aQute.libg,\
 	org.osgi.annotation.bundle,\
-	osgi.annotation
+	osgi.annotation,\
+	org.alloytools.api
+    
+-testpath: \
+    biz.aQute.wrapper.junit, \
+    biz.aQute.wrapper.hamcrest

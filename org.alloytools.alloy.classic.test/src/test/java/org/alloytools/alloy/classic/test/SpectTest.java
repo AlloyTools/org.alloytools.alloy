@@ -17,7 +17,7 @@ public class SpectTest {
     Spec   spec   = new Spec(alloy);
 
     //@formatter:off
-    String source = "        enum bool { false, true }\n"
+    String source = "      enum bool { false, true }\n"
                     + "    let tob[a] = (a)=> true else false\n"
                     + "    sig Foo {}\n"
                     + "\n"

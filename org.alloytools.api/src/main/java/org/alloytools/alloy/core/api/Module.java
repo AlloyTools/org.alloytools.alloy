@@ -23,7 +23,7 @@ public interface Module {
      *
      * @return a list of sigs
      */
-    List<TSignature> getSignatures();
+    Map<String,TSignature> getSignatures();
 
     /**
      * Get any run commands defined in the module
@@ -104,5 +104,9 @@ public interface Module {
      * Get the lost of modules that this module has opened (open ..)
      */
     List<Module> getOpens();
+
+    Optional<TFunction> getFunction(String name, int arity);
+
+    Optional<TFunction> getFunction(String name);
 
 }
