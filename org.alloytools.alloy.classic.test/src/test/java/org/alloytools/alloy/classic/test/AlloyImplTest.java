@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.alloytools.alloy.classic.provider.AlloyClassicFacade;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
+import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
@@ -46,8 +49,8 @@ public class AlloyImplTest {
 
         IRelation atoms0 = instances[0].getAtoms(foo);
         IRelation atoms1 = instances[1].getAtoms(foo);
-        assertThat(atoms0).hasSize(2);
-        assertThat(atoms1).hasSize(3);
+        assertThat((Iterable<ITuple>) atoms0).hasSize(2);
+        assertThat((Iterable<ITuple>) atoms1).hasSize(3);
 
         assertThat(atoms0.in(atoms1)).isTrue();
         assertThat(atoms1.in(atoms0)).isFalse();
@@ -197,7 +200,7 @@ public class AlloyImplTest {
         IRelation ints = inst.eval("Int");
 
         IRelation eval = inst.eval(expr);
-        assertThat(eval).isEqualTo(ints);
+        assertThat((Iterable<ITuple>) eval).isEqualTo(ints);
         // assertThat(p1.getCardinality()).isEqualTo(Cardinality.some);
 
         System.out.println(expr + " " + eval + " " + type);
@@ -211,12 +214,12 @@ public class AlloyImplTest {
 
             Solution solution = solver.solve(run, null, null, null);
             TFunction two = solution.getModule().getFunction("two").get();
-            List<Integer> collect = new ArrayList<>();
+            Set<Integer> collect = new TreeSet<>();
             for (Instance inst : solution) {
                 IRelation y = inst.getParameters(two).get("y");
                 collect.add(y.toInt());
             }
-            assertEquals(Arrays.asList(1, 2, 3), collect);
+            assertEquals(new TreeSet<>(Arrays.asList(1, 2, 3)), collect);
         }
     }
 

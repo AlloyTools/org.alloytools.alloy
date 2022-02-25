@@ -1,5 +1,7 @@
 package org.alloytools.util.table;
 
+import org.alloytools.util.table.Canvas.Style;
+
 public interface Cell {
 
     /**
@@ -17,11 +19,10 @@ public interface Cell {
      *
      * @param w
      * @param h
-     * @return
      */
-    default Canvas render(int w, int h) {
+    default Canvas render(int w, int h, Style style) {
         Canvas canvas = new Canvas(w, h);
-        canvas.box();
+        canvas.box(style);
         String[] lines = this.toString().split("\r?\n");
         for (int y = 0; y < lines.length && y < h - 2; y++) {
             for (int x = 0; x < w - 2 && x < lines[y].length(); x++) {

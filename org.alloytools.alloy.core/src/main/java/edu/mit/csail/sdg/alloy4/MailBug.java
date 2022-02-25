@@ -286,7 +286,7 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
             }).start();
             OurDialog.showmsg("Sending the bug report... please wait...", status);
         } finally {
-            System.exit(1);
+            AlloyCore.exit(1);
         }
     }
 
@@ -334,6 +334,6 @@ public final class MailBug implements UncaughtExceptionHandler, Runnable {
                                                   "Sorry. A fatal internal error has occurred.", " ", "You may submit a bug report (via HTTP).", "The error report will include your system", "configuration, but no other information.", " ", "If you'd like to be notified about a fix,", "please describe the problem and enter your email address.", " ", OurUtil.makeHT("Email:", 5, email, null), OurUtil.makeHT("Problem:", 5, scroll, null)
         }, yes, no))
             sendCrashReport(thread, ex, email.getText(), problem.getText());
-        System.exit(1);
+        AlloyCore.exit(1);
     }
 }

@@ -89,8 +89,10 @@ public class AlloyModuleClassic implements Module {
     @Override
     public Optional<TFunction> getFunction(String name, int arity) {
         check();
-        String search = "/".concat(name);
-        return getFunctions().stream().filter(f -> f.getName().endsWith(search) && f.getParameters().size() == arity).findAny();
+        return getFunctions().stream().filter(f -> {
+            boolean b = f.getName().endsWith(name) && f.getParameters().size() == arity;
+            return b;
+        }).findAny();
     }
 
     @Override

@@ -3,7 +3,7 @@ package org.alloytools.alloy.core.api;
 /**
  * A list of atoms.
  */
-public interface ITuple extends Comparable<ITuple> {
+public interface ITuple extends Comparable<ITuple>, Iterable<IAtom> {
 
     /**
      * Number of atoms in the tuple. A tuple must contain at least one atom, hence

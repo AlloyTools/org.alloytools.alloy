@@ -75,6 +75,9 @@ public class Relation implements IRelation {
             return solution.none();
 
         int arity = this.arity() + right.arity() - 2;
+        if (arity == 0)
+            return solution.none();
+
         List<IAtom> atoms = new ArrayList<>();
 
         for (ITuple l : this) {
@@ -95,7 +98,7 @@ public class Relation implements IRelation {
             }
         }
 
-        return new Relation(solution, arity, atoms);
+        return solution.create(arity, atoms);
     }
 
     @Override
@@ -104,6 +107,9 @@ public class Relation implements IRelation {
 
         List<IAtom> atoms = new ArrayList<>();
         int arity = this.arity() + right.arity();
+        if (arity == 0)
+            return solution.none();
+
         for (ITuple l : this) {
             for (ITuple r : right) {
                 for (int i = 0; i < l.arity(); i++) {
@@ -114,17 +120,22 @@ public class Relation implements IRelation {
                 }
             }
         }
-        return new Relation(solution, arity, atoms);
+        return solution.create(arity, atoms);
     }
 
     @Override
-    public Relation head() {
+    public boolean isNone() {
+        return solution.none() == this;
+    }
+
+    @Override
+    public IRelation head() {
         return split(0, 1);
     }
 
-    private Relation split(int from, int to) {
+    private IRelation split(int from, int to) {
         if (this.isEmpty())
-            return (Relation) solution.none();
+            return solution.none();
 
         assert from >= 0;
         assert from < to;
@@ -153,6 +164,9 @@ public class Relation implements IRelation {
             };
             tuples.add(t);
         }
+        if (tuples.size() == 0)
+            return solution.none();
+
         return new Relation(solution, arity, tuples);
     }
 
@@ -229,7 +243,7 @@ public class Relation implements IRelation {
             atoms.add(t.first());
             atoms.add(t.first());
         }
-        return new Relation(solution, 2, atoms);
+        return solution.create(2, atoms);
     }
 
     @Override
@@ -352,6 +366,29 @@ public class Relation implements IRelation {
     @Override
     public boolean isError() {
         return solution.error() == this;
+    }
+
+    @Override
+    public int compareTo(IRelation o) {
+        int compare = Integer.compare(arity, o.arity());
+        if (compare == 0) {
+            compare = Integer.compare(size(), o.size());
+        }
+        if (compare == 0) {
+            for (int i = 0; i < size(); i++) {
+                Tuple a = this.tuples[i];
+                ITuple b = o.getTuple(i);
+                compare = a.compareTo(b);
+                if (compare != 0)
+                    break;
+            }
+        }
+        return compare;
+    }
+
+    @Override
+    public ITuple getTuple(int i) {
+        return tuples[i];
     }
 
 }

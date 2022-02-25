@@ -1,5 +1,6 @@
 package org.alloytools.util.table;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -11,6 +12,7 @@ import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Module;
 import org.alloytools.alloy.core.api.Solution;
+import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TSignature;
 
 /**
@@ -43,8 +45,8 @@ public class TableView {
             if (sig.getFieldMap().isEmpty()) {
                 map.put(sig.getName(), toTable(atoms));
             } else {
-
-                map.put(sig.getName(), doObjectTable(sig, atoms, instance));
+                if (atoms.size() > 0)
+                    map.put(sig.getName(), doObjectTable(sig, atoms, instance));
             }
         }
 
@@ -54,14 +56,33 @@ public class TableView {
         return map;
     }
 
-    private static Table doObjectTable(TSignature sig, IRelation atoms, Instance instance) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    private static Table doObjectTable(TSignature sig, IRelation allAtoms, Instance instance) {
+        assert allAtoms.arity() == 1;
+        Map<String,TField> fieldMap = sig.getFieldMap();
+        List<IAtom> atoms = allAtoms.asList();
 
-    private static Table doHorizontalTable(IRelation atoms) {
-        // TODO Auto-generated method stub
-        return null;
+        Table table = new Table(atoms.size() + 1, fieldMap.size() + 1, 1);
+        table.set(0, 0, sig.getName());
+
+        int c = 1;
+        for (TField f : fieldMap.values()) {
+            table.set(0, c++, f.getName());
+        }
+
+        int r = 1;
+        for (IAtom atom : atoms) {
+
+            table.set(r, 0, atom);
+            c = 1;
+            for (TField f : fieldMap.values()) {
+                IRelation field = instance.getField(f);
+                IRelation values = atom.join(field);
+                Table relationTable = toTable(values);
+                table.set(r, c++, relationTable);
+            }
+            r++;
+        }
+        return table;
     }
 
     public static Table toTable(IRelation tupleset) {

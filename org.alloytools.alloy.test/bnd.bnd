@@ -1,3 +1,4 @@
 -testpath: \
 	org.alloytools:pardinus.core,\
-	biz.aQute.wrapper.junit
+	biz.aQute.wrapper.junit,\
+	org.alloytools.alloy.core

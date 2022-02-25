@@ -71,6 +71,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
+import org.alloytools.alloy.core.AlloyCore;
+
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.StringPref;
 import edu.mit.csail.sdg.alloy4.Computer;
@@ -1338,7 +1340,7 @@ public final class VizGUI implements ComponentListener {
             return null;
         }
         if (standalone)
-            System.exit(0);
+            AlloyCore.exit(0);
         else if (frame != null)
             frame.setVisible(false);
         return null;
@@ -1354,7 +1356,7 @@ public final class VizGUI implements ComponentListener {
         xmlLoaded.clear();
         xmlFileName = "";
         if (standalone)
-            System.exit(0);
+            AlloyCore.exit(0);
         else if (frame != null)
             frame.setVisible(false);
         return null;

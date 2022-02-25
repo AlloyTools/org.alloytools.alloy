@@ -12,7 +12,7 @@ import java.util.SortedSet;
  * the same arity) and the {@link #size()} is the number of tuples in this
  * relation. A relation always belongs to a {@link Solution}.
  */
-public interface IRelation extends Iterable<ITuple> {
+public interface IRelation extends Iterable<ITuple>, Comparable<IRelation> {
 
     /**
      * The solution this relation belongs to
@@ -118,7 +118,7 @@ public interface IRelation extends Iterable<ITuple> {
 
     /**
      * Return the most left column as a list of atoms PRECONDITION: this must be a
-     * unary relation
+     * unary relation TODO !! probably need to make this the full tuples.
      *
      * @return a list of atoms
      */
@@ -217,4 +217,8 @@ public interface IRelation extends Iterable<ITuple> {
     }
 
     boolean isError();
+
+    boolean isNone();
+
+    ITuple getTuple(int i);
 }

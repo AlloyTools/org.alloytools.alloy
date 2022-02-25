@@ -163,8 +163,9 @@ public class AlloyClassicFacade implements Alloy {
         });
     }
 
-    public static String getVersion() {
-        Optional<String> header = ManifestAccess.getHeader("org.alloytools.alloy.classic.provider", "Bundle-Version");
+    @Override
+    public String getVersion() {
+        Optional<String> header = ManifestAccess.getHeader("org.alloytools.alloy.dist", "Bundle-Version");
         return header.orElse("0.0.0");
     }
 

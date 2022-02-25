@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.alloytools.alloy.classic.provider.AlloyClassicFacade;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.IRelation;
+import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.TField;
@@ -30,12 +31,12 @@ public class AlloyAtomTest {
         for (Instance inst : next) {
             System.out.println(inst.getVariables());
             IRelation a = inst.getField(field);
-            assertThat(a).isNotNull();
+            assertThat((Iterable<ITuple>) a).isNotNull();
 
-            assertThat(a.union(a)).isEqualTo(a);
-            assertThat(a.intersection(a)).isEqualTo(a);
+            assertThat((Iterable<ITuple>) a.union(a)).isEqualTo(a);
+            assertThat((Iterable<ITuple>) a.intersection(a)).isEqualTo(a);
             assertThat(a.in(a)).isTrue();
-            assertThat(a.difference(a)).isEqualTo(s.none());
+            assertThat((Iterable<ITuple>) (a.difference(a))).isEqualTo(s.none());
 
         }
 
@@ -109,23 +110,23 @@ public class AlloyAtomTest {
             IRelation bat = parameters.get("bat");
             IRelation abba = parameters.get("abba");
 
-            assertThat(a.union(b)).isEqualTo(u);
-            assertThat(a.intersection(b)).isEqualTo(i);
-            assertThat(a.difference(b)).isEqualTo(dab);
-            assertThat(b.difference(a)).isEqualTo(dba);
-            assertThat(a.product(b)).isEqualTo(ab);
-            assertThat(b.product(a)).isEqualTo(ba);
-            assertThat(a.product(b)).isEqualTo(ab);
-            assertThat(ab.product(a)).isEqualTo(aba);
-            assertThat(ab.join(b)).isEqualTo(ab_b);
-            assertThat(ba.join(a)).isEqualTo(ba_a);
-            assertThat(ab.head()).isEqualTo(abh);
-            assertThat(ba.head()).isEqualTo(bah);
-            assertThat(ab.tail()).isEqualTo(abt);
-            assertThat(ba.tail()).isEqualTo(bat);
+            assertThat((Object) a.union(b)).isEqualTo(u);
+            assertThat((Object) a.intersection(b)).isEqualTo(i);
+            assertThat((Object) a.difference(b)).isEqualTo(dab);
+            assertThat((Object) b.difference(a)).isEqualTo(dba);
+            assertThat((Object) a.product(b)).isEqualTo(ab);
+            assertThat((Object) b.product(a)).isEqualTo(ba);
+            assertThat((Object) a.product(b)).isEqualTo(ab);
+            assertThat((Object) ab.product(a)).isEqualTo(aba);
+            assertThat((Object) ab.join(b)).isEqualTo(ab_b);
+            assertThat((Object) ba.join(a)).isEqualTo(ba_a);
+            assertThat((Object) ab.head()).isEqualTo(abh);
+            assertThat((Object) ba.head()).isEqualTo(bah);
+            assertThat((Object) ab.tail()).isEqualTo(abt);
+            assertThat((Object) ba.tail()).isEqualTo(bat);
             if (!b.isEmpty() && !a.isEmpty()) {
-                assertThat(ab.head()).isEqualTo(a);
-                assertThat(abba.tail().tail()).isEqualTo(ba);
+                assertThat((Object) ab.head()).isEqualTo(a);
+                assertThat((Object) abba.tail().tail()).isEqualTo(ba);
             }
         }
     }
@@ -152,7 +153,7 @@ public class AlloyAtomTest {
         System.out.println(s.getModule().getFunctions());
         TFunction foo = s.getModule().getFunction("foo").get();
         assertThat(foo).isNotNull();
-        Instance[] next = s.next(40000);
+        Instance[] next = s.next(400);
         System.out.println(next.length + " solutions");
         int n = 0;
         for (Instance inst : next) {
@@ -173,22 +174,22 @@ public class AlloyAtomTest {
             IRelation abt = parameters.get("abt");
             IRelation bat = parameters.get("bat");
 
-            assertThat(a.union(b)).isEqualTo(u);
-            assertThat(a.intersection(b)).isEqualTo(i);
-            assertThat(a.difference(b)).isEqualTo(dab);
-            assertThat(b.difference(a)).isEqualTo(dba);
-            assertThat(a.product(b)).isEqualTo(ab);
-            assertThat(b.product(a)).isEqualTo(ba);
-            assertThat(a.product(b)).isEqualTo(ab);
-            assertThat(ab.product(a)).isEqualTo(aba);
-            assertThat(ab.join(b)).isEqualTo(ab_b);
-            assertThat(ba.join(a)).isEqualTo(ba_a);
-            assertThat(ab.head()).isEqualTo(abh);
-            assertThat(ba.head()).isEqualTo(bah);
-            assertThat(ab.tail()).isEqualTo(abt);
-            assertThat(ba.tail()).isEqualTo(bat);
+            assertThat((Object) a.union(b)).isEqualTo(u);
+            assertThat((Object) a.intersection(b)).isEqualTo(i);
+            assertThat((Object) a.difference(b)).isEqualTo(dab);
+            assertThat((Object) b.difference(a)).isEqualTo(dba);
+            assertThat((Object) a.product(b)).isEqualTo(ab);
+            assertThat((Object) b.product(a)).isEqualTo(ba);
+            assertThat((Object) a.product(b)).isEqualTo(ab);
+            assertThat((Object) ab.product(a)).isEqualTo(aba);
+            assertThat((Object) ab.join(b)).isEqualTo(ab_b);
+            assertThat((Object) ba.join(a)).isEqualTo(ba_a);
+            assertThat((Object) ab.head()).isEqualTo(abh);
+            assertThat((Object) ba.head()).isEqualTo(bah);
+            assertThat((Object) ab.tail()).isEqualTo(abt);
+            assertThat((Object) ba.tail()).isEqualTo(bat);
             if (!b.isEmpty() && !a.isEmpty()) {
-                assertThat(ab.head()).isEqualTo(a);
+                assertThat((Object) ab.head()).isEqualTo(a);
             }
         }
     }

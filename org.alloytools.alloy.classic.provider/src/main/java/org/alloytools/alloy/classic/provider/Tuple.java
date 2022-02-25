@@ -1,5 +1,8 @@
 package org.alloytools.alloy.classic.provider;
 
+import java.util.Iterator;
+
+import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Solution;
@@ -33,6 +36,26 @@ abstract class Tuple implements ITuple {
         return new Relation(solution, arity(), new Tuple[] {
                                                             this
         });
+    }
+
+
+    @Override
+    public Iterator<IAtom> iterator() {
+
+        return new Iterator<IAtom>() {
+
+            int n = 0;
+
+            @Override
+            public boolean hasNext() {
+                return n < arity();
+            }
+
+            @Override
+            public IAtom next() {
+                return get(n++);
+            }
+        };
     }
 
     @Override

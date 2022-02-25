@@ -11,6 +11,10 @@
 	org.alloytools.util
 	
 -includepackage org.alloytools.alloy.cli
+
+-foo a, b, c
+-foo+ a;x=a, b;x=b, *;x=?
+
 -conditionalpackage: *
 
 -includeresource: \

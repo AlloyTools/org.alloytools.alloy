@@ -1,5 +1,7 @@
 package org.alloytools.util.table;
 
+import org.alloytools.util.table.Canvas.Style;
+
 public class Table implements Cell {
 
     public final int         rows;
@@ -76,18 +78,18 @@ public class Table implements Cell {
 
     @Override
     public String toString() {
-        if (cols == 1 && rows > 3)
+        if (cols == 1 && rows < 10 && rows > 1) {
             return transpose(0).toString("⁻¹");
-        else
+        } else
             return toString(null);
     }
 
     @Override
-    public Canvas render(int width, int height) {
-        return render(width, height, 0, 0, 0, 0);
+    public Canvas render(int width, int height, Style style) {
+        return render(width, height, 0, 0, 0, 0, style);
     }
 
-    public Canvas render(int width, int height, int left, int top, int right, int bottom) {
+    public Canvas render(int width, int height, int left, int top, int right, int bottom, Style style) {
 
         Canvas canvas = new Canvas(width + left + right, height + top + bottom);
         canvas.box(left, top, width, height, style);
@@ -106,7 +108,7 @@ public class Table implements Cell {
                     cw = width(c);
                 }
                 Cell cell = cells[r][c];
-                Canvas foo = cell.render(cw, ch);
+                Canvas foo = cell.render(cw, ch, style);
                 canvas.merge(foo, x, y);
                 x += cw - 1;
             }
@@ -163,9 +165,9 @@ public class Table implements Cell {
             message = "";
 
         if (rows == 0 || cols == 0) {
-            return "☒" + message;
+            return "{}" + message;
         }
-        Canvas render = render(width(), height(), 0, 0, message.length(), 0);
+        Canvas render = render(width(), height(), 0, 0, message.length(), 0, style);
         render.set(width(), 0, message);
         return render.toString();
     }
@@ -199,4 +201,7 @@ public class Table implements Cell {
         style = Canvas.BOLD;
     }
 
+    public void setNone() {
+        style = Canvas.NONE;
+    }
 }

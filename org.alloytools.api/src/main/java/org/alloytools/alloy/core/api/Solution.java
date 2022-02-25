@@ -138,4 +138,6 @@ public interface Solution extends Iterable<Instance> {
     TSignature bool();
 
     IRelation error();
+
+    IRelation create(int arity, List<IAtom> atoms);
 }

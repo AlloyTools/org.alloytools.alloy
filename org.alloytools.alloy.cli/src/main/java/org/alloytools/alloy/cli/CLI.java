@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.alloytools.alloy.cli.CLI.CLIOptions.CoreMininmization;
 import org.alloytools.alloy.cli.CLI.CLIOptions.DecomposeStrategy;
+import org.alloytools.alloy.core.AlloyCore;
+import org.alloytools.alloy.core.infra.AlloyDispatcher;
 import org.alloytools.alloy.infrastructure.api.AlloyMain;
 
 import aQute.lib.collections.ExtList;
@@ -260,5 +262,21 @@ public class CLI extends Env {
 		CLI cli = new CLI();
 		List<String> list = new ExtList<>(args);
 		cli.cl.execute(cli, "_run", list);
+	}
+
+	public void background(String ...string) {
+		AlloyCore.setNoExit();
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					AlloyDispatcher.main(string);
+				} catch (Exception e) {
+					exception(e, "failed to execute %s", (Object[])string);
+				} finally {
+					System.out.println("editor done");
+				}
+			}
+		};
+		t.start();
 	}
 }

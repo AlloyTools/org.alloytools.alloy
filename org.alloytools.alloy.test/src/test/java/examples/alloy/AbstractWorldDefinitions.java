@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alloytools.alloy.core.AlloyCore;
+
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -436,7 +438,7 @@ public final class AbstractWorldDefinitions {
 
     private static void usage() {
         System.out.println("java examples.AbstractWorldDefinitions [A241 | AbOp_total | AbIgnore_inv | AbTransfer_inv] [univ size]");
-        System.exit(1);
+        AlloyCore.exit(1);
     }
 
     /**

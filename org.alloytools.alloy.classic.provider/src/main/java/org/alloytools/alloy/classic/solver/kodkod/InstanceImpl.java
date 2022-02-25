@@ -96,7 +96,9 @@ class InstanceImpl implements Instance {
                 orig.addGlobal(a.label, a);
             }
             Expr expr = orig.parseOneExpressionFromString(cmd);
-            return eval(expr);
+            IRelation eval = eval(expr);
+            orig.resetGlobals();
+            return eval;
         } catch (Err | IOException e) {
             return solution.error();
         }
@@ -142,7 +144,7 @@ class InstanceImpl implements Instance {
         return "Instance[state=" + state + "]";
     }
 
-    Relation to(A4TupleSet set) {
+    IRelation to(A4TupleSet set) {
         List<IAtom> atoms = new ArrayList<>();
 
         for (A4Tuple tuple : set) {
@@ -168,7 +170,7 @@ class InstanceImpl implements Instance {
             }
         }
 
-        return new Relation(solution, set.arity(), atoms);
+        return solution.create(set.arity(), atoms);
     }
 
     @Override

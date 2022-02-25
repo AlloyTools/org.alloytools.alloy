@@ -223,7 +223,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             System.err.println("   Please make sure your X Windows is configured.");
             System.err.println("   You can verify this by typing \"xhost\"; it should not give an error message.");
             System.err.flush();
-            System.exit(1);
+            AlloyCore.exit(1);
         }
     }
 
@@ -851,7 +851,10 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 try {
                     WorkerEngine.stop();
                 } finally {
-                    System.exit(0);
+                    frame.dispose();
+                    if (viz != null)
+                        viz.getFrame().dispose();
+                    AlloyCore.exit(0);
                 }
             }
         return wrapMe();

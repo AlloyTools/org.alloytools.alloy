@@ -14,8 +14,13 @@ public class AlloyCore {
     }
 
     final static boolean debug;
+    static boolean       noexit;
     static {
         debug = "yes".equalsIgnoreCase(System.getProperty("debug")) || "true".equalsIgnoreCase(System.getProperty("debug"));
+    }
+
+    public static void setNoExit() {
+        noexit = true;
     }
 
     public static boolean isDebug() {
@@ -34,5 +39,13 @@ public class AlloyCore {
 
     public static boolean isWindows() {
         return File.separatorChar == '\\';
+    }
+
+
+    public static void exit(int code) {
+        if (noexit)
+            throw new ThreadDeath();
+        else
+            System.exit(code);
     }
 }

@@ -4,13 +4,16 @@ JPM-Command: alloy
 
 -buildpath: \
 	org.alloytools.alloy.application,\
-	org.alloytools.alloy.core,\
+    org.alloytools.alloy.classic.provider,\
+    org.alloytools.alloy.core,\
+    org.alloytools.api,\
+    org.alloytools.alloy.lsp,\
+    org.alloytools.alloy.cli,\
 	org.alloytools.alloy.extra,\
     org.alloytools.api,\
 	aQute.libg, \
     slf4j.api, \
-    slf4j.simple,\
-	org.alloytools.alloy.lsp
+    slf4j.simple
 
 -sources: false
 -conditionalpackage: aQute.*, org.apache.commmons.cli, slf4j*

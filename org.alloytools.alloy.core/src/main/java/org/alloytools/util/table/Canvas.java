@@ -39,6 +39,7 @@ public class Canvas {
 
     final static Style  PLAIN    = new Style(east, south, west, north);
     final static Style  BOLD     = new Style(beast, bsouth, bwest, bnorth);
+    final static Style  NONE     = new Style(0, 0, 0, 0);
 
     final static char[] boxchars = new char[256];
     static {
@@ -156,6 +157,9 @@ public class Canvas {
     }
 
     public Canvas box(int x, int y, int w, int h, Style style) {
+        if (style == NONE)
+            return this;
+
         bounds(x, y);
         w--;
         h--;

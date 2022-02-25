@@ -3,12 +3,14 @@ package org.alloytools.alloy.classic.solver.kodkod;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.alloytools.alloy.classic.provider.Atom;
 import org.alloytools.alloy.classic.provider.Relation;
+import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
 import org.alloytools.alloy.core.api.Module;
@@ -217,6 +219,20 @@ public class SolutionImpl implements Solution {
 
     public IRelation error() {
         return error;
+    }
+
+    @Override
+    public IRelation create(int arity, List<IAtom> atoms) {
+        if (arity == 0)
+            throw new IllegalArgumentException("arity cannot be null");
+        int l = atoms.size();
+
+        if (l == 0)
+            return none();
+        if (l != (l / arity) * arity)
+            throw new IllegalArgumentException("atoms size is not a multiple of arity so cannot turn them into tuples");
+
+        return new Relation(this, arity, atoms);
     }
 
 }

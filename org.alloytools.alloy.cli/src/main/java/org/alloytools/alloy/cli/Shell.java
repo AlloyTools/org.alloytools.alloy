@@ -3,12 +3,13 @@ package org.alloytools.alloy.cli;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Formatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.allotools.services.util.Services;
 import org.alloytools.alloy.core.api.Alloy;
@@ -19,6 +20,8 @@ import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.TCommand;
 import org.alloytools.alloy.core.api.TFunction;
+import org.alloytools.json.util.JSONEncoder;
+import org.alloytools.json.util.TextEncoder;
 import org.alloytools.util.table.Table;
 import org.alloytools.util.table.TableView;
 
@@ -27,7 +30,6 @@ import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
-import aQute.lib.justif.Justif;
 import aQute.lib.strings.Strings;
 import aQute.libg.qtokens.QuotedTokenizer;
 import jline.console.ConsoleReader;
@@ -44,6 +46,7 @@ public class Shell implements AutoCloseable {
 	Instance			instance;
 
 	boolean				boxes	= true;
+	private long		lastCompile;
 
 	static class IgnoreException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
@@ -54,6 +57,8 @@ public class Shell implements AutoCloseable {
 	interface ShellOptions extends Options {
 		@Description("Print out tuples as text instead of boxes")
 		boolean text();
+
+		boolean quiet();
 	}
 
 	public Shell(CLI env, File file, ShellOptions options) {
@@ -81,7 +86,7 @@ public class Shell implements AutoCloseable {
 
 	private void run(RunOptions options, boolean run) throws IOException {
 		if (options._arguments().isEmpty()) {
-			doCommand("Default", run, options);
+			setSolution(doCommand(null, run, options));
 		} else {
 			String arg = options._arguments().get(0);
 			if (arg.equals("{")) {
@@ -89,65 +94,127 @@ public class Shell implements AutoCloseable {
 				String collect = IO.collect(file);
 				String content = collect + "\n\n" + join + "\n";
 				module = alloy.compiler().compileSource(content);
-				doCommand("__", run,options);
+				setSolution(doCommand("__", run, options));
 			} else {
 				for (String a : options._arguments()) {
-					doCommand(a, run, options);
+					setSolution(doCommand(a, run, options));
 				}
 			}
 		}
 	}
 
-	private void doCommand(String name, boolean run, RunOptions options2) throws IOException {
-		TCommand cmd = run ? module.getRuns().get(name) : module.getChecks().get(name);
-		if (cmd == null) {
-			Optional<TFunction> fun = module.getFunctions().stream().filter(f -> f.isPredicate() && f.getName().equals(name)).findAny();
-			if (fun.isPresent()) {
-				String join = "run "+ name  + "\n";
-				String collect = IO.collect(file);
-				String content = collect + "\n\n" + join + "\n";
-				module = alloy.compiler().compileSource(content);
-				doCommand(name, run, options2);
-				return;
-			}
-			env.error("%s %s not found, available command %s", run ? "run" : "check", name, module.getRuns().keySet());
-			return;
-		}
-		Solver solver = alloy.getSolvers().get("");
-		this.solution = solver.solve(cmd, null);
-		this.iterator = solution.iterator();
-		if (!this.iterator.hasNext()) {
-			env.error("No solution for %s", cmd);
-			return;
-		}
-		next(1);
-
+	private void setSolution(Solution solution) {
+		this.solution = solution;
+		this.iterator = null;
+		this.instance = null;
 	}
 
-	private void next(int n) {
+	private Solution doCommand(String name, boolean run, RunOptions options2) throws IOException {
+		TCommand cmd;
+		if (run) {
+			if (name == null)
+				cmd = module.getDefaultCommand();
+			else {
+				cmd = module.getRuns().get(name);
+				if (cmd == null) {
+					if (name != null) {
+						Optional<TFunction> fun = module.getFunctions().stream()
+								.filter(f -> f.isPredicate() && f.getName().equals(name)).findAny();
+						if (fun.isPresent()) {
+							String join = "run " + name + "\n";
+							String collect = IO.collect(file);
+							String content = collect + "\n\n" + join + "\n";
+							module = alloy.compiler().compileSource(content);
+							return doCommand(name, run, options2);
+						}
+						env.error("%s %s not found, available command %s", run ? "run" : "check", name,
+								module.getRuns().keySet());
+						return null;
+					}
+				}
+			}
+			if (cmd == null) {
+				env.error("Cannot find run " + name);
+				return null;
+			}
+		} else {
+			if (name == null) {
+				env.error("A check has no default, so requires a name");
+				return null;
+			}
+			cmd = module.getChecks().get(name);
+			if (cmd == null) {
+				env.error("Cannot find check " + name);
+				return null;
+			}
+		}
+		Solver solver = alloy.getSolvers().get("");
+		return solver.solve(cmd, null);
+	}
+
+	private boolean next(int n) {
 		while (n > 0) {
 			if (!this.iterator.hasNext()) {
 				env.error("No more solutions");
-				return;
+				return false;
 			}
 			this.instance = this.iterator.next();
 			n--;
 		}
+		return true;
 	}
 
-	private void print() {
-		Map<String, Table> table = TableView.toTable(solution, instance);
-		table.remove("Int");
-		table.remove("seq/Int");
-		table.remove("univ");
-		table.forEach((k, v) -> {
-			System.out.println(k);
-			System.out.print(v);
-		});
+	private void print() throws IOException {
+		if (check(false)) {
+			Map<String, Table> table = TableView.toTable(solution, instance);
+			table.remove("Int");
+			table.remove("seq/Int");
+			table.remove("univ");
+			table.forEach((k, v) -> {
+				System.out.println(k);
+				System.out.print(v);
+			});
+		}
 	}
 
-	private void print(IRelation relation) {
-		System.out.println(TableView.toTable(relation));
+	private void print(IRelation relation, PrintOptions options) throws Exception {
+		if (options != null && options.json()) {
+			JSONEncoder.stream(System.out, relation);
+		} else if (options != null && options.text()) {
+			TextEncoder.stream(System.out, relation);
+		} else {
+			System.out.println(TableView.toTable(relation));
+		}
+	}
+
+	private void print(Map<String, IRelation> rs, PrintOptions options) throws Exception {
+		if (check(false)) {
+			if (options.json()) {
+				JSONEncoder.stream(System.out, rs);
+			} else {
+				List<IRelation> s = new ArrayList<>(rs.values());
+				Collections.sort(s);
+				int cols = options.horizontal(1);
+				if (cols <= 1) {
+					s.forEach(r -> System.out.println(TableView.toTable(r)));
+				} else {
+					int rows = (rs.size() + cols - 1) / cols;
+					Table table = new Table(rows, cols, 0);
+					int row = 0, col = 0;
+					for (IRelation r : s) {
+						Table t = TableView.toTable(r);
+						table.set(row, col, t.toString());
+						col++;
+						if (col >= cols) {
+							col = 0;
+							row++;
+						}
+					}
+					table.setNone();
+					System.out.println(table.toString());
+				}
+			}
+		}
 	}
 
 	@Description("Solve for the next solution")
@@ -157,7 +224,7 @@ public class Shell implements AutoCloseable {
 
 	@Description("Solve for the next solution")
 	public void _next(NextOptions options) throws IOException {
-		if (check()) {
+		if (check(false)) {
 			next(1);
 			print();
 		}
@@ -170,7 +237,7 @@ public class Shell implements AutoCloseable {
 	}
 
 	public void _find(FindOptions options) throws IOException {
-		if (check()) {
+		if (check(false)) {
 			String line = Strings.join(" ", options._arguments());
 			while (iterator.hasNext()) {
 				IRelation eval = instance.eval(line);
@@ -186,16 +253,62 @@ public class Shell implements AutoCloseable {
 	@Arguments(arg = {})
 	interface PrintOptions extends Options {
 		boolean text();
+
+		int horizontal(int i);
+
+		boolean json();
 	}
 
 	public void _print(PrintOptions options) throws IOException {
-		if (check()) {
+		if (check(false)) {
 			if (options.text()) {
 				System.out.println(instance);
 			} else {
 				print();
 			}
 		}
+	}
+
+	@Arguments(arg = "variable...")
+	interface ForEachOptions extends RunOptions, PrintOptions {
+		boolean again();
+
+		String run();
+
+		boolean duplicates();
+
+		int max(int deflt);
+	}
+
+	public void _foreach(ForEachOptions options) throws Exception {
+		if (options.run() != null) {
+			setSolution(doCommand(options.run(), true, options));
+		}
+		int max = options.max(1000);
+
+		if (check(options.again())) {
+			String line = Strings.join(" ", options._arguments());
+			Map<String, IRelation> displayed = new HashMap<>();
+			int n = 0;
+			do {
+				if (n++ > max)
+					break;
+
+				IRelation eval = instance.eval(line);
+				if (!options.duplicates() && displayed.values().contains(eval))
+					continue;
+				displayed.put(line + "-" + n, eval);
+			} while (iterator.hasNext() && next(1));
+			print(displayed, options);
+		}
+	}
+
+	@Arguments(arg = "file...")
+	interface GuiOptions extends RunOptions {
+	}
+
+	public void _edit(GuiOptions options) throws Exception {
+		env.background("gui", file.getAbsolutePath());
 	}
 
 	@Arguments(arg = { "[file]" })
@@ -213,20 +326,32 @@ public class Shell implements AutoCloseable {
 		}
 	}
 
-	private boolean check() throws IOException {
+	private boolean check(boolean reset) throws IOException {
+		if (file.lastModified() >= lastCompile) {
+			compile(file);
+		}
 		if (module.isValid()) {
 			if (solution == null) {
-				doCommand("Default", true, null);
-				if (!iterator.hasNext()) {
+				setSolution(doCommand(null, true, null));
+				if (solution == null)
+					return false;
+			}
+
+			if (iterator == null || reset) {
+				iterator = solution.iterator();
+				instance = null;
+			}
+
+			if (instance == null) {
+				if (iterator.hasNext()) {
+					instance = iterator.next();
+					return true;
+				} else {
 					env.error("no solutions");
 					return false;
 				}
-				instance = iterator.next();
-				return true;
-			} else if (!iterator.hasNext()) {
-				env.error("no more solutions");
-				return false;
 			}
+
 			return true;
 		} else {
 			module.getErrors().forEach(e -> env.error("%s", e));
@@ -235,8 +360,36 @@ public class Shell implements AutoCloseable {
 		return false;
 	}
 
+	private boolean reset() throws IOException {
+		if (file.lastModified() >= lastCompile) {
+			compile(file);
+		}
+		if (module.isValid()) {
+			if (solution == null) {
+				env.error("no solutions");
+				return true;
+			} else {
+				iterator = solution.iterator();
+				return next(1);
+			}
+		} else {
+			module.getErrors().forEach(e -> env.error("%s", e));
+			module.getWarnings().forEach(e -> env.warning("%s", e));
+		}
+		return false;
+	}
+
+	@Arguments(arg = {})
+	interface ResetOptions extends Options {
+	}
+
+	public void _reset(ResetOptions options) throws IOException {
+		reset();
+	}
+
 	private void compile(File file) {
 		this.module = alloy.compiler().compile(file);
+		this.lastCompile = System.currentTimeMillis();
 		this.solution = null;
 		this.instance = null;
 		this.iterator = null;
@@ -248,6 +401,13 @@ public class Shell implements AutoCloseable {
 
 	}
 
+	interface EvalOptions extends PrintOptions {
+	}
+
+	public void _eval(EvalOptions options) throws Exception {
+		eval(Strings.join(" ", options._arguments()), options);
+	}
+
 	/**
 	 * Show the value of a macro
 	 *
@@ -257,6 +417,8 @@ public class Shell implements AutoCloseable {
 	public void loop() throws Exception {
 
 		try (ConsoleReader reader = new ConsoleReader(); PrintWriter out = new PrintWriter(reader.getOutput())) {
+			if (!options.quiet())
+				out.println("Alloy shell " + alloy.getVersion());
 			reader.setPrompt("> ");
 
 			for (String line; (line = reader.readLine()) != null;) {
@@ -269,20 +431,17 @@ public class Shell implements AutoCloseable {
 				QuotedTokenizer qt = new QuotedTokenizer(line, " ", false, false);
 				List<String> parts = qt.getTokenSet();
 				String cmd = parts.remove(0);
-				if (cmd == "/exit")
+				if (cmd.equals("exit"))
 					return;
 
 				try {
-					if (cmd.startsWith("/")) {
+					if (cmd.equals(".")) {
+						eval(line.substring(1), null);
+					} else {
 						CommandLine cl = new CommandLine(env);
-						String help = cl.execute(this, cmd.substring(1), parts);
+						String help = cl.execute(this, cmd, parts);
 						if (help != null) {
 							System.out.println(help);
-						}
-					} else {
-						if (check()) {
-							IRelation eval = instance.eval(line);
-							print(eval);
 						}
 					}
 				} catch (Throwable e) {
@@ -295,6 +454,13 @@ public class Shell implements AutoCloseable {
 			}
 		}
 
+	}
+
+	private void eval(String line, PrintOptions options) throws Exception {
+		if (check(false)) {
+			IRelation eval = instance.eval(line);
+			print(eval, options);
+		}
 	}
 
 	@Override

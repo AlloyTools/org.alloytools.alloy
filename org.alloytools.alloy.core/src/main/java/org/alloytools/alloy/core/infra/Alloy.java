@@ -61,9 +61,9 @@ public class Alloy {
 
     }
 
-    public static void main(String args[]) throws Exception {
-        AlloyClassLoader l1 = new AlloyClassLoader();
+    static AlloyClassLoader l1 = new AlloyClassLoader();
 
+    public static void main(String args[]) throws Exception {
         Class< ? > dispatcher = l1.loadClass("org.alloytools.alloy.core.infra.AlloyDispatcher");
         Method main = dispatcher.getMethod("main", String[].class);
         main.invoke(null, (Object) args);

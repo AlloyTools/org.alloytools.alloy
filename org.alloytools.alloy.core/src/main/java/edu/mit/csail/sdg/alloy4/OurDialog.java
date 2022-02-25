@@ -46,6 +46,8 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
+import org.alloytools.alloy.core.AlloyCore;
+
 /**
  * Graphical dialog methods for asking the user some questions.
  * <p>
@@ -112,7 +114,7 @@ public final class OurDialog {
         try {
             show(parent, "Fatal Error", ERROR_MESSAGE, message, null, null);
         } finally {
-            System.exit(1);
+            AlloyCore.exit(1);
         }
     }
 

@@ -63,4 +63,6 @@ public interface Alloy {
         Solution solution = solver.solve(module.getDefaultCommand(), null);
         return solution;
     }
+
+    String getVersion();
 }

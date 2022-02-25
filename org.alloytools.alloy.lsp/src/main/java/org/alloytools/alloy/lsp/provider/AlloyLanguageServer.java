@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+import org.alloytools.alloy.core.AlloyCore;
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
 import org.eclipse.lsp4j.InitializeParams;
@@ -60,7 +61,7 @@ public class AlloyLanguageServer implements LanguageServer, LanguageClientAware 
 
     @Override
     public void exit() {
-        System.exit(0);
+        AlloyCore.exit(0);
     }
 
     @Override

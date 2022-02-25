@@ -45,4 +45,8 @@ public class ManifestAccess {
         return manifests.keySet();
     }
 
+    public static String getVersion(String bsn) {
+        return getHeader(bsn, "Bundle-Version").orElse(null);
+    }
+
 }
