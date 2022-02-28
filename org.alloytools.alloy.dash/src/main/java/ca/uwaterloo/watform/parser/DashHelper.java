@@ -1,8 +1,14 @@
 package ca.uwaterloo.watform.parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ca.uwaterloo.watform.ast.DashConcState;
+import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 
@@ -43,4 +49,31 @@ public class DashHelper {
 		}
 		return concState.isParameterized ? parameterizedExpr : expr;
 	}
+	
+	public static Expr quantify(String quantifier, String sig, Expr expr) {
+        List<Decl> decls = new ArrayList<Decl>();
+        List<ExprVar> a = new ArrayList<ExprVar>();
+        Expr sigExpr =  ExprVar.make(null, sig);
+        a.add(ExprVar.make(null, quantifier));
+        decls.add(new Decl(null, null, null, null, a, mult(sigExpr)));
+        return ExprQt.Op.ALL.make(null, null, decls, expr);
+	}
+	
+    /*
+     * Taken from the Dash.cup file. It is used for handling difficult parsing
+     * ambiguities with Alloy expressions
+     */
+    private static Expr mult(Expr x) throws Err {
+        if (x instanceof ExprUnary) {
+            ExprUnary y = (ExprUnary) x;
+            if (y.op == ExprUnary.Op.SOME)
+                return ExprUnary.Op.SOMEOF.make(y.pos, y.sub);
+            if (y.op == ExprUnary.Op.LONE)
+                return ExprUnary.Op.LONEOF.make(y.pos, y.sub);
+            if (y.op == ExprUnary.Op.ONE)
+                return ExprUnary.Op.ONEOF.make(y.pos, y.sub);
+        }
+        return x;
+    }
+
 }

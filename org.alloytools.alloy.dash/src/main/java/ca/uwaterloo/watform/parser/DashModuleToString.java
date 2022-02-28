@@ -326,7 +326,7 @@ public class DashModuleToString {
 	private static void printExprQt(ExprQt expr, DataLayouter<NoExceptions> out) {
 		boolean first = true;
 		if (expr.op != ExprQt.Op.COMPREHENSION)
-			out.print('(').print(expr.op).print(' ').beginCInd().brk(1,0);
+			out.print('(').print(expr.op).print(' ').beginCInd();
 		else
 			out.print('{').beginCInd();
 		printDecls(expr.decls, out);

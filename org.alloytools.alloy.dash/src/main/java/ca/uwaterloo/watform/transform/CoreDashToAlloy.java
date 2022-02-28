@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -41,10 +42,12 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
  
 public class CoreDashToAlloy {
 	static boolean isCreatingEnabledAfterPred = false;
-	static Map<String, String> changedVar2ConcState = new LinkedHashMap<String, String>();
+	static Map<String, DashConcState> changedVars = new LinkedHashMap<String, DashConcState>();
+	static Map<String, DashConcState> changedQuantifiedVars = new LinkedHashMap<String, DashConcState>();
+	static boolean modifyingExprQT = false;
  
     public static DashModule convertToAlloyAST(DashModule module) {	
-    	// createCommand(module);
+    	createCommand(module);
     	
     	createParamSigAST(module);
         createSnapshotSigAST(module);
@@ -56,15 +59,15 @@ public class CoreDashToAlloy {
         //createEnterPredAST(module);
         //createExitPredAST(module);
         
-        //createInitAST(module);
+        createInitAST(module);
         createOperationAST(module);
         createSmallStepAST(module);
         createTestIfStableAST(module);
         createIsEnabledAST(module);
-        //createEqualsAST(module);
-        //createStableAST(module);
-        //createModelDefFact(module);
-        //createPathAST(module);
+        createEqualsAST(module);
+        createStableAST(module);
+        createModelDefFact(module);
+        createPathAST(module);
         if (DashOptions.generateSigAxioms) {
         	createSignificanceAxiomAST(module);
         	createOperationsAxiomAST(module);
@@ -176,7 +179,7 @@ public class CoreDashToAlloy {
             decls.add(new Decl(null, null, null, null, a, b));
             a.clear();
         }
-
+ 
         /* Creating the following expression: variable: mappings (variable: param -> mapping if parameterized)*/
         for (String variableName : module.variable2Expression.keySet()) {
             Expr b = module.variable2Expression.get(variableName);
@@ -451,6 +454,7 @@ public class CoreDashToAlloy {
      * Model
      */
     private static void createPostConditionAST(DashTrans transition, DashModule module) {
+    	System.out.println("Transition: " + transition.modifiedName);
         Expr sStable = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "stable"));
         Expr sPrimeStable = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, "stable"));
         Expr sEvents = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "events"));
@@ -492,24 +496,20 @@ public class CoreDashToAlloy {
 
         /* Creating the following expression: AND[doexpr, doexpr, ..] */
         if (transition.doExpr != null && transition.doExpr.exprList != null) {                    
-            //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
-            for (String var : getUnchangedVars(transition.doExpr.exprList, getParentConcState(transition.parentState), module, transition)) {
-                Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)); //s_next.variableParent_varName
-                binaryLeft = parent.isParameterized ? ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), binaryLeft) : binaryLeft;
-                Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //s_next.variableParent_varName
-                binaryRight = parent.isParameterized ? ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), binaryRight) : binaryRight;
-                Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
-                expression = ExprBinary.Op.AND.make(null, null, expression, binaryEquals);
-            }
             Expr modifiedExpr = getVarFromParentExpr(transition.doExpr.expr, getParentConcState(transition.parentState), module);                 
             expression = ExprBinary.Op.AND.make(null, null, expression, modifiedExpr);
+            //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
+            Map<String, DashConcState> unchangedVars = new LinkedHashMap<String, DashConcState>(getUnchangedVars(transition.doExpr.exprList, module));
+            for (String var : unchangedVars.keySet()) {
+                expression = ExprBinary.Op.AND.make(null, null, expression, createUnchangedVariableAST(var, unchangedVars.get(var), parent));
+            }
+            changedVars.clear();
         }
         
         /* Creating the following expression(s): s_next.variable = s.variable */
         if (transition.doExpr == null) {
             //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
-            for (String var : getUnchangedVars(new ArrayList<Expr>(), parent, module, transition)) {
-            	System.out.println("Checking: " + var);
+            for (String var : getUnchangedVars(new ArrayList<Expr>(), module).keySet()) {
                 Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)); //s_next.variableParent_varName
                 binaryLeft = parent.isParameterized ? ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), binaryLeft) : binaryLeft;
                 Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //s_next.variableParent_varName
@@ -657,6 +657,32 @@ public class CoreDashToAlloy {
         	addParameterizedPredicateAST(module, "pos_" + transition.modifiedName, "s", "s_next", null, null, transition.parentConcState.param, expression);
         else
         	addPredicateAST(module, "pos_" + transition.modifiedName, "s", "s_next", null, null, expression); //LOOK HERE
+    }
+    
+    /*
+     * This functions creates the AST for variables that are unchanged during a transition. 
+     * If a varibale belongs to a parameterized Conc State, we create the following:
+     * p.s_next.var = p'.s_next.var
+     * If a varibale belongs to a parameterized Conc State and is not a varibale in the Conc State taking the transition, we create the following:
+     * all p: param | p.s_next.var = p.s.var
+     */
+    private static Expr createUnchangedVariableAST(String var, DashConcState varConcState, DashConcState transConcState) {
+        Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)); //s_next.variableParent_varName
+        binaryLeft = varConcState.isParameterized ? ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), binaryLeft) : binaryLeft;
+        Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //s_next.variableParent_varName
+        binaryRight = varConcState.isParameterized ? ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), binaryRight) : binaryRight;
+        Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
+        
+    	if (varConcState.isParameterized && !(transConcState.modifiedName.equals(varConcState.modifiedName))) {
+            List<Decl> decls = new ArrayList<Decl>();
+            ExprVar p = ExprVar.make(null, "p");
+            List<ExprVar> a = new ArrayList<ExprVar>(Arrays.asList(p)); //[s]
+            Expr param = ExprUnary.Op.ONE.make(null, ExprVar.make(null, varConcState.param));
+            decls.add(new Decl(null, null, null, null, a, mult(param))); //p: param
+            return ExprQt.Op.ALL.make(null, null, decls, binaryEquals);
+    	}
+    	
+    	return binaryEquals;
     }
 
     /*
@@ -1148,18 +1174,18 @@ public class CoreDashToAlloy {
         for (DashConcState concState : module.concStates.values()) {
             if (concState.states.size() == 0) {
             	if(concState.concStates.size() == 0) {
-	                if (binaryRight == null)
+	                if (binaryRight == null && !concState.isParameterized)
 	                    binaryRight = ExprVar.make(null, concState.modifiedName);
-	                else
+	                else if(!concState.isParameterized)
 	                    binaryRight = ExprBinary.Op.PLUS.make(null, null, binaryRight, ExprVar.make(null, concState.modifiedName));
             	}
             }
             else {
                 for (DashState state : concState.states) {
                 	if(state.isDefault) {
-	                    if (binaryRight == null)
+	                    if (binaryRight == null && !concState.isParameterized)
 	                        binaryRight = ExprVar.make(null, state.modifiedName);
-	                    else
+	                    else if (!concState.isParameterized)
 	                        binaryRight = ExprBinary.Op.PLUS.make(null, null, binaryRight, ExprVar.make(null, state.modifiedName));
                 	}
                 }
@@ -1183,6 +1209,7 @@ public class CoreDashToAlloy {
         for (DashInit init : module.initConditions) {
             for (Expr expr : init.exprList) {
                 Expr modifiedExpr = getVarFromParentExpr(expr, init.parent, module);
+                modifiedExpr = init.parent.isParameterized ? DashHelper.quantify("p", init.parent.param, modifiedExpr) : modifiedExpr;
                 expression = ExprBinary.Op.AND.make(null, null, expression, modifiedExpr);
             }
         }
@@ -1390,13 +1417,11 @@ public class CoreDashToAlloy {
         //If we make a reference to a conc state outside of the current conc state, find it and 
         //modify the value of the expression accordingly
     	if(expr.toString().contains("/")) {
-    		System.out.println("Ref: " + expr.toString());
     		String concStateRef = expr.toString().substring(0, expr.toString().indexOf("/"));
     		for(DashConcState state: parent.parent.concStates) {    			
     			if(state.name.equals(concStateRef)) 
     				concState = new DashConcState(state);
     		}
-    		changedVar2ConcState.put(expr.toString(), concState.modifiedName + '_' + expr.toString().substring(expr.toString().indexOf("/") + 1));
     		expression = ExprVar.make(null, expr.toString().substring(expr.toString().indexOf("/") + 1));  
     		return modifyExprWithVar(expression, concState, module, true);
     	} 
@@ -1447,11 +1472,14 @@ public class CoreDashToAlloy {
     
     private static Expr modifyVar(Expr expression, DashConcState parent, Expr expr, List<String> exprList, boolean isEnvVar, boolean isRef) {
         for (String var : exprList) {
-            if (expr.toString().equals(var + "'"))
+            if (expr.toString().equals(var + "'")) {
+            	changedVars.put(parent.modifiedName + '_' + var, parent); // Since the variable is primed, we add it to our list of changed variables
+            	if (modifyingExprQT) (changedQuantifiedVars).put(parent.modifiedName + '_' + var, parent); 
             	if (parent.isParameterized && !isRef) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "p"), ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, parent.modifiedName + '_' + var)));
             	else
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, parent.modifiedName + '_' + var));
+            }
             else if (expr.toString().equals(var)) {
             	if(isCreatingEnabledAfterPred && isEnvVar)
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "_s"), ExprVar.make(null, parent.modifiedName + '_' + var));
@@ -1577,6 +1605,10 @@ public class CoreDashToAlloy {
         return createUnaryExpr(unary.op, sub);
     }
 
+    /*
+     * Breakdown a Join expression into its subcomponents Example of a join
+     * expression: s.variable (jointed by a dot)
+     */
     private static ExprBadJoin getVarFromBadJoin(ExprBadJoin joinExpr, DashConcState parent, DashModule module) {
     	Expr left = null, right = null;
         if (joinExpr.left instanceof ExprVar) {
@@ -1621,11 +1653,13 @@ public class CoreDashToAlloy {
     }
 
     /*
-     * Breakdown a quantified expression into its subcomponents
+     * Breakdown a quantified expression into its subcomponents. An example of a quantified expression is:
+     * all p: PID | expression
      */
     private static Expr getVarFromExprQt(ExprQt exprQt, DashConcState parent, DashModule module) {
     	Expr subExpr = null;
     	List<Decl> decls = new ArrayList<Decl>();
+    	modifyingExprQT = true;
     	
         for (Decl decl : exprQt.decls) {
         	List<ExprVar> a = new ArrayList<ExprVar>();
@@ -1650,9 +1684,43 @@ public class CoreDashToAlloy {
         }
         if(exprQt.sub instanceof ExprBadJoin) {
         	subExpr = getVarFromBadJoin((ExprBadJoin) exprQt.sub, parent, module);
-        }
+        }        
         
+        subExpr = createUnchangedQTVarAST(subExpr, exprQt.decls);
+        System.out.println("SubExpr: " + subExpr);
+        changedQuantifiedVars.clear();
+        modifyingExprQT = false;
         return createExprQt(exprQt.op, decls, subExpr);
+    }
+    
+    /* If we change the value of a variable in a process, we need to ensure that the value of this varibale
+     * remains unchanged for the other process */
+    private static Expr createUnchangedQTVarAST(Expr subExpr, ConstList<Decl> qtDecls) { 	
+    	for (String var: changedQuantifiedVars.keySet()) {
+    		if (!changedQuantifiedVars.get(var).isParameterized) continue;
+    	   	
+    		String paramName = changedQuantifiedVars.get(var).param;
+            Expr binaryLeft = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)));  //p.(s_next.variableParent_varName)
+            Expr binaryRight = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var))); //s_next.variableParent_varName
+            Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
+            
+        	for (Decl decl: qtDecls) {
+        		System.out.println("Expr: " + decl.expr.toString() + " Param: "+ paramName);
+        		if (decl.expr.toString().contains(paramName)) {
+                	for(ExprHasName name: decl.names) 
+                		binaryEquals = ExprBinary.Op.AND.make(null, null, binaryEquals, ExprUnary.Op.NOT.make(null, ExprBinary.Op.IN.make(null, null, ExprVar.make(null, name.toString()), ExprVar.make(null, "quant"))));
+        		}
+        	}
+            
+            List<Decl> decls = new ArrayList<Decl>();
+            ExprVar q = ExprVar.make(null, "quant");
+            List<ExprVar> a = new ArrayList<ExprVar>(Arrays.asList(q)); //[s]
+            Expr param = ExprUnary.Op.ONE.make(null, ExprVar.make(null, changedQuantifiedVars.get(var).param));
+            decls.add(new Decl(null, null, null, null, a, mult(param))); //p: param
+            Expr expr = ExprQt.Op.ALL.make(null, null, decls, binaryEquals);
+            subExpr = ExprBinary.Op.AND.make(null, null, subExpr, expr);
+    	}
+    	return subExpr;
     }
     
     /*
@@ -1684,67 +1752,18 @@ public class CoreDashToAlloy {
             }
     	}
     	return createExprList(list.op, exprList);
-    }
- 
+    }    
+    
     //Find the variables that are unchanged during a transition
-    static List<String> getUnchangedVars(List<Expr> exprList, DashConcState parent, DashModule module, DashTrans trans) {
-    	List<String> variables = new ArrayList<String>();
-    	DashConcState concState = new DashConcState(parent);
-    	Map<String, String> var2ConcState = new LinkedHashMap<String, String>();
-    	
-    	/* Get all the variables located in the conc state inside which the transitions is declared. It will also fetch
-    	 * any variables that are located in any parents of the conc state */
-    	while(concState != null) {
-    		for(Decl decl: concState.decls) {
-    			for(ExprHasName name: decl.names) {
-    				variables.add(name.toString());
-    				var2ConcState.put(name.toString(), concState.modifiedName);
-    			}
-    		}
-    		concState = concState.parent;
-    	}
-
-    	List<String> changedVars = new ArrayList<String>();
-        List<String> unchangedVars = new ArrayList<String>(variables);
-        List<String> unchangedVarsModified = new ArrayList<String>();
-        
-        /* Remove any variables that have been changed by this transition. (A changed variable is one
-         * that is primed) */
-        for (Expr expr : exprList) {
-        	System.out.println("Expr: " + expr);
-        	for(String var: variables){
-        		if(expr.toString().contains(var + "'") && expr.toString().contains(var + "/")) {
-        			
-        		}
-        		else if(expr.toString().contains(var + "'")) {
-        			unchangedVars.remove(var);
-        			changedVars.add(var + var2ConcState.get(var));
-        		}
-        	}
+    static Map<String, DashConcState> getUnchangedVars(List<Expr> exprList, DashModule module) {
+    	Map<String, DashConcState> unchangedVariables = new LinkedHashMap<String, DashConcState>(module.variable2ConcState);
+      
+        for (String var: changedVars.keySet()) {
+        	if (unchangedVariables.keySet().contains(var))
+        		unchangedVariables.remove(var);
         }
         
-        for (String var: changedVars) {
-        	System.out.println("Changed Var: " + var + " ConcState: " + parent.modifiedName);
-        }
-        for (String var: module.variable2ConcState.keySet()) {
-        	System.out.println("All Var: " + var + " ConcState: " + module.variable2ConcState.get(var));
-        }
-        
-        /* Modify the names of variables that have not been changed. */
-        for(String var: unchangedVars) {
-        	concState = new DashConcState(parent);
-        	while(concState != null) {
-        		for(Decl decl: concState.decls) {
-        			for(ExprHasName name: decl.names) {
-        				if(name.toString().equals(var))
-        					unchangedVarsModified.add(concState.modifiedName + "_" + var);
-        			}        				
-        		}
-        		concState = concState.parent;
-        	}
-        }
-        
-        return unchangedVarsModified;
+        return unchangedVariables;
     }
   
     //Retrive the concurrent state inside which "item" is located

@@ -80,6 +80,7 @@ public class DashConcState {
 		this.parent = concState.parent;	
 		this.concStates = concState.concStates;		
 		this.states = concState.states;
+		this.param = concState.param;
 		this.transitions = concState.transitions;
 		this.templateCall = concState.templateCall;		
 		this.templateDecl = concState.templateDecl;
