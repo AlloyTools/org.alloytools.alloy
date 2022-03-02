@@ -68,6 +68,7 @@ public class CoreDashToAlloy {
         createStableAST(module);
         createModelDefFact(module);
         createPathAST(module);
+        createParamConstFactAST(module);
         if (DashOptions.generateSigAxioms) {
         	createSignificanceAxiomAST(module);
         	createOperationsAxiomAST(module);
@@ -115,6 +116,60 @@ public class CoreDashToAlloy {
         }
         
         addSigAST(module, name, null, null, decls, null, null, null, null, null);
+    }
+    
+    private static void createParamConstFactAST(DashModule module) {
+    	List<String> states = new ArrayList<String>();
+    	List<String> transitions = new ArrayList<String>();
+    	
+        List<Decl> decls = new ArrayList<Decl>();
+        List<ExprVar> a = new ArrayList<ExprVar>();
+        Expr finalExpr = null;
+    	
+        for (DashConcState concState: module.concStates.values()) {
+        	if (concState.isParameterized) {
+        		Expr expr = null;
+        		states.addAll(getStates(concState));
+        		transitions.addAll(getTransitions(module,concState));
+        		
+        		for (String state: states) {
+    				Expr left = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), ExprVar.make(null, Character.toLowerCase(state.charAt(0)) + state.substring(1))); 	//p.stateName
+    				Expr right = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "q"), ExprVar.make(null, Character.toLowerCase(state.charAt(0)) + state.substring(1)));	//q.stateName
+    				Expr equals = ExprBinary.Op.NOT_EQUALS.make(null, null, left, right); //p.stateName != q.stateName
+        			if(expr == null) {
+        				expr = equals;
+        			}
+        			else {
+        				expr = ExprBinary.Op.AND.make(null, null, expr, equals);
+        			}
+        		}
+        		
+        		for (String trans: transitions) {
+    				Expr left = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), ExprVar.make(null, Character.toLowerCase(trans.charAt(0)) + trans.substring(1)));  //p.transName
+    				Expr right = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "q"), ExprVar.make(null, Character.toLowerCase(trans.charAt(0)) + trans.substring(1))); //q.transName
+    				Expr equals = ExprBinary.Op.NOT_EQUALS.make(null, null, left, right); //p.transName != q.transName
+        			if(expr == null) {
+        				expr = equals;
+        			}
+        			else {
+        				expr = ExprBinary.Op.AND.make(null, null, expr, equals);
+        			}
+        		}
+        		
+        		Expr b = ExprVar.make(null, concState.param);
+        		a.add(ExprVar.make(null, "p"));
+        		a.add(ExprVar.make(null, "q"));
+        		decls.add(new Decl(null, new Pos("disj", 0, 0), new Pos("disj", 0, 0), null, a, mult(b)));
+        		
+        		if (finalExpr == null)
+        			finalExpr = ExprQt.Op.ALL.make(null, null, decls, expr);
+        		else
+        			finalExpr = ExprBinary.Op.AND.make(null, null, finalExpr, ExprQt.Op.ALL.make(null, null, decls, expr));
+        	}
+        }
+        
+        if (finalExpr != null)
+        	module.addFact(null, "constraints", finalExpr);
     }
 
     /* Used by other functions to help create signature ASTs */
@@ -293,15 +348,23 @@ public class CoreDashToAlloy {
         				left = ExprVar.make(null, Character.toLowerCase(fromState.charAt(0)) + fromState.substring(1));
         				left = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), left);
         			}
-        			else
+        			else {
         				left = ExprVar.make(null, transition.fromExpr.fromExpr.get(0).replace('/', '_'));
+        			}
         			Expr right = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "conf"));
         			binaryFrom = ExprBinary.Op.INTERSECT.make(null, null, left, mult(right));
         			binaryFrom = ExprUnary.Op.SOME.make(null, binaryFrom);       				
         			break;
         		}
         		else if(state.states.size() == 0 && state.modifiedName.equals(transition.fromExpr.fromExpr.get(0).replace('/', '_'))){
-                    left = ExprVar.make(null, transition.fromExpr.fromExpr.get(0).replace('/', '_'));
+        			if(transition.parentConcState.isParameterized) {
+        				String fromState = transition.fromExpr.fromExpr.get(0).replace('/', '_');
+        				left = ExprVar.make(null, Character.toLowerCase(fromState.charAt(0)) + fromState.substring(1));
+        				left = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), left);
+        			}
+        			else {
+        				left = ExprVar.make(null, transition.fromExpr.fromExpr.get(0).replace('/', '_'));
+        			}
                     Expr right = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "conf"));
                     binaryFrom = ExprBinary.Op.IN.make(null, null, left, mult(right));
         			break;
@@ -1172,27 +1235,29 @@ public class CoreDashToAlloy {
         Expr binaryRight = null;
 
         for (DashConcState concState : module.concStates.values()) {
-            if (concState.states.size() == 0) {
-            	if(concState.concStates.size() == 0) {
-	                if (binaryRight == null && !concState.isParameterized)
-	                    binaryRight = ExprVar.make(null, concState.modifiedName);
-	                else if(!concState.isParameterized)
-	                    binaryRight = ExprBinary.Op.PLUS.make(null, null, binaryRight, ExprVar.make(null, concState.modifiedName));
-            	}
-            }
-            else {
-                for (DashState state : concState.states) {
-                	if(state.isDefault) {
-	                    if (binaryRight == null && !concState.isParameterized)
-	                        binaryRight = ExprVar.make(null, state.modifiedName);
-	                    else if (!concState.isParameterized)
-	                        binaryRight = ExprBinary.Op.PLUS.make(null, null, binaryRight, ExprVar.make(null, state.modifiedName));
-                	}
-                }
-            }
+        	if (!concState.isParameterized) {
+	            if (concState.states.size() == 0) {
+	            	if(concState.concStates.size() == 0) {
+		                if (binaryRight == null)
+		                    binaryRight = ExprVar.make(null, concState.modifiedName);
+		                else
+		                    binaryRight = ExprBinary.Op.PLUS.make(null, null, binaryRight, ExprVar.make(null, concState.modifiedName));
+	            	}
+	            }
+	            else {
+	                for (DashState state : concState.states) {
+	                	if(state.isDefault) {
+		                    if (binaryRight == null)
+		                        binaryRight = ExprVar.make(null, state.modifiedName);
+		                    else
+		                        binaryRight = ExprBinary.Op.PLUS.make(null, null, binaryRight, ExprVar.make(null, state.modifiedName));
+	                	}
+	                }
+	            }
+        	}
         }
 
-        Expr expression = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
+        Expr expression = ExprBinary.Op.IN.make(null, null, binaryRight, binaryLeft);
 
         expression = ExprBinary.Op.AND.make(null, null, expression, ExprUnary.Op.NO.make(null, ExprBadJoin.make(null, null, s, taken))); //no s.taken
         if (DashOptions.isEnvEventModel) {
@@ -1598,10 +1663,13 @@ public class CoreDashToAlloy {
         if (unary.sub instanceof ExprList) {
         	sub = getVarFromExprList((ExprList) unary.sub, parent, module);
         }
+        if (unary.sub instanceof ExprQt) {
+        	sub = getVarFromExprQt((ExprQt) unary.sub, parent, module);
+        }
         if (unary.sub instanceof ExprConstant) {
         	sub = unary.sub;
         }
-        
+
         return createUnaryExpr(unary.op, sub);
     }
 
@@ -1709,6 +1777,9 @@ public class CoreDashToAlloy {
         		if (decl.expr.toString().contains(paramName)) {
                 	for(ExprHasName name: decl.names) 
                 		binaryEquals = ExprBinary.Op.AND.make(null, null, binaryEquals, ExprUnary.Op.NOT.make(null, ExprBinary.Op.IN.make(null, null, ExprVar.make(null, name.toString()), ExprVar.make(null, "quant"))));
+        		}
+        		else {
+                	binaryEquals = ExprBinary.Op.AND.make(null, null, binaryEquals, ExprUnary.Op.NOT.make(null, ExprBinary.Op.IN.make(null, null, ExprVar.make(null, "p"), ExprVar.make(null, "quant"))));
         		}
         	}
             
