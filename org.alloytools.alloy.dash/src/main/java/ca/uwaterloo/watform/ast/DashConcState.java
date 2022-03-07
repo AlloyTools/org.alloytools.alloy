@@ -70,7 +70,6 @@ public class DashConcState {
         {
         	this.param = param.toString();
         	this.isParameterized = true;
-        	System.out.println("Creating Parameterized Concurrent State: " + this.name + " with param: " + this.param + " is Parameterized: " + this.isParameterized);
         }
     }
 

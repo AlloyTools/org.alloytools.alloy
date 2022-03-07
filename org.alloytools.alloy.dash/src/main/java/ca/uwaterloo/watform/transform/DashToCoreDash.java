@@ -43,9 +43,9 @@ public class DashToCoreDash {
     static void modifyTransitions(DashModule module) {
         for (DashTrans trans : module.transitions.values()) {
             trans.fromExpr = new DashFrom(completeFromCommand(trans, module), false);
-            trans.gotoExpr = new DashGoto(completeGoToCommand(trans, module));
-            trans.onExpr = new DashOn(null, completeOnCommand(trans, module), checkInternalEvent(trans, module));
-            trans.sendExpr = new DashSend(null, completeSendCommand(trans, module));
+            trans.gotoExpr = completeGoToCommand(trans, module);
+            trans.onExpr = completeOnCommand(trans, module);
+            trans.sendExpr = completeSendCommand(trans, module);
             trans.doExpr = addAction(trans.doExpr, module);
             trans.whenExpr = addCondition(trans.whenExpr, module);
         }
@@ -66,7 +66,7 @@ public class DashToCoreDash {
         		}
         	}     	
         }
-    }  
+    } 
     
     /* Check if a GoTo command transitions to a state that has inner OR states. If so,
      * then that transition will need to transition to the default inner OR state */
@@ -78,7 +78,7 @@ public class DashToCoreDash {
         	/* destState is null if the destination state is a concurrent state (it has no OR states) */
         	if(destinationState != null) {
         		defaultInnerState = getDefaultState(trans, destinationState);
-        		trans.gotoExpr = new DashGoto(new ArrayList<String>(Arrays.asList(defaultInnerState)));
+        		trans.gotoExpr = trans.gotoExpr.param == null ? new DashGoto(new ArrayList<String>(Arrays.asList(defaultInnerState))) : new DashGoto(null, new ArrayList<String>(Arrays.asList(defaultInnerState)), trans.gotoExpr.param);
         	}     	
        
         }
@@ -328,49 +328,59 @@ public class DashToCoreDash {
         return expr;
     }
 
-    static String completeOnCommand(DashTrans trans, DashModule module) {
+    static DashOn completeOnCommand(DashTrans trans, DashModule module) {
         if (trans.onExpr == null)
             return null;
 
+        DashOn on = new DashOn(trans.onExpr);
         String onCommand = trans.onExpr.name;
 
-        if (onCommand.contains("/")) 
+        if (onCommand.contains("/")) {
             onCommand = onCommand.substring(onCommand.indexOf('/') + 1);
+        }
 
         for(DashConcState concState: module.concStates.values()) {
         	for(DashEvent event: concState.events) {
-        		if(event.name.equals(onCommand))
-        			return (concState.modifiedName + "_" + onCommand);
+        		if(event.name.equals(onCommand)) {
+        			on.parent = concState;
+        			onCommand = (concState.modifiedName + "_" + onCommand);
+        		}
         	}
         }
 
-        return onCommand;
+        on.parent = on.parent == null? trans.parentConcState : on.parent;
+        on.name = onCommand;
+        on.isInternal = checkInternalEvent(trans, module);
+        return on;
     }
 
-    static String completeSendCommand(DashTrans trans, DashModule module) {
+    static DashSend completeSendCommand(DashTrans trans, DashModule module) {
         if (trans.sendExpr == null)
             return null;
 
+        DashSend send = new DashSend(trans.sendExpr);
         String sendCommand = trans.sendExpr.name;
-        String eventParent = "";
         Object eventParentObj = trans.parentState;
 
         if (sendCommand != null && sendCommand.contains("/")) {
-            eventParent = sendCommand.substring(0, sendCommand.indexOf('/'));
             sendCommand = sendCommand.substring(sendCommand.indexOf('/') + 1);
         }
 
         while (eventParentObj != null) {
             if (eventParentObj instanceof DashConcState) {
-            	if (checkForEvent((DashConcState) eventParentObj, sendCommand))
-            		return ((DashConcState) eventParentObj).modifiedName + "_" + sendCommand;
+            	if (checkForEvent((DashConcState) eventParentObj, sendCommand)) {
+            		send.parent = (DashConcState) eventParentObj;
+            		sendCommand = ((DashConcState) eventParentObj).modifiedName + "_" + sendCommand;
+            	}
             }
 
             eventParentObj = getParent(eventParentObj);
         }
         
-        return sendCommand;
-    }
+        send.name = sendCommand;
+        send.parent = send.parent == null ? trans.parentConcState : send.parent;
+        return send;
+    }   
     
     static Boolean checkInternalEvent(DashTrans trans, DashModule module)
     {
@@ -423,10 +433,10 @@ public class DashToCoreDash {
         return completedFromCommands;
     }
 
-    static List<String> completeGoToCommand(DashTrans trans, DashModule module) {
+    static DashGoto completeGoToCommand(DashTrans trans, DashModule module) {
         List<String> completedGoToCommands = new ArrayList<String>();
 
-        if (trans.gotoExpr != null) {
+        if (trans.gotoExpr != null && trans.gotoExpr.gotoExpr != null) {
             for (String gotoCommand : trans.gotoExpr.gotoExpr) {
             	if(gotoCommand.contains("/"))
             		gotoCommand = gotoCommand.substring(gotoCommand.lastIndexOf("/") + 1);
@@ -444,8 +454,17 @@ public class DashToCoreDash {
             //If we do not have a goto command, it should be equal to the origin of the transition
             completedGoToCommands.add(trans.fromExpr.fromExpr.get(0));
         }
-           
-        return completedGoToCommands;
+        
+        if (trans.gotoExpr != null) {
+        	if (trans.gotoExpr.param == null) {
+        		System.out.println("Trans: " + trans.modifiedName + " has no param");
+        	}
+        	else {
+        	System.out.println("Trans: " + trans.modifiedName + " Goto Param: " + trans.gotoExpr.param);
+        	}
+        }
+ 
+        return trans.gotoExpr == null ? new DashGoto(null, completedGoToCommands, null) : new DashGoto(trans.gotoExpr.pos, completedGoToCommands, trans.gotoExpr.param);
     }
     
     /* Locate an or state to transition to  */

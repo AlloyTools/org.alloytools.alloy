@@ -1545,6 +1545,7 @@ public final class DashModule extends Browsable implements Module {
         String modifiedName = parent.modifiedName + "_" + event.name;
         event.modifiedName = modifiedName;
         event.parentName = parent.name;
+        event.parent = parent;
 
         if (event.type.equals("env event") || event.type.equals("event")) {
             DashOptions.isEnvEventModel = true;

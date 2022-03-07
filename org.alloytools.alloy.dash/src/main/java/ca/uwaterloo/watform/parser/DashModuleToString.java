@@ -406,6 +406,9 @@ public class DashModuleToString {
 	private static void printDecls(ConstList<Decl> decls, DataLayouter<NoExceptions> out) {
 		boolean first = true;
 		for (Decl decl : decls) {
+			if (decl.disjoint != null) {
+				out.print("disj ");
+			}
 			StringJoiner namesJoiner = new StringJoiner(",");
 			decl.names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
 			if (!first) {
