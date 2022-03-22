@@ -20,6 +20,7 @@ public class DashConcState {
     public List<DashConcState>     concStates   = new ArrayList<DashConcState>();
     public List<DashState>         states       = new ArrayList<DashState>();
     public String                  param        = new String();
+    public List<DashBuffer>        buffers      = new ArrayList<DashBuffer>();
     public List<DashTrans>         transitions  = new ArrayList<DashTrans>();
     public List<DashTemplateCall>  templateCall = new ArrayList<DashTemplateCall>();
     public List<DashTransTemplate> templateDecl = new ArrayList<DashTransTemplate>();
@@ -64,6 +65,8 @@ public class DashConcState {
                 templateCall.add((DashTemplateCall) item);
             if (item instanceof DashTransTemplate)
                 templateDecl.add((DashTransTemplate) item);
+            if (item instanceof DashBuffer)
+                buffers.add((DashBuffer) item);
         }
         
         if (param != null)
@@ -89,6 +92,7 @@ public class DashConcState {
 		this.invariant = concState.invariant;
 		this.action = concState.action;
 		this.condition = concState.condition;
+		this.buffers = concState.buffers;
 		this.isParameterized = concState.isParameterized;
 	}
 }

@@ -50,7 +50,7 @@ pred noDuplicates {
 /** invoke if you want all sequences within scope to exist */
 pred allExist {
   (some s: Seq | s.isEmpty) &&
-  (all s: Seq | SeqIdx !in s.inds => (all e: elem | some s": Seq | s.add[e, s"]))
+  (all s: Seq | SeqIdx !in s.inds => (all e: elem | some s_next: Seq | s.add[s_next, e]))
 }
 
 /** invoke if you want all sequences within scope with no duplicates */
@@ -58,7 +58,7 @@ pred allExistNoDuplicates {
   some s: Seq | s.isEmpty
   all s: Seq {
     !s.hasDups
-    SeqIdx !in s.inds => (all e: elem - s.elems | some s": Seq | s.add[e, s"])
+    SeqIdx !in s.inds => (all e: elem - s.elems | some s_next: Seq | s.add[s_next, e])
   }
 }
 
@@ -119,10 +119,15 @@ pred startsWith [s, prefix: Seq] {
 }
 
 /** added is the result of appending e to the end of s */
-pred add [s: Seq, e: elem, added: Seq] {
-  added.startsWith[s]
-  added.seqElems[s.afterLastIdx] = e
-  #added.inds = #s.inds.add[1]
+pred add [s: Seq, added: Seq, e: elem] {
+  //added.startsWith[s]
+  //added.seqElems[s.afterLastIdx] = e
+  //elems[added] - (elems[s] + e) = none
+  added.seqElems = s.seqElems + (s.afterLastIdx -> e)
+}
+
+pred remove [s: Seq, added: Seq] {
+  added.seqElems = s.seqElems - (lastIdx[s] -> last[s])
 }
 
 /** setted is the result of setting value at index i to e */
@@ -135,7 +140,7 @@ pred insert [s: Seq, idx: SeqIdx, e: elem, inserted: Seq] {
   inserted.at[idx] = e
   all i: ord/prevs[idx] | inserted.at[i] = s.at[i]
   all i: ord/nexts[idx] | inserted.at[i] = s.at[ord/prev[i]]
-  #inserted.inds = #s.inds.add[1]
+  //#inserted.inds = #s.inds.add[1]
 }
 
 /** copies source into dest starting at destStart */
@@ -147,7 +152,12 @@ pred copy [source, dest: Seq, destStart: SeqIdx] {
   }
 }
 
-
+/** appended is the result of appending s2 to s1 */
+pred append [s1, s2, appended: Seq] {
+  appended.startsWith[s1]
+  copy[s2, appended, s1.afterLastIdx]
+  //#appended.inds = #s1.inds.add[#s2.inds]
+}
 
 fun firstIdx: SeqIdx { ord/first }
 

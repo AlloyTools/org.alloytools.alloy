@@ -81,6 +81,7 @@ import ca.uwaterloo.watform.ast.DashExpr;
 import ca.uwaterloo.watform.ast.DashTrans;
 import ca.uwaterloo.watform.ast.DashEnter;
 import ca.uwaterloo.watform.ast.DashExit;
+import ca.uwaterloo.watform.ast.DashBuffer;
 
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashValidation;
@@ -272,6 +273,7 @@ parser code {:
     ch.put(DashSym.CONC, "conc");
     ch.put(DashSym.EVENT, "event");
     ch.put(DashSym.DEF, "def"); 
+    ch.put(DashSym.BUF,  "buf");
     TreeSet<String> list = new TreeSet<String>();
     Pos p=Pos.UNKNOWN;
     if (x!=null && x.value instanceof Pos) p=(Pos)(x.value);
@@ -565,6 +567,7 @@ terminal Pos ENV;              //   env event
 terminal Pos STATE;            //   state
 terminal Pos DEFAULT;          //   default
 
+terminal Pos BUF;            //     buf
 terminal Pos DEF;              //   def trans
 terminal Pos TRANS;            //   trans
 
@@ -681,8 +684,9 @@ nonterminal                            ConcB; //This reprents a conc state insid
 
 nonterminal List<Object>               StateItems;
 
-nonterminal DashEvent                      Event;
-
+nonterminal DashBuffer                 BufferA;
+nonterminal DashBuffer                 BufferB;
+nonterminal DashEvent                  Event;
 nonterminal DashState                  State;
 
 nonterminal                            Trans;
@@ -876,6 +880,16 @@ StateItems::= Enter:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
 
 StateItems::= Exit:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
 StateItems::= Exit:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
+
+/* DashPlus Buffer Grammar */
+BufferA ::=       				      Names:n COLON BUF:o LBRACKET Names:m RBRACKET  {: RESULT=new DashBuffer(o, n.get(0).label, m.get(0).label);                                             :};
+BufferB ::=       				      Names:n COLON BUF:o LBRACKET SIGINT RBRACKET  {: RESULT=new DashBuffer(o, n.get(0).label, "Int");                                             :};
+
+StateItems::= BufferA:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
+StateItems::= BufferA:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
+StateItems::= BufferB:x				{: RESULT=new ArrayList<Object>(); RESULT.add(x); :};
+StateItems::= BufferB:x StateItems:y		{: RESULT=y; RESULT.add(0, x) ;			  :};
+
 
 //Transition Declaration
 Trans ::= TRANS:o				    Name:n LBRACE TransItems:c RBRACE {: RESULT = new DashTrans(o, n.label, c);  :}
@@ -1324,7 +1338,7 @@ BracketExprB ::= TOTALORDER:a   LBRACKET Exprs:b RBRACKET:c {: Expr aa=ExprVar.m
 BracketExprB ::= INT:a       		 LBRACKET Exprs:b RBRACKET:c {: Expr aa=ExprVar.make(a, "int");             for(Expr bb:b) aa=t(aa.span().merge(bb.span()), c, bb, aa, c); RESULT=ExprUnary.Op.CAST2SIGINT.make(a, aa); :};
 BracketExprB ::= SUM:a       		 LBRACKET Exprs:b RBRACKET:c {: Expr aa=ExprVar.make(a, "int");             for(Expr bb:b) aa=t(aa.span().merge(bb.span()), c, bb, aa, c); RESULT=ExprUnary.Op.CAST2SIGINT.make(a, aa); :};
 // Dash Plus Process Variable Reference
-BracketExprB ::= BracketExprB:a      LBRACKET:o Exprs:b RBRACKET:c SLASH:d Name:e {: RESULT= ExprBinary.Op.JOIN.make(o, null, ExprVar.make(o, b.get(0).toString()), ExprVar.make(o, a.toString() + '/' + ExprVar.make(o, e.label))); :}; // Expr aa= ExprBinary.Op.AND.make(o, null, ExprVar.make(o, a.toString() + '.' + b.get(0).toString()), ExprVar.make(d, e.label));
+BracketExprB ::= BracketExprB:a      LBRACKET:o Exprs:b RBRACKET:c SLASH:d Name:e {: RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + ExprVar.make(o, e.label))); :}; // Expr aa= ExprBinary.Op.AND.make(o, null, ExprVar.make(o, a.toString() + '.' + b.get(0).toString()), ExprVar.make(d, e.label));
 
 DotExprA ::=                      UnopExprA:b  {: RESULT=b;                                                       :};
 DotExprA ::= BracketExprB:a DOT:o Bind:b       {: RESULT=t(o, null, a, b,                                  null); :};

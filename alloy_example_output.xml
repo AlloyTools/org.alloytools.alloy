@@ -1,6 +1,6 @@
 <alloy builddate="1970-01-01T00:00:00Z">
 
-<instance bitwidth="4" maxseq="4" mintrace="-1" maxtrace="-1" command="Run path for 5 Snapshot, 3 Floor, 0 EventLabel, 3 PID, 9 StateLabel, 21 TransitionLabel" filename="" tracelength="1" backloop="0">
+<instance bitwidth="4" maxseq="4" mintrace="-1" maxtrace="-1" command="Run path for 5 Snapshot, 3 Floor, 0 EventLabel, 3 PID, 8 StateLabel, 10 TransitionLabel" filename="" tracelength="1" backloop="0">
 
 <sig label="seq/Int" ID="0" parentID="1" builtin="yes">
 </sig>
@@ -30,135 +30,98 @@
 
 <sig label="this/PID" ID="8" parentID="2">
    <atom label="PID$0"/>
-   <atom label="PID$1"/>
 </sig>
 
-<field label="system_Elevator_MovingUp" ID="9" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingUp$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingUp$0"/> </tuple>
+<field label="system_Elevator_MovingDown" ID="9" parentID="8">
+   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown$2"/> </tuple>
    <types> <type ID="8"/> <type ID="10"/> </types>
 </field>
 
-<field label="system_Elevator_MovingDown" ID="11" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown$0"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingDown$1"/> </tuple>
+<field label="system_Elevator_Waiting" ID="11" parentID="8">
+   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_Waiting$0"/> </tuple>
    <types> <type ID="8"/> <type ID="12"/> </types>
 </field>
 
-<field label="system_Elevator_Idling" ID="13" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_Idling$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_Idling$0"/> </tuple>
+<field label="system_Elevator_MovingDown_MoveDown" ID="13" parentID="8">
+   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown_MoveDown$0"/> </tuple>
    <types> <type ID="8"/> <type ID="14"/> </types>
 </field>
 
-<field label="system_Elevator_MovingUp_MoveUp" ID="15" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingUp_MoveUp$0"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingUp_MoveUp$4"/> </tuple>
+<field label="system_Elevator_MovingDown_Idle" ID="15" parentID="8">
+   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown_Idle$0"/> </tuple>
    <types> <type ID="8"/> <type ID="16"/> </types>
 </field>
 
-<field label="system_Elevator_MovingUp_ChangeDirToDown" ID="17" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingUp_ChangeDirToDown$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingUp_ChangeDirToDown$0"/> </tuple>
+<field label="system_Elevator_Waiting_DefaultToGround" ID="17" parentID="8">
+   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_Waiting_DefaultToGround$0"/> </tuple>
    <types> <type ID="8"/> <type ID="18"/> </types>
 </field>
 
-<field label="system_Elevator_MovingUp_Idle" ID="19" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingUp_Idle$3"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingUp_Idle$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="20"/> </types>
-</field>
-
-<field label="system_Elevator_MovingDown_ChangeDirToUp" ID="21" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown_ChangeDirToUp$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingDown_ChangeDirToUp$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="22"/> </types>
-</field>
-
-<field label="system_Elevator_MovingDown_MoveDown" ID="23" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown_MoveDown$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingDown_MoveDown$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="24"/> </types>
-</field>
-
-<field label="system_Elevator_MovingDown_Idle" ID="25" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_MovingDown_Idle$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_MovingDown_Idle$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="26"/> </types>
-</field>
-
-<field label="system_Elevator_Idling_DefaultToGround" ID="27" parentID="8">
-   <tuple> <atom label="PID$0"/> <atom label="System_Elevator_Idling_DefaultToGround$1"/> </tuple>
-   <tuple> <atom label="PID$1"/> <atom label="System_Elevator_Idling_DefaultToGround$0"/> </tuple>
-   <types> <type ID="8"/> <type ID="28"/> </types>
-</field>
-
-<sig label="ordering/Ord" ID="29" parentID="2" one="yes" private="yes">
+<sig label="ordering/Ord" ID="19" parentID="2" one="yes" private="yes">
    <atom label="ordering/Ord$0"/>
 </sig>
 
-<field label="First" ID="30" parentID="29" private="yes">
+<field label="First" ID="20" parentID="19" private="yes">
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Floor$0"/> </tuple>
-   <types> <type ID="29"/> <type ID="4"/> </types>
+   <types> <type ID="19"/> <type ID="4"/> </types>
 </field>
 
-<field label="Next" ID="31" parentID="29" private="yes">
+<field label="Next" ID="21" parentID="19" private="yes">
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Floor$0"/> <atom label="Floor$1"/> </tuple>
    <tuple> <atom label="ordering/Ord$0"/> <atom label="Floor$1"/> <atom label="Floor$2"/> </tuple>
-   <types> <type ID="29"/> <type ID="4"/> <type ID="4"/> </types>
+   <types> <type ID="19"/> <type ID="4"/> <type ID="4"/> </types>
 </field>
 
-<sig label="boolean/True" ID="32" parentID="33" one="yes">
+<sig label="boolean/True" ID="22" parentID="23" one="yes">
    <atom label="boolean/True$0"/>
 </sig>
 
-<sig label="boolean/False" ID="34" parentID="33" one="yes">
+<sig label="boolean/False" ID="24" parentID="23" one="yes">
    <atom label="boolean/False$0"/>
 </sig>
 
-<sig label="boolean/Bool" ID="33" parentID="2" abstract="yes">
+<sig label="boolean/Bool" ID="23" parentID="2" abstract="yes">
 </sig>
 
-<sig label="open$4/Ord" ID="35" parentID="2" one="yes" private="yes">
+<sig label="open$4/Ord" ID="25" parentID="2" one="yes" private="yes">
    <atom label="open$4/Ord$0"/>
 </sig>
 
-<field label="First" ID="36" parentID="35" private="yes">
+<field label="First" ID="26" parentID="25" private="yes">
    <tuple> <atom label="open$4/Ord$0"/> <atom label="Snapshot$0"/> </tuple>
-   <types> <type ID="35"/> <type ID="37"/> </types>
+   <types> <type ID="25"/> <type ID="27"/> </types>
 </field>
 
-<field label="Next" ID="38" parentID="35" private="yes">
+<field label="Next" ID="28" parentID="25" private="yes">
    <tuple> <atom label="open$4/Ord$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
    <tuple> <atom label="open$4/Ord$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
    <tuple> <atom label="open$4/Ord$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
    <tuple> <atom label="open$4/Ord$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
-   <types> <type ID="35"/> <type ID="37"/> <type ID="37"/> </types>
+   <types> <type ID="25"/> <type ID="27"/> <type ID="27"/> </types>
 </field>
 
-<sig label="stepUtil/Step" ID="39" parentID="2" one="yes">
+<sig label="stepUtil/Step" ID="29" parentID="2" one="yes">
    <atom label="stepUtil/Step$0"/>
 </sig>
 
-<field label="initial" ID="40" parentID="39">
+<field label="initial" ID="30" parentID="29">
    <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$0"/> </tuple>
-   <types> <type ID="39"/> <type ID="37"/> </types>
+   <types> <type ID="29"/> <type ID="27"/> </types>
 </field>
 
-<field label="next_step" ID="41" parentID="39">
+<field label="next_step" ID="31" parentID="29">
    <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
    <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
    <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
    <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
-   <tuple> <atom label="stepUtil/Step$0"/> <atom label="Snapshot$4"/> <atom label="Snapshot$1"/> </tuple>
-   <types> <type ID="39"/> <type ID="37"/> <type ID="37"/> </types>
+   <types> <type ID="29"/> <type ID="27"/> <type ID="27"/> </types>
 </field>
 
-<field label="equality" ID="42" parentID="39">
-   <types> <type ID="39"/> <type ID="37"/> <type ID="37"/> </types>
+<field label="equality" ID="32" parentID="29">
+   <types> <type ID="29"/> <type ID="27"/> <type ID="27"/> </types>
 </field>
 
-<sig label="this/Snapshot" ID="43" parentID="37">
+<sig label="this/Snapshot" ID="33" parentID="27">
    <atom label="Snapshot$0"/>
    <atom label="Snapshot$1"/>
    <atom label="Snapshot$2"/>
@@ -166,181 +129,153 @@
    <atom label="Snapshot$4"/>
 </sig>
 
-<field label="stable" ID="44" parentID="43">
+<field label="stable" ID="34" parentID="33">
    <tuple> <atom label="Snapshot$0"/> <atom label="boolean/True$0"/> </tuple>
    <tuple> <atom label="Snapshot$1"/> <atom label="boolean/False$0"/> </tuple>
    <tuple> <atom label="Snapshot$2"/> <atom label="boolean/True$0"/> </tuple>
    <tuple> <atom label="Snapshot$3"/> <atom label="boolean/False$0"/> </tuple>
    <tuple> <atom label="Snapshot$4"/> <atom label="boolean/True$0"/> </tuple>
-   <types> <type ID="37"/> <type ID="33"/> </types>
+   <types> <type ID="27"/> <type ID="23"/> </types>
 </field>
 
-<field label="System_Elevator_direction" ID="45" parentID="43">
+<field label="System_Controller_called" ID="35" parentID="33">
+   <tuple> <atom label="Snapshot$0"/> <atom label="Floor$1"/> </tuple>
+   <tuple> <atom label="Snapshot$0"/> <atom label="Floor$2"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="Floor$2"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="Floor$2"/> </tuple>
+   <types> <type ID="27"/> <type ID="4"/> </types>
+</field>
+
+<field label="System_Elevator_direction" ID="36" parentID="33">
    <tuple> <atom label="Snapshot$0"/> <atom label="PID$0"/> <atom label="Down$0"/> </tuple>
-   <tuple> <atom label="Snapshot$0"/> <atom label="PID$1"/> <atom label="Down$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="PID$0"/> <atom label="Up$0"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="PID$1"/> <atom label="Down$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="PID$0"/> <atom label="Up$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="PID$1"/> <atom label="Up$0"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="PID$0"/> <atom label="Down$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="PID$0"/> <atom label="Down$0"/> </tuple>
    <tuple> <atom label="Snapshot$3"/> <atom label="PID$0"/> <atom label="Down$0"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="PID$1"/> <atom label="Up$0"/> </tuple>
    <tuple> <atom label="Snapshot$4"/> <atom label="PID$0"/> <atom label="Down$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="PID$1"/> <atom label="Down$0"/> </tuple>
-   <types> <type ID="37"/> <type ID="8"/> <type ID="6"/> </types>
+   <types> <type ID="27"/> <type ID="8"/> <type ID="6"/> </types>
 </field>
 
-<field label="System_Elevator_called" ID="46" parentID="43">
+<field label="System_Elevator_called" ID="37" parentID="33">
+   <tuple> <atom label="Snapshot$0"/> <atom label="PID$0"/> <atom label="Floor$0"/> </tuple>
+   <tuple> <atom label="Snapshot$0"/> <atom label="PID$0"/> <atom label="Floor$1"/> </tuple>
    <tuple> <atom label="Snapshot$0"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$0"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
    <tuple> <atom label="Snapshot$3"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
    <tuple> <atom label="Snapshot$4"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
-   <types> <type ID="37"/> <type ID="8"/> <type ID="4"/> </types>
+   <types> <type ID="27"/> <type ID="8"/> <type ID="4"/> </types>
 </field>
 
-<field label="System_Elevator_current" ID="47" parentID="43">
+<field label="System_Elevator_current" ID="38" parentID="33">
    <tuple> <atom label="Snapshot$0"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$0"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
    <tuple> <atom label="Snapshot$1"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
    <tuple> <atom label="Snapshot$2"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
    <tuple> <atom label="Snapshot$3"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
    <tuple> <atom label="Snapshot$4"/> <atom label="PID$0"/> <atom label="Floor$2"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="PID$1"/> <atom label="Floor$2"/> </tuple>
-   <types> <type ID="37"/> <type ID="8"/> <type ID="4"/> </types>
+   <types> <type ID="27"/> <type ID="8"/> <type ID="4"/> </types>
 </field>
 
-<sig label="stepUtil/BaseSnapshot" ID="37" parentID="2" abstract="yes">
+<sig label="stepUtil/BaseSnapshot" ID="27" parentID="2" abstract="yes">
 </sig>
 
-<field label="conf" ID="48" parentID="37">
-   <tuple> <atom label="Snapshot$0"/> <atom label="System_Elevator_MovingDown$0"/> </tuple>
-   <tuple> <atom label="Snapshot$0"/> <atom label="System_Elevator_MovingDown$1"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="System_Elevator_MovingUp$1"/> </tuple>
-   <tuple> <atom label="Snapshot$1"/> <atom label="System_Elevator_MovingDown$1"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="System_Elevator_MovingUp$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="System_Elevator_MovingUp$1"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="System_Elevator_MovingUp$0"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="System_Elevator_MovingDown$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="System_Elevator_MovingDown$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="System_Elevator_MovingDown$1"/> </tuple>
-   <types> <type ID="37"/> <type ID="49"/> </types>
+<field label="conf" ID="39" parentID="27">
+   <tuple> <atom label="Snapshot$0"/> <atom label="System_Controller_Sending$0"/> </tuple>
+   <tuple> <atom label="Snapshot$0"/> <atom label="System_Elevator_MovingDown$2"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="System_Controller_Sending$0"/> </tuple>
+   <tuple> <atom label="Snapshot$1"/> <atom label="System_Elevator_MovingDown$2"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="System_Controller_Sending$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="System_Elevator_Waiting$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="System_Controller_Sending$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="System_Elevator_Waiting$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="System_Controller_Sending$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="System_Elevator_MovingDown$2"/> </tuple>
+   <types> <type ID="27"/> <type ID="40"/> </types>
 </field>
 
-<field label="taken" ID="50" parentID="37">
-   <tuple> <atom label="Snapshot$1"/> <atom label="System_Elevator_MovingDown_ChangeDirToUp$1"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="System_Elevator_MovingDown_ChangeDirToUp$0"/> </tuple>
-   <tuple> <atom label="Snapshot$2"/> <atom label="System_Elevator_MovingDown_ChangeDirToUp$1"/> </tuple>
-   <tuple> <atom label="Snapshot$3"/> <atom label="System_Elevator_MovingUp_ChangeDirToDown$1"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="System_Elevator_MovingUp_ChangeDirToDown$0"/> </tuple>
-   <tuple> <atom label="Snapshot$4"/> <atom label="System_Elevator_MovingUp_ChangeDirToDown$1"/> </tuple>
-   <types> <type ID="37"/> <type ID="51"/> </types>
+<field label="taken" ID="41" parentID="27">
+   <tuple> <atom label="Snapshot$1"/> <atom label="System_Controller_Send$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="System_Controller_Send$0"/> </tuple>
+   <tuple> <atom label="Snapshot$2"/> <atom label="System_Elevator_MovingDown_Idle$0"/> </tuple>
+   <tuple> <atom label="Snapshot$3"/> <atom label="System_Controller_Send$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="System_Controller_Send$0"/> </tuple>
+   <tuple> <atom label="Snapshot$4"/> <atom label="System_Elevator_Waiting_DefaultToGround$0"/> </tuple>
+   <types> <type ID="27"/> <type ID="42"/> </types>
 </field>
 
-<sig label="stepUtil/EnvironmentEvent" ID="52" parentID="53" abstract="yes">
+<sig label="stepUtil/EnvironmentEvent" ID="43" parentID="44" abstract="yes">
 </sig>
 
-<sig label="stepUtil/InternalEvent" ID="54" parentID="53" abstract="yes">
+<sig label="stepUtil/InternalEvent" ID="45" parentID="44" abstract="yes">
 </sig>
 
-<sig label="stepUtil/EventLabel" ID="53" parentID="2" abstract="yes">
+<sig label="stepUtil/EventLabel" ID="44" parentID="2" abstract="yes">
 </sig>
 
-<sig label="this/System_Elevator_MovingUp" ID="10" parentID="55">
-   <atom label="System_Elevator_MovingUp$0"/>
-   <atom label="System_Elevator_MovingUp$1"/>
+<sig label="this/System_Controller_Sending" ID="46" parentID="47" one="yes">
+   <atom label="System_Controller_Sending$0"/>
 </sig>
 
-<sig label="this/System_Elevator_MovingDown" ID="12" parentID="55">
+<sig label="this/System_Controller_Done" ID="48" parentID="47" one="yes">
+   <atom label="System_Controller_Done$0"/>
+</sig>
+
+<sig label="this/System_Controller" ID="47" parentID="49" abstract="yes">
+</sig>
+
+<sig label="this/System_Elevator_MovingDown" ID="10" parentID="50">
    <atom label="System_Elevator_MovingDown$0"/>
    <atom label="System_Elevator_MovingDown$1"/>
+   <atom label="System_Elevator_MovingDown$2"/>
 </sig>
 
-<sig label="this/System_Elevator_Idling" ID="14" parentID="55">
-   <atom label="System_Elevator_Idling$0"/>
-   <atom label="System_Elevator_Idling$1"/>
+<sig label="this/System_Elevator_Waiting" ID="12" parentID="50">
+   <atom label="System_Elevator_Waiting$0"/>
 </sig>
 
-<sig label="this/System_Elevator" ID="55" parentID="56" abstract="yes">
+<sig label="this/System_Elevator" ID="50" parentID="49" abstract="yes">
 </sig>
 
-<sig label="this/System" ID="56" parentID="57" abstract="yes">
+<sig label="this/System" ID="49" parentID="51" abstract="yes">
 </sig>
 
-<sig label="this/SystemState" ID="57" parentID="49" abstract="yes">
+<sig label="this/SystemState" ID="51" parentID="40" abstract="yes">
 </sig>
 
-<sig label="stepUtil/StateLabel" ID="49" parentID="2" abstract="yes">
+<sig label="stepUtil/StateLabel" ID="40" parentID="2" abstract="yes">
 </sig>
 
-<sig label="this/System_Elevator_MovingUp_MoveUp" ID="16" parentID="51">
-   <atom label="System_Elevator_MovingUp_MoveUp$0"/>
-   <atom label="System_Elevator_MovingUp_MoveUp$1"/>
-   <atom label="System_Elevator_MovingUp_MoveUp$2"/>
-   <atom label="System_Elevator_MovingUp_MoveUp$3"/>
-   <atom label="System_Elevator_MovingUp_MoveUp$4"/>
-   <atom label="System_Elevator_MovingUp_MoveUp$5"/>
-   <atom label="System_Elevator_MovingUp_MoveUp$6"/>
+<sig label="this/System_Controller_Send" ID="52" parentID="42" one="yes">
+   <atom label="System_Controller_Send$0"/>
 </sig>
 
-<sig label="this/System_Elevator_MovingUp_ChangeDirToDown" ID="18" parentID="51">
-   <atom label="System_Elevator_MovingUp_ChangeDirToDown$0"/>
-   <atom label="System_Elevator_MovingUp_ChangeDirToDown$1"/>
-</sig>
-
-<sig label="this/System_Elevator_MovingUp_Idle" ID="20" parentID="51">
-   <atom label="System_Elevator_MovingUp_Idle$0"/>
-   <atom label="System_Elevator_MovingUp_Idle$1"/>
-   <atom label="System_Elevator_MovingUp_Idle$2"/>
-   <atom label="System_Elevator_MovingUp_Idle$3"/>
-</sig>
-
-<sig label="this/System_Elevator_MovingDown_ChangeDirToUp" ID="22" parentID="51">
-   <atom label="System_Elevator_MovingDown_ChangeDirToUp$0"/>
-   <atom label="System_Elevator_MovingDown_ChangeDirToUp$1"/>
-</sig>
-
-<sig label="this/System_Elevator_MovingDown_MoveDown" ID="24" parentID="51">
+<sig label="this/System_Elevator_MovingDown_MoveDown" ID="14" parentID="42">
    <atom label="System_Elevator_MovingDown_MoveDown$0"/>
-   <atom label="System_Elevator_MovingDown_MoveDown$1"/>
 </sig>
 
-<sig label="this/System_Elevator_MovingDown_Idle" ID="26" parentID="51">
+<sig label="this/System_Elevator_MovingDown_Idle" ID="16" parentID="42">
    <atom label="System_Elevator_MovingDown_Idle$0"/>
-   <atom label="System_Elevator_MovingDown_Idle$1"/>
 </sig>
 
-<sig label="this/System_Elevator_Idling_DefaultToGround" ID="28" parentID="51">
-   <atom label="System_Elevator_Idling_DefaultToGround$0"/>
-   <atom label="System_Elevator_Idling_DefaultToGround$1"/>
+<sig label="this/System_Elevator_Waiting_DefaultToGround" ID="18" parentID="42">
+   <atom label="System_Elevator_Waiting_DefaultToGround$0"/>
 </sig>
 
-<sig label="stepUtil/TransitionLabel" ID="51" parentID="2" abstract="yes">
+<sig label="stepUtil/TransitionLabel" ID="42" parentID="2" abstract="yes">
 </sig>
 
-<sig label="stepUtil/ctl/TS" ID="58" parentID="2" one="yes" private="yes">
+<sig label="stepUtil/ctl/TS" ID="53" parentID="2" one="yes" private="yes">
    <atom label="stepUtil/ctl/TS$0"/>
 </sig>
 
-<field label="S0" ID="59" parentID="58" private="yes">
+<field label="S0" ID="54" parentID="53" private="yes">
    <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$0"/> </tuple>
-   <types> <type ID="58"/> <type ID="37"/> </types>
+   <types> <type ID="53"/> <type ID="27"/> </types>
 </field>
 
-<field label="sigma" ID="60" parentID="58" private="yes">
+<field label="sigma" ID="55" parentID="53" private="yes">
    <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$0"/> <atom label="Snapshot$1"/> </tuple>
    <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$1"/> <atom label="Snapshot$2"/> </tuple>
    <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$2"/> <atom label="Snapshot$3"/> </tuple>
    <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$3"/> <atom label="Snapshot$4"/> </tuple>
-   <tuple> <atom label="stepUtil/ctl/TS$0"/> <atom label="Snapshot$4"/> <atom label="Snapshot$1"/> </tuple>
-   <types> <type ID="58"/> <type ID="37"/> <type ID="37"/> </types>
+   <types> <type ID="53"/> <type ID="27"/> <type ID="27"/> </types>
 </field>
 
 <sig label="univ" ID="2" builtin="yes" var="yes">

@@ -58,6 +58,9 @@ public class DashModuleToString {
 					out.print(arg);
 				}
 				out.print("]");
+				if((!open.alias.equals(open.filename.substring(open.filename.indexOf("/") + 1))) && !open.alias.contains("$")) {
+					out.print(" as ").print(open.alias);
+				}
 			}
 			out.brk();
 		}
@@ -66,7 +69,7 @@ public class DashModuleToString {
 
     private static void printSigs(DashModule module, DataLayouter<NoExceptions> out) {
     	for(Sig sig: module.sigs.values()) {
-    		printComments(((PrimSig) sig).parent.label, out);
+    		printComments(module, sig.label, out);
     		
     		if(sig.isAbstract != null)
     			out.print("abstract ");
@@ -83,7 +86,6 @@ public class DashModuleToString {
                 out.beginIInd().brk();
 				boolean first = true;
                 for(Field f: sig.getFields()) {
-                	out.brk();
 					StringJoiner namesJoiner = new StringJoiner(",");
 					f.decl().names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
 					if (!first) {
@@ -104,7 +106,7 @@ public class DashModuleToString {
     private static void printPreds(DashModule module, DataLayouter<NoExceptions> out) {
     	for(ArrayList<Func> funcs: module.funcs.values()) {
 			for (Func func : funcs) {
-				printComments(func.label, out);
+				printComments(module, func.label, out);
 				out.print("pred " + cleanLabel(func.label));
 
 				if (func.decls.size() > 0)
@@ -122,8 +124,13 @@ public class DashModuleToString {
     
     private static void printFacts(DashModule module, DataLayouter<NoExceptions> out) {
     	for(Pair<String,Expr> fact: module.facts) {
-			printComments(fact.b.toString(), out);
-			out.print("fact {").beginCInd().brk(1,0);
+    		printComments(module, fact.a, out);
+			printComments(module, fact.b.toString(), out);
+			out.print("fact ");
+			if (!fact.a.contains("$")) {
+				out.print(fact.a);
+			}
+            out.print(" {").beginCInd().brk(1,0);
 			printExpr(fact.b,out);
 			out.brk(1,-indent).end().print("}").brk().brk();
     	}
@@ -326,7 +333,7 @@ public class DashModuleToString {
 	private static void printExprQt(ExprQt expr, DataLayouter<NoExceptions> out) {
 		boolean first = true;
 		if (expr.op != ExprQt.Op.COMPREHENSION)
-			out.print('(').print(expr.op).print(' ').beginCInd();
+			out.print('(').print(expr.op).print(' ').beginCInd().brk(1,0);
 		else
 			out.print('{').beginCInd();
 		printDecls(expr.decls, out);
@@ -406,9 +413,6 @@ public class DashModuleToString {
 	private static void printDecls(ConstList<Decl> decls, DataLayouter<NoExceptions> out) {
 		boolean first = true;
 		for (Decl decl : decls) {
-			if (decl.disjoint != null) {
-				out.print("disj ");
-			}
 			StringJoiner namesJoiner = new StringJoiner(",");
 			decl.names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
 			if (!first) {
@@ -423,6 +427,9 @@ public class DashModuleToString {
 
 	// Helper method to change "{path/label}" to "label"
     private static String cleanLabel(String label) {
+    	if (!label.contains("this/")) {
+    		return label;
+    	}
 		if (label.endsWith("}") && label.startsWith("{")){
 			label = label.substring(1,label.length()-1);
 		}
@@ -445,15 +452,15 @@ public class DashModuleToString {
     	return null;
     }
     
-    private static void printComments(String reference, DataLayouter<NoExceptions> out) {
-    	if (reference.equals("stepUtil/StateLabel")) {
+    private static void printComments(DashModule module, String reference, DataLayouter<NoExceptions> out) {
+    	if (reference.equals("this/StateLabel")) {
     		out.brk().print("/***************************** STATE SPACE ************************************/").brk(); 
     	}
-    	if ((reference.equals("stepUtil/EnvironmentEvent") || (reference.equals("stepUtil/InternalEvent")))  && !eventLabelPrinted) {
+    	if ((reference.equals("this/EventLabel") && !eventLabelPrinted)) {
     		out.brk().print("/***************************** EVENTS SPACE ************************************/").brk(); 
     		eventLabelPrinted = true;
     	}
-    	if (reference.equals("stepUtil/TransitionLabel") && !transitionLabelPrinted) {
+    	if (reference.equals("this/TransitionLabel") && !transitionLabelPrinted) {
     		out.brk().print("/***************************** TRANSITION SPACE ************************************/").brk(); 
     		transitionLabelPrinted = true;
     	}
@@ -461,10 +468,13 @@ public class DashModuleToString {
     		out.print("// Snapshot Definition").brk(); 
     	}
     	if (reference.contains("pre_")) {
-    		out.print("// Pre-Condition, Post-Condition, Semantics for the " + reference.substring(reference.indexOf('_')) + " transition.").brk(); 
+    		out.print("// // Predicates for the " + reference.substring(reference.indexOf('_')) + " transition.").brk(); 
     	}
     	if (reference.equals("this/init")) {
-    		out.print("/****************************** INITIAL CONDITIONS ****************************/").brk(); 
+    		out.print("/* Overview ").brk(); 
+    		out.print(" * init[] determines whether a snapshot is initial,").brk();
+    		out.print(" * small_step [s,s_next] determines if a pair of Snapshots is a small step,").brk();
+    		out.print("*/").brk();
     	}
     	if (reference.equals("this/operation")) {
     		out.print("/***************************** MODEL DEFINITION *******************************/").brk(); 
@@ -476,6 +486,10 @@ public class DashModuleToString {
     		out.print("// Evaluates to true if the next Snapshot is stable. The next Snapshot will be stable if no more transitions will").brk();
     		out.print("// be enabled after taking the current transition ").brk(); 
     	}
+    	if (reference.equals("this/equals")) {
+    		out.print("// Test whether two consequtive Snapshots are equal. Two Snapshots are equal if they have the same set of active").brk();
+    		out.print("// control states, events generated, transitions taken in the big step, and system variables ").brk(); 
+    	}
     	if (reference.equals("this/reachabilityAxiom")) {
     		out.print("/****************************** SIGNIFICANCE AXIOMS ****************************/").brk().brk(); 
     		out.print("/* This axiom ensures that all the snapshots considered during").brk(); 
@@ -485,13 +499,20 @@ public class DashModuleToString {
     		out.print("/* This axiom states that every transition defined in a model is ").brk(); 
     		out.print("   represented by a pair of snapshots in the transition relation */").brk(); 
     	}
-    	if (reference.contains("AND[(all s | s in stepUtil/initial <=> this/init[s]), (all s,s_next | s -> s_next in stepUtil/nextStep <=> this/small_step[s, s_next])")) {
-    		out.print("/* This fact defines the following: ").brk();
-    		out.print("   Snapshots that satifiy the initial conditions can only be in the set of initial snapshots,").brk();
-    		out.print("   Pairs of snapshots that satisfy the small_step predicate conform the next step relation,").brk(); 
-    		out.print("   An unstable snapshot cannot be the last one of a trace */").brk(); 
+    	if (reference.equals("traces")) {
+    		out.print("/* Create a Trace for the Model. This fact defines the following: ").brk();
+    		out.print("   The first Snapshot in the ordering module should conforn to the initial conditions.").brk();
+    		out.print("   A small step must be taken by consequetive Snapshots in the ordering module.").brk();
+    		out.print("   A Snapshot that has not completed a big step (i.e. is not stable) must take a next step.").brk();
+    		out.print("   The last Snapshot in a trace must be stable.").brk();
+    		out.print("*/").brk();
     	}
-    	if (reference.contains("AND[(all s | s in stepUtil/BaseSnapshot), stepUtil/Step . (stepUtil/Step <: next_step) in ctl/nextState")) {
+    	if (reference.equals("different_atoms")) {
+    		out.print("/* This fact defines the following:").brk();
+    		out.print("   Consequtive snapshots that have the same set of active control states, events generated, transitions taken in the big step, and system variables are equal").brk();
+    		out.print("*/").brk();
+    	}
+    	if (reference.equals("tcmc")) {
     		out.print("/* This connects the model to the CTL module to allow for CTL TCMC */").brk();
     	}
     }

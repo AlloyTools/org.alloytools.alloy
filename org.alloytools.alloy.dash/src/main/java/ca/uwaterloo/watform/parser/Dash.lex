@@ -238,6 +238,7 @@ import java_cup.runtime.*;
 //DASH SYNTAX
 "conc state"          { return alloy_sym(yytext(), DashSym.CONC        );}
 "default"             { return alloy_sym(yytext(), DashSym.DEFAULT     );}
+"buf"                 { return alloy_sym(yytext(), DashSym.BUF         );}
 "state"               { return alloy_sym(yytext(), DashSym.STATE       );}
 "def trans"           { return alloy_sym(yytext(), DashSym.DEF         );}
 "trans"               { return alloy_sym(yytext(), DashSym.TRANS       );}

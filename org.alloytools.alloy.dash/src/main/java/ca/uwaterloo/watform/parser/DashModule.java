@@ -69,6 +69,7 @@ import edu.mit.csail.sdg.parser.CompModule;
 
 import ca.uwaterloo.watform.parser.Macro;
 import ca.uwaterloo.watform.ast.DashAction;
+import ca.uwaterloo.watform.ast.DashBuffer;
 import ca.uwaterloo.watform.ast.DashConcState;
 import ca.uwaterloo.watform.ast.DashCondition;
 import ca.uwaterloo.watform.ast.DashEvent;
@@ -77,6 +78,7 @@ import ca.uwaterloo.watform.ast.DashInvariant;
 import ca.uwaterloo.watform.ast.DashState;
 import ca.uwaterloo.watform.ast.DashTrans;
 import ca.uwaterloo.watform.ast.DashTransTemplate;
+import ca.uwaterloo.watform.ast.DashBuffer;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBad;
@@ -320,6 +322,22 @@ public final class DashModule extends Browsable implements Module {
      * converting from Dash to Alloy
      */
     public List<DashState>               defaultStates          = new ArrayList<DashState>();
+    
+    /**
+     * A list of the buffers in the Dash Model.
+     */
+    public Map<String, DashConcState>               buffers          = new LinkedHashMap<String, DashConcState>();
+    
+    /**
+     * The modified buffer names corresponding to their respective buffer element (if there are two buffers, messages and requests,
+     * both of which have the same element, then the imported buffer should have the same alias
+     */
+    public Map<String,String>               bufferElemToName          = new LinkedHashMap<String,String>();
+    
+    /**
+     * The number of unique buffers in the model
+     */
+    public int                              bufferCount          = 0;
 
     /**
      * A list of the initial conditions in the Dash Model. This will be used when
@@ -1393,6 +1411,8 @@ public final class DashModule extends Browsable implements Module {
                 conditions.put(((DashCondition) item).name, (DashCondition) item);
             if (item instanceof DashInvariant)
                 addInvariant((DashInvariant) item, topLevelConcState);
+            if (item instanceof DashBuffer)
+                addBuffer((DashBuffer) item, topLevelConcState);
             if (item instanceof Decl)
                 readVariablesDeclared((Decl) item, topLevelConcState);
         }
@@ -1425,9 +1445,58 @@ public final class DashModule extends Browsable implements Module {
 	    	conditions.put(condition.name, condition);	
 	    for (DashInvariant invariant : concState.invariant)	
 	        addInvariant(invariant, concState);	
+        for (DashBuffer buffer : concState.buffers)
+            addBuffer((DashBuffer) buffer, concState);
 	    for (Decl decl : concState.decls)	
 	        readVariablesDeclared(decl, concState);	
 	}
+	
+	public void addBuffer(DashBuffer buffer, DashConcState concState) {
+        //Fetch the current list of variable names stored for the current conc state
+        List<String> variables = variableNames.get(concState.modifiedName) != null ? variableNames.get(concState.modifiedName) : new ArrayList<String>();      
+		
+		buffer.parent = concState;
+		buffer.modifiedName = concState.modifiedName + '_' + buffer.name;
+		buffers.put(buffer.modifiedName, concState);
+		
+		if (bufferElemToName.containsKey(buffer.param)) {
+			variable2Expression.put(concState.modifiedName + "_" + buffer.name.toString(), ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
+		}
+		else {
+			bufferElemToName.put(buffer.param, "Buffer" + Integer.toString(bufferCount++));
+			variable2Expression.put(concState.modifiedName + "_" + buffer.name.toString(), ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
+		}
+		
+		variables.add(buffer.name);
+        modifiedVarNames.add(concState.modifiedName + "_" + buffer.name);
+
+        variableNames.put(concState.modifiedName, variables);
+			
+        variable2ConcState.put(concState.modifiedName + "_" + buffer.name.toString(), concState);
+	}
+	
+
+    /* Store variables that have been declared in the concurrent state */
+    void readVariablesDeclared(Decl decl, DashConcState concState) {
+        //Fetch the current list of variable names stored for the current conc state
+        List<String> variables = variableNames.get(concState.modifiedName) != null ? variableNames.get(concState.modifiedName) : new ArrayList<String>();     
+
+        /* Store the names of each variable inside decls in ConcState */
+        for (Object name : decl.names) {
+            variables.add(name.toString());
+            //Set variable name to as it would appear in the Alloy model and map it to its
+            //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
+            variable2Expression.put(concState.modifiedName + "_" + name.toString(), decl.expr);
+            variable2ConcState.put(concState.modifiedName + "_" + name.toString(), concState);
+        }
+
+        for (String var : variables) {
+            if (!modifiedVarNames.contains(concState.modifiedName + "_" + var))
+                modifiedVarNames.add(concState.modifiedName + "_" + var);
+        }
+        variableNames.put(concState.modifiedName, variables);
+    }
+
 
     public void addInitCondition(DashInit init, DashConcState parent) {
         init.parent = parent;
@@ -1557,31 +1626,6 @@ public final class DashModule extends Browsable implements Module {
         events.put(modifiedName, event);
     }
 
-    /* Store variables that have been declared in the concurrent state */
-    void readVariablesDeclared(Decl decl, DashConcState concState) {
-        List<String> variables = new ArrayList<String>();
-        
-        //Fetch the current list of variable names stored for the current conc state
-        if (variableNames.get(concState.modifiedName) != null)
-            variables = variableNames.get(concState.modifiedName);
-
-        /* Store the names of each variable inside decls in ConcState */
-        for (Object name : decl.names) {
-            variables.add(name.toString());
-            //Set variable name to as it would appear in the Alloy model and map it to its
-            //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
-            variable2Expression.put(concState.modifiedName + "_" + name.toString(), decl.expr);
-            variable2ConcState.put(concState.modifiedName + "_" + name.toString(), concState);
-        }
-
-        for (String var : variables) {
-            if (!modifiedVarNames.contains(concState.modifiedName + "_" + var))
-                modifiedVarNames.add(concState.modifiedName + "_" + var);
-        }
-        variableNames.put(concState.modifiedName, variables);
-    }
-
-
     /* Store event variables that have been declared in the concurrent state */
     void readEnvVariablesDeclared(Decl decl, DashConcState concState) {
         List<String> variables = new ArrayList<String>();
@@ -1595,7 +1639,7 @@ public final class DashModule extends Browsable implements Module {
             variables.add(name.toString());
             //Set variable name to as it would appear in the Alloy model and map it to its
             //respective expression i.e in_p: lone Patient, in_p is the var name, lone Patient is the expression
-            envVariable2Expression.put(concState.name + "_" + name.toString(), decl.expr);
+            envVariable2Expression.put(concState.modifiedName + "_" + name.toString(), decl.expr);
         }
 
         envVariableNames.put(concState.modifiedName, variables);
@@ -1625,6 +1669,10 @@ public final class DashModule extends Browsable implements Module {
 		if(stateHierarchy)
 			addOpen(null, null, ExprVar.make(null, "util/boolean"), new ArrayList<ExprVar>(), ExprVar.make(null, "boolean"));
 		addOpen(null, null, ExprVar.make(null, "util/integer"), new ArrayList<ExprVar>(), null);
+		for (String elem: bufferElemToName.keySet()) {
+			System.out.println("Alias: " + bufferElemToName.get(elem) + " Elem: " + elem);
+			addOpen(null, null, ExprVar.make(null, "util/buffer"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, elem))), ExprVar.make(null, bufferElemToName.get(elem)));
+		}
     }
     
     // =============================================DASH MODULE TO STRING FUNCTIONS ============================================//
