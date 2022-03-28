@@ -65,6 +65,7 @@ public class CoreDashToAlloy {
     public static DashModule convertToAlloyAST(DashModule module) {	
     	createCommand(module);
     	
+    	createrBufIdxSig(module);
     	createParamSigAST(module);
         createSnapshotSigAST(module);
         createStateSpaceAST(module);
@@ -99,6 +100,12 @@ public class CoreDashToAlloy {
         	//createReachabilityAST(module);
         
         return module;
+    } 
+    
+    private static void createrBufIdxSig (DashModule module) {
+    	for (String bufIdx: module.bufferNameToIndex.values()) {
+    		addSigAST(module, bufIdx, null, null, null, null, null, null, null, null);
+    	}
     }
 
     private static void createParamSigAST(DashModule module) {
@@ -272,6 +279,7 @@ public class CoreDashToAlloy {
         for (String variableName : module.variable2Expression.keySet()) {
             Expr b = module.variable2Expression.get(variableName);
             b = DashHelper.createParameterizedSnapshotVar(variableName, b, module);
+            System.out.println("Expr: " + b);
             a.add(ExprVar.make(null, variableName));
             decls.add(new Decl(null, null, null, null, a, convertToExprUnary(b)));
             a.clear();

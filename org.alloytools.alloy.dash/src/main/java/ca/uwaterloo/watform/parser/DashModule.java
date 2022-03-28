@@ -332,7 +332,17 @@ public final class DashModule extends Browsable implements Module {
      * The modified buffer names corresponding to their respective buffer element (if there are two buffers, messages and requests,
      * both of which have the same element, then the imported buffer should have the same alias
      */
-    public Map<String,String>               bufferElemToName          = new LinkedHashMap<String,String>();
+    public Map<String,String>               bufferNameToElem          = new LinkedHashMap<String,String>();
+    
+    /**
+     * This is a mapping from a Buffer name to its respective Buffer Index Signature
+     */
+    public Map<String,String>               bufferNameToIndex         = new LinkedHashMap<String,String>();
+    
+    /**
+     * This is a mapping from a buffer name to its respective alias
+     */
+    public Map<String,String>               bufferNameToAlias         = new LinkedHashMap<String,String>();
     
     /**
      * The number of unique buffers in the model
@@ -1459,13 +1469,23 @@ public final class DashModule extends Browsable implements Module {
 		buffer.modifiedName = concState.modifiedName + '_' + buffer.name;
 		buffers.put(buffer.modifiedName, concState);
 		
+		
+		variable2Expression.put(buffer.modifiedName, ExprUnary.Op.SETOF.make(null, ExprBinary.Op.ARROW.make(null, null, ExprVar.make(null, "BufIdx" + bufferCount), ExprVar.make(null, buffer.param))));
+		bufferNameToIndex.put(buffer.modifiedName, "BufIdx" + bufferCount);
+		bufferNameToAlias.put(buffer.modifiedName, "Buffer" + bufferCount++);
+		bufferNameToElem.put(buffer.modifiedName, buffer.param);
+		
+		/*
 		if (bufferElemToName.containsKey(buffer.param)) {
-			variable2Expression.put(concState.modifiedName + "_" + buffer.name.toString(), ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
+			bufferNametoIndex.put("Buffer" + Integer.toString(bufferCount), "BufIdx" + bufferCount);
+			variable2Expression.put(buffer.modifiedName, ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
 		}
 		else {
+			bufferNametoIndex.put("Buffer" + Integer.toString(bufferCount), "BufIdx" + bufferCount);
 			bufferElemToName.put(buffer.param, "Buffer" + Integer.toString(bufferCount++));
-			variable2Expression.put(concState.modifiedName + "_" + buffer.name.toString(), ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
+			variable2Expression.put(buffer.modifiedName, ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
 		}
+		*/
 		
 		variables.add(buffer.name);
         modifiedVarNames.add(concState.modifiedName + "_" + buffer.name);
@@ -1669,9 +1689,11 @@ public final class DashModule extends Browsable implements Module {
 		if(stateHierarchy)
 			addOpen(null, null, ExprVar.make(null, "util/boolean"), new ArrayList<ExprVar>(), ExprVar.make(null, "boolean"));
 		addOpen(null, null, ExprVar.make(null, "util/integer"), new ArrayList<ExprVar>(), null);
-		for (String elem: bufferElemToName.keySet()) {
-			System.out.println("Alias: " + bufferElemToName.get(elem) + " Elem: " + elem);
-			addOpen(null, null, ExprVar.make(null, "util/buffer"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, elem))), ExprVar.make(null, bufferElemToName.get(elem)));
+		for (String name: bufferNameToElem.keySet()) {
+			//System.out.println("Alias: " + bufferElemToName.get(elem) + " Elem: " + elem);
+			//addOpen(null, null, ExprVar.make(null, "util/buffer"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, elem))), ExprVar.make(null, bufferElemToName.get(elem)));
+			System.out.println("Elem: " + bufferNameToElem.get(name) + " Index: " + bufferNameToIndex.get(name) + " Name: " + name);
+			addOpen(null, null, ExprVar.make(null, "util/bufferNew"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, bufferNameToElem.get(name)), ExprVar.make(null, bufferNameToIndex.get(name)))), ExprVar.make(null, bufferNameToAlias.get(name)));
 		}
     }
     
