@@ -283,7 +283,7 @@ public final class DashModule extends Browsable implements Module {
      * The list of (CommandName,Command,Expr) triples; NOTE: duplicate command names
      * are allowed.
      */
-    public final List<Command>              commands     = new ArrayList<Command>();
+    public List<Command>             	 	commands     = new ArrayList<Command>();
     
     public CompModule         			    compModule   = null;
 
@@ -329,6 +329,11 @@ public final class DashModule extends Browsable implements Module {
     public Map<String, DashConcState>               buffers          = new LinkedHashMap<String, DashConcState>();
     
     /**
+     * A list of the buffer params mapped to their respective conc state
+     */
+    public Map<String, DashConcState>               bufferParamToConcState          = new LinkedHashMap<String, DashConcState>();
+    
+    /**
      * The modified buffer names corresponding to their respective buffer element (if there are two buffers, messages and requests,
      * both of which have the same element, then the imported buffer should have the same alias
      */
@@ -338,6 +343,11 @@ public final class DashModule extends Browsable implements Module {
      * This is a mapping from a Buffer name to its respective Buffer Index Signature
      */
     public Map<String,String>               bufferNameToIndex         = new LinkedHashMap<String,String>();
+    
+    /**
+     * This is a mapping from a Buffer name to its respective Buffer Index Signature
+     */
+    public Map<String,String>               rawBufferNameToIndex         = new LinkedHashMap<String,String>();
     
     /**
      * This is a mapping from a buffer name to its respective alias
@@ -1401,6 +1411,9 @@ public final class DashModule extends Browsable implements Module {
     
         if(topLevelConcStates.values().size() > 1)
         	stateHierarchy = true;
+        if (topLevelConcState.isParameterized) {
+        	bufferParamToConcState.put(topLevelConcState.param, topLevelConcState);
+        }
 
         for (Object item : stateItems) {
             if (item instanceof DashConcState) {
@@ -1440,6 +1453,10 @@ public final class DashModule extends Browsable implements Module {
 	    concState.parent = parent;	
 	    concStates.put(concState.modifiedName, concState);	
 	    concStateNames.add(concState.modifiedName);
+	    
+        if (concState.isParameterized) {
+        	bufferParamToConcState.put(concState.param, concState);
+        }
 		
 	    for(DashConcState innerConcState: concState.concStates)	
 	    	addConcState(concState, innerConcState);
@@ -1468,30 +1485,16 @@ public final class DashModule extends Browsable implements Module {
 		buffer.parent = concState;
 		buffer.modifiedName = concState.modifiedName + '_' + buffer.name;
 		buffers.put(buffer.modifiedName, concState);
-		
-		
+			
 		variable2Expression.put(buffer.modifiedName, ExprUnary.Op.SETOF.make(null, ExprBinary.Op.ARROW.make(null, null, ExprVar.make(null, "BufIdx" + bufferCount), ExprVar.make(null, buffer.param))));
+		rawBufferNameToIndex.put(buffer.name, "BufIdx" + bufferCount);
 		bufferNameToIndex.put(buffer.modifiedName, "BufIdx" + bufferCount);
 		bufferNameToAlias.put(buffer.modifiedName, "Buffer" + bufferCount++);
 		bufferNameToElem.put(buffer.modifiedName, buffer.param);
 		
-		/*
-		if (bufferElemToName.containsKey(buffer.param)) {
-			bufferNametoIndex.put("Buffer" + Integer.toString(bufferCount), "BufIdx" + bufferCount);
-			variable2Expression.put(buffer.modifiedName, ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
-		}
-		else {
-			bufferNametoIndex.put("Buffer" + Integer.toString(bufferCount), "BufIdx" + bufferCount);
-			bufferElemToName.put(buffer.param, "Buffer" + Integer.toString(bufferCount++));
-			variable2Expression.put(buffer.modifiedName, ExprUnary.Op.ONEOF.make(null, ExprVar.make(null, bufferElemToName.get(buffer.param) + "/Seq")));
-		}
-		*/
-		
 		variables.add(buffer.name);
         modifiedVarNames.add(concState.modifiedName + "_" + buffer.name);
-
-        variableNames.put(concState.modifiedName, variables);
-			
+        variableNames.put(concState.modifiedName, variables);			
         variable2ConcState.put(concState.modifiedName + "_" + buffer.name.toString(), concState);
 	}
 	
@@ -1511,8 +1514,9 @@ public final class DashModule extends Browsable implements Module {
         }
 
         for (String var : variables) {
-            if (!modifiedVarNames.contains(concState.modifiedName + "_" + var))
+            if (!modifiedVarNames.contains(concState.modifiedName + "_" + var)) {
                 modifiedVarNames.add(concState.modifiedName + "_" + var);
+            }
         }
         variableNames.put(concState.modifiedName, variables);
     }
@@ -1602,14 +1606,16 @@ public final class DashModule extends Browsable implements Module {
      */
     public void addState(Object parent, DashState state) {
         String modifiedStateName = "";
-        state.parent = parent;
 
-        if (parent instanceof DashConcState)
+        if (parent instanceof DashConcState) {
             modifiedStateName = ((DashConcState) parent).modifiedName + '_' + state.name;
-        else if (parent instanceof DashState)
+            state.modifiedName = modifiedStateName;
+            state.parent = parent;
+        } else if (parent instanceof DashState) {
             modifiedStateName = ((DashState) parent).modifiedName + '_' + state.name;
-        
-        state.modifiedName = modifiedStateName;
+            state.modifiedName = modifiedStateName;
+            state.parent = parent;
+        }
 
         if (state.isDefault)
             defaultStates.add(state);
@@ -1684,14 +1690,11 @@ public final class DashModule extends Browsable implements Module {
     	status = 0;
     	if (DashOptions.ctlModelChecking)
     		addOpen(null, null, ExprVar.make(null, "util/ctl"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
-		addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null); 
-		addOpen(null, null, ExprVar.make(null, "util/stepUtil"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), null);
+    	if (DashOptions.generateTraces)
+    		addOpen(null, null, ExprVar.make(null, "util/ordering"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, "Snapshot"))), ExprVar.make(modulePos, "snapshot")); 
 		if(stateHierarchy)
-			addOpen(null, null, ExprVar.make(null, "util/boolean"), new ArrayList<ExprVar>(), ExprVar.make(null, "boolean"));
-		addOpen(null, null, ExprVar.make(null, "util/integer"), new ArrayList<ExprVar>(), null);
+			addOpen(null, null, ExprVar.make(null, "util/boolean"), new ArrayList<ExprVar>(), null);
 		for (String name: bufferNameToElem.keySet()) {
-			//System.out.println("Alias: " + bufferElemToName.get(elem) + " Elem: " + elem);
-			//addOpen(null, null, ExprVar.make(null, "util/buffer"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, elem))), ExprVar.make(null, bufferElemToName.get(elem)));
 			System.out.println("Elem: " + bufferNameToElem.get(name) + " Index: " + bufferNameToIndex.get(name) + " Name: " + name);
 			addOpen(null, null, ExprVar.make(null, "util/bufferNew"), new ArrayList<ExprVar>(Arrays.asList(ExprVar.make(null, bufferNameToElem.get(name)), ExprVar.make(null, bufferNameToIndex.get(name)))), ExprVar.make(null, bufferNameToAlias.get(name)));
 		}
@@ -2336,7 +2339,7 @@ public final class DashModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add an ASSERT declaration. */
-    String addAssertion(Pos pos, String name, Expr value) throws Err {
+    public String addAssertion(Pos pos, String name, Expr value) throws Err {
         status = 3;
         if (name == null || name.length() == 0)
             name = "assert$" + (1 + asserts.size());

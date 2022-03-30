@@ -15,4 +15,5 @@ public class DashOptions {
     public static boolean generateSigAxioms  = false;
     public static boolean ctlModelChecking   = false;
     public static boolean reachabilityCheck   = false;
+    public static boolean generateTraces   = true;
 }

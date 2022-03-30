@@ -15,6 +15,12 @@
 
 package edu.mit.csail.sdg.alloy4whole;
 
+import static edu.mit.csail.sdg.alloy4.A4Preferences.AssumeSingleInput;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.CTLModelChecking;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.GenerateSigAxiom;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.GenerateTraces;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.VariablesUnchanged;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,6 +43,7 @@ import org.alloytools.alloy.core.AlloyCore;
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.parser.DashValidation;
 import ca.uwaterloo.watform.transform.CoreDashToAlloy;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -701,7 +708,7 @@ final class SimpleReporter extends A4Reporter {
         public boolean            bundleAssumeSingleInput;
         public boolean            bundleGenerateSigAxiom;
         public boolean            bundleCTLModelChecking;
-        public boolean            bundleReachabilityCheck;
+        public boolean            bundleGenerateTraces;
         public int                bundleIndex;
         public int                resolutionMode;
         public Map<String,String> map;
@@ -715,12 +722,19 @@ final class SimpleReporter extends A4Reporter {
         @Override
         public void run(WorkerCallback out) throws Exception {
             cb(out, "S2", "Starting the solver...\n\n");
+            System.out.println("RUNNER");
             final SimpleReporter rep = new SimpleReporter(out, options.recordKodkod);
             final Module world;
             if (options.originalFilename.toLowerCase(Locale.US).endsWith(".dsh")) {
                 Path directory = Paths.get(options.originalFilename).getParent();
                 DashOptions.dashModelLocation = directory.toString();
+                DashOptions.variablesUnchanged = VariablesUnchanged.get();
+                DashOptions.assumeSingleInput = AssumeSingleInput.get();
+                DashOptions.generateSigAxioms = GenerateSigAxiom.get();
+                DashOptions.ctlModelChecking = CTLModelChecking.get();
+                DashOptions.generateTraces = GenerateTraces.get();
                 DashModule dash = DashUtil.parseEverything_fromFileDash(rep, map, options.originalFilename);
+                DashValidation.validateDashModel(dash);
                 DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
                 DashModule alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
                 world = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);

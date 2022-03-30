@@ -29,6 +29,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.DecomposePref;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontName;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.GenerateSigAxiom;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.GenerateTraces;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
@@ -37,7 +38,6 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.Model1;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Model2;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Model3;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
-import static edu.mit.csail.sdg.alloy4.A4Preferences.ReachabilityCheck;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.Solver;
@@ -134,6 +134,7 @@ import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashModuleToString;
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.parser.DashValidation;
 import ca.uwaterloo.watform.transform.CoreDashToAlloy;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
 
@@ -1137,9 +1138,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 if (directory.toString() != null)
                     DashOptions.dashModelLocation = directory.toString();
                 if (text.get().isFile()) {
-                    DashUtil.parseEverything_fromFileDash(A4Reporter.NOP, null, actual);
+                    DashModule dash = DashUtil.parseEverything_fromFileDash(A4Reporter.NOP, null, actual);
+                    DashValidation.validateDashModel(dash);
                 } else {
-                    DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, text.get().getText());
+                    DashModule dash = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, text.get().getText());
+                    DashValidation.validateDashModel(dash);
                 }
             } catch (Err e) {
                 runmenu.getItem(0).setEnabled(false);
@@ -1273,12 +1276,6 @@ public final class SimpleGUI implements ComponentListener, Listener {
         opt.originalFilename = Util.canon(text.get().getFilename());
         opt.solver = Solver.get();
         task.bundleIndex = i;
-        task.bundleWarningNonFatal = WarningNonfatal.get();
-        task.bundleVariablesUnchanged = VariablesUnchanged.get();
-        task.bundleAssumeSingleInput = AssumeSingleInput.get();
-        task.bundleGenerateSigAxiom = GenerateSigAxiom.get();
-        task.bundleCTLModelChecking = CTLModelChecking.get();
-        task.bundleReachabilityCheck = ReachabilityCheck.get();
         task.map = text.takeSnapshot();
         task.options = opt.dup();
         task.resolutionMode = (Version.experimental && ImplicitThis.get()) ? 2 : 1;
@@ -1350,6 +1347,11 @@ public final class SimpleGUI implements ComponentListener, Listener {
         doRefreshRun();
         OurUtil.enableAll(runmenu);
         if (text.get().isEditingDash()) {
+            DashOptions.variablesUnchanged = VariablesUnchanged.get();
+            DashOptions.assumeSingleInput = AssumeSingleInput.get();
+            DashOptions.generateSigAxioms = GenerateSigAxiom.get();
+            DashOptions.ctlModelChecking = CTLModelChecking.get();
+            DashOptions.generateTraces = GenerateTraces.get();
             return doRun(0);
         }
         if (commands == null)
@@ -1432,7 +1434,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             DashOptions.assumeSingleInput = AssumeSingleInput.get();
             DashOptions.generateSigAxioms = GenerateSigAxiom.get();
             DashOptions.ctlModelChecking = CTLModelChecking.get();
-            DashOptions.reachabilityCheck = ReachabilityCheck.get();
+            DashOptions.generateTraces = GenerateTraces.get();
             if (text.get().isFile()) {
                 dash = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, text.get().getText());
             } else {
@@ -1445,6 +1447,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             if (text.get().isFile()) {
                 DashModuleToString.toString(alloy);
                 text.newtab(DashOptions.outputDir + ".als");
+                text.get().setText(DashModuleToString.getString(alloy));
             } else {
                 text.newtab(null);
                 text.get().setText(DashModuleToString.getString(alloy));
@@ -1600,7 +1603,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
                 addToMenu(optmenu, AssumeSingleInput);
                 addToMenu(optmenu, GenerateSigAxiom);
                 addToMenu(optmenu, CTLModelChecking);
-                //addToMenu(optmenu, ReachabilityCheck);
+                addToMenu(optmenu, GenerateTraces);
             }
 
         } finally {
@@ -1679,9 +1682,9 @@ public final class SimpleGUI implements ComponentListener, Listener {
     }
 
     /** This method toggles the "Reachability Check" checkbox. */
-    private Runner doReachabilityCheck() {
+    private Runner doGenerateTraces() {
         if (!wrap) {
-            DashOptions.reachabilityCheck = (ReachabilityCheck.get());
+            DashOptions.generateTraces = (GenerateTraces.get());
         }
         return wrapMe();
     }
@@ -2478,7 +2481,7 @@ public final class SimpleGUI implements ComponentListener, Listener {
             prefDialog.addChangeListener(wrapToChangeListener(doAssumeSingleInput()), AssumeSingleInput);
             prefDialog.addChangeListener(wrapToChangeListener(doGenerateSigAxiom()), GenerateSigAxiom);
             prefDialog.addChangeListener(wrapToChangeListener(doCTLModelChecking()), CTLModelChecking);
-            prefDialog.addChangeListener(wrapToChangeListener(doReachabilityCheck()), ReachabilityCheck);
+            prefDialog.addChangeListener(wrapToChangeListener(doGenerateTraces()), GenerateTraces);
             prefDialog.addChangeListener(wrapToChangeListener(doOptSyntaxHighlighting()), SyntaxDisabled);
             prefDialog.addChangeListener(wrapToChangeListener(doLookAndFeel()), LAF);
         } finally {

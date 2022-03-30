@@ -24,7 +24,7 @@ public class Dash {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        String actual = "C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\BufferOfficial.dsh";
+        String actual = "C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\BufferOfficial1.dsh";
         String elevator = "E:\\Alloy Specification Language\\Models\\ElevProc36.als";
         //"C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\Elevator.dsh";
         //"C:\Users\Tamjid Hossain\Desktop\Dash Models Testing\\TestModel.dsh";

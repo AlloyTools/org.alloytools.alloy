@@ -568,7 +568,7 @@ public class A4Preferences {
     /**
      * True if a Dash model will contain the Reachability Checks for Basic States
      */
-    public static final BooleanPref           ReachabilityCheck      = new BooleanPref("ReachabilityCheck", "Reachability Check", true);
+    public static final BooleanPref           GenerateTraces         = new BooleanPref("GenerateTraces", "Traces Fact", true);
 
 
     /**

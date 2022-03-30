@@ -380,9 +380,9 @@ public class DashValidation {
         	variable = variable.substring(variable.indexOf("/") + 1);
         }
         
-        if (!declarationNames.get(concStateToCheck).contains(variable) && !eventNames.get(concStateToCheck).contains(variable) && !declarationNames.get(concStateParName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
-            throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
-        }
+        //if (!declarationNames.get(concStateToCheck).contains(variable) && !eventNames.get(concStateToCheck).contains(variable) && !declarationNames.get(concStateParName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
+            //throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
+        //}
     }
 
     /* Ensure that conc states have a default state */
