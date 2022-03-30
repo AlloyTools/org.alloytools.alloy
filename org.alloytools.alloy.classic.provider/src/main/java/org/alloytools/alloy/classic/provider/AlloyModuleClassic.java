@@ -11,19 +11,21 @@ import java.util.stream.Collectors;
 
 import org.alloytools.alloy.core.api.Compiler;
 import org.alloytools.alloy.core.api.CompilerMessage;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TCommand;
 import org.alloytools.alloy.core.api.TExpression;
 import org.alloytools.alloy.core.api.TFunction;
+import org.alloytools.alloy.core.api.TOpen;
 import org.alloytools.alloy.core.api.TRun;
 import org.alloytools.alloy.core.api.TSignature;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
+import edu.mit.csail.sdg.parser.CompModule.Open;
 
-public class AlloyModuleClassic implements Module {
+public class AlloyModuleClassic implements TModule {
 
     final CompModule            module;
     final Compiler              compiler;
@@ -157,8 +159,22 @@ public class AlloyModuleClassic implements Module {
     }
 
     @Override
-    public List<Module> getOpens() {
-        return null;
+    public List<TOpen> getOpens() {
+        if (module == null) {
+            throw new IllegalStateException("module could not compile: " + errors);
+        }
+        ConstList<Open> opens = module.getOpens();
+
+        return opens.stream().map(open -> {
+            AlloyModuleClassic m = new AlloyModuleClassic(open.getRealModule(), open.filename, "", compiler, options);
+            return new TOpen() {
+
+                @Override
+                public TModule getModule() {
+                    return m;
+                }
+            };
+        }).collect(Collectors.toList());
     }
 
     private Map<String,String> extractOptions(List<Option> options, TCommand command) {

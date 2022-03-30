@@ -2,17 +2,16 @@ package edu.mit.csail.sdg.alloy4whole;
 
 import javax.swing.SwingUtilities;
 
-import org.alloytools.alloy.infrastructure.api.AlloyMain;
+import org.alloytools.alloy.infrastructure.api.AlloyCLI;
+import org.alloytools.cli.api.CLICommand;
 
 import aQute.lib.getopt.Options;
 
 
-@AlloyMain(
-           name = "gui",
-           isDefault = true )
-@AlloyMain(
-           name = "foo" )
-public class CLIFacade {
+@AlloyCLI(
+          subCommand = "gui",
+          isDefault = true )
+public class CLIFacade implements CLICommand {
 
     interface GuiOptions extends Options {
 

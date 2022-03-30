@@ -6,8 +6,11 @@ import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.SolverType;
 import org.alloytools.alloy.infrastructure.api.AlloySolver;
 
-@AlloySolver
+@AlloySolver(
+             name = MiniSatPlugin.NAME )
 public class MiniSatPlugin extends AbstractKodkodSolver {
+
+    final static String NAME = "minisat";
 
 	public MiniSatPlugin(Alloy core) {
 		super(core);
@@ -16,7 +19,7 @@ public class MiniSatPlugin extends AbstractKodkodSolver {
 
 	@Override
 	public String getId() {
-		return "minisat(jni)";
+        return NAME;
 	}
 
 	@Override

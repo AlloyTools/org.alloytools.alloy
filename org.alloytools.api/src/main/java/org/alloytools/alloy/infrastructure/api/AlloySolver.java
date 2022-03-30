@@ -5,17 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.osgi.annotation.bundle.Attribute;
 import org.osgi.annotation.bundle.Capability;
 
 @Capability(
-            namespace = AlloySolver.NAMESPACE,
+            namespace = AlloyImplementation.NAMESPACE,
             attribute = {
-                         AlloySolver.FQN + "=${@class}"
+                         AlloyImplementation.IMPLEMENTATION + "=${@class}", "interface=org.alloytools.alloy.core.api.Solver"
             } )
 @Target(ElementType.TYPE )
 @Retention(RetentionPolicy.RUNTIME )
 public @interface AlloySolver {
 
-    String NAMESPACE = "alloy.solver";
-    String FQN       = "type";
+    @Attribute
+    String name();
 }

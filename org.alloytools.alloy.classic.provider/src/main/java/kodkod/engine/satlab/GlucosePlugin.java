@@ -6,16 +6,18 @@ import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.SolverType;
 import org.alloytools.alloy.infrastructure.api.AlloySolver;
 
-@AlloySolver
+@AlloySolver(
+             name = GlucosePlugin.NAME )
 public class GlucosePlugin extends AbstractKodkodSolver {
 
+    final static String NAME = "glucose";
 	public GlucosePlugin(Alloy core) {
 		super(core);
 	}
 
 	@Override
 	public String getId() {
-		return "glucose(jni)";
+        return NAME;
 	}
 
 	@Override
@@ -34,7 +36,7 @@ public class GlucosePlugin extends AbstractKodkodSolver {
 	}
 
 	@Override
-	protected SATFactory getSATFactory(KodkodOptions options) {
+    public SATFactory getSATFactory(KodkodOptions options) {
 		return new SATFactory() {
 
 			@Override

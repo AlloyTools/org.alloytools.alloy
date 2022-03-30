@@ -3,6 +3,9 @@ package org.alloytools.alloy.core.api;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import org.alloytools.alloy.core.api.Visualizer.Renderer;
 
 /**
  * Primary interface into Alloy. An instance can be found through the Java
@@ -53,16 +56,78 @@ public interface Alloy {
      */
     File getPreferencesDir(String id);
 
+    /**
+     * Convenience to get a number of instances from a source
+     *
+     * @param source the soufce code
+     * @param max the maximum nr of instances
+     * @return an array of instances
+     */
     default Instance[] getInstances(String source, int max) {
         return getSolution(source).next(max);
     }
 
+    /**
+     * Convenience method to get a solution from a source
+     *
+     * @param source the source code
+     * @return the solution
+     */
     default Solution getSolution(String source) {
-        Module module = compiler().compileSource(source);
+        TModule module = getModule(source);
         Solver solver = getSolvers().get("");
         Solution solution = solver.solve(module.getDefaultCommand(), null);
         return solution;
     }
 
+    /**
+     * Convenience method to return a module
+     *
+     * @param source the source code
+     * @return the module
+     */
+    default TModule getModule(String source) {
+        return compiler().compileSource(source);
+    }
+
+    /**
+     * The version of the Alloy environment
+     *
+     * @return the version
+     */
     String getVersion();
+
+
+    /**
+     * Create a new object from the given class injection some domain objects like
+     * Alloy in the constructor.
+     *
+     * @param <T> the type
+     * @param type the class that needs to be instantiated
+     * @return the new object
+     */
+    <T> T create(Class<T> type);
+
+    /**
+     * Find a renderer for the given domain object type & output type
+     *
+     * @param <A> the domain object type
+     * @param <O> the output object type
+     * @param glob the glob for the name
+     * @param argument the agumen type
+     * @param output the output type
+     * @return the optional renderer
+     */
+    <A, O> Optional<Renderer<A,O>> findRenderer(String glob, Class<A> argument, Class<O> output);
+
+    /**
+     * Turn a plugin specific options object ( a data transfer object or DTO, i.e.
+     * public fields) into an AlloyOptions
+     *
+     * @param <T> the domain options type
+     * @param options the options DTO
+     * @return an AlloyOptions object
+     */
+    <T> AlloyOptions<T> asOptions(T options);
+
 }

@@ -4,7 +4,7 @@ import java.io.File;
 
 /**
  * An Alloy Compiler that can compile a file or a source and provide a
- * {@link Module}
+ * {@link TModule}
  */
 public interface Compiler {
 
@@ -13,7 +13,7 @@ public interface Compiler {
      * 
      * @return a Module
      */
-    Module compileSource(String source);
+    TModule compileSource(String source);
 
     /**
      * Compile a path, the path is resolved via the resolver. Any explicit imports
@@ -22,7 +22,7 @@ public interface Compiler {
      * 
      * @return a Module
      */
-    Module compile(String path);
+    TModule compile(String path);
 
     /**
      * Compile a file. Any explicit imports in the content (specified using the
@@ -31,5 +31,5 @@ public interface Compiler {
      * @param file the file
      * @return a Module
      */
-    Module compile(File file);
+    TModule compile(File file);
 }

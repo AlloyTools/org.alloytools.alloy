@@ -456,7 +456,7 @@ public final class A4Solution {
             solver_opts.setLogTranslation(2);
             solver_opts.setCoreGranularity(opt.coreGranularity);
         } else {
-            // Even for "KK" and "CNF", we choose SAT4J here; later, just before solving, we'll change it to a Write2CNF solver
+            // Even for "KK" and "CNF", we choose SAT4J here; later, just before solving, we'll change it to a WriteCNF solver
             solver_opts.setSolver(SATFactory.DefaultSAT4J);
         }
         solver_opts.setSymmetryBreaking(sym);

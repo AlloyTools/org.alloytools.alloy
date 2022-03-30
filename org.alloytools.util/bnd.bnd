@@ -2,7 +2,8 @@
 	aQute.libg,\
 	org.osgi.annotation.bundle,\
 	osgi.annotation,\
-	org.alloytools.api
+	org.alloytools.api,\
+	slf4j.api
     
 -testpath: \
     biz.aQute.wrapper.junit, \

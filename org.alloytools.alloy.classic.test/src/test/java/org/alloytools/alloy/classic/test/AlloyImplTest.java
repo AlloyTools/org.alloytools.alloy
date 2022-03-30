@@ -20,7 +20,7 @@ import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Instance;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solution.Trace;
 import org.alloytools.alloy.core.api.Solver;
@@ -61,7 +61,7 @@ public class AlloyImplTest {
 
     @Test
     public void testStandardNext() {
-        Module module = ai.compiler().compileSource("one sig G { y : Int} { y in 0+1+2 } ");
+        TModule module = ai.compiler().compileSource("one sig G { y : Int} { y in 0+1+2 } ");
         assertThat(module.getErrors()).isEmpty();
         Solution solve = solver.solve(module.getDefaultCommand(), null);
         List<Integer> l = new ArrayList<>();
@@ -81,7 +81,7 @@ public class AlloyImplTest {
     @Test
     public void testNextTraces() {
 
-        Module module = ai.compiler().compileSource(//
+        TModule module = ai.compiler().compileSource(//
                                                     "   one sig G { var x : Int, y : Int } { y in 0+1 }\n" //
                                                     + "    run { G.x=2 ; G.x=3 ; G.x=4 ; G.x=G.y }");
         assertThat(module.getErrors()).isEmpty();
@@ -129,12 +129,12 @@ public class AlloyImplTest {
         assertTrue(ai.getSolvers().size() > 0);
 
         assertNotNull(ai.getSolvers().get("sat4j"));
-        assertNotNull(ai.getSolvers().get("minisat(jni)"));
+        assertNotNull(ai.getSolvers().get("minisat"));
     }
 
     @Test
     public void testSolversAll() {
-        Module module = ai.compiler().compileSource("run { 1 = 1 }");
+        TModule module = ai.compiler().compileSource("run { 1 = 1 }");
         assertThat(module.getRuns()).isNotEmpty();
         assertThat(ai.getSolvers()).isNotEmpty();
         for (TRun run : module.getRuns().values()) {
@@ -153,7 +153,7 @@ public class AlloyImplTest {
 
     @Test
     public void iteratorImmutable() throws Exception {
-        Module module = ai.compiler().compileSource("some sig B {}\n run show{} for 3");
+        TModule module = ai.compiler().compileSource("some sig B {}\n run show{} for 3");
         TRun run = module.getRuns().values().iterator().next();
         Solution solution = solver.solve(run, null, null, null);
         TSignature B = module.getSignatures().get("B");
@@ -208,7 +208,7 @@ public class AlloyImplTest {
 
     @Test
     public void iterator() throws Exception {
-        Module module = ai.compiler().compileSource("pred two[y:Int] { y = 1 or y = 2 or y = 3 } run two ");
+        TModule module = ai.compiler().compileSource("pred two[y:Int] { y = 1 or y = 2 or y = 3 } run two ");
 
         for (TRun run : module.getRuns().values()) {
 
@@ -226,7 +226,7 @@ public class AlloyImplTest {
     @Test(
           expected = IllegalStateException.class )
     public void testIteratorNoElements() throws Exception {
-        Module module = ai.compiler().compileSource("pred nothing[y:Int] { y = 1 and y = 2 } run nothing ");
+        TModule module = ai.compiler().compileSource("pred nothing[y:Int] { y = 1 and y = 2 } run nothing ");
 
         TRun run = module.getRuns().get("nothing");
 
@@ -237,7 +237,7 @@ public class AlloyImplTest {
 
     @Test
     public void simple() throws Exception {
-        Module module = ai.compiler().compileSource("some sig B {}\n" + "some sig A {  x : \"abc\" } \n" + "run Foo2 { #A =1 } for 2");
+        TModule module = ai.compiler().compileSource("some sig B {}\n" + "some sig A {  x : \"abc\" } \n" + "run Foo2 { #A =1 } for 2");
         assertNotNull(module);
         System.out.println("Sigs " + module.getSignatures());
         System.out.println("Runs " + module.getRuns());
@@ -261,7 +261,7 @@ public class AlloyImplTest {
     @Test
     public void expects() throws Exception {
         Alloy ai = new AlloyClassicFacade();
-        Module module = ai.compiler().compileSource(//
+        TModule module = ai.compiler().compileSource(//
                                                     "pred foo[x, y, z: Int] {" //
                                                     + " x < 5 and y < 5\n" //
                                                     + " x.add[y] = z and x > y and z < x" //
@@ -285,7 +285,7 @@ public class AlloyImplTest {
     @Test
     public void sortedOutput() throws Exception {
         Alloy ai = new AlloyClassicFacade();
-        Module module = ai.compiler().compileSource("some sig B {}\nrun { #B =9 } for 16");
+        TModule module = ai.compiler().compileSource("some sig B {}\nrun { #B =9 } for 16");
 
         for (TRun run : module.getRuns().values()) {
 
@@ -303,7 +303,7 @@ public class AlloyImplTest {
     @Test
     public void commands() throws Exception {
         Alloy ai = new AlloyClassicFacade();
-        Module module = ai.compiler().compileSource("some sig B {}");
+        TModule module = ai.compiler().compileSource("some sig B {}");
 
         for (TRun run : module.getRuns().values()) {
 

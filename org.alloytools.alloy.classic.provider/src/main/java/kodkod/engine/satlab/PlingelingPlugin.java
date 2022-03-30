@@ -8,10 +8,13 @@ import org.alloytools.alloy.classic.solver.kodkod.KodkodOptions;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.SolverType;
 import org.alloytools.alloy.infrastructure.api.AlloySolver;
-import org.alloytools.nativecode.util.NativeCode;
+import org.alloytools.nativecode.v1.util.NativeCode;
 
-@AlloySolver
+@AlloySolver(
+             name = PlingelingPlugin.NAME )
 public class PlingelingPlugin extends AbstractKodkodSolver {
+
+    final static String NAME = "plingeling";
 
     public static class PlingelingOptions extends KodkodOptions {
 
@@ -25,7 +28,7 @@ public class PlingelingPlugin extends AbstractKodkodSolver {
 
     @Override
     public String getId() {
-        return "plingeling(jni)";
+        return NAME;
     }
 
     @Override
@@ -62,7 +65,7 @@ public class PlingelingPlugin extends AbstractKodkodSolver {
             opts.add("-p");
 
         final String executable = NativeCode.cacheBinary(getAlloy().getPreferencesDir("binary").toPath(), "plingeling").toFile().getAbsolutePath();
-        return SATFactory.externalFactory(executable == null ? "plingeling" : executable, null, isIncremental(), isUnbounded(), opts.toArray(new String[opts.size()]));
+        return SATFactory.externalFactory(executable == null ? "plingeling" : executable, null, isIncremental(), isUnbounded());
     }
 
 }

@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Represents an Alloy Module
  */
-public interface Module {
+public interface TModule {
 
     /**
      * The source path of this module. In certain cases a module does not have a
@@ -103,7 +103,7 @@ public interface Module {
     /**
      * Get the lost of modules that this module has opened (open ..)
      */
-    List<Module> getOpens();
+    List<TOpen> getOpens();
 
     Optional<TFunction> getFunction(String name, int arity);
 

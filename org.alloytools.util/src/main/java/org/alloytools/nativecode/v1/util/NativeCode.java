@@ -1,18 +1,21 @@
-package org.alloytools.nativecode.util;
+package org.alloytools.nativecode.v1.util;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class NativeCode {
 
-    static class Platform {
+    public static class Platform {
 
         public Platform(String osnames, String osarch, String dir) {
             try {
@@ -54,7 +57,7 @@ public class NativeCode {
 
     public static Platform   platform    = findPlatform();
 
-    public static boolean loadlibrary(Path cache, String name, Class< ? > libraryClass) throws RuntimeException {
+    public static boolean loadlibrary(Path cache, String name, Class< ? > libraryClass) throws RuntimeException, IOException {
         if (platform.dir == null)
             return false;
 
@@ -95,6 +98,14 @@ public class NativeCode {
             });
 
             Files.copy(resource.openStream(), to, StandardCopyOption.REPLACE_EXISTING);
+            Set<PosixFilePermission> attrs = new HashSet<>();
+            attrs.add(PosixFilePermission.OWNER_READ);
+            attrs.add(PosixFilePermission.OWNER_WRITE);
+            attrs.add(PosixFilePermission.OWNER_EXECUTE);
+            attrs.add(PosixFilePermission.OTHERS_READ);
+            attrs.add(PosixFilePermission.OTHERS_EXECUTE);
+
+            Files.setPosixFilePermissions(to, attrs);
             return to;
         } catch (IOException e) {
             throw new RuntimeException(e);

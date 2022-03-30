@@ -16,6 +16,7 @@ public class KodkodOptions extends SolverOptions {
     public int     symmetryBreaking = 20;
 
 
+
     //    @Description("This option constrols how deep we unroll loops and unroll recursive\n" + "predicate/function/macros (negative means it's disallowed)" )
     //    public int         unrolls              = 3;
 

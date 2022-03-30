@@ -1,5 +1,6 @@
 package org.alloytools.alloy.classic.solver.kodkod;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,7 +14,7 @@ import org.alloytools.alloy.classic.provider.Relation;
 import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.SolverOptions;
@@ -27,7 +28,7 @@ import edu.mit.csail.sdg.translator.A4Solution;
 public class SolutionImpl implements Solution {
 
     final Map<String,Atom> atoms  = new HashMap<>();
-    final Module           module;
+    final TModule           module;
     final Command          command;
     final A4Solution       initial;
     final Solver           solver;
@@ -55,7 +56,7 @@ public class SolutionImpl implements Solution {
     private final Relation error  = new Relation(this);
 
 
-    public SolutionImpl(Module module, Solver solver, A4Solution initial, Command command, SolverOptions options) {
+    public SolutionImpl(TModule module, Solver solver, A4Solution initial, Command command, SolverOptions options) {
         this.module = module;
         this.solver = solver;
         this.initial = initial;
@@ -114,7 +115,7 @@ public class SolutionImpl implements Solution {
     }
 
     @Override
-    public Module getModule() {
+    public TModule getModule() {
         return module;
     }
 
@@ -217,6 +218,7 @@ public class SolutionImpl implements Solution {
         return bool;
     }
 
+    @Override
     public IRelation error() {
         return error;
     }
@@ -233,6 +235,12 @@ public class SolutionImpl implements Solution {
             throw new IllegalArgumentException("atoms size is not a multiple of arity so cannot turn them into tuples");
 
         return new Relation(this, arity, atoms);
+    }
+
+    @Override
+    public Map<String,URI> getAttestations() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

@@ -1,8 +1,10 @@
 package org.alloytools.alloy.core.api;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -33,7 +35,7 @@ public interface Solution extends Iterable<Instance> {
      *
      * @return the module this solution was derived from.
      */
-    Module getModule();
+    TModule getModule();
 
     /**
      * The command this is a solution to
@@ -139,5 +141,20 @@ public interface Solution extends Iterable<Instance> {
 
     IRelation error();
 
+    /**
+     * Turn a list of atoms into a relation. The list of atoms is turned into a list
+     * of tuples so the length of the atoms list must be a multiple of arity. E.g.
+     * the list `[a,b,c,d,e,f]` will become a relation of arity 2 with:
+     *
+     * <pre>
+     * { (a,b), (c,d), (e,f) }
+     * </pre>
+     *
+     * @param arity arity of the list
+     * @param atoms list of atims. Each arity atoms are turned into a tuple.
+     * @return a relation
+     */
     IRelation create(int arity, List<IAtom> atoms);
+
+    Map<String,URI> getAttestations();
 }

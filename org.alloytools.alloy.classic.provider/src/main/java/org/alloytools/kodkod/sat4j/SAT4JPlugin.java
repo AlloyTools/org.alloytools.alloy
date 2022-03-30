@@ -10,22 +10,23 @@ import org.sat4j.minisat.SolverFactory;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.SATSolver;
 
-@AlloySolver
+@AlloySolver(
+             name = SAT4JPlugin.NAME )
 public class SAT4JPlugin extends AbstractKodkodSolver {
 
+    final static String NAME = "sat4j";
     public SAT4JPlugin(Alloy core) {
         super(core);
     }
 
     @Override
     public String getId() {
-        return "sat4j";
+        return NAME;
     }
 
     @Override
     public SolverType getSolverType() {
-        // TODO Auto-generated method stub
-        return null;
+        return SolverType.SAT;
     }
 
     @Override

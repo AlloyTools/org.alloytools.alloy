@@ -4,10 +4,12 @@
 	org.alloytools.api,\
     org.alloytools.alloy.core;version=snapshot, \
     org.alloytools:pardinus.core;version=latest;packages='*',\
+    org.alloytools:pardinus.nativesat,\
     org.alloytools.util,\
 	org.alloytools.alloy.classic.provider;packages='*',\
 	org.alloytools.util,\
     aQute.libg,\
     org.sat4j.core,\
-    assertj-core;version=latest
+    assertj-core;version=latest, \
+    slf4j.simple
     

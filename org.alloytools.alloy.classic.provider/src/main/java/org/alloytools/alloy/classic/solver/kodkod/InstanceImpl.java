@@ -197,4 +197,9 @@ class InstanceImpl implements Instance {
         return result;
     }
 
+    @Override
+    public List<TSignature> getSignatures() {
+        return new ArrayList<>(solution.module.getSignatures().values());
+    }
+
 }

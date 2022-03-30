@@ -10,7 +10,7 @@ import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.ITuple;
 import org.alloytools.alloy.core.api.Instance;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TSignature;
@@ -32,7 +32,7 @@ public class TableView {
      * Format a solution to a string
      */
     public static Map<String,Table> toTable(Solution solution, Instance instance) {
-        Module module = solution.getModule();
+        TModule module = solution.getModule();
 
         Map<String,Table> map = new TreeMap<String,Table>();
 

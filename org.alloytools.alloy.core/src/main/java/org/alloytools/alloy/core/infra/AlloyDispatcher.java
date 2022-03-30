@@ -3,7 +3,6 @@ package org.alloytools.alloy.core.infra;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.jar.Manifest;
@@ -19,9 +17,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.alloytools.alloy.context.api.AlloyContext;
-import org.alloytools.alloy.infrastructure.api.AlloyMain;
-import org.alloytools.alloy.infrastructure.api.AlloyMain.AlloyMains;
+import org.allotools.services.util.Services;
+import org.alloytools.alloy.core.api.Alloy;
+import org.alloytools.alloy.core.api.Solver;
+import org.alloytools.alloy.core.api.Visualizer;
+import org.alloytools.alloy.infrastructure.api.AlloyCLI;
+import org.alloytools.cli.api.CLICommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
@@ -30,8 +33,6 @@ import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
 import aQute.lib.strings.Strings;
-import aQute.libg.parameters.Attributes;
-import aQute.libg.parameters.ParameterMap;
 import aQute.libg.reporter.ReporterAdapter;
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
@@ -40,17 +41,19 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 
 /**
  * Since the Alloy code is used for many different situations, we do not assume
- * we know how the world looks like. This class uses the AlloyMain annotation to
+ * we know how the world looks like. This class uses the AlloyCLI annotation to
  * find any class that can be called from the command line that was added to the
  * distribution jar.
  *
  */
 public class AlloyDispatcher extends ReporterAdapter {
 
-    PrintStream        out = System.out;
-    PrintStream        err = System.err;
-    AlloyContext       context;
-    Optional<Manifest> manifest;
+    final static Logger logger = LoggerFactory.getLogger(AlloyDispatcher.class);
+
+    PrintStream         out    = System.out;
+    PrintStream         err    = System.err;
+    Alloy               alloy;
+    Optional<Manifest>  manifest;
 
 
 
@@ -129,9 +132,12 @@ public class AlloyDispatcher extends ReporterAdapter {
 
         setslf4j(options.defaultLevel(Levels.error), options.log());
 
+        this.alloy = Services.getService(Alloy.class);
+        if (alloy == null)
+            throw new Error("No implementation for Alloy available");
+
         CommandLine cl = options._command();
-        AlloyContext context = getContext(options);
-        Map<String,MainDef> mains = getMains(context, cl);
+        Map<String,MainDef> mains = getMains(alloy, cl);
 
         doPreferences(options.preferences());
 
@@ -161,9 +167,9 @@ public class AlloyDispatcher extends ReporterAdapter {
                 return;
             }
 
-            String execute = cl.execute(selected.instance, selected.name, arguments);
-            if (execute != null) {
-                err.println(execute);
+            String help = cl.execute(selected.instance, selected.name, arguments);
+            if (help != null) {
+                err.println(help);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,20 +197,6 @@ public class AlloyDispatcher extends ReporterAdapter {
         }
         out.println(version);
     }
-
-    private AlloyContext getContext(BaseOptions options) {
-        if (context == null) {
-            context = new AlloyContext() {
-
-                @Override
-                public boolean isDebug() {
-                    return options.debug();
-                }
-            };
-        }
-        return context;
-    }
-
 
     @Description("Show the preferences or modify them" )
     @Arguments(
@@ -240,14 +232,38 @@ public class AlloyDispatcher extends ReporterAdapter {
     @Arguments(
                arg = {} )
     interface SolverOptions extends Options {
+
+        @Description("show classic kodkod solvers" )
+        boolean kodkod();
     }
 
 
     public void _solvers(SolverOptions options) {
-        StringBuilder sb = new StringBuilder();
-        for (SatSolver o : A4Options.SatSolver.values()) {
-            out.printf("%s%n", o);
+        if (options.kodkod()) {
+            for (SatSolver o : A4Options.SatSolver.values()) {
+                out.printf("%s%n", o);
+            }
+        } else {
+            Justif j = new Justif(100, 0, 3, 30, 60, 80);
+            Formatter f = j.formatter();
+            for (Map.Entry<String,Solver> e : alloy.getSolvers().entrySet()) {
+                if (e.getKey().isEmpty())
+                    continue;
+
+                Solver solver = e.getValue();
+                f.format("%s\t1%s\t2%s\t3%s\n", solver.isAvailable() ? "ok" : "x", solver.getName(), e.getKey(), solver.getDescription());
+            }
+            out.println(j.wrap());
         }
+    }
+
+    public void _visualizers(SolverOptions options) {
+        Justif j = new Justif(120, 0, 40, 60, 80, 100);
+        Formatter f = j.formatter();
+        for (Visualizer e : alloy.getVisualizers()) {
+            f.format("%s\t1%s\n", e.getName(), e.getDescription());
+        }
+        out.println(j.wrap());
     }
 
 
@@ -264,7 +280,7 @@ public class AlloyDispatcher extends ReporterAdapter {
     public void __help(HelpOptions options) {
         List<String> arguments = options._arguments();
         CommandLine cl = options._command();
-        Map<String,MainDef> mains = getMains(context, cl);
+        Map<String,MainDef> mains = getMains(alloy, cl);
         Justif j = new Justif(80);
         try (Formatter f = j.formatter()) {
 
@@ -289,42 +305,20 @@ public class AlloyDispatcher extends ReporterAdapter {
     }
 
 
-    private Map<String,MainDef> getMains(AlloyContext context, CommandLine cl) {
+    private Map<String,MainDef> getMains(Alloy context, CommandLine cl) {
         Map<String,MainDef> result = new TreeMap<>();
         localCommands(cl, result);
         globalCommands(context, result);
         return result;
     }
 
-    private void globalCommands(AlloyContext context, Map<String,MainDef> result) {
-        ParameterMap header = getHeader("Provide-Capability");
+    private void globalCommands(Alloy context, Map<String,MainDef> result) {
 
-        header.entrySet().stream().filter(e -> e.getKey().startsWith(AlloyMain.NAMESPACE)).forEach(e -> {
-            try {
-                Attributes attrs = e.getValue();
-                String fqn = attrs.get(AlloyMain.FQN);
-                if (fqn == null)
-                    throw new RuntimeException("Expected a fqn in the capability " + e);
-
-                Class< ? > mainClass = AlloyDispatcher.class.getClassLoader().loadClass(fqn);
-                AlloyMains mains = mainClass.getAnnotation(AlloyMains.class);
-                if (mains != null) {
-                    for (AlloyMain am : mains.value()) {
-                        Object instance = getInstance(context, e, mainClass);
-                        MainDef main = new MainDef(instance, am.name(), am.isDefault());
-                        result.put(main.name, main);
-                    }
-                } else {
-                    AlloyMain am = mainClass.getAnnotation(AlloyMain.class);
-                    if (am != null) {
-                        Object instance = getInstance(context, e, mainClass);
-                        MainDef main = new MainDef(instance, am.name(), am.isDefault());
-                        result.put(main.name, main);
-                    } else
-                        System.err.println("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
-                }
-            } catch (ClassNotFoundException e1) {
-                throw new RuntimeException("In capability " + e + ", the fqn cannot be located as class in the current JAR: " + e1);
+        Services.getServices(CLICommand.class, context::create).forEach(cmd -> {
+            AlloyCLI annotation = cmd.getClass().getAnnotation(AlloyCLI.class);
+            for (String subCommand : annotation.subCommand()) {
+                MainDef main = new MainDef(cmd, subCommand, annotation.isDefault());
+                result.put(subCommand, main);
             }
         });
     }
@@ -338,18 +332,6 @@ public class AlloyDispatcher extends ReporterAdapter {
 
             MainDef md = new MainDef(this, cmd, false);
             result.put(cmd, md);
-        }
-    }
-
-    private Object getInstance(AlloyContext context, Entry<String,Attributes> e, Class< ? > mainClass) {
-        try {
-            return mainClass.getConstructor(AlloyContext.class).newInstance(context);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-            try {
-                return mainClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e2) {
-                throw new RuntimeException("Capability " + e + " specifies class " + mainClass + " but that class has no default constructor nor one that takes AlloyContext");
-            }
         }
     }
 
@@ -376,10 +358,6 @@ public class AlloyDispatcher extends ReporterAdapter {
             }
         }
 
-    }
-
-    private ParameterMap getHeader(String name) {
-        return getManifest().map(m -> new ParameterMap(m.getMainAttributes().getValue(name))).orElse(new ParameterMap());
     }
 
     private String getVersion() {
@@ -427,4 +405,5 @@ public class AlloyDispatcher extends ReporterAdapter {
                 }
             }
     }
+
 }

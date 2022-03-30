@@ -25,7 +25,7 @@ import org.alloytools.alloy.core.api.IAtom;
 import org.alloytools.alloy.core.api.IAtom.BasicType;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.TField;
 import org.alloytools.alloy.core.api.TFunction;
@@ -103,7 +103,7 @@ public class Spec {
     }
 
     public <T> void testvar(String source, Class<T> type, T __, String sig) throws Throwable {
-        Module module = alloy.compiler().compileSource(source);
+        TModule module = alloy.compiler().compileSource(source);
         if (!module.isValid())
             throw new IllegalArgumentException(module.toString());
 

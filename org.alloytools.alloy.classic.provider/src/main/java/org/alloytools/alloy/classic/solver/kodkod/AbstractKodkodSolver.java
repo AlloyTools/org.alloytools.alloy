@@ -9,7 +9,7 @@ import org.alloytools.alloy.classic.provider.AlloyModuleClassic;
 import org.alloytools.alloy.classic.solver.AbstractSolver;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.Instance;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.SolverOptions;
 import org.alloytools.alloy.core.api.TCommand;
@@ -31,11 +31,11 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 
     @Override
     public Solution solve(TCommand command, SolverOptions optionsOrNull, Instance lowerBound, Instance upperBound) {
-        AbstractCommand c = (AbstractCommand) command;
-        return command(command.getModule(), optionsOrNull, c.getOriginalCommand());
+        Command c = command instanceof AbstractCommand ? ((AbstractCommand) command).getOriginalCommand() : (Command) command;
+        return command(command.getModule(), optionsOrNull, c);
     }
 
-    private Solution command(Module module, SolverOptions optionsOrNull, Command command) {
+    private Solution command(TModule module, SolverOptions optionsOrNull, Command command) {
         SolverOptions options = super.processOptions(module, command, optionsOrNull);
 
         A4Reporter reporter = getReporter();
@@ -47,8 +47,10 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
     }
 
     protected A4Solution getSolution(Command command, CompModule orig, A4Reporter reporter, A4Options opt, SolverOptions options) {
+
         opt.fixupPardinusOptions = eo -> {
             DTOs.copyDTOToBean(options, eo);
+            eo.setSolver(getSATFactory());
         };
         return TranslateAlloyToKodkod.execute_command(reporter, orig.getAllReachableSigs(), command, opt);
     }
@@ -70,7 +72,11 @@ public abstract class AbstractKodkodSolver extends AbstractSolver {
 
     @Override
     public boolean isAvailable() {
-        return SATFactory.available(getSATFactory());
+        try {
+            return SATFactory.available(getSATFactory());
+        } catch (Throwable e) {
+            return false;
+        }
     }
 
     protected abstract SATFactory getSATFactory(KodkodOptions options);

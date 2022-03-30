@@ -10,7 +10,8 @@ import org.alloytools.alloy.cli.CLI.CLIOptions.CoreMininmization;
 import org.alloytools.alloy.cli.CLI.CLIOptions.DecomposeStrategy;
 import org.alloytools.alloy.core.AlloyCore;
 import org.alloytools.alloy.core.infra.AlloyDispatcher;
-import org.alloytools.alloy.infrastructure.api.AlloyMain;
+import org.alloytools.alloy.infrastructure.api.AlloyCLI;
+import org.alloytools.cli.api.CLICommand;
 
 import aQute.lib.collections.ExtList;
 import aQute.lib.env.Env;
@@ -29,8 +30,8 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
-@AlloyMain(name = "shell")
-public class CLI extends Env {
+@AlloyCLI(subCommand = "shell" )
+public class CLI extends Env implements CLICommand{
 	final CommandLine	cl		= new CommandLine(this);
 	final A4Options		options	= new A4Options();
 

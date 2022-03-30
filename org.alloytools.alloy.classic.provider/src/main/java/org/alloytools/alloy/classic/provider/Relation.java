@@ -264,10 +264,7 @@ public class Relation implements IRelation {
         Relation other = (Relation) obj;
         if (arity == 0 && other.arity == 0)
             return true;
-        if (arity != other.arity)
-            return false;
-
-        if (!Arrays.equals(tuples, other.tuples))
+        if ((arity != other.arity) || !Arrays.equals(tuples, other.tuples))
             return false;
         return true;
     }
@@ -277,10 +274,7 @@ public class Relation implements IRelation {
         if (this.isEmpty())
             return true;
 
-        if (other.isEmpty())
-            return false;
-
-        if (wrongArity(other))
+        if (other.isEmpty() || wrongArity(other))
             return false;
 
         for (Tuple t : tuples) {
@@ -331,10 +325,7 @@ public class Relation implements IRelation {
 
     @Override
     public IRelation intersection(IRelation other) {
-        if (wrongArity(other))
-            return solution.none();
-
-        if (this.isEmpty() || other.isEmpty())
+        if (wrongArity(other) || this.isEmpty() || other.isEmpty())
             return solution.none();
 
         SortedSet<ITuple> a = asSet();

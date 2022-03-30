@@ -15,7 +15,7 @@ import org.allotools.conversion.util.DTOs;
 import org.allotools.services.util.Services;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.Compiler;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.TCommand;
@@ -30,7 +30,7 @@ import aQute.lib.io.IO;
 public class AlloyLanguageTest {
 
     Alloy          alloy;
-    Module         module;
+    TModule         module;
     TCommand       command;
     private Solver solver;
     private String name;
@@ -48,7 +48,7 @@ public class AlloyLanguageTest {
             for (Alloy alloy : alloys) {
                 alloy.getSolvers();
                 Compiler compiler = alloy.compiler();
-                Module module = compiler.compile(f);
+                TModule module = compiler.compile(f);
                 if (module == null) {
                     System.out.println("Is no module " + f);
                     continue;
@@ -71,7 +71,7 @@ public class AlloyLanguageTest {
         return result;
     }
 
-    public AlloyLanguageTest(String name, Alloy alloy, Module module, TCommand run, Solver solver) throws IOException {
+    public AlloyLanguageTest(String name, Alloy alloy, TModule module, TCommand run, Solver solver) throws IOException {
         this.name = name;
         this.alloy = alloy;
         this.module = module;

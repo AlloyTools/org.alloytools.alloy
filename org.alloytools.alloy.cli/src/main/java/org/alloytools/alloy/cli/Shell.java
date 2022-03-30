@@ -15,7 +15,7 @@ import org.allotools.services.util.Services;
 import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.IRelation;
 import org.alloytools.alloy.core.api.Instance;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solution;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.TCommand;
@@ -40,7 +40,7 @@ public class Shell implements AutoCloseable {
 	final Alloy			alloy;
 
 	File				file;
-	Module				module;
+	TModule				module;
 	Solution			solution;
 	Iterator<Instance>	iterator;
 	Instance			instance;
@@ -70,17 +70,26 @@ public class Shell implements AutoCloseable {
 		compile(file);
 	}
 
-	@Arguments(arg = "...")
+    @Description("Run a predicate from the current source or run a block. E.g. 'run foo for 10' or 'run { some A } for 10'")
+	@Arguments(arg = {"pred | body ..."})
 	interface RunOptions extends Options {
 
 	}
 
+    @Description("Run a predicate from the current source or run a block. E.g. 'run foo for 10' or 'run { some A } for 10'")
 	public void _run(RunOptions options) throws IOException {
 		run(options, true);
 		print();
 	}
 
-	public void _check(RunOptions options) throws IOException {
+	@Arguments(arg = {"{body}|predicate <scope>","..."})
+    @Description("Run a check. This is the same as the `alloy` check command. It runs the body with the given scope but the intention is not to find a solution. A found solution is a counter example.")
+	interface CheckOptions extends RunOptions {
+	    
+	}
+
+    @Description("An alloy 'check' command with a run body")
+	public void _check(CheckOptions options) throws IOException {
 		run(options, false);
 	}
 
@@ -89,7 +98,7 @@ public class Shell implements AutoCloseable {
 			setSolution(doCommand(null, run, options));
 		} else {
 			String arg = options._arguments().get(0);
-			if (arg.equals("{")) {
+			if (arg.startsWith("{")) {
 				String join = "run __ " + Strings.join(" ", options._arguments());
 				String collect = IO.collect(file);
 				String content = collect + "\n\n" + join + "\n";
@@ -222,7 +231,7 @@ public class Shell implements AutoCloseable {
 	interface NextOptions extends Options {
 	}
 
-	@Description("Solve for the next solution")
+	@Description("Resolve for the next solution")
 	public void _next(NextOptions options) throws IOException {
 		if (check(false)) {
 			next(1);
@@ -230,19 +239,20 @@ public class Shell implements AutoCloseable {
 		}
 	}
 
-	@Description("Try to find a solution where the given condition is true")
+	@Description("Try to find a instance where the given condition is true. The condition is an alloy expression against the instance")
 	@Arguments(arg = { "..." })
-	interface FindOptions extends Options {
-		boolean print();
+	interface FindOptions extends PrintOptions {
 	}
 
+    @Description("Try to find an instance where the given condition is true")
 	public void _find(FindOptions options) throws IOException {
 		if (check(false)) {
 			String line = Strings.join(" ", options._arguments());
 			while (iterator.hasNext()) {
+			    next(1);
 				IRelation eval = instance.eval(line);
 				if (eval.isTrue()) {
-					print();
+					_print(options);
 					return;
 				}
 			}
@@ -250,15 +260,20 @@ public class Shell implements AutoCloseable {
 		}
 	}
 
+    @Description("Print the current instance")
 	@Arguments(arg = {})
 	interface PrintOptions extends Options {
+        @Description("Textual represeentation")
 		boolean text();
 
+        @Description("Print n instances horizontal")
 		int horizontal(int i);
 
+        @Description("Print a json file")
 		boolean json();
 	}
 
+    @Description("Print the current instance")
 	public void _print(PrintOptions options) throws IOException {
 		if (check(false)) {
 			if (options.text()) {
@@ -269,17 +284,23 @@ public class Shell implements AutoCloseable {
 		}
 	}
 
+	@Description("Iterate over all instances and execute an Alloy expression")
 	@Arguments(arg = "variable...")
 	interface ForEachOptions extends RunOptions, PrintOptions {
+	    @Description("Reset the solution")
 		boolean again();
 
+        @Description("Run a command before")
 		String run();
 
+        @Description("Show duplicate solutions")
 		boolean duplicates();
 
+        @Description("Max iterations")
 		int max(int deflt);
 	}
 
+    @Description("Iterate over all instances and execute an Alloy expression")
 	public void _foreach(ForEachOptions options) throws Exception {
 		if (options.run() != null) {
 			setSolution(doCommand(options.run(), true, options));
@@ -303,18 +324,22 @@ public class Shell implements AutoCloseable {
 		}
 	}
 
+    @Description("Open the graphical user interface")
 	@Arguments(arg = "file...")
 	interface GuiOptions extends RunOptions {
 	}
 
+    @Description("Open the graphical user interface")
 	public void _edit(GuiOptions options) throws Exception {
 		env.background("gui", file.getAbsolutePath());
 	}
 
+	@Description("Compile the current or new source file as the base to evalate against")
 	@Arguments(arg = { "[file]" })
 	interface CompileOptions extends Options {
 	}
 
+    @Description("Compile the current or new source file as the base to evalate against")
 	public void _compile(CompileOptions options) throws IOException {
 
 		File file = options._arguments().isEmpty() ? this.file : env.getFile(options._arguments().get(0));
@@ -379,10 +404,12 @@ public class Shell implements AutoCloseable {
 		return false;
 	}
 
+    @Description("Reset the solution to the first instance")
 	@Arguments(arg = {})
 	interface ResetOptions extends Options {
 	}
 
+	@Description("Reset the solution to the first instance")
 	public void _reset(ResetOptions options) throws IOException {
 		reset();
 	}
@@ -401,9 +428,12 @@ public class Shell implements AutoCloseable {
 
 	}
 
+    @Arguments(arg={"alloy..."})
+    @Description("Evaluate an Alloy expression using the current instance")
 	interface EvalOptions extends PrintOptions {
 	}
 
+    @Description("Evaluate an Alloy expression using the current instance")
 	public void _eval(EvalOptions options) throws Exception {
 		eval(Strings.join(" ", options._arguments()), options);
 	}

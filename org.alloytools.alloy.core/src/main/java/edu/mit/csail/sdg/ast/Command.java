@@ -413,7 +413,7 @@ public final class Command extends Browsable implements TCommand {
     }
 
     @Override
-    public org.alloytools.alloy.core.api.Module getModule() {
+    public org.alloytools.alloy.core.api.TModule getModule() {
         return null;
     }
 

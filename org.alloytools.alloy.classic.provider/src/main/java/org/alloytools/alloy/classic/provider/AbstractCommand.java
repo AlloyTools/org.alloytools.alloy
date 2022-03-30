@@ -2,7 +2,7 @@ package org.alloytools.alloy.classic.provider;
 
 import java.util.Set;
 
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.TCheck;
 import org.alloytools.alloy.core.api.TCommand;
 import org.alloytools.alloy.core.api.TExpression;
@@ -14,9 +14,9 @@ import edu.mit.csail.sdg.ast.Command;
 public class AbstractCommand implements TCommand, TRun, TCheck {
 
     final Command command;
-    final Module  module;
+    final TModule  module;
 
-    AbstractCommand(Module module, Command command) {
+    AbstractCommand(TModule module, Command command) {
         this.module = module;
         this.command = command;
     }
@@ -37,7 +37,7 @@ public class AbstractCommand implements TCommand, TRun, TCheck {
     }
 
     @Override
-    public Module getModule() {
+    public TModule getModule() {
         return module;
     }
 

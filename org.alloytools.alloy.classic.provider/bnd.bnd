@@ -5,8 +5,10 @@
 	org.alloytools.util,\
 	org.alloytools:pardinus.core;version=latest;packages='*',\
 	org.sat4j.core
--testpath: biz.aQute.wrapper.junit
-
+-testpath: \
+    biz.aQute.wrapper.junit, \
+    biz.aQute.wrapper.hamcrest, \
+    assertj-core;version=latest
 -includeresource \
     META-INF/services/org.alloytools.alloy.core.spi.AlloySolverFactory;literal="kodkod.engine.satlab.NativeSolvers\norg.alloytools.kodkod.sat4j.SAT4JSolverFactory", \
     META-INF/services/org.alloytools.alloy.core.api.Alloy;literal="org.alloytools.alloy.classic.provider.AlloyClassicFacade"

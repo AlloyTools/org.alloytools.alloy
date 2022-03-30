@@ -1,12 +1,299 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" output="target/classes" path="src/main/java"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/apple-osx-ui.jar">
+		<attributes>
+			<attribute name="bsn" value="lib/apple-osx-ui.jar"/>
+			<attribute name="type" value="EXTERNAL"/>
+			<attribute name="project" value="org.alloytools.alloy.application"/>
+			<attribute name="version" value="file"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/org/alloytools/pardinus.core/1.3.0/+pardinus.core-1.3.0.jar" sourcepath="/Users/aqute/.m2/repository/org/alloytools/pardinus.core/1.3.0/+pardinus.core-1.3.0.jar">
+		<attributes>
+			<attribute name="bsn" value="org.alloytools:pardinus.core"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.alloy.application"/>
+			<attribute name="version" value="1.3.0"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.core">
+		<attributes>
+			<attribute name="bsn" value="org.alloytools.alloy.core"/>
+			<attribute name="type" value="PROJECT"/>
+			<attribute name="project" value="org.alloytools.alloy.core"/>
+			<attribute name="version" value="latest"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/alloy4/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/ast/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/graphics/util/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/parser/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/sim/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/translator/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/util/table/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/infra/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/util/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/org.alloytools.alloy.core/target/org.alloytools.alloy.core.jar">
+		<attributes>
+			<attribute name="bsn" value="org.alloytools.alloy.core"/>
+			<attribute name="type" value="PROJECT"/>
+			<attribute name="project" value="org.alloytools.alloy.core"/>
+			<attribute name="version" value="latest"/>
+			<attribute name="index_location" value="platform:/plugin/bndtools.builder/org/bndtools/builder/classpath/empty.index"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/alloy4/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/ast/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/graphics/util/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/parser/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/sim/*"/>
+			<accessrule kind="accessible" pattern="edu/mit/csail/sdg/translator/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/util/table/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/infra/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/util/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/biz/aQute/bnd/aQute.libg/6.0.0/aQute.libg-6.0.0.jar" sourcepath="/Users/aqute/.m2/repository/biz/aQute/bnd/aQute.libg/6.0.0/aQute.libg-6.0.0.jar">
+		<attributes>
+			<attribute name="bsn" value="aQute.libg"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.alloy.application"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="aQute/bnd/exceptions/*"/>
+			<accessrule kind="accessible" pattern="aQute/configurable/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/annotations/setter/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/aspects/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/base64/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/bundles/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/codec/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/collections/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/concurrent/serial/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/concurrentinit/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/config/proxy/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/consoleapp/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/converter/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/data/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/date/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/dot/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/env/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/fileset/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/filter/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/formatter/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/getopt/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/hex/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/hierarchy/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/index/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/inject/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/io/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/json/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/justif/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/link/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/log2reporter/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/markdown/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/mavenpasswordobfuscator/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/persistentmap/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/promise/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/properties/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/putjar/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/redirect/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/regex/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/settings/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/specinterface/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/startlevel/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/stringrover/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/strings/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/tag/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/utf8properties/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/watcher/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/xml/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/xmldtoparser/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/xpath/*"/>
+			<accessrule kind="accessible" pattern="aQute/lib/zip/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/asn1/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/cafs/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/classdump/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/classloaders/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/clauses/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/command/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/cryptography/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/dtos/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/fileiterator/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/filelock/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/filters/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/forker/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/generics/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/glob/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/gzip/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/ints/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/log/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/map/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/parameters/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/qtokens/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/remote/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/remote/sink/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/remote/source/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/reporter/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/reporter/slf4j/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/sax/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/sax/filters/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/sed/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/shacache/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/slf4j/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/tarjan/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/tuple/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/uri/*"/>
+			<accessrule kind="accessible" pattern="aQute/libg/xslt/*"/>
+			<accessrule kind="accessible" pattern="aQute/service/reporter/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.api">
+		<attributes>
+			<attribute name="bsn" value="org.alloytools.api"/>
+			<attribute name="type" value="PROJECT"/>
+			<attribute name="project" value="org.alloytools.api"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/context/api/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/api/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/spi/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/infrastructure/api/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/org.alloytools.api/target/org.alloytools.api.jar">
+		<attributes>
+			<attribute name="bsn" value="org.alloytools.api"/>
+			<attribute name="type" value="PROJECT"/>
+			<attribute name="project" value="org.alloytools.api"/>
+			<attribute name="index_location" value="platform:/plugin/bndtools.builder/org/bndtools/builder/classpath/empty.index"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/context/api/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/api/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/core/spi/*"/>
+			<accessrule kind="accessible" pattern="org/alloytools/alloy/infrastructure/api/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/biz/aQute/biz.aQute.wrapper.junit/4.13.1/biz.aQute.wrapper.junit-4.13.1.jar" sourcepath="/Users/aqute/.m2/repository/biz/aQute/biz.aQute.wrapper.junit/4.13.1/biz.aQute.wrapper.junit-4.13.1.jar">
+		<attributes>
+			<attribute name="bsn" value="biz.aQute.wrapper.junit"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.alloy.application"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="biz/aQute/wrapper/*"/>
+			<accessrule kind="accessible" pattern="junit/extensions/*"/>
+			<accessrule kind="accessible" pattern="junit/framework/*"/>
+			<accessrule kind="accessible" pattern="junit/runner/*"/>
+			<accessrule kind="accessible" pattern="junit/textui/*"/>
+			<accessrule kind="accessible" pattern="org/junit/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/categories/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/max/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/results/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/runners/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/theories/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/theories/internal/*"/>
+			<accessrule kind="accessible" pattern="org/junit/experimental/theories/suppliers/*"/>
+			<accessrule kind="accessible" pattern="org/junit/function/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/builders/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/management/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/matchers/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/requests/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/runners/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/runners/model/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/runners/rules/*"/>
+			<accessrule kind="accessible" pattern="org/junit/internal/runners/statements/*"/>
+			<accessrule kind="accessible" pattern="org/junit/matchers/*"/>
+			<accessrule kind="accessible" pattern="org/junit/rules/*"/>
+			<accessrule kind="accessible" pattern="org/junit/runner/*"/>
+			<accessrule kind="accessible" pattern="org/junit/runner/manipulation/*"/>
+			<accessrule kind="accessible" pattern="org/junit/runner/notification/*"/>
+			<accessrule kind="accessible" pattern="org/junit/runners/*"/>
+			<accessrule kind="accessible" pattern="org/junit/runners/model/*"/>
+			<accessrule kind="accessible" pattern="org/junit/runners/parameterized/*"/>
+			<accessrule kind="accessible" pattern="org/junit/validator/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/biz/aQute/biz.aQute.wrapper.hamcrest/1.3/biz.aQute.wrapper.hamcrest-1.3.jar" sourcepath="/Users/aqute/.m2/repository/biz/aQute/biz.aQute.wrapper.hamcrest/1.3/biz.aQute.wrapper.hamcrest-1.3.jar">
+		<attributes>
+			<attribute name="bsn" value="biz.aQute.wrapper.hamcrest"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.alloy.application"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="biz/aQute/wrapper/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/beans/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/collection/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/core/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/config/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/ant/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/directorywalker/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/junit/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/model/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/model/annotation/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/model/util/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/parser/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/parser/impl/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/parser/structs/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/generator/qdox/tools/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/integration/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/internal/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/number/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/object/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/text/*"/>
+			<accessrule kind="accessible" pattern="org/hamcrest/xml/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/org/sat4j/org.sat4j.core/2.3.1/org.sat4j.core-2.3.1.jar">
+		<attributes>
+			<attribute name="bsn" value="org.sat4j.core"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.alloy.application"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/sat4j/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/core/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/constraints/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/constraints/card/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/constraints/cnf/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/core/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/learning/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/orders/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/minisat/restarts/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/opt/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/reader/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/specs/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/tools/*"/>
+			<accessrule kind="accessible" pattern="org/sat4j/tools/xplain/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
 	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -2,6 +2,7 @@ package org.alloytools.alloy.core.api;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +22,8 @@ import java.util.Map;
  *
  */
 public interface Instance {
+
+    List<TSignature> getSignatures();
 
     /**
      * Get the value of a field
@@ -110,6 +113,11 @@ public interface Instance {
             public IRelation eval(TExpression expr) {
                 return null;
             }
+
+            @Override
+            public List<TSignature> getSignatures() {
+                return Collections.emptyList();
+            }
         };
     }
 
@@ -126,8 +134,8 @@ public interface Instance {
             Comparable aa = null;
             Comparable bb = null;
             try {
-                aa = (Comparable) a.eval(sortBy);
-                bb = (Comparable) b.eval(sortBy);
+                aa = a.eval(sortBy);
+                bb = b.eval(sortBy);
                 if (aa == bb)
                     return 0;
                 if (aa == null)

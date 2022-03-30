@@ -37,7 +37,7 @@ public interface TCommand {
      *
      * @return the module
      */
-    Module getModule();
+    TModule getModule();
 
     TExpression getExpression();
 

@@ -3,6 +3,8 @@
 	<name>org.alloytools.alloy.application</name>
 	<comment></comment>
 	<projects>
+		<project>org.alloytools.api</project>
+		<project>org.alloytools.alloy.core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

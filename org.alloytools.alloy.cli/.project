@@ -3,6 +3,11 @@
 	<name>org.alloytools.alloy.cli</name>
 	<comment></comment>
 	<projects>
+		<project>org.alloytools.api</project>
+		<project>org.alloytools.alloy.core</project>
+		<project>org.alloytools.alloy.application</project>
+		<project>org.alloytools.alloy.extra</project>
+		<project>org.alloytools.util</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

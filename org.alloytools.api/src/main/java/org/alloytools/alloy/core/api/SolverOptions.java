@@ -9,5 +9,5 @@ public class SolverOptions {
     /**
      * Enable tracing
      */
-    boolean trace = false;
+    public boolean trace = false;
 }

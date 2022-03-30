@@ -1,12 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" output="target/classes" path="src/main/java"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/org/osgi/org.osgi.annotation.bundle/1.1.1/org.osgi.annotation.bundle-1.1.1.jar" sourcepath="/Users/aqute/.m2/repository/org/osgi/org.osgi.annotation.bundle/1.1.1/org.osgi.annotation.bundle-1.1.1.jar">
+		<attributes>
+			<attribute name="bsn" value="org.osgi.annotation.bundle"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.api"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/osgi/annotation/bundle/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aqute/.m2/repository/org/osgi/osgi.annotation/8.0.1/osgi.annotation-8.0.1.jar" sourcepath="/Users/aqute/.m2/repository/org/osgi/osgi.annotation/8.0.1/osgi.annotation-8.0.1.jar">
+		<attributes>
+			<attribute name="bsn" value="osgi.annotation"/>
+			<attribute name="type" value="REPO"/>
+			<attribute name="project" value="org.alloytools.api"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/osgi/annotation/bundle/*"/>
+			<accessrule kind="accessible" pattern="org/osgi/annotation/versioning/*"/>
+			<accessrule ignoreifbetter="true" kind="discouraged" pattern="**"/>
+		</accessrules>
 	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

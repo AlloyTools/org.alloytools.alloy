@@ -160,6 +160,7 @@ public class Atom implements IAtom {
     }
 
 
+    @Override
     public boolean toBool() {
         if (type == BasicType.BOOLEAN)
             return getName().equals("true");

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.allotools.conversion.util.DTOs;
 import org.alloytools.alloy.core.api.Alloy;
-import org.alloytools.alloy.core.api.Module;
+import org.alloytools.alloy.core.api.TModule;
 import org.alloytools.alloy.core.api.Solver;
 import org.alloytools.alloy.core.api.SolverOptions;
 import org.alloytools.alloy.core.api.TCommand;
@@ -26,7 +26,7 @@ public abstract class AbstractSolver implements Solver {
         return getName();
     }
 
-    protected SolverOptions processOptions(Module module, TCommand command, SolverOptions optionsOrNull) {
+    protected SolverOptions processOptions(TModule module, TCommand command, SolverOptions optionsOrNull) {
 
         SolverOptions options = optionsOrNull == null ? newOptions() : optionsOrNull;
 

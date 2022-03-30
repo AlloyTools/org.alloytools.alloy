@@ -14,7 +14,7 @@ import aQute.lib.io.IO;
  * <p>
  * This class is an entry point and should not be renamed. It should also _NOT_
  * touch any other classes. We're creating a special class loader to allow the
- * dynamic libraries to be found. If you link this class to any othe class
+ * dynamic libraries to be found. If you link this class to any other class
  * you're bound to create trouble.
  *
  */

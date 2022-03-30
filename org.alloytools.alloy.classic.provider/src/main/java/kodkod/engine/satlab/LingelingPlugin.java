@@ -6,8 +6,11 @@ import org.alloytools.alloy.core.api.Alloy;
 import org.alloytools.alloy.core.api.SolverType;
 import org.alloytools.alloy.infrastructure.api.AlloySolver;
 
-@AlloySolver
+@AlloySolver(
+             name = LingelingPlugin.NAME )
 public class LingelingPlugin extends AbstractKodkodSolver {
+
+    final static String NAME = "lingeling";
 
 	public LingelingPlugin(Alloy core) {
 		super(core);
@@ -15,7 +18,7 @@ public class LingelingPlugin extends AbstractKodkodSolver {
 
 	@Override
 	public String getId() {
-		return "lingeling(jni)";
+        return NAME;
 	}
 
 	@Override
