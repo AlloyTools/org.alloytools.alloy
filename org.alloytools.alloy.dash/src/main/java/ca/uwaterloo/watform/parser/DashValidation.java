@@ -24,10 +24,12 @@ import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprBadJoin;
 import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
+
 
 /**
  * This class represents is used to check for well-formedness conditions for a
@@ -81,6 +83,13 @@ public class DashValidation {
      * validation purposes. This is accessed by Alloy.cup when parsing a signature.
      */
     static List<String>                    sigNames               = new ArrayList<String>();
+    
+    /*
+     * A list of all the signature relation names in the DASH model. This is used for
+     * validation purposes. This is accessed by Alloy.cup when parsing a signature.
+     */
+    static List<String>                    sigRelations               = new ArrayList<String>();
+    static List<Decl>                    sigDecls               	  = new ArrayList<Decl>(); // Used by the Dash.cup file to store all the Signature relations.
 
     /*
      * A list of all the func and pred names in the DASH model. This is used for
@@ -302,13 +311,13 @@ public class DashValidation {
             getVarFromUnary((ExprUnary) joinExpr.left);
         }
         if (joinExpr.left instanceof ExprBadJoin) {
-            getVarFromBadJoin((ExprBadJoin) joinExpr.right);
+            getVarFromBadJoin((ExprBadJoin) joinExpr.left);
         }
         if (joinExpr.right instanceof ExprVar) {
             checkIfVarValid((ExprVar) joinExpr.right);
         }
         if (joinExpr.right instanceof ExprUnary) {
-            getVarFromUnary((ExprUnary) joinExpr.left);
+            getVarFromUnary((ExprUnary) joinExpr.right);
         }
         if (joinExpr.right instanceof ExprBadJoin) {
             getVarFromBadJoin((ExprBadJoin) joinExpr.right);
@@ -380,9 +389,34 @@ public class DashValidation {
         	variable = variable.substring(variable.indexOf("/") + 1);
         }
         
-        //if (!declarationNames.get(concStateToCheck).contains(variable) && !eventNames.get(concStateToCheck).contains(variable) && !declarationNames.get(concStateParName).contains(variable) && !keywords.contains(variable) && !quantifierVars.contains(variable) && !sigNames.contains(variable) && !funcNames.contains(variable)) {
-            //throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
-        //}
+        if (!getAllUserVars(concStateParName, concStateToCheck).contains(variable)) {
+            throw new ErrorSyntax(var.pos, "Could not resolve reference to: " + variable);
+        }
+    }
+    
+    private static List<String> getAllUserVars (String parent, String concState) {
+    	List<String> vars = new ArrayList<String>();
+    	if (declarationNames.get(concState) != null) {
+    		vars.addAll(declarationNames.get(concState));
+    	}
+    	if (declarationNames.get(parent) != null) {
+    		vars.addAll(declarationNames.get(parent));
+    	}
+    	
+    	if (eventNames.get(concState) != null) {
+    		vars.addAll(eventNames.get(concState));
+    	}
+    	if (eventNames.get(parent) != null) {
+    		vars.addAll(eventNames.get(parent));
+    	}
+    	
+    	vars.addAll(sigRelations);
+    	vars.addAll(keywords);
+    	vars.addAll(quantifierVars);
+    	vars.addAll(sigNames);
+    	vars.addAll(funcNames);
+    	
+    	return vars;
     }
 
     /* Ensure that conc states have a default state */
@@ -466,7 +500,6 @@ public class DashValidation {
 
     /* Accessed by the DashParser */
     public static void importModule(String fileName) {
-    	System.out.println("File Name: " + fileName);
     	if(fileName.contains("/"))
     		fileName = fileName.substring(fileName.indexOf("/") + 1);
         File utilFolder = new File(DashOptions.dashModelLocation + "/util/" + fileName + ".als"); 
@@ -518,9 +551,13 @@ public class DashValidation {
                 for (Object name : event.decl.names) {
                     events.add(new DashEvent(event.pos, name.toString(), "env"));
                 }
-            } else {
+            } else if (event.type.equals("event")){
                 events.add(new DashEvent(event.pos, event.name, "event"));
             }
+            else {
+            	events.add(new DashEvent(event.pos, event.name, "env event"));
+            }
+            	
         }
 
         return events;
@@ -669,9 +706,40 @@ public class DashValidation {
                 hasSameStateName(concStateName, state.states);
                 hasSameTransName(concStateName, state.transitions);
             }
+            checkSendEvents(currentConcState);
 
             validateExprVar(dashModule.concStates.get(concStateName));
         }
+    }
+    
+    public static void checkSendEvents(DashConcState concState) {
+    	List<DashEvent> events = getEvents(concState);
+    	Map<String, String> eventNamesType = new LinkedHashMap<String, String>();
+    	List<String> eventNames = new ArrayList<String>();
+    	
+    	DashConcState currentConcState = new DashConcState(concState);
+    	while (currentConcState.parent instanceof DashConcState) {
+    		currentConcState = (DashConcState) currentConcState.parent;
+    		events.addAll(getEvents(currentConcState));
+    	}
+    	
+    	for(DashEvent evn: events) {
+    		eventNamesType.put(evn.name, evn.type);
+    	}
+    	for(DashEvent evn: events) {
+    		eventNames.add(evn.name);
+    	}
+    	
+    	for (DashTrans trans: concState.transitions) {
+    		if (trans.sendExpr != null && eventNames.contains(trans.sendExpr.name) && eventNamesType.get(trans.sendExpr.name).equals("env event"))
+    			throw new ErrorSyntax(trans.sendExpr.pos, "An environmental event cannot be generated by the user.");
+    	}
+    	for (DashState state: concState.states) {
+    		for(DashTrans trans: state.transitions) {
+    			if (trans.sendExpr != null && eventNames.contains(trans.sendExpr.name) && eventNamesType.get(trans.sendExpr.name).equals("env event"))
+    				throw new ErrorSyntax(trans.sendExpr.pos, "An environmental event cannot be generated by the user.");
+    		}
+    	}
     }
 
     public static void addExprFromConcState(DashConcState currentConcState) {
@@ -698,9 +766,18 @@ public class DashValidation {
     }
 
     public static void validateDashModel(DashModule dashModule) {
+    	getSigRelations(dashModule);
         addConcStates(dashModule);
         validateConcStates(dashModule);
         clearContainers();
+    }
+    
+    private static void getSigRelations(DashModule module) {
+    	for (Decl decl: sigDecls) {
+            for (ExprHasName name: decl.names) {
+            	sigRelations.add(name.toString());
+            }
+    	}
     }
 
     public static void clearContainers() {
@@ -718,5 +795,6 @@ public class DashValidation {
         expressions = new HashMap<String,List<Expr>>();
     }
 }
+
 
 

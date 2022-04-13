@@ -24,7 +24,7 @@ public class Dash {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        String actual = "C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\BufferOfficial1.dsh";
+        String actual = "C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\Carousel2.dsh";
         String elevator = "E:\\Alloy Specification Language\\Models\\ElevProc36.als";
         //"C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\Elevator.dsh";
         //"C:\Users\Tamjid Hossain\Desktop\Dash Models Testing\\TestModel.dsh";
@@ -58,6 +58,12 @@ public class Dash {
             DashModule dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
             DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
             DashModule alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
+            alloy = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);
+            DashModuleToString.toString(alloy);
+
+            dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
+            coreDash = DashToCoreDash.transformToCoreDash(dash);
+            alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
             alloy = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);
             DashModuleToString.toString(alloy);
             //CompModule alloy = CompUtil.parseEverything_fromFile(rep, null, elevator);

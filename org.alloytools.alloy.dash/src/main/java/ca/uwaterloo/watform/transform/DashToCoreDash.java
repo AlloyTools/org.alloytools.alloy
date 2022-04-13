@@ -174,7 +174,6 @@ public class DashToCoreDash {
     public static void addTemplateCall(DashConcState parent, DashTemplateCall templateCall, DashModule module) {
         DashTransTemplate transTemplate = module.transitionTemplates.get(templateCall.templateName);
         List<String> declNames = new ArrayList<String>();
-        int count = 0;
 
         //Each decl is an argument for a template call
         for (Decl decl : transTemplate.decls) {

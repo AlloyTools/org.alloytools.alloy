@@ -47,6 +47,9 @@ public class DashHelper {
 		if (expr instanceof ExprVar) {
 			parameterizedExpr = ExprBinary.Op.ARROW.make(null, null, ExprVar.make(null, concState.param), expr);
 		}
+		if (expr instanceof ExprBinary) {
+			parameterizedExpr = ExprBinary.Op.ARROW.make(null, null, ExprVar.make(null, concState.param), expr);
+		}
 		return concState.isParameterized ? parameterizedExpr : expr;
 	}
 	

@@ -43,7 +43,6 @@ import org.alloytools.alloy.core.AlloyCore;
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
-import ca.uwaterloo.watform.parser.DashValidation;
 import ca.uwaterloo.watform.transform.CoreDashToAlloy;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -734,7 +733,7 @@ final class SimpleReporter extends A4Reporter {
                 DashOptions.ctlModelChecking = CTLModelChecking.get();
                 DashOptions.generateTraces = GenerateTraces.get();
                 DashModule dash = DashUtil.parseEverything_fromFileDash(rep, map, options.originalFilename);
-                DashValidation.validateDashModel(dash);
+                //DashValidation.validateDashModel(dash);
                 DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
                 DashModule alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
                 world = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);

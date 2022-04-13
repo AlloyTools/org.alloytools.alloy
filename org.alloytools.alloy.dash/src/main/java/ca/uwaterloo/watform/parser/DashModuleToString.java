@@ -213,6 +213,12 @@ public class DashModuleToString {
 			out.print("seq ");
 		else if (expr.op == ExprBinary.Op.JOIN)
 			printExprBinaryJoin(expr, out);
+		else if (expr.op == ExprBinary.Op.IMPLIES) {
+			printExpr(expr.left, out);
+			out.print(" => ").print("{ ");
+			printExpr(expr.right, out);
+			out.print(" } ");
+		}
 		// This used to ensure that binary expressions have proper braces around them
 		else if(exprType(expr.right).equals(exprBinary) || exprType(expr.left).equals(exprBinary)) {	
 			if (exprType(expr.left).equals(exprBinary) && !(exprOp(expr.left) == exprOp(expr)) && !(exprOp(expr.left) == ExprBinary.Op.JOIN)){	
@@ -333,7 +339,7 @@ public class DashModuleToString {
 	private static void printExprQt(ExprQt expr, DataLayouter<NoExceptions> out) {
 		boolean first = true;
 		if (expr.op != ExprQt.Op.COMPREHENSION)
-			out.print('(').print(expr.op).print(' ').beginCInd().brk(1,0);
+			out.print('(').print(expr.op).print(' ').beginCInd();
 		else
 			out.print('{').beginCInd();
 		printDecls(expr.decls, out);
@@ -419,7 +425,7 @@ public class DashModuleToString {
 			}
 			decl.names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
 			if (!first) {
-				out.print(",").brk();
+				out.print(",");
 			}
 			first = false;
 			out.print(namesJoiner.toString());

@@ -59,8 +59,10 @@ pred remove [R: BufIdx->elem, R_next: BufIdx->elem] {
  * The lastIndex in R_next is equal to (lastIndex - 1) in R
 */
 pred removeFirst [R: BufIdx->elem, R_next: BufIdx->elem] {
-    (all i: R.inds - ord/first | R_next.at[ord/prev[i]] = R.at[i]) 
-    lastIdx[R_next] = ord/prev[lastIdx[R]] 
+    one R.inds => (no R_next.inds) else {
+	    (all i: R.inds - ord/first | R_next.at[ord/prev[i]] = R.at[i]) 
+	    lastIdx[R_next] = ord/prev[lastIdx[R]]
+    }
 }
 
 fun firstIdx: BufIdx { ord/first }

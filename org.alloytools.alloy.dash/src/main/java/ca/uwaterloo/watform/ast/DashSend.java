@@ -4,7 +4,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 
 public class DashSend {
 
-    Pos           		 pos;
+    public Pos           		 pos;
     public DashConcState parent;
     public String 		 name;
     public String 	     param;

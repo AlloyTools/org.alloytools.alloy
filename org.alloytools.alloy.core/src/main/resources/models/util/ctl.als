@@ -31,7 +31,7 @@ module util/ctl[S]
 
 //********************KRIPKE STRUCTURE DEF*************************//
 
-private one sig TS{
+one sig TS{
     S0: some S,
     sigma: S -> S,
 }
@@ -39,9 +39,9 @@ private one sig TS{
 //********************MODEL SET UP FUNCTIONS*************************//
 // set by users in their model files
 
-fun initialState: some S {TS.S0}
+fun ks_s0: some S {TS.S0}
 
-fun nextState: S -> S {TS.sigma}
+fun ks_sigma: S -> S {TS.sigma}
 
 //********************HELPER FUNCTIONS*************************//
 
