@@ -46,6 +46,8 @@ import edu.mit.csail.sdg.ast.Sig.PrimSig;
 public class CoreDashToAlloy {
 	static boolean isCreatingEnabledAfterPred = false;
 	static boolean isCreatingPreCond = false;
+	static boolean isCreatingInit = false;
+	
 	//Keep a track of when a variable has been changed during a transition
 	static Map<String, DashConcState> changedVars = new LinkedHashMap<String, DashConcState>();
 	static Map<String, DashConcState> changedQuantifiedVars = new LinkedHashMap<String, DashConcState>();
@@ -65,13 +67,17 @@ public class CoreDashToAlloy {
 	static public Map<String, Expr> paramVarRef = new LinkedHashMap <String, Expr>(); // References made to parameterized variables outside of their concurrent state
 	static public Map<String, Expr> paramVarRefQt = new LinkedHashMap <String, Expr>(); // References made to parameterized variables outside of their concurrent state in a quantified expression (that does not use any quantification
 	
-	//Buffer Helpers
-	static List<String> bufferCommands = Arrays.asList(new String[]{"add", "remove", "removeFirst"});
-	static List<String> bufferFuncCommands = Arrays.asList(new String[]{"firstElem"});
-	static boolean foundBuffer = false;
 	static Map<String, Expr> paramBuffer = new LinkedHashMap<String, Expr>();
 	static Map<String, Expr> paramBufferChanged = new LinkedHashMap<String, Expr>();
 	static Map<String, Expr> localBufferChanged = new LinkedHashMap<String, Expr>();
+	
+	//Buffer Helpers
+	static List<String> bufferCommands = Arrays.asList(new String[]{"add", "remove", "removeFirst"});
+	static List<String> bufferFuncCommands = Arrays.asList(new String[]{"firstElem"});
+	
+	// Changed parameterized buffers that are universally quantified (No need to keep this unchanged for other replicated processes since it is universally quantified for all elements in a set of Processes
+	static Map<String, Expr> universalQuantBuffers = new LinkedHashMap<String, Expr>();
+	static boolean foundBuffer = false;
  
     public static DashModule convertToAlloyAST(DashModule module) {	
     	//createCommand(module);
@@ -1223,6 +1229,7 @@ public class CoreDashToAlloy {
         Expr binaryLeft = ExprBadJoin.make(null, null, s, conf);
         Expr binaryRight = null;
         Expr expression = null;
+        isCreatingInit = true;
 
         for (DashConcState concState : module.concStates.values()) {
             if (concState.states.size() == 0) {
@@ -1263,13 +1270,14 @@ public class CoreDashToAlloy {
         for (DashInit init : module.initConditions) {
             for (Expr expr : init.exprList) {
                 Expr modifiedExpr = getVarFromParentExpr(expr, init.parent, module);
-                modifiedExpr = init.parent.isParameterized ? DashHelper.quantify("p", init.parent.param, modifiedExpr) : modifiedExpr;
+                modifiedExpr = (init.parent.isParameterized && !(modifiedExpr instanceof ExprQt))? DashHelper.quantify("p", init.parent.param, modifiedExpr) : modifiedExpr;
                 expression = ExprBinary.Op.AND.make(null, null, expression, modifiedExpr);
             }
         }
         
         a.clear();
         decls.clear();
+        isCreatingInit = false;
         a.add(s);
         decls.add(new Decl(null, null, null, null, a, mult(snapshot))); //[s: Snapshot]
         expression = ExprUnary.Op.NOOP.make(null, expression);
@@ -1716,7 +1724,7 @@ public class CoreDashToAlloy {
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "_s"), ExprVar.make(null, parent.modifiedName + '_' + var));
             	}
             	else {
-                	if (parent.isParameterized && !isRef) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
+                	if (parent.isParameterized && !isRef && !isCreatingInit) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
                 		return ExprBadJoin.make(null, null, ExprVar.make(null, "p"), ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var)));
                 	else
                 		return ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var));
@@ -1970,8 +1978,10 @@ public class CoreDashToAlloy {
     	Expr subExpr = null;
     	List<Decl> decls = new ArrayList<Decl>();
     	List<Decl> arguments = new ArrayList<>(args);
-    	arguments.addAll(exprQt.decls);
     	modifyingExprQT.add(exprQt.sub.toString());
+    	if (exprQt.op != ExprQt.Op.ALL) {
+    		arguments.addAll(exprQt.decls);
+    	}
     	
         for (Decl decl : exprQt.decls) {
         	List<ExprVar> a = new ArrayList<ExprVar>();
@@ -1983,7 +1993,6 @@ public class CoreDashToAlloy {
         }
    
         if (exprQt.sub instanceof ExprQt) {
-        	//System.out.println("QT Expr: " + (ExprQt) exprQt.sub);
         	subExpr = getVarFromExprQt((ExprQt) exprQt.sub, parent, module, arguments);
         }
         if (exprQt.sub instanceof ExprUnary) {
@@ -2006,7 +2015,7 @@ public class CoreDashToAlloy {
         changedQuantifiedVars.clear();
         modifyingExprQT.remove(0);
         paramVarRefQt.clear();
-        subExpr = createUnchangedQuantifiedBufferAST(module, subExpr);
+        subExpr = createUnchangedQuantifiedBufferAST(module, subExpr, exprQt.op);
         return createExprQt(exprQt.op, decls, subExpr);
     }
     
@@ -2060,11 +2069,14 @@ public class CoreDashToAlloy {
         }
     }
     
-    private static Expr createUnchangedQuantifiedBufferAST(DashModule module, Expr subExpr) { 	
+    private static Expr createUnchangedQuantifiedBufferAST(DashModule module, Expr subExpr, ExprQt.Op op) { 	
     	if (isCreatingPreCond) {
     		return subExpr;
     	}
     	for (String buffer: paramBufferChanged.keySet()) {
+    		if (op == ExprQt.Op.ALL) {
+    			continue;
+    		}
     		Expr param = ExprBinary.Op.MINUS.make(null, null, ExprVar.make(null, module.buffers.get(buffer).param), paramBufferChanged.get(buffer));
             Expr binaryLeft = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, buffer)));  //quant.(s_next.bufferName)
             Expr binaryRight = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, buffer))); //quant.(s.bufferName)
