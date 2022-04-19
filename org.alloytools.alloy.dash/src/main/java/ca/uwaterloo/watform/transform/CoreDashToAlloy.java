@@ -47,6 +47,7 @@ public class CoreDashToAlloy {
 	static boolean isCreatingEnabledAfterPred = false;
 	static boolean isCreatingPreCond = false;
 	static boolean isCreatingInit = false;
+	static boolean isCreatingExprQt = false;
 	
 	//Keep a track of when a variable has been changed during a transition
 	static Map<String, DashConcState> changedVars = new LinkedHashMap<String, DashConcState>();
@@ -1724,7 +1725,7 @@ public class CoreDashToAlloy {
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "_s"), ExprVar.make(null, parent.modifiedName + '_' + var));
             	}
             	else {
-                	if (parent.isParameterized && !isRef && !isCreatingInit) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
+                	if (parent.isParameterized && !isRef && !(isCreatingInit && isCreatingExprQt)) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
                 		return ExprBadJoin.make(null, null, ExprVar.make(null, "p"), ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var)));
                 	else
                 		return ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var));
@@ -1979,6 +1980,7 @@ public class CoreDashToAlloy {
     	List<Decl> decls = new ArrayList<Decl>();
     	List<Decl> arguments = new ArrayList<>(args);
     	modifyingExprQT.add(exprQt.sub.toString());
+    	isCreatingExprQt = true;
     	if (exprQt.op != ExprQt.Op.ALL) {
     		arguments.addAll(exprQt.decls);
     	}
@@ -2015,6 +2017,7 @@ public class CoreDashToAlloy {
         changedQuantifiedVars.clear();
         modifyingExprQT.remove(0);
         paramVarRefQt.clear();
+        isCreatingExprQt = false;
         subExpr = createUnchangedQuantifiedBufferAST(module, subExpr, exprQt.op);
         return createExprQt(exprQt.op, decls, subExpr);
     }
