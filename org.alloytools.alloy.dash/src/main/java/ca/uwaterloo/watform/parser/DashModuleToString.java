@@ -75,30 +75,46 @@ public class DashModuleToString {
     			out.print("abstract ");
     		if(sig.isOne != null)
     			out.print("one ");
+    		if(sig.isVariable != null)
+    			out.print("var ");
+
 
             out.print("sig ");
 			printSig(sig, out);
-			out.print(" extends ");
-			printSig(((PrimSig) sig).parent,out);
-			out.print(" {");
-    		
-    		if(sig.getFields().size() > 0) { 
-                out.beginIInd().brk();
-				boolean first = true;
-                for(Field f: sig.getFields()) {
-					StringJoiner namesJoiner = new StringJoiner(",");
-					f.decl().names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
-					if (!first) {
-						out.print(",").brk();
-					}
-					first = false;
-					out.print(namesJoiner.toString());
-                    out.print(": ");
-                    printExpr(f.decl().expr, out);
-                }
-                out.brk(1,-indent).end();
-            }
-    		out.print("}").brk();
+			// No need to print "extends" if this is a "var" signature
+			if (sig.isVariable == null) {
+				out.print(" extends ");
+				printSig(((PrimSig) sig).parent,out);
+				out.print(" {");
+				
+	    		if(sig.getFields().size() > 0) { 
+	                out.beginIInd().brk();
+					boolean first = true;
+	                for(Field f: sig.getFields()) {
+						StringJoiner namesJoiner = new StringJoiner(",");
+						f.decl().names.forEach(name -> namesJoiner.add(cleanLabel(name.label)));
+						if (!first) {
+							out.print(",").brk();
+						}
+						first = false;
+						out.print(namesJoiner.toString());
+	                    out.print(": ");
+	                    printExpr(f.decl().expr, out);
+	                }
+	                out.brk(1,-indent).end();
+	            }
+	    		out.print("}").brk();
+			} else {
+				out.print(" in ");
+				
+				System.out.println("Sig: " + sig.label + " Field Size: " + sig.getFields().size());
+	    		if(sig.getFields().size() > 0) { 
+	                for(Field f: sig.getFields()) {
+	                    printExpr(f.decl().expr, out);
+	                }
+	                out.brk();
+	            }
+			}
     	}
 		out.brk();
     }
