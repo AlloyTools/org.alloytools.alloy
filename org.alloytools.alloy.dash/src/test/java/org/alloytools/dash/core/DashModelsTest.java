@@ -17,9 +17,9 @@ import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.parser.DashValidation;
 
 public class DashModelsTest {
-    /*
+
     //Dash Parser Unit Tests
-    //@Test
+    @Test
     public void testStates() throws Exception {
         String dashModel = "conc state concState { default state topStateA { default state innerState{}} state topStateB{}}";
         DashOptions.outputDir = "test.dsh";
@@ -37,7 +37,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    //@Test
+    @Test
     public void testConcStates() throws Exception {
 
         String dashModel = "conc state topConcStateA { conc state innerConcState{  default state A {} } } conc state topConcStateB { default state B{} }";
@@ -56,8 +56,86 @@ public class DashModelsTest {
 
         DashValidation.clearContainers();
     }
+    
+    @Test
+    public void testParamConcStates() throws Exception {
 
-    //@Test
+        String dashModel = "conc state topConcStateA [PID1] { default state A {} } conc state topConcStateB [PID2] { default state B{} }";
+        DashOptions.outputDir = "test.dsh";
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+
+        if (!(module.concStates.get("topConcStateA").name.equals("topConcStateA")))
+            throw new Exception("Top level concurrent state not stored in the IDS");
+        if (!(module.concStates.get("topConcStateB").name.equals("topConcStateB")))
+            throw new Exception("Top level concurrent state not stored in the IDS");
+        
+        if (!(module.concStates.get("topConcStateA").param.equals("PID1")))
+            throw new Exception("Top level concurrent (topConcStateA) parameter not stored properly." + " Param: " + module.concStates.get("topConcStateA").param);
+        if (!(module.concStates.get("topConcStateB").param.equals("PID2")))
+            throw new Exception("Top level concurrent (topConcStateB) parameter not stored properly.");
+
+        DashValidation.clearContainers();
+    }
+
+    @Test
+    public void testVarRefs() throws Exception {
+
+        String dashModel = "conc state Parent {\n"
+        		+ "	conc state Child1 [PID1] {\n"
+        		+ "		var1: lone Int\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				goto S1\n"
+        		+ "				do {\n"
+        		+ "					one p: PID2 | Child2[p]/var2' = {none}\n"
+        		+ "				}\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "\n"
+        		+ "	conc state Child2 [PID2] {\n"
+        		+ "		var2: lone Int\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				do {\n"
+        		+ "					one p: PID1 | Child1[p]/var1' = {none}\n"
+        		+ "				}\n"
+        		+ "				goto S1\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "}\n"
+        		+ "";
+        DashOptions.outputDir = "test.dsh";
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+        
+        List<Func> funcs0 = new ArrayList<Func>();
+        List<Func> funcs1 = new ArrayList<Func>();
+        
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("pos_Parent_Child1_S0_T0"))
+                funcs0 = module.funcs.get(name);
+            if (name.equals("pos_Parent_Child2_S0_T0"))
+                funcs1 = module.funcs.get(name);
+        }
+         
+        String expectedOutput1 = "one p | AND[p.s_next.Parent_Child2_var2 = none";
+        String expectedOutput2 = "one p | AND[p.s_next.Parent_Child1_var1 = none";
+
+        if (!(funcs0.get(0).getBody().toString().contains(expectedOutput1)))
+            throw new Exception("Post-Conditions Not Stored Properly (1)." + " Expected: " + funcs0.get(0).getBody().toString());
+        if (!(funcs1.get(0).getBody().toString().contains(expectedOutput2)))
+            throw new Exception("Post-Conditions Not Stored Properly (2)." + " Expected: " + funcs1.get(0).getBody().toString());
+
+        DashValidation.clearContainers();
+    }
+   
+    @Test
     public void testTransitions() throws Exception {
 
         String dashModel = "conc state topConcStateA { event A{} trans A {on A goto B} default state B {trans B {on A}} }";
@@ -69,15 +147,15 @@ public class DashModelsTest {
             throw new Exception("Transition not stored in the IDS");
         if (!(module.transitions.get("topConcStateA_B_B").name.equals("B")))
             throw new Exception("Transition not stored in the IDS");
-        if (!(module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0).equals("topConcStateA/B")))
-            throw new Exception("Transition goto not stored in the IDS");
+        if (!(module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0).equals("topConcStateA_B")))
+            throw new Exception("Transition goto not stored in the IDS" + " Expected: " + module.transitions.get("topConcStateA_A").gotoExpr.gotoExpr.get(0));
         if (!(module.transitions.get("topConcStateA_B_B").onExpr.name.equals("topConcStateA_A")))
             throw new Exception("Transition event not stored in the IDS");
 
         DashValidation.clearContainers();
     }
 
-    //@Test
+    @Test
     public void testVarNames() throws Exception {
 
         String dashModel = "conc state concState { var_one: none->none var_two: none->none conc state innerConcState {var_three: none->none} }";
@@ -95,9 +173,8 @@ public class DashModelsTest {
     }
 
 
-
     //CoreDash Unit Tests
-    // @Test
+     @Test
     public void testCoreDashTransitions() throws Exception {
 
         String dashModel = "conc state concState { var_one: none trans {do var_one = none} trans trans_two {do var_one = none} default state state_one {trans {do var_one = none}} }";
@@ -124,7 +201,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    //@Test
+    @Test
     public void testTransitionIncompleteCommand() throws Exception {
 
         String dashModel = "conc state concState { var_one: none trans {do var_one = none} trans trans_two {do var_one = none} default state state_one {trans {do var_one = none}} }";
@@ -161,7 +238,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    //@Test
+    @Test
     public void testTransitionAllCommands() throws Exception {
 
         String dashModel = "conc state concState { var_one: none event event_one {} default state state_one {} state state_two {} trans {from state_one, state_two on event_one when var_one = none do var_one' = var_one goto state_two send event_one }}";
@@ -174,7 +251,7 @@ public class DashModelsTest {
             transitions.add(trans);
         }
 
-        if (!transitions.get(0).fromExpr.fromExpr.get(0).equals("concState/state_one"))
+        if (!transitions.get(0).fromExpr.fromExpr.get(0).equals("concState_state_one"))
             throw new Exception("Transition From Expr not stored correctly.");
         if (!transitions.get(0).onExpr.name.equals("concState_event_one"))
             throw new Exception("Transition On Expr not stored correctly.");
@@ -182,12 +259,12 @@ public class DashModelsTest {
             throw new Exception("Transition do Expr not stored correctly.");
         if (!transitions.get(0).whenExpr.exprList.get(0).toString().equals("var_one = none"))
             throw new Exception("Transition when Expr not stored correctly. Expected is: var_one = none, Actual is: " + transitions.get(0).whenExpr.exprList.get(0).toString());
-        if (!transitions.get(0).gotoExpr.gotoExpr.get(0).equals("concState/state_two"))
+        if (!transitions.get(0).gotoExpr.gotoExpr.get(0).equals("concState_state_two"))
             throw new Exception("Transition Goto Expr not stored correctly.");
         if (!transitions.get(0).sendExpr.name.equals("concState_event_one"))
             throw new Exception("Transition Send Expr not stored correctly.");
 
-        if (!transitions.get(1).fromExpr.fromExpr.get(0).equals("concState/state_two"))
+        if (!transitions.get(1).fromExpr.fromExpr.get(0).equals("concState_state_two"))
             throw new Exception("Transition From Expr not stored correctly.");
         if (!transitions.get(1).onExpr.name.equals("concState_event_one"))
             throw new Exception("Transition On Expr not stored correctly.");
@@ -195,7 +272,7 @@ public class DashModelsTest {
             throw new Exception("Transition do Expr not stored correctly.");
         if (!transitions.get(1).whenExpr.exprList.get(0).toString().equals("var_one = none"))
             throw new Exception("Transition when Expr not stored correctly. Expected is: var_one = none, Actual is: " + transitions.get(1).whenExpr.exprList.get(0).toString());
-        if (!transitions.get(1).gotoExpr.gotoExpr.get(0).equals("concState/state_two"))
+        if (!transitions.get(1).gotoExpr.gotoExpr.get(0).equals("concState_state_two"))
             throw new Exception("Transition Goto Expr not stored correctly.");
         if (!transitions.get(1).sendExpr.name.equals("concState_event_one"))
             throw new Exception("Transition Send Expr not stored correctly.");
@@ -203,7 +280,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    // @Test
+    @Test
     public void testTransitionTemplate() throws Exception {
 
         String dashModel = "conc state concState { var_one: none event event_one {} def trans template [s: State, e: Event] {from s, state_two on e when var_one = none do var_one' = var_one goto s send e} default state state_one {} state state_two {} trans{ template[state_one, event_one]} }";
@@ -216,7 +293,7 @@ public class DashModelsTest {
             transitions.add(trans);
         }
 
-        if (!transitions.get(0).fromExpr.fromExpr.get(0).equals("concState/state_one"))
+        if (!transitions.get(0).fromExpr.fromExpr.get(0).equals("concState_state_one"))
             throw new Exception("Transition From Expr not stored correctly.");
         if (!transitions.get(0).onExpr.name.equals("concState_event_one"))
             throw new Exception("Transition On Expr not stored correctly.");
@@ -224,12 +301,12 @@ public class DashModelsTest {
             throw new Exception("Transition do Expr not stored correctly.");
         if (!transitions.get(0).whenExpr.exprList.get(0).toString().equals("var_one = none"))
             throw new Exception("Transition when Expr not stored correctly.");
-        if (!transitions.get(0).gotoExpr.gotoExpr.get(0).equals("concState/state_one"))
+        if (!transitions.get(0).gotoExpr.gotoExpr.get(0).equals("concState_state_one"))
             throw new Exception("Transition Goto Expr not stored correctly.");
         if (!transitions.get(0).sendExpr.name.equals("concState_event_one"))
             throw new Exception("Transition Send Expr not stored correctly.");
 
-        if (!transitions.get(1).fromExpr.fromExpr.get(0).equals("concState/state_two"))
+        if (!transitions.get(1).fromExpr.fromExpr.get(0).equals("concState_state_two"))
             throw new Exception("Transition From Expr not stored correctly.");
         if (!transitions.get(1).onExpr.name.equals("concState_event_one"))
             throw new Exception("Transition On Expr not stored correctly.");
@@ -237,7 +314,7 @@ public class DashModelsTest {
             throw new Exception("Transition do Expr not stored correctly.");
         if (!transitions.get(1).whenExpr.exprList.get(0).toString().equals("var_one = none"))
             throw new Exception("Transition when Expr not stored correctly.");
-        if (!transitions.get(1).gotoExpr.gotoExpr.get(0).equals("concState/state_one"))
+        if (!transitions.get(1).gotoExpr.gotoExpr.get(0).equals("concState_state_one"))
             throw new Exception("Transition Goto Expr not stored correctly.");
         if (!transitions.get(1).sendExpr.name.equals("concState_event_one"))
             throw new Exception("Transition Send Expr not stored correctly.");
@@ -246,8 +323,8 @@ public class DashModelsTest {
     }
 
     //CoreDash to Alloy AST Unit Tests
-
-    //@Test
+    
+    @Test
     public void testPredicateNames() throws Exception {
 
         String dashModel = "conc state topConcStateA { event envA{} trans A {on envA goto B} default state B {trans B {on envA}} }";
@@ -279,8 +356,6 @@ public class DashModelsTest {
 
         if (!(module.funcs.keySet().contains("init")))
             throw new Exception("Init Predicate Not Stored Correctly.");
-        if (!(module.funcs.keySet().contains("operation")))
-            throw new Exception("Operation Predicate Not Stored Correctly.");
         if (!(module.funcs.keySet().contains("small_step")))
             throw new Exception("small_step Name Predicate Not Stored Correctly.");
         if (!(module.funcs.keySet().contains("equals")))
@@ -291,7 +366,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    //@Test
+    @Test
     public void testSignatureNames() throws Exception {
         String dashModel = "conc state topConcStateA { event envA{} trans A {on envA goto B} default state B {trans B {on envA}} }";
         DashOptions.outputDir = "test.dsh";
@@ -319,7 +394,7 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
-    //@Test
+    @Test
     public void testPreCondPred() throws Exception {
         String dashModel = "conc state concState { var_one: none event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
         DashOptions.outputDir = "test.dsh";
@@ -396,6 +471,186 @@ public class DashModelsTest {
 
         DashValidation.clearContainers();
     }
+    
+    @Test
+    public void testVarRefConstraints() throws Exception {
+
+        String dashModel = "conc state Parent {\n"
+        		+ "	conc state Child1 [PID1] {\n"
+        		+ "		var1: lone Int\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				goto S1\n"
+        		+ "				do {\n"
+        		+ "					var1' = {none}\n"
+        		+ "					one p: PID2 | Child2[p]/var2' = {none}\n"
+        		+ "				}\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "\n"
+        		+ "	conc state Child2 [PID2] {\n"
+        		+ "		var2: lone Int\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				do {	\n"
+        		+ "					var2' = {none}\n"
+        		+ "					one p: PID1 | Child1[p]/var1' = {none}\n"
+        		+ "				}\n"
+        		+ "				goto S1\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "}\n"
+        		+ "";
+        DashOptions.outputDir = "test.dsh";
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+        
+        List<Func> funcs0 = new ArrayList<Func>();
+        List<Func> funcs1 = new ArrayList<Func>();
+        
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("pos_Parent_Child1_S0_T0"))
+                funcs0 = module.funcs.get(name);
+            if (name.equals("pos_Parent_Child2_S0_T0"))
+                funcs1 = module.funcs.get(name);
+        }
+         
+        String expectedOutput1 = "(all quant | quant . s_next.Parent_Child2_var2 = quant . s.Parent_Child2_var2)]), (all quant | quant.s_next.Parent_Child1_var1 = quant.s.Parent_Child1_var1)";
+        String expectedOutput2 = "(all quant | quant . s_next.Parent_Child1_var1 = quant . s.Parent_Child1_var1)]), (all quant | quant.s_next.Parent_Child2_var2 = quant.s.Parent_Child2_var2)";
+
+        if (!(funcs0.get(0).getBody().toString().contains(expectedOutput1)))
+            throw new Exception("Post-Conditions Not Stored Properly (1)." + " Expected: " + funcs0.get(0).getBody().toString());
+        if (!(funcs1.get(0).getBody().toString().contains(expectedOutput2)))
+            throw new Exception("Post-Conditions Not Stored Properly (2)." + " Expected: " + funcs1.get(0).getBody().toString());
+
+        DashValidation.clearContainers();
+    }
+    
+    @Test
+    public void testBufferInPostCond() throws Exception {
+
+        String dashModel = "conc state Parent {\n"
+        		+ "	conc state Child1 [PID1] {\n"
+        		+ "		buf1: buf[PID1]\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				goto S1\n"
+        		+ "				do {\n"
+        		+ "					buf1.add[this]\n"
+        		+ "					one p: PID2 | Child2[p]/buf2.add[p]\n"
+        		+ "				}\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "\n"
+        		+ "	conc state Child2 [PID2] {\n"
+        		+ "		buf2: buf[PID2]\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				do {	\n"
+        		+ "					buf2.add[this]\n"
+        		+ "					one p: PID1 | Child1[p]/buf1.add[p]\n"
+        		+ "				}\n"
+        		+ "				goto S1\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "}\n"
+        		+ "";
+        
+        DashOptions.outputDir = "test.dsh";
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+        
+        List<Func> funcs0 = new ArrayList<Func>();
+        List<Func> funcs1 = new ArrayList<Func>();
+        
+        for (String name : module.funcs.keySet()) {
+            if (name.equals("pos_Parent_Child1_S0_T0"))
+                funcs0 = module.funcs.get(name);
+            if (name.equals("pos_Parent_Child2_S0_T0"))
+                funcs1 = module.funcs.get(name);
+        }
+         
+        String expectedOutput1 = "p.p.s_next.Parent_Child1_buf1.p.s . Parent_Child1_buf1.add, (one p | AND[p.p.s_next.Parent_Child2_buf2.p.s.Parent_Child2_buf2.add, (all quant | quant . s_next.Parent_Child2_buf2 = quant . s.Parent_Child2_buf2)]), (all quant | quant.s_next.Parent_Child1_buf1 = quant.s.Parent_Child1_buf1)";
+        String expectedOutput2 = "p.p.s_next.Parent_Child2_buf2.p.s . Parent_Child2_buf2.add, (one p | AND[p.p.s_next.Parent_Child1_buf1.p.s.Parent_Child1_buf1.add, (all quant | quant . s_next.Parent_Child1_buf1 = quant . s.Parent_Child1_buf1)]), (all quant | quant.s_next.Parent_Child2_buf2 = quant.s.Parent_Child2_buf2)";
+
+        if (!(funcs0.get(0).getBody().toString().contains(expectedOutput1)))
+            throw new Exception("Post-Conditions Not Stored Properly (1)." + " Expected: " + funcs0.get(0).getBody().toString());
+        if (!(funcs1.get(0).getBody().toString().contains(expectedOutput2)))
+            throw new Exception("Post-Conditions Not Stored Properly (2)." + " Expected: " + funcs1.get(0).getBody().toString());
+
+        DashValidation.clearContainers();
+    }
+    
+    @Test
+    public void testBufferDataStructure() throws Exception {
+
+        String dashModel = "conc state Parent {\n"
+        		+ "	conc state Child1 [PID1] {\n"
+        		+ "		buf1: buf[PID1]\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				goto S1\n"
+        		+ "				do {\n"
+        		+ "					buf1.add[this]\n"
+        		+ "					one p: PID2 | Child2[p]/buf2.add[p]\n"
+        		+ "				}\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "\n"
+        		+ "	conc state Child2 [PID2] {\n"
+        		+ "		buf2: buf[PID2]\n"
+        		+ "		default state S0 {\n"
+        		+ "			trans T0 {\n"
+        		+ "				do {	\n"
+        		+ "					buf2.add[this]\n"
+        		+ "					one p: PID1 | Child1[p]/buf1.add[p]\n"
+        		+ "				}\n"
+        		+ "				goto S1\n"
+        		+ "			}\n"
+        		+ "		}\n"
+        		+ "		state S1 {}\n"
+        		+ "	}\n"
+        		+ "}\n"
+        		+ "";
+        
+        DashOptions.outputDir = "test.dsh";
+        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
+        DashToCoreDash.transformToCoreDash(module);
+        CoreDashToAlloy.convertToAlloyAST(module);
+        
+        List<String> buffers = new ArrayList<String>();
+        List<String> bufferElems = new ArrayList<String>();
+        
+        for (String name : module.bufferNameToElem.keySet()) {
+        	buffers.add(name);
+        	bufferElems.add(module.bufferNameToElem.get(name));
+        }
+         
+        if (!(buffers.get(0).equals("Parent_Child1_buf1")))
+            throw new Exception("Buffer Not Stored Properly." + " Expected: " + buffers.get(0));
+        if (!(buffers.get(1).equals("Parent_Child2_buf2")))
+            throw new Exception("Buffer Not Stored Properly." + " Expected: " + buffers.get(0));
+        if (!(bufferElems.get(0).equals("PID1")))
+            throw new Exception("Buffer Element Not Stored Properly." + " Expected: " + buffers.get(0));
+        if (!(bufferElems.get(1).equals("PID2")))
+            throw new Exception("Buffer Element Not Stored Properly." + " Expected: " + buffers.get(0));
+        
+        
+        DashValidation.clearContainers();
+    }
+    
     
     @Test
     public void testEnabledAfterNextStep() throws Exception {
@@ -524,56 +779,6 @@ public class DashModelsTest {
     }
 
     @Test
-    public void testOperationPred() throws Exception {
-        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
-        DashOptions.outputDir = "test.dsh";
-
-        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
-        DashToCoreDash.transformToCoreDash(module);
-        DashValidation.validateDashModel(module);
-        CoreDashToAlloy.convertToAlloyAST(module);
-
-        List<Func> funcs = new ArrayList<Func>();
-
-        for (String name : module.funcs.keySet()) {
-            if (name.equals("operation"))
-                funcs = module.funcs.get(name);
-        }
-
-        String expectedOutput = "s_next.s.concState_A";
-
-        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
-            throw new Exception("Operation Predicate Not Stored Properly.");
-
-        DashValidation.clearContainers();
-    }
-
-    @Test
-    public void testSmallStepPred() throws Exception {
-        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
-        DashOptions.outputDir = "test.dsh";
-
-        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
-        DashToCoreDash.transformToCoreDash(module);
-        DashValidation.validateDashModel(module);
-        CoreDashToAlloy.convertToAlloyAST(module);
-
-        List<Func> funcs = new ArrayList<Func>();
-
-        for (String name : module.funcs.keySet()) {
-            if (name.equals("small_step"))
-                funcs = module.funcs.get(name);
-        }
-
-        String expectedOutput = "s_next.s.operation";
-
-        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
-            throw new Exception("Operation Predicate Not Stored Properly.");
-
-        DashValidation.clearContainers();
-    }
-
-    @Test
     public void testEqualsPred() throws Exception {
         String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
         DashOptions.outputDir = "test.dsh";
@@ -598,68 +803,48 @@ public class DashModelsTest {
         DashValidation.clearContainers();
     }
 
+
     @Test
-    public void testPathPred() throws Exception {
+    public void testModelFactTraces() throws Exception {
         String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
         DashOptions.outputDir = "test.dsh";
 
+        DashOptions.ctlModelChecking = false;
+        DashOptions.generateTraces = true;
         DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
         DashToCoreDash.transformToCoreDash(module);
         DashValidation.validateDashModel(module);
         CoreDashToAlloy.convertToAlloyAST(module);
 
-        List<Func> funcs = new ArrayList<Func>();
+        String expectedOutput = "AND[snapshot/first.init, (all s | ! s in snapshot/last => s . next.s.small_step)]";
 
-        for (String name : module.funcs.keySet()) {
-            if (name.equals("path"))
-                funcs = module.funcs.get(name);
-        }
-
-        String expectedOutput = "AND[(all s,s_next | s_next.s.operation), first.init]";
-
-        if (!expectedOutput.equals(funcs.get(0).getBody().toString()))
-            throw new Exception("Path Predicate Not Stored Properly.");
-
-        DashValidation.clearContainers();
-    }
-
-    @Test
-    public void testModelFact() throws Exception {
-        String dashModel = "conc state concState { var_one: some EventLabel event envA {} trans A {from stateA on envA when var_one = none} default state stateA {}}";
-        DashOptions.outputDir = "test.dsh";
-
-        DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
-        DashToCoreDash.transformToCoreDash(module);
-        DashValidation.validateDashModel(module);
-        CoreDashToAlloy.convertToAlloyAST(module);
-
-        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s_next | s -> s_next in nextStep <=> s_next.s.small_step), (all s,s_next | s_next.s.equals => s = s_next), path]";
-
-        if (!expectedOutput.equals(module.facts.get(0).b.toString()))
-            throw new Exception("Fact Not Stored Properly.");
+        if (!expectedOutput.equals(module.facts.get(1).b.toString()))
+            throw new Exception("Fact Not Stored Properly." + " Actual: " + module.facts.get(1).b.toString());
 
         DashValidation.clearContainers();
     }
     
     @Test
-    public void testModelFactWithHierarchy() throws Exception {
+    public void testModelFactCTL() throws Exception {
         String dashModel = "conc state concState { var_one: one EventLabel event envA {} conc state inner{ default state stateA{} trans A {from stateA on envA when var_one = none}  trans B {from stateA on envA do var_one' = none} } }";
         DashOptions.outputDir = "test.dsh";
 
+        DashOptions.ctlModelChecking = true;
+        DashOptions.generateTraces = false;
+        
         DashModule module = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
         DashToCoreDash.transformToCoreDash(module);
         DashValidation.validateDashModel(module);
         CoreDashToAlloy.convertToAlloyAST(module);
 
-        String expectedOutput = "AND[(all s | s in initial <=> s.init), (all s,s_next | s -> s_next in nextStep <=> s_next.s.small_step), (all s,s_next | s_next.s.equals => s = s_next), (all s | AND[s.isEnabled, (no s_next | s_next.s.small_step)] => s.stable = False), (all s | s.stable = False => some s.nextStep), path]";
+        String expectedOutput = "AND[(all s | s in ks_s0 <=> s.init), (all s,s_next | s -> s_next in ks_sigma <=> s_next.s.small_step)]";
 
         System.out.println("Actual  : " + module.facts.get(0).b.toString());
         System.out.println("Expected: " + expectedOutput);
         
-        if (!expectedOutput.equals(module.facts.get(0).b.toString()))
-            throw new Exception("Fact Not Stored Properly.");
+        if (!expectedOutput.equals(module.facts.get(2).b.toString()))
+        	throw new Exception("Fact Not Stored Properly." + " Actual: " + module.facts.get(2).b.toString());
 
         DashValidation.clearContainers();
     }
-    */
 }
