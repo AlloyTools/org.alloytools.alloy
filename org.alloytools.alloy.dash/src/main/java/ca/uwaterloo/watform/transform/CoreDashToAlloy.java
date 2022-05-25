@@ -23,6 +23,7 @@ import ca.uwaterloo.watform.ast.DashInit;
 import ca.uwaterloo.watform.ast.DashInvariant;
 import ca.uwaterloo.watform.ast.DashState;
 import ca.uwaterloo.watform.ast.DashTrans;
+import ca.uwaterloo.watform.parser.DashChangedVars;
 import ca.uwaterloo.watform.parser.DashHelper;
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashOptions;
@@ -45,39 +46,44 @@ public class CoreDashToAlloy {
 	static boolean isCreatingEnabledAfterPred = false;
 	static boolean isCreatingPreCond = false;
 	static boolean isCreatingInit = false;
+	static boolean isCreatingInvariant = false;
 	static boolean isCreatingExprQt = false;
 	
-	//Keep a track of when a variable has been changed during a transition
+	static Map<String, DashChangedVars> changedExprQtVars = new LinkedHashMap<String, DashChangedVars>(); // Variables referenced using a quantifier [i.e. all p | ProcessID | Process[p]/var' = expr]
+	static Map<String, DashChangedVars> changedVarByReference = new LinkedHashMap<String, DashChangedVars>();
+	static List<Decl> exprQtDecls = new ArrayList<Decl>(); // All the Decls in an ExprQt (including nested ExprQts)
+	
+	// Keep a track of when a variable has been changed during a transition
 	static Map<String, DashConcState> changedVars = new LinkedHashMap<String, DashConcState>();
 	static Map<String, DashConcState> changedQuantifiedVars = new LinkedHashMap<String, DashConcState>();
 	static Map<String, DashConcState> changedBinaryVars = new LinkedHashMap<String, DashConcState>();
 	static Map<String, DashConcState> changedUnaryVars = new LinkedHashMap<String, DashConcState>();
+	static boolean legalConstraint = false;
 	static boolean changingVar = false;
 	static boolean refParamChanged = false;
 	
-	//Keep a track of the type of expression being modified
+	// Keep a track of the type of expression being modified
 	static List<String> modifyingExprQT = new ArrayList<String>();
 	static boolean modifyingExprBinary = false;
 	static boolean modifyingExprUnary = false;
-	static String currentTrans;
 	static List<Decl> quantifiedExprDecls = new ArrayList<Decl>(); // Keep a track of the decls in the current quantified expression being chekced i.e all i: sig1, j: sig2 | ... where (i: sig1 and j: sig2 are the Decls)
 	
-	//Keep a track of a parameterized variable being changed
-	static public Map<String, Expr> paramVarRef = new LinkedHashMap <String, Expr>(); // References made to parameterized variables outside of their concurrent state
-	static public Map<String, Expr> paramVarRefQt = new LinkedHashMap <String, Expr>(); // References made to parameterized variables outside of their concurrent state in a quantified expression (that does not use any quantification
+	// Keep a track of a parameterized variable being changed
+	static public Map<String, Expr> paramVarRef = new LinkedHashMap <String, Expr>(); // References made to parameterized variables outside of their concurrent state  (that does not use any quantification)
+	static public Map<String, Expr> paramVarRefQt = new LinkedHashMap <String, Expr>(); // References made to parameterized variables outside of their concurrent state in a quantified expression (that does not use any quantification)
 	
 	static Map<String, Expr> paramBuffer = new LinkedHashMap<String, Expr>();
 	static Map<String, Expr> paramBufferChanged = new LinkedHashMap<String, Expr>();
 	static Map<String, Expr> localBufferChanged = new LinkedHashMap<String, Expr>();
 	
-	//Buffer Helpers
+	// Buffer Helpers
 	static List<String> bufferCommands = Arrays.asList(new String[]{"add", "remove", "removeFirst"});
 	static List<String> bufferFuncCommands = Arrays.asList(new String[]{"firstElem"});
 	
 	// Changed parameterized buffers that are universally quantified (No need to keep this unchanged for other replicated processes since it is universally quantified for all elements in a set of Processes
 	static Map<String, Expr> universalQuantBuffers = new LinkedHashMap<String, Expr>();
 	static boolean foundBuffer = false;
- 
+
     public static DashModule convertToAlloyAST(DashModule module) {	
     	convertCommand(module);
     	//createElectrumVars(module);
@@ -137,7 +143,7 @@ public class CoreDashToAlloy {
         
         for (String variableName : module.variable2Expression.keySet()) {
             Expr b = module.variable2Expression.get(variableName);
-            System.out.println("Sig: " + variableName + " Expr: " + b);
+            //System.out.println("Sig: " + variableName + " Expr: " + b);
             b = DashHelper.createParameterizedSnapshotVar(variableName, b, module);
             a.add(ExprVar.make(null, variableName));
             decls.add(new Decl(null, null, null, null, a, convertToExprUnary(b)));
@@ -527,8 +533,7 @@ public class CoreDashToAlloy {
         		Expr source = ExprVar.make(null, fromExprStr);
         		if (transition.parentConcState.isParameterized) source = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "p"), source);
         		binaryFrom = ExprBinary.Op.IN.make(null, null, source, mult(right));
-        	}
-        	
+        	}	
         }
 
         expression = binaryFrom;
@@ -559,7 +564,6 @@ public class CoreDashToAlloy {
      */
     private static void createPostConditionAST(DashTrans transition, DashModule module) {
     	System.out.println("\nTransition: " + transition.modifiedName);
-    	currentTrans = transition.modifiedName;
         Expr sStable = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "stable"));
         Expr sPrimeStable = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, "stable"));
         Expr sEvents = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "events"));
@@ -610,38 +614,38 @@ public class CoreDashToAlloy {
             //These are the variables that have not been changed in the post-cond and they need to retain their values in the next snapshot
             Map<String, DashConcState> unchangedVars = new LinkedHashMap<String, DashConcState>(getUnchangedVars(transition.doExpr.exprList, module));
             for (String var : unchangedVars.keySet()) {
-            	System.out.println("Changing: " + var);
+            	//System.out.println("Changing: " + var);
                 expression = ExprBinary.Op.AND.make(null, null, expression, createUnchangedVariableAST(var, unchangedVars.get(var), parent));
             }
             // If we refer to a variable in a different replicated component and change it, we need to ensure this variable remains the same for the remaining components
-            // E.g. 
+            // E.g. ConcState[ref]/variable' = Expr
+            expression = constrainVarsChangedByReference(expression);
+            /*
             for (String var: paramVarRef.keySet()) {
             	expression = ExprBinary.Op.AND.make(null, null, expression, constrainChangedRefParamVar(var, changedVars.get(var), paramVarRef.get(var)));
             	System.out.println("Expr: " + constrainChangedRefParamVar(var.toString(), changedVars.get(var), paramVarRef.get(var)));
             }
+            */
             for (String var: localBufferChanged.keySet()) {
             	expression = ExprBinary.Op.AND.make(null, null, expression, constrainChangedBuffer(var, changedVars.get(var), localBufferChanged.get(var)));
-            	System.out.println("Buffer: " + var + " Parent: " + changedVars.get(var).param + " Ref: " + localBufferChanged.get(var));
+            	//System.out.println("Buffer: " + var + " Parent: " + changedVars.get(var).param + " Ref: " + localBufferChanged.get(var));
             }
             //If we have changed a var in this replicated conc state, we need to ensure that the remaining replicated conc states do not change this var
             if (transition.parentConcState.isParameterized) {
 	            for (String var : changedBinaryVars.keySet()) {
 	            	if(changedBinaryVars.get(var).modifiedName.equals(transition.parentConcState.modifiedName)) {
-	                	System.out.println("Changing2: " + var);
+	                	//System.out.println("Changing2: " + var);
 	            		expression = ExprBinary.Op.AND.make(null, null, expression, constrainChangedParamVar(var, changedBinaryVars.get(var)));
+	            		//System.out.println("Expression: " + constrainChangedParamVar(var, changedBinaryVars.get(var)));
 	            	}
 	            }
 	            for (String var : changedUnaryVars.keySet()) {
 	            	if(changedUnaryVars.get(var).modifiedName.equals(transition.parentConcState.modifiedName)) 
-	                	System.out.println("Changing3: " + var);
+	                	//System.out.println("Changing3: " + var);
 	            		expression = ExprBinary.Op.AND.make(null, null, expression, constrainChangedParamVar(var, changedUnaryVars.get(var)));
 	            }
             }
-            paramVarRef.clear();
-            changedBinaryVars.clear();
-            changedUnaryVars.clear();
-            localBufferChanged.clear();
-            changedVars.clear();
+            clearVarChangeContainers();
         }
         
         /* Creating the following expression(s): s_next.variable = s.variable */
@@ -850,6 +854,14 @@ public class CoreDashToAlloy {
         	addParameterizedPredicateAST(module, "pos_" + transition.modifiedName, "s", "s_next", null, null, transition.parentConcState.param, expression);
         else
         	addPredicateAST(module, "pos_" + transition.modifiedName, "s", "s_next", null, null, expression);
+    }
+    
+    private static void clearVarChangeContainers() {
+        paramVarRef.clear();
+        changedBinaryVars.clear();
+        changedUnaryVars.clear();
+        localBufferChanged.clear();
+        changedVars.clear();
     }
     
     /****************************************** SEMANTICS PREDICATE ***************************************/
@@ -1376,6 +1388,7 @@ public class CoreDashToAlloy {
     
     /*************************** PARAMETERIZED CONSTRAINTS*****************************/
     
+    // Creates the "constraints" fact to ensure that each replicated component has its own unique event, transition and state label
     private static void createParamConstFactAST(DashModule module) {
         Expr finalExpr = null;
     	
@@ -1554,34 +1567,36 @@ public class CoreDashToAlloy {
     
     /*************************************** KEEPING VARIABLES UNCHANGED ***************************************/
     
-    /* If we change the value of a variable in a process using a Quantified Expression, we need to ensure that the value of this variable
-     * remains unchanged for the other process 
-     */
-    private static Expr createUnchangedQTVarAST(Expr subExpr, List<Decl> qtDecls, DashConcState parent) { 	
-    	// For variables changed that reference a quantified process id i.e  one p: PID | Process[p]/var' = p
-    	for (String var: changedQuantifiedVars.keySet()) {
-    		if (!changedQuantifiedVars.get(var).isParameterized) continue;
-    		
-    		System.out.println("Quantifying: " + var + " Var Parent: " + changedQuantifiedVars.get(var).modifiedName + " Trans Parent: " + parent.modifiedName);
-    		List<String> declNames = new ArrayList<String>();
-    		String paramName = changedQuantifiedVars.get(var).param;
+    private static Expr constrainChangedQuantifiedVar (Expr subExpr, DashConcState parent, DashModule module) {
+    	for (String var: changedExprQtVars.keySet()) {		
+    		List<String> quantifiers = new ArrayList<String>();
+    		String paramName = changedExprQtVars.get(var).getParam();
             Expr binaryLeft = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)));  //p.(s_next.variableParent_varName)
             Expr binaryRight = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var))); //s_next.variableParent_varName
             Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
-            
-        	for (Decl decl: qtDecls) {
+    		
+        	for (Decl decl: exprQtDecls) {
+        		String varName = parent.modifiedName + '_' + decl.expr;
         		if (decl.expr.toString().contains(paramName)) {
                 	for(ExprHasName name: decl.names) 
-                		declNames.add(name.toString());
+                		quantifiers.add(name.toString());
+        		}
+        		else if (module.variable2Expression.containsKey(varName)) {
+        			Expr quantExpr =  module.variable2Expression.get(varName);
+        			String quantType = quantExpr instanceof ExprUnary ? ((ExprUnary) quantExpr).sub.toString() : "";
+        			if (changedExprQtVars.get(var).getParam().equals(quantType)) {
+                    	for(ExprHasName name: decl.names) 
+                    		quantifiers.add(name.toString());
+        			}
         		}
         	}
-
-            Expr param = ExprVar.make(null, changedQuantifiedVars.get(var).param);
-        	if (declNames.isEmpty()) { // A variable in the current parameterized concurrent state is changed
-        		param = ExprBinary.Op.MINUS.make(null, null, param, ExprVar.make(null, "p"));
+        	
+            Expr param = ExprVar.make(null, paramName);
+        	if (quantifiers.isEmpty()) { // A variable in the current parameterized concurrent state is changed
+        		continue;
         	}
         	
-        	for(String declName: declNames) {
+        	for(String declName: quantifiers) {
         		param = ExprBinary.Op.MINUS.make(null, null, param, ExprVar.make(null, declName.toString()));
         	}
             
@@ -1590,26 +1605,34 @@ public class CoreDashToAlloy {
             List<ExprVar> a = new ArrayList<ExprVar>(Arrays.asList(q)); //[s]
             decls.add(new Decl(null, null, null, null, a, mult(param))); //p: param
             Expr expr = ExprQt.Op.ALL.make(null, null, decls, binaryEquals);
+            //System.out.println("Adding: " + expr);
             subExpr = ExprBinary.Op.AND.make(null, null, subExpr, expr);
     	}
-    	
-    	// For variables changed inside a quantification that references another process but that is not a quantified id i.e  one p: PID1 | Process1[p]/var' = p and Proces2[PID/first]/var' = p 
-    	for (String var: paramVarRefQt.keySet()) {
-    		String paramName = changedVars.get(var).param;
-    		System.out.println("Quantifying2: " + var + "Var Parent: " + changedVars.get(var).modifiedName + " Trans Parent: " + parent.modifiedName);
+    	return subExpr;
+    }
+    
+    private static Expr constrainVarsChangedByReference(Expr subExpr) {
+    	for (String var: changedVarByReference.keySet()) {		
+    		String paramName = changedVarByReference.get(var).getParam();
             Expr binaryLeft = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)));  //p.(s_next.variableParent_varName)
             Expr binaryRight = ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "quant"), ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var))); //s_next.variableParent_varName
             Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
+    		
+            Expr param = ExprVar.make(null, paramName);
+        	
+        	for(Expr ref: changedVarByReference.get(var).getReferences()) {
+        		param = ExprBinary.Op.MINUS.make(null, null, param, ref);
+        	}
             
-            Expr param = ExprBinary.Op.MINUS.make(null, null, ExprVar.make(null, paramName), paramVarRefQt.get(var));
             List<Decl> decls = new ArrayList<Decl>();
             ExprVar q = ExprVar.make(null, "quant");
             List<ExprVar> a = new ArrayList<ExprVar>(Arrays.asList(q)); //[s]
             decls.add(new Decl(null, null, null, null, a, mult(param))); //p: param
             Expr expr = ExprQt.Op.ALL.make(null, null, decls, binaryEquals);
-            System.out.println("Adding: " + expr);
+            //System.out.println("Ref SubExpr: " + expr);
             subExpr = ExprBinary.Op.AND.make(null, null, subExpr, expr);
     	}
+    	changedVarByReference.clear();
     	return subExpr;
     }
    
@@ -1646,25 +1669,6 @@ public class CoreDashToAlloy {
         Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
         
         return ExprQt.Op.ALL.make(null, null, decls, binaryEquals);
-    }
-    
-    private static Expr constrainChangedRefParamVar(String var, DashConcState varParent, Expr ref) {
-    	System.out.println("REF: " + ref);
-        List<Decl> decls = new ArrayList<Decl>();
-        List<ExprVar> a = new ArrayList<ExprVar>();
-        Expr param = ExprBinary.Op.MINUS.make(null, null, ExprVar.make(null, varParent.param), ref); // param - ref
-        Expr quant = ExprVar.make(null, "quant");
-        a.add((ExprVar) quant);
-        decls.add(new Decl(null, null, null, null, a, mult(param))); //quant: param - ref
-        
-
-        Expr binaryLeft = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, var)); 
-        binaryLeft = ExprBadJoin.make(null, null, quant, binaryLeft); //quant.(s_next).var
-        Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //quant.(s_next).var
-        binaryRight = ExprBadJoin.make(null, null, quant, binaryRight);
-        Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
-        
-        return ExprQt.Op.ALL.make(null, null, decls, binaryEquals); //all quant: Param - Ref | quant.var' = quant.var
     }
     
     /*
@@ -1706,7 +1710,7 @@ public class CoreDashToAlloy {
     				concState = new DashConcState(state);
     		}
     		expression = ExprVar.make(null, expr.toString().substring(expr.toString().indexOf("/") + 1));  
-    		System.out.println("Reference Expression: " + expression + " Full Expression: " + expr.toString());
+    		//System.out.println("Reference Expression: " + expression + " Full Expression: " + expr.toString());
     		return modifyExprWithVar(expression, concState, module, true);
     	} 
     	
@@ -1738,11 +1742,19 @@ public class CoreDashToAlloy {
         for (String var : exprList) {
             if (expr.toString().equals(var + "'")) {
             	if (changingVar){
-            		System.out.println("Var: " + var + " ExprUnary? " + modifyingExprUnary);
+            		//System.out.println("Var: " + var + " ExprUnary? " + modifyingExprUnary);
+            		String modifiedVarName = parent.modifiedName + '_' + var;
 	            	changedVars.put(parent.modifiedName + '_' + var, parent); // Since the variable is primed, we add it to our list of changed variables
-	            	if (modifyingExprQT.size() > 0) (changedQuantifiedVars).put(parent.modifiedName + '_' + var, parent); 
-	            	if (modifyingExprBinary && modifyingExprQT.size() == 0) (changedBinaryVars).put(parent.modifiedName + '_' + var, parent); 
-	            	if (modifyingExprUnary && modifyingExprQT.size() == 0) (changedUnaryVars).put(parent.modifiedName + '_' + var, parent); 
+	            	if (modifyingExprQT.size() > 0 && parent.isParameterized) {
+	            		(changedExprQtVars).put(modifiedVarName, new DashChangedVars(modifiedVarName, parent.isParameterized ? parent.param : null));
+	            		//(changedQuantifiedVars).put(parent.modifiedName + '_' + var, parent); 
+	            	}
+	            	if (modifyingExprBinary && modifyingExprQT.size() == 0 && !isRef) {
+	            		(changedBinaryVars).put(modifiedVarName, parent); 
+	            	}
+	            	if (modifyingExprUnary && modifyingExprQT.size() == 0 && !isRef) {
+	            		(changedUnaryVars).put(modifiedVarName, parent); 
+	            	}
             	}
             	if (parent.isParameterized && !isRef) { // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "p"), ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, parent.modifiedName + '_' + var)));
@@ -1757,7 +1769,7 @@ public class CoreDashToAlloy {
             		return ExprBadJoin.make(null, null, ExprVar.make(null, "_s"), ExprVar.make(null, parent.modifiedName + '_' + var));
             	}
             	else {
-                	if (parent.isParameterized && !isRef && !(isCreatingInit && isCreatingExprQt)) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
+                	if (parent.isParameterized && !isRef && !(isCreatingInit && isCreatingExprQt) && !(isCreatingInvariant)) // No need to DotJoin the "p" expr if it is a reference to another parameterized concurrent state
                 		return ExprBadJoin.make(null, null, ExprVar.make(null, "p"), ExprBinary.Op.JOIN.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var)));
                 	else
                 		return ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, parent.modifiedName + '_' + var));
@@ -1777,7 +1789,7 @@ public class CoreDashToAlloy {
 
         if (parentExpr instanceof ExprUnary) {
             ExprUnary unary = (ExprUnary) parentExpr;
-            return getVarFromUnary(unary, parent, module);
+            return getVarFromUnary(unary, parent, module, false);
         }
         
         if (parentExpr instanceof ExprBadJoin) {
@@ -1785,7 +1797,7 @@ public class CoreDashToAlloy {
         }
 
         if (parentExpr instanceof ExprQt) {
-            return getVarFromExprQt((ExprQt) parentExpr, parent, module, new ArrayList<Decl>());
+            return getVarFromExprQt((ExprQt) parentExpr, parent, module, new ArrayList<Decl>(), false);
         }
 
         if (parentExpr instanceof ExprVar) {
@@ -1793,7 +1805,7 @@ public class CoreDashToAlloy {
         }
         
         if (parentExpr instanceof ExprList) {
-        	return getVarFromExprList((ExprList) parentExpr, parent, module);
+        	return getVarFromExprList((ExprList) parentExpr, parent, module, false);
         }
         
         if (parentExpr instanceof ExprConstant) {
@@ -1812,7 +1824,7 @@ public class CoreDashToAlloy {
     	Expr left = null, right = null;
         if (binary.left instanceof ExprUnary) {
             ExprUnary unary = (ExprUnary) binary.left;
-            left = getVarFromUnary(unary, parent, module);
+            left = getVarFromUnary(unary, parent, module, false);
         }
         if (binary.left instanceof ExprVar) {
         	changingVar = (binary.op == ExprBinary.Op.EQUALS) ? true : false; // If the expression is ExprVar = Expression, then it is possible that a variable is being changed (if it is primed)
@@ -1828,16 +1840,21 @@ public class CoreDashToAlloy {
             changingVar = false;
         }       
         if (binary.left instanceof ExprList) {
-        	left = getVarFromExprList((ExprList) binary.left, parent, module);
+        	left = getVarFromExprList((ExprList) binary.left, parent, module, false);
         }
         if (binary.left instanceof ExprConstant) {
         	left = binary.left;
         }
-       
+        if (binary.left instanceof ExprList) {
+        	left = getVarFromExprList((ExprList) binary.left, parent, module, false);
+        }
+        if (binary.left instanceof ExprQt) {
+        	left = getVarFromExprQt((ExprQt) binary.left, parent, module, new ArrayList<Decl>(), false);
+        }
 
         if (binary.right instanceof ExprUnary) {
             ExprUnary unary = (ExprUnary) binary.right;
-            right = getVarFromUnary(unary, parent, module);
+            right = getVarFromUnary(unary, parent, module, false);
         }
         if (binary.right instanceof ExprVar) {
         	changingVar = binary.op == ExprBinary.Op.IN ? true : false; // If the expression is (Expression in var'), then it is possible that a variable (var) is being changed (if it is primed i.e var')
@@ -1853,12 +1870,19 @@ public class CoreDashToAlloy {
             changingVar = false;
         }
         if (binary.right instanceof ExprList) {
-        	right = getVarFromExprList((ExprList) binary.right, parent, module);
+        	right = getVarFromExprList((ExprList) binary.right, parent, module, false);
         }
         if (binary.right instanceof ExprConstant) {
         	right = binary.right;
         }
+        if (binary.right instanceof ExprList) {
+        	right = getVarFromExprList((ExprList) binary.right, parent, module, false);
+        }
+        if (binary.right instanceof ExprQt) {
+        	right = getVarFromExprQt((ExprQt) binary.right, parent, module, new ArrayList<Decl>(), false);
+        }
         
+        //System.out.println("Right Type: " + right.getClass().getCanonicalName());
         modifyingExprBinary = false;
         return createBinaryExpr(binary.op, left, right);
     }
@@ -1867,8 +1891,9 @@ public class CoreDashToAlloy {
      * Breakdown a unary expression into its subcomponents Example of an unary
      * expression: one varible
      */
-    private static ExprUnary getVarFromUnary(ExprUnary unary, DashConcState parent, DashModule module) {
+    private static ExprUnary getVarFromUnary(ExprUnary unary, DashConcState parent, DashModule module, boolean inNestedQuant) {
     	Expr sub = null;
+    	//System.out.println("Expr Type: " + unary.sub.getClass().getCanonicalName() + " Nested?: " + inNestedQuant);
         if (unary.sub instanceof ExprVar) {
         	modifyingExprUnary = true;
         	changingVar = true;
@@ -1877,7 +1902,7 @@ public class CoreDashToAlloy {
             modifyingExprUnary = false;
         }
         if (unary.sub instanceof ExprUnary) {
-            sub = getVarFromUnary((ExprUnary) unary.sub, parent, module);
+            sub = getVarFromUnary((ExprUnary) unary.sub, parent, module, inNestedQuant);
         }
         if (unary.sub instanceof ExprBadJoin) {
             sub = getVarFromBadJoin((ExprBadJoin) unary.sub, parent, module);
@@ -1886,10 +1911,10 @@ public class CoreDashToAlloy {
             sub = getVarFromBinary((ExprBinary) unary.sub, parent, module);
         }
         if (unary.sub instanceof ExprList) {
-        	sub = getVarFromExprList((ExprList) unary.sub, parent, module);
+        	sub = getVarFromExprList((ExprList) unary.sub, parent, module, inNestedQuant);
         }
         if (unary.sub instanceof ExprQt) {
-        	sub = getVarFromExprQt((ExprQt) unary.sub, parent, module, new ArrayList<Decl>());
+        	sub = getVarFromExprQt((ExprQt) unary.sub, parent, module, new ArrayList<Decl>(), inNestedQuant);
         }
         if (unary.sub instanceof ExprConstant) {
         	sub = unary.sub;
@@ -1904,12 +1929,11 @@ public class CoreDashToAlloy {
      */
     private static ExprBadJoin getVarFromBadJoin(ExprBadJoin joinExpr, DashConcState parent, DashModule module) {
     	Expr left = null, right = null;
-        //System.out.println("Pre Left: " + joinExpr.left + " Pre Right: " + joinExpr.right);
         if (joinExpr.left instanceof ExprVar) {
             left = modifyExprWithVar(joinExpr.left, parent, module, false);
         }
         if (joinExpr.left instanceof ExprUnary) {
-            left = getVarFromUnary((ExprUnary) joinExpr.left, parent, module);
+            left = getVarFromUnary((ExprUnary) joinExpr.left, parent, module, false);
         }
         if (joinExpr.left instanceof ExprBadJoin) {
             left = getVarFromBadJoin((ExprBadJoin) joinExpr.left, parent, module);
@@ -1918,7 +1942,7 @@ public class CoreDashToAlloy {
         	left = getVarFromBinary((ExprBinary) joinExpr.left, parent, module);
         }
         if (joinExpr.left instanceof ExprList) {
-        	left = getVarFromExprList((ExprList) joinExpr.left, parent, module);
+        	left = getVarFromExprList((ExprList) joinExpr.left, parent, module, false);
         }
         if (joinExpr.left instanceof ExprConstant) {
         	left = joinExpr.left;
@@ -1928,7 +1952,7 @@ public class CoreDashToAlloy {
             right = modifyExprWithVar(joinExpr.right, parent, module, false);
         }
         if (joinExpr.right instanceof ExprUnary) {
-            right = getVarFromUnary((ExprUnary) joinExpr.right, parent, module);
+            right = getVarFromUnary((ExprUnary) joinExpr.right, parent, module, false);
         }
         if (joinExpr.right instanceof ExprBadJoin) {
             right = getVarFromBadJoin((ExprBadJoin) joinExpr.right, parent, module);
@@ -1937,16 +1961,26 @@ public class CoreDashToAlloy {
         	right = getVarFromBinary((ExprBinary) joinExpr.right, parent, module);
         }
         if (joinExpr.right instanceof ExprList) {
-        	right = getVarFromExprList((ExprList) joinExpr.right, parent, module);
+        	right = getVarFromExprList((ExprList) joinExpr.right, parent, module, false);
         }
         if (joinExpr.right instanceof ExprConstant) {
         	right = joinExpr.right;
         }  
         
-        if (refParamChanged == true) {
+        manageBufferCall(left, right, module, parent);
+        
+        if (refParamChanged) {
         	if (right instanceof ExprBadJoin && left instanceof ExprBadJoin) {
         		Expr rightRight = ((ExprBadJoin) right).right;
-            	System.out.println("Right: " + right + "RightRight: " + rightRight + " Left: " + left + " Count: " + modifyingExprQT.size());
+            	//System.out.println("Right: " + right + "RightRight: " + rightRight + " Left: " + left + " Count: " + modifyingExprQT.size());
+            	String var = rightRight.toString();
+            	if (changedVarByReference.containsKey(var)) {
+            		changedVarByReference.get(var).addReference(left);
+            	}
+            	else {
+            		changedVarByReference.put(var, new DashChangedVars(var, parent.isParameterized ? parent.param : null, left));
+            	}
+            	          	
         		if (modifyingExprQT.size() > 0) {
         			paramVarRefQt.put(rightRight.toString(), left);
         		}
@@ -1956,8 +1990,7 @@ public class CoreDashToAlloy {
         	}
         	refParamChanged = false;
         }
-        
-        manageBufferCall(left, right, module, parent);
+
         if (foundBuffer) {
         	right = ExprBadJoin.make(null, null, left, right); //s.
         	left = ExprBadJoin.make(null, null, ExprVar.make(null, "s_next"), ExprVar.make(null, ((ExprBadJoin) left).right.toString())); //s_next.bufferName
@@ -1975,17 +2008,17 @@ public class CoreDashToAlloy {
     /*
      * Breakdown a list of expressions into its subcomponents
      */
-    private static ExprList getVarFromExprList(ExprList list, DashConcState parent, DashModule module) {
+    private static ExprList getVarFromExprList(ExprList list, DashConcState parent, DashModule module, boolean inNestedExprQt) {
     	List<Expr> exprList = new ArrayList<Expr>();
     	for(Expr expr: list.args) {
     		if(expr instanceof ExprQt) {
-    			exprList.add(getVarFromExprQt((ExprQt) expr, parent, module, new ArrayList<Decl>()));
+    			exprList.add(getVarFromExprQt((ExprQt) expr, parent, module, new ArrayList<Decl>(), inNestedExprQt));
     		}
     		if(expr instanceof ExprList) {
-    			exprList.add(getVarFromExprList((ExprList) expr, parent, module));
+    			exprList.add(getVarFromExprList((ExprList) expr, parent, module, inNestedExprQt));
     		}
             if (expr instanceof ExprUnary) {
-            	exprList.add(getVarFromUnary((ExprUnary) expr, parent, module));
+            	exprList.add(getVarFromUnary((ExprUnary) expr, parent, module, false));
             }
             if (expr instanceof ExprBinary) {
             	exprList.add(getVarFromBinary((ExprBinary) expr, parent, module));
@@ -2007,18 +2040,44 @@ public class CoreDashToAlloy {
      * Breakdown a quantified expression into its subcomponents. An example of a quantified expression is:
      * all p: PID | expression
      */
-    private static Expr getVarFromExprQt(ExprQt exprQt, DashConcState parent, DashModule module, List<Decl> args) {
+    private static Expr getVarFromExprQt(ExprQt exprQt, DashConcState parent, DashModule module, List<Decl> args, boolean nestedInExprQt) {
     	Expr subExpr = null;
     	List<Decl> decls = new ArrayList<Decl>();
     	List<Decl> arguments = new ArrayList<>(args);
     	modifyingExprQT.add(exprQt.sub.toString());
     	isCreatingExprQt = true;
-    	if (exprQt.op != ExprQt.Op.ALL) {
+
+    	if (exprQt.op == ExprQt.Op.ONE || exprQt.op == ExprQt.Op.LONE || exprQt.op == ExprQt.Op.SOME) {
+        	exprQtDecls.addAll(exprQt.decls);
     		arguments.addAll(exprQt.decls);
     	}
     	
+    	System.out.println("Expr: " + exprQt);
+        for (Decl decl : exprQt.decls) {
+        	System.out.println("Decl: " + decl.expr);
+        	if (decl.expr instanceof ExprBinary) {
+        		ExprBinary bin = (ExprBinary) decl.expr;
+        		System.out.println("Right: " + bin.right + " Type: " + bin.right.getClass().getCanonicalName());
+        	}
+        }
+    	/*
+    	if (exprQt.op == ExprQt.Op.ALL && decl.expr instanceof ExprBinary && !(((ExprBinary) decl.expr).right instanceof ExprQt)) { // For the following case: all n: Node - {some Node} | expression [Do not do for set comprehension]
+    		System.out.println("Decl Right: " + ((ExprBinary) decl.expr).right);
+    		System.out.println("Decl Left: " + ((ExprBinary) decl.expr).left);
+    		exprQtDecls.add(decl);
+    	}
+    	*/
+    	
         for (Decl decl : exprQt.decls) {
         	List<ExprVar> a = new ArrayList<ExprVar>();
+        	
+        	/*
+        	if (exprQt.op == ExprQt.Op.ALL && decl.expr instanceof ExprBinary) { // For the following case: all n: Node - {some Node} | expression [Do not do for set comprehension]
+        		ExprBinary binary = (ExprBinary) decl.expr;
+        		if (binary.right instanceof ExprVar)
+        			exprQtDecls.add(decl);
+        	}
+        	*/
         	
         	for(ExprHasName name: decl.names)
         		a.add(ExprVar.make(null, name.toString()));    
@@ -2027,25 +2086,31 @@ public class CoreDashToAlloy {
         }
    
         if (exprQt.sub instanceof ExprQt) {
-        	subExpr = getVarFromExprQt((ExprQt) exprQt.sub, parent, module, arguments);
+        	subExpr = getVarFromExprQt((ExprQt) exprQt.sub, parent, module, arguments, true);
         }
         if (exprQt.sub instanceof ExprUnary) {
-        	subExpr = getVarFromUnary((ExprUnary) exprQt.sub, parent, module);
+        	subExpr = getVarFromUnary((ExprUnary) exprQt.sub, parent, module, true);
         }
         if (exprQt.sub instanceof ExprBinary) {
         	subExpr = getVarFromBinary((ExprBinary) exprQt.sub, parent, module);
         }
         if (exprQt.sub instanceof ExprVar) {
-        	subExpr = modifyExprWithVar(exprQt.sub, parent, module, false);
+        	subExpr = modifyExprWithVar(exprQt.sub, parent, module, true);
         }
         if(exprQt.sub instanceof ExprList) {
-        	subExpr = getVarFromExprList((ExprList) exprQt.sub, parent, module);
+        	subExpr = getVarFromExprList((ExprList) exprQt.sub, parent, module, true);
         }
         if(exprQt.sub instanceof ExprBadJoin) {
         	subExpr = getVarFromBadJoin((ExprBadJoin) exprQt.sub, parent, module);
-        }        
+        }
         
-        subExpr = createUnchangedQTVarAST(subExpr, arguments, parent);
+        //System.out.println("ExprQt Inner? :" + nestedInExprQt + " Expr: " + exprQt.sub);
+
+        subExpr = constrainChangedQuantifiedVar(subExpr, parent, module);
+    	//subExpr = constrainChangedQuantifiedVar(subExpr);
+    	changedExprQtVars.clear();
+    	exprQtDecls.clear();
+        //subExpr = createUnchangedQTVarAST(subExpr, arguments, parent);
         changedQuantifiedVars.clear();
         modifyingExprQT.remove(0);
         paramVarRefQt.clear();
@@ -2058,6 +2123,7 @@ public class CoreDashToAlloy {
     
     // A buffer call by the user will look as follows: (s.buffer_name).add or (id.s.buffer_Name). If this is the case: we need to modify this expression as follows:
     //(s_next.buffer_name).(s.buffer_name).add or (id.s_next.buffer_name).(id.s.buffer_name).add.since the call to add is: add[buffer, buffer', p]
+    // This gets confusing!
     private static void manageBufferCall(Expr left, Expr right, DashModule module, DashConcState parent) {
     	ExprBadJoin joinLeft = null;
         if (left instanceof ExprBadJoin) {
@@ -2066,7 +2132,7 @@ public class CoreDashToAlloy {
         	 if (bufferCommands.contains(right.toString()) && (joinLeft.right instanceof ExprBadJoin && joinLeft.left instanceof ExprVar)) {
         		 ExprBadJoin joinLeftRight = (ExprBadJoin) joinLeft.right;
         		 if (module.buffers.containsKey(joinLeftRight.right.toString()) && bufferCommands.contains(right.toString())) {
-        			 System.out.println("Changing1: " + joinLeftRight.right.toString() + " Left: " + joinLeft.left + " Command: " + right.toString());
+        			 //System.out.println("Changing1: " + joinLeftRight.right.toString() + " Left: " + joinLeft.left + " Command: " + right.toString());
         			 paramBuffer.put(joinLeftRight.right.toString(), joinLeft.left);
         			 changedVars.put(joinLeftRight.right.toString(), module.buffers.get(joinLeftRight.right.toString()));
         			 if (module.buffers.get(joinLeftRight.right.toString()).isParameterized) {
@@ -2078,11 +2144,12 @@ public class CoreDashToAlloy {
         	 if (bufferCommands.contains(right.toString()) && (joinLeft.right instanceof ExprBinary && joinLeft.left instanceof ExprVar)) {
         		 ExprBinary joinLeftRight = (ExprBinary) joinLeft.right;
         		 if (module.buffers.containsKey(joinLeftRight.right.toString()) && bufferCommands.contains(right.toString())) {
-        			 System.out.println("ChangingBuffer2: " + joinLeftRight.right.toString() + " Left: " + joinLeft + " Command: " + right.toString());
+        			 //System.out.println("ChangingBuffer2: " + joinLeftRight.right.toString() + " Left: " + joinLeft + " Command: " + right.toString());
         			 paramBuffer.put(joinLeftRight.right.toString(), joinLeft.left);
         			 changedVars.put(joinLeftRight.right.toString(), module.buffers.get(joinLeftRight.right.toString()));
         			 if (module.buffers.get(joinLeftRight.right.toString()).isParameterized) {
-        				 localBufferChanged.put(joinLeftRight.right.toString(), ExprVar.make(null, "p"));
+        				 //localBufferChanged.put(joinLeftRight.right.toString(), ExprVar.make(null, "p"));
+        				 localBufferChanged.put(joinLeftRight.right.toString(), joinLeft.left);
         			 }
         		 }
         	 }
@@ -2090,7 +2157,7 @@ public class CoreDashToAlloy {
         	 if (bufferCommands.contains(right.toString()) && (joinLeft.right instanceof ExprBadJoin && joinLeft.left instanceof ExprBadJoin)) {
         		 ExprBadJoin joinLeftRight = (ExprBadJoin) joinLeft.right;
         		 if (module.buffers.containsKey(joinLeftRight.right.toString()) && bufferCommands.contains(right.toString())) {
-        			 System.out.println("Changing3: " + joinLeftRight.right.toString() + " Left: " + joinLeft.left + " Command: " + right.toString());
+        			 //System.out.println("Changing3: " + joinLeftRight.right.toString() + " Left: " + joinLeft.left + " Command: " + right.toString());
         			 paramBuffer.put(joinLeftRight.right.toString(), joinLeft.left);
         			 changedVars.put(joinLeftRight.right.toString(), module.buffers.get(joinLeftRight.right.toString()));
         			 if (module.buffers.get(joinLeftRight.right.toString()).isParameterized) {
@@ -2142,6 +2209,8 @@ public class CoreDashToAlloy {
         Expr binaryRight = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, var)); //quant.(s_next).var
         binaryRight = ExprBadJoin.make(null, null, quant, binaryRight);
         Expr binaryEquals = ExprBinary.Op.EQUALS.make(null, null, binaryLeft, binaryRight);
+        
+        //System.out.println("Buffer: " + ExprQt.Op.ALL.make(null, null, decls, binaryEquals));
         
         return ExprQt.Op.ALL.make(null, null, decls, binaryEquals); //all quant: Param - Ref | quant.var' = quant.var
     }
@@ -2639,27 +2708,22 @@ public class CoreDashToAlloy {
     /***************************** CREATING INVARIANT FACT *******************************/
     
     private static void createInvariantFact(DashModule module) {
+    	isCreatingInvariant = true;
     	for(DashInvariant invar: module.invariants.values()) {
     		addInvariantFact(invar, module);
     	}
+    	isCreatingInvariant = false;
     }
 
     private static void addInvariantFact(DashInvariant invar, DashModule module) {
     	Expr expression = null;
-    	ExprVar parent = ExprVar.make(null, invar.parent.modifiedName);
-    	Expr sConf = ExprBadJoin.make(null, null, ExprVar.make(null, "s"), ExprVar.make(null, "conf")); //s.conf
-    	Expr binary = ExprBinary.Op.IN.make(null, null, parent, sConf); //parent in s.conf
 
-    	Expr impliesExpr = null;
     	for(Expr expr: invar.exprList) {
-            Expr modifiedExpr = getVarFromParentExpr(expr, getParentConcState(invar.parent), module);
-        	if(impliesExpr == null)
-        		impliesExpr = modifiedExpr;
-        	else
-        		impliesExpr = ExprBinary.Op.AND.make(null, null, impliesExpr, modifiedExpr);
+    		if (expression == null)
+    			expression = getVarFromParentExpr(expr, getParentConcState(invar.parent), module);
+    		else
+    			expression = ExprBinary.Op.AND.make(null, null, getVarFromParentExpr(expr, getParentConcState(invar.parent), module), expression);
         }
-
-    	expression = ExprBinary.Op.IMPLIES.make(null, null, binary, impliesExpr);
 
         List<Decl> decls = new ArrayList<Decl>();
         List<ExprVar> a = new ArrayList<ExprVar>();

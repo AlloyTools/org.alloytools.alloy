@@ -8,6 +8,7 @@ import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.DashModuleToString;
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.parser.DashValidation;
 import ca.uwaterloo.watform.transform.CoreDashToAlloy;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -24,16 +25,15 @@ public class Dash {
 
         System.out.println("Please specify the .dsh file path:");
         Scanner sc = new Scanner(System.in);
-        //String actual = "C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\DistributedSystem.dsh";
-        String actual = "C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\CarouselMC4.dsh";
-        String elevator = "E:\\Alloy Specification Language\\Models\\ElevProc36.als";
-        //"C:\\Users\\Tamjid Hossain\\Desktop\\Dash Processes Models\\Elevator.dsh";
-        //"C:\Users\Tamjid Hossain\Desktop\Dash Models Testing\\TestModel.dsh";
+        String actual = sc.nextLine();
 
-        //if (!actual.endsWith(".dsh")) {
-        //    System.err.println("File not supported.\nExpected a Dash file with 'dsh' extension");
-        //    return;
-        //}
+        if (!actual.endsWith(".dsh")) {
+            System.err.println("File not supported.\nExpected a Dash file with 'dsh' extension");
+            return;
+        }
+        DashOptions.generateSigAxioms = true;
+        DashOptions.ctlModelChecking = true;
+        DashOptions.generateTraces = false;
         sc.close();
 
         Path path = Paths.get(actual);
@@ -57,18 +57,11 @@ public class Dash {
             System.out.println("=========== Parsing+Typechecking " + fileName + " =============");
 
             DashModule dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
+            DashValidation.validateDashModel(dash);
             DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
             DashModule alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
             alloy = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);
             DashModuleToString.toString(alloy);
-
-            dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
-            coreDash = DashToCoreDash.transformToCoreDash(dash);
-            alloy = CoreDashToAlloy.convertToAlloyAST(coreDash);
-            alloy = DashModule.resolveAll(rep == null ? A4Reporter.NOP : rep, alloy);
-            DashModuleToString.toString(alloy);
-            //CompModule alloy = CompUtil.parseEverything_fromFile(rep, null, elevator);
-            //CompModuleToString.toString(alloy, elevator);
 
             // Choose some default options for how you want to execute the
             // commands

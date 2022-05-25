@@ -183,7 +183,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
      * This stores the currently recognized set of reserved keywords.
      */
     private static final String[]     keywords = new String[] {
-                                                               "abstract", "action", "var", "all", "and", "as", "assert", "but", "check", "conc", "condition", "disj", "disjoint", "else", "enum", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "fun", "iden", "iff", "implies", "in", "Int", "int", "let", "lone", "module", "no", "none", "not", "one", "open", "or", "part", "partition", "pred", "private", "run", "seq", "set", "sig", "some", "state", "String", "sum", "this", "univ", "eventually", "always", "after", "once", "historically", "since", "trans", "triggered", "before", "until", "releases", "steps"
+                                                               "abstract", "action", "var", "all", "and", "as", "assert", "but", "check", "conc", "condition", "default", "disj", "disjoint", "do", "else", "enum", "env", "event", "exactly", "exh", "exhaustive", "expect", "extends", "fact", "for", "from", "fun", "goto", "iden", "iff", "implies", "in", "init", "Int", "int", "invariant", "let", "lone", "module", "no", "none", "not", "one", "open", "on", "or", "part", "partition", "pred", "private", "run", "send", "seq", "set", "sig", "some", "state", "String", "sum", "this", "univ", "when", "eventually", "always", "after", "once", "historically", "since", "trans", "triggered", "before", "until", "releases", "steps"
     };
 
     /**
