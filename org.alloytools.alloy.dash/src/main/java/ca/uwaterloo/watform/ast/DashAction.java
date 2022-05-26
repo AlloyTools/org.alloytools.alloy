@@ -6,10 +6,6 @@ import java.util.List;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
 
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.Template;
-import org.apache.velocity.app.VelocityEngine;
-
 public class DashAction {
 
     public Pos           pos;

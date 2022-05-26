@@ -6,7 +6,13 @@ import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
@@ -47,6 +53,19 @@ public class RapidDash {
             DashModule dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
             DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
             // Start our translation from here
+
+            // Create velocity objects necessary for translation
+            VelocityEngine ve = new VelocityEngine();
+            ve.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
+            ve.setProperty("resource.loader.classpath.class", ClasspathResourceLoader.class.getName());
+            ve.init();
+            Template t = ve.getTemplate("templates/VelocityTemplateFile.vm");
+            VelocityContext vc = new VelocityContext();
+
+            //print modified template file
+            StringWriter sw = new StringWriter();
+            t.merge(vc, sw);
+            System.out.println(sw);
 
         }
     }

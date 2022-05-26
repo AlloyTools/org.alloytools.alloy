@@ -13,6 +13,14 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/cnf"/>
+	<classpathentry kind="lib" path="/cnf/jars/commons-collections4-4.4.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/commons-collections4-4.4-sources.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/commons-lang3-3.12.0.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/commons-lang3-3.12.0-sources.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/slf4j-api-1.7.32.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/slf4j-simple-1.7.32.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/velocity-engine-core-2.3.jar"/>
+	<classpathentry kind="lib" path="/cnf/jars/velocity-engine-core-2.3-sources.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dash"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>

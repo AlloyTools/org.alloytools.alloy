@@ -1,3 +1,5 @@
+apply plugin: 'java-library'
+
 dependencies {
 	implementation files('../cnf/jars/commons-collections4-4.4-sources.jar')
 	implementation files('../cnf/jars/commons-collections4-4.4.jar')
@@ -7,25 +9,4 @@ dependencies {
 	implementation files('../cnf/jars/slf4j-simple-1.7.32.jar')
 	implementation files('../cnf/jars/velocity-engine-core-2.3-sources.jar')
 	implementation files('../cnf/jars/velocity-engine-core-2.3.jar')
-}
-
-task macos( dependsOn: jar, type: JavaExec ) {
-
-	classpath files("${System.properties['java.home']}/../lib/ant-javafx.jar")
-	classpath files(".")
-
-	main = 'com.sun.javafx.tools.packager.Main'
-
-	args( 
-		'-deploy', 
-			'-BappVersion=5.1.0',
-			'-native', 'pkg',
-				'-srcfiles', 'target/org.alloytools.alloy.dist.jar', 
-				'-appclass', 'edu.mit.csail.sdg.alloy4whole.Alloy', 
-				'-name', 'Alloy',
-	 			'-outdir', 'target', 
-				'-outfile', 'alloy',
-				'-Bmac.CFBundleVersion=5.1.0',
-	 			'-v'	)
-	
 }
