@@ -1,6 +1,80 @@
+# TODO: add some comments?
+
+from __future__ import annotations
+from operator import methodcaller
+import logging
+import random
 from abc import ABC
 
-"""==== Signatures ===="""
+
+# ===== logging =====
+
+GCLOG = logging.DEBUG+1  # used for guard condition
+ACLOG = logging.DEBUG+2  # used for action chosen
+CALOG = logging.DEBUG+3  # used for feedback on adding called
+
+logging.basicConfig(level=ACLOG)
+logging.addLevelName(GCLOG, "GUARD")
+logging.addLevelName(ACLOG, "ACTION")
+logging.addLevelName(CALOG, "CALLED")
+
+
+# ===== helper functions =====
+
+def get_int_input(msg: str, range: tuple = (0, 1), default: int = -1) -> int:
+    """ get a valid integer in this range """
+    while True:
+        inp = input(
+            f"{msg} (range in [{','.join(map(str,range))}]): ")
+        if inp.isnumeric() and int(inp) >= range[0] and int(inp) <= range[1]:
+            break
+        elif(inp == ""):
+            inp = default
+            break
+        print(f"Please enter a valid integer in [{','.join(map(str,range))}]")
+    return int(inp)
+
+
+def singleton(cls, *args, **kwargs):
+    """using singleton for quantifier 'one'"""
+    instances = {}
+
+    def _singleton():
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return _singleton
+
+
+# ======= Base classes =======
+
+class State(ABC):
+    """" State base class """
+
+    def __init__(self, *args) -> None:
+        """
+        State() => doesn't do anything
+        State(context: State) => set _context to context
+        State(context: State, root_context: State) => also set root context
+        """
+
+        if len(args) >= 2 and isinstance(args[1], State):
+            self._set_root_context(args[1])
+        if len(args) >= 1 and isinstance(args[0], State):
+            self._set_context(args[0])
+
+    def __repr__(self):
+        return f"State {self.__class__.__name__}"
+
+    def _set_context(self, context: State):
+        self._context = context
+
+    def _set_root_context(self, context: State):
+        self._root_context = context
+
+    def change_state(self, state: State):
+        logging.info(f"{self._state} => {state}")
+        self._state = state
 
 
 class Signature(ABC):
@@ -26,10 +100,162 @@ class Signature(ABC):
         return False
 
 
+# ===== the actual model =====
+# --- Signatures ---
+
 #foreach($label in $basicSigLabels)
 class $label(Signature):
     def __init__(self, name: str = None) -> None:
-        super().__init__("$label", name)
+        super().__init__("${label}", name)
 
 
 #end
+
+# --- Conc States ---
+#foreach($concState in $concStateList)
+class ${concState.getName()}_State(State):
+    """ The wrapper state for ${concState.getName()} """
+
+    def __init__(self, context: State, root_context: State) -> None:
+        super().__init__(context, root_context)
+        self._state = self.${concState.getName()}(self, root_context)  # default state
+
+    def execute(self):
+        self._state.execute()
+
+    class ${concState.getName()}(State):
+        """ the concrete state that does the work """
+
+        # initialize named actions (Alloy expressions) as functions
+        /** TODO: invariant actions not implemented */
+
+        def action_{actionName}(self):
+            if Elevator_current in Elevator_called:
+                Elevator_called.remove(Elevator_current)
+
+        # transitions
+        #foreach($trans in $concState.getTransitions())
+        # trans - ${trans.getTransName()}
+        def _trans_${trans.getTransName()}(self, is_event: bool) -> bool:
+            r""" Execute a transition if possible
+            :param is_event: is it triggered by event?
+            :return: false to continue the loop in the executor
+                     true to stop the loop
+            """
+            /** TODO: global variables (signatures used in this state)*/
+            #foreach($globalVar in $globalVariables)
+            global ${globalVar}
+            #end
+
+            if (is_event):
+                return False
+            else:
+                logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
+                /** TODO: transition guard condition */
+                if not len(${trans.getGuardCondition()}):
+                    return False
+
+            logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")
+            /** TODO: transition action */
+            ${trans.getAction()}
+
+            self._context.change_state(self._context.${trans.fromStateName()}(self._context, self._root_context))
+            return True
+
+
+        #end
+
+        """
+        Consider there could be many states, there should be a function in each state that can execute on its own.
+        `execute` should be called in the central controller.
+        `execute` could be part of a big step or the big step itself (in this case, it is a big step)
+        """
+
+        # executor for this state
+        def execute(self):
+            """ pick a transition and perform  """
+
+            # get and shuffle the transition list
+            transitions = [trans for trans in dir(
+                self) if trans.startswith('_trans_')]
+
+            random.shuffle(transitions)
+
+            # TODO: assume a call to execute() is a small step for this state
+            try:
+                # select a transition randomly and execute
+                for transition in transitions:
+                    if methodcaller(transition, False)(self):
+                        # if returns True, that means a transition is taken
+                        break
+
+                # demo only
+                # print current state
+                self.print_state()
+
+            except EOFError:
+                raise EOFError
+
+
+#end
+
+
+class CentralController(State):
+    r""" The central controller of the whole system """
+
+    def __init__(self):
+        # info needed for a concurrent substate
+        self._conc_state1 = Elevator_State(self, self)
+        self._conc_state1_act_states = set()
+
+    def execute(self):
+        """ start the system """
+
+        # TODO: assume the execute() from the parent state (or the centralcontroller)
+        # takes care of the big-step of all substates
+
+        # get all the global env variables
+        global Elevator_env_call
+
+        try:
+            # takes care of a big step for substate 1 (each loop is a big-step)
+            while (True):
+                self._conc_state1_act_states.clear()
+
+                # ========== get the input ==========
+                # TODO: should the inputing process be here? input should only be handled when the system is stable (beging of a big-step)
+                # So in this case, it does make sense.
+
+                # TODO: is this reset here reasonable?
+                # reset env variables
+                Elevator_env_call = set()
+
+                # loop to get environmental input
+                # Reason to put this here is because environmental variable can only be changed when the system is stable
+                # has to put it in the central controller
+                while(True):
+                    # Users can call the elevator multiple times at the same time (or this is because `call` is a set)
+                    f = get_int_input(
+                        "Press [Enter] to skip. Or enter an integer to call the elevator", Floor_Ordering()._range, -1)
+                    if(f != -1):
+                        Elevator_env_call.add(Elevator_current.get(f))
+                        logging.log(
+                            CALOG, f"\t floor just called: {Elevator_env_call}")
+                    else:
+                        break
+
+                # a small step for substate 1
+                while(not (str(self._conc_state1._state) in self._conc_state1_act_states)):
+                    self._conc_state1_act_states.add(
+                        str(self._conc_state1._state))
+                    self._conc_state1.execute()         # the target state must be handled in execute()
+
+                logging.info(
+                    f"A big step is finished for substate 1, current state: {self._conc_state1}")
+        except EOFError:
+            pass
+
+
+# start the system
+cc: CentralController = CentralController()
+cc.execute()

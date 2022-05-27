@@ -42,11 +42,12 @@ public class RapidDash {
 
             System.out.println("Parsing Model");
 
-            //Parse+typecheck the model
+            // Parse + typecheck the model
             System.out.println("=========== Parsing+Typechecking " + fileName + " =============");
 
             DashModule dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
             DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
+
             // Start our translation from here
             DashPythonTranslation dashPythonTranslation = CoreDashToPython.convertToPythonTranslation(coreDash);
             System.out.println(CoreDashToPython.toString(dashPythonTranslation));
