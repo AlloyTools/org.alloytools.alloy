@@ -1,3 +1,14 @@
+dependencies {
+	implementation files('../cnf/jars/commons-collections4-4.4-sources.jar')
+	implementation files('../cnf/jars/commons-collections4-4.4.jar')
+	implementation files('../cnf/jars/commons-lang3-3.12.0-sources.jar')
+	implementation files('../cnf/jars/commons-lang3-3.12.0.jar')
+	implementation files('../cnf/jars/slf4j-api-1.7.32.jar')
+	implementation files('../cnf/jars/slf4j-simple-1.7.32.jar')
+	implementation files('../cnf/jars/velocity-engine-core-2.3-sources.jar')
+	implementation files('../cnf/jars/velocity-engine-core-2.3.jar')
+}
+
 task macos( dependsOn: jar, type: JavaExec ) {
 
 	classpath files("${System.properties['java.home']}/../lib/ant-javafx.jar")

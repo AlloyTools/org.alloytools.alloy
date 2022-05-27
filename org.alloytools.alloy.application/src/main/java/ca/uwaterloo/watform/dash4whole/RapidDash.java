@@ -1,9 +1,10 @@
 package ca.uwaterloo.watform.dash4whole;
 
 import ca.uwaterloo.watform.parser.DashModule;
-import ca.uwaterloo.watform.parser.DashModuleToString;
 import ca.uwaterloo.watform.parser.DashOptions;
 import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.rapidDash.DashPythonTranslation;
+import ca.uwaterloo.watform.transform.CoreDashToPython;
 import ca.uwaterloo.watform.transform.DashToCoreDash;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 
@@ -47,7 +48,8 @@ public class RapidDash {
             DashModule dash = DashUtil.parseEverything_fromFileDash(rep, null, actual);
             DashModule coreDash = DashToCoreDash.transformToCoreDash(dash);
             // Start our translation from here
-
+            DashPythonTranslation dashPythonTranslation = CoreDashToPython.convertToPythonTranslation(coreDash);
+            System.out.println(CoreDashToPython.toString(dashPythonTranslation));
         }
     }
 }

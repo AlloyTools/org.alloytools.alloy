@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" output="target/classes" path="src/main/java"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.util"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.kodkod.nativesat"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.application"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/cnf"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.pardinus"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -21,6 +21,7 @@
 Export-Package: \
 	ca.uwaterloo.watform.ast,\
 	ca.uwaterloo.watform.parser,\
+	ca.uwaterloo.watform.rapidDash,\
 	ca.uwaterloo.watform.transform,\
     	de.uka.ilkd.pp,\
 	
