@@ -1296,7 +1296,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
             // from SimpleGui
             // VizGUI viz = new VizGUI(false, "", windowmenu2, enumerator, evaluator);
             if (viz == null)
-                viz = new VizGUI(false, "", null, enumerator, evaluator, 1);
+                viz = new VizGUI(false, "", null, enumerator, evaluator, 2);
             viz.loadXML(Util.canon(arg.substring(5)), false);
         }
     }
