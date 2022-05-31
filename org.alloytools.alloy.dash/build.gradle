@@ -27,6 +27,8 @@ task cup(type: JavaExec ) {
 
     classpath file( '../cnf/jars/java-cup-11a.jar' )
     classpath file( '../cnf/jars/java-cup-runtime-0.11-a-czt01-cdh.jar' )
+    classpath file( '../cnf/jars/velocity-engine-core-2.3-sources.jar' )
+    classpath file( '../cnf/jars/velocity-engine-core-2.3.jar' )
     main = 'java_cup.Main'
     workingDir( "src/main/java/ca/uwaterloo/watform/parser")
     args(
