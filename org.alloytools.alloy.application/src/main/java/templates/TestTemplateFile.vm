@@ -1,0 +1,54 @@
+# --- Signatures ---
+
+#foreach($label in $basicSigLabels)
+class $label(Signature):
+    def __init__(self, name: str = None) -> None:
+        super().__init__("${label}", name)
+
+
+#end
+
+# --- Conc States ---
+#foreach($concState in $concStateList)
+class ${concState.getName()}_State(State):
+    """ The wrapper state for ${concState.getName()} """
+
+    def __init__(self, context: State, root_context: State) -> None:
+        self._state = self.${concState.getName()}(self, root_context)  # default state
+
+
+    class ${concState.getName()}(State):
+        """ the concrete state that does the work """
+
+        # transitions
+        #foreach($trans in $concState.getTransitions())
+        # trans - ${trans.getTransName()}
+        def _trans_${trans.getTransName()}(self, is_event: bool) -> bool:
+            r""" Execute a transition if possible
+            :param is_event: is it triggered by event?
+            :return: false to continue the loop in the executor
+                     true to stop the loop
+            """
+            /** TODO: global variables (signatures used in this state)*/
+            #foreach($globalVar in $globalVariables)
+            global ${globalVar}
+            #end
+
+            if (is_event):
+                return False
+            else:
+                logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
+                /** TODO: transition guard condition */
+                if not len(${trans.getGuardCondition()}):
+                    return False
+
+            logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")
+            /** TODO: transition action */
+            ${trans.getAction()}
+
+            self._context.change_state(self._context.${trans.fromStateName()}(self._context, self._root_context))
+            return True
+
+
+        #end
+#end
