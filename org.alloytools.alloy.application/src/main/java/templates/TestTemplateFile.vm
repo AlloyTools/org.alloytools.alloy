@@ -9,46 +9,59 @@ class $label(Signature):
 #end
 
 # --- Conc States ---
-#foreach($concState in $concStateList)
-class ${concState.getName()}_State(State):
-    """ The wrapper state for ${concState.getName()} """
+#macro(generateState $concState $padding)
+$padding class ${concState.getName()}_State(State):
+$padding     # substates
+	#foreach($substate in $concState.getSubstates())
+		#set($tab = "    ")
+		#set($newpadding = "$padding$tab")
+		#generateState($substate $newpadding)
+	#end
+	
+$padding    """ The wrapper state for ${concState.getName()} """
 
-    def __init__(self, context: State, root_context: State) -> None:
-        self._state = self.${concState.getName()}(self, root_context)  # default state
+$padding    def __init__(self, context: State, root_context: State) -> None:
+$padding        self._state = self.${concState.getName()}(self, root_context)  # default state
 
 
-    class ${concState.getName()}(State):
-        """ the concrete state that does the work """
+$padding    class ${concState.getName()}(State):
+$padding        """ the concrete state that does the work """
 
-        # transitions
-        #foreach($trans in $concState.getTransitions())
-        # trans - ${trans.getTransName()}
-        def _trans_${trans.getTransName()}(self, is_event: bool) -> bool:
-            r""" Execute a transition if possible
-            :param is_event: is it triggered by event?
-            :return: false to continue the loop in the executor
-                     true to stop the loop
-            """
-            /** TODO: global variables (signatures used in this state)*/
-            #foreach($globalVar in $globalVariables)
-            global ${globalVar}
+$padding        # transitions
+       #foreach($trans in $concState.getTransitions())
+$padding        # trans - ${trans.getTransName()}
+$padding       def _trans_${trans.getTransName()}(self, is_event: bool) -> bool:
+$padding            r""" Execute a transition if possible
+$padding            :param is_event: is it triggered by event?
+$padding            :return: false to continue the loop in the executor
+$padding                     true to stop the loop
+$padding            """
+$padding            /** TODO: global variables (signatures used in this state)*/
+$padding            #foreach($globalVar in $globalVariables)
+$padding            global ${globalVar}
             #end
 
-            if (is_event):
-                return False
-            else:
-                logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
-                /** TODO: transition guard condition */
-                if not len(${trans.getGuardCondition()}):
-                    return False
+$padding            if (is_event):
+$padding                return False
+$padding            else:
+$padding                logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
+$padding                /** TODO: transition guard condition */
+$padding                if not len(${trans.getGuardCondition()}):
+$padding                    return False
 
-            logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")
-            /** TODO: transition action */
-            ${trans.getAction()}
+$padding            logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")
+$padding            /** TODO: transition action */
+$padding            ${trans.getAction()}
 
-            self._context.change_state(self._context.${trans.fromStateName()}(self._context, self._root_context))
-            return True
-
+$padding            self._context.change_state(self._context.${trans.fromStateName()}(self._context, self._root_context))
+$padding            return True
 
         #end
+ 
+#end 
+
+#foreach($concState in $concStateList)
+	#generateState($concState "")
 #end
+
+

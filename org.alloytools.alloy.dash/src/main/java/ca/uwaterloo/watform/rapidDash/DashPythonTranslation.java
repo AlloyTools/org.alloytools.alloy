@@ -46,6 +46,26 @@ public class DashPythonTranslation {
         for(String stateName: dashModule.states.keySet()){
             this.concStateMap.put(stateName, new State(stateName));
         }
+        
+        // add substates to conc states
+        for(DashConcState state: dashModule.concStates.values()) {
+        	for(DashConcState substate: state.concStates) {
+        		this.concStateMap.get(state.modifiedName).addSubstate(this.concStateMap.get(substate.modifiedName));
+        		this.concStateMap.get(substate.modifiedName).parent = concStateMap.get(state.modifiedName);
+        	}
+        	for(DashState substate: state.states) {
+        		this.concStateMap.get(state.modifiedName).addSubstate(this.concStateMap.get(substate.modifiedName));
+        		this.concStateMap.get(substate.modifiedName).parent = concStateMap.get(state.modifiedName);
+        	}
+        }
+        
+        // add substates to dash states
+        for(DashState state: dashModule.states.values()) {
+        	for(DashState substate: state.states) {
+        		this.concStateMap.get(state.modifiedName).addSubstate(this.concStateMap.get(substate.modifiedName));
+        		this.concStateMap.get(substate.modifiedName).parent = concStateMap.get(state.modifiedName);
+        	}
+        }
 
         // generate transitions
         for(DashTrans dashTrans : dashModule.transitions.values()){
@@ -60,20 +80,34 @@ public class DashPythonTranslation {
                 sig.isVariable == null;
     }
 
-    public List<State> getStates(){return concStateMap.values().stream().collect(Collectors.toList());}
+    // return all states that aren't substates (to prevent them from appearing multiple times)
+    public List<State> getStates() {
+    	List<State> states = new ArrayList<State>();
+    	for(State state: concStateMap.values()) {
+    		if(state.parent == null) {
+    			states.add(state);
+    		}
+    	}
+    	return states;
+    }
 
     public class State{
         private String stateName;                       // state name
         private List<Transition>  transitions;   // store the translated code for transitions
+        private List<State> substates;
+        public State parent = null;
         public State(String stateName){
             this.stateName = stateName;
             this.transitions = new ArrayList<>();
+            this.substates = new ArrayList<State>();
         }
         public void addTransition(Transition transition){
             this.transitions.add(transition);
         }
         public String getName(){return stateName;}
         public List<Transition> getTransitions() {return transitions.stream().collect(Collectors.toList());}
+        public List<State> getSubstates() { return substates.stream().collect(Collectors.toList()); }
+        public void addSubstate(State s) { substates.add(s); }
     }
 
     public class Transition{

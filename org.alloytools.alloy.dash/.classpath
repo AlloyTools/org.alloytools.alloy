@@ -6,7 +6,6 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.apache.velocity"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.application"/>
