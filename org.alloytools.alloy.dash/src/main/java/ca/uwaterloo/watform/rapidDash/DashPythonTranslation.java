@@ -1,11 +1,10 @@
 package ca.uwaterloo.watform.rapidDash;
 
-import ca.uwaterloo.watform.ast.DashState;
 import ca.uwaterloo.watform.ast.DashConcState;
 import ca.uwaterloo.watform.ast.DashTrans;
+import ca.uwaterloo.watform.ast.DashWhenExpr;
 import ca.uwaterloo.watform.parser.DashModule;
 import edu.mit.csail.sdg.ast.Sig;
-import org.apache.velocity.VelocityContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -106,10 +105,10 @@ public class DashPythonTranslation {
             }
             if(dashTrans.whenExpr != null){    // determines the guard_condition (if statement)
                 // TODO: need to be able to translate the predicates first
-                // String predicate = ...;
+                DashExprToPython dashExprTranslator = new DashExprToPython<>(dashTrans.whenExpr);
 
                 // set condition
-                this.guardCondition = "<Guard Condition placeholder>";
+                this.guardCondition = dashExprTranslator.toString();
             }
             if(dashTrans.doExpr != null){      // determines the action
                 // TODO: need to be able to translate the actions first

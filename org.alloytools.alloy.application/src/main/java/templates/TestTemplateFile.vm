@@ -39,7 +39,7 @@ class ${concState.getName()}_State(State):
             else:
                 logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
                 /** TODO: transition guard condition */
-                if not len(${trans.getGuardCondition()}):
+                if not (${trans.getGuardCondition()}):
                     return False
 
             logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")
