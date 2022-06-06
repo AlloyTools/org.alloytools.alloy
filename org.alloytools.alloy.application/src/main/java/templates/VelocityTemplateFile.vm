@@ -35,15 +35,14 @@ def get_int_input(msg: str, range: tuple = (0, 1), default: int = -1) -> int:
     return int(inp)
 
 
-def singleton(cls, *args, **kwargs):
-    """using singleton for quantifier 'one'"""
-    instances = {}
+# Model "one sig" as singleton classes
+class Singleton(type(Signature)):
+    _instances = {}
 
-    def _singleton():
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-    return _singleton
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+        cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 # ======= Base classes =======
@@ -107,6 +106,17 @@ class Signature(ABC):
 class $label(Signature):
     def __init__(self, name: str = None) -> None:
         super().__init__("${label}", name)
+
+
+#end
+
+#foreach($label in $oneSigLabels)
+class $label(Signature, metaclass=Singleton):
+    def __init__(self):
+        self._abbrev = '${label.charAt(0)}'
+
+    def __repr__(self):
+        return f"$label(${label.charAt(0)})"
 
 
 #end
