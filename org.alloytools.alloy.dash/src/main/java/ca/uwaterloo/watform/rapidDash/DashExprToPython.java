@@ -54,7 +54,7 @@ public class DashExprToPython<ExprType> {
             // TODO: will need to replace left and right with signature names
 
             ExprBinary binaryNode = (ExprBinary) node;
-            return(binaryNode.left + BinaryOp2PythonOp(binaryNode.op) + binaryNode.right);
+            return(BinaryOp2PythonOp(binaryNode));
         } else if (node instanceof ExprVar){
             return node.toString();
         }else{
@@ -83,7 +83,7 @@ public class DashExprToPython<ExprType> {
             case EXACTLYOF:
                 res = " ";
                 break;
-            case NOT:
+            case NOT:        // TODO: this part assumes the inner expression is a statement that evaluates to true or false
                 res = "not(" + this.genExpr(node,1) + ")";
                 break;
             case AFTER:
@@ -104,10 +104,10 @@ public class DashExprToPython<ExprType> {
             case ONCE:
                 res = " ";
                 break;
-            case NO:
-                res = "not "+this.genExpr(node,1);
+            case NO:        // TODO: this part assumes the inner expression is a signature instance that is an object
+                res = this.genExpr(node,1) + " is None";
                 break;
-            case SOME:
+            case SOME:      // TODO: this part assumes the inner expression is a signature instance that is an object
                 res = this.genExpr(node,1) + " is not None";
                 break;
             case LONE:
@@ -145,9 +145,9 @@ public class DashExprToPython<ExprType> {
     }
 
     // translate Binary operation, also returns the empty space
-    private String BinaryOp2PythonOp(ExprBinary.Op op){
+    private String BinaryOp2PythonOp(ExprBinary node){
         String res = " ";
-        switch(op){
+        switch(node.op){
             case ARROW:
                 res = " ";
                 break;
@@ -214,14 +214,14 @@ public class DashExprToPython<ExprType> {
             case PLUSPLUS:
                 res = " ";
                 break;
-            case PLUS:
-                res = " + ";
+            case PLUS:        // TODO: this part assumes inner expression are a signature instances and are sets
+                res = this.genExpr(node.left, 1) + " | " + this.genExpr(node.right, 1);
                 break;
             case IPLUS:
                 res = " ";
                 break;
-            case MINUS:
-                res = " - ";
+            case MINUS:        // TODO: this part assumes inner expression are a signature instances and are sets
+                res = this.genExpr(node.left, 1) + " - " + this.genExpr(node.right, 1);
                 break;
             case IMINUS:
                 res = " ";
@@ -235,38 +235,38 @@ public class DashExprToPython<ExprType> {
             case REM:
                 res = " ";
                 break;
-            case EQUALS:
-                res = " == ";
+            case EQUALS:        // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " == " + this.genExpr(node.right, 1);
                 break;
-            case NOT_EQUALS:    // TODO: or "is not"?
-                res = " != ";
+            case NOT_EQUALS:    // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " != " + this.genExpr(node.right, 1);
                 break;
             case IMPLIES:
                 res = " ";
                 break;
-            case LT:
-                res = " < ";
+            case LT:         // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " < " + this.genExpr(node.right, 1);
                 break;
-            case LTE:
-                res = " <= ";
+            case LTE:        // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " <= " + this.genExpr(node.right, 1);
                 break;
-            case GT:
-                res = " > ";
+            case GT:         // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " > " + this.genExpr(node.right, 1);
                 break;
-            case GTE:
-                res = " >= ";
+            case GTE:        // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " >= " + this.genExpr(node.right, 1);
                 break;
-            case NOT_LT:
-                res = " >= ";
+            case NOT_LT:     // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " >= " + this.genExpr(node.right, 1);
                 break;
-            case NOT_LTE:
-                res = " > ";
+            case NOT_LTE:    // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " > " + this.genExpr(node.right, 1);
                 break;
-            case NOT_GT:
-                res = " <= ";
+            case NOT_GT:     // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " <= " + this.genExpr(node.right, 1);
                 break;
-            case NOT_GTE:
-                res = " < ";
+            case NOT_GTE:    // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
+                res = this.genExpr(node.left, 1) + " < " + this.genExpr(node.right, 1);
                 break;
             case SHL:
                 res = " ";
@@ -277,17 +277,17 @@ public class DashExprToPython<ExprType> {
             case SHR:
                 res = " ";
                 break;
-            case IN:
-                res = " in ";
+            case IN:            // TODO: this part assumes inner expression are a signature instances and are sets
+                res = this.genExpr(node.left, 1) + ".issubset(" + this.genExpr(node.right, 1) + ")";
                 break;
-            case NOT_IN:
-                res = " not in ";
+            case NOT_IN:        // TODO: this part assumes inner expression are a signature instances and are sets
+                res = "not(" + this.genExpr(node.left, 1) + ".issubset(" + this.genExpr(node.right, 1) + "))";
                 break;
-            case AND:
-                res = " and ";
+            case AND:           // TODO: this part assumes the inner expression is a statement that evaluates to true or false
+                res = "(" + this.genExpr(node.left, 1) + ") and (" + this.genExpr(node.right, 1) + ")";
                 break;
-            case OR:
-                res = " or ";
+            case OR:            // TODO: this part assumes the inner expression is a statement that evaluates to true or false
+                res = "(" + this.genExpr(node.left, 1) + ") or (" + this.genExpr(node.right, 1) + ")";
                 break;
             case IFF:
                 res = " ";
