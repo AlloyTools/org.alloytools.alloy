@@ -31,6 +31,7 @@ public class CoreDashToPython {
 
         // add signatures
         vc.put("basicSigLabels", dashPythonTranslation.basicSigLabels);
+        vc.put("oneSigLabels", dashPythonTranslation.oneSigLabels);
 
         // add concurrent states
         vc.put("concStateList", dashPythonTranslation.getStates());

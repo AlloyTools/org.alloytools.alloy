@@ -22,6 +22,8 @@ public class DashPythonTranslation {
 
     public List<String> basicSigLabels;
 
+    public List<String> oneSigLabels;
+
     private Map<String, State> concStateMap;
 
     /**
@@ -34,6 +36,12 @@ public class DashPythonTranslation {
         // get signature names
         this.basicSigLabels = dashModule.sigs.values().stream()
                 .filter(this::isSubSig)
+                .map(sig -> clean(sig.label))
+                .collect(Collectors.toList());
+
+        // get signature names
+        this.oneSigLabels = dashModule.sigs.values().stream()
+                .filter(this::isOneSig)
                 .map(sig -> clean(sig.label))
                 .collect(Collectors.toList());
 
@@ -56,6 +64,12 @@ public class DashPythonTranslation {
 
     private Boolean isSubSig(Sig sig) {
         return sig.isSubsig != null & sig.isOne == null & sig.isAbstract == null & sig.isEnum == null &
+                sig.isLone == null & sig.isMeta == null & sig.isPrivate == null & sig.isSome == null & sig.isSubset == null &
+                sig.isVariable == null;
+    }
+
+    private Boolean isOneSig(Sig sig) {
+        return sig.isOne != null & sig.isAbstract == null & sig.isEnum == null &
                 sig.isLone == null & sig.isMeta == null & sig.isPrivate == null & sig.isSome == null & sig.isSubset == null &
                 sig.isVariable == null;
     }
