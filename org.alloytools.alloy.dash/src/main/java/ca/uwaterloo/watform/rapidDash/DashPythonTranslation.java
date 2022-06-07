@@ -1,6 +1,7 @@
 package ca.uwaterloo.watform.rapidDash;
 
 import ca.uwaterloo.watform.ast.DashConcState;
+import ca.uwaterloo.watform.ast.DashState;
 import ca.uwaterloo.watform.ast.DashTrans;
 import ca.uwaterloo.watform.ast.DashWhenExpr;
 import ca.uwaterloo.watform.parser.DashModule;
