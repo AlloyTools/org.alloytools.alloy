@@ -23,14 +23,15 @@ public class CoreDashToPython {
         ve.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
         ve.setProperty("resource.loader.classpath.class", ClasspathResourceLoader.class.getName());
         ve.init();
-        // Template t = ve.getTemplate("templates/VelocityTemplateFile.vm");    // the final template
-        Template t = ve.getTemplate("templates/TestTemplateFile.vm");     // the template used to test
+        Template t = ve.getTemplate("templates/VelocityTemplateFile.vm");    // the final template
+        // Template t = ve.getTemplate("templates/TestTemplateFile.vm");     // the template used to develop (without code that's not generated)
         VelocityContext vc = new VelocityContext();
 
         // add to template file
 
         // add signatures
         vc.put("basicSigLabels", dashPythonTranslation.basicSigLabels);
+        vc.put("oneSigLabels", dashPythonTranslation.oneSigLabels);
 
         // add concurrent states
         vc.put("concStateList", dashPythonTranslation.getStates());

@@ -35,15 +35,14 @@ def get_int_input(msg: str, range: tuple = (0, 1), default: int = -1) -> int:
     return int(inp)
 
 
-def singleton(cls, *args, **kwargs):
-    """using singleton for quantifier 'one'"""
-    instances = {}
+# Model "one sig" as singleton classes
+class Singleton(type(Signature)):
+    _instances = {}
 
-    def _singleton():
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-    return _singleton
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+        cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 # ======= Base classes =======
@@ -111,6 +110,17 @@ class $label(Signature):
 
 #end
 
+#foreach($label in $oneSigLabels)
+class $label(Signature, metaclass=Singleton):
+    def __init__(self):
+        self._abbrev = '${label.charAt(0)}'
+
+    def __repr__(self):
+        return f"$label(${label.charAt(0)})"
+
+
+#end
+
 # --- Conc States ---
 #foreach($concState in $concStateList)
 class ${concState.getName()}_State(State):
@@ -152,7 +162,7 @@ class ${concState.getName()}_State(State):
             else:
                 logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
                 /** TODO: transition guard condition */
-                if not len(${trans.getGuardCondition()}):
+                if not (${trans.getGuardCondition()}):
                     return False
 
             logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")

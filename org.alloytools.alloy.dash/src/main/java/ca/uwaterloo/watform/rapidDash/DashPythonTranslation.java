@@ -1,11 +1,10 @@
 package ca.uwaterloo.watform.rapidDash;
 
-import ca.uwaterloo.watform.ast.DashState;
 import ca.uwaterloo.watform.ast.DashConcState;
 import ca.uwaterloo.watform.ast.DashTrans;
+import ca.uwaterloo.watform.ast.DashWhenExpr;
 import ca.uwaterloo.watform.parser.DashModule;
 import edu.mit.csail.sdg.ast.Sig;
-import org.apache.velocity.VelocityContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +21,8 @@ public class DashPythonTranslation {
 
     public List<String> basicSigLabels;
 
+    public List<String> oneSigLabels;
+
     private Map<String, State> concStateMap;
 
     /**
@@ -34,6 +35,12 @@ public class DashPythonTranslation {
         // get signature names
         this.basicSigLabels = dashModule.sigs.values().stream()
                 .filter(this::isSubSig)
+                .map(sig -> clean(sig.label))
+                .collect(Collectors.toList());
+
+        // get signature names
+        this.oneSigLabels = dashModule.sigs.values().stream()
+                .filter(this::isOneSig)
                 .map(sig -> clean(sig.label))
                 .collect(Collectors.toList());
 
@@ -76,6 +83,12 @@ public class DashPythonTranslation {
 
     private Boolean isSubSig(Sig sig) {
         return sig.isSubsig != null & sig.isOne == null & sig.isAbstract == null & sig.isEnum == null &
+                sig.isLone == null & sig.isMeta == null & sig.isPrivate == null & sig.isSome == null & sig.isSubset == null &
+                sig.isVariable == null;
+    }
+
+    private Boolean isOneSig(Sig sig) {
+        return sig.isOne != null & sig.isAbstract == null & sig.isEnum == null &
                 sig.isLone == null & sig.isMeta == null & sig.isPrivate == null & sig.isSome == null & sig.isSubset == null &
                 sig.isVariable == null;
     }
@@ -140,10 +153,10 @@ public class DashPythonTranslation {
             }
             if(dashTrans.whenExpr != null){    // determines the guard_condition (if statement)
                 // TODO: need to be able to translate the predicates first
-                // String predicate = ...;
+                DashExprToPython dashExprTranslator = new DashExprToPython<>(dashTrans.whenExpr);
 
                 // set condition
-                this.guardCondition = "<Guard Condition placeholder>";
+                this.guardCondition = dashExprTranslator.toString();
             }
             if(dashTrans.doExpr != null){      // determines the action
                 // TODO: need to be able to translate the actions first
