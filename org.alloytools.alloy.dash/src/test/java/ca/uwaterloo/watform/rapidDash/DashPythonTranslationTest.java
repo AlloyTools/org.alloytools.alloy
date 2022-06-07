@@ -7,6 +7,8 @@ import ca.uwaterloo.watform.transform.DashToCoreDash;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,12 +31,24 @@ public class DashPythonTranslationTest {
         DashModule dashModule = DashUtil.parseEverything_fromStringDash(A4Reporter.NOP, dashModel);
         DashToCoreDash.transformToCoreDash(dashModule);
         DashPythonTranslation translation = new DashPythonTranslation(dashModule);
+        assertEquals(1, translation.getStates().size());
+        assertEquals("concState", translation.getStates().get(0).getName());
 
-        assertEquals(4, translation.getStates().size());
-        assertEquals(1, findStateOccurncesInTranslation(translation, "concState_topStateA_innerState"));
-        assertEquals(1, findStateOccurncesInTranslation(translation, "concState_topStateB"));
-        assertEquals(1, findStateOccurncesInTranslation(translation, "concState_topStateA"));
-        assertEquals(1, findStateOccurncesInTranslation(translation, "concState"));
+        List<DashPythonTranslation.State> secondary_states = translation.getStates().get(0).getSubstates();
+
+        assertEquals(2, secondary_states.size());
+        HashMap<String, DashPythonTranslation.State> nameToState = new HashMap<>();
+        for (DashPythonTranslation.State state : secondary_states)
+        {
+            nameToState.put(state.getName(), state);
+        }
+        assertTrue(nameToState.containsKey("concState_topStateB"));
+        assertTrue(nameToState.containsKey("concState_topStateA"));
+
+        List<DashPythonTranslation.State> tertiary_states = nameToState.get("concState_topStateA").getSubstates();
+
+        assertEquals(1, tertiary_states.size());
+        assertEquals("concState_topStateA_innerState", tertiary_states.get(0).getName());
     }
 
     @Test
@@ -62,7 +76,6 @@ public class DashPythonTranslationTest {
 
         DashPythonTranslation translation = new DashPythonTranslation(dashModule);
 
-        System.out.println(translation.basicSigLabels);
         assertEquals(2, translation.basicSigLabels.size());
         assertTrue(translation.basicSigLabels.contains("Patient"));
         assertTrue(translation.basicSigLabels.contains("Medication"));
