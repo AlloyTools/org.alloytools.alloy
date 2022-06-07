@@ -15,6 +15,7 @@
 	biz.aQute.wrapper.junit, \
 	biz.aQute.wrapper.hamcrest, \
     src/main/resources;version=file, \
+    ../org.alloytools.alloy.application/target/classes;version=file, \
     slf4j.api, \
     org.sat4j.core, \
 
