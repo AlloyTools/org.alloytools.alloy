@@ -139,18 +139,19 @@ public class DashPythonTranslation {
         public Transition(DashTrans dashTrans){
             // set default transition information
             this.transName = dashTrans.name;
-            this.stateName = ((DashConcState)dashTrans.parentState).name;
+            this.stateName = ((DashConcState)dashTrans.parentState).name;   // TODO: not sure if this name is fully qualified
+            this.fromStateName = stateName;
 
             // System.out.println("[Debug]: transition: " + dashTrans.name + ", state name: " + this.stateName);
 
             // check keywords
             if(dashTrans.fromExpr != null){    // determines which state this transition belongs to
                 // set state name
-                this.fromStateName = dashTrans.fromExpr.toString();
+                // TODO: need implementation, currently fromStateName is just the statename, which is ok for now
             }
             if(dashTrans.onExpr != null){      // determines the trigger event
                 // TODO: event related
-                this.eventCondition = "<Event placeholder>";
+                this.eventCondition = "pass\t# <placeholder for Event>";
             }
             if(dashTrans.whenExpr != null){    // determines the guard_condition (if statement)
                 // TODO: need to be able to translate the predicates first
@@ -164,16 +165,16 @@ public class DashPythonTranslation {
                 // String predicate = ...;
 
                 // set action
-                this.action = "<Action placeholder>";
+                this.action = "pass\t# <placeholder for Action>";
             }
             if(dashTrans.gotoExpr != null){    // determine the next state
                 this.toStateName = dashTrans.gotoExpr.toString();
             }
             if(dashTrans.sendExpr != null){    // determines the event to send
-                this.triggerEvent = "<Trigger event placeholder>";
+                this.triggerEvent = "pass\t# <placeholder for Triggering event>";
             }
             if(dashTrans.transTemplate != null){   // TODO: don't know what this does
-                this.transTemplate = "<Trans Template placeholder>";
+                this.transTemplate = "pass\t# <placeholder for Trans Template>";
             }
         }
         public String getTransName(){return transName;}

@@ -1,4 +1,50 @@
+from __future__ import annotations
+from operator import methodcaller
+import logging
+import random
 from abc import ABC
+
+
+# ===== logging =====
+
+GCLOG = logging.DEBUG+1  # used for guard condition
+ACLOG = logging.DEBUG+2  # used for action chosen
+CALOG = logging.DEBUG+3  # used for feedback on adding called
+
+logging.basicConfig(level=ACLOG)
+logging.addLevelName(GCLOG, "GUARD")
+logging.addLevelName(ACLOG, "ACTION")
+logging.addLevelName(CALOG, "CALLED")\
+
+# ===== Base Classes =====
+
+class State(ABC):
+    """" State base class """
+
+    def __init__(self, *args) -> None:
+        """
+        State() => doesn't do anything
+        State(context: State) => set _context to context
+        State(context: State, root_context: State) => also set root context
+        """
+
+        if len(args) >= 2 and isinstance(args[1], State):
+            self._set_root_context(args[1])
+        if len(args) >= 1 and isinstance(args[0], State):
+            self._set_context(args[0])
+
+    def __repr__(self):
+        return f"State {self.__class__.__name__}"
+
+    def _set_context(self, context: State):
+        self._context = context
+
+    def _set_root_context(self, context: State):
+        self._root_context = context
+
+    def change_state(self, state: State):
+        logging.info(f"{self._state} => {state}")
+        self._state = state
 
 class Signature(ABC):
     def __init__(self, sig_name: str = "Signature", name: str = None) -> None:
@@ -84,22 +130,21 @@ $padding            """
 $padding            /** TODO: global variables (signatures used in this state)*/
 $padding            #foreach($globalVar in $globalVariables)
 $padding            global ${globalVar}
-            #end
-
+                    #end
 
 $padding            if (is_event):
 $padding                return False
 $padding            else:
 $padding                logging.log(GCLOG, f" test guard condition of ${trans.getTransName()}.")
 $padding                /** TODO: transition guard condition */
-$padding                if not len(${trans.getGuardCondition()}):
+$padding                if not (${trans.getGuardCondition()}):
 $padding                    return False
 
 $padding            logging.log(ACLOG,f" action of [${trans.getTransName()}] triggered.")
 $padding            /** TODO: transition action */
 $padding            ${trans.getAction()}
 
-$padding            self._context.change_state(self._context.${trans.fromStateName()}(self._context, self._root_context))
+$padding            self._context.change_state(self._context.${trans.getFromStateName()}(self._context, self._root_context))
 $padding            return True
 
         #end
