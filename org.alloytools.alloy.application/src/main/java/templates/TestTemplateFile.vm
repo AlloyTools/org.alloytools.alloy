@@ -112,7 +112,7 @@ $padding     # substates
 $padding    """ The wrapper state for ${concState.getName()} """
 
 $padding    def __init__(self, context: State, root_context: State) -> None:
-$padding        super(concState.getName(), self).__init__(self) # init superclass
+$padding        super(${concState.getName()}, self).__init__(self) # init superclass
 $padding        self.change_state(root_context)  # go to default state
 $padding
 $padding        # state variable declarations
