@@ -3,7 +3,9 @@ package ca.uwaterloo.watform.rapidDash;
 import ca.uwaterloo.watform.ast.DashDoExpr;
 import ca.uwaterloo.watform.ast.DashWhenExpr;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBadJoin;
 import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprConstant;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 
@@ -14,6 +16,8 @@ import edu.mit.csail.sdg.ast.ExprVar;
 public class DashExprToPython<ExprType> {
     private ExprType specialExpr;
     private StringBuilder sb;
+    public boolean isDecl = false;
+    public boolean isInit = false;
 
     public DashExprToPython(ExprType specialExpr){
         this.specialExpr = specialExpr;
@@ -27,6 +31,11 @@ public class DashExprToPython<ExprType> {
     public String toString() {
         return this.sb.toString();
     }
+    
+    public void reparseExpr() {
+    	this.sb = new StringBuilder();
+    	this.parseExpr();
+    }
 
     // generate python expressions
     private void parseExpr(){
@@ -35,6 +44,8 @@ public class DashExprToPython<ExprType> {
             sb.append(genExpr(((DashWhenExpr)this.specialExpr).expr, ((DashWhenExpr)this.specialExpr).exprList.size()));
         } else if (specialExpr instanceof DashDoExpr){
             // TODO: Do expr should be different since actions are needed, not just evaluation statements
+        } else {
+        	sb.append(genExpr((Expr)specialExpr, 1));
         }
     }
 
@@ -46,18 +57,26 @@ public class DashExprToPython<ExprType> {
         if (node instanceof ExprUnary) {
             // TODO: is sub always a binary?
 
+        	
             ExprUnary unaryNode = (ExprUnary) node;
             return(UnaryOp2PythonOp(unaryNode.op, unaryNode.sub));
         } else if (node instanceof ExprBinary) {
             // TODO: will BinaryExpr have sub nodes?
 
             // TODO: will need to replace left and right with signature names
-
             ExprBinary binaryNode = (ExprBinary) node;
             return(BinaryOp2PythonOp(binaryNode));
-        } else if (node instanceof ExprVar){
+        } else if (node instanceof ExprVar || node instanceof ExprConstant){
             return node.toString();
-        }else{
+        } else if (node instanceof ExprBadJoin) {
+        	// this assumes the expr is in the form (#STATE_VARIABLE).PLUS/MINUS[CONSTANT]
+        	ExprBadJoin badNode = (ExprBadJoin)node;
+        	ExprBadJoin badSubnode = (ExprBadJoin)badNode.right;
+        	ExprUnary cardinality = (ExprUnary) badSubnode.left;// #STATE_VARIABLE
+        	String type = badSubnode.right.toString();// plus or minus
+        	String operation = type.equals("plus") ? " + " : " - ";
+        	return UnaryOp2PythonOp(cardinality.op, cardinality.sub) + operation + badNode.left.toString();
+        } else {
             // under development, use this to catch more types that could be useful
             System.out.println("More types: " + node.getClass());
         }
@@ -78,7 +97,7 @@ public class DashExprToPython<ExprType> {
                 res = " ";
                 break;
             case SETOF:
-                res = " ";
+                res = "set() # of sig " + node.toString();// this translation is for state variable declarations
                 break;
             case EXACTLYOF:
                 res = " ";
@@ -129,7 +148,7 @@ public class DashExprToPython<ExprType> {
                 res = " ";
                 break;
             case CARDINALITY:
-                res = " ";
+                res = "len(self." + node.toString() + ")";
                 break;
             case CAST2INT:
                 res = " ";
@@ -149,7 +168,8 @@ public class DashExprToPython<ExprType> {
         String res = " ";
         switch(node.op){
             case ARROW:
-                res = " ";
+            	// TODO: parse the left and right side of the arrow operation
+                res = "dict()";
                 break;
             case ANY_ARROW_SOME:
                 res = " ";
@@ -236,7 +256,12 @@ public class DashExprToPython<ExprType> {
                 res = " ";
                 break;
             case EQUALS:        // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
-                res = this.genExpr(node.left, 1) + " == " + this.genExpr(node.right, 1);
+            	if(isInit) {
+            		res = this.genExpr(node.left, 1) + " = " + this.genExpr(node.right, 1).toLowerCase();
+            	} else {
+            		res = this.genExpr(node.left, 1) + " == " + this.genExpr(node.right, 1);
+            	}
+                
                 break;
             case NOT_EQUALS:    // TODO: this part assumes this part assumes inner expression are a signature instances and are comparable
                 res = this.genExpr(node.left, 1) + " != " + this.genExpr(node.right, 1);

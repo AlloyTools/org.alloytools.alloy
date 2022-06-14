@@ -112,7 +112,23 @@ $padding     # substates
 $padding    """ The wrapper state for ${concState.getName()} """
 
 $padding    def __init__(self, context: State, root_context: State) -> None:
-$padding        self._state = self.${concState.getName()}(self, root_context)  # default state
+$padding        super(concState.getName(), self).__init__(self) # init superclass
+$padding        self.change_state(root_context)  # go to default state
+$padding
+$padding        # state variable declarations
+	#foreach($decl in $concState.getDecls())
+$padding        $decl
+	#end
+
+$padding        # state variable initializations
+	#foreach($init in $concState.getInits())
+$padding        self.$init
+	#end
+
+$padding        # state variable constraint assertions
+	#foreach($init_constraint in $concState.getInitConstraints())
+$padding        $init_constraint
+	#end
 
 
 $padding    class ${concState.getName()}(State):

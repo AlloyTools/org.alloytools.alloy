@@ -25,5 +25,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dash"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.dist"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.alloytools.alloy.extra"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
