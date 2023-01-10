@@ -58,8 +58,8 @@ public final class AlloyModel {
      * If A extends B, then "(A,B)" will be in this map.
      * <p>
      * AlloyModel's constructor ensures the following: <br>
-     * (1) hierachy.keySet() is always a subset of this.types <br>
-     * (2) hierachy.valueSet() is always a subset of this.types <br>
+     * (1) hierarchy.keySet() is always a subset of this.types <br>
+     * (2) hierarchy.valueSet() is always a subset of this.types <br>
      * (3) "univ" is never in the keySet <br>
      * (4) null is never in the keySet nor valueSet <br>
      * (5) there is no cycle in this relation

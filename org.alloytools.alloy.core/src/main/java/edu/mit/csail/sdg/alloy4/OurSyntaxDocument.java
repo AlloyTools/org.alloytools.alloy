@@ -577,7 +577,7 @@ class OurSyntaxDocument extends DefaultStyledDocument {
     }
 
     /**
-     * Overriden to return the full text of the document.
+     * Overridden to return the full text of the document.
      *
      * @return the entire text
      */

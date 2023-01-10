@@ -32,7 +32,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 
 /**
  * Immutable; represents disjoint[] or pred/totalOrder[] or (... and ... and ..)
- * and other similar list of arugments.
+ * and other similar list of arguments.
  * <p>
  * <b>Invariant:</b> type!=EMPTY => (all x:args | x.mult==0)
  */

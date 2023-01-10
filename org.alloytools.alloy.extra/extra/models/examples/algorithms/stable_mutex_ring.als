@@ -72,7 +72,7 @@ sig Tick {
   val: Process -> one Val,
   runs: set Process,    // processes scheduled to run on this tick
   // for visualization
-  priv: set Process  // the set of priviledged processes on this tick
+  priv: set Process  // the set of privileged processes on this tick
 }
 {
   priv = { p : Process | Privileged[p, this] }

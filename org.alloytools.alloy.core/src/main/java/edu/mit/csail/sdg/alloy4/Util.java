@@ -403,17 +403,17 @@ public final class Util {
             } else if (b.startsWith("this/")) {
                 return 1;
             }
-            int acount = 0, bcount = 0;
+            int account = 0, bcount = 0;
             for (int i = 0; i < a.length(); i++) {
                 if (a.charAt(i) == '/')
-                    acount++;
+                    account++;
             }
             for (int i = 0; i < b.length(); i++) {
                 if (b.charAt(i) == '/')
                     bcount++;
             }
-            if (acount != bcount)
-                return (acount < bcount) ? -1 : 1;
+            if (account != bcount)
+                return (account < bcount) ? -1 : 1;
             int result = a.compareToIgnoreCase(b);
             return result != 0 ? result : a.compareTo(b);
         }
@@ -821,7 +821,7 @@ public final class Util {
 
     /**
      * Returns a mask of the form 000..0011..11 where the number of 1s is equal to
-     * the number of significant bits of the highest integer withing the given
+     * the number of significant bits of the highest integer within the given
      * bitwidth
      */
     public static int shiftmask(int bitwidth) {

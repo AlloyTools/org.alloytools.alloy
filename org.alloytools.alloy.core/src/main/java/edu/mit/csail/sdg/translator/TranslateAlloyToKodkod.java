@@ -660,7 +660,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     // ==============================================================================================================//
 
     /**
-     * Convenience method that evalutes x and casts the result to be a Kodkod
+     * Convenience method that evaluates x and casts the result to be a Kodkod
      * Formula.
      *
      * @return the formula - if x evaluates to a Formula
@@ -676,7 +676,7 @@ public final class TranslateAlloyToKodkod extends VisitReturn<Object> {
     }
 
     /**
-     * Convenience method that evalutes x and cast the result to be a Kodkod
+     * Convenience method that evaluates x and cast the result to be a Kodkod
      * IntExpression.
      *
      * @return the integer expression - if x evaluates to an IntExpression

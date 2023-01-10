@@ -786,7 +786,7 @@ SigQual  ::= PRIVATE:x                {: RESULT=new ArrayList<Pos>(6); RESULT.ad
 SigQual  ::= VAR:x            	      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(x);    :};
 
 SigQuals ::= SIG                      {: RESULT=new ArrayList<Pos>(6); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); RESULT.add(null); :};
-SigQuals ::= SigQual:a SigQuals:b     {: RESULT=a; for(int i=0;i<6;i++) if (a.get(i)==null) a.set(i,b.get(i)); else if (b.get(i)!=null) throw new ErrorSyntax(b.get(i), "The same qualifer cannot be specified more than once for the same sig."); :};
+SigQuals ::= SigQual:a SigQuals:b     {: RESULT=a; for(int i=0;i<6;i++) if (a.get(i)==null) a.set(i,b.get(i)); else if (b.get(i)!=null) throw new ErrorSyntax(b.get(i), "The same qualifier cannot be specified more than once for the same sig."); :};
 
 SigIn    ::= EXTENDS:a SigRef:x       {: RESULT=new ArrayList<ExprVar>(2); RESULT.add(x); RESULT.add(ExprVar.make(a, "extends")); :};
 SigIn    ::= IN:a SigRefu:x           {: RESULT=x;  x.add(ExprVar.make(a,"in"));                                                  :};

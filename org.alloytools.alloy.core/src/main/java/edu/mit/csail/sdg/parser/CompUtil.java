@@ -70,7 +70,7 @@ public final class CompUtil {
     // =============================================================================================================//
 
     /**
-     * Go up the directory hierachy 0 or more times. <br>
+     * Go up the directory hierarchy 0 or more times. <br>
      * For example, on a UNIX machine, goUp("/home/abc/def",1) will return
      * "/home/abc" <br>
      * For example, on a UNIX machine, goUp("/home/abc/def",2) will return "/home"
