@@ -66,7 +66,7 @@ public final class StaticInstanceReader {
     private final LinkedHashMap<Sig,AlloyType>       sig2type    = new LinkedHashMap<Sig,AlloyType>();
 
     /**
-     * This maps each Sig ot its corresponding unique VIsualizer AlloyAtom (if
+     * This maps each Sig to its corresponding unique VIsualizer AlloyAtom (if
      * isMeta is true).
      */
     private final LinkedHashMap<Sig,AlloyAtom>       sig2atom    = new LinkedHashMap<Sig,AlloyAtom>();

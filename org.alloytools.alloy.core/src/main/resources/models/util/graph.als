@@ -1,7 +1,7 @@
 module util/graph[node]
 
 /*
- * Utilities for some common operations and contraints
+ * Utilities for some common operations and constraints
  * on graphs.
  *
  * author: Greg Dennis

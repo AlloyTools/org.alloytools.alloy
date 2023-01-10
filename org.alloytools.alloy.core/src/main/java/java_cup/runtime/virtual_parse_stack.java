@@ -91,7 +91,7 @@ public class virtual_parse_stack {
         if (real_next >= real_stack.size())
             return;
 
-        /* get a copy of the first Symbol we have not transfered */
+        /* get a copy of the first Symbol we have not transferred */
         stack_sym = (Symbol) real_stack.elementAt(real_stack.size() - 1 - real_next);
 
         /* record the transfer */

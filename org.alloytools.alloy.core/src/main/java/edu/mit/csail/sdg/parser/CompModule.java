@@ -1330,7 +1330,7 @@ public final class CompModule extends Browsable implements Module {
                 if (arg.label.length() == 0)
                     throw new ErrorSyntax(arg.span(), "Argument cannot be empty.");
                 if (arg.label.indexOf('@') >= 0)
-                    throw new ErrorSyntax(arg.span(), "Argument cannot contain the \'@\' chracter.");
+                    throw new ErrorSyntax(arg.span(), "Argument cannot contain the \'@\' character.");
                 newlist.add(arg.label);
             }
         Open x = opens.get(as);
@@ -1347,7 +1347,7 @@ public final class CompModule extends Browsable implements Module {
         opens.put(as, x);
     }
 
-    /** Do any post-parsing processig. */
+    /** Do any post-parsing processing. */
     void doneParsing() {
         status = 3;
         LinkedHashMap<String,Open> copy = new LinkedHashMap<String,Open>(opens);

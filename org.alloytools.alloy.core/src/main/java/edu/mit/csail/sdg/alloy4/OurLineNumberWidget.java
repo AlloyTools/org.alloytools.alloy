@@ -249,7 +249,7 @@ public class OurLineNumberWidget extends JComponent implements DocumentListener,
     /**
      * Set the fontName and fontSize for this widget.  If the
      * submitted name and size amount to a change of the font itself,
-     * incure an update() call.
+     * incur an update() call.
      * @param fontName
      * @param fontSize
      */

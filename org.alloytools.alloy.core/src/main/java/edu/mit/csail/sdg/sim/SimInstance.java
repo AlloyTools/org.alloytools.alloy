@@ -522,7 +522,7 @@ public final class SimInstance extends VisitReturn<Object> {
     }
 
     /**
-     * Convenience method that evalutes x and casts the result to be a boolean.
+     * Convenience method that evaluates x and casts the result to be a boolean.
      *
      * @return the boolean - if x evaluates to a boolean
      * @throws ErrorFatal - if x does not evaluate to a boolean
@@ -537,7 +537,7 @@ public final class SimInstance extends VisitReturn<Object> {
     }
 
     /**
-     * Convenience method that evalutes x and cast the result to be a int.
+     * Convenience method that evaluates x and cast the result to be a int.
      *
      * @return the int - if x evaluates to an int
      * @throws ErrorFatal - if x does not evaluate to an int
@@ -554,7 +554,7 @@ public final class SimInstance extends VisitReturn<Object> {
     }
 
     /**
-     * Convenience method that evalutes x and cast the result to be a tupleset
+     * Convenience method that evaluates x and cast the result to be a tupleset
      *
      * @return the tupleset - if x evaluates to a tupleset
      * @throws ErrorFatal - if x does not evaluate to a tupleset
@@ -961,7 +961,7 @@ public final class SimInstance extends VisitReturn<Object> {
     }
 
     /**
-     * Helper method for enumerating all possibilties for a
+     * Helper method for enumerating all possibilities for a
      * quantification-expression.
      */
     private int enumerate(final TempList<SimTuple> store, int sum, final ExprQt x, final Expr body, final int i) throws Err { // if op is ALL NO SOME ONE LONE then it always returns
@@ -1341,7 +1341,7 @@ public final class SimInstance extends VisitReturn<Object> {
                     }
             return "";
         } catch (Err ex) {
-            return "An internal error has occured:\n" + ex.dump();
+            return "An internal error has occurred:\n" + ex.dump();
         }
     }
 }

@@ -1698,7 +1698,7 @@ public final class A4Solution {
             inst = new TemporalInstance(Arrays.asList(inst), 0, 1);
         // To ensure no more output during SolutionEnumeration
         solver.options().setReporter(oldReporter);
-        // If unsatisfiable, then retreive the unsat core if desired
+        // If unsatisfiable, then retrieve the unsat core if desired
         if (inst == null && solver.options().solver() == SATFactory.MiniSatProver) {
             try {
                 lCore = new LinkedHashSet<Node>();

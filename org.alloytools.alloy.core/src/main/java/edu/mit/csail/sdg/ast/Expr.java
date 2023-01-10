@@ -240,7 +240,7 @@ public abstract class Expr extends Browsable {
 
     /**
      * Resolves this expression if ambiguous. (And if t.size()>0, it represents the
-     * set of tuples whose presence/absence is relevent to the parent expression)
+     * set of tuples whose presence/absence is relevant to the parent expression)
      * (Note: it's possible for t to be EMPTY, or even ambiguous!)
      * <p>
      * On success: the return value will be well-typed and unambiguous

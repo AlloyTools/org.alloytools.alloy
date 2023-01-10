@@ -518,7 +518,7 @@ public final class A4SolutionReader {
             if (ex instanceof Err)
                 throw ((Err) ex);
             else
-                throw new ErrorFatal("Fatal error occured: " + ex, ex);
+                throw new ErrorFatal("Fatal error occurred: " + ex, ex);
         }
     }
 }
