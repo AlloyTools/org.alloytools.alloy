@@ -78,7 +78,7 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
  *           parallel problem)
  */
 
-final class SimpleReporter extends A4Reporter {
+public final class SimpleReporter extends A4Reporter {
 
     public static final class SimpleCallback1 implements WorkerCallback {
 
@@ -601,7 +601,7 @@ final class SimpleReporter extends A4Reporter {
     private int warn = 0;
 
     /** Task that performs solution enumeration. */
-    static final class SimpleTask2 implements WorkerTask {
+    public static final class SimpleTask2 implements WorkerTask {
 
         private static final long       serialVersionUID = 0;
         public int                      index            = -1; // [electrum] registers which iteration operation to perform
@@ -683,7 +683,7 @@ final class SimpleReporter extends A4Reporter {
     }
 
     /** Task that perform one command. */
-    static final class SimpleTask1 implements WorkerTask {
+    public static final class SimpleTask1 implements WorkerTask {
 
         private static final long serialVersionUID = 0;
         public A4Options          options;
@@ -762,38 +762,40 @@ final class SimpleReporter extends A4Reporter {
                         rep.cb("", "   #" + (i + 1) + ": Unknown.\n");
                         continue;
                     }
+                    StringBuilder sb = new StringBuilder();
                     if (result.get(i).endsWith(".xml")) {
                         rep.cb("", "   #" + (i + 1) + ": ");
                         rep.cb("link", r.check ? "Counterexample found. " : "Instance found. ", "XML: " + result.get(i));
-                        rep.cb("", r.label + (r.check ? " is invalid" : " is consistent"));
+                        sb.append(r.label + (r.check ? " is invalid" : " is consistent"));
                         if (r.expects == 0)
-                            rep.cb("", ", contrary to expectation");
+                        	sb.append(", contrary to expectation");
                         else if (r.expects == 1)
-                            rep.cb("", ", as expected");
+                        	sb.append(", as expected");
                     } else if (result.get(i).endsWith(".core")) {
                         rep.cb("", "   #" + (i + 1) + ": ");
                         rep.cb("link", r.check ? "No counterexample found. " : "No instance found. ", "CORE: " + result.get(i));
-                        rep.cb("", r.label + (r.check ? " may be valid" : " may be inconsistent"));
+                        sb.append(r.label + (r.check ? " may be valid" : " may be inconsistent"));
                         if (r.expects == 1)
-                            rep.cb("", ", contrary to expectation");
+                        	sb.append(", contrary to expectation");
                         else if (r.expects == 0)
-                            rep.cb("", ", as expected");
+                        	sb.append(", as expected");
                     } else {
                         if (r.check)
-                            rep.cb("", "   #" + (i + 1) + ": No counterexample found. " + r.label + " may be valid");
+                        	sb.append("   #" + (i + 1) + ": No counterexample found. " + r.label + " may be valid");
                         else
-                            rep.cb("", "   #" + (i + 1) + ": No instance found. " + r.label + " may be inconsistent");
+                        	sb.append("   #" + (i + 1) + ": No instance found. " + r.label + " may be inconsistent");
                         if (r.expects == 1)
-                            rep.cb("", ", contrary to expectation");
+                        	sb.append(", contrary to expectation");
                         else if (r.expects == 0)
-                            rep.cb("", ", as expected");
+                        	sb.append(", as expected");
                     }
-                    rep.cb("", ".\n");
+                    sb.append(".\n");
+                    rep.cb("", sb.toString());
                 }
                 rep.cb("", "\n");
             }
             if (rep.warn > 1)
-                rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings. Please scroll up to see them.\n");
+                rep.cb("bold", "Note: There were " + rep.warn + " compilation warnings.\n");
             if (rep.warn == 1)
                 rep.cb("bold", "Note: There was 1 compilation warning. Please scroll up to see it.\n");
 

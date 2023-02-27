@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -572,6 +573,9 @@ public class A4Preferences {
     /** The latest tab distance of the Alloy Analyzer. */
     public static final IntChoicePref         TabSize                = IntChoicePref.range("TabSize", "Tab size", 1, 1, 16, 4);
 
+    /** The latest line-number mode selection of the Alloy Analyzer. */
+    public static final BooleanPref           LineNumbers            = new BooleanPref("Line-numbers", "Show line numbers in editors");
+
     /** The latest welcome screen that the user has seen. */
     public static final BooleanPref           Welcome                = new BooleanPref("Welcome", "Show welcome message at start up");
 
@@ -804,14 +808,28 @@ public class A4Preferences {
         return ans;
     }
 
-    // /** The visualization algorithm */
-    // public static final StringChoicePref VisualizationAlgorithm = new
-    // StringChoicePref("VizAlg", "Visualization algorightm",
-    // Arrays.asList("Sugiyama", "Circle", "Grid"), "Sugiyama");
-    //
-    // public static final IntPref GridLayoutRows = new
-    // IntPref("GridLayoutRows", 1, 5, 100);
-    // public static final IntPref GridLayoutCols = new
-    // IntPref("GridLayoutCols", 1, 5, 100);
+    /**
+     * Convenience method to set a value by string
+     *
+     * @param id the id of the preference
+     * @param value the value in string form
+     * @return an error message or null if all ok
+     */
+
+    public static <T> String set(String id, String value) {
+        Optional<Pref< ? >> pref = allPrefs().stream().filter(p -> p.id.equals(id)).findAny();
+        if (pref.isPresent()) {
+            try {
+                Pref<T> p = (Pref<T>) pref.get();
+                T parsed = (T) pref.get().parse(value);
+                p.set(parsed);
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        } else {
+            return "no such preference";
+        }
+        return null;
+    }
 
 }

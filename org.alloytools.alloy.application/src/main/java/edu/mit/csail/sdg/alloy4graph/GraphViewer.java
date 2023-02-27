@@ -615,7 +615,7 @@ public final strictfp class GraphViewer extends JPanel {
             }
             Util.setCurrentDirectory(filename.getParentFile());
         } catch (Throwable ex) {
-            OurDialog.alert(parent, "An error has occured in writing the output file:\n" + ex);
+            OurDialog.alert(parent, "An error has occurred in writing the output file:\n" + ex);
         }
     }
 

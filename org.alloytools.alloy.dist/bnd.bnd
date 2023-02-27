@@ -1,25 +1,38 @@
 
-Main-Class: edu.mit.csail.sdg.alloy4whole.Alloy
+Main-Class: org.alloytools.alloy.core.infra.Alloy
+JPM-Command: alloy
 
 -buildpath: \
 	org.alloytools.alloy.application,\
-    org.alloytools.alloy.core,\
+	org.alloytools.alloy.core,\
 	org.alloytools.alloy.extra,\
+    org.alloytools.api,\
 	aQute.libg, \
     slf4j.api, \
-    slf4j.simple
-	
+    slf4j.simple,\
+	org.alloytools.alloy.lsp
 
 -sources: false
--conditionalpackage: aQute.lib*, org.apache.commmons.cli, slf4j*
+-conditionalpackage: aQute.*, org.apache.commmons.cli, slf4j*
 
 -includeresource: \
+    @${repo;org.alloytools.api}, \
 	@${repo;org.alloytools.alloy.application}, \
 	@${repo;org.alloytools.alloy.core}, \
 	@${repo;org.alloytools.alloy.extra}, \
+    @${repo;org.alloytools.alloy.lsp}, \
 	@${repo;org.alloytools:pardinus.core}, \
 	@${repo;org.alloytools:pardinus.nativesat}, \
 	@${repo;org.sat4j.core}, \
 	@${repo;org.sat4j.maxsat}, \
 	@${repo;org.sat4j.pb}, \
+    @${repo;slf4j.api}, \
+    @${repo;slf4j.simple}, \
+	@${repo;org.eclipse.lsp4j}, \
+    @${repo;org.eclipse.lsp4j.jsonrpc}, \
+    @${repo;com.google.gson}, \
+    @${repo;org.eclipse.equinox.common}, \
+    @${repo;org.apache.commons.io}, \
 	LICENSES
+
+-dependson: *

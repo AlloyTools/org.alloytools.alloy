@@ -104,7 +104,7 @@ fact MsgMovementConstraints {
       // Return addresses are correct
       all n: Node | t.sent[n].state.from in n
 
-      // messages sent to a node on a tick become visible to that node on some subseqent tick,
+      // messages sent to a node on a tick become visible to that node on some subsequent tick,
       // and permanently stop being visible to that node on the tick after that node reads the message
       all n: Node, m: Msg | {
           // message starts being visible to node n no earlier than it is sent;

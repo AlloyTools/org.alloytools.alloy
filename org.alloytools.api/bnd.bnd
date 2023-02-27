@@ -1,0 +1,4 @@
+-includepackage *;from:=classes
+-buildpath: \
+	org.osgi.annotation.bundle,\
+	osgi.annotation

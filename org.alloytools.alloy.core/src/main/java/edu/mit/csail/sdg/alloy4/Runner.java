@@ -45,14 +45,14 @@ public abstract class Runner extends AbstractAction implements Runnable, WindowL
     public Runner() {}
 
     /**
-     * This method should be overriden to provide the default action that this
+     * This method should be overridden to provide the default action that this
      * Runner would perform.
      */
     @Override
     public abstract void run();
 
     /**
-     * This method should be overriden to provide the default action that this
+     * This method should be overridden to provide the default action that this
      * Runner would perform given an argument.
      */
     public abstract void run(Object arg);

@@ -40,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.ConstList;
@@ -56,6 +57,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
+import edu.mit.csail.sdg.ast.Assert;
 import edu.mit.csail.sdg.ast.Attr;
 import edu.mit.csail.sdg.ast.Browsable;
 import edu.mit.csail.sdg.ast.Clause;
@@ -76,6 +78,7 @@ import edu.mit.csail.sdg.ast.ExprLet;
 import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
+import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Module;
@@ -243,7 +246,7 @@ public final class CompModule extends Browsable implements Module {
     private final Map<String,Macro>           macros      = new LinkedHashMap<String,Macro>();
 
     /** Each assertion name is mapped to its Expr. */
-    private final Map<String,Expr>            asserts     = new LinkedHashMap<String,Expr>();
+    private final Map<String,Assert>            asserts     = new LinkedHashMap<String,Assert>();
 
     /**
      * The list of facts; each fact is either an untypechecked Exp or a typechecked
@@ -384,7 +387,7 @@ public final class CompModule extends Browsable implements Module {
                 match = rootmodule.globals.get(name);
             if (match != null) {
                 if (match instanceof Macro)
-                    return ((Macro) match).changePos(pos);
+                    return (match);//.changePos(pos);
                 match = ExprUnary.Op.NOOP.make(pos, match);
                 return ExprChoice.make(isIntsNotUsed, pos, asList(match), asList(name));
             }
@@ -486,9 +489,14 @@ public final class CompModule extends Browsable implements Module {
         public Expr visit(ExprBadJoin x) throws Err {
             Expr left = visitThis(x.left);
             Expr right = visitThis(x.right);
+            Expr rightInner = ignoreNoops(right);
             // If it's a macro invocation, instantiate it
-            if (right instanceof Macro)
-                return ((Macro) right).addArg(left).instantiate(this, warns);
+            if (rightInner instanceof Macro){
+                Expr instantiated = ((Macro) rightInner).addArg(left).instantiate(this, warns);
+                Expr res = ExprUnary.Op.NOOP.make(right.pos, instantiated);
+                res.setReferenced(right.referenced());
+                return res;
+            }
             // check to see if it is the special builtin function "Int[]"
             if (left.type().is_int() && right.isSame(Sig.SIGINT))
                 return left; // [AM] .cast2sigint();
@@ -499,6 +507,15 @@ public final class CompModule extends Browsable implements Module {
             return process(x.pos, x.closingBracket, right.pos, ((ExprChoice) right).choices, ((ExprChoice) right).reasons, left);
         }
 
+        public static Expr ignoreNoops(Expr e){
+            if (e instanceof ExprUnary){
+                ExprUnary eu = (ExprUnary) e;
+                if( eu.op == Op.NOOP){
+                    return ignoreNoops(eu.sub);
+                }
+            }
+            return e;
+        }
         /** {@inheritDoc} */
         @Override
         public Expr visit(ExprBinary x) throws Err {
@@ -506,8 +523,13 @@ public final class CompModule extends Browsable implements Module {
             Expr right = visitThis(x.right);
             if (x.op == ExprBinary.Op.JOIN) {
                 // If it's a macro invocation, instantiate it
-                if (right instanceof Macro)
-                    return ((Macro) right).addArg(left).instantiate(this, warns);
+                Expr rightInner = ignoreNoops(right);
+                if (rightInner instanceof Macro){
+                    Expr instantiated = ((Macro) rightInner).addArg(left).instantiate(this, warns);
+                    Expr res = ExprUnary.Op.NOOP.make(right.pos, instantiated);
+                    res.setReferenced(right.referenced());
+                    return res;
+                }
                 // check to see if it is the special builtin function "Int[]"
                 if (left.type().is_int() && right.isSame(Sig.SIGINT))
                     return left; // [AM] .cast2sigint();
@@ -632,20 +654,9 @@ public final class CompModule extends Browsable implements Module {
             if (obj instanceof Macro) {
                 Macro macro = ((Macro) obj).copy();
                 Expr instantiated = macro.instantiate(this, warns);
-                instantiated.setReferenced(new Clause() {
-
-                    @Override
-                    public Pos pos() {
-                        return instantiated.pos;
-                    }
-
-                    @Override
-                    public String explain() {
-                        return instantiated.toString();
-                    }
-
-                });
-                return instantiated;
+                Expr res = ExprUnary.Op.NOOP.make(x.pos, instantiated);
+                res.setReferenced(new Clause.Custom(macro.pos, macro.toString()));
+                return res;
             } else
                 return obj;
         }
@@ -671,6 +682,21 @@ public final class CompModule extends Browsable implements Module {
         /** {@inheritDoc} */
         @Override
         public Expr visit(Sig x) {
+            return x;
+        }
+
+        @Override
+        public Expr visit(Func x) throws Err {
+            return x;
+        }
+
+        @Override
+        public Expr visit(Assert x) throws Err {
+            return x;
+        }
+
+        @Override
+        public Expr visit(Macro x) throws Err {
             return x;
         }
 
@@ -890,9 +916,9 @@ public final class CompModule extends Browsable implements Module {
         }
         if (asserts.size() > 0) {
             x = new ArrayList<Browsable>(asserts.size());
-            for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-                Pos sp = e.getValue().span();
-                x.add(make(sp, sp, "<b>assert</b> " + e.getKey(), e.getValue()));
+            for (Map.Entry<String,Assert> e : asserts.entrySet()) {
+                Pos sp = e.getValue().expr.span();
+                x.add(make(sp, sp, "<b>assert</b> " + e.getKey(), e.getValue().expr));
             }
             ans.add(make("<b>" + x.size() + (x.size() > 1 ? " asserts</b>" : " assert</b>"), x));
         }
@@ -933,7 +959,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /**
-     * Parse one expression by starting fromt this module as the root module.
+     * Parse one expression by starting from this module as the root module.
      */
     @Override
     public Expr parseOneExpressionFromString(String input) throws Err, FileNotFoundException, IOException {
@@ -993,7 +1019,7 @@ public final class CompModule extends Browsable implements Module {
             } else if (x instanceof Func) {
                 Func y = (Func) x;
                 msg.append(y.isPred ? "pred " : "fun ").append(y.label).append("\n" + "at ").append(y.pos.toShortString());
-            } else if (x instanceof Expr) {
+            } else if (x instanceof Assert) {
                 Expr y = (Expr) x;
                 msg.append("assertion at ").append(y.pos.toShortString());
             }
@@ -1095,7 +1121,7 @@ public final class CompModule extends Browsable implements Module {
                         ans.add(x);
             }
             if ((r & 2) != 0) {
-                Expr x = m.asserts.get(name);
+                Assert x = m.asserts.get(name);
                 if (x != null)
                     ans.add(x);
             }
@@ -1130,7 +1156,7 @@ public final class CompModule extends Browsable implements Module {
                             ans.add(x);
                 }
                 if ((r & 2) != 0) {
-                    Expr x = u.asserts.get(name);
+                    Assert x = u.asserts.get(name);
                     if (x != null)
                         ans.add(x);
                 }
@@ -1241,7 +1267,7 @@ public final class CompModule extends Browsable implements Module {
                 String name = expr.label;
                 dup(expr.span(), name, true);
                 if (path.length() == 0) {
-                    Sig newSig = addSig(name, null, null, null, null, WHERE.make(expr.span()));
+                    Sig newSig = addSig(null, name, null, null, null, null, WHERE.make(expr.span()));
                     if (nextIsExact)
                         exactSigs.add(newSig);
                 } else {
@@ -1304,7 +1330,7 @@ public final class CompModule extends Browsable implements Module {
                 if (arg.label.length() == 0)
                     throw new ErrorSyntax(arg.span(), "Argument cannot be empty.");
                 if (arg.label.indexOf('@') >= 0)
-                    throw new ErrorSyntax(arg.span(), "Argument cannot contain the \'@\' chracter.");
+                    throw new ErrorSyntax(arg.span(), "Argument cannot contain the \'@\' character.");
                 newlist.add(arg.label);
             }
         Open x = opens.get(as);
@@ -1321,7 +1347,7 @@ public final class CompModule extends Browsable implements Module {
         opens.put(as, x);
     }
 
-    /** Do any post-parsing processig. */
+    /** Do any post-parsing processing. */
     void doneParsing() {
         status = 3;
         LinkedHashMap<String,Open> copy = new LinkedHashMap<String,Open>(opens);
@@ -1447,7 +1473,8 @@ public final class CompModule extends Browsable implements Module {
         sigs.put(Sig.GHOST.label, Sig.GHOST);
     }
 
-    Sig addSig(String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
+    Sig addSig(Pos namePos, String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
+
         Sig obj;
         Pos pos = Pos.UNKNOWN.merge(WHERE.find(attributes));
         status = 3;
@@ -1469,14 +1496,15 @@ public final class CompModule extends Browsable implements Module {
         if (subset != null) {
             attributes = Util.append(attributes, SUBSET.makenull(subset));
             List<Sig> newParents = new ArrayList<Sig>(parents == null ? 0 : parents.size());
-            if (parents != null)
-                for (ExprVar p : parents)
-                    newParents.add(new PrimSig(p.label, WHERE.make(p.pos)));
-            obj = new SubsetSig(full, newParents, attributes);
+            if (parents == null) parents = Arrays.asList();
+            for (ExprVar p : parents)
+                newParents.add(new PrimSig(p.label, WHERE.make(p.pos)));
+            obj = new SubsetSig(namePos, full, parents.stream().map(p -> p.pos).collect(Collectors.toList()), newParents, attributes);
         } else {
             attributes = Util.append(attributes, SUBSIG.makenull(subsig));
             PrimSig newParent = (parents != null && parents.size() > 0) ? (new PrimSig(parents.get(0).label, WHERE.make(parents.get(0).pos))) : UNIV;
-            obj = new PrimSig(full, newParent, attributes);
+            Pos parentPos = (parents != null && parents.size() > 0) ? parents.get(0).pos : Pos.UNKNOWN;
+            obj = new PrimSig(namePos, full, parentPos, newParent, attributes);
         }
         sigs.put(name, obj);
         old2fields.put(obj, fields);
@@ -1491,9 +1519,9 @@ public final class CompModule extends Browsable implements Module {
         List<ExprVar> THESE = Arrays.asList(THIS);
         if (atoms == null || atoms.size() == 0)
             throw new ErrorSyntax(pos, "Enumeration must contain at least one name.");
-        addSig(name.label, null, null, null, null, WHERE.make(name.pos), ABSTRACT.make(name.pos), PRIVATE.makenull(priv), Attr.ENUM);
+        addSig(null, name.label, null, null, null, null, WHERE.make(name.pos), ABSTRACT.make(name.pos), PRIVATE.makenull(priv), Attr.ENUM);
         for (ExprVar a : atoms)
-            addSig(a.label, EXTENDS, THESE, null, null, WHERE.make(a.pos), ONE.make(a.pos), PRIVATE.makenull(priv));
+            addSig(null, a.label, EXTENDS, THESE, null, null, WHERE.make(a.pos), ONE.make(a.pos), PRIVATE.makenull(priv));
         int oldStatus = status;
         status = 0;
         try {
@@ -1520,18 +1548,20 @@ public final class CompModule extends Browsable implements Module {
             throw new ErrorType(pos, "Sig " + oldS + " is involved in a cyclic inheritance.");
         if (oldS instanceof SubsetSig) {
             List<Sig> parents = new ArrayList<Sig>();
-            for (Sig n : ((SubsetSig) oldS).parents) {
+            SubsetSig oldSS = (SubsetSig) oldS;
+            for (Sig n : oldSS.parents) {
                 Sig parentAST = u.getRawSIG(n.pos, n.label);
                 if (parentAST == null)
                     throw new ErrorSyntax(n.pos, "The sig \"" + n.label + "\" cannot be found.");
                 parents.add(resolveSig(res, topo, parentAST, warns));
             }
-            realSig = new SubsetSig(fullname, parents, oldS.attributes.toArray(new Attr[0]));
+            realSig = new SubsetSig(oldSS.pos, fullname, oldSS.parentRefPoss, parents, oldS.attributes.toArray(new Attr[0]));
             for (Sig n : parents)
                 if (n != UNIV && n.isVariable != null && realSig.isVariable == null)
                     warns.add(new ErrorWarning(realSig.isSubset, "Part of " + n.label + " is static.\n" + "Sig " + realSig.label + " is static but " + n.label + " is variable."));
         } else {
-            Sig sup = ((PrimSig) oldS).parent;
+            PrimSig oldSP = (PrimSig) oldS;
+            Sig sup = oldSP.parent;
             Sig parentAST = u.getRawSIG(sup.pos, sup.label);
             if (parentAST == null)
                 throw new ErrorSyntax(sup.pos, "The sig \"" + sup.label + "\" cannot be found.");
@@ -1539,7 +1569,7 @@ public final class CompModule extends Browsable implements Module {
             if (!(parent instanceof PrimSig))
                 throw new ErrorSyntax(sup.pos, "Cannot extend the subset signature \"" + parent + "\".\n" + "A signature can only extend a toplevel signature or a subsignature.");
             PrimSig p = (PrimSig) parent;
-            realSig = new PrimSig(fullname, p, oldS.attributes.toArray(new Attr[0]));
+            realSig = new PrimSig(oldSP.labelPos, fullname, oldSP.parentRefPos, p, oldS.attributes.toArray(new Attr[0]));
             if (parent != UNIV && parent.isVariable != null && realSig.isVariable == null)
                 warns.add(new ErrorWarning(realSig.isSubsig, "Part of " + parent.label + " is static.\n" + "Sig " + realSig.label + " is static but " + parent.label + " is variable."));
             if (parent != UNIV && parent.isVariable == null && realSig.isVariable != null)
@@ -1573,26 +1603,30 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a MACRO declaration. */
-    void addMacro(Pos p, Pos isPrivate, String n, List<ExprVar> decls, Expr v) throws Err {
+    void addMacro(Pos p, Pos isPrivate, Pos labelPos, String label, List<ExprVar> decls, Expr v) throws Err {
         if (!Version.experimental)
             throw new ErrorSyntax(p, "LET declaration is allowed only inside a toplevel paragraph.");
         ConstList<ExprVar> ds = ConstList.make(decls);
         status = 3;
-        dup(p, n, false);
+        dup(p, label, false);
         for (int i = 0; i < ds.size(); i++)
             for (int j = i + 1; j < ds.size(); j++)
                 if (ds.get(i).label.equals(ds.get(j).label))
                     throw new ErrorSyntax(ds.get(j).span(), "The parameter name \"" + ds.get(j).label + "\" cannot appear more than once.");
-        Macro ans = new Macro(p, isPrivate, this, n, ds, v);
-        Macro old = macros.put(n, ans);
+        Macro ans = new Macro(p, isPrivate, this, labelPos, label, ds, v);
+        Macro old = macros.put(label, ans);
         if (old != null) {
-            macros.put(n, old);
-            throw new ErrorSyntax(p, "You cannot declare more than one macro with the same name \"" + n + "\" in the same file.");
+            macros.put(label, old);
+            throw new ErrorSyntax(p, "You cannot declare more than one macro with the same name \"" + label + "\" in the same file.");
         }
     }
 
+    public SafeList<Macro> getAllMacros() {
+        return new SafeList<Macro>(macros.values());
+    }
+
     /** Add a FUN or PRED declaration. */
-    void addFunc(Pos p, Pos isPrivate, String n, Expr f, List<Decl> decls, Expr t, Expr v) throws Err {
+    void addFunc(Pos p, Pos isPrivate, ExprVar n, Expr f, List<Decl> decls, Expr t, Expr v) throws Err {
         if (decls == null)
             decls = new ArrayList<Decl>();
         else
@@ -1610,15 +1644,15 @@ public final class CompModule extends Browsable implements Module {
             }
         }
         status = 3;
-        dup(p, n, false);
+        dup(p, n.label, false);
         ExprHasName dup = Decl.findDuplicateName(decls);
         if (dup != null)
             throw new ErrorSyntax(dup.span(), "The parameter name \"" + dup.label + "\" cannot appear more than once.");
-        Func ans = new Func(p, isPrivate, n, decls, t, v);
-        ArrayList<Func> list = funcs.get(n);
+        Func ans = new Func(p, isPrivate, n.pos, n.label, decls, t, v);
+        ArrayList<Func> list = funcs.get(n.label);
         if (list == null) {
             list = new ArrayList<Func>();
-            funcs.put(n, list);
+            funcs.put(n.label, list);
         }
         list.add(ans);
     }
@@ -1663,7 +1697,7 @@ public final class CompModule extends Browsable implements Module {
                 if (err)
                     continue;
                 try {
-                    f = new Func(f.pos, f.isPrivate, fullname, tmpdecls.makeConst(), ret, f.getBody());
+                    f = new Func(f.pos, f.isPrivate, f.labelPos, fullname, tmpdecls.makeConst(), ret, f.getBody());
                     list.set(listi, f);
                     rep.typecheck("" + f + ", RETURN: " + f.returnDecl.type() + "\n");
                 } catch (Err ex) {
@@ -1727,12 +1761,12 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add an ASSERT declaration. */
-    String addAssertion(Pos pos, String name, Expr value) throws Err {
+    String addAssertion(Pos pos, Pos labelPos, String name, Expr value) throws Err {
         status = 3;
         if (name == null || name.length() == 0)
             name = "assert$" + (1 + asserts.size());
         dup(pos, name, false);
-        Expr old = asserts.put(name, ExprUnary.Op.NOOP.make(value.span().merge(pos), value));
+        Assert old = asserts.put(name, new Assert(pos.merge(value.span()), labelPos, name, ExprUnary.Op.NOOP.make(value.span(), value)));
         if (old != null) {
             asserts.put(name, old);
             throw new ErrorSyntax(pos, "\"" + name + "\" is already the name of an assertion in this module.");
@@ -1746,11 +1780,12 @@ public final class CompModule extends Browsable implements Module {
      */
     private JoinableList<Err> resolveAssertions(A4Reporter rep, JoinableList<Err> errors, List<ErrorWarning> warns) throws Err {
         Context cx = new Context(this, warns);
-        for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-            Expr expr = e.getValue();
+        for (Map.Entry<String,Assert> e : asserts.entrySet()) {
+            Assert _assert = e.getValue();
+            Expr expr = _assert.expr;
             expr = cx.check(expr).resolve_as_formula(warns);
             if (expr.errors.isEmpty()) {
-                e.setValue(expr);
+                e.setValue(new Assert(_assert.pos, _assert.labelPos, _assert.label, expr));
                 rep.typecheck("Assertion " + e.getKey() + ": " + expr.type() + "\n");
             } else
                 errors = errors.make(expr.errors);
@@ -1762,10 +1797,10 @@ public final class CompModule extends Browsable implements Module {
      * Return an unmodifiable list of all assertions in this module.
      */
     @Override
-    public ConstList<Pair<String,Expr>> getAllAssertions() {
-        TempList<Pair<String,Expr>> ans = new TempList<Pair<String,Expr>>(asserts.size());
-        for (Map.Entry<String,Expr> e : asserts.entrySet()) {
-            ans.add(new Pair<String,Expr>(e.getKey(), e.getValue()));
+    public ConstList<Assert> getAllAssertions() {
+        TempList<Assert> ans = new TempList<Assert>(asserts.size());
+        for (Assert a : asserts.values()) {
+            ans.add(a);
         }
         return ans.makeConst();
     }
@@ -1851,7 +1886,8 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, ExprVar name, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    void addCommand(boolean followUp, Pos pos, ExprVar name, ExprVar commandKeyword, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+        boolean check = commandKeyword.label.equals("c");
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
         if (label != null)
@@ -1863,7 +1899,7 @@ public final class CompModule extends Browsable implements Module {
             throw new ErrorSyntax(pos, "Predicate/assertion name cannot contain \'@\'");
         String labelName = (label == null || label.label.length() == 0) ? name.label : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, tmn, tmx, exp, scopes, null, name, parent);
+        Command newcommand = new Command(pos, name, labelName, check, overall, bitwidth, seq, tmn, tmx, exp, scopes, null, commandKeyword, name, parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1871,8 +1907,8 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, boolean check, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
-
+    void addCommand(boolean followUp, Pos pos, Expr e, ExprVar commandKeyword, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+        boolean check = commandKeyword.label.equals("c");
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
 
@@ -1882,12 +1918,12 @@ public final class CompModule extends Browsable implements Module {
         status = 3;
         String n;
         if (check)
-            n = addAssertion(pos, "check$" + (1 + commands.size()), e);
+            n = addAssertion(pos, null, "check$" + (1 + commands.size()), e);
         else
-            addFunc(e.span().merge(pos), Pos.UNKNOWN, n = "run$" + (1 + commands.size()), null, new ArrayList<Decl>(), null, e);
+            addFunc(e.span().merge(pos), Pos.UNKNOWN, ExprVar.make( Pos.UNKNOWN, n = "run$" + (1 + commands.size())), null, new ArrayList<Decl>(), null, e);
         String labelName = (label == null || label.label.length() == 0) ? n : label.label;
         Command parent = followUp ? commands.get(commands.size() - 1) : null;
-        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, tmn, tmx, expects, scopes, null, ExprVar.make(null, n), parent);
+        Command newcommand = new Command(e.span().merge(pos), e, labelName, check, overall, bitwidth, seq, tmn, tmx, expects, scopes, null, commandKeyword, ExprVar.make(null, n), parent);
         if (parent != null)
             commands.set(commands.size() - 1, newcommand);
         else
@@ -1896,8 +1932,9 @@ public final class CompModule extends Browsable implements Module {
 
     public void addDefaultCommand() {
         if (commands.isEmpty()) {
-            addFunc(Pos.UNKNOWN, Pos.UNKNOWN, "$$Default", null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, -1, -1, 1, null, null, ExprVar.make(null, "$$Default"), null));
+            addFunc(Pos.UNKNOWN, Pos.UNKNOWN, ExprVar.make(Pos.UNKNOWN, "$$Default"), null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
+            ExprVar check = ExprVar.make(Pos.UNKNOWN, "check");
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, -1, -1, 1, null, null, check, ExprVar.make(null, "$$Default"), null));
         }
     }
 
@@ -1917,7 +1954,14 @@ public final class CompModule extends Browsable implements Module {
             if (m.size() < 1)
                 throw new ErrorSyntax(cmd.pos, "The assertion \"" + cname + "\" cannot be found.");
 
-            Expr expr = (Expr) (m.get(0));
+            Expr expr;
+            if (m.get(0) instanceof Assert){
+                Assert _assert = (Assert) m.get(0);
+                expr = _assert.expr;
+                declaringClause = _assert;
+            }else{
+                expr = (Expr) m.get(0);
+            }
             e = expr.not();
         } else {
             List<Object> m = getRawQS(4, cname); // We prefer fun/pred in the
@@ -1947,13 +1991,13 @@ public final class CompModule extends Browsable implements Module {
                 throw new ErrorSyntax(cmd.pos, "Mutable sig " + et.sig + " is not top-level thus cannot have scopes assigned.");
             if (et.isExact && s.isVariable != null)
                 throw new ErrorSyntax(cmd.pos, "Sig " + et.sig + " is variable thus scope cannot be exact.");
-            sc.add(new CommandScope(null, s, et.isExact, et.startingScope, et.endingScope, et.increment));
+            sc.add(new CommandScope(et.pos, et.sigPos, s, et.isExact, et.startingScope, et.endingScope, et.increment));
         }
 
         if (cmd.nameExpr != null) {
             cmd.nameExpr.setReferenced(declaringClause);
         }
-        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.minprefix, cmd.maxprefix, cmd.expects, sc.makeConst(), exactSigs, globalFacts.and(e), parent);
+        return new Command(cmd.pos, cmd.nameExpr, cmd.label, cmd.check, cmd.overall, cmd.bitwidth, cmd.maxseq, cmd.minprefix, cmd.maxprefix, cmd.expects, sc.makeConst(), exactSigs, cmd.commandKeyword, globalFacts.and(e), parent);
 
     }
 
@@ -2024,10 +2068,10 @@ public final class CompModule extends Browsable implements Module {
             cx.put("this", s.decl.get());
             Expr bound = cx.check(d.expr).resolve_as_set(warns);
             cx.remove("this");
-            String[] names = new String[d.names.size()];
-            for (int i = 0; i < names.length; i++)
-                names[i] = d.names.get(i).label;
-            Field[] fields = s.addTrickyField(d.span(), d.isPrivate, d.disjoint, d.disjoint2, null, d.isVar, names, bound);
+            // String[] names = new String[d.names.size()];
+            // for (int i = 0; i < names.length; i++)
+            //     names[i] = d.names.get(i).label;
+            Field[] fields = s.addTrickyField(d.span(), d.isPrivate, d.disjoint, d.disjoint2, null, d.isVar, d.names, bound);
             final VisitQuery<Sig> q = new VisitQuery<Sig>() {
 
                 @Override
@@ -2039,9 +2083,9 @@ public final class CompModule extends Browsable implements Module {
                 }
             };
             Sig qr = q.visitThis(bound);
-            if (d.isVar == null && qr != null)
+            if (d.isVar == null && qr != null) 
                 warns.add(new ErrorWarning(d.span(), "Static field types with variable bound.\n" + "Field " + d.names.get(0) + " is static but " + qr.label + " is variable."));
-            if (d.isVar == null && s.isVariable != null)
+            if (d.isVar == null && s.isVariable != null) 
                 warns.add(new ErrorWarning(d.span(), "Static field inside variable sig.\n" + "Field " + d.names.get(0) + " is static but " + s.label + " is variable."));
             for (Field f : fields) {
                 rep.typecheck("Sig " + s + ", Field " + f.label + ": " + f.type() + "\n");
@@ -2088,7 +2132,7 @@ public final class CompModule extends Browsable implements Module {
         for (CompModule m : root.allModules)
             for (Sig s : new ArrayList<Sig>(m.sigs.values()))
                 if (m != root || (s != root.metaSig && s != root.metaField)) {
-                    PrimSig ka = new PrimSig(s.label + "$", root.metaSig, Attr.ONE, PRIVATE.makenull(s.isPrivate), Attr.META);
+                    PrimSig ka = new PrimSig(Pos.UNKNOWN, s.label + "$", Pos.UNKNOWN, root.metaSig, Attr.ONE, PRIVATE.makenull(s.isPrivate), Attr.META);
                     sig2meta.put(s, ka);
                     ka.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "value", s);
                     m.new2old.put(ka, ka);
@@ -2099,7 +2143,7 @@ public final class CompModule extends Browsable implements Module {
                         Pos priv = field.isPrivate;
                         if (priv == null)
                             priv = s.isPrivate;
-                        PrimSig kb = new PrimSig(s.label + "$" + field.label, root.metaField, Attr.ONE, PRIVATE.makenull(priv), Attr.META);
+                        PrimSig kb = new PrimSig(Pos.UNKNOWN, s.label + "$" + field.label, Pos.UNKNOWN, root.metaField, Attr.ONE, PRIVATE.makenull(priv), Attr.META);
                         field2meta.put(field, kb);
                         m.new2old.put(kb, kb);
                         m.sigs.put(base(kb), kb);
@@ -2413,6 +2457,14 @@ public final class CompModule extends Browsable implements Module {
                 d.expr.accept(visitor);
             });
             s.getFacts().forEach(f -> f.accept(visitor));
+
+            if(s instanceof SubsetSig){
+                SubsetSig ss = (SubsetSig) s;
+                ss.parentRefs().forEach( p -> p.accept(visitor));
+            }else{
+                PrimSig ps = (PrimSig) s;
+                ps.parentRef().accept(visitor);
+            }
         });
 
         funcs.values().forEach(funs -> {
@@ -2430,6 +2482,7 @@ public final class CompModule extends Browsable implements Module {
         });
         asserts.values().forEach(assrt -> {
             assrt.accept(visitor);
+            assrt.expr.accept(visitor);
         });
         commands.forEach(cmd -> {
             if (cmd.nameExpr != null)
@@ -2445,12 +2498,80 @@ public final class CompModule extends Browsable implements Module {
             if (open.expressions != null)
                 open.expressions.stream().filter(x -> x != null).forEach(ex -> ex.accept(visitor));
         });
+
+        // macros are not visitable for now ( accept() throws an exception)
         macros.values().forEach(macro -> {
-            macro.accept(visitor);
+           macro.accept(visitor);
         });
         params.values().forEach(x -> x.accept(visitor));
         return null;
     }
+
+    interface Action{ void call();}
+    private void tryIgnore(Action action) {try { action.call();} catch(Exception ex) {}}
+
+    public <T> void visitExpressionsResilient(VisitReturn<T> visitor) {
+        sigs.values().forEach(s -> {
+            s.accept(visitor);
+            s.getFieldDecls().forEach(d -> {
+                d.names.forEach(x -> tryIgnore(() -> x.accept(visitor)));
+                tryIgnore( () -> d.expr.accept(visitor));
+            });
+            s.getFacts().forEach(f -> tryIgnore(() -> f.accept(visitor)));
+
+            if(s instanceof SubsetSig){
+                SubsetSig ss = (SubsetSig) s;
+                ss.parentRefs().forEach( p -> tryIgnore( () -> p.accept(visitor)));
+            }else {
+                PrimSig ps = (PrimSig) s;
+                tryIgnore ( () -> ps.parentRef().accept(visitor));
+            }
+
+        });
+
+        funcs.values().forEach(funs -> {
+            funs.forEach(fun -> {
+
+                //System.out.println("visiting func " + fun.label + ". label pos: " + fun.labelExpr().pos);
+                //tryIgnore ( () -> fun.labelExpr().accept(visitor));
+                fun.accept(visitor);
+                fun.getBody().accept(visitor);
+                fun.decls.forEach(d -> {
+                    tryIgnore( () -> d.expr.accept(visitor));
+                    d.names.forEach(n -> tryIgnore ( () -> n.accept(visitor)));
+                });
+                tryIgnore( () -> fun.returnDecl.accept(visitor));
+            });
+        });
+        facts.forEach(fact -> {
+            tryIgnore ( () -> fact.b.accept(visitor));
+        });
+        asserts.values().forEach(assrt -> {
+            tryIgnore ( () -> assrt.accept(visitor));
+            tryIgnore ( () -> assrt.expr.accept(visitor));
+        });
+        commands.forEach(cmd -> {
+            if (cmd.nameExpr != null)
+                tryIgnore ( () -> cmd.nameExpr.accept(visitor));
+
+            cmd.additionalExactScopes.forEach(sig -> tryIgnore( () -> sig.accept(visitor)));
+            tryIgnore( () -> cmd.formula.accept(visitor));
+            cmd.scope.forEach(scope -> {
+                tryIgnore( () -> scope.sigRef().accept(visitor));
+            });
+        });
+        opens.values().forEach(open -> {
+            if (open.expressions != null)
+                open.expressions.stream().filter(x -> x != null).forEach(ex -> tryIgnore( () -> ex.accept(visitor)));
+        });
+
+        // macros are not visitable for now ( accept() throws an exception)
+        macros.values().forEach(macro -> {
+            tryIgnore( () -> macro.accept(visitor));
+        });
+        params.values().forEach(x -> tryIgnore( () -> x.accept(visitor)));
+    }
+
 
     public Expr find(Pos pos) {
         if (pos == null)
@@ -2463,7 +2584,7 @@ public final class CompModule extends Browsable implements Module {
         }
         Holder holder = new Holder();
 
-        visitExpressions(new VisitQueryOnce<Object>() {
+        visitExpressionsResilient(new VisitQueryOnce<Object>() {
 
             @Override
             public boolean visited(Expr expr) {

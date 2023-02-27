@@ -175,7 +175,7 @@ there is exactly one node. What happens here is that the
 model requires that a closest preceding finger node has a
 distinct identifier from the input identifier, but this
 cannot happen if there is exactly one node and if the input
-identifer equals that of the node.
+identifier equals that of the node.
 
 \subsection faulty \tt<find_successor>
 

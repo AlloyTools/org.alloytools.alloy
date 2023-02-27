@@ -10,6 +10,7 @@ import static edu.mit.csail.sdg.alloy4.A4Preferences.FontSize;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.ImplicitThis;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.InferPartialInstance;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.LAF;
+import static edu.mit.csail.sdg.alloy4.A4Preferences.LineNumbers;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.NoOverflow;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.RecordKodkod;
 import static edu.mit.csail.sdg.alloy4.A4Preferences.SkolemDepth;
@@ -420,6 +421,7 @@ public class PreferencesDialog extends JFrame {
         JPanel p = OurUtil.makeGrid(2, gbc().make(), mkCombo(FontName), mkCombo(FontSize), mkCombo(TabSize));
         addToGrid(p, mkCheckBox(SyntaxDisabled), gbc().pos(0, 3).gridwidth(2));
         addToGrid(p, mkCheckBox(AntiAlias), gbc().pos(0, 4).gridwidth(2));
+        addToGrid(p, mkCheckBox(LineNumbers), gbc().pos(0, 5).gridwidth(2));
 
         // JPanel p = new JPanel(new GridBagLayout());
         // addToGrid(p, mkCheckBox(SyntaxDisabled), gbc().pos(0,

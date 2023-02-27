@@ -226,7 +226,7 @@ public final strictfp class OurPDFWriter {
      * given matrix; for example, [1 0 0 1 dx dy] means "translation to dx dy" $R $G
      * $B RG --> sets the stroke color (where 0 <= $R <= 1, etc) $R $G $B rg -->
      * sets the fill color (where 0 <= $R <= 1, etc) Q --> restores the current
-     * graphics state Page Object (3 because PAGE is #3) (4 beacuse PAGES is #4) (2
+     * graphics state Page Object (3 because PAGE is #3) (4 because PAGES is #4) (2
      * because CONTENTS is #2)
      * ========================================================= ================
      * ============ 3 0 obj << /Type /Page /Parent 4 0 R /Contents 2 0 R >>

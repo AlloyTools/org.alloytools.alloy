@@ -191,7 +191,7 @@ final class MagicLayout {
      * <ul>
      * <li>interesting example: 2d game grid
      * <li>ex: toplogical sort -- layout tree and list, not cnxn between them
-     * <li>look for homogenius binary relation (a -&gt; a)
+     * <li>look for homogeneous binary relation (a -&gt; a)
      * <li>may be several relations defining the spine
      * </ul>
      */
@@ -210,7 +210,7 @@ final class MagicLayout {
                     if (!enumerationTypes.contains(targetType)) {
                         spines.add(r);
                     }
-                    // however, binary relations named parent should be layed
+                    // however, binary relations named parent should be laid
                     // out backwards
                     if (r.getName().equals("parent")) {
                         vizState.layoutBack.put(r, true);

@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Attr;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Decl;
@@ -54,14 +55,14 @@ public class DemoFileSystem {
     }
 
     PrimSig makeSig(PrimSig parent, String name, boolean isAbstract, boolean isOne) throws Err {
-        PrimSig ans = new PrimSig(name, parent, (isAbstract ? Attr.ABSTRACT : null), (isOne ? Attr.ONE : null));
+        PrimSig ans = new PrimSig(null, name, Pos.UNKNOWN, parent, (isAbstract ? Attr.ABSTRACT : null), (isOne ? Attr.ONE : null));
         sigs.add(ans);
         return ans;
     }
 
     void runFor3(Expr expr) throws Err {
         A4Options opt = new A4Options();
-        Command cmd = new Command(false, 3, 3, 3, expr.and(fact));
+        Command cmd = new Command(false, 3, 3, 3, null, expr.and(fact));
         A4Solution sol = TranslateAlloyToKodkod.execute_command(NOP, sigs, cmd, opt);
         System.out.println(sol.toString().trim());
         if (sol.satisfiable()) {

@@ -453,7 +453,7 @@ final class SwingLogPanel {
         log.copy();
     }
 
-    /** Removes any messages writtin in "red" style. */
+    /** Removes any messages written in "red" style. */
     public void clearError() {
         if (log == null)
             return;

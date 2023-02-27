@@ -60,7 +60,7 @@ final class OurSyntaxUndoableDocument extends OurSyntaxDocument {
     private int                now;
 
     /**
-     * The number of undoable opeartions that are currently "undone".
+     * The number of undoable operations that are currently "undone".
      */
     private int                undone;
 
@@ -219,7 +219,7 @@ final class OurSyntaxUndoableDocument extends OurSyntaxDocument {
     }
 
     /**
-     * Overriden to return the full text of the document.
+     * Overridden to return the full text of the document.
      *
      * @return the entire text
      */
