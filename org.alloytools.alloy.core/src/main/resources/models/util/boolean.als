@@ -38,6 +38,6 @@ fun Nor[b1, b2: Bool] : Bool {
   subset_[b1 + b2, False]
 }
 
-fun subset_[s1, s2: set Bool] : Bool {
+private fun subset_[s1, s2: set Bool] : Bool {
   (s1 in s2) => True else False
 }
