@@ -437,14 +437,14 @@ public final class OurSyntaxWidget {
         if (s != null && s.length() > 0) {
             StringBuilder sb = new StringBuilder(s);
             int i = 0;
-            while (i < sb.length() - 1) {
+            while (i < sb.length()) {
                 if (sb.charAt(i) == '/' && sb.charAt(i + 1) == '/') {
                     sb.delete(i, i + 2);
                 } else {
                     sb.insert(i, "//");
                     i += 2;
                 }
-                while (i < sb.length() - 1) {
+                while (i < sb.length()) {
                     if (sb.charAt(i) == '\n') {
                         i++;
                         break;
