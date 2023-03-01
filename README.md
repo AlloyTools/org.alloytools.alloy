@@ -78,12 +78,12 @@ Bndtools will continuously create the final executable. The projects are setup t
 Ensure you have the [Osmorc] plugin is enabled, as this plugin is needed for
 Bndtools support. It should be enabled by default.
 
-1. Choose "Import Project"
-2. Select the `org.alloytools.alloy` directory.
+1. Choose `Import project from existing Sources` by using `Ctrl + Shift + a`.
+2. Select the root folder (default folder name is `org.alloytools.alloy`).
 3. Choose "Import project from external model: Bnd/Bndtools" and click "Next"
-4. For "Select Bnd/Bndtools project to import", all projects should be checked
-   by default, click "Next"
+4. For "Select Bnd/Bndtools project to import", all projects should be checked by default, click "Next"
 5. For project SDK, Choose "1.8", Click Finish
+6. Select folder `org/alloytools/kodkod/nativesat/jni` as `Resource Folder` by selecting module `org.alloytools.kodkod.nativesat`, selecting folder `jni` -> `right click` -> `Mark Directory As` -> `Resource Root`.
 
 Note: do *not* link the Gradle project, as this will prevent you from running
 Alloy within IDEA.
