@@ -346,13 +346,17 @@ public class PreferencesDialog extends JFrame {
             }
         }
         // check if in system path
-        for (String str : (System.getenv("PATH")).split(Pattern.quote(File.pathSeparator))) {
+        for (String str : (System.getenv("PATH")).split(Pattern.quote(File.pathSeparator)))
+            try {
             Path pth = Paths.get(str);
             if (Files.exists(pth.resolve(name))) {
                 if (isDebug)
                     System.out.println("Loaded: " + name + " at " + pth);
                 return true;
             }
+        } catch (java.nio.file.InvalidPathException e) {
+            if (isDebug)
+                System.out.println("Invalid file path on PATH: " + str + ", ignoring");
         }
 
         if (isDebug)
