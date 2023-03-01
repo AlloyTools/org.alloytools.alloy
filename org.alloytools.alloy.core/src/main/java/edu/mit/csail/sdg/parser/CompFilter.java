@@ -27,7 +27,6 @@ import static edu.mit.csail.sdg.parser.CompSym.COMMA;
 import static edu.mit.csail.sdg.parser.CompSym.DISJ;
 import static edu.mit.csail.sdg.parser.CompSym.EOF;
 import static edu.mit.csail.sdg.parser.CompSym.EQUALS;
-import static edu.mit.csail.sdg.parser.CompSym.EXH;
 import static edu.mit.csail.sdg.parser.CompSym.FUN;
 import static edu.mit.csail.sdg.parser.CompSym.GT;
 import static edu.mit.csail.sdg.parser.CompSym.GTE;
@@ -70,7 +69,6 @@ import static edu.mit.csail.sdg.parser.CompSym.ONE_ARROW_ANY;
 import static edu.mit.csail.sdg.parser.CompSym.ONE_ARROW_LONE;
 import static edu.mit.csail.sdg.parser.CompSym.ONE_ARROW_ONE;
 import static edu.mit.csail.sdg.parser.CompSym.ONE_ARROW_SOME;
-import static edu.mit.csail.sdg.parser.CompSym.PART;
 import static edu.mit.csail.sdg.parser.CompSym.PRED;
 import static edu.mit.csail.sdg.parser.CompSym.PRIVATE;
 import static edu.mit.csail.sdg.parser.CompSym.RBRACE;
@@ -191,7 +189,7 @@ final class CompFilter implements Scanner {
             temp.add(b = myread());
             if (b.sym == PRIVATE)
                 temp.add(b = myread());
-            if (b.sym == DISJ || b.sym == PART || b.sym == EXH)
+            if (b.sym == DISJ)
                 temp.add(b = myread());
             while (b.sym == ID) {
                 temp.add(b = myread());

@@ -165,7 +165,6 @@ parser code {:
     ch.put(CompSym.ENUM, "enum");
     ch.put(CompSym.EQUALS, "=");
     ch.put(CompSym.EXACTLY, "exactly");
-    ch.put(CompSym.EXH, "exh");
     ch.put(CompSym.EXPECT, "expect");
     ch.put(CompSym.EXTENDS, "extends");
     ch.put(CompSym.FACT, "fact");
@@ -203,7 +202,6 @@ parser code {:
     ch.put(CompSym.ONE, "one");
     ch.put(CompSym.OPEN, "open");
     ch.put(CompSym.OR, "||");
-    ch.put(CompSym.PART, "part");
     ch.put(CompSym.PLUS, "+");
     ch.put(CompSym.PLUSPLUS, "++");
     ch.put(CompSym.PRED, "pred");
@@ -447,7 +445,6 @@ terminal Pos ELSE;             //  else
 terminal Pos ENUM;             //  enum
 terminal Pos EQUALS;           //  =  ==
 terminal Pos EXACTLY;          //  exactly
-terminal Pos EXH;              //  exh exhaustive
 terminal Pos EXPECT;           //  expect
 terminal Pos EXTENDS;          //  extends
 terminal Pos FACT;             //  fact
@@ -485,7 +482,6 @@ terminal Pos ONE2;             //  one            // The filter enables us to di
 terminal Pos ONE;              //  one            // The filter enables us to disambiguate
 terminal Pos OPEN;             //  open
 terminal Pos OR;               //  ||     or
-terminal Pos PART;             //  part   partition
 terminal Pos PLUS;             //  +
 terminal Pos PLUSPLUS;         //  ++
 terminal Pos PRED;             //  pred
@@ -826,8 +822,6 @@ Namex ::= Namex:a COMMA         Name:b {: nod(b);              a.add(b); RESULT=
 Namex ::= Namex:a COMMA EXACTLY Name:b {: nod(b); a.add(null); a.add(b); RESULT=a;                                   :};
 
 // [electrum] additional parameter for variable declarations (for fields)
-Decla ::=           PART:k Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
-Decla ::=           EXH:k  Names   COLON                 Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
 Decla ::=           DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(null, k,    null, null, a, mult(b)); :};
 Decla ::= PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    k,    null, null, a, mult(b)); :};
 Decla ::= PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, null, a, mult(b)); :};
@@ -838,8 +832,6 @@ Decla ::= VAR:v PRIVATE:p DISJ:k Names:a COLON                 Expr:b  {: RESULT
 Decla ::= VAR:v PRIVATE:p        Names:a COLON                 Expr:b  {: RESULT=new Decl(p,    null, null, v, a, mult(b)); :};
 Decla ::= VAR:v                  Names:a COLON                 Expr:b  {: RESULT=new Decl(null, null, null, v, a, mult(b)); :};
 
-Decla ::=           PART:k Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "part");        :};
-Decla ::=           EXH:k  Names   COLON DISJ            Expr    {: if (1==1) throw CompModule.hint(k, "exh");         :};
 Decla ::=           DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(null, k,    d, null, a, mult(b)); :};
 Decla ::= PRIVATE:p DISJ:k Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    k,    d, null, a, mult(b)); :};
 Decla ::= PRIVATE:p        Names:a COLON DISJ:d          Expr:b  {: RESULT=new Decl(p,    null, d, null, a, mult(b)); :};
@@ -852,15 +844,11 @@ Decla ::= VAR:v                  Names:a COLON DISJ:d          Expr:b  {: RESULT
 
 Declb ::= Decla:x {: RESULT=x; :};
 
-Declb ::=           PART:k Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "part");                                       :};
-Declb ::=           EXH:k  Names   EQUALS          Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                        :};
 Declb ::=           DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");         :};
 Declb ::= PRIVATE   DISJ:d Names   EQUALS          Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint.");         :};
 Declb ::= PRIVATE:p        Names:a EQUALS          Expr:b  {: RESULT=new Decl(p,    null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :};
 Declb ::=                  Names:a EQUALS          Expr:b  {: RESULT=new Decl(null, null, null, null, a, ExprUnary.Op.EXACTLYOF.make(null, b)); :};
 
-Declb ::=           PART:k Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "part");                               :};
-Declb ::=           EXH:k  Names   EQUALS DISJ     Expr    {: if (1==1) throw CompModule.hint(k, "exh");                                :};
 Declb ::=           DISJ   Names   EQUALS DISJ:d   Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint."); :};
 Declb ::= PRIVATE   DISJ   Names   EQUALS DISJ:d   Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint."); :};
 Declb ::= PRIVATE          Names   EQUALS DISJ:d   Expr    {: if (1==1) throw new ErrorSyntax(d, "Defined fields cannot be disjoint."); :};
