@@ -1,0 +1,182 @@
+ 
+
+//DASH grammar ------------------------------------------------------------------------
+
+// besides creating a DashState; the parsing also has count buffers and create indexes
+// for those buffers in order to have the correct open statements
+
+// adding a case for the Spec
+Spec ::= Spec StateRoot:o ;
+
+// Root State Declaration
+StateRoot ::= STATE:o Name:n LBRACE RBRACE:e // empty state
+        {: 
+           parser.dashmodule.rootStartLine = o.y;
+           parser.dashmodule.rootEndLine = e.y;
+           parser.dashmodule.setRoot(new DashState(o, n.label,  DashStrings.DefKind.NOTDEFAULT));
+        :}; 
+StateRoot ::= STATE:o Name:n LBRACE StateItemList:c RBRACE:e 
+       {: 
+          parser.dashmodule.rootStartLine = o.y;
+          parser.dashmodule.rootEndLine = e.y;
+          parser.dashmodule.setRoot(new DashState(o, n.label, DashStrings.StateKind.OR, DashStrings.DefKind.NOTDEFAULT, c)); 
+       :};
+
+StateItemList ::= StateItem:x
+        {: List<Object> xList = new ArrayList<Object>(); xList.add(x); RESULT= xList; :};
+StateItemList ::= StateItemList:c StateItem:s 
+        {: c.add(s); RESULT = c; :};
+
+// empty state
+StateItem ::= STATE:o  Name:n LBRACE RBRACE 
+        {: RESULT = new DashState(o, n.label, DashStrings.DefKind.NOTDEFAULT ); :}; 
+
+StateItem ::= STATE:o Name:n LBRACE StateItemList:c RBRACE 
+        {: RESULT = new DashState(o, n.label,  DashStrings.StateKind.OR, DashStrings.DefKind.NOTDEFAULT, c);    :};
+        
+// empty state
+StateItem ::= DEF STATE:o Name:n LBRACE RBRACE 
+        {: RESULT = new DashState(o, n.label,  DashStrings.DefKind.DEFAULT);   :}; 
+
+StateItem ::= DEF STATE:o Name:n LBRACE StateItemList:c RBRACE 
+        {:  RESULT = new DashState(o, n.label, DashStrings.StateKind.OR,   DashStrings.DefKind.DEFAULT, c);   :};
+
+// non parametrized state
+StateItem ::= CONC:o STATE Name:n LBRACE StateItemList:c RBRACE 
+        {: RESULT = new DashState(o, n.label, DashStrings.StateKind.AND, DashStrings.DefKind.NOTDEFAULT, c);  :};
+
+// parametrized state
+StateItem ::= CONC:o STATE Name:n LBRACKET Name:m RBRACKET LBRACE StateItemList:c RBRACE 
+        {:  RESULT = new DashState(o, n.label, m.label, c);  :};
+
+// event decls
+StateItem ::= EVENT:o Names:n LBRACE RBRACE 
+        {: ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) ll.add(x.label);
+           RESULT = new DashEventDecls(o, ll,  DashStrings.IntEnvKind.INT);  :};
+StateItem ::= ENV EVENT:o Names:n LBRACE RBRACE 
+        {: ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) ll.add(x.label);
+           RESULT = new DashEventDecls(o, ll,  DashStrings.IntEnvKind.ENV);  :}; 
+
+// var decls
+StateItem ::=
+        // we don't support the full variations of declarations here
+        // don't know what the pos should be for this one
+           Names:n COLON:o Expr:b
+        {: ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) ll.add(x.label);
+           RESULT = new DashVarDecls(o, ll ,b, DashStrings.IntEnvKind.INT); :};
+StateItem ::= ENV:o Names:n COLON Expr:b
+        {: ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) ll.add(x.label);
+           RESULT = new DashVarDecls(o, ll, b, DashStrings.IntEnvKind.ENV); :};
+
+//buffer decls
+StateItem ::= Names:n COLON:o BUF LBRACKET Name:m RBRACKET  
+        {: 
+           ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) {
+                ll.add(x.label);
+                DashSituation.bufferElements.add(x.label);
+           }
+           RESULT = new DashBufferDecls(o, ll, m.label,  DashStrings.IntEnvKind.INT); 
+        :};
+StateItem ::= Names:n COLON:o BUF LBRACKET SIGINT RBRACKET  
+        {: 
+           ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) {
+                ll.add(x.label);
+                DashSituation.bufferElements.add(x.label);
+           }
+           RESULT = new DashBufferDecls(o, ll, DashStrings.intName,  DashStrings.IntEnvKind.INT); 
+        :};
+StateItem ::= ENV:o Names:n COLON BUF LBRACKET Name:m RBRACKET  
+        {: 
+           ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) {
+                ll.add(x.label);
+                DashSituation.bufferElements.add(x.label);
+           }
+           RESULT = new DashBufferDecls(o, ll, m.label,  DashStrings.IntEnvKind.ENV); 
+        :};
+
+StateItem ::= ENV:o Names:n COLON BUF LBRACKET SIGINT RBRACKET  
+        {: 
+           ArrayList<String> ll = new ArrayList<String>();
+           for (ExprVar x: n) {
+                ll.add(x.label);
+                DashSituation.bufferElements.add(x.label);
+           }
+           RESULT = new DashBufferDecls(o, ll, DashStrings.intName,  DashStrings.IntEnvKind.ENV); 
+        :};
+
+// init
+// Super is a list of expressions joined by conjunction
+StateItem ::= INIT:o Super:v   
+        {: RESULT = new DashInit(o, v); :};
+
+// invariant
+StateItem ::= INVARIANT:o Super:v 
+        {:  RESULT = new DashInv(o, v); :};
+
+StateItem ::= INVARIANT:o Name:n Super:v 
+        {:  RESULT = new DashInv(o, n.label, v); :};
+
+// action
+StateItem ::= ACTION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
+        {:  RESULT = new DashAction(o, n.label, e); :};
+
+// condition
+StateItem ::= CONDITION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
+        {:  RESULT = new DashCondition(o, n.label, e); :};
+
+// transition
+StateItem ::= TRANS:o Name:n LBRACE TransItemList:c RBRACE 
+        {: RESULT = new DashTrans(o, n.label, c);  :};  
+
+TransItemList ::= TransItem:x
+        {: RESULT = new ArrayList<Object>(); RESULT.add(x); :};
+TransItemList ::= TransItemList:c TransItem:x   
+        {: c.add(x); RESULT = c; :};
+   
+TransItem ::= FROM:o Name:n  
+        {: RESULT = new DashFrom(o, n.label);  :};
+
+TransItem ::= ON:o Expr:e   
+        {: RESULT = new DashOn(o, e);  :};
+
+TransItem ::= WHEN:o Expr:v 
+        {:  RESULT = new DashWhen(o, v); :};
+
+TransItem ::= DO:o   Expr:v  
+        {:  RESULT = new DashDo(o, v); :};
+
+
+TransItem ::= GOTO:o Name:n   
+        {: RESULT = new DashGoto(o, n.label); :};
+
+
+// this allows Send x.ev1 and "Send n" in parsing but will have to sort out later to see if correct
+TransItem ::= SEND:o Expr:v 
+        {: RESULT = new DashSend(o, v); :};
+        
+// DASH PLUS PROCESS VARIABLE REFERENCE
+// ParamConcState[Param]/Variable
+// result Param.ParamConcState/Variable
+// not sure why a BadJoin is used here; but Alloy parsing rules use ExprBadJoins, not ExprJoins
+// note PRIME is a special token in grammar and we want to support v'
+BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e 
+    {: 
+        if (b.size() > 1) throw new ErrorSyntax(o,"Two many args to reference to sibling state");
+        RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + e.label)); 
+    :}; 
+BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e PRIME
+    {: 
+        if (b.size() > 1) throw new ErrorSyntax(o,"Two many args to reference to sibling state");
+        // probably have to fix PRIME here later when turning to Alloy
+        RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + e.label + "'")); 
+    :}; 
+
+//DASH end grammar ---------------------------------------------------------------------
+

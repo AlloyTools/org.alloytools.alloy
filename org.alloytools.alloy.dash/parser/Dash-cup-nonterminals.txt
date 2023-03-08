@@ -1,0 +1,15 @@
+
+
+//DASH nonterminals --------------------------------------------
+
+nonterminal                            StateRoot; 
+
+nonterminal Object                     StateItem;
+nonterminal List<Object>               StateItemList;
+
+nonterminal Object                     TransItem;
+nonterminal List<Object>               TransItemList;
+
+
+//DASH end nonterminals ------------------------------------------
+

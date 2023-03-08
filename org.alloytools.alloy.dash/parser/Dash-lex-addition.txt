@@ -1,0 +1,27 @@
+//DASH SYNTAX ADDITIONS
+
+"state"          { return alloy_sym(yytext(), DashSym.STATE       );}
+"conc"          { return alloy_sym(yytext(), DashSym.CONC        );}
+"default"             { return alloy_sym(yytext(), DashSym.DEF     );}
+
+"event"               { return alloy_sym(yytext(), DashSym.EVENT       );}
+"env"                 { return alloy_sym(yytext(), DashSym.ENV         );}
+"buf"                 { return alloy_sym(yytext(), DashSym.BUF         );}
+
+"init"                { return alloy_sym(yytext(), DashSym.INIT        );}
+"invariant"           { return alloy_sym(yytext(), DashSym.INVARIANT   );}
+"action"			  { return alloy_sym(yytext(), DashSym.ACTION   );}
+"condition"			  { return alloy_sym(yytext(), DashSym.CONDITION   );}
+
+"trans"               { return alloy_sym(yytext(), DashSym.TRANS       );}
+
+"from"                { return alloy_sym(yytext(), DashSym.FROM        );}
+"on"                  { return alloy_sym(yytext(), DashSym.ON          );}
+"when"                { return alloy_sym(yytext(), DashSym.WHEN        );}
+"do"                  { return alloy_sym(yytext(), DashSym.DO          );}
+"goto"                { return alloy_sym(yytext(), DashSym.GOTO        );}
+"send"                { return alloy_sym(yytext(), DashSym.SEND        );}
+
+
+//END DASH SYNTAX ADDITIONS
+

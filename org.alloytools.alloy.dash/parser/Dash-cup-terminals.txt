@@ -1,0 +1,30 @@
+
+
+//DASH terminals -----------------------------------
+
+// must match DASH symbols
+
+terminal Pos STATE;            
+terminal Pos CONC;             
+terminal Pos DEF;              
+
+terminal Pos EVENT;            
+terminal Pos ENV;              
+terminal Pos BUF;              
+
+terminal Pos INIT;             
+terminal Pos INVARIANT;        
+terminal Pos ACTION;
+terminal Pos CONDITION;
+
+terminal Pos TRANS;            
+
+terminal Pos FROM;       
+terminal Pos ON;         
+terminal Pos WHEN;       
+terminal Pos DO;         
+terminal Pos GOTO;       
+terminal Pos SEND;       
+
+//DASH end terminals ---------------------------------
+

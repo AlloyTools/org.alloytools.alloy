@@ -1,0 +1,30 @@
+    
+
+    //DASH syntax ---------------------------------
+
+    // must match DASH terminals
+    
+    ch.put(DashSym.STATE, "state");
+    ch.put(DashSym.CONC, "conc");
+    ch.put(DashSym.DEF, "default"); 
+
+    ch.put(DashSym.EVENT, "event");
+    ch.put(DashSym.ENV, "env"); 
+    ch.put(DashSym.BUF,  "buf");
+
+    ch.put(DashSym.INIT, "init");
+    ch.put(DashSym.INVARIANT, "invariant");
+    ch.put(DashSym.ACTION, "action");
+    ch.put(DashSym.CONDITION, "condition");
+
+    ch.put(DashSym.TRANS, "trans");
+
+    ch.put(DashSym.FROM, "from");
+    ch.put(DashSym.ON, "on");
+    ch.put(DashSym.WHEN, "when");
+    ch.put(DashSym.DO, "do");
+    ch.put(DashSym.GOTO, "goto");
+    ch.put(DashSym.SEND, "send");
+
+    //DASH end syntax ------------------------------
+
