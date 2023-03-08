@@ -5,6 +5,7 @@
 	lib/apple-osx-ui.jar;version=file,\
 	org.alloytools:pardinus.core;version='1.3.0',\
 	org.alloytools.alloy.core;version=latest,\
+	org.alloytools.alloy.dash;version=latest,\
 	aQute.libg,\
 	org.alloytools.api
 -testpath: \
@@ -16,3 +17,4 @@ Private-Package: \
 	edu.mit.csail.sdg.alloy4graph,\
 	edu.mit.csail.sdg.alloy4viz,\
 	edu.mit.csail.sdg.alloy4whole,\
+	ca.uwaterloo.watform.dash4whole,\

@@ -131,7 +131,7 @@ fun append [s1, s2: Int -> univ] : s1+s2 {
  * returns the subsequence of s between from and to, inclusive
  * Precondition: 0 <= from <= to < #s
  */
-fun subseq [s: Int -> univ, from, to: Int] : s {
-  let shift = {i", i: seq/Int | int[i"] = ui/sub[int[i], int[from]] } |
+fun subseq [s: Int -> univ, frm, to: Int] : s {
+  let shift = {i", i: seq/Int | int[i"] = ui/sub[int[i], int[frm]] } |
     shift.((seq/Int - ui/nexts[to]) <: s)
 }

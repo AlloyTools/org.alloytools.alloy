@@ -117,7 +117,7 @@ import edu.mit.csail.sdg.ast.VisitReturn;
  *           variable argument is passed
  */
 
-public final class CompModule extends Browsable implements Module {
+public class CompModule extends Browsable implements Module {
 
     // These fields are shared by all Modules that point to each other
 
@@ -194,7 +194,7 @@ public final class CompModule extends Browsable implements Module {
      * The position of the "MODULE" line at the top of the file; Pos.UNKNOWN if the
      * line has not been parsed from the file yet.
      */
-    private Pos                   modulePos  = Pos.UNKNOWN;
+    public Pos                   modulePos  = Pos.UNKNOWN;
 
     /**
      * The text of the "MODULE" line at the top of the file; "unknown" if the line
@@ -205,7 +205,7 @@ public final class CompModule extends Browsable implements Module {
     /**
      * Whether we have seen a name containing a dollar sign or not.
      */
-    boolean                       seenDollar = false;
+    public boolean                       seenDollar = false;
 
     /**
      * Each param is mapped to its corresponding Sig (or null if we have not
@@ -225,7 +225,7 @@ public final class CompModule extends Browsable implements Module {
     private final Map<String,Open>            opens       = new LinkedHashMap<String,Open>();
 
     /** Each sig name is mapped to its corresponding SigAST. */
-    private final Map<String,Sig>             sigs        = new LinkedHashMap<String,Sig>();
+    public final Map<String,Sig>             sigs        = new LinkedHashMap<String,Sig>();
 
     /**
      * The list of params in this module whose scope shall be deemed "exact"
@@ -235,7 +235,7 @@ public final class CompModule extends Browsable implements Module {
     /**
      * The current name resolution mode (0=pure) (1=Alloy 4.1.3 and older) (2=new)
      */
-    int                                       resolution  = 1;
+    public int                                       resolution  = 1;
 
     /**
      * Each func name is mapped to a nonempty list of FunAST objects.
@@ -771,7 +771,7 @@ public final class CompModule extends Browsable implements Module {
         /**
          * Connect this OPEN statement to a module that it points to.
          */
-        void connect(CompModule realModule) throws Err {
+        public void connect(CompModule realModule) throws Err {
             if (this.realModule != null && this.realModule != realModule)
                 throw new ErrorFatal("Internal error (import mismatch)");
             this.realModule = realModule;
@@ -814,7 +814,7 @@ public final class CompModule extends Browsable implements Module {
      * @param filename - the filename corresponding to this module
      * @param path - one of the path pointing to this module
      */
-    CompModule(CompModule world, String filename, String path) throws Err {
+    public CompModule(CompModule world, String filename, String path) throws Err {
         if (world == null) {
             if (path.length() > 0)
                 throw new ErrorFatal("Root module misparsed by parser.");
@@ -951,7 +951,7 @@ public final class CompModule extends Browsable implements Module {
     /**
      * Generate an error message saying the given keyword is no longer supported.
      */
-    static ErrorSyntax hint(Pos pos, String name) {
+    public static ErrorSyntax hint(Pos pos, String name) {
         String msg = "The name \"" + name + "\" cannot be found.";
         if ("exh".equals(name) || "exhaustive".equals(name) || "part".equals(name) || "partition".equals(name))
             msg = msg + " If you are migrating from Alloy 3, please see Help->QuickGuide on how to translate models that use the \"" + name + "\" keyword.";
@@ -1252,7 +1252,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add the "MODULE" declaration. */
-    void addModelName(Pos pos, String moduleName, List<ExprVar> list) throws Err {
+    public void addModelName(Pos pos, String moduleName, List<ExprVar> list) throws Err {
         if (status > 0)
             throw new ErrorSyntax(pos, "The \"module\" declaration must occur at the top,\n" + "and can occur at most once.");
         this.moduleName = moduleName;
@@ -1282,7 +1282,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add util/sequniv to the list of declarations. */
-    void addSeq(Pos pos) throws Err {
+    public void addSeq(Pos pos) throws Err {
         int oldStatus = status;
         status = 0;
         try {
@@ -1293,7 +1293,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add an OPEN declaration. */
-    void addOpen(Pos pos, Pos isPrivate, ExprVar name, List<ExprVar> args, ExprVar alias) throws Err {
+    public void addOpen(Pos pos, Pos isPrivate, ExprVar name, List<ExprVar> args, ExprVar alias) throws Err {
         if (status > 2)
             throw new ErrorSyntax(pos, "The \"open\" declaration must occur before any\n" + "sig/pred/fun/fact/assert/check/run command.");
         String as = (alias == null ? "" : alias.label);
@@ -1348,7 +1348,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Do any post-parsing processing. */
-    void doneParsing() {
+    public void doneParsing() {
         status = 3;
         LinkedHashMap<String,Open> copy = new LinkedHashMap<String,Open>(opens);
         opens.clear();
@@ -1469,11 +1469,11 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a sig declaration. */
-    void addGhostSig() throws Err {
+    public void addGhostSig() throws Err {
         sigs.put(Sig.GHOST.label, Sig.GHOST);
     }
 
-    Sig addSig(Pos namePos, String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
+    public Sig addSig(Pos namePos, String name, ExprVar par, List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
 
         Sig obj;
         Pos pos = Pos.UNKNOWN.merge(WHERE.find(attributes));
@@ -1513,7 +1513,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add an enumeration. */
-    void addEnum(Pos pos, Pos priv, ExprVar name, List<ExprVar> atoms, Pos closingBracket) throws Err {
+    public void addEnum(Pos pos, Pos priv, ExprVar name, List<ExprVar> atoms, Pos closingBracket) throws Err {
         ExprVar EXTENDS = ExprVar.make(null, "extends");
         ExprVar THIS = ExprVar.make(null, "this/" + name);
         List<ExprVar> THESE = Arrays.asList(THIS);
@@ -1603,7 +1603,7 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a MACRO declaration. */
-    void addMacro(Pos p, Pos isPrivate, Pos labelPos, String label, List<ExprVar> decls, Expr v) throws Err {
+    public void addMacro(Pos p, Pos isPrivate, Pos labelPos, String label, List<ExprVar> decls, Expr v) throws Err {
         if (!Version.experimental)
             throw new ErrorSyntax(p, "LET declaration is allowed only inside a toplevel paragraph.");
         ConstList<ExprVar> ds = ConstList.make(decls);
@@ -1626,7 +1626,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a FUN or PRED declaration. */
-    void addFunc(Pos p, Pos isPrivate, ExprVar n, Expr f, List<Decl> decls, Expr t, Expr v) throws Err {
+    public void addFunc(Pos p, Pos isPrivate, ExprVar n, Expr f, List<Decl> decls, Expr t, Expr v) throws Err {
         if (decls == null)
             decls = new ArrayList<Decl>();
         else
@@ -1761,7 +1761,7 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add an ASSERT declaration. */
-    String addAssertion(Pos pos, Pos labelPos, String name, Expr value) throws Err {
+    public String addAssertion(Pos pos, Pos labelPos, String name, Expr value) throws Err {
         status = 3;
         if (name == null || name.length() == 0)
             name = "assert$" + (1 + asserts.size());
@@ -1808,7 +1808,7 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a FACT declaration. */
-    void addFact(Pos pos, String name, Expr value) throws Err {
+    public void addFact(Pos pos, String name, Expr value) throws Err {
         status = 3;
         if (name == null || name.length() == 0)
             name = "fact$" + (1 + facts.size());
@@ -1886,7 +1886,7 @@ public final class CompModule extends Browsable implements Module {
     // ============================================================================================================================//
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, ExprVar name, ExprVar commandKeyword, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
+    public void addCommand(boolean followUp, Pos pos, ExprVar name, ExprVar commandKeyword, int overall, int bitwidth, int seq, int tmn, int tmx, int exp, List<CommandScope> scopes, ExprVar label) throws Err {
         boolean check = commandKeyword.label.equals("c");
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");
@@ -1907,7 +1907,7 @@ public final class CompModule extends Browsable implements Module {
     }
 
     /** Add a COMMAND declaration. */
-    void addCommand(boolean followUp, Pos pos, Expr e, ExprVar commandKeyword, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
+    public void addCommand(boolean followUp, Pos pos, Expr e, ExprVar commandKeyword, int overall, int bitwidth, int seq, int tmn, int tmx, int expects, List<CommandScope> scopes, ExprVar label) throws Err {
         boolean check = commandKeyword.label.equals("c");
         if (followUp && !Version.experimental)
             throw new ErrorSyntax(pos, "Syntax error encountering => symbol.");

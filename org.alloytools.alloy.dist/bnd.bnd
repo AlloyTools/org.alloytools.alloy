@@ -5,6 +5,7 @@ JPM-Command: alloy
 -buildpath: \
 	org.alloytools.alloy.application,\
 	org.alloytools.alloy.core,\
+    org.alloytools.alloy.dash,\
 	org.alloytools.alloy.extra,\
     org.alloytools.api,\
 	aQute.libg, \
@@ -19,6 +20,7 @@ JPM-Command: alloy
     @${repo;org.alloytools.api}, \
 	@${repo;org.alloytools.alloy.application}, \
 	@${repo;org.alloytools.alloy.core}, \
+    @${repo;org.alloytools.alloy.dash}, \
 	@${repo;org.alloytools.alloy.extra}, \
     @${repo;org.alloytools.alloy.lsp}, \
 	@${repo;org.alloytools:pardinus.core}, \
