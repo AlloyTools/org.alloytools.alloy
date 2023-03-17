@@ -7,6 +7,7 @@ import ca.uwaterloo.watform.core.DashStrings;
 public class DashFrom extends Dash {
 	public String src;
 	public DashFrom(Pos pos,String f) {
+		assert(f != null);
 		this.pos = pos;
 		this.src = f;
 	}

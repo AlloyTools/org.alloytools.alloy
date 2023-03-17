@@ -1,0 +1,59 @@
+/* 
+ * For the util functions used many places
+ */
+
+package ca.uwaterloo.watform.core;
+
+import java.util.StringJoiner;
+import java.util.List;
+import java.util.Collection;
+import java.util.Set;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
+
+public class DashUtilFcns {
+
+
+
+	public static String last(List<String> ll) {
+		return ll.get(ll.size() - 1 );
+	}
+
+	/* copied from https://stackoverflow.com/questions/7414667/identify-duplicates-in-a-list */
+	public static <T> Set<T> findDuplicates(Collection<T> collection) {
+
+		Set<T> duplicates = new LinkedHashSet<>();
+		Set<T> uniques = new HashSet<>();
+
+		for(T t : collection) 
+		    if(!uniques.add(t)) 
+		        duplicates.add(t);
+		return duplicates;
+	}
+
+	public static String strCommaList(List<String> ll) {
+		StringJoiner sj = new StringJoiner(", ");
+        ll.forEach(n -> sj.add(n));
+        return sj.toString();		
+	}
+	public static <T> Set<T> listToSet(List<T> ll) {
+		return ll.stream().collect(Collectors.toSet());
+	}
+	
+	public static <T> List<T> setToList(Set<T> ll) {
+		return new ArrayList<T>(ll);
+	}
+	
+	public static void myprint(String s) {
+		// debugging output
+		System.out.println(s);
+	}
+	public static <T> List<T> newListWith(List<T> ll, T s) {
+		List<T> x = new ArrayList<T>(ll);
+		x.add(s);
+		return x;
+	}
+}

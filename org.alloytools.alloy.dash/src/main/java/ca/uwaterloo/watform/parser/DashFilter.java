@@ -135,7 +135,7 @@ import java_cup.runtime.Symbol;
  * class is used to merge them into a single "ONE_ARROW_ONE" token)
  */
 
-public final class DashFilter implements Scanner {
+final class DashFilter implements Scanner {
 
     // ===================== PHASE 1
     // ==================================================================================

@@ -16,9 +16,10 @@ public class DashInit extends Dash {
 
     public Expr init;
 
-    public DashInit(Pos pos, Expr init) {
-        this.pos = pos;
-        this.init = init;
+    public DashInit(Pos p, Expr i) {
+        assert(i != null);
+        this.pos = p;
+        this.init = i;
     }
     public String toString() {
         String s = new String();

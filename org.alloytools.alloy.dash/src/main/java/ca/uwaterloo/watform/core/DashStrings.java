@@ -1,9 +1,28 @@
-/* string names used in Dash and conversion to Alloy */
+ /* string names used in Dash and conversion to Alloy */
 
 package ca.uwaterloo.watform.core;
 
 public class DashStrings {
 
+	/* alloy keywords */
+	public static String moduleName = "module";
+	public static String extendsName = "extends";
+	public static String inName = "in";
+	public static String abstractName = "abstract";
+	public static String oneName = "one";
+	public static String varName = "var";
+	public static String openName = "open";
+	public static String asName = "as";
+	public static String boolName = "boolean/Bool";
+	public static String trueName = "boolean/True";
+	public static String intName = "int";
+	public static String utilBooleanName = "util/boolean";
+	public static String utilCTLpathName = "util/ctl_path";
+	public static String utilOrderingName = "util/ordering";
+	public static String utilBufferName = "util/buffer";
+	public static String sigName = "sig";
+	public static String predName = "pred";
+	
 	// used for printing: parts of Dash syntax
 	// must be in sync with Dash-cup-symbols.txt
 	public static String stateName = "state";
@@ -26,13 +45,10 @@ public class DashStrings {
 	public static String doName = "do";
 	public static String gotoName = "goto";
 	public static String sendName = "send";
-	
+	public static String SLASH = "/";
 	
 	
 
-
-	// used for translation to Alloy
-	public static String qualChar = "/";
 	// predicate names
 
 	public static String smallStepName = "small_step";
@@ -47,8 +63,8 @@ public class DashStrings {
 
 	public static String stateLabelName = "StateLabel";
 	public static String systemStateName = "SystemState";
-
-	public static String bufferIndexName = "bufIndex";
+	public static String transitionLabelName = "TransitionLabel";
+	public static String identifierName = "Identifiers";
 	// how to name parameter variables
 	public static String pName = "p";
 	public static String eventsName = "events";
@@ -61,27 +77,19 @@ public class DashStrings {
 	public static String postName = "_post";
 	public static String semanticsName = "_semantics";
 	public static String testIfNextStableName = "testIfNextStable";
-	public static String isEnabledAfterStep = "_ isEnabledAfterStep";
+	public static String isEnabledAfterStepName = "_isEnabledAfterStep";
 	public static String tName = "t";
 	public static String geName = "ge";
 
-	/* alloy keywords */
-	public static String extendsName = "extends";
-	public static String inName = "in";
-	public static String abstractName = "abstract";
-	public static String oneName = "one";
-	public static String varName = "var";
-	public static String boolName = "boolean";
-	public static String intName = "int";
-	public static String utilBooleanName = "util/boolean";
-	public static String utilCTLpathName = "util/ctl_path";
-	public static String utilOrderingName = "util/ordering";
-	public static String utilBufferName = "util/buffer";
+	public static String bufferName = "buffer";
+	public static String bufferIndexName = "bufIdx";
+
+
 
 	public static String tracesName = "traces";
 	
-	public static String sCur = "s";
-	public static String sNext = "sNext";
+	public static String sCurName = "s";
+	public static String sNextName = "sNext";
 	public static String prime(String a) {
 		return a+"'";
 	};
@@ -93,10 +101,13 @@ public class DashStrings {
 
 	public static enum StateKind {
 		AND,
-		OR,
-		BASIC
+		OR   
+		// basic is determined if no children
 	}
 
+	// this distinct is only used at parsing
+	// within StateTable the default of a state is String name
+	// or null
 	public static enum DefKind {
 		DEFAULT,
 		NOTDEFAULT

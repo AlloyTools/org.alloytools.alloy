@@ -19,6 +19,7 @@ public class DashBufferDecls extends Dash {
 	private DashStrings.IntEnvKind kind;
 
 	public DashBufferDecls(Pos pos, List<String> n, String element, DashStrings.IntEnvKind k) {
+		assert (n != null && element != null);
 		this.pos = pos;
 		this.names = n;
 		this.element = element;
@@ -33,7 +34,7 @@ public class DashBufferDecls extends Dash {
 		}
 		StringJoiner sj = new StringJoiner(",\n");
         names.forEach(n -> sj.add(n));
-		s += sj.toString() + ":" + DashStrings.bufName + "[" + element + "]";
+		s += sj.toString() + ":" + DashStrings.bufName + "[" + element + "]\n";
 		return s;
 	}
 }

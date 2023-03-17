@@ -11,6 +11,7 @@ public class DashDo  extends Dash {
 	public Expr action;
 
 	public DashDo(Pos pos,Expr a) {
+		assert (a != null);
 		this.pos = pos;
 		this.action = a;
 

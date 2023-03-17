@@ -31,6 +31,7 @@ public class MainFunctions {
             DashOptions.isTraces = true;
             DashSituation.haveCountedBuffers = false;
             DashSituation.bufferElements = new ArrayList<String>();
+            DashSituation.bufferNames = new ArrayList<String>();
             dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
             if (dash == null) {
                 System.err.println("Empty Alloy file");
@@ -39,10 +40,11 @@ public class MainFunctions {
                 dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
                 //System.out.println(filename + " parsed successfully.");
                 // well-formedness checks
-                //dash.resolveAll(d); 
-                ;
+                dash.resolveAllDash(rep); 
+                //System.out.println(dash.toString());
             }
         } catch (Exception e) {
+            e.printStackTrace(System.err);
             System.err.println(e);
             System.exit(1);
         }
@@ -60,23 +62,22 @@ public class MainFunctions {
         return s;
     }
 
-    //NAD  this should be more general and take a String
-    public static CompModule translateToAlloy(DashModule dash, A4Reporter rep) {
+    public static DashModule translate(DashModule dash, A4Reporter rep) {
         try {
             DashOptions.isTraces = true;
-            if (dash == null) {
-                System.err.println("Cannot translate to Alloy.");
-                System.exit(1);
+            if (dash != null) {
+                // translates in place
+                dash.translate();
             }
-            //CompModule alloy = new CoreDashToAlloy(dash).translate();
-            //alloy.resolveAll(rep == null ? A4Reporter.NOP : rep, );
+            // Alloy wff check
+            dash.resolveAllAlloy(rep == null ? A4Reporter.NOP : rep);
+            System.out.println(dash.toString());
         } catch (Exception e) {
+            e.printStackTrace(System.err);
             System.err.println(e);
             System.exit(1);
         }
-        
-        //CompModule alloy = null;
-        return null;
+        return dash;
     }
 
    public static A4Solution executeCommand(Command cmd, CompModule alloy, A4Reporter rep, A4Options options) {

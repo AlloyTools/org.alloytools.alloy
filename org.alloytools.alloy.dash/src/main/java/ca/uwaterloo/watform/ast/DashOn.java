@@ -8,6 +8,7 @@ import ca.uwaterloo.watform.core.DashStrings;
 public class DashOn extends Dash {
 	public Expr ev;
 	public DashOn(Pos pos,Expr e) {
+		assert(e != null);
 		this.pos = pos;
 		this.ev = e;
 	}

@@ -11,9 +11,15 @@ Spec ::= Spec StateRoot:o ;
 // Root State Declaration
 StateRoot ::= STATE:o Name:n LBRACE RBRACE:e // empty state
         {: 
+           // first line in file is line 1
            parser.dashmodule.rootStartLine = o.y;
            parser.dashmodule.rootEndLine = e.y;
-           parser.dashmodule.setRoot(new DashState(o, n.label,  DashStrings.DefKind.NOTDEFAULT));
+           if (!parser.dashmodule.hasRoot())
+                // a basic state
+                parser.dashmodule.setRoot(new DashState(o, n.label,  DashStrings.DefKind.NOTDEFAULT));
+           else
+                DashErrors.onlyOneState(o); 
+
         :}; 
 StateRoot ::= STATE:o Name:n LBRACE StateItemList:c RBRACE:e 
        {: 
@@ -73,12 +79,21 @@ StateItem ::= ENV:o Names:n COLON Expr:b
            RESULT = new DashVarDecls(o, ll, b, DashStrings.IntEnvKind.ENV); :};
 
 //buffer decls
+//we have to know the number of buffers for the open statements,
+//which have to be loaded at the beginning of parsing
+//Soln: parse twice
+//first time stores buffer names, element types in DashSituation
+//second time includes the appropriate opens (based on values in DashSituation)
+//when do new DashModule() before start parsing
+//collection here is the same regardless of parsing pass
 StateItem ::= Names:n COLON:o BUF LBRACKET Name:m RBRACKET  
         {: 
            ArrayList<String> ll = new ArrayList<String>();
            for (ExprVar x: n) {
                 ll.add(x.label);
-                DashSituation.bufferElements.add(x.label);
+                // it will do this the same way both passes through parsing
+                DashSituation.bufferElements.add(m.label);
+                DashSituation.bufferNames.add(x.label);
            }
            RESULT = new DashBufferDecls(o, ll, m.label,  DashStrings.IntEnvKind.INT); 
         :};
@@ -87,7 +102,9 @@ StateItem ::= Names:n COLON:o BUF LBRACKET SIGINT RBRACKET
            ArrayList<String> ll = new ArrayList<String>();
            for (ExprVar x: n) {
                 ll.add(x.label);
-                DashSituation.bufferElements.add(x.label);
+                // it will do this the same way both passes through parsing
+                DashSituation.bufferElements.add(DashStrings.intName);
+                DashSituation.bufferNames.add(x.label);
            }
            RESULT = new DashBufferDecls(o, ll, DashStrings.intName,  DashStrings.IntEnvKind.INT); 
         :};
@@ -96,17 +113,20 @@ StateItem ::= ENV:o Names:n COLON BUF LBRACKET Name:m RBRACKET
            ArrayList<String> ll = new ArrayList<String>();
            for (ExprVar x: n) {
                 ll.add(x.label);
-                DashSituation.bufferElements.add(x.label);
+                // it will do this the same way both passes through parsing
+                DashSituation.bufferElements.add(m.label);
+                DashSituation.bufferNames.add(x.label);
            }
            RESULT = new DashBufferDecls(o, ll, m.label,  DashStrings.IntEnvKind.ENV); 
         :};
-
 StateItem ::= ENV:o Names:n COLON BUF LBRACKET SIGINT RBRACKET  
         {: 
            ArrayList<String> ll = new ArrayList<String>();
            for (ExprVar x: n) {
                 ll.add(x.label);
-                DashSituation.bufferElements.add(x.label);
+                // it will do this the same way both passes through parsing
+                DashSituation.bufferElements.add(DashStrings.intName);
+                DashSituation.bufferNames.add(x.label);
            }
            RESULT = new DashBufferDecls(o, ll, DashStrings.intName,  DashStrings.IntEnvKind.ENV); 
         :};
@@ -168,12 +188,12 @@ TransItem ::= SEND:o Expr:v
 // note PRIME is a special token in grammar and we want to support v'
 BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e 
     {: 
-        if (b.size() > 1) throw new ErrorSyntax(o,"Two many args to reference to sibling state");
+        if (b.size() > 1) DashErrors.crossRefMoreThanOneArg(o,e.label); 
         RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + e.label)); 
     :}; 
 BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e PRIME
     {: 
-        if (b.size() > 1) throw new ErrorSyntax(o,"Two many args to reference to sibling state");
+        if (b.size() > 1) DashErrors.crossRefMoreThanOneArg(o,e.label); 
         // probably have to fix PRIME here later when turning to Alloy
         RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + e.label + "'")); 
     :}; 

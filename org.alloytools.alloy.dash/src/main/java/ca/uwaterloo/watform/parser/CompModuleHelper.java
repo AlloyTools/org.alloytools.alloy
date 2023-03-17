@@ -1,5 +1,6 @@
 // No state here
 // just helper functions for adding elements to the module
+// return a string that is what the Alloy text would be; avoids us having to print all of Alloy constructs
 
 package ca.uwaterloo.watform.parser;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.lang.StringBuilder;
+import java.util.StringJoiner;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
@@ -23,14 +25,36 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
 
 import ca.uwaterloo.watform.core.DashStrings;
-import ca.uwaterloo.watform.alloyasthelper.AlloyExprHelper;
-
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 public class CompModuleHelper extends CompModule {
+
+    private String space = " ";
+    private String tab = "  ";
 
     // this class is never instantiated
     public CompModuleHelper(CompModule world, String filename, String path) {
         super(world,filename,path);
+    }
+
+    public String addOpenSimple(String name, List<String> args, String aliasName) {
+        ExprVar alias = (aliasName == null) ? null : ExprHelper.createVar(aliasName);
+        List<ExprVar> argsExprList = new ArrayList<ExprVar>();
+        if (args != null)  
+            for (String a: args) argsExprList.add(ExprHelper.createVar(a));
+        addOpen(null, null, ExprHelper.createVar(name), argsExprList, alias);
+        // build the string that is this open
+        String s = DashStrings.openName + " "+name;
+        if (args != null) {
+            s += "[";
+            StringJoiner j = new StringJoiner(", ");
+            args.forEach(a -> j.add(a));
+            s += j.toString();
+            s += "]";
+        }
+        if (aliasName != null) s += " " + DashStrings.asName + " " + aliasName;
+        return s+"\n";
     }
 
     /**
@@ -40,7 +64,9 @@ public class CompModuleHelper extends CompModule {
      * Alloy    public Sig addSig(Pos namePos, String name, ExprVar par, 
      *        List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes) throws Err {
      */
-    public void addSigSimple(String name) {
+    
+    public String addSigSimple(String name) {
+        // sig name {}
         addSig( 
             Pos.UNKNOWN,
             name, 
@@ -54,9 +80,13 @@ public class CompModuleHelper extends CompModule {
             null,
             null,
             null);
+        String s = new String();
+        s += DashStrings.sigName + space + name + " {}\n";
+        return s;
     }
 
-    public void addAbstractSigSimple(String name) {
+    public String addAbstractSigSimple(String name) {
+        // abstract sig name {}
         addSig(
             Pos.UNKNOWN,
             name, 
@@ -70,14 +100,19 @@ public class CompModuleHelper extends CompModule {
             null, 
             null,
             null);
+        String s = new String();
+        s += DashStrings.abstractName + space + DashStrings.sigName + space;
+        s += name + " {}\n";
+        return s;
     }
 
-    public void addAbstractExtendsSigSimple(String extension, String extended) {
+    public String addAbstractExtendsSigSimple(String extension, String extended) {
+        // abstract sig extension extends extended {}
         addSig( 
             Pos.UNKNOWN,
             extension, 
-            AlloyExprHelper.createVar(DashStrings.extendsName), 
-            AlloyExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            ExprHelper.createVar(DashStrings.extendsName), 
+            ExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null,
             AttrType.ABSTRACT.makenull(Pos.UNKNOWN), 
@@ -86,14 +121,42 @@ public class CompModuleHelper extends CompModule {
             null, 
             null,
             null);
+        String s = DashStrings.abstractName + space + DashStrings.sigName + space;
+        s += extension + space + DashStrings.extendsName + space;
+        s += extended;
+        s += " {} \n"; 
+        return s;
     }
 
-    public void addOneExtendsSigSimple(String extension, String extended) {
+    public String addExtendsSigSimple(String extension, String extended) {
+        // one sig extension extends extended {}
         addSig(
             Pos.UNKNOWN,
             extension, 
-            AlloyExprHelper.createVar(DashStrings.extendsName), 
-            AlloyExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            ExprHelper.createVar(DashStrings.extendsName), 
+            ExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            new ArrayList<Decl>(), 
+            null, 
+            null, 
+            null,
+            null, 
+            null, 
+            null,
+            null);
+        String s = DashStrings.sigName + space;
+        s += extension + space + DashStrings.extendsName + space;
+        s += extended;
+        s += " {} \n"; 
+        return s;
+    }
+
+    public String addOneExtendsSigSimple(String extension, String extended) {
+        // one sig extension extends extended {}
+        addSig(
+            Pos.UNKNOWN,
+            extension, 
+            ExprHelper.createVar(DashStrings.extendsName), 
+            ExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null, 
             null, 
@@ -102,8 +165,14 @@ public class CompModuleHelper extends CompModule {
             null, 
             null,
             null);
+        String s = DashStrings.oneName + space + DashStrings.sigName + space;
+        s += extension + space + DashStrings.extendsName + space;
+        s += extended;
+        s += " {} \n"; 
+        return s;
     }
-    public void addSigWithDeclsSimple(String name, ArrayList<Decl> decls) {
+    public String addSigWithDeclsSimple(String name, List<Decl> decls) {
+        // sig name { decls }
         addSig(
             Pos.UNKNOWN,
             name, 
@@ -116,18 +185,20 @@ public class CompModuleHelper extends CompModule {
             null, 
             null,
             null,
-            null); 
+            null);
+        String s = DashStrings.sigName + space + name + space + "{\n";
+        StringJoiner j = new StringJoiner(",\n");
+        decls.forEach(i -> j.add(tab + i.toString()));
+        s += j.toString() + "\n}\n";
+        return s;
     } 
-    /*
-    public Sig addSig(Pos namePos, String name, ExprVar par, 
-             List<ExprVar> parents, List<Decl> fields, Expr fact, Attr... attributes)
-    */
-    public void addVarSigSimple(String name, ExprVar typ) {
-        // Electrum: var sig s in typ;
+
+    public String addVarSigSimple(String name, ExprVar typ) {
+        // var sig s in typ {};
         addSig(
             Pos.UNKNOWN,
             name,
-            AlloyExprHelper.createVar(DashStrings.inName), 
+            ExprHelper.createVar(DashStrings.inName), 
             Arrays.asList(typ),
             new ArrayList<Decl>(),
             null,
@@ -138,18 +209,37 @@ public class CompModuleHelper extends CompModule {
             null,
             AttrType.VARIABLE.makenull(Pos.UNKNOWN)
             );
+        String s = DashStrings.varName + space + DashStrings.sigName + space;
+        s += name + space + DashStrings.inName + space;
+        s += typ.toString(); 
+        s += " { }\n";
+        return s;
     }
 
-    public void addOpenSimple(String name, List<String> args, String aliasName) {
-        ExprVar alias = (aliasName == null) ? null : AlloyExprHelper.createVar(aliasName);
-        List<ExprVar> argsExprList = new ArrayList<ExprVar>();
-        if (args != null)  
-            for (String a: args) {
-                argsExprList.add(AlloyExprHelper.createVar(a));
-            }
-        // problem: we can't add opens after other stuff has been parsed in the Alloy module
-        addOpen(null, null, AlloyExprHelper.createVar(name), argsExprList, alias);
+    public String addVarSigSimple(String name, List<ExprVar> typ) {
+        // var sig s in typ {};
+        addSig(
+            Pos.UNKNOWN,
+            name,
+            ExprHelper.createVar(DashStrings.inName), 
+            typ,
+            new ArrayList<Decl>(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            AttrType.VARIABLE.makenull(Pos.UNKNOWN)
+            );
+        String s = DashStrings.varName + space + DashStrings.sigName + space;
+        s += name + space + DashStrings.inName + space;
+        s += typ.toString(); 
+        s += " { }\n";
+        return s;
     }
+
+
 
     /**
      * adding functions/predicates 
@@ -158,9 +248,26 @@ public class CompModuleHelper extends CompModule {
      * f is a label
      * t is return type; null if predicate
      */
-    public void addPredSimple(String name, List<Decl> decls, ArrayList<Expr> eList) {
-        Expr body = AlloyExprHelper.createAnd(eList);
-        addFunc(Pos.UNKNOWN, Pos.UNKNOWN, AlloyExprHelper.createVar(name), null, decls, null, body);
+    public String addPredSimple(String name, List<Decl> decls, List<Expr> eList) {
+        Expr body = ExprHelper.createAnd(eList);
+        addFunc(Pos.UNKNOWN, Pos.UNKNOWN, ExprHelper.createVar(name), null, decls, null, body);
+        String s = new String();
+        s += DashStrings.predName + " " + name + "[";
+        StringJoiner j = new StringJoiner(", ");
+        decls.forEach(i -> j.add(i.toString()));
+        s += j.toString() + "] {\n";
+        // s += body.toString();
+        // as long as createAnd is working correctly this is okay
+        // and better formatted
+        s += tab;
+        StringJoiner sj = new StringJoiner("\n" + tab);
+        ExprToString eToString = new ExprToString(false);
+        for (Expr e: eList) {
+            sj.add(eToString.toString(e));
+        }
+        s += sj.toString() + "\n";
+        s+= "}\n";
+        return s;
     }
 
     /**

@@ -8,6 +8,7 @@ import ca.uwaterloo.watform.core.DashStrings;
 public class DashWhen  extends Dash {
 	public Expr when;
 	public DashWhen(Pos pos,Expr w) {
+		assert(w != null);
 		this.pos = pos;
 		this.when = w;
 	}

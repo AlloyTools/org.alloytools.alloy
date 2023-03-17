@@ -17,6 +17,7 @@ public class DashVarDecls extends Dash {
 
 
 	public DashVarDecls (Pos pos, List<String> n, Expr e, DashStrings.IntEnvKind k) {
+		assert(n != null && e != null);
 		this.pos = pos;
 		this.names = n;
 		this.typ = e;

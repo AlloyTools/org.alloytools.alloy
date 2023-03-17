@@ -65,12 +65,12 @@ import edu.mit.csail.sdg.parser.CompModule.Open;
  *           static (classic Alloy);
  */
 
-public class DashUtil {
+public final class DashUtil {
 
     /**
      * Constructor is private, since this class never needs to be instantiated.
      */
-    public DashUtil() {
+    private DashUtil() {
     }
 
     // =============================================================================================================//

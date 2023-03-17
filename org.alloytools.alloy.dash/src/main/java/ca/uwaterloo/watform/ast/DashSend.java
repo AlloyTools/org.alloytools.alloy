@@ -22,6 +22,7 @@ public class DashSend  extends Dash {
 
 	public Expr eventExpr;
 	public DashSend(Pos pos,Expr ev) {
+		assert(ev != null);
 		this.pos = pos;
 		this.eventExpr = ev;
 	}

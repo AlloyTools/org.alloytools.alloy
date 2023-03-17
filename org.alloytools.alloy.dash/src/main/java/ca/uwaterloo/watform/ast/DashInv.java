@@ -16,10 +16,11 @@ public class DashInv extends Dash {
         this.name = null;
         this.inv = inv;
     }
-    public DashInv(Pos pos, String n, Expr inv) {
+    public DashInv(Pos p, String n, Expr i) {
+        assert(n != null && i != null);
         this.pos = pos;
         this.name = n;
-        this.inv = inv;
+        this.inv = i;
     }
     public String toString() {
         String s = new String();

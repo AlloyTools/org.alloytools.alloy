@@ -1,0 +1,39 @@
+package ca.uwaterloo.watform.alloyasthelper;
+
+import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.StringJoiner;
+
+
+import edu.mit.csail.sdg.ast.Expr;
+
+
+import ca.uwaterloo.watform.core.DashErrors;
+
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+
+// this is necessary to make a better toString method for
+// Joins where brackets are printed
+// we will have to use this within any expressions in actions or guards or event parameters
+public class ExprExt extends Expr {
+
+		public Expr exp;
+
+		public ExprExt(Expr e) {
+			this.exp = e;
+		}
+
+		public String toString() {
+			if (this.exp isinstance ExprJoin) {
+				s = new String();
+				s += this.exp.left.toString();
+				s += " . ";
+				if (this.exp.right isinstance ExprJoin) {
+					s += "( ";
+					s += this.exp.right.toString();
+					s += " )";
+				}
+			} else return e.toString();
+		}
+}

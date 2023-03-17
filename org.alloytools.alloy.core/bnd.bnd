@@ -28,7 +28,8 @@ Export-Package: \
 	edu.mit.csail.sdg.translator,\
 	org.alloytools.util.table,\
 	org.alloytools.alloy.core, \
-	org.alloytools.alloy.core.util
+	org.alloytools.alloy.core.util, \
+	com.io7m.jpplib.core, \
 	
 Private-Package: \
 	java_cup.runtime

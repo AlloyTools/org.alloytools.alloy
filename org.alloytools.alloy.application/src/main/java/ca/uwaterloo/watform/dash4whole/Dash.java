@@ -124,7 +124,7 @@ public class Dash {
                 }
             } else {
                 try {
-                    alloymodule = MainFunctions.translateToAlloy(d, rep);
+                    alloymodule = MainFunctions.translate(d, rep);
                 } catch (Exception e) {
                     System.err.println(e);
                     System.exit(1);

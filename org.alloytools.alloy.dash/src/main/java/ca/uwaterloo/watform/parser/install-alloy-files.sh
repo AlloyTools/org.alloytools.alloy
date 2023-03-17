@@ -58,7 +58,7 @@ rm CompUtil.java
 
 
 
-rm *.java-e
+rm *.java-e *.javat
 
 # make DashModule an extension of DashCompModule 
 

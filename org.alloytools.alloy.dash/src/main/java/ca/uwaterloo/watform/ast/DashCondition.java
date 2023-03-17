@@ -16,6 +16,7 @@ public class DashCondition extends Dash {
     public Expr expr;
 
     public DashCondition(Pos p, String n, Expr e) {
+        assert(n != null && e != null);
         this.pos = p;
         this.name = n;
         this.expr = e;

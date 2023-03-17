@@ -1,3 +1,5 @@
+/* is this used? */
+
 package ca.uwaterloo.watform.ast;
 
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -9,6 +11,7 @@ public class DashExpr  extends Dash {
 	private Expr ae;
 
 	public DashExpr(Pos pos,Expr a) {
+		assert(a != null);
 		this.pos = pos;
 		this.ae = a;
 

@@ -1,6 +1,7 @@
 package ca.uwaterloo.watform.alloyasthelper;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -16,17 +17,28 @@ import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.ExprBinary;
 
-// Expr is not final so we can extend it
-public class AlloyExprHelper  {
 
+import ca.uwaterloo.watform.core.DashStrings;
+
+// these are all static
+// don't want to make them an extension
+// because then would have to put them in all different classes
+
+
+public class ExprHelper  {
+
+    // useful in development
+    public static Expr createNullExpr() {
+        return createEquals(createTrue(),createTrue());
+    }
     public static ExprVar createTrue() {
-        return ExprVar.make(Pos.UNKNOWN,  "True");
+        return ExprVar.make(Pos.UNKNOWN,  DashStrings.trueName);
     } 
     public static ExprVar createVar(String v) {
         return ExprVar.make(Pos.UNKNOWN, v);
     }
-    public static ArrayList<ExprVar> createVarList(ArrayList<String> vList) {
-        ArrayList<ExprVar> retList = new ArrayList<ExprVar>();
+    public static List<ExprVar> createVarList(List<String> vList) {
+        List<ExprVar> retList = new ArrayList<ExprVar>();
         for (String v: vList) {
             retList.add(createVar(v));
         }
@@ -41,10 +53,10 @@ public class AlloyExprHelper  {
         return (ExprUnary) op.make(Pos.UNKNOWN, sub);
     }
     // dunno why this one is different in Alloy code
-    public static Expr createExprList(ExprList.Op op, ArrayList<Expr> args) {
+    public static Expr createExprList(ExprList.Op op, List<Expr> args) {
         return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, op, args);
     }   
-    public static Expr createExprQt(ExprQt.Op op, ArrayList<Decl> decls, Expr expr) {
+    public static Expr createExprQt(ExprQt.Op op, List<Decl> decls, Expr expr) {
         return op.make(Pos.UNKNOWN, Pos.UNKNOWN, decls,expr);
     }
 
@@ -58,16 +70,17 @@ public class AlloyExprHelper  {
     public static ExprBinary createJoin(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.JOIN.make(Pos.UNKNOWN, Pos.UNKNOWN, left, right);
     }
-    public static Expr createJoinList(ArrayList<Expr> elist) {
+    public static Expr createJoinList(List<Expr> elist) {
         Expr ret = null;
         assert(elist!=null);
+        Collections.reverse(elist);
         ret = elist.get(0);
-        for (Expr el: elist.subList(1,elist.size()-1)) {
+        for (Expr el: elist.subList(1,elist.size())) {
             ret = createJoin(ret,el);
         }
         return ret;
     }
-    public static Expr createPlusList(ArrayList<Expr> elist) {
+    public static Expr createPlusList(List<Expr> elist) {
         Expr ret = null;
         assert(elist!=null);
         ret = elist.get(0);
@@ -85,13 +98,13 @@ public class AlloyExprHelper  {
     public static ExprBinary createAnd(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static Expr createAnd(ArrayList<Expr> args) {
+    public static Expr createAnd(List<Expr> args) {
         return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
     }
     public static ExprBinary createOr(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static Expr createOr(ArrayList<Expr> args) {
+    public static Expr createOr(List<Expr> args) {
         return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
     }
     public static ExprBinary createArrow(Expr left,Expr right) {
@@ -105,7 +118,7 @@ public class AlloyExprHelper  {
     }
     // {x,y,z}
     // returns x -> (y -> z)
-    public static Expr createArrowList(ArrayList<String> eList) {
+    public static Expr createArrowList(List<String> eList) {
         assert(eList != null);
         Collections.reverse(eList);
         Expr o = createVar(eList.get(0));
@@ -120,15 +133,28 @@ public class AlloyExprHelper  {
         return (ExprITE) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
     }
    
-    public static ExprQt createAll(ArrayList<Decl> decls, Expr expr) {
+    public static ExprQt createAll(List<Decl> decls, Expr expr) {
         return (ExprQt) ExprQt.Op.ALL.make(Pos.UNKNOWN, Pos.UNKNOWN,  decls, expr);
     }
-    public static ExprQt createSome(ArrayList<Decl> decls, Expr expr) {
+    public static ExprQt createSome(List<Decl> decls, Expr expr) {
         return (ExprQt) ExprQt.Op.SOME.make(Pos.UNKNOWN, Pos.UNKNOWN,  decls, expr);
     }
 
     public static ExprUnary createAlways(Expr expr) {
         return (ExprUnary) ExprUnary.Op.ALWAYS.make(Pos.UNKNOWN, expr);
+    }
+
+    public static Expr createPredCall(String name, List<Expr> elist) {
+        // using ExprCall.make is overkill
+        // b/c it required the entire function definition to be passed
+        // as an argument
+        // joins are equivalent but not as nice to look at :-)
+        // order of joins is tricky
+        Expr o = createVar(name);
+        for (Expr e:elist) {
+            o = createJoin(e,o);
+        }
+        return o;
     }
 
 }

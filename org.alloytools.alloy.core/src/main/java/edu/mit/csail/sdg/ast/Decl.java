@@ -29,7 +29,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
  *           variable).
  */
 
-public final class Decl {
+public class Decl {
 
     /**
      * If nonnull, then this decl is private (and this.isPrivate is the location of

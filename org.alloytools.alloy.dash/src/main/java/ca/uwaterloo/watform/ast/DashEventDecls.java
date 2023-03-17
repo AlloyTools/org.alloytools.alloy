@@ -15,6 +15,7 @@ public class DashEventDecls extends Dash {
 	private DashStrings.IntEnvKind kind; 
 
 	public DashEventDecls(Pos pos, List<String> n, DashStrings.IntEnvKind kind) {
+		assert(n != null);
 		this.pos = pos;
 		this.names = n;
 		this.kind = kind;

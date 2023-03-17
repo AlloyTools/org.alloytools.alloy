@@ -2,8 +2,13 @@ package ca.uwaterloo.watform.ast;
 
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
-import ca.uwaterloo.watform.core.DashStrings;
+import ca.uwaterloo.watform.core.*;
+
+import ca.uwaterloo.watform.parser.StateTable;
+import ca.uwaterloo.watform.parser.TransTable;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 
@@ -11,10 +16,11 @@ public class DashTrans extends Dash {
 	String name;
 	List<Object> items;
 
-	public DashTrans(Pos pos,String name, List<Object> items) {
-		this.pos = pos;
-		this.name = name;
-		this.items = items;
+	public DashTrans(Pos p,String n, List<Object> i) {
+		assert(n != null && i != null);
+		this.pos = p;
+		this.name = n;
+		this.items = i;
 	}
 
 	public String toString() {
@@ -29,5 +35,9 @@ public class DashTrans extends Dash {
 		}
 		return s;
 	}
+	public void resolveAll(StateTable st, TransTable tt, List<String> params, List<String> ances) {
+		String tfqn = DashFQN.fqn(ances,name);
+		System.out.println("Resolving trans "+tfqn);		
 
+	}
 }
