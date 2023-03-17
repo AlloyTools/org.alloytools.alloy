@@ -25,9 +25,9 @@ sed -i -e 's/CompSym/DashSym/g' Alloy.lex
 #sed -i -e 's/CompModule/DashModule/g' Alloy.lex
 
 # FILE LINE NUMBER DEPENDENCE BELOW
-sed -n -e '1,24p' Alloy.lex > part1.txt
-sed -n -e '25,240p' Alloy.lex > part2.txt
-sed -n -e '241,$p' Alloy.lex > part3.txt
+sed -n -e '1,24p' Alloy.lex > part1.txt  # to the end of imports
+sed -n -e '25,235p' Alloy.lex > part2.txt # to the end of tokens
+sed -n -e '236,$p' Alloy.lex > part3.txt
 { echo "$msg"; cat part1.txt Dash-lex-imports.txt part2.txt Dash-lex-addition.txt part3.txt ; } > Dash.lex
 rm Alloy.lex part*.txt 
 rm *.lex-e
@@ -50,11 +50,11 @@ sed -i -e 's/CompModule u = new CompModule(root, filename, prefix);/DashModule u
 
 # split it up and put it back together
 # FILE LINE NUMBER DEPENDENCE BELOW
-sed -n -e '1,61p' Alloy.cup > part1.txt # to end of symbols
-sed -n -e '62,249p' Alloy.cup > part2.txt
-sed -n -e '250,533p' Alloy.cup > part3.txt # to end of terminals
-sed -n -e '534,621p' Alloy.cup > part4.txt # to end of Dash-cup-nonterminals
-sed -n -e '622,$p' Alloy.cup > part5.txt # to end of file
+sed -n -e '1,61p' Alloy.cup > part1.txt # to end of imports
+sed -n -e '62,247p' Alloy.cup > part2.txt # to the end of symbols
+sed -n -e '248,529p' Alloy.cup > part3.txt # to end of terminals
+sed -n -e '530,617p' Alloy.cup > part4.txt # to end of nonterminals
+sed -n -e '618,$p' Alloy.cup > part5.txt # to end of file
 { echo "$msg"; cat part1.txt Dash-cup-imports.txt part2.txt Dash-cup-symbols.txt part3.txt Dash-cup-terminals.txt part4.txt Dash-cup-nonterminals.txt part5.txt Dash-cup-grammar.txt; } > Dash.cup
 rm Alloy.cup part*.txt
 rm *.cup-e

@@ -194,8 +194,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 "else"                { return alloy_sym(yytext(), DashSym.ELSE        );}
 "enum"                { return alloy_sym(yytext(), DashSym.ENUM        );}
 "exactly"             { return alloy_sym(yytext(), DashSym.EXACTLY     );}
-"exhaustive"          { return alloy_sym(yytext(), DashSym.EXH         );}
-"exh"                 { return alloy_sym(yytext(), DashSym.EXH         );}
 "expect"              { return alloy_sym(yytext(), DashSym.EXPECT      );}
 "extends"             { return alloy_sym(yytext(), DashSym.EXTENDS     );}
 "fact"                { return alloy_sym(yytext(), DashSym.FACT        );}
@@ -216,8 +214,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 "one"                 { return alloy_sym(yytext(), DashSym.ONE         );}
 "open"                { return alloy_sym(yytext(), DashSym.OPEN        );}
 "or"                  { return alloy_sym(yytext(), DashSym.OR          );}
-"partition"           { return alloy_sym(yytext(), DashSym.PART        );}
-"part"                { return alloy_sym(yytext(), DashSym.PART        );}
 "pred"                { return alloy_sym(yytext(), DashSym.PRED        );}
 "private"             { return alloy_sym(yytext(), DashSym.PRIVATE     );}
 "run"                 { return alloy_sym(yytext(), DashSym.RUN         );}
@@ -245,7 +241,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 "'"                   { return alloy_sym(yytext(), DashSym.PRIME       );}
 "‘"                   { return alloy_sym(yytext(), DashSym.PRIME       );}
 "’"                   { return alloy_sym(yytext(), DashSym.PRIME       );}
-
 //DASH SYNTAX ADDITIONS
 
 "state"          { return alloy_sym(yytext(), DashSym.STATE       );}
@@ -272,6 +267,7 @@ import edu.mit.csail.sdg.parser.CompModule;
 
 
 //END DASH SYNTAX ADDITIONS
+
 
 [\"] ([^\\\"] | ("\\" .))* [\"] [\$0-9a-zA-Z_\"] [\$0-9a-zA-Z_\"]* 	   { throw new ErrorSyntax(alloy_here(yytext()),"String literal cannot be followed by a legal identifier character."); }
 [\"] ([^\\\"] | ("\\" .))* [\"]                                        { return alloy_string(yytext()); }
