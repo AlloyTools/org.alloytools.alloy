@@ -1,0 +1,7 @@
+module X
+
+sig A {}
+
+fact jj {
+	1 = 1
+}

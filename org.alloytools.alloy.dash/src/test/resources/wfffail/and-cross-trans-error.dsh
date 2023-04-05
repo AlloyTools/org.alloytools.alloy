@@ -1,0 +1,12 @@
+state Root {
+	conc state A {
+		state A1 {
+			trans t1 {
+				goto Root/B/B1
+			}
+		}
+	}
+	conc state B {
+		state B1 {}
+	}
+}

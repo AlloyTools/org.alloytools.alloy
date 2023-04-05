@@ -1,0 +1,16 @@
+enum status {x, y}
+
+state Top {
+	env input: one status
+	default state OFF { }
+	state ON {}
+	trans t0 {
+		when input = x	
+		goto ON
+	}
+	trans t1 {
+		when input = y
+		goto OFF
+	}
+	
+}

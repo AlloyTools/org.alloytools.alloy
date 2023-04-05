@@ -1,0 +1,7 @@
+state Root {
+	// no need to say this is default
+	state S {
+		trans t1 {
+		}
+	}
+}

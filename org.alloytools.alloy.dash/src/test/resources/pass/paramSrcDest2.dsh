@@ -1,0 +1,10 @@
+state Root {
+	conc A [APID] {
+		trans t1 {
+			goto Root/B/S1[x]
+		}
+	}
+	conc B [BPID] {
+		state S1 {}
+	}
+}

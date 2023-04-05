@@ -1,0 +1,35 @@
+// Identifiers are declared by translation
+
+state Root {
+	conc state A [AId] {
+		conc state A1 [A1ID] {
+			state S1 {}
+			default state S2 {
+				conc state C[CId] {
+					state C1 {}
+					default state C2 {}
+					trans t0 {
+						from C2
+						goto C1
+					}
+				}
+			}
+			trans t3 {
+				from S2
+				goto S1
+			}
+			trans t1 {
+				from S1
+				goto S2
+			}
+		}
+	}
+	conc state B [BId] {
+		state B1 {}
+		default state B2 {}
+		trans t2 {
+			from B1
+			goto B2
+		}
+	}
+}

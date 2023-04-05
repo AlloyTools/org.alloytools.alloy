@@ -1,0 +1,7 @@
+sig A {}
+
+state S1 {
+	b1 : buf[A]
+	b2 : buf[B]
+	env b3 : buf[B]
+}

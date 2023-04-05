@@ -1,0 +1,6 @@
+state Root {
+	state S1 {}
+	conc S2 {}
+	default state S3 {}
+	default conc S4 {}
+}

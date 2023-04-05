@@ -1,0 +1,5 @@
+state Root {
+	conc A [APID] {
+		trans t1 {}
+	}
+}

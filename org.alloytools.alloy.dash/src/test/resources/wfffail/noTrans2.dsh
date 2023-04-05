@@ -1,0 +1,8 @@
+sig A {}
+
+sig B {}
+
+state S {}
+
+
+

@@ -1,0 +1,9 @@
+sig A {}
+
+fact {}
+
+state Root {
+	// not correct because must have substates
+	conc A {}
+	conc B {}
+}

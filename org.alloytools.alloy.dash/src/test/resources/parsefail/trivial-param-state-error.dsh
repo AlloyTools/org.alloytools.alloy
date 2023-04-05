@@ -1,0 +1,6 @@
+sig A {}
+
+fact {}
+
+// should fail
+state Root [A] {}

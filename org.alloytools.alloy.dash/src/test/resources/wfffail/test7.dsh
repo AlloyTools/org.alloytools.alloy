@@ -1,0 +1,28 @@
+state Root {
+conc state p1 {
+
+	default state p1s0 {
+		trans p1t0 {
+			goto p1s1
+		}
+	}
+	state p1s1 {
+		trans p1t1 {
+			goto p1s0
+		}
+	}
+	
+}
+conc state p2 {
+	default state p2s0 {
+		trans p2t0 {
+			goto p2s1
+		}
+	}
+	state p2s1 {
+		trans p2t1 {
+			goto p2s0
+		}
+	}
+}
+}

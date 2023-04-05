@@ -1,0 +1,18 @@
+// S2 is unknown b/c it is not within the same conc name space
+state Root {
+	conc S1 {
+		state S7 {}
+		trans t1 {
+			goto S7
+		}
+	}
+	default state  S2 {
+		state S3{
+			state S4{
+				trans t2 {
+					goto S7
+				}
+			}
+		}
+	}
+}

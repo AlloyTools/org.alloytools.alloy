@@ -1,0 +1,15 @@
+state Root {
+	state S {
+		trans t1 {
+			// goto B  // this works
+			//goto C // 'The name "Root_S_C" cannot be found.'
+			//goto D // 'The name "Root_S_D" cannot be found.'
+			goto Root/B/C/D // error
+		}
+	}
+	default state B {
+    		conc  C {
+        			default state D {}
+    		}
+	}
+}

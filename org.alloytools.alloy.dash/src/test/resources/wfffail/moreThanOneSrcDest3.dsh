@@ -1,0 +1,7 @@
+state Root {
+	trans t1 {
+		goto Root
+		from Root
+		goto Root
+	}
+}

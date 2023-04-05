@@ -1,0 +1,24 @@
+
+
+state Top {
+	state Outer {
+		default state s0 {
+			trans t0 {
+				goto s1
+			}
+		}
+		state s1 {
+			trans t1 {
+				goto s0
+			}
+		}
+		trans t4 {
+			goto s2
+		}
+	}
+	default state Outer {
+		trans t3 {
+			goto s1
+		}
+	}
+}

@@ -1,0 +1,12 @@
+state Root {
+	conc A [APID] {
+		conc B [BPID] {
+			default state S1 {
+				trans t1 { 
+					goto S2
+				}
+			}
+			state S2 {}
+		}
+	}
+}

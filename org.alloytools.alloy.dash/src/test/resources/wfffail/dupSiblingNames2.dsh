@@ -1,0 +1,4 @@
+state Root {
+	state A {}
+	state A {}
+}

@@ -1,0 +1,19 @@
+
+
+state Top {
+	default state s0 {
+		trans t0 {
+			goto s1
+		}
+	}
+	state s1 {
+		trans t1 {
+			goto s2
+		}
+	}
+	state s2 {
+		trans t3 {
+			goto s1
+		}
+	}
+}

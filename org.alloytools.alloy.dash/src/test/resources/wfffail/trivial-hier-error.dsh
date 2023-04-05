@@ -1,0 +1,9 @@
+sig A {}
+
+fact {}
+
+
+state Root {
+	state A {}
+	state B {}
+}

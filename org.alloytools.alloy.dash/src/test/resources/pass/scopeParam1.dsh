@@ -1,0 +1,10 @@
+state Root {
+	conc A [APID] {
+		default state S1 {
+			trans t1 { 
+				goto Root/A/S2[x]
+			}
+		}
+		state S2 {}
+	}
+}

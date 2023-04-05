@@ -1,0 +1,7 @@
+state Root {
+	// no need to say this is default
+	conc C {
+		trans t1 {
+		}
+	}
+}

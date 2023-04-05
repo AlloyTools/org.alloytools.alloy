@@ -1,0 +1,21 @@
+state Root {
+	default state S1 {
+		state S2 {
+			trans t1 {}
+		}
+	}
+	state S3 {
+		default state S4 {
+			state S5 {}
+		}
+		conc A {
+			state S7 {}
+		}
+		conc B {
+			state S7 {}
+		}
+		conc C [CPID] {
+			state S7{}
+		}
+	}
+}

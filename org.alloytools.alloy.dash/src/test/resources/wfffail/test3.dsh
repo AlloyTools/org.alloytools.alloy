@@ -1,0 +1,6 @@
+state A {
+	trans t1 {
+		// should fail on x,y as a list
+		send P[x,y]/ev1	
+	}
+}

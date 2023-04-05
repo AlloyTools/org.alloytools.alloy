@@ -1,0 +1,5 @@
+state Root {
+	conc A {}
+	state A {}
+	conc B {}
+}
