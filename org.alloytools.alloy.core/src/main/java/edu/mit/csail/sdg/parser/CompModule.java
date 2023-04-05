@@ -1936,7 +1936,7 @@ public final class CompModule extends Browsable implements Module {
         if (commands.isEmpty()) {
             addFunc(Pos.UNKNOWN, Pos.UNKNOWN, ExprVar.make(Pos.UNKNOWN, "$$Default"), null, new ArrayList<Decl>(), null, ExprConstant.TRUE);
             ExprVar check = ExprVar.make(Pos.UNKNOWN, "check");
-            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, 4, 4, 4, -1, -1, 1, null, null, check, ExprVar.make(null, "$$Default"), null));
+            commands.add(new Command(Pos.UNKNOWN, ExprConstant.TRUE, "Default", false, -1, -1, -1, -1, -1, -1, null, null, check, ExprVar.make(null, "$$Default"), null));
         }
     }
 
