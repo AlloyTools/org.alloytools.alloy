@@ -15,6 +15,7 @@ public class DashStrings {
 	public static String asName = "as";
 	public static String boolName = "boolean/Bool";
 	public static String trueName = "boolean/True";
+	public static String noneName = "none";
 	public static String intName = "int";
 	public static String utilBooleanName = "util/boolean";
 	public static String utilCTLpathName = "util/ctl_path";
@@ -58,7 +59,7 @@ public class DashStrings {
 	
 	// sig names
 	public static String snapshotName = "Snapshot";
-	public static String confName = "confName";
+	public static String confName = "conf";
 	public static String takenName = "taken";
 
 	public static String stateLabelName = "StateLabel";
@@ -88,8 +89,8 @@ public class DashStrings {
 
 	public static String tracesName = "traces";
 	
-	public static String sCurName = "s";
-	public static String sNextName = "sNext";
+	public static String curName = "s";
+	public static String nextName = "sNext";
 	public static String prime(String a) {
 		return a+"'";
 	};

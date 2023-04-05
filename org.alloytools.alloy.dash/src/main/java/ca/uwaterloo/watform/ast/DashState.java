@@ -1,6 +1,5 @@
 package ca.uwaterloo.watform.ast;
 
-//tmp
 import java.util.*;
 
 import java.util.List;
@@ -15,6 +14,7 @@ import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.*;
 
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.TransTable;
 
@@ -33,7 +33,7 @@ public class DashState  extends Dash {
 	// 6 args
 	// probably not used?
 	public DashState(Pos p, String n, String prm, DashStrings.StateKind k, DashStrings.DefKind d, List<Object> i) {
-		assert(n != null && prm != null & i != null);
+		assert(n != null && i != null);
 		this.pos = p;
 		this.name = n;
 		this.param = prm;
@@ -43,6 +43,7 @@ public class DashState  extends Dash {
 		//System.out.println("here1 creating "+this.name+" "+ this.kind);
 	
 	}
+	/*
 	// basic state - default or non-default
 	// 3 args
 	public DashState(Pos p, String n, DashStrings.DefKind d) {
@@ -79,7 +80,7 @@ public class DashState  extends Dash {
 		this.items = i;	
 		//System.out.println("here4 creating "+this.name+" "+ this.kind);
 	}
-
+	*/
 	public String toString() {
 		String s = new String("");
 		//s += s.join("", Collections.nCopies(tab*tabsize, " "));
@@ -103,6 +104,12 @@ public class DashState  extends Dash {
 		return s;
 	}
 
+	public static String noParam() {
+		return null;
+	}
+	public static List<Object> noSubstates() {
+		return new ArrayList<Object>();
+	}
 		// env events cannot be generated
 		// env vars cannot be primed anywhere
 		// must have at least one transition (could be looping on Root ...)
@@ -110,22 +117,20 @@ public class DashState  extends Dash {
 	/*
 	 * check for errors in the state hierarchy
 	 * and put all states in the state table
-	 * also sets this state's fqn here
+	 * also set this state's fqn here
 	 */
 	public void resolveAllStates(StateTable st, List<String> params, List<String> ances)  {
 		if (DashFQN.alreadyFQN(name)) DashErrors.stateNameCantBeFQN(pos, name);
 		sfqn = DashFQN.fqn(ances,name);
 		System.out.println("Resolving state "+sfqn);
-			
-		List<String> newParams = new ArrayList<String>(params);
-		if (param != null) newParams.add(param);
-
+	
 		// process the children
 		// have to make a copy so that recursion does not just
 		// continue to add to list everywhere				
 		List<String> newAnces = new ArrayList<String>(ances);
-		newAnces.add(name);
-		
+		newAnces.add(name);		
+		List<String> newParams = new ArrayList<String>(params);
+		if (param != null) newParams.add(param);
 
 		List<DashState> substatesList = new ArrayList<DashState>();
 		if (items != null)
@@ -136,13 +141,8 @@ public class DashState  extends Dash {
 				.collect(Collectors.toList());
 
 		if (substatesList.isEmpty() ) {
-			
-			if (kind == DashStrings.StateKind.AND)
-				DashErrors.concStateNoChildren(sfqn); 
-			else if (param != null) 
-				DashErrors.basicStateParam(sfqn);
-			else
-				st.add(sfqn, kind, params, null, DashFQN.fqn(ances), null);
+
+			st.add(sfqn, kind, param, newParams, def, DashFQN.fqn(ances), null);
 			
 		} else {
 			
@@ -153,32 +153,49 @@ public class DashState  extends Dash {
 			Set<String> dups = DashUtilFcns.findDuplicates(childFQNs);
 			if (!dups.isEmpty()) 
 				DashErrors.dupSiblingNames(DashUtilFcns.strCommaList(dups.stream().collect(Collectors.toList())));
-							
-			// all sibling names must be the same type
-			Set<DashStrings.StateKind> k = new HashSet<DashStrings.StateKind>();
-			substatesList.forEach(i -> k.add(i.kind));
-			if (k.size() != 1)
-				DashErrors.siblingsSameKind(sfqn);
-			
-			// if substates are OR, then must be a default unless there is only one substate
-			// parent kind does not matter
-			String def = null;
-			if (k.contains(DashStrings.StateKind.OR) && substatesList.size() != 1) {
-				// names of the default states
-				List<String> defaultsList = 
+
+			// add this state to the table
+			st.add(sfqn,kind, param, newParams,def, DashFQN.fqn(ances), childFQNs);
+
+			// add all substates to the table
+			for (DashState s: substatesList) s.resolveAllStates(st, newParams, newAnces);
+
+			// make sure defaults are correct
+			// if there's only one child it is automatically the default
+			if (substatesList.size() == 1) {
+				// make sure it is set as default
+				// this child should already be in the state table
+				// might already be set as duplicate but that's okay
+				// have to use the substate's FQN here
+				st.setAsDefault(childFQNs.get(0));
+			} else {
+				// default states
+				List<DashState> defaultsList = 
 					substatesList.stream()
 					.filter(i -> (i.def == DashStrings.DefKind.DEFAULT))
-					.map(i -> i.name)
 					.collect(Collectors.toList());
-				if (defaultsList.size() > 1) DashErrors.tooManyDefaults(sfqn);
-				else if (defaultsList.isEmpty()) DashErrors.noDefaultState(sfqn);
-				else def = defaultsList.get(0);
-			} else if (k.contains(DashStrings.StateKind.OR) && substatesList.size() == 1) {
-				def = substatesList.get(0).name;
-			}
-			st.add(sfqn,kind, newParams,def, DashFQN.fqn(ances), childFQNs);
+				List<DashState> andList = 
+					substatesList.stream()
+					.filter(i -> (i.kind == DashStrings.StateKind.AND))
+					.collect(Collectors.toList());
+				if (andList.equals(substatesList) && defaultsList.size() == 0) {
+					// all AND-states and non designated as defaults so all are defaults
+					for (String ch: childFQNs) st.setAsDefault(ch);
+				} else if (defaultsList.size() == 0) 
+					DashErrors.noDefaultState(sfqn);
+				else {
+					// if defaults list contains an OR states, it should be size 1
+					boolean flag = defaultsList.stream().anyMatch( (s) -> s.kind == DashStrings.StateKind.OR);
+					if (flag) {
+						if (defaultsList.size() != 1) DashErrors.tooManyDefaults(sfqn);	
+						// o/w one OR state is default
+					} else {					
+						// if defaults list is all c's, all c children should be included
 
-			for (DashState s: substatesList) s.resolveAllStates(st, newParams, newAnces);
+						if (defaultsList != andList) DashErrors.allAndDefaults(sfqn);
+					}
+				}
+			}
 		}
 
 			/*
@@ -242,40 +259,45 @@ public class DashState  extends Dash {
 			// transition src/dest have to be resolved here rather than in DashTrans because
 			// this src and dest are contextual
 
-			List<String> fromList = 
+			List<DashRef> fromList = 
 				t.items.stream()
 				.filter(i -> i instanceof DashFrom)
 				.map(p -> ((DashFrom) p).src)
 				.collect(Collectors.toList());
-			String src = setSrcDest("from", fromList, st, sfqn, tfqn);
-			assert(src != null); // should have thrown an exception
-			st.add(src);  
+			System.out.println(fromList);
+			DashRef src = setSrcDest("from", fromList, st, sfqn, tfqn);
+			assert(src != null); 
+			st.add(src.getName());  
 			
-			List<String> gotoList = 
+			List<DashRef> gotoList = 
 				t.items.stream()
 				.filter(i -> i instanceof DashGoto)
 				.map(p -> ((DashGoto) p).dest)
 				.collect(Collectors.toList());
-			String dest = setSrcDest("goto", gotoList, st, sfqn, tfqn);
-			assert(dest != null); // should have thrown an exception
-			st.add(dest);
+			System.out.println(gotoList);
+			DashRef dest = setSrcDest("goto", gotoList, st, sfqn, tfqn);
+			assert(dest != null); 
+			st.add(dest.getName());
 
-			// note that this is not newAnces; states referenced by t can be siblings to the state
-			// that t is within
-
+			/*
+			// AND-cross transitions are now allowed
 			// check if it is an AND-cross transition
 			List<String> srcAnces = st.getAllAnces(src);
-			System.out.println("src="+src+" srcAnces= "+srcAnces);
+			// System.out.println("src="+src+" srcAnces= "+srcAnces);
 			List<String> destAnces = st.getAllAnces(dest);
-			System.out.println("dest="+dest+" destAnces= "+destAnces);
+			// System.out.println("dest="+dest+" destAnces= "+destAnces);
 			int i = 0;
+			// find closest common ances
 			while (i< srcAnces.size() && i < destAnces.size() && srcAnces.get(i).equals(destAnces.get(i))) i++;
+			// are there any conc states between src/dest and the closest common ances?
 			for (int j=i; j < srcAnces.size();j++)
-				if (st.getKind(srcAnces.get(i)) == DashStrings.StateKind.AND)
+				if (st.isAnd(srcAnces.get(i)))
 					DashErrors.andCrossTransition(tfqn);
 			for (int j=i; j < destAnces.size(); j++)
-				if (st.getKind(destAnces.get(i)) == DashStrings.StateKind.AND)
+				if (st.isAnd(st.getKind(destAnces.get(i))))
 					DashErrors.andCrossTransition(tfqn);
+			*/
+
 			tt.add(tfqn,st.getParams(sfqn),src,dest);
 		}
 		if (items != null ) {
@@ -286,7 +308,7 @@ public class DashState  extends Dash {
 				.collect(Collectors.toList());
 			for (DashState s: substatesList) s.resolveAllTrans(st, tt);
 		}
-		//	t.resolveAll(st, tt, newParams, ances);
+
 		
 
 	}
@@ -299,36 +321,70 @@ public class DashState  extends Dash {
 	 * Otherwise, it looks at all uniquely named states up to an ancestor conc state
 	 * Requires state table to have been built already
 	 */
-	public String setSrcDest(String xType, List<String> ll,  StateTable st, String parentFQN, String tfqn) {
+ 
+	public DashRef setSrcDest(String xType, List<DashRef> ll,  StateTable st, String parentFQN, String tfqn) {
 
+		//System.out.println("Here");
+		//System.out.println(ll);
 		if (ll.size() > 1) {
 			DashErrors.moreThanOneSrcDest(xType, tfqn);
 			return null;
 		} else if (ll.isEmpty()) 
-			// could be root
-			return sfqn;
+			// can be a loop on root
+			return new DashRef(parentFQN, ExprHelper.createVarExprList(DashStrings.pName,st.getParams(parentFQN)));
 		else {
 			// if has slashes, turn to "-"
-			String xName = ll.get(0);
-			if (DashFQN.alreadyFQN(xName)) return xName;
-			else {
-				List<String> matches = new ArrayList<String>();
-				for (String s:st.getAllNonConcStatesWithinThisState(st.getClosestConcAnces(parentFQN))) {
-					if (xName.equals(DashFQN.chopNameFromFQN(s))) matches.add(s);
+			DashRef x = ll.get(0);
+			//System.out.println("Looking for: " + x);
+			if (DashFQN.alreadyFQN(x.getName())) {
+				// number of params provided must match number of params needed
+				if (x.getParamValues().size() != st.getParams(x.getName()).size()) {
+					DashErrors.fqnSrcDestMustHaveRightNumberParams(xType,tfqn);
+					return null;
 				}
+				return x;
+			} else {
+				// not fully qualified
+				// shouldn't have params in DashRef
+				// Root could be here but won't have params 
+				if (!x.getParamValues().isEmpty()) {
+					DashErrors.srcDestCantHaveParam(xType,tfqn);
+					return null;
+				}
+				// Root ends up here
+				List<String> matches = new ArrayList<String>();
+				//String a = st.getClosestConcAnces(parentFQN);
+				//System.out.println("getClosestConcAnces: "+a);
+				//List<String> b = st.getAllNonConcStatesWithinThisState(a);
+				//System.out.println("getAllNonConcStatesWithinThisState "+b);
+				for (String s:st.getRegion(parentFQN)) {
+					if (x.getName().equals(DashFQN.chopNameFromFQN(s))) matches.add(s);
+				}
+				System.out.println("matches: " + matches);
 				if (matches.size() > 1) {
 					DashErrors.ambiguousSrcDest(xType, tfqn);
 					return null; 
 				} else if (matches.isEmpty()) {
 					//DashUtilFcns.myprint(st.toString());
-					DashErrors.unknownSrcDest(xName,xType,tfqn);
+					DashErrors.unknownSrcDest(x.getName(),xType,tfqn);
 					return null;
 				} else {
-					return matches.get(0);
+					String m = matches.get(0);
+					//System.out.println(m);
+					// must have same param values as trans b/c in same conc region
+					return new DashRef(m, paramVars(st.getParams(m)));
 				}
 			}
 		}
 	}
+
+    // [n1,n2,...]
+    private List<Expr> paramVars(List<String> names) {
+        List<Expr> o = new ArrayList<Expr>();
+        for (String n: names) o.add(ExprHelper.createVar(DashStrings.pName+n));
+        return o;
+    }
+
 
 	/*
 	public String getParam() {

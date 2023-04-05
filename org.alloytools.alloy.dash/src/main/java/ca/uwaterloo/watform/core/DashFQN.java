@@ -77,5 +77,24 @@ public class DashFQN {
         while (i < minLength && aSplit.get(i).equals(bSplit.get(i))) i++;
     	return fqn(aSplit.subList(0,i));
 	}
-
+	public static List<String> allPrefixes(String fqn) {
+		List<String> prefixes = new ArrayList<String>();
+		// not including state itself
+		List<String> splitfqn = splitFQN(fqn);
+		for (int i=0;i < splitfqn.size()-1; i++) {
+			StringJoiner sj = new StringJoiner(inputQualChar);
+			for (int j=0;j<=i;j++) {
+				sj.add(splitfqn.get(j));				
+			}
+			prefixes.add(sj.toString());
+		}
+		return prefixes;
+	}
+	/* ances: A/B/C dest: A/B/C/D/E returns A/B/C/D */
+	public static String getChildOfContextAncesOfDest(String ances, String dest) {
+		if (dest.startsWith(ances)) 
+			// by going to ances, we are adding +1
+			return fqn(splitFQN(dest).subList(0,splitFQN(ances).size()));
+		else { DashErrors.ancesNotPrefix(ances,dest); return null; }
+	}
 }

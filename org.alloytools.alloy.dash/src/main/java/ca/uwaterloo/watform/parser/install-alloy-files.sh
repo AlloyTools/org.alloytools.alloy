@@ -42,6 +42,7 @@ sed -i -e 's/CompModule /DashModule /g' CompUtil.java
 # one place CompModule is used other than in types
 sed -it -e 's/return new CompModule(null, "", "");/return new DashModule(null, "", "");/' CompUtil.java
 
+
 sed -i -e 's/CompUtil/DashUtil/g' CompUtil.java
 
 sed -i -e 's/CompParser/DashParser/g' CompUtil.java

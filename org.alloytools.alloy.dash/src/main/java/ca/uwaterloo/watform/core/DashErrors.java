@@ -13,57 +13,88 @@ public class DashErrors {
 
 	// syntax errors --------------------------------------------
 
-	public static void stateNameCantBeFQN(Pos o, String name) throws Err {
-		throw new ErrorSyntax(o,"State name "+name+" when declared cannot have slash");
-	}
+	public static String onlyOneStateMsg = "Model can only have one 'state' section";
 	public static void onlyOneState(Pos o) throws Err {
-		throw new ErrorSyntax(o,"Model can only have one 'state' section");
+		throw new ErrorSyntax(o,onlyOneStateMsg);
 	}
+	public static String noTransMsg = "Model does not contain any transitions.";
+	public static void noTrans() throws Err {
+		throw new ErrorSyntax(noTransMsg);
+	}
+	public static String noStatesMsg = "Model must have at least one state.";
+	public static void noStates() throws Err {
+		throw new ErrorSyntax(noStatesMsg);
+	}
+	public static String tooManyDefaultStatesMsg = "Too many default states in state: "; 
+	public static void tooManyDefaults(String fqn) throws Err {
+		throw new ErrorSyntax(tooManyDefaultStatesMsg+fqn);
+	}
+	public static String noDefaultStateMsg = "State does not have default state: ";
+	public static void noDefaultState(String fqn) throws Err {
+		throw new ErrorSyntax(noDefaultStateMsg+fqn);
+	}
+	public static String allConcDefaultStatesMsg = "All conc children of state must be defaults if one is for state: ";
+	public static void allAndDefaults(String sfqn) throws Err {
+		throw new ErrorSyntax(allConcDefaultStatesMsg+sfqn);
+	}
+	public static String stateNameCantBeFQNMsg = "When declared, state name cannot have slash: ";
+	public static void stateNameCantBeFQN(Pos o, String name) throws Err {
+		throw new ErrorSyntax(o,stateNameCantBeFQNMsg+name);
+	}
+	public static String dupSiblingNamesMsg = "Duplicate sibling state names: ";
 	public static void dupSiblingNames(String dups) throws Err {
-		throw new ErrorSyntax("Duplicate sibling state names: " + dups);
+		throw new ErrorSyntax(dupSiblingNamesMsg + dups);
 	}
+	public static String dupTransNameMsg = "Duplicate transition names: ";
 	public static void dupTransNames(String dups) throws Err {
-		throw new ErrorSyntax("Duplicate sibling state names: " + dups);
+		throw new ErrorSyntax(dupTransNameMsg + dups);
 	}
+	public static String moreThanOneSrcDestMsg = "Transition has more than one src or dest: ";
+	public static void moreThanOneSrcDest(String x, String n) throws Err {
+		throw new ErrorSyntax(moreThanOneSrcDestMsg + x);
+	}
+	public static String unknownSrcDestMsg = "Src/Dest of trans is unknown: ";
+	public static void unknownSrcDest(String x, String t, String tfqn) throws Err {
+		throw new ErrorSyntax(unknownSrcDestMsg + "trans "+tfqn+" "+t+" "+x);
+	}
+	public static String fqnSrcDestMustHaveRightNumberParamsMsg = "A fully qualified state name must have the right number of parameters: ";
+	public static void fqnSrcDestMustHaveRightNumberParams(String xType, String tfqn) throws Err {
+		throw new ErrorSyntax(fqnSrcDestMustHaveRightNumberParamsMsg + xType + " of transition "+ tfqn );
+	}
+	public static String srcDestCantHaveParamMsg = "Non-fully qualified src/dest cannot have parameters: ";
+	public static void srcDestCantHaveParam(String xType, String tfqn) throws Err {
+		throw new ErrorSyntax(srcDestCantHaveParamMsg + xType + " of transition "+ tfqn );
+	}
+	public static String ambiguousSrcDestMsg = "State name not unique within this conc/Root region: ";
+	public static void ambiguousSrcDest(String x, String tfqn) throws Err {
+		throw new ErrorSyntax(ambiguousSrcDestMsg + "trans "+tfqn+" "+x);
+	}
+	// below this have not been tested
+
+
 	public static void siblingsSameKind(String fqn) throws Err {
 		throw new ErrorSyntax("Children of "+fqn+" must all be of concurrent or not concurrent");
 	}
 	public static void crossRefMoreThanOneArg(Pos o, String n) throws Err {
 		throw new ErrorSyntax(o,"Two many args to reference to "+n+" in sibling state");
 	}
-	public static void moreThanOneSrcDest(String x, String n) throws Err {
-		throw new ErrorSyntax("Transition "+n+" has more than one "+ x);
-	}
-	public static void noTrans() throws Err {
-		throw new ErrorSyntax("Model does not contain any transitions.");
-	}
+
+
 	public static void transUsesNonExistentState(String n) throws Err {
 		throw new ErrorSyntax("Some transition has from/goto to state "+n+" which doesn't exist");
 	}
-	public static void tooManyDefaults(String fqn) throws Err {
-		throw new ErrorSyntax("State "+fqn+" has more than one default state");
-	}
-	public static void noDefaultState(String fqn) throws Err {
-		throw new ErrorSyntax("State "+fqn+" does not have a default state");
-	}
-	public static void unknownSrcDest(String x, String t, String tfqn) throws Err {
-		throw new ErrorSyntax("Trans "+tfqn+" "+t+" "+x+ " is unknown");
-	}
-	public static void ambiguousSrcDest(String x, String tfqn) throws Err {
-		throw new ErrorSyntax("Trans "+tfqn+" "+x+" dest name is ambiguous: could be child of of parent state or sibling of parent state");
-	}
+
+
+
 	public static void andCrossTransition(String tfqn) throws Err {
 		throw new ErrorSyntax("Trans "+tfqn+" goes between concurrent states");
 	}
 
+
+
+
 	// parts of the code that should be unreachable -------------
 
-	public static void concStateNoChildren(String fqn) throws Err {
-		throw new ErrorFatal("Concurrent state "+fqn+" must have substates");
-	}
-	public static void basicStateParam(String fqn) throws Err {
-		throw new ErrorFatal("Basic state "+fqn+" has parameter");
-	}
 	public static void toAlloyNoDash() throws Err {
 		throw new ErrorFatal("Translating to Alloy when no Dash part");
 	}
@@ -88,5 +119,10 @@ public class DashErrors {
 	public static void missingExpr(String s) throws Err {
 		throw new ErrorFatal("Missing expr type in "+s);
 	}
-
+	public static void tooHighParamDepth() throws Err {
+		throw new ErrorFatal("paramsDepthInUse called with too high a number");
+	}
+	public static void ancesNotPrefix(String a, String d) throws Err {
+		throw new ErrorFatal(a + "  must be prefix of " + d);
+	}
 }

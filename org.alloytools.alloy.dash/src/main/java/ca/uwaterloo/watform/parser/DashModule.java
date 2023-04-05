@@ -13,17 +13,20 @@ import java.util.Set;
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.parser.CompModule;
-
+import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.*;
 import ca.uwaterloo.watform.ast.*;
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 
 import ca.uwaterloo.watform.parser.CompModuleHelper;
 import ca.uwaterloo.watform.dashtoalloy.DashToAlloy;
 
 public class DashModule extends CompModuleHelper {
 
-	private DashState root = null;
+	// let it be a list so we can have a good error message in wff checks (resolveAllDash)
+	private List<DashState> roots = new ArrayList<DashState>();
+	private DashState root = null; // normally first element of roots
 
 	// after parsing, these allow us to echo the Alloy-only parts
 	// of the file when printing
@@ -33,6 +36,8 @@ public class DashModule extends CompModuleHelper {
 
 	// derived during resolveAllDash phase
 	private int numBuffers = 0;
+	private int maxDepthParams = 0;
+	private boolean[] transAtThisParamDepth; 
 	private SymbolTable symbolTable;
 	private StateTable stateTable = new StateTable();
 	private TransTable transTable = new TransTable();
@@ -71,7 +76,10 @@ public class DashModule extends CompModuleHelper {
 		// this function is just for compatibility with copied CompUtil -> DashUtil
 		// super must be first statement in constructor
 		super(world,filename,path);
-		assert(world == null && path == null);
+		// this is violated so something in Alloy parsing must call this within a world
+		// assert(world == null && path == null);
+		// as long as super is doing copying from incoming world to current world
+		// this should be fine
 		initializeDashModule();
 	}
 	private void initializeDashModule() {	
@@ -197,12 +205,17 @@ public class DashModule extends CompModuleHelper {
             	opens += this.addOpenSimple(DashStrings.utilBufferName, Arrays.asList(DashStrings.bufferIndexName+i, bufElements.get(i)), bufNames.get(i));
     }
 
-    // constructors/accessor functions ------------------
+    // constructors 
 
-	public void setRoot(DashState r) {
-		assert(r == null);
-		root = r;
+	public void addRoot(DashState r) {
+		roots.add(r);
 	}
+	public void setParsed() {
+		assert(status == Status.CREATED);
+		status = Status.PARSED;
+	}
+
+	// general query
 	public boolean hasRoot() {
 		return (root != null);
 	}
@@ -213,17 +226,6 @@ public class DashModule extends CompModuleHelper {
 	public int getNumBuffers() {
 		return numBuffers;
 	}
-
-	public boolean isBasicState(String s) {
-		return (stateTable.isBasicState(s));
-	}
-
-    public List<String> getImmChildren(String parent) {
-    	return stateTable.getImmChildren(parent);
-    }
-    public Set<String> getTransNames() {
-    	return transTable.getTransNames();
-    }
     public boolean hasInternalEvents() {
 		return false; // (eventTable.hasInternalEvents());
 	}
@@ -238,20 +240,134 @@ public class DashModule extends CompModuleHelper {
 	}
 	public int getMaxDepthParams() {
 		// could precalculate this
-		return stateTable.getMaxDepthParams();
-	}
-	public List<String> getTransParams(String t) {
-		return transTable.getParams(t);
+		return maxDepthParams;
 	}
 	public List<String> getAllParams() {
 		return stateTable.getAllParams();
 	}
+
+	//stuff about states (some of these are to expose the stateTable for testing)
+	public boolean isLeaf(String s) {
+		return (stateTable.isLeaf(s));
+	}
+	public boolean isAnd(String s) {
+		return stateTable.isAnd(s);
+	}
+	public boolean isRoot(String s) {
+		return stateTable.isRoot(s);
+	}
+    public List<String> getImmChildren(String parent) {
+    	return stateTable.getImmChildren(parent);
+    }
+    public List<DashRef> getLeafStatesExited(DashRef s) {
+    	return stateTable.getLeafStatesExited(s);
+    }
+    public List<DashRef> getLeafStatesEntered(DashRef s) {
+    	return stateTable.getLeafStatesEntered(s);
+    }
+    public List<DashRef> getLeafStatesEnteredWithContext(DashRef context, DashRef s) {
+    	return stateTable.getLeafStatesEnteredWithContext(context, s);
+    }
+    public List<String> getAllAnces(String sfqn) {
+    	return stateTable.getAllAnces(sfqn);
+    }
+    public String getClosestConcAnces(String sfqn) {
+		return stateTable.getClosestConcAnces(sfqn);
+	}
+	public List<String> getAllNonConcDesc(String sfqn) {
+		return stateTable.getAllNonConcDesc(sfqn);
+	}
+	public List<String> getRegion(String sfqn) {
+		return stateTable.getRegion(sfqn);
+	}
+
+    // stuff about transitions
+    public Set<String> getTransNames() {
+    	return transTable.getTransNames();
+    }
+    public DashRef getTransSrc(String tfqn) {
+    	return transTable.getSrc(tfqn);
+    }
+    public DashRef getTransDest(String tfqn) {
+    	return transTable.getDest(tfqn);
+    }
+    public List<String> getHigherPriTrans(String tfqn) {
+    	return transTable.getHigherPriTrans(tfqn);
+    }
+
+	public Boolean transAtThisParamDepth(int i) {
+		if (i > maxDepthParams) { DashErrors.tooHighParamDepth(); return null; }
+		else
+			return transAtThisParamDepth[i];
+	}
+	public List<String> getTransParams(String t) {
+		return transTable.getParams(t);
+	}
+
+	// stuff about both states and trans
+	public DashRef getScope(String tfqn) {
+		DashRef src = getTransSrc(tfqn);
+		DashRef dest = getTransDest(tfqn);
+		String sc = DashFQN.longestCommonFQN(src.getName(),dest.getName());
+		// maxCommonParams is max number of params that could have in common
+		// but they don't necessarily have the same values
+		Integer maxCommonParams = stateTable.getParams(sc).size();
+		List<Expr> scopeParams = new ArrayList<Expr>();
+		Expr equals = null;
+		Expr s = null;
+		Expr d = null;
+		for (int i=0;i<maxCommonParams;i++) {
+			s = src.getParamValues().get(i);
+			d = dest.getParamValues().get(i);
+			if (ExprHelper.sEquals(s,d)) {
+				// syntactically equal
+				scopeParams.add(s);
+			} else {
+				equals = ExprHelper.createEquals(s,d);
+				scopeParams.add(
+					ExprHelper.createITE(
+						equals,
+						s,
+						ExprHelper.createVar(stateTable.getParams(sc).get(i))));  // whole set
+				for (int j=i+1;j<maxCommonParams;j++) {
+					s = src.getParamValues().get(j);
+					d = dest.getParamValues().get(j);
+					if (ExprHelper.sEquals(s,d)) {
+						// syntactically equal
+						scopeParams.add(s);
+					} else {
+						equals = ExprHelper.createAnd(equals,ExprHelper.createEquals(s,d));
+						scopeParams.add(
+							ExprHelper.createITE(
+								equals,
+								s,
+								ExprHelper.createVar(stateTable.getParams(sc).get(j))));  // whole set
+					}
+				}
+				break;
+			}
+		}
+		return new DashRef (sc,scopeParams);
+	}
+	// returns the list of states with params
+	// that are exited when taking trans t
+	public List<DashRef> exited(String tfqn) {
+		DashRef scope = getScope(tfqn);
+		return stateTable.getLeafStatesExited(scope);
+	}
+
 	// processes  ---------------------------------------
 
+	// should we use the rep arg here?
 	public void resolveAllDash(A4Reporter rep) {
-		assert(status == Status.PARSED);
+
 		System.out.println("Resolving Dash");
-		if (root != null ) {
+		if (roots.isEmpty()) {
+			DashErrors.noStates();
+		} else if (roots.size() > 1) {
+			DashErrors.onlyOneState(roots.get(1).getPos());
+		} else {
+			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
 			root.resolveAllStates(stateTable,new ArrayList<String>(),new ArrayList<String>());
@@ -260,10 +376,21 @@ public class DashModule extends CompModuleHelper {
 			root.resolveAllTrans(stateTable,transTable);
 			System.out.println(stateTable.toString());
 			System.out.println(transTable.toString());
+			for (String tfqn: getTransNames()) {
+				System.out.println(tfqn +" scope :" + getScope(tfqn));
+			}
+			//System.out.println("getClosestConcAnces: "+getClosestConcAnces("Root/S1/S2"));
+			//System.out.println("getAllNonConcDesc: " +getAllNonConcDesc("Root"));
+			//System.out.println("getRegion of "+"Root/S1/S2: "+getRegion("Root/S1/S2"));
+			//System.out.println("exited" + getLeafStatesExitedTrans("Root/S1/t1"));
+			//System.out.println("entered" + getLeafStatesEntered(getTransDest("Root/S1/t1")));
 			// if root has no substates?
 			// if no transitions?
 			stateTable.resolveAll(getRootName());
 			transTable.resolveAll();
+			maxDepthParams = stateTable.getMaxDepthParams();
+			  //transAtThisParamDepth = new boolean[maxDepthParams+1];
+			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);
 		}
 		status = Status.RESOLVED_DASH;
 	}
@@ -286,7 +413,7 @@ public class DashModule extends CompModuleHelper {
     	// returns it as the output
     	// so here we cast DashModule to CompModule and ignore the
     	// output CompModule
-    	assert(status == Status.TRANSLATED_TO_ALLOY);
+    	//assert(status == Status.TRANSLATED_TO_ALLOY);
     	System.out.println("Resolving Alloy");
     	// this quits if it throws an error
     	//resolveAll(rep == null ? A4Reporter.NOP : rep, this);
@@ -294,32 +421,14 @@ public class DashModule extends CompModuleHelper {
     	status = Status.RESOLVED_ALLOY;
     }
 
-
-	// helper functions for creating parts of module 
-	/*
-    public static createDecl(ExprVar v, Expr e) {
-        return new Decl(null, null, null, null, v, mult(e));
+    // for testing
+    public List<String> getDefaults(String s) {
+    	return stateTable.getDefaults(s);
     }
-    public static createOneDecl(String v, String typ) {
-        return createDecl(createVar(v), createOne(createVar(typ));
-    }
-    public static createSetDecl(String v, String typ) {
-        return createDecl(createVar(v), createSet(createVar(typ));
-    }
-	*/
 
 
 
-	/*
-	private List<String> params;
-	private StateTable stateTable;
-	private TransTable transTable;
-	private SymbolTable symbolTable;
-	private EventTable eventTable;
-	public boolean hasConcurrency;
-
-
-
+    /* leftover
 	public String getRoot() {
 		return root.name(); // as root it is already FQN
 	}

@@ -35,6 +35,7 @@ JPM-Command: alloy
     @${repo;com.google.gson}, \
     @${repo;org.eclipse.equinox.common}, \
     @${repo;org.apache.commons.io}, \
+    @${repo;com.io7m.jpplib.io7m-jpplib-core}, \
 	LICENSES
 
 -dependson: *

@@ -1,18 +1,22 @@
 package ca.uwaterloo.watform.ast;
 
-import edu.mit.csail.sdg.alloy4.Pos;
+import java.util.List;
 
+import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.ast.Expr;
+
+import ca.uwaterloo.watform.core.DashUtilFcns.*;
 import ca.uwaterloo.watform.core.DashStrings;
 
 
 public class DashGoto extends Dash {
-	public String dest;
-	public DashGoto(Pos pos,String g) {
-		assert(g != null);
+	public DashRef dest;
+	public DashGoto(Pos pos,DashRef d) {
+		assert(d!=null);
 		this.pos = pos;
-		this.dest = g;
+		this.dest = d;
 	}
 	public String toString() {
-		return DashStrings.gotoName + " " + dest + "\n";
+		return DashStrings.gotoName + "  " +dest.toString() + "\n";
 	}
 }

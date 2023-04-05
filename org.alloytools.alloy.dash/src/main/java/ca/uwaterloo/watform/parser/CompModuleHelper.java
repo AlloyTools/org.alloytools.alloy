@@ -256,17 +256,22 @@ public class CompModuleHelper extends CompModule {
         StringJoiner j = new StringJoiner(", ");
         decls.forEach(i -> j.add(i.toString()));
         s += j.toString() + "] {\n";
-        // s += body.toString();
-        // as long as createAnd is working correctly this is okay
-        // and better formatted
+        // we have to use our own printer
+        // rather than expr.toString()
+        // because that fcn does not include brackets
+        // appropriately to get the correct associativity for joins
+        //
+        // later we could do something nicer for pred calls
+        // but remember the predicate call to testIfNextStable is nested 
+        // inside an ITE
         s += tab;
-        StringJoiner sj = new StringJoiner("\n" + tab);
-        ExprToString eToString = new ExprToString(false);
+        StringJoiner sj = new StringJoiner("\n" + tab);   
         for (Expr e: eList) {
+            ExprToString eToString = new ExprToString(false);
             sj.add(eToString.toString(e));
         }
         s += sj.toString() + "\n";
-        s+= "}\n";
+        s+= "}\n\n";
         return s;
     }
 

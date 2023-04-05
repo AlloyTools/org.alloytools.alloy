@@ -12,7 +12,7 @@ public class Dash  {
      */
     public Pos pos;
 
-    public final Pos pos() {
+    public final Pos getPos() {
         return pos;
     }
 

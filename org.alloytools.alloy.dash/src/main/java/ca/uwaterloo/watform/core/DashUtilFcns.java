@@ -34,9 +34,9 @@ public class DashUtilFcns {
 		return duplicates;
 	}
 
-	public static String strCommaList(List<String> ll) {
+	public static <T> String strCommaList(List<T> ll) {
 		StringJoiner sj = new StringJoiner(", ");
-        ll.forEach(n -> sj.add(n));
+        ll.forEach(n -> sj.add(n.toString()));
         return sj.toString();		
 	}
 	public static <T> Set<T> listToSet(List<T> ll) {
@@ -56,4 +56,13 @@ public class DashUtilFcns {
 		x.add(s);
 		return x;
 	}
+	public static <T> String NoneStringIfNeeded(T x) {
+		return ( (x == null) ? "none" : x.toString()) ;
+	}
+
+	public static void handleException(Exception e) {    
+        e.printStackTrace(System.err);
+        System.exit(1);
+    }
+
 }

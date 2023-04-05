@@ -5,6 +5,8 @@
 // besides creating a DashState; the parsing also has count buffers and create indexes
 // for those buffers in order to have the correct open statements
 
+// no DashErrors here -- all are checked in wff checks
+
 // adding a case for the Spec
 Spec ::= Spec StateRoot:o ;
 
@@ -14,18 +16,25 @@ StateRoot ::= STATE:o Name:n LBRACE RBRACE:e // empty state
            // first line in file is line 1
            parser.dashmodule.rootStartLine = o.y;
            parser.dashmodule.rootEndLine = e.y;
-           if (!parser.dashmodule.hasRoot())
-                // a basic state
-                parser.dashmodule.setRoot(new DashState(o, n.label,  DashStrings.DefKind.NOTDEFAULT));
-           else
-                DashErrors.onlyOneState(o); 
-
+           parser.dashmodule.addRoot(
+                new DashState(o, 
+                        n.label,
+                        DashState.noParam(), 
+                        DashStrings.StateKind.OR,  
+                        DashStrings.DefKind.NOTDEFAULT, 
+                        DashState.noSubstates()));
         :}; 
 StateRoot ::= STATE:o Name:n LBRACE StateItemList:c RBRACE:e 
        {: 
           parser.dashmodule.rootStartLine = o.y;
           parser.dashmodule.rootEndLine = e.y;
-          parser.dashmodule.setRoot(new DashState(o, n.label, DashStrings.StateKind.OR, DashStrings.DefKind.NOTDEFAULT, c)); 
+          parser.dashmodule.addRoot(
+                new DashState(o, 
+                        n.label, 
+                        null,
+                        DashStrings.StateKind.OR, 
+                        DashStrings.DefKind.NOTDEFAULT, 
+                        c));
        :};
 
 StateItemList ::= StateItem:x
@@ -33,27 +42,125 @@ StateItemList ::= StateItem:x
 StateItemList ::= StateItemList:c StateItem:s 
         {: c.add(s); RESULT = c; :};
 
-// empty state
+// or-state, non-default, empty
 StateItem ::= STATE:o  Name:n LBRACE RBRACE 
-        {: RESULT = new DashState(o, n.label, DashStrings.DefKind.NOTDEFAULT ); :}; 
+        {: RESULT = new DashState(o, 
+                n.label, 
+                DashState.noParam(),
+                DashStrings.StateKind.OR,
+                DashStrings.DefKind.NOTDEFAULT,
+                DashState.noSubstates() ); 
+        :}; 
 
+// or-state, non-default, substates
 StateItem ::= STATE:o Name:n LBRACE StateItemList:c RBRACE 
-        {: RESULT = new DashState(o, n.label,  DashStrings.StateKind.OR, DashStrings.DefKind.NOTDEFAULT, c);    :};
-        
-// empty state
+        {: RESULT = new DashState(o, 
+                n.label,  
+                DashState.noParam(), 
+                DashStrings.StateKind.OR,
+                DashStrings.DefKind.NOTDEFAULT, 
+                c);    
+        :};
+
+// or-state, default, empty state
 StateItem ::= DEF STATE:o Name:n LBRACE RBRACE 
-        {: RESULT = new DashState(o, n.label,  DashStrings.DefKind.DEFAULT);   :}; 
+        {: RESULT = new DashState(o, 
+                n.label,
+                DashState.noParam(), 
+                DashStrings.StateKind.OR,
+                DashStrings.DefKind.DEFAULT,
+                DashState.noSubstates());   
+        :}; 
 
+// or-state, default, substates
 StateItem ::= DEF STATE:o Name:n LBRACE StateItemList:c RBRACE 
-        {:  RESULT = new DashState(o, n.label, DashStrings.StateKind.OR,   DashStrings.DefKind.DEFAULT, c);   :};
+        {:  RESULT = new DashState(o, 
+                n.label, 
+                DashState.noParam(),
+                DashStrings.StateKind.OR,
+                DashStrings.DefKind.DEFAULT, 
+                c);   
+        :};
 
-// non parametrized state
-StateItem ::= CONC:o STATE Name:n LBRACE StateItemList:c RBRACE 
-        {: RESULT = new DashState(o, n.label, DashStrings.StateKind.AND, DashStrings.DefKind.NOTDEFAULT, c);  :};
+// conc state, non-default, empty
+StateItem ::= CONC:o  Name:n LBRACE  RBRACE 
+        {: RESULT = new DashState(o, 
+                n.label, 
+                DashState.noParam(), 
+                DashStrings.StateKind.AND,
+                DashStrings.DefKind.NOTDEFAULT, 
+                DashState.noSubstates());  
+        :};
 
-// parametrized state
-StateItem ::= CONC:o STATE Name:n LBRACKET Name:m RBRACKET LBRACE StateItemList:c RBRACE 
-        {:  RESULT = new DashState(o, n.label, m.label, c);  :};
+// conc state, non-default, substates
+StateItem ::= CONC:o  Name:n LBRACE StateItemList:c RBRACE 
+        {: RESULT = new DashState(o, 
+                n.label, 
+                DashState.noParam(),
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.NOTDEFAULT, 
+                c);  
+        :};
+
+// conc state, default, empty
+StateItem ::= DEF CONC:o  Name:n LBRACE  RBRACE 
+        {: RESULT = new DashState(o, 
+                n.label,
+                DashState.noParam(), 
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.DEFAULT, 
+                DashState.noSubstates() );  
+        :};
+
+// conc state, default, substates
+StateItem ::= DEF CONC:o  Name:n LBRACE StateItemList:c RBRACE 
+        {: RESULT = new DashState(o,
+                n.label, 
+                DashState.noParam(),
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.DEFAULT, 
+                c);  
+        :};
+
+// parametrized state, non-default, empty
+StateItem ::= CONC:o Name:n LBRACKET Name:m RBRACKET LBRACE  RBRACE 
+        {:  RESULT = new DashState(o, 
+                n.label, 
+                m.label, 
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.NOTDEFAULT, 
+                DashState.noSubstates());  
+        :};
+
+// parametrized state, non-default, substates
+StateItem ::= CONC:o Name:n LBRACKET Name:m RBRACKET LBRACE StateItemList:c RBRACE 
+         {:  RESULT = new DashState(o, 
+                n.label, 
+                m.label,
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.NOTDEFAULT, 
+                c);  
+        :};
+
+// parametrized state, default, empty
+StateItem ::= DEF CONC:o Name:n LBRACKET Name:m RBRACKET LBRACE  RBRACE 
+        {:  RESULT = new DashState(o, 
+                n.label, 
+                m.label, 
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.DEFAULT,
+                DashState.noSubstates());  
+        :};
+
+// parametrized state, default, empty
+StateItem ::= DEF CONC:o Name:n LBRACKET Name:m RBRACKET LBRACE StateItemList:c RBRACE 
+        {:  RESULT = new DashState(o, 
+                n.label, 
+                m.label, 
+                DashStrings.StateKind.AND, 
+                DashStrings.DefKind.DEFAULT,
+                c);  
+        :};
 
 // event decls
 StateItem ::= EVENT:o Names:n LBRACE RBRACE 
@@ -154,14 +261,30 @@ StateItem ::= CONDITION:o Name:n LBRACKET Expr:e RBRACKET LBRACE RBRACE
 // transition
 StateItem ::= TRANS:o Name:n LBRACE TransItemList:c RBRACE 
         {: RESULT = new DashTrans(o, n.label, c);  :};  
+// transition
+StateItem ::= TRANS:o Name:n LBRACE  RBRACE 
+        {: RESULT = new DashTrans(o, n.label, new ArrayList<Object>());  :};  
 
 TransItemList ::= TransItem:x
         {: RESULT = new ArrayList<Object>(); RESULT.add(x); :};
 TransItemList ::= TransItemList:c TransItem:x   
         {: c.add(x); RESULT = c; :};
-   
+
+//Exprp is non-empty list of comma-separated Expr
+
 TransItem ::= FROM:o Name:n  
-        {: RESULT = new DashFrom(o, n.label);  :};
+        {: RESULT = new DashFrom(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()));  :};
+
+TransItem ::= FROM:o Name:n LBRACKET Exprp:e RBRACKET 
+        {: RESULT = new DashFrom(o, new DashRef(o,n.label,e));  :};
+
+TransItem ::= GOTO:o Name:n   
+        {: RESULT = new DashGoto(o, new DashRef(o,n.label,DashRef.emptyParamValuesList())); :};
+
+TransItem ::= GOTO:o Name:n LBRACKET  Exprp:e RBRACKET 
+        {: 
+           RESULT = new DashGoto(o, new DashRef(o, n.label,e));
+        :};
 
 TransItem ::= ON:o Expr:e   
         {: RESULT = new DashOn(o, e);  :};
@@ -173,8 +296,6 @@ TransItem ::= DO:o   Expr:v
         {:  RESULT = new DashDo(o, v); :};
 
 
-TransItem ::= GOTO:o Name:n   
-        {: RESULT = new DashGoto(o, n.label); :};
 
 
 // this allows Send x.ev1 and "Send n" in parsing but will have to sort out later to see if correct

@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.*;
+import static ca.uwaterloo.watform.core.DashUtilFcns.*;
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 import ca.uwaterloo.watform.ast.*;
 
 public class TransTable {
@@ -25,8 +27,8 @@ public class TransTable {
 
 	public class TransElement {
 		public List<String> params; // null if no params
-		public String src; // FQN
-		public String dest; // FQN
+		public DashRef src; 
+		public DashRef dest;
 		public Expr when; // just one?
 		public Expr on;
 		public List<Expr> action;
@@ -43,8 +45,8 @@ public class TransTable {
 		*/
 		public TransElement(
 			List<String> prms,
-			String s, // fqn
-			String d // fqn
+			DashRef s, 
+			DashRef d 
 		)
 		/*
 			DashEvent w,
@@ -72,9 +74,9 @@ public class TransTable {
 		}
 		public String toString() {
 			String s = new String();
-			s += "params: "+params +"\n";
-			s += "src: "+src +"\n";
-			s += "dest: "+dest +"\n";
+			s += "params: " + params +"\n";
+			s += "src: " + src.toString() + "\n";
+			s += "dest: " + dest.toString() + "\n";
 			// add more
 			return s;
 		}
@@ -87,8 +89,8 @@ public class TransTable {
 	public void add(
 			String fqn,
 			List<String> params,
-			String s,
-			String d)
+			DashRef s,
+			DashRef d)
 	/*
 			DashEvent w,
 			DashExpr o,
@@ -98,9 +100,9 @@ public class TransTable {
 	{
 		System.out.println("Adding "+fqn);
 		assert(!fqn.isEmpty());
-		assert(params == null | !params.isEmpty());
-		assert(!s.isEmpty());
-		assert(!d.isEmpty());
+		assert(params != null );
+		assert(s != null);
+		assert(d != null);
 		if (table.containsKey(fqn)) DashErrors.transTableDup(fqn);
 		else table.put(fqn, new TransElement(params,s,d));
 	}
@@ -121,11 +123,69 @@ public class TransTable {
 		if (table.containsKey(t)) return table.get(t).params;
 		else { DashErrors.transDoesNotExist("getParams", t); return null; }
 	}
+	public DashRef getSrc(String t) {
+		if (table.containsKey(t)) return table.get(t).src;
+		else { DashErrors.transDoesNotExist("getSrc", t); return null; }
+	}
+	public DashRef getDest(String t) {
+		if (table.containsKey(t)) return table.get(t).dest;
+		else { DashErrors.transDoesNotExist("getDest", t); return null; }
+	}
+	// might be better to make this getTransWithThisSrc
+	// but this is more efficient if it is only used for higherPriTrans
+	public List<String> getTransWithTheseSrcs(List<String> slist) {
+		List<String> tlist = new ArrayList<String>();
+		for (String k:table.keySet()) {
+			if (slist.contains(table.get(k).src.getName())) tlist.add(k);
+		}
+		return tlist;
+	}
+	public List<String> getHigherPriTrans(String t) {
+		// list returned could be empty
+		List<String> tlist = new ArrayList<String>();
+		// have to look for transitions from sources earlier on the path of this transitions src
+		if (table.containsKey(t)) { tlist.addAll(getTransWithTheseSrcs(DashFQN.allPrefixes(table.get(t).src.getName()))); }
+		else { DashErrors.transDoesNotExist("getParams", t); }
+		return tlist;
+	}
+
+
+
+	/*
+	public List<String> getNotOrthogonalTransAbove(String t) {
+		List<String> notOrthogonal = new ArrayList<String>();
+		String tScope = getScope(table.get(t).src, table.get(t).dest);
+		// get scope of this trans
+		for (to: table.getKeys()) {
+			if (!t.equals(to)) {
+				String toScope = getScope(table.get(to).src, table.get(to).dest);
+				if (!isBelow(toScope, tScope)) {
+					// will be caught by !takeni's below this trans
+					;
+				} else if (isBelow(tScope, toScope)) {
+					notOrthogonal.add(to);
+				} else {
+					
+				}
+
+			}
+		}
+			get scope of to
+			get lca of 
+	}
+	*/
 	public void resolveAll() {
 		System.out.println("Resolving trans table");
 		if (getTransNames().isEmpty()) DashErrors.noTrans();
-		// check all source and dest exist in state table
 		isResolved = true;
+	}
+	public boolean[] transAtThisParamDepth(int max) {
+		boolean[] depthsInUse = new boolean[max+1]; // 0..max
+		for (int i=0; i <= max; i++) depthsInUse[i] = false;
+		for (String k:table.keySet()) 
+			if (table.get(k).params == null) depthsInUse[0] = true;
+			else depthsInUse[table.get(k).params.size()] = true;
+		return depthsInUse;
 	}
 
 }

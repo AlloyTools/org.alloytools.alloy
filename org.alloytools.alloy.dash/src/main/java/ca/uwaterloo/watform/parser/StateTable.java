@@ -14,8 +14,17 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.stream.Collectors;
+
+import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.*;
+import static ca.uwaterloo.watform.core.DashUtilFcns.*;
+import static ca.uwaterloo.watform.core.DashStrings.*;
+import static ca.uwaterloo.watform.core.DashFQN.*;
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+
+import ca.uwaterloo.watform.ast.DashRef;
 
 public class StateTable {
 	private HashMap<String,StateElement> table;
@@ -28,51 +37,54 @@ public class StateTable {
 	public class StateElement {
 		// better than a tuple
 		private DashStrings.StateKind kind; // must exist AND/OR
-		private List<String> params; // null if none
-		private String def; // null if none
+		private String param; // may be empty
+		private List<String> params; // null if none; param is last of params if it exists
+		private DashStrings.DefKind def; 
 		// these all use fullQual names to point to trans in TransTable
 		// or states in this StateTable
 		private String parent; // null if none
 		// this could be a set b/c there are no dups and order
 		// doesn't matter, but lists are easier to work with
 		private List<String> immChildren; // empty if none
+		/*
 		private ArrayList<String> transWithThisSrc;
 		private ArrayList<String> transWithThisScope;
 		// all trans with this scope or descendant scope
 		private ArrayList<String> allTransWithinState; 
 		private ArrayList<String> basicStatesEntered; // following defaults
 		private ArrayList<String> basicStatesExited;
-
+	    */
 
 		public StateElement(
 			DashStrings.StateKind k,
+			String prm,
 			List<String> prms, 
-			String d,
+			DashStrings.DefKind d,
 			String p, 
 			List<String> iChildren) {
+		
 			assert(k != null);
-			assert(prms == null || !prms.isEmpty());
-			assert(def == null || !def.isEmpty());
-			assert(parent == null || !parent.isEmpty());
-			assert(immChildren != null); // could be empty
+			assert(prm == null || !prm.isEmpty());
+			assert(prms != null);
+			assert(p == null || !p.isEmpty());
+			assert(iChildren != null); // could be empty
+	
 			this.kind = k; 
+			this.param = prm;
 			this.params = prms; 
 			this.def = d; 
 			this.parent = p; 
 			this.immChildren = iChildren; 
-			this.transWithThisSrc = null;
-			this.transWithThisScope = null;
-			this.allTransWithinState = null;
-			this.basicStatesEntered = null;
-			this.basicStatesExited = null;
+
 		}
 		public String toString() {
 			String s = new String();
 			s += "kind: "+kind +"\n";
-			s += "params: "+params +"\n";
+			s += "param:"+ NoneStringIfNeeded(param)+"\n";
+			s += "params: "+ NoneStringIfNeeded(params) +"\n";
 			s += "default: "+def+"\n";
-			s += "parent: "+parent +"\n";
-			s += "immChildren: "+immChildren +"\n";
+			s += "parent: "+ NoneStringIfNeeded(parent) +"\n";
+			s += "immChildren: "+NoneStringIfNeeded(immChildren) +"\n";
 			// add more
 			return s;
 		}
@@ -102,20 +114,19 @@ public class StateTable {
 			}
 		}
 		*/	
+		/*
 		public Boolean allAttributesEmpty() {
-			return (kind == null || 
-				params == null ||
-				def == null || 
-				parent == null ||
-			    immChildren == null ||
-			    transWithThisSrc == null ||
-			    transWithThisScope == null ||
-			    allTransWithinState == null ||
-			    basicStatesEntered == null ||
-			    basicStatesExited == null);
+			return (kind == null && 
+				param == null &&
+				params == null &&
+				def == null &&
+				parent == null &&
+			    immChildren.isEmpty() ) ;
 		}
-		public Boolean attributesSame(DashStrings.StateKind k,List<String> prms, String d, String p, List<String> iChildren) {
+		*/
+		public Boolean attributesSame(DashStrings.StateKind k, String prm, List<String> prms, DashStrings.DefKind d, String p, List<String> iChildren) {
 			return (kind == k && 
+				param.equals(prm) && 
 				params.equals(prms) && 
 				def.equals(d) && 
 				parent.equals(p) && 
@@ -134,6 +145,9 @@ public class StateTable {
 	public String getRoot() {
 		return root;
 	}
+	public boolean isRoot(String s) {
+		return (s.equals(getRoot()));
+	}
 	public String toString() {
 		String s = new String("STATE TABLE\n");
 		for (String k:table.keySet()) {
@@ -150,38 +164,66 @@ public class StateTable {
 		assert(!fqn.isEmpty());
 		if (!table.containsKey(fqn))
 			table.put(fqn,null);
-		// System.out.println("adding State table: "+fqn);
+		System.out.println("adding State table: "+fqn);
 	}
 	public void add(
 		String fqn, 
 		DashStrings.StateKind k, 
+		String prm, 
 		List<String> prms, 
-		String d,
+		DashStrings.DefKind d,
 		String p, 
 		List<String> iChildren)  {
 		// if its null, make it empty to not throw exceptions
 		if (iChildren == null) iChildren = new ArrayList<String>();
 		if (table.containsKey(fqn)) {
 			StateElement se = table.get(fqn);
-			if (se.allAttributesEmpty()) 
-				table.replace(fqn, new StateElement(k,prms,d, p,iChildren));
-			else if (!se.attributesSame(k,prms,d,p,iChildren)) 
+			if (se == null) 
+				table.replace(fqn, new StateElement(k,prm, prms,d, p,iChildren));
+			else if (!se.attributesSame(k,prm,prms,d,p,iChildren)) 
 				// hopefully not possible
 				DashErrors.addStateToStateTableDup(fqn);
 		}
 		else 
-			table.put(fqn, new StateElement(k,prms,d,p,iChildren));
-		System.out.println("adding to State table: "+fqn+space+prms+space+d+space+p+iChildren);
+			table.put(fqn, new StateElement(k,prm, prms,d,p,iChildren));
+		System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
 	}
 	
-	public boolean containsKey(String q) {
-		return table.containsKey(q);
+	public boolean containsKey(String s) {
+		return table.containsKey(s);
 	}
-	public boolean isBasicState(String q)  {
-		if (table.containsKey(q)) 
-			// shouldn't really need the check for OR here
-			return (table.get(q).kind == DashStrings.StateKind.OR && table.get(q).immChildren == null);
-		else { DashErrors.isBasicNotExist(q); return false; }
+	public boolean setAsDefault(String s) {
+		if (table.containsKey(s)) {
+			table.get(s).def = DashStrings.DefKind.DEFAULT;
+			return true;
+		}
+		else { DashErrors.stateDoesNotExist("setDefault", s); return false; }		
+	}
+	public boolean isLeaf(String s)  {
+		if (table.containsKey(s)) 
+			return (table.get(s).immChildren.isEmpty());
+		else { DashErrors.stateDoesNotExist("isLeaf", s); return false; }
+	}
+	public boolean isOr(String s) {
+		if (table.containsKey(s)) 
+			return (table.get(s).kind == StateKind.OR);
+		else { DashErrors.stateDoesNotExist("isOr", s); return false; }
+	}
+	public boolean isAnd(String s) {
+		if (table.containsKey(s)) 
+			return (table.get(s).kind == StateKind.AND);
+		else { DashErrors.stateDoesNotExist("isAnd",s); return false; }
+	}
+	public boolean isDefault(String s) {
+		if (table.containsKey(s)) 
+			return (table.get(s).def == DefKind.DEFAULT);
+		else { DashErrors.stateDoesNotExist("isDefault",s); return false; }
+	}
+
+	public String getParam(String s) {
+		if (table.containsKey(s))
+			return table.get(s).param;  
+		else { DashErrors.stateDoesNotExist("getParam", s); return null; }	
 	}
 	public List<String> getParams(String s) {
 		if (table.containsKey(s))
@@ -212,63 +254,66 @@ public class StateTable {
 		// do not need to walk over tree for this operation; can just use FQNs
 		List<String> fqnSplit = DashFQN.splitFQN(fqn);
 		List<String> x = new ArrayList<String>();
-		// don't want to include the state itself
-		if (fqnSplit.size()-1 > 0) for (int i=0; i < fqnSplit.size()-1; i++) x.add(DashFQN.fqn(fqnSplit.subList(0,i+1)));
+		// include the state itself (could be Root)
+		if (fqnSplit.size() > 0) for (int i=0; i < fqnSplit.size(); i++) x.add(DashFQN.fqn(fqnSplit.subList(0,i+1)));
 		// list is in order from root, ...., fqn-1 on path
+		//System.out.println("getAllAnces of "+fqn+" is "+x);
+		// contains at least Root state
 		return x;
 	}
 	public String getClosestConcAnces(String s) {				
-		// getAllAnces returns list from Root, ..., parentFQN-1 on path
+		// getAllAnces returns list from Root, ..., parentFQN on path
 		// could also just walk back through parents
 		List<String> allAnces = getAllAnces(s);
-		allAnces.add(s);
+		//allAnces.add(s);
 		Collections.reverse(allAnces);
 
 		String concAnces = null;
 		// allAnces cannot be empty b/c must have Root in it
 		for (String a:allAnces) {
-			if (getKind(a) == DashStrings.StateKind.AND) {
+			if (isAnd(a) || isRoot(a)) {
 				concAnces = a;
 				break;
 			}
 		}
+		//System.out.println("getClosestConcAnces: "+concAnces);
 		return concAnces; // might be null
 	}
+	/*
 	public List<String> getAllNonConcStatesWithinThisState(String concAnces) {		
 		if (concAnces!=null) return getAllNonConcDesc(concAnces);
-		else 
+		else {
 			// went back to root
-			return getAllNonConcDesc(root);
+			List <String> x = getAllNonConcDesc(root);
+			//System.out.println("getAllNonConcStatesWithinThisState: "+x);
+			return x;
+		}
 	}
-
+	*/
 	public List<String> getAllNonConcDesc(String s) {
-		// get all the descendants not in concurrent states
-		// s is not included
-		System.out.println("getAllNonConcDesc "+s);
+		// get all the descendants not WITHIN concurrent states
+		// s is included
+		// have to be careful to avoid duplicates
+		// System.out.println("getAllNonConcDesc "+s);
 		List<String> desc = new ArrayList<String>();
+		desc.add(s); // could be Root or a conc state
+		//System.out.println("in getAllNonConcDesc: "+desc);
 		if (table.containsKey(s)) {
-			if (!table.get(s).immChildren.isEmpty()) {
-				System.out.println("HERE " + table.get(s).immChildren);
-				if (table.get(table.get(s).immChildren.get(0)).kind != DashStrings.StateKind.AND) {
-					for (String c: table.get(s).immChildren) {
-						desc.addAll(getAllNonConcDesc(c));
-						desc.add(c);
-					}
-					return desc;
-				} else return desc; // empty list
-			} else return desc; // empty list
-		}  
-		else { DashErrors.stateDoesNotExist("getAllNonConcDesc", s); return null; }	
+			for (String c: table.get(s).immChildren) {
+				//System.out.println("in getAllNonConcDesc: "+c);
+				if (isOr(c)) desc.addAll(getAllNonConcDesc(c));
+			}
+			return desc;
+		} else { DashErrors.stateDoesNotExist("getAllNonConcDesc", s); return null; }	
 	}
-	public DashStrings.StateKind getKind(String s) {
-		if (table.containsKey(s))
-			return table.get(s).kind; 
-		else { DashErrors.stateDoesNotExist("getKind", s); return null; }		
+	public List<String> getRegion(String sfqn) {
+		return getAllNonConcDesc(getClosestConcAnces(sfqn));
 	}
 	public int getMaxDepthParams() {
 		return getMaxDepthParams(root);
 	}
 	public int getMaxDepthParams(String s) {
+		// TODO: check this - seems to be not getting to full depth
 		int max = 0;
 		for (String c: getImmChildren(s)) {
 			if (getParams(c) != null) 
@@ -292,27 +337,85 @@ public class StateTable {
 		// walk down parent to children and pass back info
 		isResolved = true;
 	}
-	/*
-	public void addEnterExit(String s, ArrayList<String> enter, ArrayList<String> exit) {
-		if (s in table.keys()) {
-			table.get(s).basicStatesEntered = enter;
-			table.get(s).basicStatesExited = exit;
+
+
+	public List<DashRef> getLeafStatesExited(DashRef s) {
+		List<DashRef> r = new ArrayList<DashRef>();
+		System.out.println("exiting" + s.toString());
+		if (isLeaf(s.getName())) {
+			r.add(s);
+			return r;
 		} else {
-			// error
+			// exit everything below even if not currently in it
+			for (String ch:getImmChildren(s.getName())) {
+				// exit all copies of the params
+				List<Expr> newParamValues = new ArrayList<Expr>(s.getParamValues());
+				newParamValues.add(ExprHelper.createVar(getParam(ch)));
+				r.addAll(getLeafStatesExited(new DashRef(ch, newParamValues)));
+			}
+			return r;
 		}
 	}
-	public ArrayList<String> getParams(String s) {
-		assert(isResolved == true);
-		return table.get(s).params;
+	public List<String> getDefaults(String s) {
+		if (!table.containsKey(s)) 
+			{ DashErrors.stateDoesNotExist("getDefaults",s); return null; }
+		// else if (isLeaf(s)) return null;
+		else {
+			assert(!isLeaf(s) || getImmChildren(s).isEmpty());
+			return getImmChildren(s).stream()
+  				.filter(c -> isDefault(c))
+  				.collect(Collectors.toList());
+  		}
 	}
-	public ArrayList<String> getBasicStatesEntered(String s) {
-		assert(isResolved == true);
-		return table.get(s).basicStatesEntered;
+	public List<DashRef> getLeafStatesEntered(DashRef s) {
+		List<DashRef> r = new ArrayList<DashRef>();
+		if (isLeaf(s.getName())) 
+			r.add(s);
+		else {
+			// enter every default below 
+			// if enter one c/p state enter all
+			// might be one (if o) or many (if c/p)
+			List<String> defaults = getDefaults(s.getName());
+			assert(defaults != null);
+			for (String ch:defaults) {
+				// enter all copies of the param if a parameterized state
+				List<Expr> newParamValues = new ArrayList<Expr>(s.getParamValues());
+				newParamValues.add(ExprHelper.createVar(getParam(ch)));
+				r.addAll(getLeafStatesEntered(new DashRef(ch, newParamValues)));
+			}
+		}
+		return r;		
 	}
-	public ArrayList<String> getBasicStatesExited(String s) {
-		assert(isResolved == true);
-		return table.get(s).basicStatesExited;
+	/*
+		Assumption: context is an ancestor of dest
+	*/
+	public List<DashRef> getLeafStatesEnteredWithContext(DashRef context, DashRef dest) {
+		List<DashRef> r = new ArrayList<DashRef>();
+		if (context.getName().equals(dest.getName())) 
+			r.addAll(getLeafStatesEntered(dest));
+		else {
+			// context must have children
+			List<String> children = getImmChildren(context.getName());
+			String chOfContext = DashFQN.getChildOfContextAncesOfDest(context.getName(),dest.getName());
+			r.addAll(getLeafStatesEnteredWithContext(new DashRef(chOfContext,context.getParamValues()), dest));
+			if (!isOr(chOfContext)) {
+				// enter all sibling c/p's
+				// treating c/p's the same
+				List<String> andChildren = children.stream()
+					.filter(c -> isAnd(c))
+					.collect(Collectors.toList());
+				andChildren.remove(chOfContext);
+				for (String ch:children) {
+					List<Expr> newParamValues = new ArrayList<Expr>();
+					// if a c, won't be any additional params
+					newParamValues.addAll(dest.getParamValues().subList(0, getParams(ch).size()-1));
+					r.addAll(getLeafStatesEntered(new DashRef(ch, newParamValues)));
+				}	
+			}
+		}
+		return r;
 	}
+	/* seems like this goes in DashToAlloy
 	public Expr createStateArrow(String s) {
 		Expr e = createVar(s);
 		for (i:s.params.reverse()) {
@@ -320,7 +423,6 @@ public class StateTable {
 		}
 		return e;
 	}
-
 	*/
 
 }

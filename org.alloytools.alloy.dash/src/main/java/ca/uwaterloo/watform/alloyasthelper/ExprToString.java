@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringJoiner;
 
-import com.io7m.jpplib.core.Layouter;
-import com.io7m.jpplib.core.Backend;
+import de.uka.ilkd.pp.DataLayouter;
+import de.uka.ilkd.pp.NoExceptions;
+import de.uka.ilkd.pp.StringBackend;
+
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Pair;
@@ -19,20 +21,18 @@ import ca.uwaterloo.watform.core.DashErrors;
 
 public class ExprToString {
 
-    int indent;
-    int lineWidth;
-    Layouter<NoExceptions> out;
+    int indent = 4;
+    int lineWidth = 80;
+    StringBackend back = new StringBackend(lineWidth);
+    DataLayouter<NoExceptions> out = new DataLayouter<NoExceptions>(back, indent);;
     Boolean isAfterAlloyResolveAll;
-    
+
+
     public ExprToString(boolean isAfterAlloyResolveAll) {
         this.isAfterAlloyResolveAll = isAfterAlloyResolveAll;
-        this.indent = 4;
-        this.lineWidth = 120;
-        Backend back = new Backend(lineWidth);
-        this.out = new Layouter<NoExceptions>(back, indent);
     }
 
-    public String toString(Expr e) throws IOException {
+    public String toString(Expr e)  {
         out.beginC(0);
         ExprToOut(e);
         out.end().close();
@@ -344,7 +344,7 @@ public class ExprToString {
             first = false;
             out.print(namesJoiner.toString());
             out.print(": ");
-            ExprToOut(decl.expr, out);
+            ExprToOut(decl.expr);
         }
     }
 

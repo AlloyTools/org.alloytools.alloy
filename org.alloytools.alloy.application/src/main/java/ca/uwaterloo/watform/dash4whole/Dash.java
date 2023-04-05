@@ -19,7 +19,8 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 
 import ca.uwaterloo.watform.core.DashOptions;
-import ca.uwaterloo.watform.parser.DashUtil;
+// import ca.uwaterloo.watform.parser.DashUtil;
+import ca.uwaterloo.watform.core.DashUtilFcns;
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.mainfunctions.MainFunctions;
 
@@ -29,6 +30,7 @@ import ca.uwaterloo.watform.mainfunctions.MainFunctions;
 public class Dash {
 
    @SuppressWarnings("resource" )
+
 
    public static void main(String args[]) throws Exception { 
 
@@ -111,23 +113,31 @@ public class Dash {
                 DashOptions.dashModelLocation = directory.toString();
 
             //Parse+typecheck the model
-            //System.out.println("Reading: " + filename );
+            System.out.println("Reading: " + filename );
 
             A4Reporter rep = new A4Reporter();
             CompModule alloymodule = null;
-            DashModule d = MainFunctions.parseFile(filename.toString(), rep);
+            DashModule d = null;
+            try {
+                d = MainFunctions.parseAndResolveDashFile(filename, rep);
+            } catch (Exception e) {
+                DashUtilFcns.handleException(e);
+            }
             if (printOnly) {  
                 if (d != null) {
-                    String o = MainFunctions.dumpString(d);
-                    System.out.println(o);
-                    // System.out.println("File parsed successfully.");
+                    try {
+                        String o = MainFunctions.dumpString(d);
+                        System.out.println(o);
+                        System.out.println("File parsed successfully.");
+                    } catch (Exception e) {
+                        DashUtilFcns.handleException(e);
+                    }
                 }
             } else {
                 try {
                     alloymodule = MainFunctions.translate(d, rep);
                 } catch (Exception e) {
-                    System.err.println(e);
-                    System.exit(1);
+                    DashUtilFcns.handleException(e);
                 }
                 if (alloymodule == null) {
                     System.err.println("Something went wrong");
@@ -142,14 +152,16 @@ public class Dash {
                             out.createNewFile();
                         }
                         System.out.println("Creating: " + outfilename);
-                        // NAD tmp
-                        //String content = new DashModuleToString(true).getString(alloymodule);
-                        //FileWriter fw = new FileWriter(out.getAbsoluteFile());
-                        //BufferedWriter bw = new BufferedWriter(fw);
-                        //bw.write(content);
-                        //bw.close();
+                        FileWriter fw = new FileWriter(out.getAbsoluteFile());
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        bw.write(alloymodule.toString());
+                        bw.close();
+                        // temporarily, we'll check if it reads in as an AlloyModule okay
+                        // should be no Dash in it
+                        MainFunctions.parseAndResolveAlloyFile(outfilename, rep);
+                        System.out.println("Parsed and Resolved Alloy output file");
                     } catch(Exception e){
-                        System.err.println(e);
+                        DashUtilFcns.handleException(e);
                     }
                 } else {
                     // execute command(s)
@@ -163,7 +175,12 @@ public class Dash {
                     for (Command cmd : commands) { 
                         if (i == cmdnum | cmdnum == 0) {
                             System.out.println("Executing command: " + cmd);
-                            A4Solution ans = MainFunctions.executeCommand(cmd,alloymodule,rep, options);
+                            A4Solution ans = null;
+                            try {
+                                ans = MainFunctions.executeCommand(cmd,alloymodule,rep, options);
+                            } catch (Exception e) {
+                                DashUtilFcns.handleException(e);
+                            }
                             if (ans.satisfiable()) {
                                 System.out.println("Result: SAT");
                             } else {

@@ -16,10 +16,17 @@ import java.util.Arrays;
 import edu.mit.csail.sdg.ast.Decl;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Expr;
-import ca.uwaterloo.watform.core.*;
 
+import ca.uwaterloo.watform.core.DashOptions;
+import ca.uwaterloo.watform.core.DashStrings;
+import ca.uwaterloo.watform.core.DashUtilFcns;
 
-import ca.uwaterloo.watform.alloyasthelper.*;
+// shortens the code to import these statically
+import static ca.uwaterloo.watform.core.DashFQN.*;
+import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
+
+import ca.uwaterloo.watform.alloyasthelper.DeclExt;
+import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 import ca.uwaterloo.watform.parser.DashModule;
 import ca.uwaterloo.watform.parser.CompModuleHelper;
@@ -41,7 +48,7 @@ public class DashToAlloy {
             createTransPost(t);
             createTransSemantics(t);
             createTransIsEnabledAfterStep(t);
-            createTransPred(t);
+            createTrans(t);
         }
         createSmallStep();
     }
@@ -53,28 +60,35 @@ public class DashToAlloy {
         // but we can't output "/" in Alloy identifiers
         // so before outputting we convert "/" to "_"
         // for everything
-        return DashFQN.convertFQN(s);
+        return convertFQN(s);
     }
     private void createSpaceSignatures() {
-        // abstract sig Statelabel
+        // abstract sig Statelabel {}
         d.alloyString += d.addAbstractSigSimple(DashStrings.stateLabelName);
-        // abstract sig SystemState extend StateLabel
-        d.alloyString += d.addAbstractExtendsSigSimple(DashStrings.systemStateName,DashStrings.stateLabelName);
-
-        recurseCreateStateSpaceSigs(DashStrings.stateLabelName, fqn(d.getRootName()));
-
+        // Root
+        //if (d.hasConcurrency() || d.getImmChildren(d.getRootName()).isEmpty())
+            //d.alloyString += d.addExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
+        //else 
+            d.alloyString += d.addAbstractExtendsSigSimple(d.getRootName(),DashStrings.stateLabelName);
+        recurseCreateStateSpaceSigs(d.getRootName());
         d.alloyString += "\n";
 
+        // abstract sig TransLabel {}
         d.alloyString += d.addAbstractSigSimple(DashStrings.transitionLabelName);
+        // add all transitions as one sig extensions of TransLabel
         for (String t : d.getTransNames()) {
             d.alloyString += d.addOneExtendsSigSimple(fqn(t), DashStrings.transitionLabelName);
         }
         d.alloyString += "\n";
-        if (d.getMaxDepthParams() != 0) d.alloyString += d.addAbstractSigSimple(DashStrings.identifierName);
-        if (!d.getAllParams().isEmpty())
+
+        // abstract sig Identifiers {} if this model has parameterized components
+        if (d.getMaxDepthParams() != 0) {
+            d.alloyString += d.addAbstractSigSimple(DashStrings.identifierName);
             for (String s: d.getAllParams())
                 d.alloyString += d.addExtendsSigSimple(s, DashStrings.identifierName);
-        d.alloyString += "\n";
+            d.alloyString += "\n";
+        }
+        
         /*
         if (d.hasEvents()) {
             addAbstractSigSimple(eventLabelName);
@@ -101,43 +115,49 @@ public class DashToAlloy {
         } 
         */
     }
-    private void recurseCreateStateSpaceSigs(String parent, String child) {
-        if (d.isBasicState(child)) d.alloyString += d.addOneExtendsSigSimple(fqn(child),fqn(parent));
-        else {
-            d.alloyString += d.addAbstractExtendsSigSimple(fqn(child), fqn(parent));
-            for (String grandchild: d.getImmChildren(child)) recurseCreateStateSpaceSigs(child, grandchild);
+    private void recurseCreateStateSpaceSigs(String parent) {
+        for (String child: d.getImmChildren(parent)) 
+            if (d.isLeaf(child)) d.alloyString += d.addOneExtendsSigSimple(fqn(child),fqn(parent));
+            else {
+                //if (d.isAnd(parent)) 
+                    //d.alloyString += d.addExtendsSigSimple(fqn(child), fqn(parent));
+                //else 
+                    d.alloyString += d.addAbstractExtendsSigSimple(fqn(child), fqn(parent));
+                recurseCreateStateSpaceSigs(child);  
         }   
     }
     private void createSnapshotSig(){
         if (DashOptions.isElectrum) {
             // if Electrum add var sigs 
             // taken0, conf0, event0
-            d.alloyString += d.addVarSigSimple(DashStrings.takenName+"0", ExprHelper.createVar(DashStrings.transitionLabelName));
-            d.alloyString += d.addVarSigSimple(DashStrings.confName+"0", ExprHelper.createVar(DashStrings.stateLabelName));
+            
+            if (d.transAtThisParamDepth(0))
+                d.alloyString += d.addVarSigSimple(DashStrings.takenName+"0", createVar(DashStrings.transitionLabelName));
+            d.alloyString += d.addVarSigSimple(DashStrings.confName+"0", createVar(DashStrings.stateLabelName));
             if (d.hasEvents())
-                d.alloyString += d.addVarSigSimple(DashStrings.eventName+"0", ExprHelper.createVar(DashStrings.eventLabelName));
-            if (d.getMaxDepthParams() != 0) {
-                for (int i = 1; i < d.getMaxDepthParams()+1; i++) {
-                    List<ExprVar> cop = new ArrayList<ExprVar> (Collections.nCopies(i,ExprHelper.createVar(DashStrings.identifierName)));
+                d.alloyString += d.addVarSigSimple(DashStrings.eventName+"0", createVar(DashStrings.eventLabelName));
+            List<ExprVar> cop;
+            for (int i = 1; i <= d.getMaxDepthParams(); i++) {
+                cop = new ArrayList<ExprVar> (Collections.nCopies(i+1,createVar(DashStrings.identifierName)));
+                if (d.transAtThisParamDepth(i))
                     // taken 1, etc.
                     d.alloyString += d.addVarSigSimple(
                         DashStrings.takenName+Integer.toString(i), 
-                        DashUtilFcns.newListWith(cop, ExprHelper.createVar(DashStrings.transitionLabelName)));
+                        DashUtilFcns.newListWith(cop, createVar(DashStrings.transitionLabelName)));
                     // conf 1, etc.
+                d.alloyString += d.addVarSigSimple(
+                    DashStrings.confName+Integer.toString(i), 
+                    DashUtilFcns.newListWith(cop, createVar(DashStrings.stateLabelName)));
+                // event 1, etc.
+                if (d.hasEvents())
                     d.alloyString += d.addVarSigSimple(
-                        DashStrings.confName+Integer.toString(i), 
-                        DashUtilFcns.newListWith(cop, ExprHelper.createVar(DashStrings.stateLabelName)));
-                    // event 1, etc.
-                    if (d.hasEvents())
-                        d.alloyString += d.addVarSigSimple(
-                            DashStrings.eventName+Integer.toString(i), 
-                            DashUtilFcns.newListWith(cop, ExprHelper.createVar(DashStrings.eventLabelName)));
-                }
+                        DashStrings.eventName+Integer.toString(i), 
+                        DashUtilFcns.newListWith(cop, createVar(DashStrings.eventLabelName)));
             }
+        
             // stable: one boolean;
             if (d.hasConcurrency()) {            
-                //TODO now to make this one boolean
-                d.alloyString += d.addVarSigSimple(DashStrings.stableName, ExprHelper.createVar(DashStrings.boolName));
+                d.alloyString += d.addVarSigSimple(DashStrings.stableName, createVar(DashStrings.boolName));
             }
             // add dynamic symbols (vars and buffers)
             /*
@@ -153,31 +173,32 @@ public class DashToAlloy {
             List<Decl> decls = new ArrayList<Decl>();
 
             // taken0, conf0, event0
-            decls.add(DeclExt.newSetDeclExt(DashStrings.takenName+"0", DashStrings.transitionLabelName));
+            if (d.transAtThisParamDepth(0))
+                decls.add(DeclExt.newSetDeclExt(DashStrings.takenName+"0", DashStrings.transitionLabelName));
             decls.add(DeclExt.newSetDeclExt(DashStrings.confName+"0", DashStrings.stateLabelName));
             if (d.hasEvents())
                 decls.add(DeclExt.newSetDeclExt(DashStrings.eventName+"0", DashStrings.eventLabelName));
-            if (d.getMaxDepthParams() != 0) {
-                for (int i = 1; i < d.getMaxDepthParams()+1; i++) {
-                    List<String> cop = Collections.nCopies(i+1,DashStrings.identifierName);
-                    // taken 1, etc. 
+            List<String> cop;        
+            for (int i = 1; i <= d.getMaxDepthParams(); i++) {
+                cop = Collections.nCopies(i+1,DashStrings.identifierName);
+                // taken 1, etc. 
+                if (d.transAtThisParamDepth(i)) 
                     decls.add(DeclExt.newSetDeclExt(
                         DashStrings.takenName+Integer.toString(i), 
-                        ExprHelper.createArrowList(DashUtilFcns.newListWith(cop, DashStrings.transitionLabelName))));
-                    // conf 1, etc.
-                    decls.add(DeclExt.newSetDeclExt(
-                        DashStrings.confName+Integer.toString(i), 
-                        ExprHelper.createArrowList(DashUtilFcns.newListWith(cop, DashStrings.stateLabelName))));
-                    // event 1, etc.
-                    if (d.hasEvents())
-                        decls.add(new DeclExt(
-                            DashStrings.eventName+Integer.toString(i), 
-                        ExprHelper.createArrowList(DashUtilFcns.newListWith(cop, DashStrings.eventLabelName))));
-                }
+                        createArrowList(DashUtilFcns.newListWith(cop, DashStrings.transitionLabelName))));
+                // conf 1, etc.
+                decls.add(DeclExt.newSetDeclExt(
+                    DashStrings.confName+Integer.toString(i), 
+                    createArrowList(DashUtilFcns.newListWith(cop, DashStrings.stateLabelName))));
+                // event 1, etc.
+                if (d.hasEvents())
+                    decls.add(new DeclExt(
+                        DashStrings.eventName+Integer.toString(i), 
+                    createArrowList(DashUtilFcns.newListWith(cop, DashStrings.eventLabelName))));
             }
             // stable: one boolean;
             if (d.hasConcurrency()) {    
-                decls.add(new DeclExt(DashStrings.stableName, ExprHelper.createOne(ExprHelper.createVar(DashStrings.boolName))));
+                decls.add(new DeclExt(DashStrings.stableName, createOne(createVar(DashStrings.boolName))));
             }
             // add dynamic symbols (vars and buffers)
             /*
@@ -212,17 +233,17 @@ public class DashToAlloy {
     */
     private void createTransPre(String t) {
         List<String> prs = d.getTransParams(t); 
-        List<Expr> o = new ArrayList<Expr>();
+        List<Expr> body = new ArrayList<Expr>();
 
-        /*
+        
         // p3 -> p2 -> p1 -> src in s.confVar(i)
         // src does not have to be a basic state 
-        Expr src = createVar(d.getTransSrc(t));
-        ArrayList<Expr> psList = createVars(prs);       
-        o.add(createIn(createArrowList(createVars(prs).add(src)),curConf(prs.size())));
-
+        /*
+        body.add(createIn(paramsToXArrow(prs,convertFQN(d.getTransSrc(t))),curConf(prs.size())));
+        */
+        /*
         // guard_cond_t1 [s] 
-        o.add(d.getTransGuard(t).convertToAlloy(d.symbolTable, sCurVar(), sNextVar()));
+        o.add(d.getTransGuard(t).convertToAlloy(d.symbolTable, curVar(), nextVar()));
 
         // events
         if (d.hasConcurrency() && d.getTransTrigger(t) != null && d.hasEnvironmentalEvents()) {
@@ -243,18 +264,15 @@ public class DashToAlloy {
         Expr body = createAnd(o);
         */
 
-        // tmp
-        List<Expr> body = Arrays.asList(ExprHelper.createNullExpr());
-
-        d.alloyString += d.addPredSimple(DashFQN.convertFQN(t)+DashStrings.preName, curParamsDecls(prs), body); 
+        d.alloyString += d.addPredSimple(convertFQN(t)+DashStrings.preName, curParamsDecls(prs), body); 
         d.alloyString += "\n";
     }
     private void createTransPost(String t) {
         List<String> prs = d.getTransParams(t); 
 
         // tmp
-        List<Expr> body = Arrays.asList(ExprHelper.createNullExpr());
-        d.alloyString += d.addPredSimple(DashFQN.convertFQN(t)+DashStrings.postName,curNextParamsDecls(prs),body);
+        List<Expr> body = new ArrayList<Expr>();
+        d.alloyString += d.addPredSimple(convertFQN(t)+DashStrings.postName,curNextParamsDecls(prs),body);
     }
     // -----------------------------------------------------------------------------
     /*
@@ -266,16 +284,46 @@ public class DashToAlloy {
                 no t1.notOrthogonal & (s.taken0 + taken0 |> TransitionLabel + s.taken1 |> TransitionLabel + ...)
             }
             for all t in t1.higherPri 
-                some p0. p1. !pre_higherpri_trans[s,p0,p1]
+                // all have same param values (or prefixes) because these trans are from srcs
+                // that are ances of the src of this transition
+                !pre_higherpri_trans[s,pParam0,pParam1]
+                !pre_higherpri_trans[s,pParam0]
+                // it depends on the params of the src state not on t1's params!  ACK!!!
+                // maybe it is okay because pre_ of the trans has the correct parameters (might be trans params or something user has provided)
         }
     */
     private void createTransSemantics(String t) {
-        //List<Expr> body = new ArrayList<Expr>();
+        List<Expr> body = new ArrayList<Expr>();
         List<String> prs = d.getTransParams(t);
+        String tfqn = convertFQN(t); // output FQN
+        
+
+        // s'.taken = s.taken + t1
+        // or
+        // s'.taken2 = s.taken2 + p2 -> p1 -> tfqn
+        // and other takens stay the same
+        List<Expr> takens = new ArrayList<Expr>();
+        for (int i=0;i <= d.getMaxDepthParams(); i++) 
+            if (d.transAtThisParamDepth(i))
+                if (i == prs.size())
+                    if (DashOptions.isElectrum) 
+                         takens.add(createEquals(
+                                taken(i),
+                                createPlus(taken(i),paramsToXArrow(prs,tfqn))));
+                    else takens.add(createEquals(
+                                nextTaken(i),
+                                createPlus(curTaken(i),paramsToXArrow(prs,tfqn))));
+                else
+                    if (DashOptions.isElectrum) takens.add(createEquals(taken(i), curTaken(i)));
+                    else takens.add(createEquals(nextTaken(i), curTaken(i)));
+        Expr elseExpr = createAnd(takens);
+
+        // no trans "below" the scope of this trans with the same params can be taken
+        // (other params are for other parts of state hierarchy at this depth)
+
+        // for the rest of the non-orthogonal trans, param values don't matter
 
         /*
-        // s'.taken = s.taken + t1
-        Expr elseExpr = createEquals(nextTaken(prs.size()),createPlus(curTaken(prs.size()),createParamsJoin(prs,t1)));
         if (notOrthogonal != null) {
             elseExpr = 
                 createAnd(
@@ -286,22 +334,48 @@ public class DashToAlloy {
                             createNonOrthogonalExpr(t),
                             createChoppedGroup(prs.size(),DashStrings.takenName,DashStrings.transitionLabelName))));
         }     
+    */
+        takens = new ArrayList<Expr>();
+        for (int i=0;i <= d.getMaxDepthParams(); i++) 
+            if (d.transAtThisParamDepth(i))
+                if (i == prs.size())
+                    if (DashOptions.isElectrum)
+                        takens.add(createEquals(
+                                taken(i),
+                                paramsToXArrow(prs,tfqn)));
+                    else takens.add(createEquals(
+                                nextTaken(i),
+                                paramsToXArrow(prs,tfqn)));
+                else
+                    if (DashOptions.isElectrum) takens.add(createEquals(taken(i), createNone())); 
+                    else takens.add(createEquals(nextTaken(i), createNone())); 
+        Expr firsttaken = createAnd(takens);   
+        if (d.hasConcurrency())    
+            body.add(
+                createITE(curStableTrue(),
+                    // s'.taken = t1
+                    firsttaken,
+                    elseExpr)
+                );
+        else 
+            // will only have taken0 in it
+            body.add(firsttaken);
 
-        body.add(
-            createITE(sCurStableTrue(),
-                // s'.taken = t1
-                createEquals(nextTaken(prs.size()), createParamsJoin(prs,t1)),
-                elseExpr
-            )
-        for (h: dash.transTable.get(t).getHigherPriority()) {
-            List<String> prs = h.getParams();
-            // some p0. p1. !pre_higherpri_trans[s,p0,p1]
-            body.add(createSome(paramsDecls(prs), createNot(curJoinParams(prs,h+DashStrings.preName))))
+        // priority
+        // depends on the src of this transition
+        for (String h: d.getHigherPriTrans(t)) {
+            List<String> hprs = d.getTransParams(h);
+            // !pre_higherpri_trans[s,p0,p1]
+            // Note: all the parameter values will be the same
+            // only lower priority transitions could have more parameters
+            if (DashOptions.isElectrum) 
+                body.add(createNot(createPredCall(convertFQN(h+DashStrings.preName),paramVars(hprs))));
+            else 
+                body.add(createNot(createPredCall(convertFQN(h+DashStrings.preName),curParamVars(hprs))));
         }
-        */
-        // tmp
-        List<Expr> body = Arrays.asList(ExprHelper.createNullExpr());
-        d.alloyString += d.addPredSimple(DashFQN.convertFQN(t)+DashStrings.semanticsName,curNextParamsDecls(prs),body);
+        
+
+        d.alloyString += d.addPredSimple(convertFQN(t)+DashStrings.semanticsName,curNextParamsDecls(prs),body);
         d.alloyString += "\n";
     }
     // ---------------------------------------------------
@@ -344,7 +418,7 @@ public class DashToAlloy {
 
         // guard_cond_t1 [s'] 
         // final parameter (usually s') should not be used in precondition
-        o.add(dash.getTransGuard(t).convertToAlloy(dash.symbolTable, sNextVar(), null, prs));
+        o.add(dash.getTransGuard(t).convertToAlloy(dash.symbolTable, nextVar(), null, prs));
 
 
         // no t1.notOrthogonal & (t + s.taken + s.taken1 |> TransitionLabel + taken2 |> TransitionLabel + ...)  
@@ -380,8 +454,8 @@ public class DashToAlloy {
         if (d.hasEvents())
             decls.add((Decl) DeclExt.newSetDeclExt(DashStrings.geName, DashStrings.eventLabelName));
         // tmp
-        List<Expr> body = Arrays.asList(ExprHelper.createNullExpr());
-        d.alloyString += d.addPredSimple(DashFQN.convertFQN(t)+DashStrings.isEnabledAfterStepName,decls,body);
+        List<Expr> body = new ArrayList<Expr>();
+        d.alloyString += d.addPredSimple(convertFQN(t)+DashStrings.isEnabledAfterStepName,decls,body);
         d.alloyString += "\n";
     }
 
@@ -392,97 +466,196 @@ public class DashToAlloy {
             pparam2.pparam1.pparam0.s'.s.post_1 and
             pparam2.pparam1.pparam0.s'.s'.semantics_t1
     */        
-    private void createTransPred(String t) {
+    private void createTrans(String t) {
         // t is FQN
         // e.g. [ClientId,ServerId.,,,]
         List<String> prs = d.getTransParams(t);
         List<Expr> body = new ArrayList<Expr>();
-        String tfqn = DashFQN.convertFQN(t);
-        // pre_transName[s, p0, p1, p2] -> p2.p1.p0.s.pre_transName
-        body.add(ExprHelper.createPredCall(tfqn + DashStrings.preName, curParamsArgs(prs)));
-        // p2.p1.p0.s'.s.post_transName
-        body.add(ExprHelper.createPredCall(tfqn + DashStrings.preName, curNextParamsArgs(prs)));
-        // p2.p1.p0.s'.s.semantics_transName
-        body.add(ExprHelper.createPredCall(tfqn + DashStrings.preName, curNextParamsArgs(prs)));
+        String tfqn = convertFQN(t); // output FQN
+        
+        if (DashOptions.isElectrum) {
+            // pre_transName[ p0, p1, p2] -> p2.p1.p0.pre_transName
+            body.add(createPredCall(tfqn + DashStrings.preName, paramVars(prs)));
+            // p2.p1.p0.post_transName
+            body.add(createPredCall(tfqn + DashStrings.postName, paramVars(prs)));
+            // p2.p1.p0.semantics_transName
+            body.add(createPredCall(tfqn + DashStrings.semanticsName, paramVars(prs)));
+        } else {
+            // pre_transName[s, p0, p1, p2] -> p2.p1.p0.s.pre_transName
+            body.add(createPredCall(tfqn + DashStrings.preName, curParamVars(prs)));
+            // p2.p1.p0.s'.s.post_transName
+            body.add(createPredCall(tfqn + DashStrings.postName, curNextParamVars(prs)));
+            // p2.p1.p0.s'.s.semantics_transName
+            body.add(createPredCall(tfqn + DashStrings.semanticsName, curNextParamVars(prs)));
+        }
         d.alloyString += d.addPredSimple(tfqn, curNextParamsDecls(prs), body);
-        d.alloyString += "\n";
     }
 
+   // --------------------------------------------------------------------------------------
+    /*
+        pred small_step [s:Snapshot, s': Snapshot] { 
+                some pparam0 : Param0 , pparam1 : Param1 ... | 
+                    { // for all t’s at level i with params Param5, Param6, ...
+                    (or t[s, s_next, pparam5, pparam6 ]) 
+                    // loop? big-step issue?
+                }
+    */
     private void createSmallStep() {
-        ;
+
+        // list of FQN of transitions
+        // does not have to be done in order of number of parameters b/c all disjuncted
+        ArrayList<Expr> e = new ArrayList<Expr>();
+        for (String t: d.getTransNames()) {
+            String tfqn = convertFQN(t); // output FQN
+            // p3.p2.p1.s'.s.t for parameters of this transition
+            if (DashOptions.isElectrum) e.add(createPredCall(tfqn,paramVars(d.getTransParams(t))));
+            else e.add(createPredCall(tfqn,curNextParamVars(d.getTransParams(t))));
+        }
+        List<Expr> body = new ArrayList<Expr>();
+        if (d.getAllParams().isEmpty()) body.add(createOr(e));
+        else body.add(createSome(paramDecls(d.getAllParams()),createOr(e)));
+
+        //TODO add loop if all notenabled
+        d.alloyString += d.addPredSimple(DashStrings.smallStepName,curNextDecls(),body);
     }
 
-    // useful shortcuts 
-    private Decl sCurDecl() {
-        return (Decl) new DeclExt(DashStrings.sCurName, DashStrings.snapshotName);
+
+
+    // common decls
+    private Decl curDecl() {
+        return (Decl) new DeclExt(DashStrings.curName, DashStrings.snapshotName);
     }
-    private Decl sNextDecl() {
-        return (Decl) new DeclExt(DashStrings.sNextName, DashStrings.snapshotName);
+    private Decl nextDecl() {
+        return (Decl) new DeclExt(DashStrings.nextName, DashStrings.snapshotName);
     }
-    private Decl paramDecls(String n) {
+    private Decl paramDecl(String n) {
         return (Decl) new DeclExt(DashStrings.pName+n, n);
+    }
+    private List<Decl> curNextDecls() {
+        List<Decl> o = new ArrayList<Decl>();
+        if (!DashOptions.isElectrum) {
+            o.add(curDecl());
+            o.add(nextDecl());
+        }
+        return o;
+    }
+    private List<Decl> paramDecls(List<String> prs) {
+        List<Decl> o = new ArrayList<Decl>();
+        for (String n: prs) o.add(paramDecl(n));
+        return o;
     }
     private List<Decl> curParamsDecls(List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
-        if (!DashOptions.isElectrum) o.add(sCurDecl());
-        for (String n: prs) o.add(paramDecls(n));
+        if (!DashOptions.isElectrum) o.add(curDecl());
+        o.addAll(paramDecls(prs));
         return o;
     }
     private List<Decl> curNextParamsDecls(List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
-        if (!DashOptions.isElectrum) { o.add(sCurDecl()); o.add(sNextDecl()); }
-        for (String n: prs) o.add(paramDecls(n));
+        if (!DashOptions.isElectrum) { o.add(curDecl()); o.add(nextDecl()); }
+        o.addAll(paramDecls(prs));
         return o;
     }
 
-    private ExprVar sCurVar() {
-        return ExprHelper.createVar(DashStrings.sCurName);
+    // common vars
+    // s
+    private ExprVar curVar() {
+        return createVar(DashStrings.curName);
     }
-    private ExprVar sNextVar() {
-        return ExprHelper.createVar(DashStrings.sNextName);
+    // s'
+    private ExprVar nextVar() {
+        return createVar(DashStrings.nextName);
     }
-    private List<Expr> convertParamsToVars(List<String> names) {
+    // [n1,n2,...]
+    private List<Expr> paramVars(List<String> names) {
         List<Expr> o = new ArrayList<Expr>();
-        for (String n: names) o.add(ExprHelper.createVar(DashStrings.pName+n));
+        for (String n: names) o.add(createVar(DashStrings.pName+n));
         return o;
     }
-    private List<Expr> curParamsArgs(List<String> params) {
+    private List<Expr> curParamVars(List<String> params) {
         List<Expr> o = new ArrayList<Expr>();
-        o.add(sCurVar());
-        o.addAll(convertParamsToVars(params));
+        o.add(curVar());
+        o.addAll(paramVars(params));
         return o;
     }
-    private List<Expr> curNextParamsArgs(List<String> params) {
+    private List<Expr> curNextParamVars(List<String> params) {
         List<Expr> o = new ArrayList<Expr>();
-        o.add(sCurVar());
-        o.add(sNextVar());
-        o.addAll(convertParamsToVars(params));
+        o.add(curVar());
+        o.add(nextVar());
+        o.addAll(paramVars(params));
         return o;
+    }
+
+    private Expr taken(int size) {
+        return createVar(DashStrings.takenName + size);
+    }
+    private Expr conf(int size) {
+        return createVar(DashStrings.confName + size);
+    }
+    private Expr stable() {
+        return createVar(DashStrings.stableName);
+    }
+    // s.taken5
+    private Expr curTaken(int size) {
+        return curJoinExpr(taken(size));
+    }
+    // s'.taken5
+    private Expr nextTaken(int size) {
+        return nextJoinExpr(taken(size));
+    }
+    // s.conf4
+    private Expr curConf(int size) {
+        return curJoinExpr(conf(size));
+    }
+    // s'.conf3
+    private Expr nextConf(int size) {
+        return nextJoinExpr(conf(size));
+    }
+    // s.stable == boolean/True
+    private Expr curStableTrue() {
+        return createEquals(stable(),createTrue());
+    }
+    // s.name
+    private Expr curJoinExpr(Expr e) {
+        return createJoin(curVar(), e);
+    }
+    //s'.name
+    private Expr nextJoinExpr(Expr e) {
+        return createJoin(nextVar(), e);
+    }
+    // p3 -> p2 -> p1 -> x
+    private Expr paramsToXArrow(List<String> prs, String x) {
+        Collections.reverse(prs);
+        Expr e = createVar(x);
+        for (String p: prs) {
+            e = createArrow(createVar(p),e);
+        }
+        return e;
     }
     /*
     private Expr predJoinCurParams(String name, List<String> prs) {
         //p2.p1.p0.s.name
-        Expr e = ExprHelper.createVar(name);
+        Expr e = createVar(name);
         List<Expr> prsVarList = convertParamsToVars(prs);
-        if (!DashOptions.isElectrum) e = ExprHelper.createJoin(sCurVar(),e);
+        if (!DashOptions.isElectrum) e = createJoin(curVar(),e);
         if (prs!= null) {
             Collections.reverse(prsVarList);
             prsVarList.add(e);
             System.out.println("predJoinCurParams: " +prsVarList);
-            Expr x = ExprHelper.createJoinList(prsVarList);
+            Expr x = createJoinList(prsVarList);
             System.out.println("Join of prsVarList: " + x);
-            return ExprHelper.createJoinList(prsVarList) ;
+            return createJoinList(prsVarList) ;
         } else return e;
     }
     private Expr predJoinCurNextParams(String name, List<String> prs) {
         //p2.p1.p0.s'.s.pre_transName
-        Expr e = ExprHelper.createVar(name);
+        Expr e = createVar(name);
         List<Expr> prsVarList = convertParamsToVars(prs);
-        if (!DashOptions.isElectrum) e = ExprHelper.createJoin(sNextVar(),ExprHelper.createJoin(sCurVar(),e));
+        if (!DashOptions.isElectrum) e = createJoin(nextVar(),createJoin(curVar(),e));
         if (prs!=null) {
             Collections.reverse(prsVarList);
             prsVarList.add(e);
-            return ExprHelper.createJoinList(prsVarList) ;
+            return createJoinList(prsVarList) ;
         } else return e;      
     }
     */

@@ -15,6 +15,7 @@ import edu.mit.csail.sdg.ast.ExprList;
 import edu.mit.csail.sdg.ast.ExprQt;
 import edu.mit.csail.sdg.ast.ExprUnary;
 import edu.mit.csail.sdg.ast.ExprVar;
+import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprBinary;
 
 
@@ -34,6 +35,9 @@ public class ExprHelper  {
     public static ExprVar createTrue() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.trueName);
     } 
+    public static ExprVar createNone() {
+        return ExprVar.make(Pos.UNKNOWN,  DashStrings.noneName);
+    } 
     public static ExprVar createVar(String v) {
         return ExprVar.make(Pos.UNKNOWN, v);
     }
@@ -44,7 +48,21 @@ public class ExprHelper  {
         }
         return retList;
     }
-
+    public static List<ExprVar> createVarList(String prefix, List<String> vList) {
+        List<ExprVar> retList = new ArrayList<ExprVar>();
+        for (String v: vList) {
+            retList.add(createVar(prefix+v));
+        }
+        return retList;
+    }
+    // to avoid the need to cast every ExprVar to an Expr
+    public static List<Expr> createVarExprList(String prefix, List<String> vList) {
+        List<Expr> retList = new ArrayList<Expr>();
+        for (String v: vList) {
+            retList.add((Expr) createVar(prefix+v));
+        }
+        return retList;
+    }
     /* generic ones */
     public static Expr createBinaryExpr(Expr left, ExprBinary.Op op, Expr right) {   
         return (ExprBinary) op.make(Pos.UNKNOWN, Pos.UNKNOWN,left,right);
@@ -61,6 +79,9 @@ public class ExprHelper  {
     }
 
     /* a few useful specific ones */
+    public static Expr createNot(Expr sub) {
+        return (ExprUnary) ExprUnary.Op.NOT.make(Pos.UNKNOWN, sub);
+    }
     public static Expr createOne(Expr sub) {
         return (ExprUnary) ExprUnary.Op.ONE.make(Pos.UNKNOWN, sub);
     }
@@ -95,17 +116,18 @@ public class ExprHelper  {
     public static ExprBinary createNotEquals(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.NOT_EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static ExprBinary createAnd(Expr left, Expr right) {
-        return (ExprBinary) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    // returns an ExprList
+    public static ExprList createAnd(Expr left, Expr right) {
+        return (ExprList) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static Expr createAnd(List<Expr> args) {
-        return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
+    public static ExprList createAnd(List<Expr> args) {
+        return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
     }
-    public static ExprBinary createOr(Expr left, Expr right) {
-        return (ExprBinary) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    public static ExprList createOr(Expr left, Expr right) {
+        return (ExprList) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static Expr createOr(List<Expr> args) {
-        return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
+    public static ExprList createOr(List<Expr> args) {
+        return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
     }
     public static ExprBinary createArrow(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.ARROW.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
@@ -155,6 +177,14 @@ public class ExprHelper  {
             o = createJoin(e,o);
         }
         return o;
+    }
+
+    // simple equality: two var names are equal
+    public static boolean sEquals(Expr e1, Expr e2) {
+        return ( (e1 == e2) ||
+                 (e1 instanceof ExprVar && 
+                    e2 instanceof ExprVar && 
+                    ((ExprVar) e1).label.equals(((ExprVar) e2).label))) ;
     }
 
 }

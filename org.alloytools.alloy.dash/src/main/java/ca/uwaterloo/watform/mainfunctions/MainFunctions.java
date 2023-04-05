@@ -25,58 +25,69 @@ public class MainFunctions {
 
     // both these function expect DashOptions to be set 
 
-    public static DashModule parseFile(String filename, A4Reporter rep) {
+    public static DashModule parseAndResolveDashFile(String filename, A4Reporter rep) {
         DashModule dash = null;
-        try {
-            DashOptions.isTraces = true;
-            DashSituation.haveCountedBuffers = false;
-            DashSituation.bufferElements = new ArrayList<String>();
-            DashSituation.bufferNames = new ArrayList<String>();
+
+        DashOptions.isTraces = true;
+        DashSituation.haveCountedBuffers = false;
+        DashSituation.bufferElements = new ArrayList<String>();
+        DashSituation.bufferNames = new ArrayList<String>();
+        dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
+        if (dash == null) {
+            System.err.println("Empty Alloy file");
+        } else {
+            DashSituation.haveCountedBuffers = true;
             dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
-            if (dash == null) {
-                System.err.println("Empty Alloy file");
-            } else {
-                DashSituation.haveCountedBuffers = true;
-                dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
-                //System.out.println(filename + " parsed successfully.");
-                // well-formedness checks
-                dash.resolveAllDash(rep); 
-                //System.out.println(dash.toString());
-            }
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            System.err.println(e);
-            System.exit(1);
+            //System.out.println(filename + " parsed successfully.");
+            // well-formedness checks
+            dash.resolveAllDash(rep); 
+            //System.out.println(dash.toString());
         }
+ 
         return dash;     
     }
-    public static String dumpString(DashModule dash) {
-       String s = null;
-       try {
-            if (dash != null) {
-                s = dash.toString();
+    // only needed for testing
+    public static void parseAndResolveAlloyFile(String filename, A4Reporter rep) {
+        DashModule dash = null;
+
+        DashOptions.isTraces = true;
+        DashSituation.haveCountedBuffers = false;
+        DashSituation.bufferElements = new ArrayList<String>();
+        DashSituation.bufferNames = new ArrayList<String>();
+        dash = DashUtil.parseEverything_fromFileDash(rep, null, filename); 
+        if (dash == null) {
+            System.err.println("Error in parsing");
+            System.exit(1);
+        } else {
+            if (dash.hasRoot()) {
+                System.err.println("Not a pure Alloy file");
+                System.exit(1);
+            } else {
+                dash.resolveAllAlloy(rep); 
             }
-        } catch (Exception e) {
-            System.err.println(e);
-        }     
+        }
+    }
+    public static String dumpString(DashModule dash) {
+        String s = null;
+ 
+        if (dash != null) {
+            s = dash.toString();
+        }
+    
         return s;
     }
 
     public static DashModule translate(DashModule dash, A4Reporter rep) {
-        try {
-            DashOptions.isTraces = true;
-            if (dash != null) {
-                // translates in place
-                dash.translate();
-            }
-            // Alloy wff check
-            dash.resolveAllAlloy(rep == null ? A4Reporter.NOP : rep);
-            System.out.println(dash.toString());
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            System.err.println(e);
-            System.exit(1);
+
+        DashOptions.isTraces = true;
+        if (dash != null) {
+            // translates in place
+            dash.translate();
         }
+        // Alloy wff check
+        dash.resolveAllAlloy(rep == null ? A4Reporter.NOP : rep);
+        //System.out.println(dash.toString());
+
         return dash;
     }
 
