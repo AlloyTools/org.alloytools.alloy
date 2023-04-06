@@ -39,6 +39,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 
 public final class ExprList extends Expr {
 
+
     /** This class contains all possible builtin predicates. */
     public static enum Op {
                            /**
@@ -65,6 +66,9 @@ public final class ExprList extends Expr {
 
     /** Caches the span() result. */
     private Pos                  span = null;
+
+    /** The positions where implicit in-line conjunctions occurred. */
+    public final ConstList<Pos>  implicits;
 
     // ============================================================================================================//
 
@@ -108,10 +112,11 @@ public final class ExprList extends Expr {
     // ============================================================================================================//
 
     /** Constructs an ExprList node. */
-    private ExprList(Pos pos, Pos closingBracket, Op op, boolean ambiguous, ConstList<Expr> args, long weight, JoinableList<Err> errs) {
+    private ExprList(Pos pos, Pos closingBracket, Op op, boolean ambiguous, ConstList<Expr> args, long weight, JoinableList<Err> errs, ConstList<Pos> implicits) {
         super(pos, closingBracket, ambiguous, Type.FORMULA, 0, weight, errs);
         this.op = op;
         this.args = args;
+        this.implicits = implicits;
     }
 
     // ============================================================================================================//
@@ -120,21 +125,24 @@ public final class ExprList extends Expr {
      * Add expr to list, in a way that flattens the conjunctions as much as possible
      * (for better unsat core).
      */
-    private static void addAND(TempList<Expr> list, Expr expr) {
+    private static List<Pos> addAND(TempList<Expr> list, Expr expr) {
+        List<Pos> implicits = new ArrayList<>();
         Expr x = expr.deNOP();
         if (x.isSame(ExprConstant.TRUE))
-            return;
+            return implicits;
         if (x instanceof ExprBinary && ((ExprBinary) x).op == ExprBinary.Op.AND) {
-            addAND(list, ((ExprBinary) x).left);
-            addAND(list, ((ExprBinary) x).right);
-            return;
+            implicits.addAll(addAND(list, ((ExprBinary) x).left));
+            implicits.addAll(addAND(list, ((ExprBinary) x).right));
+            return implicits;
         }
         if (x instanceof ExprList && ((ExprList) x).op == ExprList.Op.AND) {
+            implicits.addAll(((ExprList) x).implicits);
             for (Expr y : ((ExprList) x).args)
-                addAND(list, y);
-            return;
+                implicits.addAll(addAND(list, y));
+            return implicits;
         }
         list.add(expr);
+        return implicits;
     }
 
     /**
@@ -158,13 +166,24 @@ public final class ExprList extends Expr {
         list.add(expr);
     }
 
-    /** Generates a call to a builtin predicate */
     public static ExprList make(Pos pos, Pos closingBracket, Op op, List< ? extends Expr> args) {
+        return make(pos, closingBracket, op, args, null);
+    }
+
+    /**
+     * Generates a call to a builtin predicate
+     *
+     * @param implicit
+     */
+    public static ExprList make(Pos pos, Pos closingBracket, Op op, List< ? extends Expr> args, Pos implicit) {
         boolean ambiguous = false;
         JoinableList<Err> errs = emptyListOfErrors;
         TempList<Expr> newargs = new TempList<Expr>(args.size());
         long weight = 0;
         Type commonArity = null;
+        TempList<Pos> implicits = new TempList<>();
+        if (implicit != null)
+            implicits.add(implicit);
         for (int i = 0; i < args.size(); i++) {
             Expr a = (op == Op.AND || op == Op.OR) ? args.get(i).typecheck_as_formula() : args.get(i).typecheck_as_set();
             ambiguous = ambiguous || a.ambiguous;
@@ -178,7 +197,7 @@ public final class ExprList extends Expr {
             else
                 commonArity = commonArity.pickCommonArity(a.type);
             if (op == Op.AND)
-                addAND(newargs, a);
+                implicits.addAll(addAND(newargs, a));
             else if (op == Op.OR)
                 addOR(newargs, a);
             else
@@ -202,7 +221,7 @@ public final class ExprList extends Expr {
             if (commonArity == EMPTY)
                 errs = errs.make(new ErrorType(pos, "The builtin predicate disjoint[] cannot be used among expressions of different arities."));
         }
-        return new ExprList(pos, closingBracket, op, ambiguous, newargs.makeConst(), weight, errs);
+        return new ExprList(pos, closingBracket, op, ambiguous, newargs.makeConst(), weight, errs, implicits.makeConst());
     }
 
     /** Generates the expression (arg1 and arg2) */
@@ -210,7 +229,12 @@ public final class ExprList extends Expr {
         TempList<Expr> list = new TempList<Expr>(2);
         list.add(a);
         list.add(b);
-        return make(pos, closingBracket, Op.AND, list.makeConst());
+        Pos implicit = null;
+        if (pos == null && a.span().y2 == b.span().y) {
+            implicit = new Pos(a.span().filename, a.span().x2, a.span().y2, b.span().x, b.span().y);
+        }
+        ExprList lst = make(pos, closingBracket, Op.AND, list.makeConst(), implicit);
+        return lst;
     }
 
     /** Generates the expression (arg1 || arg2) */

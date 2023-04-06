@@ -469,6 +469,8 @@ public final class CompModule extends Browsable implements Module {
         /** {@inheritDoc} */
         @Override
         public Expr visit(ExprList x) throws Err {
+            for (Pos p : x.implicits)
+                warns.add(new ErrorWarning(p, "Implicit in-line conjunction between two formulas."));
             TempList<Expr> temp = new TempList<Expr>(x.args.size());
             for (int i = 0; i < x.args.size(); i++)
                 temp.add(visitThis(x.args.get(i)));
