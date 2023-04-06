@@ -195,6 +195,9 @@ public final class StaticGraphMaker {
             return node;
         if ((hidePrivate && atom.getType().isPrivate) || (hideMeta && atom.getType().isMeta) || !view.nodeVisible(atom, instance))
             return null;
+        for (AlloySet set : instance.atom2sets(atom))
+            if (hidePrivate && set.isPrivate)
+                return null;
         // Make the node
         DotColor color = view.nodeColor(atom, instance);
         DotStyle style = view.nodeStyle(atom, instance);
