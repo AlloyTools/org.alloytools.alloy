@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -153,11 +154,17 @@ public final class CompModule extends Browsable implements Module {
      */
     private final Map<String,Expr>              globals;
 
-    /** This stores the meta signature "sig$" */
-    private final PrimSig                       metaSig;
+    /** This stores the meta signature "vsig$" */
+    private final PrimSig                       metaVSig;
 
-    /** This stores the meta signature "field$" */
-    private final PrimSig                       metaField;
+    /** This stores the meta signature "ssig$" */
+    private final PrimSig                       metaSSig;
+
+    /** This stores the meta signature "vfield$" */
+    private final PrimSig                       metaVField;
+
+    /** This stores the meta signature "sfield$" */
+    private final PrimSig                       metaSField;
 
     // ============================================================================================================================//
 
@@ -575,9 +582,9 @@ public final class CompModule extends Browsable implements Module {
                 if (exp.mult == 0 && exp.type().arity() == 1)
                     exp = ExprUnary.Op.ONEOF.make(null, exp);
                 if (exp.errors.isEmpty()) {
-                    if (exp.type().isSubtypeOf(rootmodule.metaSig().plus(rootmodule.metaField()).type())) {
-                        isMetaSig = exp.type().intersects(rootmodule.metaSig().type());
-                        isMetaField = exp.type().intersects(rootmodule.metaField().type());
+                    if (exp.type().isSubtypeOf((rootmodule.metaSSig.plus(rootmodule.metaVSig).plus(rootmodule.metaSField).plus(rootmodule.metaVField)).type())) {
+                        isMetaSig = exp.type().intersects((rootmodule.metaSSig.plus(rootmodule.metaVSig)).type());
+                        isMetaField = exp.type().intersects((rootmodule.metaSField.plus(rootmodule.metaVField)).type());
                     }
                 }
                 // Below is a special case to allow more fine-grained
@@ -592,7 +599,7 @@ public final class CompModule extends Browsable implements Module {
                     // binding
                     Expr answer = null;
                     if (isMetaSig)
-                        for (PrimSig child : rootmodule.metaSig().children())
+                        for (PrimSig child : rootmodule.metaSigAtoms())
                             if (child.type().intersects(exp.type())) {
                                 put(v.label, child);
                                 Expr sub = visitThis(x.sub);
@@ -605,7 +612,7 @@ public final class CompModule extends Browsable implements Module {
                                     answer = child.in(exp).implies(sub).and(answer);
                             }
                     if (isMetaField)
-                        for (PrimSig child : rootmodule.metaField().children())
+                        for (PrimSig child : rootmodule.metaFieldAtoms())
                             if (child.type().intersects(exp.type())) {
                                 put(v.label, child);
                                 Expr sub = visitThis(x.sub);
@@ -829,8 +836,10 @@ public final class CompModule extends Browsable implements Module {
             allModules = new ArrayList<CompModule>();
             exactSigs = new LinkedHashSet<Sig>();
             globals = new LinkedHashMap<String,Expr>();
-            metaSig = new PrimSig("this/sig$", Attr.ABSTRACT, Attr.META);
-            metaField = new PrimSig("this/field$", Attr.ABSTRACT, Attr.META);
+            metaVSig = new PrimSig("this/vsig$", Attr.ABSTRACT, Attr.META);
+            metaVField = new PrimSig("this/vfield$", Attr.ABSTRACT, Attr.META);
+            metaSSig = new PrimSig("this/ssig$", Attr.ABSTRACT, Attr.META);
+            metaSField = new PrimSig("this/sfield$", Attr.ABSTRACT, Attr.META);
         } else {
             this.world = world;
             new2old = world.new2old;
@@ -840,8 +849,10 @@ public final class CompModule extends Browsable implements Module {
             allModules = world.allModules;
             exactSigs = world.exactSigs;
             globals = world.globals;
-            metaSig = world.metaSig;
-            metaField = world.metaField;
+            metaVSig = world.metaVSig;
+            metaVField = world.metaVField;
+            metaSSig = world.metaSSig;
+            metaSField = world.metaSField;
         }
         this.path = path;
         if (filename != null && filename.length() > 0)
@@ -931,15 +942,49 @@ public final class CompModule extends Browsable implements Module {
     /**
      * Returns the meta signature "sig$" (or null if such a sig does not exist)
      */
-    public PrimSig metaSig() {
-        return world.metaSig;
+    public List<PrimSig> metaSigAtoms() {
+        List<PrimSig> sigs = new ArrayList<>();
+        sigs.addAll(world.metaSSig.children().makeCopy());
+        sigs.addAll(world.metaVSig.children().makeCopy());
+        return sigs;
+    }
+
+    /**
+     * Returns the meta signature "ssig$" (or null if such a sig does not exist)
+     */
+    public PrimSig metaSSig() {
+        return world.metaSSig;
+    }
+
+    /**
+     * Returns the meta signature "vsig$" (or null if such a sig does not exist)
+     */
+    public PrimSig metaVSig() {
+        return world.metaVSig;
     }
 
     /**
      * Returns the meta signature "field$" (or null if such a sig does not exist)
      */
-    public PrimSig metaField() {
-        return world.metaField;
+    public List<PrimSig> metaFieldAtoms() {
+        List<PrimSig> fields = new ArrayList<>();
+        fields.addAll(world.metaSField.children().makeCopy());
+        fields.addAll(world.metaVField.children().makeCopy());
+        return fields;
+    }
+
+    /**
+     * Returns the meta signature "sfield$" (or null if such a sig does not exist)
+     */
+    public PrimSig metaSField() {
+        return world.metaSField;
+    }
+
+    /**
+     * Returns the meta signature "vfield$" (or null if such a sig does not exist)
+     */
+    public PrimSig metaVField() {
+        return world.metaVField;
     }
 
     private static String base(String string) {
@@ -2129,16 +2174,16 @@ public final class CompModule extends Browsable implements Module {
         Map<Sig,PrimSig> sig2meta = new LinkedHashMap<Sig,PrimSig>();
         Map<Field,PrimSig> field2meta = new LinkedHashMap<Field,PrimSig>();
         boolean hasMetaSig = false, hasMetaField = false;
-        root.new2old.put(root.metaSig, root.metaSig);
-        root.sigs.put(base(root.metaSig), root.metaSig);
-        root.new2old.put(root.metaField, root.metaField);
-        root.sigs.put(base(root.metaField), root.metaField);
+        for (PrimSig s : root.metaSigs()) {
+            root.new2old.put(s, s);
+            root.sigs.put(base(s), s);
+        }
         for (CompModule m : root.allModules)
             for (Sig s : new ArrayList<Sig>(m.sigs.values()))
-                if (m != root || (s != root.metaSig && s != root.metaField)) {
-                    PrimSig ka = new PrimSig(Pos.UNKNOWN, s.label + "$", Pos.UNKNOWN, root.metaSig, Attr.ONE, PRIVATE.makenull(s.isPrivate), Attr.META);
+                if (m != root || !root.metaSigs().contains(s)) {
+                    PrimSig ka = new PrimSig(Pos.UNKNOWN, s.label + "$", Pos.UNKNOWN, s.isVariable != null ? root.metaVSig : root.metaSSig, Attr.ONE, PRIVATE.makenull(s.isPrivate), Attr.META);
                     sig2meta.put(s, ka);
-                    ka.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "value", s);
+                    ka.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, s.isVariable, "value", s);
                     m.new2old.put(ka, ka);
                     m.sigs.put(base(ka), ka);
                     hasMetaSig = true;
@@ -2147,18 +2192,18 @@ public final class CompModule extends Browsable implements Module {
                         Pos priv = field.isPrivate;
                         if (priv == null)
                             priv = s.isPrivate;
-                        PrimSig kb = new PrimSig(Pos.UNKNOWN, s.label + "$" + field.label, Pos.UNKNOWN, root.metaField, Attr.ONE, PRIVATE.makenull(priv), Attr.META);
+                        PrimSig kb = new PrimSig(Pos.UNKNOWN, s.label + "$" + field.label, Pos.UNKNOWN, field.isVariable != null ? root.metaVField : root.metaSField, Attr.ONE, PRIVATE.makenull(priv), Attr.META);
                         field2meta.put(field, kb);
                         m.new2old.put(kb, kb);
                         m.sigs.put(base(kb), kb);
                         hasMetaField = true;
-                        kb.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "value", field);
+                        kb.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, s.isVariable, "value", field);
                         if (allfields == ExprConstant.EMPTYNESS)
                             allfields = kb;
                         else
                             allfields = allfields.plus(kb);
                     }
-                    ka.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "fields", allfields);
+                    ka.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, null, "fields", allfields);
                 }
         for (Map.Entry<Sig,PrimSig> e : sig2meta.entrySet()) {
             Expr expr = null;
@@ -2167,7 +2212,7 @@ public final class CompModule extends Browsable implements Module {
                 if (a.parent != null && a.parent != UNIV)
                     expr = sig2meta.get(a.parent);
             }
-            e.getValue().addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "parent", (expr == null ? ExprConstant.EMPTYNESS : expr));
+            e.getValue().addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, null, "parent", (expr == null ? ExprConstant.EMPTYNESS : expr));
         }
         for (Map.Entry<Sig,PrimSig> e : sig2meta.entrySet()) {
             Sig s = e.getKey();
@@ -2189,12 +2234,19 @@ public final class CompModule extends Browsable implements Module {
                         else
                             allfields = allfields.plus(metaF);
                     }
-            s2.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, "subfields", allfields);
+            s2.addDefinedField(Pos.UNKNOWN, null, Pos.UNKNOWN, null, "subfields", allfields);
         }
         if (hasMetaSig == false)
-            root.facts.add(new Pair<String,Expr>("sig$fact", root.metaSig.no().and(root.metaField.no())));
+            root.facts.add(new Pair<String,Expr>("sig$fact", root.metaSSig.no().and(root.metaVSig.no()).and(root.metaSField.no()).and(root.metaVField.no())));
         else if (hasMetaField == false)
-            root.facts.add(new Pair<String,Expr>("sig$fact", root.metaField.no()));
+            root.facts.add(new Pair<String,Expr>("sig$fact", root.metaSField.no().and(root.metaVField.no())));
+
+        root.addMacro(Pos.UNKNOWN, Pos.UNKNOWN, Pos.UNKNOWN, "sig$", null, root.metaSSig.plus(root.metaVSig));
+        root.addMacro(Pos.UNKNOWN, Pos.UNKNOWN, Pos.UNKNOWN, "field$", null, root.metaSField.plus(root.metaVField));
+    }
+
+    private Collection<PrimSig> metaSigs() {
+        return Arrays.asList(metaSSig, metaVSig, metaSField, metaVField);
     }
 
     // ============================================================================================================================//
@@ -2400,10 +2452,10 @@ public final class CompModule extends Browsable implements Module {
                                 ch.add(x0);
                                 re.add("field " + f.sig.label + " <: " + f.label);
                             }
-        if (metaSig() != null && (rootsig == null || rootfield == null)) {
-            SafeList<PrimSig> children = null;
+        if (rootsig == null || rootfield == null) {
+            List<PrimSig> children = null;
             try {
-                children = metaSig().children();
+                children = metaSigAtoms();
             } catch (Err err) {
                 return null;
             } // exception NOT possible
@@ -2415,10 +2467,10 @@ public final class CompModule extends Browsable implements Module {
                         re.add("field " + f.sig.label + " <: " + f.label);
                     }
         }
-        if (metaField() != null && (rootsig == null || rootfield == null)) {
-            SafeList<PrimSig> children = null;
+        if (rootsig == null || rootfield == null) {
+            List<PrimSig> children = null;
             try {
-                children = metaField().children();
+                children = metaFieldAtoms();
             } catch (Err err) {
                 return null;
             } // exception NOT possible

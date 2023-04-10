@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.alloytools.util.table.Table;
+
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -35,7 +37,6 @@ import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Attr.AttrType;
-import org.alloytools.util.table.Table;
 
 /**
  * Mutable; represents a signature.
@@ -232,7 +233,7 @@ public abstract class Sig extends Expr implements Clause {
     /**
      * The position of the sig label
      */
-    public final Pos            labelPos;
+    public final Pos             labelPos;
 
     /**
      * The label for this sig; this name does not need to be unique.
@@ -376,6 +377,7 @@ public abstract class Sig extends Expr implements Clause {
         } else
             return false;
     }
+
     /** {@inheritDoc} */
     @Override
     public int getDepth() {
@@ -487,16 +489,17 @@ public abstract class Sig extends Expr implements Clause {
         public final PrimSig parent;
 
         /**
-         * The position of the reference to the parent Sig.
-         * Can be null only if parent is null
+         * The position of the reference to the parent Sig. Can be null only if parent
+         * is null
          */
-        public final Pos parentRefPos;
+        public final Pos     parentRefPos;
 
 
-        private Expr parentRef;
-        public Expr parentRef(){
-            if(parentRef == null ){
-                parentRef = ExprUnary.Op.NOOP.make(parentRefPos ,  parent );
+        private Expr         parentRef;
+
+        public Expr parentRef() {
+            if (parentRef == null) {
+                parentRef = ExprUnary.Op.NOOP.make(parentRefPos, parent);
             }
             return parentRef;
         }
@@ -506,7 +509,7 @@ public abstract class Sig extends Expr implements Clause {
             super(label, var);
             this.parent = parent;
             assert parent == null ? parentRefPos == null : parentRefPos != null;
-            this.parentRefPos =  parentRefPos ;
+            this.parentRefPos = parentRefPos;
             if (add)
                 this.parent.children.add(this);
         }
@@ -650,22 +653,23 @@ public abstract class Sig extends Expr implements Clause {
         }
 
         /**
-         * The positions of references to parent Sigs (in parents field).
-         * Could be null
+         * The positions of references to parent Sigs (in parents field). Could be null
          */
         public final ConstList<Pos> parentRefPoss;
 
-        private ConstList<Expr> parentRefs;
-        public ConstList<Expr> parentRefs(){
-            if(parentRefs == null){
+        private ConstList<Expr>     parentRefs;
+
+        public ConstList<Expr> parentRefs() {
+            if (parentRefs == null) {
                 TempList<Expr> res = new TempList<>();
-                for(int i = 0; i < parents.size(); i++){
-                    res.add(ExprUnary.Op.NOOP.make(parentRefPoss != null ? parentRefPoss.get(i) : Pos.UNKNOWN,  parents.get(i) ));
+                for (int i = 0; i < parents.size(); i++) {
+                    res.add(ExprUnary.Op.NOOP.make(parentRefPoss != null ? parentRefPoss.get(i) : Pos.UNKNOWN, parents.get(i)));
                 }
                 parentRefs = res.makeConst();
             }
             return parentRefs;
         }
+
         /**
          * Constructs a subset sig.
          *
@@ -711,7 +715,7 @@ public abstract class Sig extends Expr implements Clause {
             if (temp.size() == 0)
                 throw new ErrorType(pos, "Sig " + label + " must have at least one non-empty parent.");
             this.parents = temp.makeConst();
-            this.parentRefPoss = parentRefPoss != null ? new  TempList<Pos>(parentRefPoss).makeConst() : null;
+            this.parentRefPoss = parentRefPoss != null ? new TempList<Pos>(parentRefPoss).makeConst() : null;
         }
 
         /** {@inheritDoc} */
@@ -926,7 +930,7 @@ public abstract class Sig extends Expr implements Clause {
      * @throws ErrorType if the bound is not fully typechecked or is not a
      *             set/relation
      */
-    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, Pos isVar, List<? extends ExprHasName> labels, Expr bound) throws Err {
+    public final Field[] addTrickyField(Pos pos, Pos isPrivate, Pos isDisjoint, Pos isDisjoint2, Pos isMeta, Pos isVar, List< ? extends ExprHasName> labels, Expr bound) throws Err {
         bound = bound.typecheck_as_set();
         if (bound.ambiguous)
             bound = bound.resolve_as_set(null);
@@ -970,14 +974,14 @@ public abstract class Sig extends Expr implements Clause {
      * @throws ErrorType if the bound is not fully typechecked or is not a
      *             set/relation
      */
-    public final Field addDefinedField(Pos pos, Pos isPrivate, Pos isMeta, String label, Expr bound) throws Err {
+    public final Field addDefinedField(Pos pos, Pos isPrivate, Pos isMeta, Pos isVar, String label, Expr bound) throws Err {
         bound = bound.typecheck_as_set();
         if (bound.ambiguous)
             bound = bound.resolve_as_set(null);
         if (bound.mult() != ExprUnary.Op.EXACTLYOF)
             bound = ExprUnary.Op.EXACTLYOF.make(null, bound);
-        final Field f = new Field(pos, isPrivate, isMeta, null, null, null, this, null, label, bound);
-        final Decl d = new Decl(null, null, null, null, Arrays.asList(f), bound);
+        final Field f = new Field(pos, isPrivate, isMeta, null, null, isVar, this, null, label, bound);
+        final Decl d = new Decl(null, null, null, isVar, Arrays.asList(f), bound);
         f.decl = d;
         fields.add(d);
         realFields.add(f);
@@ -1018,7 +1022,7 @@ public abstract class Sig extends Expr implements Clause {
         sb.append(" }");
 
         //return sb.toString();
-        
+
         return t.transpose(0).toString();
     }
 
@@ -1045,13 +1049,10 @@ public abstract class Sig extends Expr implements Clause {
             sb.append("subset ");
 
         sb.append(clean(label));
-        if(! realFields.isEmpty()){
+        if (!realFields.isEmpty()) {
             sb.append(" {\n");
 
-            sb.append(StreamSupport.stream(realFields.spliterator(), false)
-            .map(f -> " " + clean(f.label) + " : " +
-                      clean(type.join(f.type).toString()))
-            .collect(Collectors.joining(",\n")));
+            sb.append(StreamSupport.stream(realFields.spliterator(), false).map(f -> " " + clean(f.label) + " : " + clean(type.join(f.type).toString())).collect(Collectors.joining(",\n")));
 
             sb.append("\n}");
         }
