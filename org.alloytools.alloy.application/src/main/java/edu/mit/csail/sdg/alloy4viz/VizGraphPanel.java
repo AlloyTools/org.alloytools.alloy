@@ -369,7 +369,7 @@ public final class VizGraphPanel extends JPanel {
                 if (graph instanceof GraphViewer) {
                     viewer.add((GraphViewer) graph);
                     if (prevsv != null && i <= prevsv.size())
-                        viewer.get(i).setScale(prevsv.get(i).getScale());
+                        viewer.get(i).setScale(((GraphViewer) graph).getScale());
                 } else
                     viewer = null;
                 graphPanels.get(i).removeAll();
