@@ -30,6 +30,7 @@ import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.JoinableList;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
+import edu.mit.csail.sdg.ast.ExprUnary.Op;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 
 /**
@@ -373,6 +374,43 @@ public abstract class Expr extends Browsable {
         if (ans) {
             try {
                 ans = accept(hasCall) != null;
+            } catch (Err ex) {
+                ans = false;
+            }
+        } // This exception should not occur
+        return ans;
+    }
+
+    /**
+     * A return visitor that determines whether the node (or a subnode) has any
+     * temporal operator.
+     */
+    private static final VisitQuery<Object> hasTemporal = new VisitQuery<Object>() {
+
+        @Override
+        public Object visit(ExprUnary x) throws Err {
+            if (x.op == Op.AFTER || x.op == Op.BEFORE || x.op == Op.PRIME || x.op == Op.HISTORICALLY || x.op == Op.ALWAYS || x.op == Op.ONCE || x.op == Op.EVENTUALLY)
+                return x;
+            return super.visit(x);
+        }
+
+        @Override
+        public Object visit(ExprBinary x) throws Err {
+            if (x.op == ExprBinary.Op.UNTIL || x.op == ExprBinary.Op.SINCE || x.op == ExprBinary.Op.TRIGGERED || x.op == ExprBinary.Op.RELEASES)
+                return x;
+            return super.visit(x);
+        }
+    };
+
+    /**
+     * Returns true if the node is well-typed, unambiguous, and contains any
+     * temporal operator.
+     */
+    public final boolean hasTemporal() {
+        boolean ans = !ambiguous && errors.isEmpty();
+        if (ans) {
+            try {
+                ans = accept(hasTemporal) != null;
             } catch (Err ex) {
                 ans = false;
             }
