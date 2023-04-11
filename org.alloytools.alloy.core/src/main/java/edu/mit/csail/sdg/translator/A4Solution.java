@@ -120,7 +120,6 @@ import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-import kodkod.util.ints.IndexedEntry;
 
 /**
  * This class stores a SATISFIABLE or UNSATISFIABLE solution. It is also used as
@@ -1769,30 +1768,11 @@ public final class A4Solution {
             return answer;
         Instance sol = eval.instance();
         StringBuilder sb = new StringBuilder();
-        sb.append("---INSTANCE---");
-        if (sol instanceof TemporalInstance) {
-            sb.append("\nloop=");
-            sb.append(getLoopState());
-            sb.append("\nend=");
-            sb.append(getTraceLength() - 1);
-        }
-        sb.append("\nintegers={");
-        boolean firstTuple = true;
-        for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-            if (firstTuple)
-                firstTuple = false;
-            else
-                sb.append(", ");
-            // No need to print e.index() since we've ensured the Int atom's
-            // String representation is always equal to ""+e.index()
-            Object atom = e.value().iterator().next().atom(0);
-            sb.append(atom2name(atom));
-        }
-        sb.append("}\n");
         try {
             if (sol instanceof TemporalInstance && state < 0) {
+                sb.append("---Trace---\n");
                 for (int i = 0; i < getTraceLength(); i++) {
-                    sb.append("------State " + i + "-------\n");
+                    sb.append("------State " + i + (i == getLoopState() ? " (loop)" : "") + "-------\n");
                     for (Sig s : sigs) {
                         sb.append(s.label).append("=").append(eval(s, i)).append("\n");
                         for (Field f : s.getFields())
@@ -1804,6 +1784,15 @@ public final class A4Solution {
                 }
             } else {
                 state = Math.max(0, state);
+
+                int lln = getTraceLength() - getLoopState();
+                state = state > getLoopState() ? (((state - getLoopState()) % lln) + getLoopState()) : state;
+
+                if (eval.options().temporal())
+                    sb.append("------State " + state + (state == getLoopState() ? " (loop)" : "") + "-------\n");
+                else
+                    sb.append("---Instance---\n");
+
                 for (Sig s : sigs) {
                     sb.append(s.label).append("=").append(eval(s, state)).append("\n");
                     for (Field f : s.getFields())
