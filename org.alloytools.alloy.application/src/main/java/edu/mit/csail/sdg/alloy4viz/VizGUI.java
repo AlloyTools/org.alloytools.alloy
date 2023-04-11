@@ -657,7 +657,7 @@ public final class VizGUI implements ComponentListener {
             forkMenu = menuItem(instanceMenu, "Show New Fork", 'F', 'F', doFork());
             // [electrum] trace navigation buttons
             leftNavMenu = menuItem(instanceMenu, "Show Previous State", KeyEvent.VK_LEFT, KeyEvent.VK_LEFT, doNavLeft());
-            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, doNavRight());
+            rightNavMenu = menuItem(instanceMenu, "Show Next State", KeyEvent.VK_RIGHT, KeyEvent.VK_RIGHT, doNavRight());
             thememenu = menu(mb, "&Theme", doRefreshTheme());
             if (standalone || windowmenu == null)
                 windowmenu = menu(mb, "&Window", doRefreshWindow());
