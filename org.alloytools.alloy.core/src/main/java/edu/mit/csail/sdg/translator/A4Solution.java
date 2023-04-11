@@ -1985,8 +1985,8 @@ public final class A4Solution {
         if (eval == null)
             return "---OUTCOME---\nUnsatisfiable.\n";
 
-        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, state);
-        return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toSet()));
+        Map<String,Table> table = TableView.toTable(this, eval.instance(), sigs, skolems, state);
+        return String.join("\n", table.values().stream().map(x -> x.toString()).collect(Collectors.toList()));
     }
 
     public Table toTable(int state) {
