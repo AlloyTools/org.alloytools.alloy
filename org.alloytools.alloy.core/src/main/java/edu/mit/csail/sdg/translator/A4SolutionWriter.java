@@ -28,6 +28,7 @@ import edu.mit.csail.sdg.alloy4.ErrorFatal;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4.Version;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprCall;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.ast.Sig;
@@ -111,7 +112,8 @@ public final class A4SolutionWriter {
             while (true) {
                 A4TupleSet ts = (A4TupleSet) (sol.eval(expr.minus(sum), state));
                 int n = ts.size();
-                if (n <= 0 || expr instanceof ExprVar) // [electrum] static skolem vars (from quantifications) may not be part of the sig in other states
+                // [electrum] the value of mutable skolem vars may use atoms not present in the current state (from quantifications and auxiliary functions)
+                if (n <= 0 || expr instanceof ExprVar || expr instanceof ExprCall)
                     break;
                 if (lastSize > 0 && lastSize <= n)
                     throw new ErrorFatal("An internal error occurred in the evaluator.");
