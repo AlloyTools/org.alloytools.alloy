@@ -1615,6 +1615,12 @@ public final class A4Solution {
 
         fgoal = Formula.and(formulas);
 
+        PardinusBounds b;
+        if (solver.options().decomposed())
+            b = PardinusBounds.splitAtTemporal(bounds);
+        else
+            b = bounds;
+
         Solution sol;
         if (opt.solver instanceof KKTransformer) {
             sol = doKK(rep, opt);
@@ -1623,18 +1629,12 @@ public final class A4Solution {
         } else if (tryBookExamples && solver.solver instanceof AbstractKodkodSolver) {
             sol = tryBook(rep, cmd);
         } else if (!solver.options().solver().incremental()) {
-            sol = solver.solve(fgoal, bounds);
+            sol = solver.solve(fgoal, b);
         } else
             sol = null;
 
         if (sol == null) {
             final long start = System.nanoTime();
-            PardinusBounds b;
-            if (solver.options().decomposed())
-                b = PardinusBounds.splitAtTemporal(bounds);
-            else
-                b = bounds;
-
             try {
                 kEnumerator = new Peeker<Solution>(solver.solveAll(fgoal, b));
             } catch (InvalidMutableExpressionException e) {
@@ -1645,6 +1645,8 @@ public final class A4Solution {
             } catch (InvalidUnboundedProblem e) {
                 Pos p = ((Expr) k2pos(e.node())).pos;
                 throw new ErrorAPI(p, "Invalid specification for complete backend.\n" + e.getMessage());
+            } catch (CapacityExceededException ex) {
+                throw TranslateAlloyToKodkod.rethrow(ex);
             }
             sol = kEnumerator.next();
             this.duration = System.nanoTime() - start;
