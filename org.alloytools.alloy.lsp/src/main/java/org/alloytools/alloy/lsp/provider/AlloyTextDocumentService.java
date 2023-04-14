@@ -147,6 +147,7 @@ import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.A4SolutionReader;
 
+@SuppressWarnings("restriction" )
 class AlloyTextDocumentService implements TextDocumentService, WorkspaceService, LanguageClientAware {
 
     public AlloyLanguageClient client;
@@ -951,7 +952,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
         List<AlloyLSMessage> resMsgs = new ArrayList<>();
         resMsgs.add(alloyMsg);
 
-        final int verbosity = 0;
+        int verbosity = 0;
         if (msg == null) {
             span.append("Done\n");
         } else if (msg instanceof String) {
@@ -1233,6 +1234,7 @@ class AlloyTextDocumentService implements TextDocumentService, WorkspaceService,
     // edu.mit.csail.sdg.alloy4whole.SimpleGUI.doVisualize(String) for handling
     // instance visualization links
 
+    @SuppressWarnings("unchecked" )
     private void doVisualize(String arg) {
         log("doVisualize() called with " + arg);
         if (arg.startsWith("CORE: ")) { // CORE: filename

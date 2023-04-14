@@ -118,8 +118,6 @@ public class TableView {
     /**
      * Turn a super scripted name back
      *
-     * @param cmd
-     * @return
      */
     static Pattern SUPERSCRIPTED_NAME_P = Pattern.compile("(\\p{javaJavaIdentifierPart}+)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)");
 
@@ -147,7 +145,6 @@ public class TableView {
      * @param instance
      * @param sigs
      * @param state
-     * @return
      */
     // [electrum] added state to print, -1 for static
     public static Map<String,Table> toTable(A4Solution solution, Instance instance, SafeList<Sig> sigs, int state) {
