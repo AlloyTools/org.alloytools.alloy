@@ -38,6 +38,7 @@ public class Shell implements AutoCloseable {
 		private static final long serialVersionUID = 1L;
 	}
 
+	@Arguments(arg = "path")
 	interface ShellOptions extends Options {
 
 	}

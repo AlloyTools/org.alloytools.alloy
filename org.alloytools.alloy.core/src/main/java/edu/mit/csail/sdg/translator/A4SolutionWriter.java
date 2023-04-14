@@ -319,7 +319,7 @@ public final class A4SolutionWriter {
      * If this solution is a satisfiable solution, this method will write it out in
      * XML format as a sequence of &lt;instance&gt;..&lt;/instance&gt;.
      */
-    static void writeInstance(A4Reporter rep, A4Solution sol, PrintWriter out, Iterable<Func> extraSkolems, Map<String,String> sources) throws Err {
+    public static void writeInstance(A4Reporter rep, A4Solution sol, PrintWriter out, Iterable<Func> extraSkolems, Map<String,String> sources) throws Err {
         if (!sol.satisfiable())
             throw new ErrorAPI("This solution is unsatisfiable.");
         try {
