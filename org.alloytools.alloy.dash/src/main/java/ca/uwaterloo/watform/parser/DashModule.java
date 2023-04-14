@@ -266,7 +266,7 @@ public class DashModule extends CompModuleHelper {
     	return stateTable.getLeafStatesEntered(s);
     }
     public List<DashRef> getLeafStatesEnteredWithContext(DashRef context, DashRef s) {
-    	return stateTable.getLeafStatesEnteredWithContext(context, s);
+    	return null; //stateTable.getLeafStatesEnteredWithContext(context, s);
     }
     public List<String> getAllAnces(String sfqn) {
     	return stateTable.getAllAnces(sfqn);
@@ -355,9 +355,37 @@ public class DashModule extends CompModuleHelper {
 		DashRef scope = getScope(tfqn);
 		return stateTable.getLeafStatesExited(scope);
 	}
+	// for debugging
+	public List<DashRef> allPrefixDashRefs(DashRef x) {
+		return stateTable.allPrefixDashRefs(x);
+	}
+	public List<DashRef> entered(String tfqn) {
+		return stateTable.getLeafStatesEnteredInContext(
+				getScope(tfqn),
+				getTransDest(tfqn));
+	}
 
 	// processes  ---------------------------------------
 
+	public void debug(String tfqn) {
+		System.out.println(stateTable.toString());
+		System.out.println(transTable.toString());
+		for (String x: getTransNames()) {
+			// System.out.println(tfqn +" scope :" + getScope(x));
+		}
+		if (tfqn != null) {
+			System.out.println("src " + getTransSrc(tfqn));
+			System.out.println("dest " + getTransDest(tfqn));
+			System.out.println("getScope " + getScope(tfqn));
+			System.out.println("getClosestConcAnces: "+getClosestConcAnces(getTransSrc(tfqn).getName()));
+			System.out.println("getAllNonConcDesc: " +getAllNonConcDesc(getClosestConcAnces(getTransSrc(tfqn).getName())));
+			System.out.println("getRegion:"+"Root/S1/S2: "+getRegion(getTransSrc(tfqn).getName()));
+			System.out.println("exited: " + exited(tfqn));		
+			System.out.println("entered" + getLeafStatesEntered(getTransDest(tfqn)));
+			System.out.println("enteredInContext" + entered(tfqn));
+			System.out.println("allPrefixDashRefs of scope: "+ allPrefixDashRefs(getScope(tfqn)));
+		}
+	}
 	// should we use the rep arg here?
 	public void resolveAllDash(A4Reporter rep) {
 
@@ -374,16 +402,6 @@ public class DashModule extends CompModuleHelper {
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
 			root.resolveAllTrans(stateTable,transTable);
-			System.out.println(stateTable.toString());
-			System.out.println(transTable.toString());
-			for (String tfqn: getTransNames()) {
-				System.out.println(tfqn +" scope :" + getScope(tfqn));
-			}
-			//System.out.println("getClosestConcAnces: "+getClosestConcAnces("Root/S1/S2"));
-			//System.out.println("getAllNonConcDesc: " +getAllNonConcDesc("Root"));
-			//System.out.println("getRegion of "+"Root/S1/S2: "+getRegion("Root/S1/S2"));
-			//System.out.println("exited" + getLeafStatesExitedTrans("Root/S1/t1"));
-			//System.out.println("entered" + getLeafStatesEntered(getTransDest("Root/S1/t1")));
 			// if root has no substates?
 			// if no transitions?
 			stateTable.resolveAll(getRootName());
@@ -391,6 +409,8 @@ public class DashModule extends CompModuleHelper {
 			maxDepthParams = stateTable.getMaxDepthParams();
 			  //transAtThisParamDepth = new boolean[maxDepthParams+1];
 			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);
+			//
+			//debug("Root/S1/t1");
 		}
 		status = Status.RESOLVED_DASH;
 	}

@@ -101,12 +101,12 @@ public class ExprHelper  {
         }
         return ret;
     }
-    public static Expr createPlusList(List<Expr> elist) {
+    public static Expr createUnionList(List<Expr> elist) {
         Expr ret = null;
         assert(elist!=null);
         ret = elist.get(0);
         for (Expr el: elist.subList(1,elist.size())) {
-            ret = createPlus(ret,el);
+            ret = createUnion(ret,el);
         }
         return ret;
     }
@@ -132,8 +132,13 @@ public class ExprHelper  {
     public static ExprBinary createArrow(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.ARROW.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static ExprBinary createPlus(Expr left,Expr right) {
+    // set union
+    public static ExprBinary createUnion(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.PLUS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    }
+    // set diff
+    public static ExprBinary createDiff(Expr left,Expr right) {
+        return (ExprBinary) ExprBinary.Op.MINUS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static ExprBinary createIn(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.IN.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);

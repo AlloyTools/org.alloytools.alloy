@@ -77,11 +77,11 @@ public class DashFQN {
         while (i < minLength && aSplit.get(i).equals(bSplit.get(i))) i++;
     	return fqn(aSplit.subList(0,i));
 	}
+	// include this fqn
 	public static List<String> allPrefixes(String fqn) {
 		List<String> prefixes = new ArrayList<String>();
-		// not including state itself
 		List<String> splitfqn = splitFQN(fqn);
-		for (int i=0;i < splitfqn.size()-1; i++) {
+		for (int i=0;i < splitfqn.size(); i++) {
 			StringJoiner sj = new StringJoiner(inputQualChar);
 			for (int j=0;j<=i;j++) {
 				sj.add(splitfqn.get(j));				
@@ -92,9 +92,17 @@ public class DashFQN {
 	}
 	/* ances: A/B/C dest: A/B/C/D/E returns A/B/C/D */
 	public static String getChildOfContextAncesOfDest(String ances, String dest) {
-		if (dest.startsWith(ances)) 
-			// by going to ances, we are adding +1
-			return fqn(splitFQN(dest).subList(0,splitFQN(ances).size()));
+		/*
+		System.out.println(ances);
+		System.out.println(dest);
+		System.out.println(splitFQN(dest));
+		System.out.println(splitFQN(dest).subList(0,splitFQN(ances).size()));
+		System.out.println(fqn(splitFQN(dest).subList(0,splitFQN(ances).size())));
+		*/
+		if (dest.equals(ances)) return dest;
+		else if (dest.startsWith(ances)) 
+			// dest must be longer than ances
+			return fqn(splitFQN(dest).subList(0,splitFQN(ances).size()+1));
 		else { DashErrors.ancesNotPrefix(ances,dest); return null; }
 	}
 }

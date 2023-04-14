@@ -309,10 +309,10 @@ public class DashToAlloy {
                     if (DashOptions.isElectrum) 
                          takens.add(createEquals(
                                 taken(i),
-                                createPlus(taken(i),paramsToXArrow(prs,tfqn))));
+                                createUnion(taken(i),paramsToXArrow(prs,tfqn))));
                     else takens.add(createEquals(
                                 nextTaken(i),
-                                createPlus(curTaken(i),paramsToXArrow(prs,tfqn))));
+                                createUnion(curTaken(i),paramsToXArrow(prs,tfqn))));
                 else
                     if (DashOptions.isElectrum) takens.add(createEquals(taken(i), curTaken(i)));
                     else takens.add(createEquals(nextTaken(i), curTaken(i)));

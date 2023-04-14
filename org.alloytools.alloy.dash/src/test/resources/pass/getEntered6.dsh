@@ -1,0 +1,13 @@
+state Root {
+	default state S1 {
+		trans t1 {
+			goto S2
+		}
+	}
+	state S2 {
+		conc A {
+			default state S3 {}
+			state S4 {}
+		}
+	}
+}

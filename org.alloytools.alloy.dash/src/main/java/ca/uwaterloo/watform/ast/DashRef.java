@@ -25,6 +25,8 @@ public class DashRef extends Dash {
 		this.pos = Pos.UNKNOWN;
 		this.name = n;
 		this.paramValues = eList;
+		//System.out.println(n);
+		//System.out.println(eList);
 	}
 
 	public String getName() {

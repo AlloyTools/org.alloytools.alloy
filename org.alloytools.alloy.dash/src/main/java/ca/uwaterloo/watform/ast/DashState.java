@@ -40,7 +40,8 @@ public class DashState  extends Dash {
 		this.kind = k;
 		this.def = d;
 		this.items = i;
-		//System.out.println("here1 creating "+this.name+" "+ this.kind);
+		//System.out.println("here1 creating "+this.name);
+		//System.out.println("here1 " + (this.param == null));
 	
 	}
 	/*
@@ -179,7 +180,7 @@ public class DashState  extends Dash {
 					.filter(i -> (i.kind == DashStrings.StateKind.AND))
 					.collect(Collectors.toList());
 				if (andList.equals(substatesList) && defaultsList.size() == 0) {
-					// all AND-states and non designated as defaults so all are defaults
+					// all AND-states are not designated as defaults so all are defaults
 					for (String ch: childFQNs) st.setAsDefault(ch);
 				} else if (defaultsList.size() == 0) 
 					DashErrors.noDefaultState(sfqn);
@@ -191,8 +192,9 @@ public class DashState  extends Dash {
 						// o/w one OR state is default
 					} else {					
 						// if defaults list is all c's, all c children should be included
-
-						if (defaultsList != andList) DashErrors.allAndDefaults(sfqn);
+						//System.out.println("defaultsList: "+defaultsList);
+						//System.out.println("andList: "+andList);
+						if (!(defaultsList.equals(andList))) DashErrors.allAndDefaults(sfqn);
 					}
 				}
 			}

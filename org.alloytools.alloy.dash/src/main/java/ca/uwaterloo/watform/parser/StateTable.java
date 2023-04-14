@@ -225,6 +225,12 @@ public class StateTable {
 			return table.get(s).param;  
 		else { DashErrors.stateDoesNotExist("getParam", s); return null; }	
 	}
+
+	public boolean hasParam(String s) {
+		if (table.containsKey(s))
+			return table.get(s).param != null;  
+		else { DashErrors.stateDoesNotExist("hasParam", s); return false; }			
+	}
 	public List<String> getParams(String s) {
 		if (table.containsKey(s))
 			return table.get(s).params;  
@@ -306,6 +312,7 @@ public class StateTable {
 			return desc;
 		} else { DashErrors.stateDoesNotExist("getAllNonConcDesc", s); return null; }	
 	}
+	// region is the area within which the src name does not need to be FQN
 	public List<String> getRegion(String sfqn) {
 		return getAllNonConcDesc(getClosestConcAnces(sfqn));
 	}
@@ -341,7 +348,7 @@ public class StateTable {
 
 	public List<DashRef> getLeafStatesExited(DashRef s) {
 		List<DashRef> r = new ArrayList<DashRef>();
-		System.out.println("exiting" + s.toString());
+		//System.out.println("exiting" + s.toString());
 		if (isLeaf(s.getName())) {
 			r.add(s);
 			return r;
@@ -350,7 +357,7 @@ public class StateTable {
 			for (String ch:getImmChildren(s.getName())) {
 				// exit all copies of the params
 				List<Expr> newParamValues = new ArrayList<Expr>(s.getParamValues());
-				newParamValues.add(ExprHelper.createVar(getParam(ch)));
+				if (hasParam(ch)) newParamValues.add(ExprHelper.createVar(getParam(ch)));
 				r.addAll(getLeafStatesExited(new DashRef(ch, newParamValues)));
 			}
 			return r;
@@ -378,43 +385,104 @@ public class StateTable {
 			List<String> defaults = getDefaults(s.getName());
 			assert(defaults != null);
 			for (String ch:defaults) {
+				//System.out.println(ch);
 				// enter all copies of the param if a parameterized state
 				List<Expr> newParamValues = new ArrayList<Expr>(s.getParamValues());
-				newParamValues.add(ExprHelper.createVar(getParam(ch)));
+				if (hasParam(ch))
+					newParamValues.add(ExprHelper.createVar(getParam(ch)));
 				r.addAll(getLeafStatesEntered(new DashRef(ch, newParamValues)));
 			}
 		}
 		return r;		
 	}
+	public List<DashRef> allPrefixDashRefs(DashRef s) {
+		List<String> allPrefixFQNs = DashFQN.allPrefixes(s.getName());
+		List<DashRef> r = new ArrayList<DashRef>();
+		int i = 0;
+		for (String x:allPrefixFQNs) {
+			if (isAnd(x) && hasParam(x)) {
+				r.add(new DashRef(x,s.getParamValues().subList(0,i+1)));
+				i++;
+			} else
+				r.add(new DashRef(x,s.getParamValues().subList(0,i)));
+		}
+		assert(i == s.getParamValues().size());
+		return r;
+	}
 	/*
 		Assumption: context is an ancestor of dest
+
+		The param values of context do not have to match dest (but they will be subsets of the same set).
+	
+		The param values of context (from the scope) could be a set of param values or they could match dest
+		(and therefore src of the trans as well). But they could be an ITE expression because of expressions
+		used in src/dest.
+
+		The dest param values must be singleton sets.
+		Does not seem to be any room for syntactic simplifications in these expressions.
 	*/
-	public List<DashRef> getLeafStatesEnteredWithContext(DashRef context, DashRef dest) {
-		List<DashRef> r = new ArrayList<DashRef>();
-		if (context.getName().equals(dest.getName())) 
-			r.addAll(getLeafStatesEntered(dest));
-		else {
-			// context must have children
-			List<String> children = getImmChildren(context.getName());
-			String chOfContext = DashFQN.getChildOfContextAncesOfDest(context.getName(),dest.getName());
-			r.addAll(getLeafStatesEnteredWithContext(new DashRef(chOfContext,context.getParamValues()), dest));
-			if (!isOr(chOfContext)) {
-				// enter all sibling c/p's
-				// treating c/p's the same
+	
+	public List<DashRef> getLeafStatesEnteredInContext(DashRef context, DashRef dest) {
+		List<DashRef> cR = allPrefixDashRefs(context);
+		List<DashRef> dR = allPrefixDashRefs(dest);
+		System.out.println("cR: "+cR);
+		System.out.println("dR: "+dR);
+		// cR is a prefix of dR but possibly with different param values
+		List<DashRef> r = new ArrayList<DashRef>(); // result
+		int p = 0; // parameter value position
+		List<Expr> nP;
+		for (int i=0; i< cR.size()-1; i++) {
+			DashRef c = cR.get(i);
+			if (isAnd(c.getName()) && hasParam(c.getName())) {
+				nP = new ArrayList<Expr>();
+				nP.addAll(DashUtilFcns.allButLast(c.getParamValues()));
+				nP.add(ExprHelper.createDiff(
+					DashUtilFcns.lastElement(c.getParamValues()), 
+					dest.getParamValues().get(p)));
+				r.addAll(getLeafStatesEntered(new DashRef(c.getName(), nP)));
+				p++;
+			}
+		}
+		System.out.println("r: "+r);
+		for (int i=cR.size()-1;i<= dR.size()-1;i++) {
+			DashRef d = dR.get(i);
+			System.out.println("d: "+d);
+			if (isAnd(d.getName())) {	
+				// sisters	
+				String chOfContext = d.getName();
+				if (hasParam(chOfContext)) {
+					// one on path to dest
+					nP = new ArrayList<Expr>
+						(DashUtilFcns.allButLast(d.getParamValues()));
+					nP.add(ExprHelper.createDiff(
+						// all param values
+						ExprHelper.createVar(getParam(d.getName())),
+						DashUtilFcns.lastElement(d.getParamValues())));
+					r.addAll(getLeafStatesEntered(
+						new DashRef(chOfContext,nP)));			
+				}
+				//siblings
+				List<String> children = getImmChildren(getParent(d.getName()));
 				List<String> andChildren = children.stream()
 					.filter(c -> isAnd(c))
 					.collect(Collectors.toList());
 				andChildren.remove(chOfContext);
-				for (String ch:children) {
-					List<Expr> newParamValues = new ArrayList<Expr>();
-					// if a c, won't be any additional params
-					newParamValues.addAll(dest.getParamValues().subList(0, getParams(ch).size()-1));
-					r.addAll(getLeafStatesEntered(new DashRef(ch, newParamValues)));
-				}	
+				// siblings
+				for (String ch:andChildren) {
+					nP = new ArrayList<Expr>(d.getParamValues());
+					if (hasParam(ch)) 
+						// add the entire param set
+						nP.add(ExprHelper.createVar(getParam(ch)));
+					r.addAll(getLeafStatesEntered(new DashRef(ch,nP)));		
+				}		
 			}
+			//c = d;
 		}
+		System.out.println("r "+r);
+		r.addAll(getLeafStatesEntered(dest));
 		return r;
 	}
+
 	/* seems like this goes in DashToAlloy
 	public Expr createStateArrow(String s) {
 		Expr e = createVar(s);

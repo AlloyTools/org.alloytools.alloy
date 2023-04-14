@@ -1,0 +1,16 @@
+state Root {
+	conc A [AID] {
+		state S1 {
+			trans t1 {
+				goto Root/B[x]
+			}
+		}
+	}
+	conc B [BID] {
+		state S2 {
+			conc C [CID] {
+				state S3 {}
+			}
+		}
+	}
+}

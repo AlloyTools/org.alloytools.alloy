@@ -95,6 +95,13 @@ public class DashErrors {
 
 	// parts of the code that should be unreachable -------------
 
+	public static String ancesNotPrefixMsg = " must be a prefix of ";
+	public static void ancesNotPrefix(String a, String d) throws Err {
+		throw new ErrorFatal(a + ancesNotPrefixMsg + d);
+	}
+
+
+	// not tested below this line
 	public static void toAlloyNoDash() throws Err {
 		throw new ErrorFatal("Translating to Alloy when no Dash part");
 	}
@@ -122,7 +129,8 @@ public class DashErrors {
 	public static void tooHighParamDepth() throws Err {
 		throw new ErrorFatal("paramsDepthInUse called with too high a number");
 	}
-	public static void ancesNotPrefix(String a, String d) throws Err {
-		throw new ErrorFatal(a + "  must be prefix of " + d);
+	public static String paramNumberProblemMsg = "wrong number of param values: ";
+	public static void paramNumberProblem(String s) throws Err {
+		throw new ErrorFatal(paramNumberProblemMsg + s);
 	}
 }

@@ -144,8 +144,11 @@ public class TransTable {
 		// list returned could be empty
 		List<String> tlist = new ArrayList<String>();
 		// have to look for transitions from sources earlier on the path of this transitions src
-		if (table.containsKey(t)) { tlist.addAll(getTransWithTheseSrcs(DashFQN.allPrefixes(table.get(t).src.getName()))); }
-		else { DashErrors.transDoesNotExist("getParams", t); }
+		List<String> allPrefixes = DashFQN.allPrefixes(table.get(t).src.getName());
+		// remove the src state itself
+		allPrefixes.remove(allPrefixes.size()-1);
+		if (table.containsKey(t)) tlist.addAll(getTransWithTheseSrcs(allPrefixes)); 
+		else  DashErrors.transDoesNotExist("getParams", t); 
 		return tlist;
 	}
 

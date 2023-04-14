@@ -64,5 +64,10 @@ public class DashUtilFcns {
         e.printStackTrace(System.err);
         System.exit(1);
     }
-
+    public static <T> T lastElement(List<T> ll) {
+    	return ll.get(ll.size()-1);
+    }
+    public static <T> List<T> allButLast(List<T> ll) {
+    	return ll.subList(0,ll.size()-1);
+    }
 }
