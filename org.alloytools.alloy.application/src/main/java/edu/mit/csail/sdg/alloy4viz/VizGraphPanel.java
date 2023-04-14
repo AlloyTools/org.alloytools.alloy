@@ -427,6 +427,7 @@ public final class VizGraphPanel extends JPanel {
      * @return the number of graph panels
      */
     public int numPanels() {
-        return vizState.size();
+        return graphPanels.size();
     }
+
 }

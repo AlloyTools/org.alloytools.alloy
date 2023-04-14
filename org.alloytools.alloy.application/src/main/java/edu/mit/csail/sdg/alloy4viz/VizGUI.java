@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,6 +52,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -812,7 +815,7 @@ public final class VizGUI implements ComponentListener {
         }
         projectionButton.setEnabled(true);
         projectionPopup.removeAll();
-        VizState myState = myStates.get(statepanes - 1);
+        VizState myState = myStates.get(0);
         final Set<AlloyType> projected = myState.getProjectedTypes();
         for (final AlloyType t : myState.getOriginalModel().getTypes())
             if (myState.canProject(t)) {
@@ -868,7 +871,7 @@ public final class VizGUI implements ComponentListener {
                 vizButton.setEnabled(false);
         }
         // [electrum] this info is the same in all states
-        final AlloyInstance oInst = myStates.get(statepanes - 1).getOriginalInstance();
+        final AlloyInstance oInst = myStates.get(0).getOriginalInstance();
         final boolean isMeta = oInst.isMetamodel;
         final boolean isTrace = oInst.originalA4.getMaxTrace() >= 0;
         final boolean hasConfigs = oInst.originalA4.hasConfigs();
@@ -921,10 +924,39 @@ public final class VizGUI implements ComponentListener {
         // on the right
         if (frame != null)
             frame.setTitle(makeVizTitle());
-        // [electrum] all visualizations focus on current state
+        int numPanes = isTrace && !isMeta ? statepanes : 1;
+
+
+        if (current != lastParsed) {
+            for (int i = 0; i < getVizState().size(); i++) {
+                File f = new File(getXMLfilename());
+                try {
+                    if (!f.exists())
+                        throw new IOException("File " + getXMLfilename() + " does not exist.");
+
+                    if (current + i < 0) {
+                        getVizState().set(i, null);
+                    } else {
+                        AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, current + i);
+                        if (getVizState().get(i) != null)
+                            getVizState().get(i).loadInstance(myInstance);
+                        else {
+                            getVizState().set(i, new VizState(getVizState().get(getVizState().size() - 1)));
+                            getVizState().get(i).loadInstance(myInstance);
+                        }
+                    }
+                } catch (Throwable e) {
+                    OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
+                    doCloseAll();
+                    return;
+                }
+            }
+            lastParsed = current;
+        }
+
         switch (currentMode) {
             case Tree : {
-                final VizTree t = new VizTree(myStates.get(statepanes - 1).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current);
+                final VizTree t = new VizTree(myStates.get(0).getOriginalInstance().originalA4, makeVizTitle(), fontSize, current);
                 final JScrollPane scroll = OurUtil.scrollpane(t, Color.BLACK, Color.WHITE, new OurBorder(true, false, true, false));
                 scroll.addFocusListener(new FocusListener() {
 
@@ -941,56 +973,27 @@ public final class VizGUI implements ComponentListener {
                 break;
             }
             case TEXT : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.toString(current);
-                content = getTextComponent(textualOutput, true);
+                List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.toString(x)).collect(Collectors.toList());
+                content = getTextComponent(textualOutput);
                 break;
             }
             case TABLE : {
-                String textualOutput = myStates.get(statepanes - 1).getOriginalInstance().originalA4.format(current);
-                content = getTextComponent(textualOutput, false);
+                List<String> textualOutput = IntStream.range(current, current + numPanes).mapToObj(x -> myStates.get(0).getOriginalInstance().originalA4.format(x)).collect(Collectors.toList());
+                content = getTextComponent(textualOutput);
                 break;
             }
             default : {
-                List<VizState> numPanes = isTrace && !isMeta ? myStates : myStates.subList(statepanes - 1, statepanes);
-                if (myGraphPanel == null || numPanes.size() != myGraphPanel.numPanels()) {
-                    if (isTrace && !isMeta) // [electrum] test whether trace
-                        myGraphPanel = new VizGraphPanel(frame, myStates, false);
-                    else
-                        myGraphPanel = new VizGraphPanel(frame, myStates.subList(statepanes - 1, statepanes), false);
-                } else {
-                    if (isTrace && !isMeta) {
-                        for (int i = 0; i < statepanes; i++) {
-                            File f = new File(getXMLfilename());
-                            try {
-                                if (!f.exists())
-                                    throw new IOException("File " + getXMLfilename() + " does not exist.");
+                if (myGraphPanel == null || numPanes != myGraphPanel.numPanels())
+                    myGraphPanel = new VizGraphPanel(frame, myStates, false);
 
-                                if (current + i < 0) {
-                                    getVizState().set(i, null);
-                                } else {
-                                    AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, current + i);
-                                    if (getVizState().get(i) != null)
-                                        getVizState().get(i).loadInstance(myInstance);
-                                    else {
-                                        getVizState().set(i, new VizState(getVizState().get(statepanes - 1))); // [electrum] get the previous state (including theme)
-                                        getVizState().get(i).loadInstance(myInstance);
-                                    }
-                                }
-                            } catch (Throwable e) {
-                                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
-                                doCloseAll();
-                                return;
-                            }
-                        }
-                    }
-                    myGraphPanel.seeDot(frame, false);
-                    myGraphPanel.remakeAll(frame);
-                }
+                myGraphPanel.seeDot(frame, false);
+                myGraphPanel.remakeAll(frame);
+
                 content = myGraphPanel;
             }
         }
 
-        // [electrum] update the trace overview
+        // update the trace overview
         if (isTrace && !isMeta) {
             JComponent aux = content;
 
@@ -1026,7 +1029,7 @@ public final class VizGUI implements ComponentListener {
         JComponent left = null;
         if (settingsOpen == 1) {
             if (myCustomPanel == null)
-                myCustomPanel = new VizCustomizationPanel(splitpane, myStates.get(statepanes - 1));
+                myCustomPanel = new VizCustomizationPanel(splitpane, myStates.get(0));
             else
                 myCustomPanel.remakeAll();
             left = myCustomPanel;
@@ -1086,8 +1089,8 @@ public final class VizGUI implements ComponentListener {
      */
     private String makeVizTitle() {
         // [electrum] this info is the same in all states
-        String filename = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().filename : "");
-        String commandname = (!myStates.isEmpty() ? myStates.get(statepanes - 1).getOriginalInstance().commandname : "");
+        String filename = (!myStates.isEmpty() ? myStates.get(0).getOriginalInstance().filename : "");
+        String commandname = (!myStates.isEmpty() ? myStates.get(0).getOriginalInstance().commandname : "");
         int i = filename.lastIndexOf('/');
         if (i >= 0)
             filename = filename.substring(i + 1);
@@ -1130,23 +1133,31 @@ public final class VizGUI implements ComponentListener {
      *
      * @param b
      */
-    private JComponent getTextComponent(String text, boolean wrap) {
-        final JTextArea ta = OurUtil.textarea(text, 10, 10, false, wrap);
-        final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+    private JComponent getTextComponent(List<String> texts, boolean wrap) {
+        JPanel diagramsScrollPanels = new JPanel();
+        diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
+        for (String text : texts) {
 
-            private static final long serialVersionUID = 0;
+            final JTextArea ta = OurUtil.textarea(text, 10, 10, false, false);
+            final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
 
-            @Override
-            public void setFont(Font font) {
-                super.setFont(font);
-            }
-        };
-        ans.setBorder(new OurBorder(true, false, true, false));
-        String fontName = OurDialog.getProperFontName("Lucida Console", "Monospaced");
-        Font font = new Font(fontName, Font.PLAIN, fontSize);
-        ans.setFont(font);
-        ta.setFont(font);
-        return ans;
+                private static final long serialVersionUID = 0;
+
+                @Override
+                public void setFont(Font font) {
+                    super.setFont(font);
+                }
+            };
+            ans.setBorder(new OurBorder(true, false, true, false));
+            String fontName = OurDialog.getProperFontName("Lucida Console", "Monospaced");
+            Font font = new Font(fontName, Font.PLAIN, fontSize);
+            ans.setFont(font);
+            ta.setFont(font);
+            JScrollPane diagramScrollPanel = OurUtil.scrollpane(ans, new OurBorder(true, true, true, false));
+            diagramsScrollPanels.add(diagramScrollPanel);
+        }
+
+        return diagramsScrollPanels;
     }
 
     // /** Helper method that reads a file and then return a JTextArea
@@ -1182,10 +1193,10 @@ public final class VizGUI implements ComponentListener {
             seg_iteration = false;
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
             // [electrum] update all viz states
-            for (int i = 0; i < statepanes; i++) {
-                try {
-                    if (!f.exists())
-                        throw new IOException("File " + xmlFileName + " does not exist.");
+            try {
+                if (!f.exists())
+                    throw new IOException("File " + xmlFileName + " does not exist.");
+                for (int i = 0; i < statepanes; i++) {
                     if (i >= myStates.size()) {
                         AlloyInstance myInstance = StaticInstanceReader.parseInstance(f, state + i);
                         myStates.add(new VizState(myInstance));
@@ -1198,17 +1209,23 @@ public final class VizGUI implements ComponentListener {
                             vstate.loadInstance(myInstance);
                         myStates.set(i, vstate);
                     }
-                } catch (Throwable e) {
-                    xmlLoaded.remove(fileName);
-                    xmlLoaded.remove(xmlFileName);
-                    OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
-                    if (xmlLoaded.size() > 0) {
-                        loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state + i);
-                        return;
+                    boolean isMeta = myStates.get(i).getOriginalInstance().isMetamodel;
+                    boolean isTrace = myStates.get(i).getOriginalInstance().originalA4.getMaxTrace() >= 0;
+                    if (!isTrace || isMeta) {
+                        myStates.retainAll(Arrays.asList(myStates.get(0)));
+                        break;
                     }
-                    doCloseAll();
+                }
+            } catch (Throwable e) {
+                xmlLoaded.remove(fileName);
+                xmlLoaded.remove(xmlFileName);
+                OurDialog.alert(frame, "Cannot read or parse Alloy instance: " + xmlFileName + "\n\nError: " + e.getMessage());
+                if (xmlLoaded.size() > 0) {
+                    loadXML(xmlLoaded.get(xmlLoaded.size() - 1), false, state);
                     return;
                 }
+                doCloseAll();
+                return;
             }
             repopulateProjectionPopup();
             xml2title.put(xmlFileName, makeVizTitle());
@@ -1227,6 +1244,7 @@ public final class VizGUI implements ComponentListener {
             frame.setTitle("Alloy Visualizer " + Version.version() + " loading... Please wait...");
             OurUtil.show(frame);
         }
+        lastParsed = current;
         updateDisplay();
     }
 
@@ -1272,7 +1290,7 @@ public final class VizGUI implements ComponentListener {
         }
         filename = Util.canon(filename);
         try {
-            myStates.get(statepanes - 1).savePaletteXML(filename); // [electrum] same theme in all states
+            myStates.get(0).savePaletteXML(filename); // [electrum] same theme in all states
             filename = Util.canon(filename); // Since the canon name may have
                                             // changed
             addThemeHistory(filename);
@@ -1732,9 +1750,9 @@ public final class VizGUI implements ComponentListener {
     private Runner doNavRight() {
         if (wrap)
             return wrapMe();
-        int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-        int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-        int lmx = current + 1 + statepanes > lst ? current + 1 + statepanes : lst;
+        int lst = getVizState().get(0).getOriginalInstance().originalA4.getTraceLength();
+        int lop = getVizState().get(0).getOriginalInstance().originalA4.getLoopState();
+        int lmx = current + 1 + getVizState().size() > lst ? current + 1 + getVizState().size() : lst;
         int lox = lmx - (lst - lop);
         current = normalize(current + 1, lmx, lox);
         updateDisplay();
@@ -1875,8 +1893,8 @@ public final class VizGUI implements ComponentListener {
     private Runner doApply() {
         if (!myStates.isEmpty()) {
             // [electrum] apply theme to all states
-            for (int i = 0; i < myStates.size() - 1; i++) {
-                VizState ss = myStates.get(statepanes - 1);
+            for (int i = 1; i < myStates.size(); i++) {
+                VizState ss = myStates.get(0);
                 myStates.set(i, new VizState(ss));
                 myStates.get(i).loadInstance(ss.getOriginalInstance());
             }
@@ -1999,6 +2017,8 @@ public final class VizGUI implements ComponentListener {
      */
     private int    current          = 0;
 
+    private int lastParsed = -1;
+
     /*
      * Draws a graph depicting the shape of the trace being visualized. States are
      * clickable for navigation.
@@ -2023,9 +2043,9 @@ public final class VizGUI implements ComponentListener {
                 int offsety = 2 + heighti / 2;
                 // center and apply offset according to current state
                 int offsetx = this.getWidth() / 2 + ((dist - 2 * radius) / 2) - (dist * (current + 1));
-                int lst = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getTraceLength();
-                int lop = getVizState().get(statepanes - 1).getOriginalInstance().originalA4.getLoopState();
-                int lmx = current + statepanes > lst ? current + statepanes : lst;
+                int lst = getVizState().get(getVizState().size() - 1).getOriginalInstance().originalA4.getTraceLength();
+                int lop = getVizState().get(getVizState().size() - 1).getOriginalInstance().originalA4.getLoopState();
+                int lmx = current + getVizState().size() > lst ? current + getVizState().size() : lst;
                 int lox = lmx - (lst - lop);
                 Ellipse2D loop = null, last = null;
                 for (int i = 0; i < lmx; i++) {
@@ -2036,7 +2056,7 @@ public final class VizGUI implements ComponentListener {
                     if (i == lox)
                         loop = circl;
                     Color tmp = g2.getColor();
-                    int max = normalize(current + statepanes - 1, lmx, lox);
+                    int max = normalize(current + getVizState().size() - 1, lmx, lox);
                     int min = normalize(current, lmx, lox);
                     if ((min <= max && i >= min && i <= max) || (min > max && (i >= min || (i <= max && i >= lox)))) {
                         g2.setColor(new Color(255, 255, 255));
