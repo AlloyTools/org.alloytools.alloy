@@ -1,7 +1,7 @@
 package org.alloytools.alloy.cli;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,11 +16,11 @@ import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
 import aQute.libg.glob.Glob;
-import edu.mit.csail.sdg.alloy4.SafeList;
 import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Module;
+import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Options.SatSolver;
@@ -31,6 +31,10 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 public class CLI extends Env {
 	final CommandLine	cl		= new CommandLine(this);
 	final A4Options		options	= new A4Options();
+
+	public enum OutputType {
+		plain, json, xml;
+	}
 
 	public interface CLIOptions extends aQute.lib.getopt.Options {
 		/**
@@ -184,32 +188,6 @@ public class CLI extends Env {
 	 * Show the list of solvers
 	 */
 
-	@Arguments(arg = {})
-	@Description("Show the list of solvers")
-	interface SolverOptions extends Options {
-		@Description("Show extended information")
-		boolean xtended();
-	}
-
-	public void _solvers(SolverOptions options) {
-		SafeList<SatSolver> values = SatSolver.values();
-		values.forEach(s -> {
-			if (options.xtended()) {
-				System.out.printf("%-20s %-20s %s\n", s.id(), maskNull(s.external()), Arrays.toString(s.options()));
-			} else {
-				System.out.println(s.id());
-			}
-		});
-
-	}
-
-	private String maskNull(Object s) {
-		if (s == null) {
-			return "";
-		}
-		return s.toString();
-	}
-
 	/**
 	 * Run all 'run' & asserts
 	 */
@@ -217,16 +195,23 @@ public class CLI extends Env {
 	@Arguments(arg = "path")
 	interface ExecOptions extends Options {
 		String command();
+
+		OutputType type(OutputType deflt);
+
+		String output();
+
+		boolean nooverflow();
+
+		String solver();
 	}
 
-	public void _exec(ExecOptions options) throws IOException {
+	public void _exec(ExecOptions options) throws Exception {
 		SimpleReporter rep = new SimpleReporter(this);
 
 		String filename = options._arguments().remove(0);
-		System.out.println("exec " + filename);
-		
+
 		Map<String, String> cache = new HashMap<>();
-		Module world = CompUtil.parseEverything_fromFile(rep, cache, filename);
+		CompModule world = CompUtil.parseEverything_fromFile(rep, cache, filename);
 
 		Glob glob;
 		if (options.command() != null) {
@@ -235,7 +220,7 @@ public class CLI extends Env {
 			glob = Glob.ALL;
 
 		for (Command c : world.getAllCommands()) {
-			
+
 			if (!glob.matches(c.label)) {
 				continue;
 			}
@@ -245,23 +230,52 @@ public class CLI extends Env {
 			A4Solution s = TranslateAlloyToKodkod.execute_commandFromBook(rep, world.getAllReachableSigs(), c,
 					this.options);
 
-			int n = 0;
-			while (s.satisfiable()) {
-				
-				String format = s.format();
-				System.out.println(format);
-				System.out.println("-----------------"+n+"------------------");
-				if (s.isIncremental()) {
-					s = s.next();
-				} else
-					break;
-				n++;
-			}
+			String output = options.output();
+			OutputType type = options.type(OutputType.plain);
+			String result = generate(options, world, s, type);
+			output(options, output, result);
 		}
 
 	}
 
+	private void output(ExecOptions options, String output, String result) throws IOException {
+		if (output != null) {
+			File file = getFile(options.output());
+			if (!file.getParentFile().isDirectory()) {
+				error("The parent directory of the output file %s does not exist", file);
+			} else if (!file.canWrite()) {
+				error("Cannot write %s", file);
+			} else {
+				IO.store(result, file);
+			}
+		} else {
+			System.out.println(result);
+		}
+	}
+
+	private String generate(ExecOptions options, CompModule world, A4Solution s, OutputType type) throws Exception {
+		String result;
+		switch (type) {
+		default:
+			error("Invalid `type` option %s, using `plain`", options.type(OutputType.plain));
+			// fall through
+		case plain:
+			result = Output.boxes(world, s);
+			break;
+
+		case json:
+			result = Output.json(world, s);
+			break;
+
+		case xml:
+			result = Output.xml(world, s);
+			break;
+		}
+		return result;
+	}
+
 	public void _shell(Shell.ShellOptions options) throws Exception {
+
 		String filename = options._arguments().remove(0);
 		try (Shell s = new Shell(this, getFile(filename), options)) {
 			s.loop();

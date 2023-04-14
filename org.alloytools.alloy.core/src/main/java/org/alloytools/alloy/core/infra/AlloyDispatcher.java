@@ -23,6 +23,7 @@ import org.alloytools.alloy.infrastructure.api.AlloyMain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.lib.env.Env;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
@@ -32,7 +33,6 @@ import aQute.lib.justif.Justif;
 import aQute.lib.strings.Strings;
 import aQute.libg.parameters.Attributes;
 import aQute.libg.parameters.ParameterMap;
-import aQute.libg.reporter.ReporterAdapter;
 import edu.mit.csail.sdg.alloy4.A4Preferences;
 import edu.mit.csail.sdg.alloy4.A4Preferences.Pref;
 import edu.mit.csail.sdg.translator.A4Options;
@@ -45,7 +45,7 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
  * distribution jar.
  *
  */
-public class AlloyDispatcher extends ReporterAdapter {
+public class AlloyDispatcher extends Env {
 
     static Logger      log;
     PrintStream        out = System.out;
@@ -119,7 +119,7 @@ public class AlloyDispatcher extends ReporterAdapter {
                 System.err.println(help);
             }
         } catch (Exception e) {
-            dispatcher.exception(e, "invocation failed %s", e.getMessage());
+            e.printStackTrace();
         }
         dispatcher.report(System.out);
     }
@@ -158,17 +158,27 @@ public class AlloyDispatcher extends ReporterAdapter {
                 }
             }
 
-            if (!isOk()) {
+            if (isOk()) {
+                log.debug("selected main {} is with arguments {}", selected, arguments);
+
+                try {
+                    String execute = cl.execute(selected.instance, selected.name, arguments);
+                    if (execute != null) {
+                        err.println(execute);
+                    }
+                } catch (Exception e) {
+                    if (options.debug())
+                        e.printStackTrace();
+
+                    error("%s", e.getMessage());
+                }
                 return;
             }
-
-            log.debug("selected main {} is with arguments {}", selected, arguments);
-
-            String execute = cl.execute(selected.instance, selected.name, arguments);
-            if (execute != null) {
-                err.println(execute);
+            if (selected.instance instanceof Env) {
+                Env env = (Env) selected.instance;
+                getInfo(env);
             }
-
+            report(System.out);
         } finally {
             mains.values().forEach(IO::close);
         }
@@ -299,7 +309,7 @@ public class AlloyDispatcher extends ReporterAdapter {
     }
 
     private void globalCommands(AlloyContext context, Map<String,MainDef> result) {
-        ParameterMap header = getHeader("Provide-Capability");
+        ParameterMap header = getHeaderMap("Provide-Capability");
 
         header.entrySet().stream().filter(e -> e.getKey().startsWith(AlloyMain.NAMESPACE)).forEach(e -> {
             try {
@@ -375,7 +385,7 @@ public class AlloyDispatcher extends ReporterAdapter {
 
     }
 
-    private ParameterMap getHeader(String name) {
+    private ParameterMap getHeaderMap(String name) {
         return getManifest().map(m -> new ParameterMap(m.getMainAttributes().getValue(name))).orElse(new ParameterMap());
     }
 
