@@ -14,6 +14,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4whole.SimpleGUI;
 
+@SuppressWarnings("restriction" )
 public class AlloyLanguageServerUtil {
 	public static Pos positionToPos(Position position) {
 		return positionToPos(position, null);

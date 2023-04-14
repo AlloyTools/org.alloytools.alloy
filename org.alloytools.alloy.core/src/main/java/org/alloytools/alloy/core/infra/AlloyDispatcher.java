@@ -47,11 +47,11 @@ import edu.mit.csail.sdg.translator.A4Options.SatSolver;
  */
 public class AlloyDispatcher extends ReporterAdapter {
 
-    final static Logger log = LoggerFactory.getLogger(AlloyDispatcher.class);
-    PrintStream         out = System.out;
-    PrintStream         err = System.err;
-    AlloyContext        context;
-    Optional<Manifest>  manifest;
+    static Logger      log;
+    PrintStream        out = System.out;
+    PrintStream        err = System.err;
+    AlloyContext       context;
+    Optional<Manifest> manifest;
 
 
 
@@ -312,9 +312,11 @@ public class AlloyDispatcher extends ReporterAdapter {
                 AlloyMain mainAnn = mainClass.getAnnotation(AlloyMain.class);
                 if (mainAnn != null) {
                     Object instance = getInstance(context, e, mainClass);
-                    MainDef main = new MainDef(instance, mainAnn.name(), mainAnn.isDefault());
-                    result.put(main.name, main);
-                    log.debug("found main class {}", main);
+                    for (String name : mainAnn.name()) {
+                        MainDef main = new MainDef(instance, name, mainAnn.isDefault());
+                        result.put(main.name, main);
+                        log.debug("found main class {}", main);
+                    }
                 } else {
                     throw new RuntimeException("Main class " + mainClass + " is listed in capability " + e + " but does not have an AlloyMain annotation");
                 }
@@ -414,5 +416,6 @@ public class AlloyDispatcher extends ReporterAdapter {
                     System.err.println("invalid slf4j target definition " + target + ", expect " + TARGET_P);
                 }
             }
+        log = LoggerFactory.getLogger(AlloyDispatcher.class);
     }
 }

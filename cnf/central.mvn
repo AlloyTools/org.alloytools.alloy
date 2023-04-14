@@ -27,3 +27,4 @@ biz.aQute:biz.aQute.wrapper.junit:4.13.1
 biz.aQute.bnd:aQute.libg:6.1.0
 org.osgi:org.osgi.annotation.bundle:1.1.1
 org.osgi:osgi.annotation:8.0.1
+jline:jline:2.14.6

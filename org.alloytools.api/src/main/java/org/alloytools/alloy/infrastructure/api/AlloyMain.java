@@ -35,7 +35,7 @@ public @interface AlloyMain {
     String FQN       = "fqn";
 
 
-    String name();
+    String[] name();
 
     boolean isDefault() default false;
 }
