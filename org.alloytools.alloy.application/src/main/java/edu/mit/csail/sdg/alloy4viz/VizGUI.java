@@ -43,12 +43,15 @@ import java.awt.geom.Path2D;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.prefs.Preferences;
@@ -73,6 +76,10 @@ import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.HighlightPainter;
 
 import edu.mit.csail.sdg.alloy4.A4Preferences.IntPref;
 import edu.mit.csail.sdg.alloy4.A4Preferences.StringPref;
@@ -1136,9 +1143,25 @@ public final class VizGUI implements ComponentListener {
     private JComponent getTextComponent(List<String> texts, boolean wrap) {
         JPanel diagramsScrollPanels = new JPanel();
         diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
-        for (String text : texts) {
+        for (int i = 0; i < texts.size(); i++) {
 
-            final JTextArea ta = OurUtil.textarea(text, 10, 10, false, false);
+
+            final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, false);
+
+            try {
+                List<Entry<Integer,Integer>> ds = new ArrayList<>();
+                if (i != 0)
+                    ds = findDiffs(texts.get(i - 1), texts.get(i));
+
+                Highlighter highlighter = ta.getHighlighter();
+                HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+                for (Entry<Integer,Integer> df : ds)
+                    highlighter.addHighlight(df.getKey(), df.getKey() + df.getValue(), painter);
+            } catch (BadLocationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
             final JScrollPane ans = new JScrollPane(ta, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
 
                 private static final long serialVersionUID = 0;
@@ -1158,6 +1181,23 @@ public final class VizGUI implements ComponentListener {
         }
 
         return diagramsScrollPanels;
+    }
+
+    static private List<Entry<Integer,Integer>> findDiffs(String s1, String s2) {
+        List<Entry<Integer,Integer>> res = new ArrayList<>();
+        String delim = "\n";
+        if (s1.contains("┌"))
+            delim = "\n\n";
+
+        Set<String> cs1 = new HashSet<>(), cs2 = new HashSet<>();
+        cs1.addAll(Arrays.asList(s1.split(delim)));
+        cs2.addAll(Arrays.asList(s2.split(delim)));
+
+        for (String c : cs2)
+            if (!cs1.contains(c))
+                res.add(new AbstractMap.SimpleEntry(s2.indexOf(c), c.length()));
+
+        return res;
     }
 
     // /** Helper method that reads a file and then return a JTextArea
