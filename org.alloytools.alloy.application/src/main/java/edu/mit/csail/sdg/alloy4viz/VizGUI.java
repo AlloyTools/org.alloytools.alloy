@@ -43,7 +43,7 @@ import java.awt.geom.Path2D;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1136,29 +1136,25 @@ public final class VizGUI implements ComponentListener {
     }
 
     /**
-     * Helper method returns a JTextArea containing the given text.
-     *
-     * @param b
+     * Helper method returns the JTextAreas containing the given texts.
      */
     private JComponent getTextComponent(List<String> texts, boolean wrap) {
         JPanel diagramsScrollPanels = new JPanel();
         diagramsScrollPanels.setLayout(new BoxLayout(diagramsScrollPanels, BoxLayout.LINE_AXIS));
         for (int i = 0; i < texts.size(); i++) {
 
-
             final JTextArea ta = OurUtil.textarea(texts.get(i), 10, 10, false, false);
 
             try {
-                List<Entry<Integer,Integer>> ds = new ArrayList<>();
+                List<Entry<Integer,Integer>> dfs = new ArrayList<>();
                 if (i != 0)
-                    ds = findDiffs(texts.get(i - 1), texts.get(i));
+                    dfs = findDiffs(texts.get(i - 1), texts.get(i), currentMode);
 
                 Highlighter highlighter = ta.getHighlighter();
                 HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-                for (Entry<Integer,Integer> df : ds)
+                for (Entry<Integer,Integer> df : dfs)
                     highlighter.addHighlight(df.getKey(), df.getKey() + df.getValue(), painter);
             } catch (BadLocationException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -1183,19 +1179,20 @@ public final class VizGUI implements ComponentListener {
         return diagramsScrollPanels;
     }
 
-    static private List<Entry<Integer,Integer>> findDiffs(String s1, String s2) {
+    /*
+     * Detects relations whose textual representation has changed between two steps.
+     * Returns positions of changes in the post state.
+     */
+    static private List<Entry<Integer,Integer>> findDiffs(String s1, String s2, VisualizerMode currentMode) {
         List<Entry<Integer,Integer>> res = new ArrayList<>();
-        String delim = "\n";
-        if (s1.contains("┌"))
-            delim = "\n\n";
+        String delim = currentMode == VisualizerMode.TABLE ? "\n\n" : "\n";
 
-        Set<String> cs1 = new HashSet<>(), cs2 = new HashSet<>();
-        cs1.addAll(Arrays.asList(s1.split(delim)));
-        cs2.addAll(Arrays.asList(s2.split(delim)));
+        Set<String> cs1 = new HashSet<String>(Arrays.asList(s1.split(delim)));
+        Set<String> cs2 = new HashSet<String>(Arrays.asList(s2.split(delim)));
 
         for (String c : cs2)
             if (!cs1.contains(c))
-                res.add(new AbstractMap.SimpleEntry(s2.indexOf(c), c.length()));
+                res.add(new SimpleEntry<Integer,Integer>(s2.indexOf(c), c.length()));
 
         return res;
     }
@@ -1232,7 +1229,6 @@ public final class VizGUI implements ComponentListener {
         if (!forcefully)
             seg_iteration = false;
         if (forcefully || !xmlFileName.equals(this.xmlFileName)) {
-            // [electrum] update all viz states
             try {
                 if (!f.exists())
                     throw new IOException("File " + xmlFileName + " does not exist.");
