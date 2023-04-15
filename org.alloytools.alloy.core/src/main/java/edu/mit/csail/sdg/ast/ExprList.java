@@ -17,9 +17,13 @@ package edu.mit.csail.sdg.ast;
 
 import static edu.mit.csail.sdg.ast.Type.EMPTY;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.ConstList.TempList;
@@ -67,8 +71,11 @@ public final class ExprList extends Expr {
     /** Caches the span() result. */
     private Pos                  span = null;
 
-    /** The positions where implicit in-line conjunctions occurred. */
-    public final ConstList<Pos>  implicits;
+    /**
+     * The positions where implicit in-line conjunctions occurred with an associated
+     * message.
+     */
+    public final Map<Pos,String> implicits;
 
     // ============================================================================================================//
 
@@ -112,7 +119,7 @@ public final class ExprList extends Expr {
     // ============================================================================================================//
 
     /** Constructs an ExprList node. */
-    private ExprList(Pos pos, Pos closingBracket, Op op, boolean ambiguous, ConstList<Expr> args, long weight, JoinableList<Err> errs, ConstList<Pos> implicits) {
+    private ExprList(Pos pos, Pos closingBracket, Op op, boolean ambiguous, ConstList<Expr> args, long weight, JoinableList<Err> errs, Map<Pos,String> implicits) {
         super(pos, closingBracket, ambiguous, Type.FORMULA, 0, weight, errs);
         this.op = op;
         this.args = args;
@@ -123,22 +130,22 @@ public final class ExprList extends Expr {
 
     /**
      * Add expr to list, in a way that flattens the conjunctions as much as possible
-     * (for better unsat core).
+     * (for better unsat core). Registers implicit in-line conjunctions.
      */
-    private static List<Pos> addAND(TempList<Expr> list, Expr expr) {
-        List<Pos> implicits = new ArrayList<>();
+    private static Map<Pos,String> addAND(TempList<Expr> list, Expr expr) {
+        Map<Pos,String> implicits = new HashMap<Pos,String>();
         Expr x = expr.deNOP();
         if (x.isSame(ExprConstant.TRUE))
             return implicits;
         if (x instanceof ExprBinary && ((ExprBinary) x).op == ExprBinary.Op.AND) {
-            implicits.addAll(addAND(list, ((ExprBinary) x).left));
-            implicits.addAll(addAND(list, ((ExprBinary) x).right));
+            implicits.putAll(addAND(list, ((ExprBinary) x).left));
+            implicits.putAll(addAND(list, ((ExprBinary) x).right));
             return implicits;
         }
         if (x instanceof ExprList && ((ExprList) x).op == ExprList.Op.AND) {
-            implicits.addAll(((ExprList) x).implicits);
+            implicits.putAll(((ExprList) x).implicits);
             for (Expr y : ((ExprList) x).args)
-                implicits.addAll(addAND(list, y));
+                implicits.putAll(addAND(list, y));
             return implicits;
         }
         list.add(expr);
@@ -175,15 +182,15 @@ public final class ExprList extends Expr {
      *
      * @param implicit
      */
-    public static ExprList make(Pos pos, Pos closingBracket, Op op, List< ? extends Expr> args, Pos implicit) {
+    public static ExprList make(Pos pos, Pos closingBracket, Op op, List< ? extends Expr> args, Entry<Pos,String> implicit) {
         boolean ambiguous = false;
         JoinableList<Err> errs = emptyListOfErrors;
         TempList<Expr> newargs = new TempList<Expr>(args.size());
         long weight = 0;
         Type commonArity = null;
-        TempList<Pos> implicits = new TempList<>();
+        Map<Pos,String> implicits = new HashMap<Pos,String>();
         if (implicit != null)
-            implicits.add(implicit);
+            implicits.put(implicit.getKey(), implicit.getValue());
         for (int i = 0; i < args.size(); i++) {
             Expr a = (op == Op.AND || op == Op.OR) ? args.get(i).typecheck_as_formula() : args.get(i).typecheck_as_set();
             ambiguous = ambiguous || a.ambiguous;
@@ -197,7 +204,7 @@ public final class ExprList extends Expr {
             else
                 commonArity = commonArity.pickCommonArity(a.type);
             if (op == Op.AND)
-                implicits.addAll(addAND(newargs, a));
+                implicits.putAll(addAND(newargs, a));
             else if (op == Op.OR)
                 addOR(newargs, a);
             else
@@ -221,7 +228,7 @@ public final class ExprList extends Expr {
             if (commonArity == EMPTY)
                 errs = errs.make(new ErrorType(pos, "The builtin predicate disjoint[] cannot be used among expressions of different arities."));
         }
-        return new ExprList(pos, closingBracket, op, ambiguous, newargs.makeConst(), weight, errs, implicits.makeConst());
+        return new ExprList(pos, closingBracket, op, ambiguous, newargs.makeConst(), weight, errs, implicits);
     }
 
     /** Generates the expression (arg1 and arg2) */
@@ -229,9 +236,12 @@ public final class ExprList extends Expr {
         TempList<Expr> list = new TempList<Expr>(2);
         list.add(a);
         list.add(b);
-        Pos implicit = null;
+        Entry<Pos,String> implicit = null;
         if (pos == null && a.span().y2 == b.span().y) {
-            implicit = new Pos(a.span().filename, a.span().x2, a.span().y2, b.span().x, b.span().y);
+            Browsable lf = a;
+            if (a instanceof ExprList)
+                lf = ((ExprList) a).args.get(((ExprList) a).args.size() - 1);
+            implicit = new AbstractMap.SimpleEntry<Pos,String>(new Pos(a.span().filename, a.span().x2, a.span().y2, b.span().x, b.span().y), "(" + lf + ") and (" + b + ")");
         }
         ExprList lst = make(pos, closingBracket, Op.AND, list.makeConst(), implicit);
         return lst;
