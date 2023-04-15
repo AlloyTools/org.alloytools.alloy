@@ -1790,9 +1790,7 @@ public final class A4Solution {
                 int lln = getTraceLength() - getLoopState();
                 state = state > getLoopState() ? (((state - getLoopState()) % lln) + getLoopState()) : state;
 
-                if (eval.options().temporal())
-                    sb.append("------State " + state + (state == getLoopState() ? " (loop)" : "") + "-------\n");
-                else
+                if (!eval.options().temporal())
                     sb.append("---Instance---\n");
 
                 for (Sig s : sigs) {
