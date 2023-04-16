@@ -407,7 +407,7 @@ public final class SimpleReporter extends A4Reporter {
                     first = false;
                 if (exacts.contains(s))
                     sb.append(s.label.replace("this/", "") + "==" + scopes.get(s));
-                else
+                else if (scopes.keySet().contains(s))
                     sb.append(s.label.replace("this/", "") + "<=" + scopes.get(s));
             }
         cb("scopes", "Scopes: " + sb.toString() + "\n");
