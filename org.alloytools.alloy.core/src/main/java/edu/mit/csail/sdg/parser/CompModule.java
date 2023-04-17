@@ -972,8 +972,6 @@ public final class CompModule extends Browsable implements Module {
      */
     static ErrorSyntax hint(Pos pos, String name) {
         String msg = "The name \"" + name + "\" cannot be found.";
-        if ("exh".equals(name) || "exhaustive".equals(name) || "part".equals(name) || "partition".equals(name))
-            msg = msg + " If you are migrating from Alloy 3, please see Help->QuickGuide on how to translate models that use the \"" + name + "\" keyword.";
         return new ErrorSyntax(pos, msg);
     }
 
