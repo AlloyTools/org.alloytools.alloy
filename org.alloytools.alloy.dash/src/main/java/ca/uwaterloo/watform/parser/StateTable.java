@@ -24,7 +24,7 @@ import static ca.uwaterloo.watform.core.DashStrings.*;
 import static ca.uwaterloo.watform.core.DashFQN.*;
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 
-import ca.uwaterloo.watform.ast.DashRef;
+import ca.uwaterloo.watform.core.DashRef;
 
 public class StateTable {
 	private HashMap<String,StateElement> table;
@@ -422,51 +422,62 @@ public class StateTable {
 		Does not seem to be any room for syntactic simplifications in these expressions.
 	*/
 	
-	public List<DashRef> getLeafStatesEnteredInContext(DashRef context, DashRef dest) {
+	public List<DashRef> getLeafStatesEnteredInScope(DashRef context, DashRef dest) {
 		List<DashRef> cR = allPrefixDashRefs(context);
 		List<DashRef> dR = allPrefixDashRefs(dest);
 		System.out.println("cR: "+cR);
 		System.out.println("dR: "+dR);
 		// cR is a prefix of dR but possibly with different param values
+		// enter all the possible side concurrent regions of the scope(context)
 		List<DashRef> r = new ArrayList<DashRef>(); // result
 		int p = 0; // parameter value position
-		List<Expr> nP;
-		for (int i=0; i< cR.size()-1; i++) {
+		List<Expr> xP = new ArrayList<Expr>(); // parameters carrying forward
+		List<Expr> nP; // parameters for each addition
+		Expr e1;
+		Expr e2;
+		for (int i=0; i< cR.size(); i++) {
 			DashRef c = cR.get(i);
 			if (isAnd(c.getName()) && hasParam(c.getName())) {
-				nP = new ArrayList<Expr>();
-				nP.addAll(DashUtilFcns.allButLast(c.getParamValues()));
-				nP.add(ExprHelper.createDiff(
-					DashUtilFcns.lastElement(c.getParamValues()), 
-					dest.getParamValues().get(p)));
-				r.addAll(getLeafStatesEntered(new DashRef(c.getName(), nP)));
+				nP = new ArrayList<Expr>(xP);
+				e1 = DashUtilFcns.lastElement(c.getParamValues());
+				e2 = dest.getParamValues().get(p);
+				if (!ExprHelper.sEquals(e1, e2)) {
+					nP.add(ExprHelper.createDiff(e1,e2));
+					r.addAll(getLeafStatesEntered(new DashRef(c.getName(), nP)));
+				} // if equal this is empty so don't include it
+				xP.add(e2);  // just e2 for next one
 				p++;
 			}
 		}
-		System.out.println("r: "+r);
-		for (int i=cR.size()-1;i<= dR.size()-1;i++) {
-			DashRef d = dR.get(i);
-			System.out.println("d: "+d);
-			if (isAnd(d.getName())) {	
-				// sisters	
-				String chOfContext = d.getName();
-				if (hasParam(chOfContext)) {
-					// one on path to dest
+		//System.out.println("r: "+r);
+		// we've dealt with all the side paths in cR of dR (including the last one in CR)
+		// now deal with the rest of dR by looking at the side paths of the children
+		// might be nothing in this loop if cR and dR are the same length
+		for (int i=cR.size()-1;i< dR.size()-1;i++) {
+			DashRef d = dR.get(i);  // first one will be match the last of cR
+			DashRef chOfDest = dR.get(i+1);  
+			//System.out.println("d: "+d);
+			if (isAnd(chOfDest.getName())) {	
+				// has sisters
+				if (hasParam(chOfDest.getName())) {
+					// ones not on path to dest
 					nP = new ArrayList<Expr>
-						(DashUtilFcns.allButLast(d.getParamValues()));
-					nP.add(ExprHelper.createDiff(
-						// all param values
-						ExprHelper.createVar(getParam(d.getName())),
-						DashUtilFcns.lastElement(d.getParamValues())));
-					r.addAll(getLeafStatesEntered(
-						new DashRef(chOfContext,nP)));			
+						(DashUtilFcns.allButLast(chOfDest.getParamValues()));
+					// all param values
+					e1 = ExprHelper.createVar(getParam(chOfDest.getName()));
+					e2 = DashUtilFcns.lastElement(chOfDest.getParamValues());
+					if (!ExprHelper.sEquals(e1, e2)) {
+						nP.add(ExprHelper.createDiff(e1, e2));
+						r.addAll(getLeafStatesEntered(
+							new DashRef(chOfDest.getName(),nP)));	
+					} // if equal this is empty so don't include it		
 				}
 				//siblings
-				List<String> children = getImmChildren(getParent(d.getName()));
+				List<String> children = getImmChildren(d.getName());
 				List<String> andChildren = children.stream()
 					.filter(c -> isAnd(c))
 					.collect(Collectors.toList());
-				andChildren.remove(chOfContext);
+				andChildren.remove(chOfDest.getName());
 				// siblings
 				for (String ch:andChildren) {
 					nP = new ArrayList<Expr>(d.getParamValues());
@@ -476,7 +487,7 @@ public class StateTable {
 					r.addAll(getLeafStatesEntered(new DashRef(ch,nP)));		
 				}		
 			}
-			//c = d;
+			// if its an OR state, just go on to the next one
 		}
 		System.out.println("r "+r);
 		r.addAll(getLeafStatesEntered(dest));

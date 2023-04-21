@@ -7,7 +7,7 @@ import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashUtilFcns.*;
 import ca.uwaterloo.watform.core.DashStrings;
-
+import ca.uwaterloo.watform.core.DashRef;
 
 public class DashGoto extends Dash {
 	public DashRef dest;

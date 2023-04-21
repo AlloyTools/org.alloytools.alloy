@@ -6,6 +6,7 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.DashStrings;
+import ca.uwaterloo.watform.core.DashRef;
 
 public class DashFrom extends Dash {
 

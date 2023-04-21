@@ -340,6 +340,8 @@ public class DashState  extends Dash {
 			//System.out.println("Looking for: " + x);
 			if (DashFQN.alreadyFQN(x.getName())) {
 				// number of params provided must match number of params needed
+				//System.out.println(x.getParamValues().size());
+				//System.out.println(st.getParams(x.getName()).size());
 				if (x.getParamValues().size() != st.getParams(x.getName()).size()) {
 					DashErrors.fqnSrcDestMustHaveRightNumberParams(xType,tfqn);
 					return null;

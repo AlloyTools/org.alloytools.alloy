@@ -1,0 +1,20 @@
+state Root {
+	default conc A {
+
+	}
+	default conc B {
+
+	}
+	default conc C [CID] {
+
+	}
+	state S1 {
+		trans t1 {}
+		trans t2 {
+			goto Root/B
+		}
+		trans t3 {
+			goto Root/C[c1]
+		}
+	}
+}

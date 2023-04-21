@@ -64,7 +64,7 @@ public class DashFQN {
 	}
 	public static String chopNameFromFQN(String fqn) {
 		// this is from an output FQN
-		return DashUtilFcns.last(splitFQN(fqn));
+		return DashUtilFcns.lastElement(splitFQN(fqn));
 	}
 	// can't just take longest prefix because states may have similar names
 	// such as Bit1 and Bit2

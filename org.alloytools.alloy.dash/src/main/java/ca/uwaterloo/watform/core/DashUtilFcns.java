@@ -16,12 +16,6 @@ import java.util.stream.Collectors;
 
 public class DashUtilFcns {
 
-
-
-	public static String last(List<String> ll) {
-		return ll.get(ll.size() - 1 );
-	}
-
 	/* copied from https://stackoverflow.com/questions/7414667/identify-duplicates-in-a-list */
 	public static <T> Set<T> findDuplicates(Collection<T> collection) {
 
@@ -64,9 +58,11 @@ public class DashUtilFcns {
         e.printStackTrace(System.err);
         System.exit(1);
     }
-    public static <T> T lastElement(List<T> ll) {
-    	return ll.get(ll.size()-1);
-    }
+
+	public static <T> T lastElement(List<T> ll) {
+		return ll.get(ll.size() - 1 );
+	}
+
     public static <T> List<T> allButLast(List<T> ll) {
     	return ll.subList(0,ll.size()-1);
     }

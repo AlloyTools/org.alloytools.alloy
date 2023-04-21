@@ -1,0 +1,20 @@
+state Root {
+	conc A [AID] {
+		conc B [BID] {
+			state S1 {
+				trans t1 {
+					from Root/A/B/S1[a1, b1]
+					goto Root/A[a2]
+				}
+			}
+		}
+	}
+	trans t2 {
+		from Root/A/B/S1[a3,b3]
+		goto Root/A/B/S1[a4,b4]
+	}
+	trans t3 {
+		from Root/A/B/S1[a5,b5]
+		goto Root/A/B[a6,b6]
+	}
+}

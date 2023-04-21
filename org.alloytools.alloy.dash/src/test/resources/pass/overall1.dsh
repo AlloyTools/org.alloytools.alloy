@@ -1,12 +1,14 @@
 state Root {
 	conc A [AID] {
 		conc B [BID] {
-			state S1 {
-				trans t1 {
-					goto Root/A/S1[a2]
-				}
-			}
+			state S1 {}
 		}
-		default state S1 {}
+	}
+	conc C [CID] {
+		state S2 {}
+	}
+	trans t1 {
+		from Root/A/B/S1[a1,b1]
+		goto Root/C/S2[c1]
 	}
 }

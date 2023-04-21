@@ -1,14 +1,17 @@
-package ca.uwaterloo.watform.ast;
+package ca.uwaterloo.watform.core;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
 
+import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 import ca.uwaterloo.watform.core.DashUtilFcns;
 
-public class DashRef extends Dash {
+public class DashRef{
+	private Pos pos;
 	private String name;
 	private List<Expr> paramValues;
 
@@ -42,5 +45,11 @@ public class DashRef extends Dash {
 	}
 	public static List<Expr> emptyParamValuesList() {
 		return new ArrayList<Expr>();
+	}
+	public Expr toAlloy() {
+		List<Expr> ll = new ArrayList<Expr>(paramValues);
+		Collections.reverse(ll);
+		ll.add(ExprHelper.createVar(name));
+		return ExprHelper.createArrowExprList(ll);
 	}
 }

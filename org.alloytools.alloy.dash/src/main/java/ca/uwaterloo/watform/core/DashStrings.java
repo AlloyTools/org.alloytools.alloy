@@ -60,7 +60,7 @@ public class DashStrings {
 	// sig names
 	public static String snapshotName = "Snapshot";
 	public static String confName = "conf";
-	public static String takenName = "taken";
+	public static String scopesUsedName = "scopesUsed";
 
 	public static String stateLabelName = "StateLabel";
 	public static String systemStateName = "SystemState";

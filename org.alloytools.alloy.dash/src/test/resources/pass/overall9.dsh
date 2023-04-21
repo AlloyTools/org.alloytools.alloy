@@ -1,0 +1,20 @@
+state Root {
+	default conc A [AID] {
+		state S1 {}
+	}
+	default conc B {
+		conc C {}
+		conc D {}
+		conc E [EID]{
+			state S2 {}
+			default state S4 {}
+			conc F [FID] {}
+			conc G {}
+		}
+	}
+	state S3 {}
+	trans t1 {
+		from Root/B/E/F[e1,f1]
+		goto Root/B/E/G[e2]
+	} 
+}

@@ -110,8 +110,18 @@ public class ExprHelper  {
         }
         return ret;
     }
-    public static ExprBinary createEquals(Expr left, Expr right) {
-        return (ExprBinary) ExprBinary.Op.EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    public static Expr createDiffList(List<Expr> elist) {
+        Expr ret = null;
+        assert(elist!=null);
+        ret = elist.get(0);
+        for (Expr el: elist.subList(1,elist.size())) {
+            ret = createDiff(ret,el);
+        }
+        return ret;
+    }
+    public static Expr createEquals(Expr left, Expr right) {
+        if (sEquals(left,right)) return (Expr) createTrue();
+        else return (Expr) ExprBinary.Op.EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static ExprBinary createNotEquals(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.NOT_EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
@@ -145,19 +155,28 @@ public class ExprHelper  {
     }
     // {x,y,z}
     // returns x -> (y -> z)
-    public static Expr createArrowList(List<String> eList) {
+    public static Expr createArrowStringList(List<String> eList) {
         assert(eList != null);
         Collections.reverse(eList);
         Expr o = createVar(eList.get(0));
-        for (String e: eList.subList(1,eList.size()-1)) {
+        for (String e: eList.subList(1,eList.size())) {
             o = createArrow(createVar(e), o);
         }
         return o;
     }    
+    public static Expr createArrowExprList(List<Expr> eList) {
+        assert(eList != null);
+        Collections.reverse(eList);
+        Expr o = eList.get(0);
+        for (Expr e: eList.subList(1,eList.size())) {
+            o = createArrow(e, o);
+        }
+        return o;
+    }   
 
-
-    public static ExprITE createITE(Expr cond, Expr impliesExpr, Expr elseExpr) {
-        return (ExprITE) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
+    public static Expr createITE(Expr cond, Expr impliesExpr, Expr elseExpr) {
+        if (sEquals(cond, createTrue()))  return (Expr) impliesExpr;
+        else return (Expr) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
     }
    
     public static ExprQt createAll(List<Decl> decls, Expr expr) {

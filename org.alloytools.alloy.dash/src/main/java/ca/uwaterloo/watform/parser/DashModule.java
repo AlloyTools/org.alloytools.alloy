@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4.Pair;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -16,8 +18,9 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.*;
+import static ca.uwaterloo.watform.core.DashUtilFcns.*;
 import ca.uwaterloo.watform.ast.*;
-import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
 
 import ca.uwaterloo.watform.parser.CompModuleHelper;
 import ca.uwaterloo.watform.dashtoalloy.DashToAlloy;
@@ -265,8 +268,8 @@ public class DashModule extends CompModuleHelper {
     public List<DashRef> getLeafStatesEntered(DashRef s) {
     	return stateTable.getLeafStatesEntered(s);
     }
-    public List<DashRef> getLeafStatesEnteredWithContext(DashRef context, DashRef s) {
-    	return null; //stateTable.getLeafStatesEnteredWithContext(context, s);
+    public List<DashRef> getLeafStatesEnteredWithScope(DashRef context, DashRef s) {
+    	return null; //stateTable.getLeafStatesEnteredWithScope(context, s);
     }
     public List<String> getAllAnces(String sfqn) {
     	return stateTable.getAllAnces(sfqn);
@@ -319,29 +322,29 @@ public class DashModule extends CompModuleHelper {
 		for (int i=0;i<maxCommonParams;i++) {
 			s = src.getParamValues().get(i);
 			d = dest.getParamValues().get(i);
-			if (ExprHelper.sEquals(s,d)) {
+			if (sEquals(s,d)) {
 				// syntactically equal
 				scopeParams.add(s);
 			} else {
-				equals = ExprHelper.createEquals(s,d);
+				equals = createEquals(s,d);
 				scopeParams.add(
-					ExprHelper.createITE(
+					createITE(
 						equals,
 						s,
-						ExprHelper.createVar(stateTable.getParams(sc).get(i))));  // whole set
+						createVar(stateTable.getParams(sc).get(i))));  // whole set
 				for (int j=i+1;j<maxCommonParams;j++) {
 					s = src.getParamValues().get(j);
 					d = dest.getParamValues().get(j);
-					if (ExprHelper.sEquals(s,d)) {
+					if (sEquals(s,d)) {
 						// syntactically equal
 						scopeParams.add(s);
 					} else {
-						equals = ExprHelper.createAnd(equals,ExprHelper.createEquals(s,d));
+						equals = createAnd(equals,createEquals(s,d));
 						scopeParams.add(
-							ExprHelper.createITE(
+							createITE(
 								equals,
 								s,
-								ExprHelper.createVar(stateTable.getParams(sc).get(j))));  // whole set
+								createVar(stateTable.getParams(sc).get(j))));  // whole set
 					}
 				}
 				break;
@@ -360,11 +363,49 @@ public class DashModule extends CompModuleHelper {
 		return stateTable.allPrefixDashRefs(x);
 	}
 	public List<DashRef> entered(String tfqn) {
-		return stateTable.getLeafStatesEnteredInContext(
+		return stateTable.getLeafStatesEnteredInScope(
 				getScope(tfqn),
 				getTransDest(tfqn));
 	}
 
+	public List<DashRef> onlyConc(List<DashRef> dr) {
+		return dr.stream()
+			.filter(x -> isAnd(x.getName()))
+			.collect(Collectors.toList());
+	}
+	public List<DashRef> scopesUsed(String tfqn) {
+		DashRef scope = getScope(tfqn);
+		List<DashRef> aP = onlyConc(allPrefixDashRefs(scope));
+		List<DashRef> r = new ArrayList<DashRef>();
+		List<Expr> prms;
+		Expr e;
+		Expr p;
+		for (DashRef s: allButLast(aP)) {
+			// if a prefix scope includes all param values, it really
+			// is the scope
+			if (isAnd(s.getName()) && stateTable.hasParam(s.getName())) {
+				prms = new ArrayList<Expr>(allButLast(s.getParamValues()));
+				e = lastElement(s.getParamValues());
+				p = createITE(createEquals(e,createVar(stateTable.getParam(s.getName()))),
+						  createVar(stateTable.getParam(s.getName())),
+						  createNone());
+				prms.add(p);
+				r.add(new DashRef(s.getName(), prms));
+			}
+		}
+		r.add(lastElement(aP));
+		return r;
+	}
+	public List<DashRef> nonOrthogonalScopesOf(String tfqn) {
+		DashRef scope = getScope(tfqn);
+		System.out.println(allPrefixDashRefs(scope));
+		List<DashRef> aP = allPrefixDashRefs(scope);
+		// always needs to include Root
+		List<DashRef> r = new ArrayList<DashRef>();
+		r.add(aP.get(0));
+		r.addAll(onlyConc(aP));
+		return r;
+	}
 	// processes  ---------------------------------------
 
 	public void debug(String tfqn) {
@@ -382,8 +423,10 @@ public class DashModule extends CompModuleHelper {
 			System.out.println("getRegion:"+"Root/S1/S2: "+getRegion(getTransSrc(tfqn).getName()));
 			System.out.println("exited: " + exited(tfqn));		
 			System.out.println("entered" + getLeafStatesEntered(getTransDest(tfqn)));
-			System.out.println("enteredInContext" + entered(tfqn));
+			System.out.println("enteredInScope" + entered(tfqn));
 			System.out.println("allPrefixDashRefs of scope: "+ allPrefixDashRefs(getScope(tfqn)));
+			System.out.println("scopesUsed: "+ scopesUsed(tfqn));
+			System.out.println("nonOrthogonalScopes: " + nonOrthogonalScopesOf(tfqn));
 		}
 	}
 	// should we use the rep arg here?
