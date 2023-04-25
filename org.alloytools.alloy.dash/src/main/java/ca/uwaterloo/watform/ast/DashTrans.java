@@ -37,7 +37,7 @@ public class DashTrans extends Dash {
 	}
 	public void resolveAll(StateTable st, TransTable tt, List<String> params, List<String> ances) {
 		String tfqn = DashFQN.fqn(ances,name);
-		System.out.println("Resolving trans "+tfqn);		
+		//System.out.println("Resolving trans "+tfqn);		
 
 	}
 }

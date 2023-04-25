@@ -164,7 +164,7 @@ public class StateTable {
 		assert(!fqn.isEmpty());
 		if (!table.containsKey(fqn))
 			table.put(fqn,null);
-		System.out.println("adding State table: "+fqn);
+		//System.out.println("adding State table: "+fqn);
 	}
 	public void add(
 		String fqn, 
@@ -186,7 +186,7 @@ public class StateTable {
 		}
 		else 
 			table.put(fqn, new StateElement(k,prm, prms,d,p,iChildren));
-		System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
+		//System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
 	}
 	
 	public boolean containsKey(String s) {
@@ -338,7 +338,7 @@ public class StateTable {
 		return DashUtilFcns.setToList(allParams);
 	}
 	public void resolveAll(String root) {
-		System.out.println("Resolving state table");
+		//System.out.println("Resolving state table");
 		for (String k: table.keySet()) 
 			if (table.get(k) == null) DashErrors.transUsesNonExistentState(k);
 		// walk down parent to children and pass back info
@@ -425,8 +425,8 @@ public class StateTable {
 	public List<DashRef> getLeafStatesEnteredInScope(DashRef context, DashRef dest) {
 		List<DashRef> cR = allPrefixDashRefs(context);
 		List<DashRef> dR = allPrefixDashRefs(dest);
-		System.out.println("cR: "+cR);
-		System.out.println("dR: "+dR);
+		//System.out.println("cR: "+cR);
+		//System.out.println("dR: "+dR);
 		// cR is a prefix of dR but possibly with different param values
 		// enter all the possible side concurrent regions of the scope(context)
 		List<DashRef> r = new ArrayList<DashRef>(); // result
@@ -489,7 +489,7 @@ public class StateTable {
 			}
 			// if its an OR state, just go on to the next one
 		}
-		System.out.println("r "+r);
+		//System.out.println("r "+r);
 		r.addAll(getLeafStatesEntered(dest));
 		return r;
 	}

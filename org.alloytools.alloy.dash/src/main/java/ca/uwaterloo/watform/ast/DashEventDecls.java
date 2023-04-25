@@ -31,4 +31,10 @@ public class DashEventDecls extends Dash {
 		s += DashStrings.eventName + " " + sj.toString() +"{ }\n";
 		return s;
 	}
+	public List<String> getNames() {
+		return names;
+	}
+	public DashStrings.IntEnvKind getKind() {
+		return kind;
+	}
 }

@@ -71,6 +71,30 @@ public class DashErrors {
 	}
 	// below this have not been tested
 
+	public static String eventNameCantBeFQNMsg = "Event name cannot be fully qualified at declaration: ";
+	public static void eventNameCantBeFQN(Pos o, String s) {
+		throw new ErrorSyntax(o, eventNameCantBeFQNMsg + s);
+	}
+	public static String duplicateEventNameMsg = "Event name already in use: ";
+	public static void duplicateEventName(Pos o, String s) {
+		throw new ErrorSyntax(o, duplicateEventNameMsg + s);
+	}
+	public static String varNameCantBeFQNMsg = "Var name cannot be fully qualified at declaration: ";
+	public static void varNameCantBeFQN(Pos o, String s) {
+		throw new ErrorSyntax(o, varNameCantBeFQNMsg + s);
+	}
+	public static String duplicateVarNameMsg = "Var name already in use: ";
+	public static void duplicateVarName(Pos o, String s) {
+		throw new ErrorSyntax(o, duplicateVarNameMsg + s);
+	}
+	public static String bufferNameCantBeFQNMsg = "Buffer name cannot be fully qualified at declaration: ";
+	public static void bufferNameCantBeFQN(Pos o, String s) {
+		throw new ErrorSyntax(o, bufferNameCantBeFQNMsg + s);
+	}
+	public static String duplicateBufferNameMsg = "Buffer name already in use: ";
+	public static void duplicateBufferName(Pos o, String s) {
+		throw new ErrorSyntax(o, duplicateBufferNameMsg + s);
+	}
 
 	public static void siblingsSameKind(String fqn) throws Err {
 		throw new ErrorSyntax("Children of "+fqn+" must all be of concurrent or not concurrent");

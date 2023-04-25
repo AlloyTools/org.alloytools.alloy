@@ -17,6 +17,9 @@ import ca.uwaterloo.watform.core.*;
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 import ca.uwaterloo.watform.parser.StateTable;
 import ca.uwaterloo.watform.parser.TransTable;
+import ca.uwaterloo.watform.parser.EventTable;
+import ca.uwaterloo.watform.parser.VarTable;
+import ca.uwaterloo.watform.parser.BufferTable;
 
 public class DashState  extends Dash {
 
@@ -120,10 +123,10 @@ public class DashState  extends Dash {
 	 * and put all states in the state table
 	 * also set this state's fqn here
 	 */
-	public void resolveAllStates(StateTable st, List<String> params, List<String> ances)  {
+	public void resolveAllStates(StateTable st, EventTable et, VarTable vt, BufferTable bt, List<String> params, List<String> ances)  {
 		if (DashFQN.alreadyFQN(name)) DashErrors.stateNameCantBeFQN(pos, name);
 		sfqn = DashFQN.fqn(ances,name);
-		System.out.println("Resolving state "+sfqn);
+		//System.out.println("Resolving state "+sfqn);
 	
 		// process the children
 		// have to make a copy so that recursion does not just
@@ -159,7 +162,7 @@ public class DashState  extends Dash {
 			st.add(sfqn,kind, param, newParams,def, DashFQN.fqn(ances), childFQNs);
 
 			// add all substates to the table
-			for (DashState s: substatesList) s.resolveAllStates(st, newParams, newAnces);
+			for (DashState s: substatesList) s.resolveAllStates(st, et, vt, bt, newParams, newAnces);
 
 			// make sure defaults are correct
 			// if there's only one child it is automatically the default
@@ -199,6 +202,63 @@ public class DashState  extends Dash {
 				}
 			}
 		}
+
+		// add declared events
+		List <DashEventDecls> eventDeclsList = new ArrayList<DashEventDecls>();
+		if (items != null)
+			eventDeclsList = 
+				items.stream()
+				.filter(i -> i instanceof DashEventDecls)
+				.map(p -> (DashEventDecls) p)
+				.collect(Collectors.toList());
+		// put in event table with FQN 
+		for (DashEventDecls e:eventDeclsList) {
+			DashStrings.IntEnvKind k = e.getKind();
+			for (String x: e.getNames()) {
+				if (DashFQN.alreadyFQN(x)) DashErrors.eventNameCantBeFQN(e.getPos(), x);
+				String xfqn = DashFQN.fqn(sfqn,x);
+				if (!et.add(xfqn,k, newParams)) DashErrors.duplicateEventName(e.getPos(),x);
+			}
+		}
+
+		// add declared variables
+		List <DashVarDecls> varDeclsList = new ArrayList<DashVarDecls>();
+		if (items != null)
+			varDeclsList = 
+				items.stream()
+				.filter(i -> i instanceof DashVarDecls)
+				.map(p -> (DashVarDecls) p)
+				.collect(Collectors.toList());
+		// put in var table with FQN 
+		for (DashVarDecls v:varDeclsList) {
+			DashStrings.IntEnvKind k = v.getKind();
+			Expr t = v.getTyp();
+			for (String x: v.getNames()) {
+				if (DashFQN.alreadyFQN(x)) DashErrors.varNameCantBeFQN(v.getPos(), x);
+				String xfqn = DashFQN.fqn(sfqn,x);
+				if (!vt.add(xfqn,k, newParams, t)) DashErrors.duplicateVarName(v.getPos(),x);
+			}
+		}
+
+		// add declared buffers
+		List <DashBufferDecls> bufferDeclsList = new ArrayList<DashBufferDecls>();
+		if (items != null)
+			bufferDeclsList = 
+				items.stream()
+				.filter(i -> i instanceof DashBufferDecls)
+				.map(p -> (DashBufferDecls) p)
+				.collect(Collectors.toList());
+		// put in var table with FQN 
+		for (DashBufferDecls b:bufferDeclsList) {
+			DashStrings.IntEnvKind k = b.getKind();
+			String el = b.getElement();
+			for (String x: b.getNames()) {
+				if (DashFQN.alreadyFQN(x)) DashErrors.bufferNameCantBeFQN(b.getPos(), x);
+				String xfqn = DashFQN.fqn(sfqn,x);
+				if (!bt.add(xfqn,k, newParams, el)) DashErrors.duplicateBufferName(b.getPos(),x);
+			}
+		}
+
 
 			/*
 			
@@ -266,7 +326,7 @@ public class DashState  extends Dash {
 				.filter(i -> i instanceof DashFrom)
 				.map(p -> ((DashFrom) p).src)
 				.collect(Collectors.toList());
-			System.out.println(fromList);
+			//System.out.println(fromList);
 			DashRef src = setSrcDest("from", fromList, st, sfqn, tfqn);
 			assert(src != null); 
 			st.add(src.getName());  
@@ -276,7 +336,7 @@ public class DashState  extends Dash {
 				.filter(i -> i instanceof DashGoto)
 				.map(p -> ((DashGoto) p).dest)
 				.collect(Collectors.toList());
-			System.out.println(gotoList);
+			//System.out.println(gotoList);
 			DashRef dest = setSrcDest("goto", gotoList, st, sfqn, tfqn);
 			assert(dest != null); 
 			st.add(dest.getName());
@@ -364,7 +424,7 @@ public class DashState  extends Dash {
 				for (String s:st.getRegion(parentFQN)) {
 					if (x.getName().equals(DashFQN.chopNameFromFQN(s))) matches.add(s);
 				}
-				System.out.println("matches: " + matches);
+				//System.out.println("matches: " + matches);
 				if (matches.size() > 1) {
 					DashErrors.ambiguousSrcDest(xType, tfqn);
 					return null; 

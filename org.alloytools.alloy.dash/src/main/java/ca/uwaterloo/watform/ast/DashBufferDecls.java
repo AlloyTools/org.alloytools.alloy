@@ -37,4 +37,13 @@ public class DashBufferDecls extends Dash {
 		s += sj.toString() + ":" + DashStrings.bufName + "[" + element + "]\n";
 		return s;
 	}
+	public List<String> getNames() {
+		return names;
+	}
+	public String getElement() {
+		return element;
+	}
+	public DashStrings.IntEnvKind getKind() {
+		return kind;
+	}
 }

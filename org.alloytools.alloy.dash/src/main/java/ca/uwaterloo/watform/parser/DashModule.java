@@ -44,6 +44,9 @@ public class DashModule extends CompModuleHelper {
 	private SymbolTable symbolTable;
 	private StateTable stateTable = new StateTable();
 	private TransTable transTable = new TransTable();
+	private EventTable eventTable = new EventTable();
+	private VarTable varTable = new VarTable();
+	private BufferTable bufferTable = new BufferTable();
 
 	// once created and parsed, the following are
 	// the phases of a DashModule
@@ -195,7 +198,7 @@ public class DashModule extends CompModuleHelper {
 	// needed during parsing -------------------------
 
 	public void importModules(List<String> bufElements, List<String> bufNames) {
-		System.out.println("Adding open stmts");
+		//System.out.println("Adding open stmts");
         String noAlias = null;
         booleanOpen = this.addOpenSimple(DashStrings.utilBooleanName, null, noAlias); 
         if (DashOptions.isTcmc) 
@@ -375,30 +378,38 @@ public class DashModule extends CompModuleHelper {
 	}
 	public List<DashRef> scopesUsed(String tfqn) {
 		DashRef scope = getScope(tfqn);
-		List<DashRef> aP = onlyConc(allPrefixDashRefs(scope));
+		List<DashRef> aP = allPrefixDashRefs(scope);
+		List<DashRef> aPc = onlyConc(aP);
 		List<DashRef> r = new ArrayList<DashRef>();
 		List<Expr> prms;
 		Expr e;
 		Expr p;
-		for (DashRef s: allButLast(aP)) {
-			// if a prefix scope includes all param values, it really
-			// is the scope
-			if (isAnd(s.getName()) && stateTable.hasParam(s.getName())) {
-				prms = new ArrayList<Expr>(allButLast(s.getParamValues()));
-				e = lastElement(s.getParamValues());
-				p = createITE(createEquals(e,createVar(stateTable.getParam(s.getName()))),
-						  createVar(stateTable.getParam(s.getName())),
-						  createNone());
-				prms.add(p);
-				r.add(new DashRef(s.getName(), prms));
+		if (aPc.isEmpty()) {
+			// no concurrent states in scope prefix
+			// so just add root
+			r.add(aP.get(0));
+		} else {
+			for (DashRef s: allButLast(aPc)) {
+				// if a prefix scope includes all param values, it really
+				// is the scope
+				if (isAnd(s.getName()) && stateTable.hasParam(s.getName())) {
+					prms = new ArrayList<Expr>(allButLast(s.getParamValues()));
+					e = lastElement(s.getParamValues());
+					p = createITE(createEquals(e,createVar(stateTable.getParam(s.getName()))),
+							  createVar(stateTable.getParam(s.getName())),
+							  createNone());
+					prms.add(p);
+					r.add(new DashRef(s.getName(), prms));
+				}
 			}
+			// if it has a parameter it will be included
+			r.add(lastElement(aPc));
 		}
-		r.add(lastElement(aP));
 		return r;
 	}
 	public List<DashRef> nonOrthogonalScopesOf(String tfqn) {
 		DashRef scope = getScope(tfqn);
-		System.out.println(allPrefixDashRefs(scope));
+		//System.out.println(allPrefixDashRefs(scope));
 		List<DashRef> aP = allPrefixDashRefs(scope);
 		// always needs to include Root
 		List<DashRef> r = new ArrayList<DashRef>();
@@ -408,9 +419,17 @@ public class DashModule extends CompModuleHelper {
 	}
 	// processes  ---------------------------------------
 
+	public void debug() {
+		System.out.println(stateTable.toString());
+		System.out.println(transTable.toString());
+		System.out.println(eventTable.toString());		
+		System.out.println(varTable.toString());
+	}
 	public void debug(String tfqn) {
 		System.out.println(stateTable.toString());
 		System.out.println(transTable.toString());
+		System.out.println(eventTable.toString());
+		System.out.println(varTable.toString());
 		for (String x: getTransNames()) {
 			// System.out.println(tfqn +" scope :" + getScope(x));
 		}
@@ -432,7 +451,7 @@ public class DashModule extends CompModuleHelper {
 	// should we use the rep arg here?
 	public void resolveAllDash(A4Reporter rep) {
 
-		System.out.println("Resolving Dash");
+		//System.out.println("Resolving Dash");
 		if (roots.isEmpty()) {
 			DashErrors.noStates();
 		} else if (roots.size() > 1) {
@@ -441,13 +460,14 @@ public class DashModule extends CompModuleHelper {
 			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
-			root.resolveAllStates(stateTable,new ArrayList<String>(),new ArrayList<String>());
+			root.resolveAllStates(stateTable,eventTable, varTable, bufferTable, new ArrayList<String>(),new ArrayList<String>());
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
 			root.resolveAllTrans(stateTable,transTable);
 			// if root has no substates?
 			// if no transitions?
 			stateTable.resolveAll(getRootName());
+			// TODO will need eventTable
 			transTable.resolveAll();
 			maxDepthParams = stateTable.getMaxDepthParams();
 			  //transAtThisParamDepth = new boolean[maxDepthParams+1];
@@ -477,7 +497,7 @@ public class DashModule extends CompModuleHelper {
     	// so here we cast DashModule to CompModule and ignore the
     	// output CompModule
     	//assert(status == Status.TRANSLATED_TO_ALLOY);
-    	System.out.println("Resolving Alloy");
+    	//System.out.println("Resolving Alloy");
     	// this quits if it throws an error
     	//resolveAll(rep == null ? A4Reporter.NOP : rep, this);
     	// if no errors

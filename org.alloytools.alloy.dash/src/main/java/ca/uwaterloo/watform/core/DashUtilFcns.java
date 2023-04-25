@@ -64,6 +64,7 @@ public class DashUtilFcns {
 	}
 
     public static <T> List<T> allButLast(List<T> ll) {
-    	return ll.subList(0,ll.size()-1);
+    	if (ll.isEmpty()) return ll;
+    	else return ll.subList(0,ll.size()-1);
     }
 }

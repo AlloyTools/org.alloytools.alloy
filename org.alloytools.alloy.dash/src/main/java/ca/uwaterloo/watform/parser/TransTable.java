@@ -98,7 +98,7 @@ public class TransTable {
 			List<DashEvent> se) {
 	*/
 	{
-		System.out.println("Adding "+fqn);
+		//System.out.println("Adding "+fqn);
 		assert(!fqn.isEmpty());
 		assert(params != null );
 		assert(s != null);
@@ -178,7 +178,7 @@ public class TransTable {
 	}
 	*/
 	public void resolveAll() {
-		System.out.println("Resolving trans table");
+		//System.out.println("Resolving trans table");
 		if (getTransNames().isEmpty()) DashErrors.noTrans();
 		isResolved = true;
 	}

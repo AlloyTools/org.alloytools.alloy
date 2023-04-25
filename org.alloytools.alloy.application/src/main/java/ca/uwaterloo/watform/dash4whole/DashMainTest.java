@@ -49,7 +49,7 @@ public class DashMainTest {
             if (args.length == 2) {
                 // transition name
                 d.debug(args[1]);
-            }
+            } else d.debug();
         }
         /*
         DashModule d = 

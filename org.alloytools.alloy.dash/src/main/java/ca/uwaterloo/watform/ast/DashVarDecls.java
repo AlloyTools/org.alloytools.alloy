@@ -24,7 +24,6 @@ public class DashVarDecls extends Dash {
 		this.kind = k;
 	}
 
-
 	public String toString() {
 		String s = new String("");
 		if (kind == DashStrings.IntEnvKind.ENV) {
@@ -33,5 +32,14 @@ public class DashVarDecls extends Dash {
 		StringJoiner sj = new StringJoiner(",\n");
         names.forEach(n -> sj.add(n));
 		return s + sj.toString() + ":" + typ.toString() + "\n";
+	}
+	public List<String> getNames() {
+		return names;
+	}
+	public Expr getTyp() {
+		return typ;
+	}
+	public DashStrings.IntEnvKind getKind() {
+		return kind;
 	}
 }
