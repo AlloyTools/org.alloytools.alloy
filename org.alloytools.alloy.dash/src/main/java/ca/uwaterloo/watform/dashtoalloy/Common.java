@@ -27,16 +27,23 @@ import ca.uwaterloo.watform.parser.CompModuleHelper;
 
 public class Common {
 
-    // common decls
+    // s:Snapshot
     public static Decl curDecl() {
         return (Decl) new DeclExt(DashStrings.curName, DashStrings.snapshotName);
     }
+
+
+    // s':Snapshot
     public static Decl nextDecl() {
         return (Decl) new DeclExt(DashStrings.nextName, DashStrings.snapshotName);
     }
+
+    // p0:P0
     public static Decl paramDecl(String n) {
         return (Decl) new DeclExt(DashStrings.pName+n, n);
     }
+
+    // [s:Snapshot, s':Snapshot] 
     public static List<Decl> curNextDecls() {
         List<Decl> o = new ArrayList<Decl>();
         if (!DashOptions.isElectrum) {
@@ -45,28 +52,35 @@ public class Common {
         }
         return o;
     }
+
+    // [p0:P0, p1:P1, ...]
     public static List<Decl> paramDecls(List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
         for (String n: prs) o.add(paramDecl(n));
         return o;
     }
+
+    // s:Snapshot, p0:P0, p1:P1, ...]
     public static List<Decl> curParamsDecls(List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
         if (!DashOptions.isElectrum) o.add(curDecl());
         o.addAll(paramDecls(prs));
         return o;
     }
+    // s:Snapshot, s':Snapshot, p0:P0, p1:P1, ...]
     public static List<Decl> curNextParamsDecls(List<String> prs) {
         List<Decl> o = new ArrayList<Decl>();
         if (!DashOptions.isElectrum) { o.add(curDecl()); o.add(nextDecl()); }
         o.addAll(paramDecls(prs));
         return o;
     }
-    public static Decl eventsDecl(int i) {
-        return (Decl) new DeclExt(DashStrings.eventsName + i, DashStrings.allEventsName);
+
+    public static Decl genEventDecl(int i) {
+        return (Decl) new DeclExt(DashStrings.genEventName + i, DashStrings.allEventsName);
     }
-    public static Decl scopesUsedDecl(int i) {
-        return (Decl) new DeclExt(DashStrings.scopesUsedName + i, DashStrings.stateLabelName);
+
+    public static Decl scopeDecl(int i) {
+        return (Decl) new DeclExt(DashStrings.scopeName + i, DashStrings.allEventsName);
     }
 
     // common vars
@@ -78,30 +92,34 @@ public class Common {
     public static ExprVar nextVar() {
         return createVar(DashStrings.nextName);
     }
+    //[s,s']
     public static List<Expr> curNextVars() {
         List<Expr> o = new ArrayList<Expr>();
         o.add(curVar());
         o.add(nextVar());
         return o;        
     }
-    // [n1,n2,...]
+    // [p1,p2,...]
     public static List<Expr> paramVars(List<String> names) {
         List<Expr> o = new ArrayList<Expr>();
         for (String n: names) o.add(createVar(DashStrings.pName+n));
         return o;
     }
+    // [s, p1,p2,...]
     public static List<Expr> curParamVars(List<String> params) {
         List<Expr> o = new ArrayList<Expr>();
         o.add(curVar());
         o.addAll(paramVars(params));
         return o;
     }
+    // [s,s',  p1,p2,...]
     public static List<Expr> curNextParamVars(List<String> params) {
         List<Expr> o = new ArrayList<Expr>(curNextVars());
         o.addAll(paramVars(params));
         return o;
     }
 
+    // stable
     public static Expr stable() {
         return createVar(DashStrings.stableName);
     }
@@ -115,6 +133,12 @@ public class Common {
 
     public static Expr scopesUsedVar(int size) {
         return createVar(DashStrings.scopesUsedName + size);
+    }
+    public static Expr scopeVar(int size) {
+        return createVar(DashStrings.scopeName + size);
+    }
+    public static Expr genEventVar(int size) {
+        return createVar(DashStrings.genEventName + size);
     }
     public static Expr confVar(int size) {
         return createVar(DashStrings.confName + size);

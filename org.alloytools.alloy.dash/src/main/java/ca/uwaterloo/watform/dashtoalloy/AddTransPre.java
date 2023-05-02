@@ -61,9 +61,7 @@ public class AddTransPre {
             List<Expr> u = DashRef.hasNumParams(nonO,i).stream()
                 .map(x -> x.toAlloy())
                 .collect(Collectors.toList());
-            // scopesUsedi' = scopesUsedi - exitedi + enteredi
-            Expr e = curConf(i);
-            for (Expr x: u) body.add(createNot(createIn(x,scopesUsedVar(i))));
+            for (Expr x: u) body.add(createNot(createIn(x,curScopesUsed(i))));
         }
 
         // event trigger

@@ -200,8 +200,8 @@ public class DashErrors {
 	public static void nonDashRefExpr() throws Err {
 		throw new ErrorFatal("nonDashRefExpr");
 	}
-	public static void eventTableGetParams() {
-		throw new ErrorFatal("eventTableGetParams");
+	public static void eventTableEventNotFound(String m, String efqn) {
+		throw new ErrorFatal("eventTableEventNotFound: "+m+" "+efqn);
 	}
 	public static void regionMatchesWrongParamNumber() {
 		throw new ErrorFatal("regionMatchesWrongParamNumber");

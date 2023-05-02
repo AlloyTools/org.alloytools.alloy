@@ -39,11 +39,11 @@ public class AddTestIfNextStable {
 			args.addAll(curNextVars());
 		}
 		for (int i=0; i<= d.getMaxDepthParams(); i++) {
-			decls.add(scopesUsedDecl(i));
-			args.add(scopesUsedVar(i));
+			decls.add(scopeDecl(i));
+			args.add(scopeVar(i));
 			if (d.hasEventsAti(i)) {
-				decls.add(eventsDecl(i));
-				args.add(eventsVar(i));
+				decls.add(genEventDecl(i));
+				args.add(genEventVar(i));
 			}
 		}
 		for (String tfqn: d.getAllTransNames()) {
@@ -51,6 +51,7 @@ public class AddTestIfNextStable {
 			body.add(createNot(
 					createPredCall(tout + DashStrings.enabledAfterStepName, args)));
 		}
+
 		d.alloyString += d.addPredSimple(DashStrings.testIfNextStableName,decls,body);
 	}
 }

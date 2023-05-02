@@ -17,10 +17,11 @@ public class DashToAlloy {
             AddTransPre.addTransPre(d,tfqn);
             AddTransPost.addTransPost(d,tfqn);
             //createTransSemantics(t);
-            AddTransIsEnabledAfterStep.addTransIsEnabledAfterStep(d,tfqn);
+            if (d.hasConcurrency()) AddTransIsEnabledAfterStep.addTransIsEnabledAfterStep(d,tfqn);
             AddTrans.addTrans(d,tfqn);
         }
-        AddTestIfNextStable.addTestIfNextStable(d);
+        if (d.hasConcurrency())
+            AddTestIfNextStable.addTestIfNextStable(d);
         AddSmallStep.addSmallStep(d);
     }
 }

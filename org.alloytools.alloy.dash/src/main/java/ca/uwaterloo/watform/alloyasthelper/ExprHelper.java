@@ -187,8 +187,12 @@ public class ExprHelper  {
         return (ExprBinary) ExprBinary.Op.NOT_EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     // returns an ExprList
-    public static ExprList createAnd(Expr left, Expr right) {
-        return (ExprList) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    public static Expr createAnd(Expr left, Expr right) {
+        if (sEquals(left, createFalse())) return createFalse();
+        if (sEquals(right, createFalse())) return createFalse();
+        if (sEquals(left, createTrue())) return right;
+        if (sEquals(right, createTrue())) return left;
+        return (Expr) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     //public static ExprList createAndList(List<Expr> args) {
     //    return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
@@ -201,8 +205,12 @@ public class ExprHelper  {
         }
         return ret;
     }
-    public static ExprList createOr(Expr left, Expr right) {
-        return (ExprList) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    public static Expr createOr(Expr left, Expr right) {
+        if (sEquals(left, createTrue())) return createTrue();
+        if (sEquals(right, createTrue())) return createTrue();
+        if (sEquals(left, createFalse())) return right;
+        if (sEquals(right, createFalse())) return left;
+        return (Expr) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static Expr createOrFromList(List<Expr> elist) {
         if (elist.isEmpty()) return createTrue();

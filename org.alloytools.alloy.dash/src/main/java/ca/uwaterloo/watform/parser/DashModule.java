@@ -314,6 +314,9 @@ public class DashModule extends CompModuleHelper {
     	return transTable.getHigherPriTrans(tfqn);
     }
 
+    public boolean isEnvironmentalEvent(String efqn) {
+    	return eventTable.isEnvironmentalEvent(efqn);
+    }
 	public Boolean transAtThisParamDepth(int i) {
 		if (i > maxDepthParams) { DashErrors.tooHighParamDepth(); return null; }
 		else

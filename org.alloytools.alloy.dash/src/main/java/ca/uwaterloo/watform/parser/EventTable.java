@@ -92,9 +92,13 @@ public class EventTable {
 			.filter(i -> table.get(i).kind == IntEnvKind.ENV)
 			.collect(Collectors.toList());	
 	}
-	public List<String> getParams(String ev) {
-		if (table.containsKey(ev)) return table.get(ev).params;
-		else { DashErrors.eventTableGetParams(); return null; }
+	public List<String> getParams(String efqn) {
+		if (table.containsKey(efqn)) return table.get(efqn).params;
+		else { DashErrors.eventTableEventNotFound("getParams", efqn); return null; }
+	}
+	public boolean isEnvironmentalEvent(String efqn) {
+		if (table.containsKey(efqn)) return (table.get(efqn).kind == IntEnvKind.ENV);
+		else { DashErrors.eventTableEventNotFound("isEnvironmentalEvent", efqn); return false; }	
 	}
 	public List<String> allEventsOfState(String sfqn) {
 		// return all events declared in this state

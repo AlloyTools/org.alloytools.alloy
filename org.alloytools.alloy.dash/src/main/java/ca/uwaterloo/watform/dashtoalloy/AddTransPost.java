@@ -74,9 +74,7 @@ public class AddTransPost {
 
     public static void addTransPost(DashModule d, String tfqn) {
         String tout = translateFQN(tfqn);
-
         List<String> prs = d.getTransParams(tfqn); 
-
         List<Expr> body = new ArrayList<Expr>();
 
         // confi' = confi - exitedi + enteredi
@@ -100,9 +98,9 @@ public class AddTransPost {
             List<Expr> u = DashRef.hasNumParams(sU,i).stream()
                 .map(x -> x.toAlloy())
                 .collect(Collectors.toList());
-            Expr e = curConf(i);
+            Expr e = curScopesUsed(i);
             if (!u.isEmpty()) e = createUnion(e,createUnionFromList(u));
-            e = createEquals(nextConf(i),e);
+            e = createEquals(nextScopesUsed(i),e);
         }
 
         DashRef ev = d.getTransSend(tfqn);
@@ -178,18 +176,22 @@ public class AddTransPost {
         if (case4.isEmpty()) c4 = createTrue();
         else c4 = createAndFromList(case4);
 
-        body.add(
-        createITE(createTestIfNextStableCall(d, tfqn),
-            createAnd(
-                nextStableTrue(),
-                createITE (curStableTrue(),
-                    c1,
-                    c2)),
-            createAnd(
-                nextStableFalse(),
-                createITE(curStableTrue(),
-                    c3,
-                    c4))));
+        if (d.hasConcurrency())
+            body.add(
+            createITE(createTestIfNextStableCall(d, tfqn),
+                createAnd(
+                    nextStableTrue(),
+                    createITE (curStableTrue(),
+                        c1,
+                        c2)),
+                createAnd(
+                    nextStableFalse(),
+                    createITE(curStableTrue(),
+                        c3,
+                        c4))));
+        else 
+            body.add(
+                createAnd(nextStableTrue(), c1));
 
         d.alloyString += d.addPredSimple(tout+postName,curNextParamsDecls(prs),body);
     }

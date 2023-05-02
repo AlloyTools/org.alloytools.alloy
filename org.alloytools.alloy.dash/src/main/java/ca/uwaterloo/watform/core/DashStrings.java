@@ -58,7 +58,7 @@ public class DashStrings {
 	public static String equalsName = "equals";
 	public static String isEnabled = "isEnabled";
 	
-	// sig names
+	// sig/field names
 	public static String snapshotName = "Snapshot";
 	public static String confName = "conf";
 	public static String scopesUsedName = "scopesUsed";
@@ -81,8 +81,8 @@ public class DashStrings {
 	public static String testIfNextStableName = "testIfNextStable";
 	public static String enabledAfterStepName = "_enabledAfterStep";
 	public static String tName = "t";
-	public static String geName = "ge";
-
+	public static String genEventName = "genEvents";
+	public static String scopeName = "scope";
 	public static String bufferName = "buffer";
 	public static String bufferIndexName = "bufIdx";
 
