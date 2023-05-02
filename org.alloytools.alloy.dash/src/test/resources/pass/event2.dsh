@@ -1,0 +1,5 @@
+state Root {
+	event ev1 {}
+	trans t1 {
+	}
+}

@@ -17,6 +17,24 @@ public class DashCoreFQNTests {
         return Arrays.asList(k);
     }
 
+    @Test 
+    public void test1() {
+        String k = DashFQN.fqn("Root");
+        assertEquals(k, "Root");
+    }
+
+    @Test 
+    public void test2() {
+        String k = DashFQN.fqn("Root/A/B");
+        assertEquals(k, "Root/A/B");
+    }
+
+    @Test 
+    public void test3() {
+        String k = DashFQN.fqn("Root/A/B");
+        assertEquals(k, "Root/A/B");
+    }
+
     @Test
     public void testFQN1()  {
         String k = DashFQN.longestCommonFQN("Root/A","Root/B");
@@ -89,4 +107,11 @@ public class DashCoreFQNTests {
             }));
     }
 
+    @Test 
+    public void suffix() {
+        assert(DashFQN.suffix("A/B/C/x", "C/x"));
+        assert(DashFQN.suffix("A/B/C/x", "x"));
+        assert(DashFQN.suffix("x","x"));
+        assert(!DashFQN.suffix("A/B/xyz", "yz"));
+    }
 }

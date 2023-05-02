@@ -67,7 +67,9 @@ import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 import java.util.Arrays;
 import edu.mit.csail.sdg.alloy4.Pair;
-
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.MarkdownHandler;
@@ -1523,7 +1525,7 @@ TransItemList ::= TransItemList:c TransItem:x
         {: c.add(x); RESULT = c; :};
 
 //Exprp is non-empty list of comma-separated Expr
-
+//Exprs could be empty ist of comma-separated Expr
 TransItem ::= FROM:o Name:n  
         {: RESULT = new DashFrom(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()));  :};
 
@@ -1538,8 +1540,15 @@ TransItem ::= GOTO:o Name:n LBRACKET  Exprp:e RBRACKET
            RESULT = new DashGoto(o, new DashRef(o, n.label,e));
         :};
 
-TransItem ::= ON:o Expr:e   
-        {: RESULT = new DashOn(o, e);  :};
+// this allows "on x.ev1", "on A/ev1[x]" and "on n" in parsing but will have to sort out later to see if correct
+TransItem ::= ON:o Expr:v 
+        {: RESULT = new DashOn(o, v); :};
+
+//TransItem ::= ON:o Name:n   
+//        {: //RESULT = new DashOn(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()) );  :};
+
+//TransItem ::= ON:o Name:n LBRACKET  Expr:b RBRACKET  
+//        {: //RESULT = new DashOn(o, new DashRef(o,n.label,e) );  :};
 
 TransItem ::= WHEN:o Expr:v 
         {:  RESULT = new DashWhen(o, v); :};
@@ -1547,28 +1556,35 @@ TransItem ::= WHEN:o Expr:v
 TransItem ::= DO:o   Expr:v  
         {:  RESULT = new DashDo(o, v); :};
 
-
-
-
 // this allows Send x.ev1 and "Send n" in parsing but will have to sort out later to see if correct
 TransItem ::= SEND:o Expr:v 
         {: RESULT = new DashSend(o, v); :};
-        
-// DASH PLUS PROCESS VARIABLE REFERENCE
-// ParamConcState[Param]/Variable
-// result Param.ParamConcState/Variable
-// not sure why a BadJoin is used here; but Alloy parsing rules use ExprBadJoins, not ExprJoins
+
+//TransItem ::= SEND:o Name:n   
+//        {: RESULT = new DashSend(o, new DashRef(o, n.label,DashRef.emptyParamValuesList()) );  :};
+
+//TransItem ::= SEND:o Name:n LBRACKET  Exprp:e RBRACKET  
+//        {: RESULT = new DashSend(o, new DashRef(o,n.label,e) );  :};
+
+// DASH PLUS PROCESS REFERENCE
+// in Alloy can't have a "/Variable" in the following so we need more syntax
+// A/B/C[ParamValue1, ParamValue2]/Variable
+// result ParamValue2.ParamValue1.A/B/C/Variable (using BadJoins)
 // note PRIME is a special token in grammar and we want to support v'
+
 BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e 
     {: 
-        if (b.size() > 1) DashErrors.crossRefMoreThanOneArg(o,e.label); 
-        RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + e.label)); 
+        Expr r = ExprVar.make(o, a.toString() + '/' + e.label);
+        Collections.reverse(b);
+        for (Expr x:b) r = ExprBinary.Op.JOIN.make(o,null, x, r);
+        RESULT= ExprBinary.Op.JOIN.make(o, null, DashRef.processRef(), r);
     :}; 
 BracketExprB ::= BracketExprB:a LBRACKET:o Exprs:b RBRACKET SLASH Name:e PRIME
     {: 
-        if (b.size() > 1) DashErrors.crossRefMoreThanOneArg(o,e.label); 
-        // probably have to fix PRIME here later when turning to Alloy
-        RESULT= ExprBadJoin.make(o, null, b.get(0), ExprVar.make(o, a.toString() + '/' + e.label + "'")); 
+        Expr r = ExprVar.make(o, a.toString() + '/' + e.label + "'");
+        Collections.reverse(b);
+        for (Expr x:b) r = ExprBinary.Op.JOIN.make(o,null, x, r);
+        RESULT= ExprBinary.Op.JOIN.make(o, null, DashRef.processRef(),r);
     :}; 
 
 //DASH end grammar ---------------------------------------------------------------------

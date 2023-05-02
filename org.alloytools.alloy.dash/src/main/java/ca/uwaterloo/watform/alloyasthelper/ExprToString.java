@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringJoiner;
+import java.util.List;
+import java.util.Collections;
 
 import de.uka.ilkd.pp.DataLayouter;
 import de.uka.ilkd.pp.NoExceptions;
@@ -17,7 +19,11 @@ import edu.mit.csail.sdg.ast.*;
 import edu.mit.csail.sdg.ast.Sig.Field;
 import edu.mit.csail.sdg.ast.Sig.PrimSig;
 
+import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
+import ca.uwaterloo.watform.core.DashFQN;
+import ca.uwaterloo.watform.core.DashRef;
 import ca.uwaterloo.watform.core.DashErrors;
+import ca.uwaterloo.watform.core.DashUtilFcns;
 
 public class ExprToString {
 
@@ -39,16 +45,17 @@ public class ExprToString {
         return back.getString();
     }
     private void ExprToOut(Expr expr) {
+        
         /*
         if (expr instanceof ExprBad){
             ExprBadToOut((ExprBad)expr);
+        
         } else if (expr instanceof ExprBadCall){
             ExprBadCallToOut((ExprBadCall)expr);
-        } else if (expr instanceof ExprBadJoin){
-            ExprBadJoinToOut((ExprBadJoin)expr);
-        } else 
         */
-        if (expr instanceof ExprBinary){
+        if (expr instanceof ExprBadJoin){
+            ExprBadJoinToOut((ExprBadJoin)expr);
+        } else if (expr instanceof ExprBinary) {
             ExprBinaryToOut((ExprBinary)expr);
         } else if (expr instanceof ExprCall){
             ExprCallToOut((ExprCall)expr);
@@ -72,7 +79,7 @@ public class ExprToString {
             SigToOut((Sig)expr);
         } else if (expr instanceof Field){
             FieldToOut((Field)expr);
-        } else DashErrors.missingExpr("ExprToOut ");
+        } else DashErrors.missingExpr("ExprToOut :" +expr.getClass().getName());
     }
     /*
     private void ExprBad(ExprBad expr) {
@@ -90,18 +97,33 @@ public class ExprToString {
         }
         out.end().print(']');
     }
-
-    private void ExprBadJoin(ExprBadJoin expr) {
-        Expr(expr.left);
-        out.print('.');
-        Expr(expr.right);
-    }
     */
+
+    
     private Boolean isBinary(Expr e) {
         return (e instanceof ExprBinary);
     }
     private void ExprBinaryToOut(ExprBinary expr) {
-        if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
+        if (DashRef.isDashRefProcessRef(expr)) {
+            //   Root/A/B[exp1, exp2]/v1
+            String v = DashRef.nameOfDashRefExpr(expr);
+            String n = DashFQN.chopNameFromFQN(v);
+            String prefix = DashFQN.chopPrefixFromFQN(v);
+            String s = prefix;
+            s += "[";
+            List<String> el = new ArrayList<String>();
+            Expr e1 = getLeft(expr);
+            el.add(e1.toString());
+            while (isExprJoin(e1)) {
+                el.add(e1.toString());
+                e1 = getLeft(e1);
+            }
+            Collections.reverse(el);
+            s += DashUtilFcns.strCommaList(el);
+            s += "]/" + v;
+            out.print(s);
+        }
+        else if (expr.op == ExprBinary.Op.ISSEQ_ARROW_LONE) {
             out.print("seq ");
             ExprToOut(expr.right);
         }
@@ -138,6 +160,17 @@ public class ExprToString {
         }
     }
     
+    private void ExprBadJoinToOut(ExprBadJoin expr) {
+        out.print("(");
+        ExprToOut(expr.left);
+        out.print(")");
+        out.print('.');
+        out.print("(");
+        ExprToOut(expr.right);
+        out.print(")");
+    }
+
+
     private void ExprBinaryJoinToOut(ExprBinary expr) {
         // The Alloy resolve dot joins (this) to a variable reference in a variable. We should not bring the ("this")
         // We also do not print (Snapshot <: ...)

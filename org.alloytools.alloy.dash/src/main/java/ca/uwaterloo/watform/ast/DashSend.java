@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.StringJoiner;
 
 import ca.uwaterloo.watform.core.DashStrings;
+import ca.uwaterloo.watform.core.DashRef;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
@@ -20,14 +21,31 @@ import edu.mit.csail.sdg.ast.Expr;
 
 public class DashSend  extends Dash {
 
-	public Expr eventExpr;
-	public DashSend(Pos pos,Expr ev) {
-		assert(ev != null);
+	//public DashRef ref;
+	public Expr exp;
+
+	/*
+	public DashSend(Pos pos,DashRef r) {
+		assert(r != null);
 		this.pos = pos;
-		this.eventExpr = ev;
+		this.ref = r;
+		this.exp = null;
+	}
+	*/
+	public DashSend(Pos pos,Expr e) {
+		assert(e != null);
+		this.pos = pos;
+		this.exp = e;
+		//this.ref = null;
 	}
 	public String toString() {
-		return DashStrings.sendName + " " + eventExpr.toString() + "\n";
+		//if (ref != null)
+		//	return DashStrings.sendName + " " + ref.toString() + "\n";
+		//else
+			return DashStrings.sendName + " " + exp.toString() + "\n";
+	}
+	public Expr getExp() {
+		return exp;
 	}
 }
 

@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import edu.mit.csail.sdg.alloy4.Pair;
-
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.MarkdownHandler;

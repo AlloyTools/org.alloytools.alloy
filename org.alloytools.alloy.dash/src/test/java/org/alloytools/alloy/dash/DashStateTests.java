@@ -115,42 +115,58 @@ public class DashStateTests {
       assertTrue(d.getAllAnces("Root/S1").equals(ll(new String[]{"Root", "Root/S1"})));
    }
 
-   // getClosestConcAnces ----------------
+   // getClosestParamAnces ----------------
 
    @Test 
-   public void getClosestConcAnces1() {
+   public void getClosestParamAnces1() {
       DashModule d = test("noSrc1");
-      assertTrue(d.getClosestConcAnces("Root/S1").equals("Root"));
-      assertTrue(d.getClosestConcAnces("Root/S2").equals("Root"));
+      assertTrue(d.getClosestParamAnces("Root/S1").equals("Root"));
+      assertTrue(d.getClosestParamAnces("Root/S2").equals("Root"));
    }
    @Test 
-   public void getClosestConcAnces2() {
+   public void getClosestParamAnces2() {
       DashModule d = test("scopeParam2");
-      assertTrue(d.getClosestConcAnces("Root/A/B/S1").equals("Root/A/B"));
-      assertTrue(d.getClosestConcAnces("Root/A/B").equals("Root/A/B"));
+      assertTrue(d.getClosestParamAnces("Root/A/B/S1").equals("Root/A/B"));
+      assertTrue(d.getClosestParamAnces("Root/A/B").equals("Root/A/B"));
    }
 
-   // getAllNonConcDesc --------------
 
-   @Test 
-   public void getAllNonConcDesc1() {
-      DashModule d = test("getAllNonConcDesc1");
-      assertTrue(d.getAllNonConcDesc("Root")
-         .equals(ll(new String[]{"Root", "Root/S1", "Root/S1/S2","Root/S3","Root/S3/S4", "Root/S3/S4/S5"})));
-   }
 
    // getRegion ----------------------
    @Test 
    public void getRegion1() {
       DashModule d = test("getRegion1");
       assertTrue(d.getRegion("Root/S1/S2")
-         .equals(ll(new String[]{"Root", "Root/S1", "Root/S1/S2","Root/S3","Root/S3/S4", "Root/S3/S4/S5"})));
+         .equals(ll(new String[]{
+            "Root", 
+            "Root/S1", 
+            "Root/S1/S2",
+            "Root/S3",
+            "Root/S3/S4", 
+            "Root/S3/S4/S5",
+            "Root/S3/A",
+            "Root/S3/A/S7",
+            "Root/S3/A/S7/S8",
+            "Root/S3/B",
+            "Root/S3/B/S7"
+         })));
    }
    @Test 
    public void getRegion2() {
       DashModule d = test("getAllNonConcDesc1");
       assertTrue(d.getRegion("Root/S1/S2")
-         .equals(ll(new String[]{"Root", "Root/S1", "Root/S1/S2","Root/S3","Root/S3/S4", "Root/S3/S4/S5"})));
+         .equals(ll(new String[]{
+            "Root", 
+            "Root/S1", 
+            "Root/S1/S2",
+            "Root/S3",
+            "Root/S3/S4", 
+            "Root/S3/S4/S5",
+            "Root/S3/A",
+            "Root/S3/A/S7",
+            "Root/S3/B",
+            "Root/S3/B/S7"
+         })));
    }
 
    // allPrefixDashRefs ----------------------
@@ -899,6 +915,36 @@ public class DashStateTests {
             "Root/B/E/F[e2, FID]",
             "Root/B/E/G[e2]"
          }))); 
+   }
+
+   @Test
+   public void overall10() {
+      DashModule d = test("overall10");
+      String tfqn = "Root/S1/t1";
+      assertTrue(
+         src(d, tfqn).equals("Root/S1[]"));
+      assertTrue(
+         dest(d, tfqn).equals("Root/S2[]")); 
+   }
+
+   @Test
+   public void overall11() {
+      DashModule d = test("overall11");
+      String tfqn = "Root/S1/t1";
+      assertTrue(
+         src(d, tfqn).equals("Root/S1[]"));
+      assertTrue(
+         dest(d, tfqn).equals("Root/S2[]")); 
+   }
+
+   @Test
+   public void overall12() {
+      DashModule d = test("overall12");
+      String tfqn = "Root/S1/t1";
+      assertTrue(
+         src(d, tfqn).equals("Root/S1[]"));
+      assertTrue(
+         dest(d, tfqn).equals("Root/S1/S7[]")); 
    }
 
 }

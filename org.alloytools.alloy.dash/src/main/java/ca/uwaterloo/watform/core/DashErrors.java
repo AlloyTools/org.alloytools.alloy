@@ -46,8 +46,8 @@ public class DashErrors {
 		throw new ErrorSyntax(dupSiblingNamesMsg + dups);
 	}
 	public static String dupTransNameMsg = "Duplicate transition names: ";
-	public static void dupTransNames(String dups) throws Err {
-		throw new ErrorSyntax(dupTransNameMsg + dups);
+	public static void dupTransNames(Pos o, String dups) throws Err {
+		throw new ErrorSyntax(o, dupTransNameMsg + dups);
 	}
 	public static String moreThanOneSrcDestMsg = "Transition has more than one src or dest: ";
 	public static void moreThanOneSrcDest(String x, String n) throws Err {
@@ -70,6 +70,11 @@ public class DashErrors {
 		throw new ErrorSyntax(ambiguousSrcDestMsg + "trans "+tfqn+" "+x);
 	}
 	// below this have not been tested
+
+	public static String transNameCantBeFQNMsg = "Trans name cannot be fully qualified at declaration: ";
+	public static void transNameCantBeFQN(Pos o, String s) {
+		throw new ErrorSyntax(o, transNameCantBeFQNMsg + s);
+	}
 
 	public static String eventNameCantBeFQNMsg = "Event name cannot be fully qualified at declaration: ";
 	public static void eventNameCantBeFQN(Pos o, String s) {
@@ -96,23 +101,39 @@ public class DashErrors {
 		throw new ErrorSyntax(o, duplicateBufferNameMsg + s);
 	}
 
-	public static void siblingsSameKind(String fqn) throws Err {
-		throw new ErrorSyntax("Children of "+fqn+" must all be of concurrent or not concurrent");
+	// event errors
+	public static String tooManyEventsMsg = "Multiple ";
+	public static void tooManyEvents(String xType, String tfqn) {
+		throw new ErrorSyntax(tooManyEventsMsg + xType + " in " + tfqn);
 	}
-	public static void crossRefMoreThanOneArg(Pos o, String n) throws Err {
-		throw new ErrorSyntax(o,"Two many args to reference to "+n+" in sibling state");
+	public static String unknownEventMsg = "Event does not exist: ";
+	public static void unknownEvent(String xType, String v, String tfqn) {
+		throw new ErrorSyntax(unknownEventMsg +v+" in "+ tfqn +" "+ xType);
 	}
-
-
-	public static void transUsesNonExistentState(String n) throws Err {
-		throw new ErrorSyntax("Some transition has from/goto to state "+n+" which doesn't exist");
+	public static String ambiguousEventMsg = "Event name not unique within this conc/Root region: ";
+	public static void ambiguousEvent(String xType, String v, String tfqn) {
+		throw new ErrorSyntax(ambiguousEventMsg +v+" in "+ tfqn + " "+xType);
 	}
-
-
-
-	public static void andCrossTransition(String tfqn) throws Err {
-		throw new ErrorSyntax("Trans "+tfqn+" goes between concurrent states");
+	public static String fqnEventMissingParametersMsg = "Fully qualified event name missing paramaters: ";
+	public static void fqnEventMissingParameters(String xType, String v, String tfqn) {
+		throw new ErrorSyntax(fqnEventMissingParametersMsg + v + " in "+tfqn + " " + xType);
 	}
+	public static String expNotEventMsg = "Not an event for: ";
+	public static void expNotEvent(String xType, String tfqn) {
+		throw new ErrorSyntax(expNotEventMsg + tfqn + " " + xType);
+	}
+	//public static void siblingsSameKind(String fqn) throws Err {
+	//	throw new ErrorSyntax("Children of "+fqn+" must all be of concurrent or not concurrent");
+	//}
+	//public static void crossRefMoreThanOneArg(Pos o, String n) throws Err {
+	//	throw new ErrorSyntax(o,"Two many args to reference to "+n+" in sibling state");
+	//}
+
+
+
+
+
+
 
 
 
@@ -156,5 +177,36 @@ public class DashErrors {
 	public static String paramNumberProblemMsg = "wrong number of param values: ";
 	public static void paramNumberProblem(String s) throws Err {
 		throw new ErrorFatal(paramNumberProblemMsg + s);
+	}
+	public static String chopPrefixFromFQNwithNoPrefixMsg = "chopPrefixFromFQNwithNoPrefix: ";
+	public static void chopPrefixFromFQNwithNoPrefix(String s) throws Err {
+		throw new ErrorFatal(chopPrefixFromFQNwithNoPrefixMsg + s);
+	}
+	public static void nonEmptyStateItems() throws Err {
+		throw new ErrorFatal("Non-empty state items at end of state resolve");
+	}
+	public static void nonEmptyTransItems() throws Err {
+		throw new ErrorFatal("Non-empty trans items at end of trans resolve");
+	}
+	public static void getRightNotBinaryOrJoin() throws Err {
+		throw new ErrorFatal("getRightNotBinaryOrJoin");
+	}
+	public static void getLeftNotBinaryOrJoin() throws Err {
+		throw new ErrorFatal("getLeftNotBinaryOrJoin");
+	}
+	public static void replaceDashRefExprVarError() throws Err {
+		throw new ErrorFatal("replaceDashRefExprVarError");
+	}
+	public static void nonDashRefExpr() throws Err {
+		throw new ErrorFatal("nonDashRefExpr");
+	}
+	public static void eventTableGetParams() {
+		throw new ErrorFatal("eventTableGetParams");
+	}
+	public static void regionMatchesWrongParamNumber() {
+		throw new ErrorFatal("regionMatchesWrongParamNumber");
+	}
+	public static void createTestIfNextStableCallMultipleScopesAtSameLevel() {
+		throw new ErrorFatal("createTestIfNextStableCallMultipleScopesAtSameLevel");
 	}
 }

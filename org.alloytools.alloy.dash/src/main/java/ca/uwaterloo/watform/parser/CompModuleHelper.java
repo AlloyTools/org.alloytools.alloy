@@ -112,7 +112,7 @@ public class CompModuleHelper extends CompModule {
             Pos.UNKNOWN,
             extension, 
             ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null,
             AttrType.ABSTRACT.makenull(Pos.UNKNOWN), 
@@ -134,7 +134,7 @@ public class CompModuleHelper extends CompModule {
             Pos.UNKNOWN,
             extension, 
             ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null, 
             null, 
@@ -156,7 +156,7 @@ public class CompModuleHelper extends CompModule {
             Pos.UNKNOWN,
             extension, 
             ExprHelper.createVar(DashStrings.extendsName), 
-            ExprHelper.createVarList(new ArrayList<String>(Arrays.asList(extended))), 
+            ExprHelper.createExprVarList(new ArrayList<String>(Arrays.asList(extended))), 
             new ArrayList<Decl>(), 
             null, 
             null, 
@@ -249,7 +249,7 @@ public class CompModuleHelper extends CompModule {
      * t is return type; null if predicate
      */
     public String addPredSimple(String name, List<Decl> decls, List<Expr> eList) {
-        Expr body = ExprHelper.createAnd(eList);
+        Expr body = ExprHelper.createAndFromList(eList);
         addFunc(Pos.UNKNOWN, Pos.UNKNOWN, ExprHelper.createVar(name), null, decls, null, body);
         String s = new String();
         s += DashStrings.predName + " " + name + "[";

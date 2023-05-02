@@ -3,6 +3,6 @@ state A {
 		// these are all allowed
 		send ev1
 		send P[x]/ev1
-		send x.y.ev1
+		on P[x]/ev1
 	}
 }

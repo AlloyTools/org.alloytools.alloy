@@ -15,6 +15,7 @@ public class DashStrings {
 	public static String asName = "as";
 	public static String boolName = "boolean/Bool";
 	public static String trueName = "boolean/True";
+	public static String falseName = "boolean/False";
 	public static String noneName = "none";
 	public static String intName = "int";
 	public static String utilBooleanName = "util/boolean";
@@ -64,21 +65,21 @@ public class DashStrings {
 
 	public static String stateLabelName = "StateLabel";
 	public static String systemStateName = "SystemState";
-	public static String transitionLabelName = "TransitionLabel";
+	//public static String transitionLabelName = "TransitionLabel";
 	public static String identifierName = "Identifiers";
 	// how to name parameter variables
 	public static String pName = "p";
 	public static String eventsName = "events";
-	public static String eventLabelName = "EventLabel";
-	public static String envEventLabelName = "EnvironmentalEvent";
-	public static String intEventLabelName = "InternalEvent";
+	public static String allEventsName = "AllEvents";
+	public static String allEnvironmentalEventsName = "AllEnvironmentalEvents";
+	public static String allInternalEventsName = "AllInternalEvent";
 
 
 	public static String preName = "_pre";
 	public static String postName = "_post";
 	public static String semanticsName = "_semantics";
 	public static String testIfNextStableName = "testIfNextStable";
-	public static String isEnabledAfterStepName = "_isEnabledAfterStep";
+	public static String enabledAfterStepName = "_enabledAfterStep";
 	public static String tName = "t";
 	public static String geName = "ge";
 
@@ -113,4 +114,7 @@ public class DashStrings {
 		DEFAULT,
 		NOTDEFAULT
 	}
+
+	public static String processRef = "$$PROCESSREF$$";
+
 }

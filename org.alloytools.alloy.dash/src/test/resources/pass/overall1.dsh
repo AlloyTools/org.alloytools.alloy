@@ -1,4 +1,5 @@
 state Root {
+	event ev1 {}
 	conc A [AID] {
 		conc B [BID] {
 			state S1 {}
@@ -10,5 +11,6 @@ state Root {
 	trans t1 {
 		from Root/A/B/S1[a1,b1]
 		goto Root/C/S2[c1]
+		on ev1
 	}
 }

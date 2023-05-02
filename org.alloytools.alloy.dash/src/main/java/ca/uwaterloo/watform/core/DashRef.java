@@ -3,12 +3,16 @@ package ca.uwaterloo.watform.core;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprBinary;
+import edu.mit.csail.sdg.ast.ExprVar;
 
-import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
+import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
 import ca.uwaterloo.watform.core.DashUtilFcns;
+import ca.uwaterloo.watform.core.DashErrors;
 
 public class DashRef{
 	private Pos pos;
@@ -49,7 +53,170 @@ public class DashRef{
 	public Expr toAlloy() {
 		List<Expr> ll = new ArrayList<Expr>(paramValues);
 		Collections.reverse(ll);
-		ll.add(ExprHelper.createVar(name));
-		return ExprHelper.createArrowExprList(ll);
+		ll.add(createVar(name));
+		return createArrowExprList(ll);
 	}
+
+
+	// the following operations are about Alloy expressions that
+	// represent joins from a DashRefs
+
+	// These are:
+	// exp2. exp1. Root/A/B/v1 (from Root/A/B[exp1,exp2]/v1 with Joins for events and vars in exp)
+	// exp2. exp1. Root/A/B/v1 (with regular Joins for vars)
+	// exp2 -> exp1 -> Root/A/B/v1 (from events)
+	// We think it is a DashRef is there is a slash in the "name"
+	// slashes aren't regularly allowed in Alloy
+
+	// stuck in the formula the parser produces
+	// from Root/A/B[exp1,exp2]/v1
+	public static Expr processRef() {
+		return createVar(DashStrings.processRef);
+	}
+
+	/* 
+		could be used in an action or in an event expr 
+		was built by new Expr rule in parser
+		Root/A/B[exp1,exp2]/v1 is recorded in the AST as
+		$$PROCESSREF$$ . exp2 . exp1 . Root/A/B/v1
+	*/
+	public static boolean isDashRefProcessRef(Expr e) {
+		if (isExprJoin(e)) 
+			if (isExprVar(getLeft(e)))
+				return sEquals(getLeft(e), processRef());
+		return false;
+	}
+	/*
+		can only be used in an action
+		exp2. exp1. Root/A/B/v1 or
+		exp2. exp1. Root/A/B/v1'
+	*/
+	public static boolean isDashRefJoin(Expr e) {
+		if (isExprJoin(e)) {
+			Expr e2 = e;
+			while (isExprJoin(e2)) e2 = getRight(e2);
+			if (isExprVar(e2)) return true;
+				//String v = getVarName((ExprVar)e2);
+				//if (DashFQN.isFQN(v)) return true;
+			//}
+		}
+		return false;
+	}
+	// results from pred calls Tk[xx]
+	public static boolean isDashRefBadJoin(Expr e) {
+		//System.out.println(e);
+		//System.out.println(e.getClass().getName());
+		if (isExprBadJoin(e)) {
+			Expr e2 = e;
+			while (isExprBadJoin(e2)) {
+				e2 = getRight(e2);
+			}
+			if (isExprVar(e2)) return true; //{
+				//String v = getVarName((ExprVar)e2);
+				//if (DashFQN.isFQN(v)) return true;
+			//}
+		}
+		return false;
+	}
+
+	/* 
+		can only be used in an event
+		exp2 -> exp1 -> Root/A/B/ev1 
+	*/
+	public static boolean isDashRefArrow(Expr e) {
+		if (isExprArrow(e)) {
+			Expr e2 = e;
+			while (isExprArrow(e2)) e2 = getRight(e2);
+			if (isExprVar(e2)) return true; //{
+				//String v = getVarName((ExprVar)e2);
+				//if (DashFQN.isFQN(v)) return true;
+			//}
+		}
+		return false;
+	}
+
+	/*
+		from exp2. exp2. Root/A/B/v1' return Root/A/B/v1'
+	*/
+	public static String nameOfDashRefExpr(Expr e) {
+		assert(isDashRefProcessRef(e) || isDashRefJoin(e) || isDashRefArrow(e) || isDashRefBadJoin(e));
+		Expr e2 = getRight(e);
+		while (isExprBadJoin(e2) || isExprJoin(e2)) {
+			e2 = getRight(e2);
+		}
+		assert(isExprVar(e2));
+		String v = getVarName((ExprVar) e2);
+		//assert(DashFQN.isFQN(v));
+		return v;
+	}
+	public static List<Expr> paramValuesOfDashRefExpr(Expr e) {
+		List<Expr> r = new ArrayList<Expr>();
+		Expr e1 = e;
+		if (isDashRefProcessRef(e1)) {
+			e1 = getRight(e1); // ignore $$PROCESSREF$$
+			while (isExprJoin(e1)) {
+				r.add(getLeft(e1));
+				e1 = getRight(e1);
+			}
+		} else if (isExprJoin(e1)) {
+			while (isExprJoin(e1)) {
+				r.add(getLeft(e1));
+				e1 = getRight(e1);
+			}			
+		} else if (isExprBadJoin(e1)) {
+			while (isExprBadJoin(e1)) {
+				r.add(getLeft(e1));
+				e1 = getRight(e1);
+			}	
+		} else if (isExprArrow(e1)) {
+			while (isExprArrow(e1)) {
+				r.add(getLeft(e1));
+				e1 = getRight(e1);
+			}
+		} else {
+			DashErrors.nonDashRefExpr();
+			return null;
+		}
+		return r;
+	}
+	/*
+		replaceDashRefExprVar(exp2. exp1. Root/A/B/v1', sNext.Root/A/B/v1 )
+		returns exp2.exp1.sNext.Root/A/B/v1
+	*/
+
+	public static Expr subForDashRefArrow(Expr e, Expr r) {
+		if (isExprVar(e)) return r;
+		else return createArrow(getLeft(e), subForDashRefArrow(getRight(e),r));
+	}
+	// works for Join or BadJoin
+	public static Expr subForDashRefJoin(Expr e, Expr r) {
+		if (isExprVar(e)) return r;
+		else return createJoin(getLeft(e), subForDashRefJoin(getRight(e),r));
+	}
+	public static Expr convertDashRefProcessRefToArrow(Expr e) {
+		// removes $$PROCESSREF$$ and replaces joins with arrows
+		Expr e1 = getRight(e);
+		return convertDashRefProcessRefToArrowAux(e1);
+	}
+	public static Expr convertDashRefProcessRefToArrowAux(Expr e) {
+		if (isExprVar(e)) return fqnVar(e);
+		else return createArrow(getLeft(e), convertDashRefProcessRefToArrowAux(getRight(e)));
+	}	
+	public static ExprVar fqnVar(Expr e) {
+		assert(isExprVar(e));
+		return createVar(DashFQN.fqn(getVarName((ExprVar) e)));
+	}
+    // referencing a for loop variable in a filter does not work
+    // so do this as a loop
+    public static List<DashRef> hasNumParams(List<DashRef> dr, int i) {
+        // filter to ones that have this number of params
+        //System.out.println(i);
+        //System.out.println(dr);
+        List<DashRef> o = dr.stream()
+            .filter(x -> x.getParamValues().size() == i)
+            .collect(Collectors.toList()); 
+        //System.out.println(o);
+        return o;
+    }
+    
 }

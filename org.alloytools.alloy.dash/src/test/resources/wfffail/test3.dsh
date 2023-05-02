@@ -1,6 +1,9 @@
 state A {
 	trans t1 {
-		// should fail on x,y as a list
-		send P[x,y]/ev1	
+		// these are all allowed
+		send ev1
+		send P[x]/ev1
+		send x.y.ev1
+		on x.y.ev1
 	}
 }

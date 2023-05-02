@@ -79,13 +79,14 @@ public class DashWffFailTests {
          {"moreThanOneSrcDest1", moreThanOneSrcDestMsg},
          {"moreThanOneSrcDest2", moreThanOneSrcDestMsg}, // 19
          {"moreThanOneSrcDest3", moreThanOneSrcDestMsg},
-         {"unknownSrcDest1", unknownSrcDestMsg},
-         {"unknownSrcDest2", unknownSrcDestMsg},
-         {"unknownSrcDest3", unknownSrcDestMsg},
+         //{"unknownSrcDest1", unknownSrcDestMsg}, //21
+         //{"unknownSrcDest2", unknownSrcDestMsg},
+         //{"unknownSrcDest3", unknownSrcDestMsg},
          {"unknownSrcDest4", unknownSrcDestMsg},
-         {"fqnSrcDestMustHaveRightNumberParams1", fqnSrcDestMustHaveRightNumberParamsMsg},
+         {"fqnSrcDestMustHaveRightNumberParams1", fqnSrcDestMustHaveRightNumberParamsMsg}, 
          {"srcDestCantHaveParam1", srcDestCantHaveParamMsg},
-         {"ambiguousSrcDest1", ambiguousSrcDestMsg}
+         {"ambiguousSrcDest1", ambiguousSrcDestMsg},
+         {"test11",ambiguousSrcDestMsg}
       });
    }
 

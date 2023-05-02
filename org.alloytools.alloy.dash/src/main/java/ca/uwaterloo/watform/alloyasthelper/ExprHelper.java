@@ -18,8 +18,10 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.ExprHasName;
 import edu.mit.csail.sdg.ast.ExprBinary;
 
-
 import ca.uwaterloo.watform.core.DashStrings;
+import ca.uwaterloo.watform.core.DashErrors;
+
+import ca.uwaterloo.watform.alloyasthelper.ExprToString;
 
 // these are all static
 // don't want to make them an extension
@@ -28,6 +30,52 @@ import ca.uwaterloo.watform.core.DashStrings;
 
 public class ExprHelper  {
 
+    // tests ------------------------------------
+    public static boolean isExprBinary(Expr e) {
+        return (e instanceof ExprBinary);
+    }
+    public static boolean isExprJoin(Expr e) {
+        return ((e instanceof ExprBinary) && ((ExprBinary) e).op.equals(ExprBinary.Op.JOIN));
+    }
+    public static boolean isExprArrow(Expr e) {
+        return ((e instanceof ExprBinary) && ((ExprBinary) e).op.equals(ExprBinary.Op.ARROW));
+    }
+    public static boolean isExprBadJoin(Expr e) {
+        return (e instanceof ExprBadJoin);
+    }
+    public static boolean isExprVar(Expr e) {
+        return (e instanceof ExprVar);
+    }
+
+    // simple equality: two var names are equal
+    public static boolean sEquals(Expr e1, Expr e2) {
+        return ( (e1 == e2) ||
+                 (isExprVar(e1) && isExprVar(e2) && 
+                    getVarName((ExprVar) e1).equals(getVarName((ExprVar) e2)))) ;
+    }
+
+    // destructors -------------------------------
+    public static String getVarName(ExprVar e) {
+        return e.label;
+    }
+
+    public static Expr getRight(Expr e) {
+        if (isExprBinary(e) )
+            return ((ExprBinary) e).right;
+        else if (isExprBadJoin(e) )
+            return ((ExprBadJoin) e).right;
+        else { DashErrors.getRightNotBinaryOrJoin(); return null; }
+    }
+    public static Expr getLeft(Expr e) {
+        if (isExprBinary(e)) 
+            return ((ExprBinary) e).left;
+        else if (isExprBadJoin(e))
+            return ((ExprBadJoin) e).left;
+        else { DashErrors.getLeftNotBinaryOrJoin(); return null; }
+    }
+
+    // constructors -----------------------------------
+
     // useful in development
     public static Expr createNullExpr() {
         return createEquals(createTrue(),createTrue());
@@ -35,34 +83,46 @@ public class ExprHelper  {
     public static ExprVar createTrue() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.trueName);
     } 
+    public static ExprVar createFalse() {
+        return ExprVar.make(Pos.UNKNOWN,  DashStrings.falseName);
+    } 
     public static ExprVar createNone() {
         return ExprVar.make(Pos.UNKNOWN,  DashStrings.noneName);
     } 
     public static ExprVar createVar(String v) {
         return ExprVar.make(Pos.UNKNOWN, v);
     }
-    public static List<ExprVar> createVarList(List<String> vList) {
-        List<ExprVar> retList = new ArrayList<ExprVar>();
+    public static List<Expr> createVarList(List<String> vList) {
+        List<Expr> retList = new ArrayList<Expr>();
         for (String v: vList) {
             retList.add(createVar(v));
         }
         return retList;
     }
-    public static List<ExprVar> createVarList(String prefix, List<String> vList) {
-        List<ExprVar> retList = new ArrayList<ExprVar>();
+    public static List<Expr> createVarList(String prefix, List<String> vList) {
+        List<Expr> retList = new ArrayList<Expr>();
         for (String v: vList) {
             retList.add(createVar(prefix+v));
         }
         return retList;
     }
+    
     // to avoid the need to cast every ExprVar to an Expr
-    public static List<Expr> createVarExprList(String prefix, List<String> vList) {
-        List<Expr> retList = new ArrayList<Expr>();
+    public static List<ExprVar> createExprVarList(List<String> vList) {
+        List<ExprVar> retList = new ArrayList<ExprVar>();
         for (String v: vList) {
-            retList.add((Expr) createVar(prefix+v));
+            retList.add((ExprVar) createVar(v));
         }
         return retList;
     }
+    public static List<ExprVar> createExprVarList(String prefix, List<String> vList) {
+        List<ExprVar> retList = new ArrayList<ExprVar>();
+        for (String v: vList) {
+            retList.add((ExprVar) createVar(prefix + v));
+        }
+        return retList;
+    }
+
     /* generic ones */
     public static Expr createBinaryExpr(Expr left, ExprBinary.Op op, Expr right) {   
         return (ExprBinary) op.make(Pos.UNKNOWN, Pos.UNKNOWN,left,right);
@@ -130,21 +190,48 @@ public class ExprHelper  {
     public static ExprList createAnd(Expr left, Expr right) {
         return (ExprList) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static ExprList createAnd(List<Expr> args) {
-        return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
+    //public static ExprList createAndList(List<Expr> args) {
+    //    return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
+    //}
+    public static Expr createAndFromList(List<Expr> elist) {
+        if (elist.isEmpty()) return createTrue();
+        Expr ret = elist.get(0);
+        for (Expr el: elist.subList(1,elist.size())) {
+            ret = createAnd(ret,el);
+        }
+        return ret;
     }
     public static ExprList createOr(Expr left, Expr right) {
         return (ExprList) ExprBinary.Op.OR.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    public static ExprList createOr(List<Expr> args) {
-        return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
+    public static Expr createOrFromList(List<Expr> elist) {
+        if (elist.isEmpty()) return createTrue();
+        Expr ret = elist.get(0);
+        for (Expr el: elist.subList(1,elist.size())) {
+            ret = createOr(ret,el);
+        }
+        return ret;
     }
+    //public static ExprList createOr(List<Expr> args) {
+    //    return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
+    //}
     public static ExprBinary createArrow(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.ARROW.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     // set union
     public static ExprBinary createUnion(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.PLUS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
+    }
+    public static Expr createUnionFromList(List<Expr> elist) {
+        if (elist.isEmpty()) return createNone();
+        Expr ret = elist.get(0);
+        for (Expr el: elist.subList(1,elist.size())) {
+            ret = createUnion(ret,el);
+        }
+        return ret;
+    }
+    public static ExprBinary createIntersect(Expr left,Expr right) {
+        return (ExprBinary) ExprBinary.Op.INTERSECT.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     // set diff
     public static ExprBinary createDiff(Expr left,Expr right) {
@@ -203,12 +290,10 @@ public class ExprHelper  {
         return o;
     }
 
-    // simple equality: two var names are equal
-    public static boolean sEquals(Expr e1, Expr e2) {
-        return ( (e1 == e2) ||
-                 (e1 instanceof ExprVar && 
-                    e2 instanceof ExprVar && 
-                    ((ExprVar) e1).label.equals(((ExprVar) e2).label))) ;
+    public static String myExprToString(Expr e) {
+        ExprToString eToString = new ExprToString(false);
+        return eToString.toString(e);
     }
+
 
 }

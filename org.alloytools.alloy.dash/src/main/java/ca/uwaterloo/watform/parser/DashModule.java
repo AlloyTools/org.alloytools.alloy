@@ -233,13 +233,16 @@ public class DashModule extends CompModuleHelper {
 		return numBuffers;
 	}
     public boolean hasInternalEvents() {
-		return false; // (eventTable.hasInternalEvents());
+		return eventTable.hasInternalEvents();
 	}
 	public boolean hasEnvironmentalEvents() {
-		return false; //(eventTable.hasExternalEvents());
+		return eventTable.hasEnvironmentalEvents();
 	}
 	public boolean hasEvents() {
-		return false; //(hasInternalEvents() || hasEnvironmentalEvents())
+		return eventTable.hasEvents();
+	}
+	public boolean hasEventsAti(int i) {
+		return eventTable.hasEventsAti(i);
 	}
 	public boolean hasConcurrency() {
 		return stateTable.hasConcurrency(root.name);
@@ -277,25 +280,35 @@ public class DashModule extends CompModuleHelper {
     public List<String> getAllAnces(String sfqn) {
     	return stateTable.getAllAnces(sfqn);
     }
-    public String getClosestConcAnces(String sfqn) {
-		return stateTable.getClosestConcAnces(sfqn);
+    public String getClosestParamAnces(String sfqn) {
+		return stateTable.getClosestParamAnces(sfqn);
 	}
-	public List<String> getAllNonConcDesc(String sfqn) {
-		return stateTable.getAllNonConcDesc(sfqn);
+	public List<String> getAllNonParamDesc(String sfqn) {
+		return stateTable.getAllNonParamDesc(sfqn);
 	}
 	public List<String> getRegion(String sfqn) {
 		return stateTable.getRegion(sfqn);
 	}
 
     // stuff about transitions
-    public Set<String> getTransNames() {
-    	return transTable.getTransNames();
+    public Set<String> getAllTransNames() {
+    	return transTable.getAllTransNames();
+    }
+
+    public List<String> getParams(String tfqn) {
+    	return transTable.getParams(tfqn);
     }
     public DashRef getTransSrc(String tfqn) {
     	return transTable.getSrc(tfqn);
     }
     public DashRef getTransDest(String tfqn) {
     	return transTable.getDest(tfqn);
+    }
+    public DashRef getTransOn(String tfqn) {
+    	return transTable.getOn(tfqn);
+    }
+    public DashRef getTransSend(String tfqn) {
+    	return transTable.getSend(tfqn);
     }
     public List<String> getHigherPriTrans(String tfqn) {
     	return transTable.getHigherPriTrans(tfqn);
@@ -361,6 +374,7 @@ public class DashModule extends CompModuleHelper {
 		DashRef scope = getScope(tfqn);
 		return stateTable.getLeafStatesExited(scope);
 	}
+
 	// for debugging
 	public List<DashRef> allPrefixDashRefs(DashRef x) {
 		return stateTable.allPrefixDashRefs(x);
@@ -430,15 +444,15 @@ public class DashModule extends CompModuleHelper {
 		System.out.println(transTable.toString());
 		System.out.println(eventTable.toString());
 		System.out.println(varTable.toString());
-		for (String x: getTransNames()) {
+		for (String x: getAllTransNames()) {
 			// System.out.println(tfqn +" scope :" + getScope(x));
 		}
 		if (tfqn != null) {
 			System.out.println("src " + getTransSrc(tfqn));
 			System.out.println("dest " + getTransDest(tfqn));
 			System.out.println("getScope " + getScope(tfqn));
-			System.out.println("getClosestConcAnces: "+getClosestConcAnces(getTransSrc(tfqn).getName()));
-			System.out.println("getAllNonConcDesc: " +getAllNonConcDesc(getClosestConcAnces(getTransSrc(tfqn).getName())));
+			System.out.println("getClosestParamAnces: "+getClosestParamAnces(getTransSrc(tfqn).getName()));
+			//System.out.println("getAllNonParamDesc: " +getAllNonParamDesc(getClosestConcAnces(getTransSrc(tfqn).getName())));
 			System.out.println("getRegion:"+"Root/S1/S2: "+getRegion(getTransSrc(tfqn).getName()));
 			System.out.println("exited: " + exited(tfqn));		
 			System.out.println("entered" + getLeafStatesEntered(getTransDest(tfqn)));
@@ -460,15 +474,15 @@ public class DashModule extends CompModuleHelper {
 			root = roots.get(0);
 			// passed with empty set of params, empty set of ancestors
 			stateTable.setRoot(root.name);
-			root.resolveAllStates(stateTable,eventTable, varTable, bufferTable, new ArrayList<String>(),new ArrayList<String>());
+			root.resolve(stateTable,transTable, eventTable, varTable, bufferTable, new ArrayList<String>(),new ArrayList<String>());
 			// have to do states first so siblings of trans parent state
 			// are in place to search for src/dest
-			root.resolveAllTrans(stateTable,transTable);
+			// root.resolveTransTable(stateTable,transTable);
 			// if root has no substates?
 			// if no transitions?
-			stateTable.resolveAll(getRootName());
+			stateTable.resolve(getRootName());
 			// TODO will need eventTable
-			transTable.resolveAll();
+			transTable.resolve(stateTable, eventTable);
 			maxDepthParams = stateTable.getMaxDepthParams();
 			  //transAtThisParamDepth = new boolean[maxDepthParams+1];
 			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);
@@ -483,9 +497,8 @@ public class DashModule extends CompModuleHelper {
 		System.out.println("Translating to Alloy");
 		// this is so we can partition the translation
 		// code into a different file
-		DashToAlloy d = new DashToAlloy(this);
 		// translation is done in place
-		d.translate();
+		DashToAlloy.translate(this);
 		// if no errors 
 		status = Status.TRANSLATED_TO_ALLOY;
 	}
@@ -515,18 +528,18 @@ public class DashModule extends CompModuleHelper {
 	public String getRoot() {
 		return root.name(); // as root it is already FQN
 	}
-
+	*/
 	public List<String> getAllInternalEventNames() {
-		assert(r.hasAllInternalEvents());
-		return eventTable.getInternalEvent();
+		//assert(hasInternalEvents());
+		return eventTable.getAllInternalEvents();
 	}
 	public List<String> getAllEnvironmentalEventNames() {
-		assert(r.hasAllExternalEvents());
-		return eventTable.getEnvironmentalEvents();
+		//assert(hasExternalEvents());
+		return eventTable.getAllEnvironmentalEvents();
 	}
-	public List<String> getTransitionNames() {
-		return transTable.getNames();
-	}
+	
+
+	/*
 	public List<String> getTransTriggerEvents(String t){
 		return transTable.get(t).trigger();
 	}
@@ -561,9 +574,9 @@ public class DashModule extends CompModuleHelper {
 		ArrayList<String> o = transTable.keys().stream().filter(t -> transTable.get(t).params.size() == i).collect(Collectors.toList());
 		return o;		
 	}
-	public List<String> getTransParams(String t) {
-		return transTable.get(t).getParams();
-	}
+	*/
+
+	/*
 	public ArrayList<String> getBasicStatesEnteredAtLevel(i){
 		ArrayList<String> bs = stateTable.get(root).basicStatesEntered;
 		ArrayList<String> o = bs.stream().filter(s -> s.params.size() == i).collect(Collectors.toList());
