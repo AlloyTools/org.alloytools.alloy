@@ -192,7 +192,27 @@ public class CompModuleHelper extends CompModule {
         s += j.toString() + "\n}\n";
         return s;
     } 
-
+    public String addOneSigWithDeclsSimple(String name, List<Decl> decls) {
+        // sig name { decls }
+        addSig(
+            Pos.UNKNOWN,
+            name, 
+            null, 
+            null, 
+            decls, 
+            null, 
+            null, 
+            null, 
+            AttrType.ONE.makenull(Pos.UNKNOWN), 
+            null,
+            null,
+            null);
+        String s = DashStrings.sigName + space + name + space + "{\n";
+        StringJoiner j = new StringJoiner(",\n");
+        decls.forEach(i -> j.add(tab + i.toString()));
+        s += j.toString() + "\n}\n";
+        return s;
+    } 
     public String addVarSigSimple(String name, ExprVar typ) {
         // var sig s in typ {};
         addSig(

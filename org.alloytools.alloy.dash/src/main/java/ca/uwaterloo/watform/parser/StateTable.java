@@ -19,13 +19,15 @@ import java.util.stream.Collectors;
 import edu.mit.csail.sdg.ast.Expr;
 
 import ca.uwaterloo.watform.core.*;
-import ca.uwaterloo.watform.ast.*;
+import ca.uwaterloo.watform.core.DashRef;
 import static ca.uwaterloo.watform.core.DashUtilFcns.*;
 import static ca.uwaterloo.watform.core.DashStrings.*;
 import static ca.uwaterloo.watform.core.DashFQN.*;
 import ca.uwaterloo.watform.alloyasthelper.ExprHelper;
 
-import ca.uwaterloo.watform.core.DashRef;
+import ca.uwaterloo.watform.ast.*;
+
+import ca.uwaterloo.watform.parser.VarTable;
 
 public class StateTable {
 	private HashMap<String,StateElement> table;
@@ -47,11 +49,13 @@ public class StateTable {
 		// this could be a set b/c there are no dups and order
 		// doesn't matter, but lists are easier to work with
 		private List<String> immChildren; // empty if none
-		private List<DashInv> invariants;
-		private List<DashInit> inits;
+		private List<DashInv> origInvariants;
+		private List<DashInit> origInits;
 		private List<DashAction> actions;
 		private List<DashCondition> conditions;
-
+		// after resolve
+		private List<Expr> invs;
+		private List<Expr> inits;
 		/*
 		private ArrayList<String> transWithThisSrc;
 		private ArrayList<String> transWithThisScope;
@@ -88,8 +92,8 @@ public class StateTable {
 			this.def = d; 
 			this.parent = p; 
 			this.immChildren = iChildren; 
-			this.invariants = invL;
-			this.inits = initL;
+			this.origInvariants = invL;
+			this.origInits = initL;
 			this.actions = actL;
 			this.conditions = condL;
 
@@ -141,6 +145,7 @@ public class StateTable {
 			    immChildren.isEmpty() ) ;
 		}
 		*/
+		/*
 		public Boolean attributesSame(DashStrings.StateKind k, String prm, List<String> prms, DashStrings.DefKind d, String p, List<String> iChildren) {
 			return (kind == k && 
 				param.equals(prm) && 
@@ -148,6 +153,13 @@ public class StateTable {
 				def.equals(d) && 
 				parent.equals(p) && 
 				immChildren.equals(iChildren));
+		}
+		*/
+		public void setInits(List<Expr> elist) {
+			inits = elist;
+		}
+		public void setInvs(List<Expr> elist) {
+			invs = elist;
 		}
 	}
 
@@ -207,6 +219,7 @@ public class StateTable {
 		//}
 		//else 
 		if (table.containsKey(fqn)) return false;
+		else if (DashStrings.hasPrime(fqn)) { DashErrors.nameShouldNotBePrimed(fqn); return false; }
 		else { table.put(fqn, new StateElement(k,prm, prms,d,p,iChildren, invL, initL, actL, condL)); return true; }
 		//System.out.println("adding to State table: "+fqn+space+prm + space + prms+space+d+space+p+iChildren);
 	}
@@ -370,12 +383,24 @@ public class StateTable {
 		}
 		return DashUtilFcns.setToList(allParams);
 	}
-	public void resolve(String root) {
-		//System.out.println("Resolving state table");
-		//for (String k: table.keySet()) 
-			//if (table.get(k) == null) DashErrors.transUsesNonExistentState(k);
-		// walk down parent to children and pass back info
-		//TODO: nothing to do here now?
+	public void resolve(String root, VarTable vt) {
+		// resolve inits and invariants
+		for (String sfqn: table.keySet()) {
+			table.get(sfqn)
+				.setInits(table.get(sfqn).origInits.stream()
+					.map(i -> vt.resolveExpr("init", i.getInit(), 
+						getRegion(sfqn), 
+						sfqn, 
+						getParams(sfqn)))
+					.collect(Collectors.toList()));
+			table.get(sfqn)
+				.setInvs(table.get(sfqn).origInvariants.stream()
+					.map(i -> vt.resolveExpr("inv", i.getInv(), 
+						getRegion(sfqn), 
+						sfqn, 
+						getParams(sfqn)))
+					.collect(Collectors.toList()));
+		}
 		isResolved = true;
 	}
 

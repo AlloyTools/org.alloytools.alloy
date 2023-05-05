@@ -47,7 +47,7 @@ public class ExprHelper  {
         return (e instanceof ExprVar);
     }
 
-    // simple equality: two var names are equal
+    // simple equality: two var names are equal -----------------------
     public static boolean sEquals(Expr e1, Expr e2) {
         return ( (e1 == e2) ||
                  (isExprVar(e1) && isExprVar(e2) && 
@@ -60,18 +60,31 @@ public class ExprHelper  {
     }
 
     public static Expr getRight(Expr e) {
-        if (isExprBinary(e) )
+        if (isExprBinary(e))
             return ((ExprBinary) e).right;
         else if (isExprBadJoin(e) )
             return ((ExprBadJoin) e).right;
-        else { DashErrors.getRightNotBinaryOrJoin(); return null; }
+        else if (e instanceof ExprITE)
+            return ((ExprITE) e).right;
+        else { DashErrors.getRightNotBinaryOrJoin(e.getClass().getName()); return null; }
     }
     public static Expr getLeft(Expr e) {
         if (isExprBinary(e)) 
             return ((ExprBinary) e).left;
         else if (isExprBadJoin(e))
             return ((ExprBadJoin) e).left;
-        else { DashErrors.getLeftNotBinaryOrJoin(); return null; }
+        else if (e instanceof ExprITE)
+            return ((ExprITE) e).left;
+        else { DashErrors.getLeftNotBinaryOrJoin(e.getClass().getName()); return null; }
+    }
+
+    public static ExprBinary.Op getOp(Expr e) {
+        assert(e instanceof ExprBinary);
+        return ((ExprBinary) e).op;
+    }
+    public static Expr getCond(Expr e) {
+        assert(e instanceof ExprITE);
+        return ((ExprITE) e).cond;
     }
 
     // constructors -----------------------------------
@@ -130,9 +143,10 @@ public class ExprHelper  {
     public static Expr createUnaryExpr(ExprUnary.Op op, Expr sub) {
         return (ExprUnary) op.make(Pos.UNKNOWN, sub);
     }
-    // dunno why this one is different in Alloy code
+
+
     public static Expr createExprList(ExprList.Op op, List<Expr> args) {
-        return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, op, args);
+        return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, op, args);
     }   
     public static Expr createExprQt(ExprQt.Op op, List<Decl> decls, Expr expr) {
         return op.make(Pos.UNKNOWN, Pos.UNKNOWN, decls,expr);
@@ -186,7 +200,7 @@ public class ExprHelper  {
     public static ExprBinary createNotEquals(Expr left, Expr right) {
         return (ExprBinary) ExprBinary.Op.NOT_EQUALS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    // returns an ExprList
+
     public static Expr createAnd(Expr left, Expr right) {
         if (sEquals(left, createFalse())) return createFalse();
         if (sEquals(right, createFalse())) return createFalse();
@@ -194,10 +208,13 @@ public class ExprHelper  {
         if (sEquals(right, createTrue())) return left;
         return (Expr) ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
-    //public static ExprList createAndList(List<Expr> args) {
-    //    return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
-    //}
+    public static Expr createAndList(List<Expr> args) {
+        //TODO put simplifications in here
+        return (Expr) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.AND, args);
+    }
+
     public static Expr createAndFromList(List<Expr> elist) {
+        // does simplifications
         if (elist.isEmpty()) return createTrue();
         Expr ret = elist.get(0);
         for (Expr el: elist.subList(1,elist.size())) {
@@ -220,9 +237,10 @@ public class ExprHelper  {
         }
         return ret;
     }
-    //public static ExprList createOr(List<Expr> args) {
-    //    return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
-    //}
+    public static ExprList createOrList(List<Expr> args) {
+        // put simplifications in here so can replace createOrFromList
+        return (ExprList) ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN,  ExprList.Op.OR, args);
+    }
     public static ExprBinary createArrow(Expr left,Expr right) {
         return (ExprBinary) ExprBinary.Op.ARROW.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
@@ -231,6 +249,7 @@ public class ExprHelper  {
         return (ExprBinary) ExprBinary.Op.PLUS.make(Pos.UNKNOWN, Pos.UNKNOWN,  left, right);
     }
     public static Expr createUnionFromList(List<Expr> elist) {
+        //TODO make an ExprList
         if (elist.isEmpty()) return createNone();
         Expr ret = elist.get(0);
         for (Expr el: elist.subList(1,elist.size())) {
@@ -273,7 +292,8 @@ public class ExprHelper  {
         if (sEquals(cond, createTrue()))  return (Expr) impliesExpr;
         else return (Expr) ExprITE.make(Pos.UNKNOWN, cond, impliesExpr, elseExpr);
     }
-   
+
+
     public static ExprQt createAll(List<Decl> decls, Expr expr) {
         return (ExprQt) ExprQt.Op.ALL.make(Pos.UNKNOWN, Pos.UNKNOWN,  decls, expr);
     }

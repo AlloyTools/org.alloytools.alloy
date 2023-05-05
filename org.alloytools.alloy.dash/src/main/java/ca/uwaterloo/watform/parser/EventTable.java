@@ -53,6 +53,7 @@ public class EventTable {
 	public Boolean add(String efqn, IntEnvKind k, List<String> prms) {
 		assert(prms!=null);
 		if (table.containsKey(efqn)) return false;
+		else if (hasPrime(efqn)) { DashErrors.nameShouldNotBePrimed(efqn); return false; }
 		else { table.put(efqn, new EventElement(k,prms)); return true; }
 	}
 	public void resolveAllEventTable() {

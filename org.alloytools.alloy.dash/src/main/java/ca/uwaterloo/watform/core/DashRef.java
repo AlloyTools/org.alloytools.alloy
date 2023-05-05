@@ -13,6 +13,7 @@ import edu.mit.csail.sdg.ast.ExprVar;
 import static ca.uwaterloo.watform.alloyasthelper.ExprHelper.*;
 import ca.uwaterloo.watform.core.DashUtilFcns;
 import ca.uwaterloo.watform.core.DashErrors;
+import ca.uwaterloo.watform.core.DashRef;
 
 public class DashRef{
 	private Pos pos;
@@ -36,6 +37,16 @@ public class DashRef{
 		//System.out.println(eList);
 	}
 
+	// within expressions we can't have DashRefs
+	// so we'll fake it
+	public static Expr DashRefExpr(String n, List<Expr> eList) {
+		// a lot like toAlloy
+		List<Expr> ll = new ArrayList<Expr>(eList);
+		Collections.reverse(ll);
+		ll.add(createVar(n));
+		return createArrow(processRef(), createArrowExprList(ll));		
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -91,6 +102,7 @@ public class DashRef{
 		exp2. exp1. Root/A/B/v1 or
 		exp2. exp1. Root/A/B/v1'
 	*/
+	/*
 	public static boolean isDashRefJoin(Expr e) {
 		if (isExprJoin(e)) {
 			Expr e2 = e;
@@ -102,7 +114,9 @@ public class DashRef{
 		}
 		return false;
 	}
+	*/
 	// results from pred calls Tk[xx]
+	/*
 	public static boolean isDashRefBadJoin(Expr e) {
 		//System.out.println(e);
 		//System.out.println(e.getClass().getName());
@@ -118,11 +132,12 @@ public class DashRef{
 		}
 		return false;
 	}
-
+	*/
 	/* 
 		can only be used in an event
 		exp2 -> exp1 -> Root/A/B/ev1 
 	*/
+	/*
 	public static boolean isDashRefArrow(Expr e) {
 		if (isExprArrow(e)) {
 			Expr e2 = e;
@@ -134,14 +149,14 @@ public class DashRef{
 		}
 		return false;
 	}
-
+	*/
 	/*
 		from exp2. exp2. Root/A/B/v1' return Root/A/B/v1'
 	*/
 	public static String nameOfDashRefExpr(Expr e) {
-		assert(isDashRefProcessRef(e) || isDashRefJoin(e) || isDashRefArrow(e) || isDashRefBadJoin(e));
+		//assert(isDashRefProcessRef(e) || isDashRefJoin(e) || isDashRefArrow(e) || isDashRefBadJoin(e));
 		Expr e2 = getRight(e);
-		while (isExprBadJoin(e2) || isExprJoin(e2)) {
+		while (/*isExprBadJoin(e2) ||*/ isExprJoin(e2)) {
 			e2 = getRight(e2);
 		}
 		assert(isExprVar(e2));
@@ -158,7 +173,7 @@ public class DashRef{
 				r.add(getLeft(e1));
 				e1 = getRight(e1);
 			}
-		} else if (isExprJoin(e1)) {
+		} /* else if (isExprJoin(e1)) {
 			while (isExprJoin(e1)) {
 				r.add(getLeft(e1));
 				e1 = getRight(e1);
@@ -173,7 +188,7 @@ public class DashRef{
 				r.add(getLeft(e1));
 				e1 = getRight(e1);
 			}
-		} else {
+		} */ else {
 			DashErrors.nonDashRefExpr();
 			return null;
 		}

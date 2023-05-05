@@ -49,10 +49,12 @@ public class DashErrors {
 	public static void dupTransNames(Pos o, String dups) throws Err {
 		throw new ErrorSyntax(o, dupTransNameMsg + dups);
 	}
+	/*
 	public static String moreThanOneSrcDestMsg = "Transition has more than one src or dest: ";
 	public static void moreThanOneSrcDest(String x, String n) throws Err {
 		throw new ErrorSyntax(moreThanOneSrcDestMsg + x);
 	}
+	*/
 	public static String unknownSrcDestMsg = "Src/Dest of trans is unknown: ";
 	public static void unknownSrcDest(String x, String t, String tfqn) throws Err {
 		throw new ErrorSyntax(unknownSrcDestMsg + "trans "+tfqn+" "+t+" "+x);
@@ -71,6 +73,10 @@ public class DashErrors {
 	}
 	// below this have not been tested
 
+	public static String nameShouldNotBePrimedMsg = "Declared state/trans/event/var cannot have a primed name: ";
+	public static void nameShouldNotBePrimed(String n) {
+		throw new ErrorSyntax(nameShouldNotBePrimedMsg+n);
+	}
 	public static String transNameCantBeFQNMsg = "Trans name cannot be fully qualified at declaration: ";
 	public static void transNameCantBeFQN(Pos o, String s) {
 		throw new ErrorSyntax(o, transNameCantBeFQNMsg + s);
@@ -102,9 +108,9 @@ public class DashErrors {
 	}
 
 	// event errors
-	public static String tooManyEventsMsg = "Multiple ";
-	public static void tooManyEvents(String xType, String tfqn) {
-		throw new ErrorSyntax(tooManyEventsMsg + xType + " in " + tfqn);
+	public static String tooManyMsg = "Multiple ";
+	public static void tooMany(String xType, String tfqn) {
+		throw new ErrorSyntax(tooManyMsg + xType + " in " + tfqn);
 	}
 	public static String unknownEventMsg = "Event does not exist: ";
 	public static void unknownEvent(String xType, String v, String tfqn) {
@@ -128,10 +134,18 @@ public class DashErrors {
 	//public static void crossRefMoreThanOneArg(Pos o, String n) throws Err {
 	//	throw new ErrorSyntax(o,"Two many args to reference to "+n+" in sibling state");
 	//}
-
-
-
-
+	public static String noPrimedVarsInMsg = "Primed variables are not allowed in: ";
+	public static void noPrimedVarsIn(String s1, String s2, String s3) {
+		throw new ErrorSyntax(noPrimedVarsInMsg + s1 + " " + s2 + " "+s3);
+	}
+	public static String ambiguousVarMsg = "Var name not unique within this conc/Root region: ";
+	public static void ambiguousVar(String xType, String v, String tfqn) {
+		throw new ErrorSyntax(ambiguousVarMsg +v+" in "+ tfqn + " "+xType);
+	}
+	public static String fqnVarWrongNumberParametersMsg = "Wrong number of parameter values for: ";
+	public static String fqnVarWrongNumberParameters(String s1, String s2, String s3) {
+		throw new ErrorSyntax(fqnVarWrongNumberParametersMsg + s1 + " "+s2 +" "+s3);
+	}
 
 
 
@@ -168,6 +182,9 @@ public class DashErrors {
 	public static void transDoesNotExist(String s1, String n) throws Err {
 		throw new ErrorFatal("for function "+s1+", trans "+n+ " does not exist in trans table");
 	}
+	public static void varDoesNotExist(String s1, String n) throws Err {
+		throw new ErrorFatal("for function "+s1+", var "+n+ " does not exist in var table");
+	}
 	public static void missingExpr(String s) throws Err {
 		throw new ErrorFatal("Missing expr type in "+s);
 	}
@@ -188,11 +205,11 @@ public class DashErrors {
 	public static void nonEmptyTransItems() throws Err {
 		throw new ErrorFatal("Non-empty trans items at end of trans resolve");
 	}
-	public static void getRightNotBinaryOrJoin() throws Err {
-		throw new ErrorFatal("getRightNotBinaryOrJoin");
+	public static void getRightNotBinaryOrJoin(String s) throws Err {
+		throw new ErrorFatal("getRightNotBinaryOrJoin: "+s);
 	}
-	public static void getLeftNotBinaryOrJoin() throws Err {
-		throw new ErrorFatal("getLeftNotBinaryOrJoin");
+	public static void getLeftNotBinaryOrJoin(String s) throws Err {
+		throw new ErrorFatal("getLeftNotBinaryOrJoin: "+s);
 	}
 	public static void replaceDashRefExprVarError() throws Err {
 		throw new ErrorFatal("replaceDashRefExprVarError");
@@ -208,5 +225,8 @@ public class DashErrors {
 	}
 	public static void createTestIfNextStableCallMultipleScopesAtSameLevel() {
 		throw new ErrorFatal("createTestIfNextStableCallMultipleScopesAtSameLevel");
+	}
+	public static String UnsupportedExpr(String s1, String s2) {
+		throw new ErrorFatal("unsupported expression type in: "+ s1 + " "+s2);
 	}
 }

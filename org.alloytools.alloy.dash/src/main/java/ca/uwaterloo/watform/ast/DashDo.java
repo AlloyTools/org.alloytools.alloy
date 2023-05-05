@@ -24,4 +24,7 @@ public class DashDo  extends Dash {
 		s += "}\n";
 		return s;
 	}
+	public Expr getDo() {
+		return action;
+	}
 }

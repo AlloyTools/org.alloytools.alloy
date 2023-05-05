@@ -15,4 +15,7 @@ public class DashWhen  extends Dash {
 	public String toString() {
 		return DashStrings.whenName + " " + when.toString() + "\n";
 	}
+	public Expr getWhen() {
+		return when;
+	}
 }

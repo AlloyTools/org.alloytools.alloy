@@ -27,4 +27,7 @@ public class DashInit extends Dash {
         s += init.toString() + "\n";
         return s + "}\n";
     }
+    public Expr getInit() {
+        return init;
+    }
 }

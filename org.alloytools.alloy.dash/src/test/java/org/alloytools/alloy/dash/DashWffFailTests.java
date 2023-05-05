@@ -76,9 +76,9 @@ public class DashWffFailTests {
          {"dupSiblingNames2", dupSiblingNamesMsg},
          {"dupTransName1", dupTransNameMsg},
          {"dupTransName2", dupTransNameMsg}, // 17
-         {"moreThanOneSrcDest1", moreThanOneSrcDestMsg},
-         {"moreThanOneSrcDest2", moreThanOneSrcDestMsg}, // 19
-         {"moreThanOneSrcDest3", moreThanOneSrcDestMsg},
+         {"moreThanOneSrcDest1", tooManyMsg},
+         {"moreThanOneSrcDest2", tooManyMsg}, // 19
+         {"moreThanOneSrcDest3", tooManyMsg},
          //{"unknownSrcDest1", unknownSrcDestMsg}, //21
          //{"unknownSrcDest2", unknownSrcDestMsg},
          //{"unknownSrcDest3", unknownSrcDestMsg},

@@ -8,7 +8,7 @@ package ca.uwaterloo.watform.parser;
 
 import java.io.*;
 
-import java.util.Set;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class TransTable {
 		public DashRef dest;
 		public Expr when; // just one?
 		public DashRef on;
-		public List<Expr> action;
+		public Expr act;
 		public DashRef send;
 
 		/*
@@ -86,6 +86,8 @@ public class TransTable {
 			s += "dest: " + NoneStringIfNeeded(dest) + "\n";
 			s += "on: " + NoneStringIfNeeded(on) + "\n";
 			s += "send: " + NoneStringIfNeeded(send) + "\n";
+			s += "when: " + NoneStringIfNeeded(when) + "\n";
+			s += "do: " + NoneStringIfNeeded(act) + "\n";
 			// add more
 			return s;
 		}
@@ -100,6 +102,12 @@ public class TransTable {
 		}
 		public void setSend(DashRef e) {
 			send = e;
+		}
+		public void setWhen(Expr e) {
+			when = e;
+		}
+		public void setDo(Expr e) {
+			act = e;
 		}
 	}
 	
@@ -129,6 +137,7 @@ public class TransTable {
 		assert(sendList != null);
 		assert(doList != null);
 		if (table.containsKey(tfqn)) return false;
+		else if (DashStrings.hasPrime(tfqn)) { DashErrors.nameShouldNotBePrimed(tfqn); return false; }
 		else { table.put(tfqn, new TransElement(params,fromList,onList,whenList,gotoList,sendList,doList)); return true; }
 	}
 	public String toString() {
@@ -142,8 +151,8 @@ public class TransTable {
 		return s;
 	}
 
-	public Set<String> getAllTransNames() {
-		return table.keySet();
+	public List<String> getAllTransNames() {
+		return new ArrayList<String>(table.keySet());
 	}
 	public List<String> getParams(String t) {
 		if (table.containsKey(t)) return table.get(t).params;
@@ -165,7 +174,14 @@ public class TransTable {
 		if (table.containsKey(t)) return table.get(t).send;
 		else { DashErrors.transDoesNotExist("getSend", t); return null; }
 	}
-
+	public Expr getDo(String t) {
+		if (table.containsKey(t)) return table.get(t).act;
+		else { DashErrors.transDoesNotExist("getDo", t); return null; }
+	}
+	public Expr getWhen(String t) {
+		if (table.containsKey(t)) return table.get(t).when;
+		else { DashErrors.transDoesNotExist("getWhen", t); return null; }
+	}
 
 	// might be better to make this getTransWithThisSrc
 	// but this is more efficient if it is only used for higherPriTrans
@@ -194,7 +210,7 @@ public class TransTable {
 	 * must be done after resolveAllState
 	 * this fcn does not modify anything in this object
 	 */
-	public void resolve(StateTable st, EventTable et) {
+	public void resolve(StateTable st, EventTable et, VarTable vt) {
 
 		//System.out.println(st);
 		//System.out.println(toString());
@@ -218,7 +234,16 @@ public class TransTable {
 			table.get(tfqn).setDest(determineSrcDest("goto", gList, st, tfqn));
 
 			// determining the when
-
+			List<Expr> whenExpList =
+				table.get(tfqn).whenList.stream()
+				.map(p -> (p.getWhen()))
+				.collect(Collectors.toList());
+			table.get(tfqn)
+				.setDo(
+					vt.resolveExprList("when", whenExpList, 
+						st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+						tfqn, 
+						getParams(tfqn)));
 
 
 			// determining the on
@@ -236,7 +261,17 @@ public class TransTable {
 			table.get(tfqn).setSend(determineEvent("send", sendExpList,st, et, tfqn));
 
 			// determining the do
-
+			List<Expr> doExpList =
+				table.get(tfqn).doList.stream()
+				.map(p -> (p.getDo()))
+				.collect(Collectors.toList());
+			table.get(tfqn)
+				.setDo(
+					vt.resolveExprList("do", doExpList, 
+						st.getRegion(DashFQN.chopPrefixFromFQN(tfqn)), 
+						tfqn, 
+						getParams(tfqn)));
+			
 		}
 		isResolved = true;
 	}
@@ -250,12 +285,14 @@ public class TransTable {
 	 * Requires state table to have been built already
 	 */
  
+ 	// tfqn is needed for error messages
+
 	public DashRef determineSrcDest(String xType, List<DashRef> ll,  StateTable st, String tfqn) {
 
 		// parent state of this transition
 		String parentFQN = DashFQN.chopPrefixFromFQN(tfqn);
 		if (ll.size() > 1) {
-			DashErrors.moreThanOneSrcDest(xType, tfqn);
+			DashErrors.tooMany(xType, tfqn);
 			return null;
 		} else if (ll.isEmpty()) 
 			// can be a loop on root
@@ -321,7 +358,7 @@ public class TransTable {
 	private DashRef determineEvent(String xType, List<Expr> expList, StateTable st, EventTable et, String tfqn) {
 		if (expList.isEmpty()) return null;
 		else if (expList.size() > 1) {
-			DashErrors.tooManyEvents(xType, tfqn);
+			DashErrors.tooMany(xType, tfqn);
 			return null;
 		} else {
 			Expr exp = expList.get(0);
@@ -333,16 +370,17 @@ public class TransTable {
 			// ProcessRef: A/B/C[a1,b1]/ev which became $$PROCESSREF$$. b1.a1.A/B/C/ev in parsing
 			// BadJoin: ev[a1,b1] which became b1.a1.ev in parsing 
 			if (ExprHelper.isExprVar(exp) ||
-				DashRef.isDashRefArrow(exp) || 
-				DashRef.isDashRefProcessRef(exp) || 
-				DashRef.isDashRefBadJoin(exp)) {
+				//DashRef.isDashRefArrow(exp) || 
+				DashRef.isDashRefProcessRef(exp))// || 
+				//DashRef.isDashRefBadJoin(exp)) 
+			{
 				String e;
 				List<Expr> paramValues;
 				if (ExprHelper.isExprVar(exp)) {
 					e = ExprHelper.getVarName((ExprVar) exp);	
 					paramValues = new ArrayList<Expr>();
 				} else {
-					e = DashFQN.fqn(DashRef.nameOfDashRefExpr(exp));
+					e = DashRef.nameOfDashRefExpr(exp);
 					paramValues = DashRef.paramValuesOfDashRefExpr(exp);
 				}
 				String efqn = DashFQN.fqn(e);
@@ -390,6 +428,8 @@ public class TransTable {
 			}
 		}
 	}
+
+
 
 	public boolean[] transAtThisParamDepth(int max) {
 		boolean[] depthsInUse = new boolean[max+1]; // 0..max

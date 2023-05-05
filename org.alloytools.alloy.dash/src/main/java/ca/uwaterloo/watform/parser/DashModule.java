@@ -291,7 +291,7 @@ public class DashModule extends CompModuleHelper {
 	}
 
     // stuff about transitions
-    public Set<String> getAllTransNames() {
+    public List<String> getAllTransNames() {
     	return transTable.getAllTransNames();
     }
 
@@ -316,6 +316,15 @@ public class DashModule extends CompModuleHelper {
 
     public boolean isEnvironmentalEvent(String efqn) {
     	return eventTable.isEnvironmentalEvent(efqn);
+    }
+    public List<String> getAllVarNames() {
+    	return varTable.getAllVarNames();
+    }
+    public List<String> getVarParams(String vfqn) {
+    	return varTable.getParams(vfqn);
+    }
+    public Expr getVarType(String vfqn) {
+    	return varTable.getType(vfqn);
     }
 	public Boolean transAtThisParamDepth(int i) {
 		if (i > maxDepthParams) { DashErrors.tooHighParamDepth(); return null; }
@@ -483,11 +492,14 @@ public class DashModule extends CompModuleHelper {
 			// root.resolveTransTable(stateTable,transTable);
 			// if root has no substates?
 			// if no transitions?
-			stateTable.resolve(getRootName());
-			// TODO will need eventTable
-			transTable.resolve(stateTable, eventTable);
+
+			// resolves inits, invariants
+			stateTable.resolve(getRootName(), varTable);
+
+			transTable.resolve(stateTable, eventTable, varTable);
+
 			maxDepthParams = stateTable.getMaxDepthParams();
-			  //transAtThisParamDepth = new boolean[maxDepthParams+1];
+
 			transAtThisParamDepth = transTable.transAtThisParamDepth(maxDepthParams);
 			//
 			//debug("Root/S1/t1");

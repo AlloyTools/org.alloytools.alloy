@@ -30,4 +30,7 @@ public class DashInv extends Dash {
         s += inv.toString() + "\n";
         return s + "}\n";
     }
+    public Expr getInv() {
+        return inv;
+    }
 }

@@ -48,7 +48,7 @@ public class DashStrings {
 	public static String gotoName = "goto";
 	public static String sendName = "send";
 	public static String SLASH = "/";
-	
+	public static String PRIME = "'";
 	
 
 	// predicate names
@@ -73,7 +73,7 @@ public class DashStrings {
 	public static String allEventsName = "AllEvents";
 	public static String allEnvironmentalEventsName = "AllEnvironmentalEvents";
 	public static String allInternalEventsName = "AllInternalEvent";
-
+	public static String variablesName = "Variables";
 
 	public static String preName = "_pre";
 	public static String postName = "_post";
@@ -117,4 +117,7 @@ public class DashStrings {
 
 	public static String processRef = "$$PROCESSREF$$";
 
+	public static boolean hasPrime(String s) {
+		return (s.substring(s.length()-1, s.length()).equals(PRIME));
+	}
 }
